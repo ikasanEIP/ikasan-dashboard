@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -10,7 +9,6 @@ import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -28,9 +26,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
-import de.f0rce.ace.AceEditor;
-import de.f0rce.ace.enums.AceMode;
-import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
@@ -43,7 +38,6 @@ import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
-import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -56,6 +50,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
@@ -71,6 +66,8 @@ import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
@@ -86,6 +83,9 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class ContextTemplateManagementWidget extends VerticalLayout implements JobSynchronisationRequiredListener {
+
+    Logger logger = LoggerFactory.getLogger(ContextTemplateManagementWidget.class);
+
     private Registration contextSaveBroadcasterRegistration;
     private ScheduledContextService scheduledContextService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -106,7 +106,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
-    private AceEditor aceEditor;
+    private JobPlanEditorWidget jobPlanEditorWidget;
     private SchedulerVisualisation schedulerVisualisation;
     private ContextInstanceGridWidget contextInstanceGridWidget;
     private SchedulerJobGridWidget schedulerJobGridWidget;
@@ -122,7 +122,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private IntegerField contextTtlMinutes;
     private IntegerField contextTtlHours;
     private IntegerField contextTtlDays;
-    private Div schedulerVisualisationDiv;
+    private VerticalLayout schedulerVisualisationDiv;
     private Tab visualisationTab;
     private Tab rawContextTab;
     private Tab contextInstancesTab;
@@ -138,6 +138,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
     private Button synchroniseJobsButton;
+
+    private ComboBox<String> searchCb;
 
     /**
      * Constructor
@@ -284,7 +286,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, jobInitiationService);
 
-        this.setWidthFull();
+        this.setSizeFull();
     }
 
     /**
@@ -431,8 +433,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
         this.getElement().getStyle().set("padding-top", "0px");
-        this.add(statusLayout, headerLayout, collapsableLayout, tabLayout, this.aceEditor, this.schedulerVisualisationDiv
+        this.add(statusLayout, headerLayout, collapsableLayout, tabLayout, this.jobPlanEditorWidget, this.schedulerVisualisationDiv
             , this.contextInstanceGridWidget, this.schedulerJobGridWidget, this.contextTemplateStatisticsWidget);
+        this.expand(this.jobPlanEditorWidget);
     }
 
     /**
@@ -451,35 +454,35 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         tabs.addSelectedChangeListener(event -> {
             if(tabs.getSelectedTab().equals(this.contextInstancesTab)) {
-                this.aceEditor.setVisible(false);
+                this.jobPlanEditorWidget.setVisible(false);
                 this.schedulerVisualisationDiv.setVisible(false);
                 this.contextInstanceGridWidget.setVisible(true);
                 this.schedulerJobGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.statisticsTab)) {
-                this.aceEditor.setVisible(false);
+                this.jobPlanEditorWidget.setVisible(false);
                 this.schedulerVisualisationDiv.setVisible(false);
                 this.contextInstanceGridWidget.setVisible(false);
                 this.schedulerJobGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(true);
             }
             else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
-                this.aceEditor.setVisible(true);
+                this.jobPlanEditorWidget.setVisible(true);
                 this.schedulerVisualisationDiv.setVisible(false);
                 this.contextInstanceGridWidget.setVisible(false);
                 this.schedulerJobGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
-                this.aceEditor.setVisible(false);
+                this.jobPlanEditorWidget.setVisible(false);
                 this.schedulerVisualisationDiv.setVisible(true);
                 this.contextInstanceGridWidget.setVisible(false);
                 this.schedulerJobGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.jobTemplatesTab)) {
-                this.aceEditor.setVisible(false);
+                this.jobPlanEditorWidget.setVisible(false);
                 this.schedulerVisualisationDiv.setVisible(false);
                 this.contextInstanceGridWidget.setVisible(false);
                 this.schedulerJobGridWidget.setVisible(true);
@@ -493,30 +496,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
      */
     protected void initialiseEditor()
     {
-        aceEditor = new AceEditor();
+        this.jobPlanEditorWidget = new JobPlanEditorWidget(this.contextTemplate
+            , this.scheduledContextService, this.schedulerJobService);
 
-        aceEditor.setTheme(AceTheme.dracula);
-        aceEditor.setMode(AceMode.json);
-        aceEditor.setFontSize(11);
-        aceEditor.setTabSize(4);
-        aceEditor.setHeight("75vh");
-        aceEditor.setReadOnly(true);
-        aceEditor.setWrap(false);
-        aceEditor.setVisible(false);
-        aceEditor.getElement().getStyle().set("margin-bottom", "30px");
-
-        this.updateRawContextTemplate();
-    }
-
-    private void updateRawContextTemplate() {
-        ContextService contextService = new ContextService();
-
-        try {
-            aceEditor.setValue(contextService.getContextTemplateString(this.contextTemplate));
-        }
-        catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+        this.jobPlanEditorWidget.setVisible(false);
     }
 
     /**
@@ -537,8 +520,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService) {
 
-        this.schedulerVisualisationDiv = new Div();
+        this.schedulerVisualisationDiv = new VerticalLayout();
         this.schedulerVisualisationDiv.setSizeFull();
+        this.schedulerVisualisationDiv.setMargin(false);
+        this.schedulerVisualisationDiv.setPadding(false);
 
         this.schedulerVisualisation = new ContextSchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
@@ -546,7 +531,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             , this.schedulerJobExecutionEnvironmentLabel);
         this.schedulerVisualisation.addJobSynchronisationRequiredListener(this);
         this.schedulerVisualisation.setWidthFull();
-        this.schedulerVisualisation.setHeight("75vh");
 
         try {
             ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
@@ -566,13 +550,22 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, this.contextTemplate, null, true);
             }
 
-            VerticalLayout buttonWrapper = new VerticalLayout();
+            HorizontalLayout buttonWrapper = new HorizontalLayout();
             buttonWrapper.setMargin(false);
             buttonWrapper.setPadding(false);
             buttonWrapper.setWidthFull();
+
             HorizontalLayout buttonLayout = new HorizontalLayout();
             buttonLayout.setMargin(false);
             buttonLayout.setPadding(false);
+            buttonLayout.getStyle().set("position", "absolute");
+            buttonLayout.getStyle().set("right", "10px");
+
+            this.searchCb = new ComboBox<>();
+            this.searchCb.setPlaceholder(getTranslation("label.search-job-plan", UI.getCurrent().getLocale()));
+            this.initialiseSearchCb();
+
+            buttonWrapper.add(searchCb);
 
             Button addContextButton = new Button(getTranslation("button.add-context", UI.getCurrent().getLocale()), VaadinIcon.PLUS.create());
             addContextButton.setIconAfterText(true);
@@ -589,16 +582,36 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             buttonLayout.add(addContextButton, this.contextViewMenuBar());
 
             buttonWrapper.add(buttonLayout);
-            buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
 
             this.schedulerVisualisation.getElement().getStyle().set("margin-top", "0px");
-            this.schedulerVisualisation.getElement().getStyle().set("margin-bottom", "30px");
             this.schedulerVisualisationDiv.add(buttonWrapper, this.schedulerVisualisation);
+            this.schedulerVisualisationDiv.expand(this.schedulerVisualisation);
         }
         catch (IOException e) {
             // todo raise message
             e.printStackTrace();
         }
+    }
+
+    private void initialiseSearchCb() {
+        Map<String, Context> contextMap = ContextHelper.getAllContexts(this.contextTemplate);
+        searchCb.setItems(contextMap.keySet());
+        searchCb.setWidth("500px");
+        searchCb.addValueChangeListener(event -> {
+            if(searchCb.getValue() != null) {
+                ContextTemplate child = (ContextTemplate) ContextHelper.getChildContext(searchCb.getValue(), this.contextTemplate);
+
+                if (child != null) {
+                    try {
+                        this.schedulerVisualisation.addBoundaryToItem(child.getName(), true);
+                    } catch (Exception e) {
+                        NotificationHelper.showUserNotification(getTranslation("notification.could-not-open-child-job-plan", UI.getCurrent().getLocale()));
+                    }
+                } else {
+                    NotificationHelper.showUserNotification(getTranslation("notification.could-not-find-child-job-plan", UI.getCurrent().getLocale()));
+                }
+            }
+        });
     }
 
     /**
@@ -801,9 +814,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
      */
     private Button createSynchroniseJobsButton() {
         Button synchroniseJobsButton = new Button(getTranslation("button.synchronise-jobs", UI.getCurrent().getLocale()), VaadinIcon.COGS.create());
-//        synchroniseJobsButton.getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
-//        synchroniseJobsButton.getStyle().set("color","white");
-//        synchroniseJobsButton.getElement().setAttribute("title", getTranslation("tooltip.synch-jobs-required", UI.getCurrent().getLocale()));
         synchroniseJobsButton.setIconAfterText(true);
 
         ComponentSecurityVisibility.applySecurity(synchroniseJobsButton, SecurityConstants.ALL_AUTHORITY,
@@ -1060,14 +1070,26 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
         this.contextSaveBroadcasterRegistration = ContextTemplateSavedEventBroadcaster.register(contextTemplate -> {
-            this.contextTemplate = contextTemplate;
-            if(ui.isAttached()) {
-                ui.access(() -> binder.readBean(contextTemplate));
+            if(this.contextTemplate.getName().equals(contextTemplate.getName())) {
+                this.contextTemplate = contextTemplate;
+                if (ui.isAttached()) {
+                    ui.access(() -> {
+                        binder.readBean(contextTemplate);
+
+                        this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
+                        this.blackoutWindowDateTimePairs.clear();
+                        this.populateBlackoutWindowPairs(contextTemplate);
+                        this.jobPlanEditorWidget.updateRawContextTemplate(contextTemplate);
+
+                        try {
+                            this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, this.contextTemplate, null, true, ui);
+                            this.initialiseSearchCb();
+                        } catch (Exception e) {
+                            logger.error("Could not recreate visualisation upon context update!", e);
+                        }
+                    });
+                }
             }
-            this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
-            this.blackoutWindowDateTimePairs.clear();
-            this.populateBlackoutWindowPairs(contextTemplate);
-            this.updateRawContextTemplate();
         });
     }
 

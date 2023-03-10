@@ -59,8 +59,8 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                 .getByContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
 
             if(contextMachine == null) {
-                throw new InvalidContextInstanceIdException(String.format("Could not resolve context machine with context instance id [%s]." +
-                    " Cache Contents - %s", contextualisedScheduledProcessEvent.getContextInstanceId(), ContextMachineCache.instance().toString()));
+                throw new InvalidContextInstanceIdException(String.format("Could not resolve context machine with context name[%s] and context instance id [%s]." +
+                    " Cache Contents - %s", contextualisedScheduledProcessEvent.getContextName(), contextualisedScheduledProcessEvent.getContextInstanceId(), ContextMachineCache.instance().toString()));
             }
 
             this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, contextMachine);

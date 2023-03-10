@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.service;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
@@ -26,6 +27,17 @@ public class ContextService {
 
     public ContextService() {
         this.objectMapper = ObjectMapperFactory.newInstance();
+    }
+
+    public boolean isValidJSON(final String json) throws JsonProcessingException {
+        try {
+            this.objectMapper.readTree(json);
+        }
+        catch (JsonProcessingException jpe) {
+            throw jpe;
+        }
+
+        return true;
     }
 
     public ContextTemplate getContextTemplate(String context) throws JsonProcessingException {

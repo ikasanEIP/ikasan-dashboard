@@ -337,7 +337,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
     }
 
     protected void initBase() {
-        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, false);
+        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, false, UI.getCurrent());
         this.designerCanvas.setSizeFull();
         this.designerCanvas.getElement().getStyle().set("border", "1px solid #E0E0E0");
         this.designerCanvas.getElement().getStyle().set("padding", "0px");

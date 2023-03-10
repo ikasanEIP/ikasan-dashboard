@@ -4,6 +4,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -30,6 +31,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
@@ -47,8 +49,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
+import java.util.Map;
 
-public class SplitContextInstanceVisualisation extends Div implements ContextOpenedListener, ContextSelectedListener, CanvasInitialisedListener {
+public class SplitContextInstanceVisualisation extends VerticalLayout implements ContextOpenedListener, ContextSelectedListener, CanvasInitialisedListener {
     Logger logger = LoggerFactory.getLogger(SplitContextInstanceVisualisation.class);
     private Registration contextInstanceStateChangeRegistration;
     private Registration schedulerJobInstanceStateChangeRegistration;
@@ -170,6 +173,8 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
     public void initialiseVisualisation() {
         if(!initialised) {
             this.setSizeFull();
+            this.setPadding(false);
+            this.setMargin(false);
 
             if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                 this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
@@ -187,27 +192,13 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
                 searchFilter.setContextName(this.contextInstance.getName());
                 searchFilter.setOwner(ContextProfileRecord.SYSTEM_OWNER);
 
-//                SearchResults<ContextProfileRecord> results = this.contextProfileService.findByFilter(searchFilter, -1, -1, null, null);
-//
-//                if (results.getResultList().size() > 0 && results.getResultList().get(0).getContextProfile().getDefaultContext() != null
-//                    && !results.getResultList().get(0).getContextProfile().getDefaultContext().isEmpty()) {
-//                    ContextInstance childContextInstance = ContextHelper.getChildContextInstance(results.getResultList()
-//                        .get(0).getContextProfile().getDefaultContext(), this.contextInstance);
-//
-//                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, childContextInstance, null);
-//                } else {
-//                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
-//                }
-
                 this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
 
                 this.schedulerInstanceVisualisation.addCanvasInitialisedListener(this);
 
                 this.visualisationSplitLayout = new SplitLayout();
-                this.visualisationSplitLayout.setHeight("100%");
                 this.visualisationSplitLayout.setWidthFull();
                 this.visualisationSplitLayout.setOrientation(SplitLayout.Orientation.VERTICAL);
-                this.visualisationSplitLayout.getElement().getStyle().set("margin-bottom", "5px");
 
                 this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService, scheduledProcessManagementService,
                     configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
@@ -237,7 +228,7 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
 
                 downButton.getElement().appendChild(VaadinIcon.ARROW_DOWN.create().getElement());
                 downButton.addClickListener(event -> {
-                    visualisationSplitLayout.setSplitterPosition(97);
+                    visualisationSplitLayout.setSplitterPosition(95);
                     this.jobVisualisation.setVisible(false);
                 });
 
@@ -283,7 +274,29 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
                     jobVisualisation.setVisible(true);
                 });
 
-                this.add(this.visualisationSplitLayout);
+                ComboBox<String> searchCb = new ComboBox<>();
+                searchCb.setPlaceholder(getTranslation("label.search-job-plan", UI.getCurrent().getLocale()));
+                Map<String, Context> contextMap = ContextHelper.getAllContexts(this.contextInstance);
+                searchCb.setItems(contextMap.keySet());
+                searchCb.setWidth("500px");
+                searchCb.addValueChangeListener(event -> {
+                    if(searchCb.getValue() != null) {
+                        Context child = ContextHelper.getChildContext(searchCb.getValue(), this.contextInstance);
+
+                        if (child != null) {
+                            try {
+                                this.contextSelected(child.getName());
+                                this.contextOpened(child);
+                            } catch (Exception e) {
+                                NotificationHelper.showUserNotification(getTranslation("notification.could-not-open-child-job-plan", UI.getCurrent().getLocale()));
+                            }
+                        } else {
+                            NotificationHelper.showUserNotification(getTranslation("notification.could-not-find-child-job-plan", UI.getCurrent().getLocale()));
+                        }
+                    }
+                });
+                this.add(searchCb, this.visualisationSplitLayout);
+                this.expand(this.visualisationSplitLayout);
 
                 this.setVisible(false);
             } catch (IOException e) {
