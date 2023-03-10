@@ -16,6 +16,7 @@ import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -67,6 +68,40 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals("jobName2", events.get(0).getJobName());
 
         // todo make sure context has been updated
+    }
+
+    @Test
+    public void test_simple_context_job_already_complete() throws IOException, InvalidContextTemplateException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.COMPLETE);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
+    }
+
+    @Test
+    public void test_simple_context_job_already_error() throws IOException, InvalidContextTemplateException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.ERROR);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
     }
 
     /**
