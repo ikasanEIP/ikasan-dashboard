@@ -1763,6 +1763,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 }
                 else {
                     children.addAll(contextInstance.getContexts().stream()
+                        .filter(instance -> instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
+                        .map(instance -> (Object) instance)
+                        .collect(Collectors.toList()));
+
+                    children.addAll(contextInstance.getContexts().stream()
                         .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
                             (instance, filter.get().getJobName()).size() > 0)
                         .map(instance -> (Object) instance)
@@ -1789,6 +1794,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         .collect(Collectors.toList()));
                 }
                 else {
+                    children.addAll(((ContextInstance) node).getContexts().stream()
+                        .filter(instance -> instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
+                        .map(instance -> (Object) instance)
+                        .collect(Collectors.toList()));
+
                     children.addAll(((ContextInstance) node).getContexts().stream()
                         .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
                             (instance, filter.get().getJobName()).size() > 0)
