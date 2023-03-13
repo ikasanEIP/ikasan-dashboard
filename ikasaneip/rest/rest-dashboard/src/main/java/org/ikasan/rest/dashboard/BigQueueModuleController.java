@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -174,18 +175,19 @@ public class BigQueueModuleController {
 
         List<BigQueueModuleDto> bigQueueModuleDtoList = new ArrayList<>();
         List<MetadataModuleDto> metadataModuleDtoList = getModules();
-        // For Each Module register to the the ikasan dashboard, get the biq queue with it size
+        // For Each Module register to the ikasan dashboard, get the biq queue with it size
         for (MetadataModuleDto module : metadataModuleDtoList) {
             if (moduleType.equals("ALL") || module.getModuleType() == moduleEnum) {
                 try {
                     LOG.info("Getting all queue sizes for the module [{}]", module.getName());
                     Map<String, Long> queueMap = bigQueueModuleService.size(module.getUrl(), includeZeros);
                     if (queueMap.size() > 0) {
-                        bigQueueModuleDtoList.add(new BigQueueModuleDto(module.getName(), queueMap));
+                        bigQueueModuleDtoList.add(new BigQueueModuleDto(module.getName(), queueMap, true));
                     }
                 } catch (Exception e1) {
                     // May get errors due to the module not supporting BigQueue
                     LOG.warn("Unable to get Big Queue details for module [{}], with error [{}]", module.getName(), e1.getMessage());
+                    bigQueueModuleDtoList.add(new BigQueueModuleDto(module.getName(), new HashMap<>(), false));
                 }
             }
         }
