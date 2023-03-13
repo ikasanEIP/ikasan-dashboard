@@ -134,9 +134,10 @@ public class BigQueueModuleRestServiceImpl extends ModuleRestService implements 
             return responseEntity.getBody();
         }
         catch(RestClientException e){
-            LOG.warn("Issue getting the size of all queues on the url [{}] [includeZeros={}]. Likely module is not compatible with BigQueue or module is not responsive.", url, includeZeros);
+            String error = "Issue getting the size of all queues on the url ["+url+"] [includeZeros="+includeZeros+"]. Likely module is not compatible with BigQueue or module is not responsive.";
+            LOG.warn(error);
             LOG.debug(e.getLocalizedMessage());
-            return new HashMap<>();
+            throw new RestClientException(error);
         }
     }
 
