@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ContextHelper {
 
@@ -272,9 +273,12 @@ public class ContextHelper {
             }
         }
 
-        finalResults = finalResults.stream().filter(job -> !((SchedulerJobInstance)job).getChildContextName().equals(childContextName) &&
+        finalResults = finalResults.stream().flatMap(s -> Stream.ofNullable(s))
+            .filter(job -> !((SchedulerJobInstance)job).getChildContextName().equals(childContextName) &&
+                theChildContext != null &&
                 !theChildContext.getScheduledJobs().stream()
-                    .filter(j -> job.getJobName().equals(((SchedulerJob)j).getJobName()))
+                    .flatMap(s -> Stream.ofNullable(s))
+                    .filter(j -> job!= null && job.getJobName().equals(((SchedulerJob)j).getJobName()))
                     .findFirst()
                     .isPresent())
             .filter(distinctByKey(j -> j.getJobName()))
