@@ -12,6 +12,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.Map;
@@ -305,7 +306,7 @@ public class BigQueueModuleRestServiceImplTest {
         assertNull(result);
     }
 
-    @Test
+    @Test(expected = RestClientException.class)
     public void test_all_size_404() {
         stubFor(get(urlEqualTo("/rest/big/queue/size?includeZeros=true"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -315,10 +316,9 @@ public class BigQueueModuleRestServiceImplTest {
                 .withStatus(404)
             ));
         Map<String, Long> result = uut.size(contextBaseUrl,true);
-        assertTrue(result.isEmpty());
     }
 
-    @Test
+    @Test(expected = RestClientException.class)
     public void test_all_size_500() {
         stubFor(get(urlEqualTo("/rest/big/queue/size?includeZeros=true"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -328,7 +328,6 @@ public class BigQueueModuleRestServiceImplTest {
                 .withStatus(500)
             ));
         Map<String, Long> result = uut.size(contextBaseUrl,true);
-        assertTrue(result.isEmpty());
     }
 
     @Test

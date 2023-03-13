@@ -6,10 +6,12 @@ public class BigQueueModuleDto {
 
     String moduleName;
     Map<String, Long> queueSizeMap;
+    boolean isSuccessful;
 
-    public BigQueueModuleDto(String moduleName, Map<String, Long> queueSizeMap) {
+    public BigQueueModuleDto(String moduleName, Map<String, Long> queueSizeMap, boolean isSuccessful) {
         this.moduleName = moduleName;
         this.queueSizeMap = queueSizeMap;
+        this.isSuccessful = isSuccessful;
     }
 
     public String getModuleName() {
@@ -26,5 +28,13 @@ public class BigQueueModuleDto {
 
     public void setQueueSizeMap(Map<String, Long> queueSizeMap) {
         this.queueSizeMap = queueSizeMap;
+    }
+
+    public boolean isSuccessful() {
+        return isSuccessful;
+    }
+
+    public void setSuccessful(boolean successful) {
+        isSuccessful = successful;
     }
 }
