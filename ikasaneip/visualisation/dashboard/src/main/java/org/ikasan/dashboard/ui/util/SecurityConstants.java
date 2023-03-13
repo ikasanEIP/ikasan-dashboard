@@ -174,6 +174,10 @@ public class SecurityConstants
     public static String SCHEDULER_ALL_WRITE = "scheduler-all-write";
     public static String SCHEDULER_ALL_ADMIN = "scheduler-all-admin";
 
+    public static String SCHEDULER_DEV_READ = "scheduler-dev-read";
+    public static String SCHEDULER_DEV_WRITE = "scheduler-dev-write";
+    public static String SCHEDULER_DEV_ADMIN = "scheduler-dev-admin";
+
     public static String BUSINESS_STREAM_READ = "business-stream-read";
     public static String BUSINESS_STREAM_WRITE = "business-stream-write";
     public static String BUSINESS_STREAM_ADMIN = "business-stream-admin";

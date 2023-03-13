@@ -112,12 +112,11 @@ public class JobPlanEditorWidget extends VerticalLayout {
         HorizontalLayout horizontalLayout = new HorizontalLayout();
 
         Button validateButton = new Button(getTranslation("button.validate", UI.getCurrent().getLocale()));
-        ComponentSecurityVisibility.applySecurity(validateButton, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ALL_ADMIN,
-            SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ADMIN,
-            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_READ);
+        ComponentSecurityVisibility.applySecurity(validateButton, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_DEV_ADMIN,
+            SecurityConstants.SCHEDULER_DEV_WRITE);
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
-        ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ALL_ADMIN,
-            SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_WRITE);
+        ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_DEV_ADMIN,
+            SecurityConstants.SCHEDULER_DEV_WRITE);
 
         horizontalLayout.add(validateButton, saveButton);
 
