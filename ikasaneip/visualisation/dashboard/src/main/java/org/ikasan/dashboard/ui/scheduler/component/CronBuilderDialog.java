@@ -6,9 +6,11 @@ import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 import com.vaadin.componentfactory.gridlayout.GridLayout;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
@@ -152,7 +154,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         super.content.add(this.cronExpressionTf, this.naturalLanguageTf, tabs, secondsLayout, minutesLayout, hoursLayout, daysLayout, monthsLayout, yearsLayout, buttonLayout);
 
 
-        this.setWidth("1000px");
+        this.setWidth("1200px");
         this.setHeight("550px");
     }
 
@@ -822,12 +824,14 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         TimeComponent lastDayOfMonth = this.getLastDayOfMonth();
         TimeComponent lastWeekDayOfMonth = this.getLastWeekOfMonth();
         TimeComponent lastDaySelectOfMonth = this.getLastDaySelectOfMonth();
+        TimeComponent specificNthDayOfMonth = this.getSpecificNthDayOfMonth();
 
         radioGroup.setItems(List.of(everyDay
             , everyDayStartingOnDay
             , everyDayStartingOnCalendarDay
             , specificDay
             , specificDayOfWeek
+            , specificNthDayOfMonth
             , lastDayOfMonth
             , lastWeekDayOfMonth
             , lastDaySelectOfMonth));
@@ -841,6 +845,10 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         if(this.dayOfMonthPart.equals("?") && this.dayOfWeekPart.equals("*")) {
             radioGroup.setValue(everyDay);
             layout.add(radioGroup, everyDay.getComponent());
+        }
+        if(this.dayOfMonthPart.equals("?") && this.dayOfWeekPart.contains("#")) {
+            radioGroup.setValue(specificNthDayOfMonth);
+            layout.add(radioGroup, specificNthDayOfMonth.getComponent());
         }
         else if(this.dayOfMonthPart.equals("?") && this.dayOfWeekPart.contains("/")) {
             radioGroup.setValue(everyDayStartingOnDay);
@@ -876,7 +884,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         }
 
         radioGroup.addValueChangeListener(event -> {
-            if(event.getValue().equals(everyDayStartingOnDay) || event.getValue().equals(specificDayOfWeek) || event.getValue().equals(lastDaySelectOfMonth)) {
+            if(event.getValue().equals(everyDayStartingOnDay) || event.getValue().equals(specificDayOfWeek)
+                || event.getValue().equals(lastDaySelectOfMonth) || event.getValue().equals(specificNthDayOfMonth)) {
                 this.dayOfWeekPart = event.getValue().getValue();
                 this.dayOfMonthPart = "?";
             }
@@ -1069,8 +1078,56 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         return timeComponent;
     }
 
-    private TimeComponent getSpecificDay() {
+    private TimeComponent getSpecificNthDayOfMonth() {
 
+        GridLayout layout = new GridLayout(7, 1);
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.specific-nth-instance-of-day-in-month"
+            , UI.getCurrent().getLocale()), layout);
+
+        if(this.dayOfWeekPart.contains("#")) {
+            timeComponent.setValue(this.dayOfWeekPart);
+        }
+        else {
+            timeComponent.setValue("2#1");
+        }
+
+        String[] tokens = timeComponent.getValue().split("#");
+
+        ComboBox<String> instanceNumCb = new ComboBox<>();
+        instanceNumCb.setItems("1st", "2nd", "3rd", "4th", "5th");
+        instanceNumCb.setValue(this.instanceTense(tokens[1]));
+
+        layout.addComponent(instanceNumCb);
+
+        RadioButtonGroup<String> radioGroup = new RadioButtonGroup<>();
+        radioGroup.setItems("Monday", "Tuesday", "Wednesday",
+            "Thursday", "Friday", "Saturday", "Sunday");
+        radioGroup.setValue(this.numToDayOfWeek(tokens[0]));
+
+        layout.addComponent(radioGroup);
+        layout.addComponent(new Label(" of the month."));
+
+
+        instanceNumCb.addValueChangeListener(event -> {
+            this.dayOfMonthPart = "?";
+            dayOfWeekPart = this.dayOfWeek(radioGroup.getValue())+"#"+this.instance(instanceNumCb.getValue());
+            timeComponent.setValue(this.dayOfWeekPart);
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+        radioGroup.addValueChangeListener(event -> {
+            this.dayOfMonthPart = "?";
+            dayOfWeekPart = this.dayOfWeek(radioGroup.getValue())+"#"+this.instance(instanceNumCb.getValue());
+            timeComponent.setValue(this.dayOfWeekPart);
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+        layout.setSizeFull();
+
+        return timeComponent;
+    }
+
+    private TimeComponent getSpecificDay() {
         List<Checkbox> day = new ArrayList<>();
         IntStream.range(1, 32).forEach(i -> day.add(new Checkbox(Integer.toString(i))));
 
@@ -1643,8 +1700,30 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         }
     }
 
-    private String numToDayOfWeek(String textDay) {
-        switch (textDay){
+    private String instance(String instance) {
+        switch (instance){
+            case "1st" : return "1";
+            case "2nd" : return "2";
+            case "3rd" : return "3";
+            case "4th" : return "4";
+            case "5th" : return "5";
+            default: return "";
+        }
+    }
+
+    private String instanceTense(String instance) {
+        switch (instance){
+            case "1" : return "1st";
+            case "2" : return "2nd";
+            case "3" : return "3rd";
+            case "4" : return "4th";
+            case "5" : return "5th";
+            default: return "";
+        }
+    }
+
+    private String numToDayOfWeek(String numDay) {
+        switch (numDay){
             case "1" : return "Sunday";
             case "2" : return "Monday";
             case "3" : return "Tuesday";
