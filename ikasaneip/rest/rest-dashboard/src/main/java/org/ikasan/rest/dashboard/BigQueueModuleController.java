@@ -182,12 +182,12 @@ public class BigQueueModuleController {
                     LOG.info("Getting all queue sizes for the module [{}]", module.getName());
                     Map<String, Long> queueMap = bigQueueModuleService.size(module.getUrl(), includeZeros);
                     if (queueMap.size() > 0) {
-                        bigQueueModuleDtoList.add(new BigQueueModuleDto(module.getName(), queueMap, true));
+                        bigQueueModuleDtoList.add(new BigQueueModuleDto(module.getName(), module.getUrl(), queueMap, true));
                     }
                 } catch (Exception e1) {
                     // May get errors due to the module not supporting BigQueue
                     LOG.warn("Unable to get Big Queue details for module [{}], with error [{}]", module.getName(), e1.getMessage());
-                    bigQueueModuleDtoList.add(new BigQueueModuleDto(module.getName(), new HashMap<>(), false));
+                    bigQueueModuleDtoList.add(new BigQueueModuleDto(module.getName(), module.getUrl(), new HashMap<>(), false));
                 }
             }
         }

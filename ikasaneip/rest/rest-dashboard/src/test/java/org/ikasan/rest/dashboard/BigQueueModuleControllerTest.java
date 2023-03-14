@@ -423,10 +423,10 @@ public class BigQueueModuleControllerTest {
         assertEquals(200, result.getResponse().getStatus());
         assertEquals("" +
                 "[" +
-                    "{\"moduleName\":\"someModule1\"," +
+                    "{\"moduleName\":\"someModule1\",\"moduleUrl\":\"localhost1\"," +
                     "\"queueSizeMap\":{\"queue1\":0,\"queue2\":3,\"queue3\":0,\"queue4\":4}," +
                     "\"successful\":true}," +
-                    "{\"moduleName\":\"someModule2\"," +
+                    "{\"moduleName\":\"someModule2\",\"moduleUrl\":\"localhost2\"," +
                     "\"queueSizeMap\":{\"queue1\":0,\"queue2\":3,\"queue3\":0,\"queue4\":4}," +
                     "\"successful\":true}" +
                 "]",
@@ -473,10 +473,10 @@ public class BigQueueModuleControllerTest {
         assertEquals(200, result.getResponse().getStatus());
         assertEquals("" +
                 "[" +
-                "{\"moduleName\":\"someModule1\"," +
+                "{\"moduleName\":\"someModule1\",\"moduleUrl\":\"localhost1\"," +
                 "\"queueSizeMap\":{\"queue1\":0,\"queue2\":3,\"queue3\":0,\"queue4\":4}," +
                 "\"successful\":true}," +
-                "{\"moduleName\":\"someModule2\"," +
+                "{\"moduleName\":\"someModule2\",\"moduleUrl\":\"localhost2\"," +
                 "\"queueSizeMap\":{\"queue1\":0,\"queue2\":3,\"queue3\":0,\"queue4\":4}" +
                 ",\"successful\":true}" +
                 "]",
@@ -523,8 +523,8 @@ public class BigQueueModuleControllerTest {
         assertEquals(200, result.getResponse().getStatus());
         assertEquals("" +
                 "[" +
-                    "{\"moduleName\":\"someModule1\",\"queueSizeMap\":{\"queue1\":0,\"queue2\":3,\"queue3\":0,\"queue4\":4},\"successful\":true}," +
-                    "{\"moduleName\":\"someModule2\",\"queueSizeMap\":{},\"successful\":false}" +
+                    "{\"moduleName\":\"someModule1\",\"moduleUrl\":\"localhost1\",\"queueSizeMap\":{\"queue1\":0,\"queue2\":3,\"queue3\":0,\"queue4\":4},\"successful\":true}," +
+                    "{\"moduleName\":\"someModule2\",\"moduleUrl\":\"localhost2\",\"queueSizeMap\":{},\"successful\":false}" +
                 "]",
             result.getResponse().getContentAsString());
 
@@ -556,7 +556,7 @@ public class BigQueueModuleControllerTest {
 
         assertEquals(200, result.getResponse().getStatus());
         assertEquals("" +
-                "[{\"moduleName\":\"someModule1\",\"queueSizeMap\":{},\"successful\":false}]",
+                "[{\"moduleName\":\"someModule1\",\"moduleUrl\":\"localhost1\",\"queueSizeMap\":{},\"successful\":false}]",
             result.getResponse().getContentAsString());
 
         verify(bigQueueModuleService).size("localhost1", true);
