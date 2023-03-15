@@ -112,6 +112,7 @@ public class ContextMachine {
                           ContextInstancePublicationService<ContextInstance> contextInstancePublicationService) {
         this.context = context;
         this.contextInstance = contextInstance;
+        ContextHelper.enrichJobs(contextInstance);
         this.internalEventDrivenJobInstances = internalEventDrivenJobInstances;
         this.globalEventJobInstanceMap = globalEventJobInstanceMap;
         if (this.globalEventJobInstanceMap == null) {
