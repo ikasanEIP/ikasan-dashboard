@@ -15,7 +15,8 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public abstract class AbstractDashboardSchedulerService {
-    public static final String CONTEXT_GROUP = "context";
+    public static final String CONTEXT_START_GROUP = "context start";
+    public static final String CONTEXT_END_GROUP = "context end";
     public static final String NOTIFY_GROUP = "notify";
     public static final String CONTEXT_INSTANCE_ID = "contextInstanceId";
     /** Logger for this class */
@@ -66,12 +67,12 @@ public abstract class AbstractDashboardSchedulerService {
         String jobGroup = jobDetail.getKey().getGroup();
 
         // for non-context jobs, unschedule the job so that we can reschedule it if the cron expression has changed.
-        if (!jobGroup.equals(CONTEXT_GROUP)) {
+        if (!jobGroup.equals(CONTEXT_START_GROUP) && !jobGroup.equals(CONTEXT_END_GROUP)) {
             this.unscheduleJob(jobName);
         }
         try
         {
-            if(jobGroup.equals(CONTEXT_GROUP) || !this.scheduler.checkExists(jobkey))
+            if(jobGroup.equals(CONTEXT_START_GROUP) || jobGroup.equals(CONTEXT_END_GROUP) || !this.scheduler.checkExists(jobkey))
             {
                 final Trigger trigger = getCronTrigger(
                     jobkey,

@@ -82,7 +82,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
     public void registerStartJobAndTrigger(String contextName, String cronExpressionToTriggerJob, String timezone) {
         final ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(
             contextName, cronExpressionToTriggerJob, timezone, contextInstanceRegistrationService);
-        final JobDetail jobDetail = scheduledJobFactory.createJobDetail(job, ContextInstanceRegisterJob.class, job.getJobName(), CONTEXT_GROUP);
+        final JobDetail jobDetail = scheduledJobFactory.createJobDetail(job, ContextInstanceRegisterJob.class, job.getJobName(), CONTEXT_START_GROUP);
 
         // Overwrite if already in map
         super.dashboardJobDetailsMap.put(job.getJobName(), jobDetail);
@@ -107,7 +107,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
     public void registerEndJobAndTrigger(String contextName, String cronExpressionToTriggerJob, String timezone, String contextInstanceId) {
         ContextInstanceEndJob endJob = new ContextInstanceEndJob(contextName + END_JOB_EXTENSION, cronExpressionToTriggerJob, timezone
             , this.contextInstanceRegistrationService, this);
-        JobDetail endJobDetail = this.scheduledJobFactory.createJobDetail(endJob, ContextInstanceEndJob.class, endJob.getJobName(), CONTEXT_GROUP);
+        JobDetail endJobDetail = this.scheduledJobFactory.createJobDetail(endJob, ContextInstanceEndJob.class, endJob.getJobName(), CONTEXT_END_GROUP);
 
         // Overwrite if already in map
         super.dashboardJobDetailsMap.put(endJob.getJobName(), endJobDetail);

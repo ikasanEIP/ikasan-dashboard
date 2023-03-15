@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_GROUP;
+import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_START_GROUP;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -91,17 +91,17 @@ public class ContextInstanceSchedulerServiceTest {
         ScheduledContextRecordTestSearchResults results = new ScheduledContextRecordTestSearchResults(3, true);
         when(scheduledContextService.findAll()).thenReturn(results);
 
-        createJobDetailAndSetStub("ContextName1", CONTEXT_GROUP);
-        createJobDetailAndSetStub("ContextName2", CONTEXT_GROUP);
-        createJobDetailAndSetStub("ContextName3", CONTEXT_GROUP);
+        createJobDetailAndSetStub("ContextName1", CONTEXT_START_GROUP);
+        createJobDetailAndSetStub("ContextName2", CONTEXT_START_GROUP);
+        createJobDetailAndSetStub("ContextName3", CONTEXT_START_GROUP);
         when(scheduler.scheduleJob(any(), any())).thenReturn(new Date());
 
         contextInstanceSchedulerService.registerJobs();
 
         verify(scheduledContextService).findAll();
-        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName1"), eq(CONTEXT_GROUP));
-        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName2"), eq(CONTEXT_GROUP));
-        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName3"), eq(CONTEXT_GROUP));
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName1"), eq(CONTEXT_START_GROUP));
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName2"), eq(CONTEXT_START_GROUP));
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName3"), eq(CONTEXT_START_GROUP));
 
         verify(scheduler, times(3)).scheduleJob(any(), any());
         verify(scheduler, times(3)).getTriggersOfJob(any());
