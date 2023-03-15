@@ -74,6 +74,7 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
     private LeftNavigationItem policyManagementMenuItem;
     private LeftNavigationItem userDirectoryManagementMenuItem;
     private LeftNavigationItem businessStreamDesignerMenuItem;
+    private LeftNavigationItem quartzSchedulerMenuItem;
 
     public IkasanAppLayout()
     {
@@ -166,6 +167,11 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
             UI.getCurrent().getLocale(), null), VaadinIcon.COG.create(), UserDirectoriesView.class);
         this.userDirectoryManagementMenuItem.setId("userDirectoryManagementMenuItem");
         leftSubMenuBuilder = leftSubMenuBuilder.add(this.userDirectoryManagementMenuItem);
+
+        this.quartzSchedulerMenuItem = new LeftNavigationItem(getTranslation("menu-item.quartz-scheduler",
+            UI.getCurrent().getLocale(), null), VaadinIcon.CALENDAR_CLOCK.create(), QuartzSchedulerView.class);
+        this.roleManagementMenuItem.setId("quartzSchedulerViewMenuItem");
+        leftSubMenuBuilder = leftSubMenuBuilder.add(this.quartzSchedulerMenuItem);
 
         this.businessStreamDesignerMenuItem = new LeftNavigationItem("Designer", VaadinIcon.PALETE.create(), BusinessStreamDesignerView.class);
         this.businessStreamDesignerMenuItem.setId("businessStreamDesignerMenuItem");
