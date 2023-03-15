@@ -1,10 +1,12 @@
 {
   "agentName" : "scheduler-agent",
   "jobName" : "744167903",
+  "contextName" : "CONTEXT-1436221681",
   "childContextNames" : [ ],
   "startupControlType" : "AUTOMATIC",
   "skippedContexts" : { },
   "heldContexts" : { },
+  "childContextName" : "CONTEXT-1589183395",
   "held" : false,
   "initiationEventRaised" : false,
   "status" : "WAITING",
