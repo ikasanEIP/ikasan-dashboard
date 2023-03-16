@@ -66,9 +66,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private ModuleMetaDataService moduleMetadataService;
 
     @Resource
-    private DateFormatter dateFormatter;
-
-    @Resource
     private ConfigurationService configurationRestService;
 
     @Resource
@@ -107,17 +104,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Value("${scheduled.job.context.queue.directory}")
     private String queueDirectory;
 
-    @Resource
-    private InternalEventDrivenJobService internalEventDrivenJobService;
-
-    @Resource
-    private ScheduledContextInstanceService contextInstanceService;
 
     @Resource
     private LogStreamingService logStreamingService;
-
-    @Resource
-    private ContextParametersInstanceService contextParametersInstanceService;
 
     @Resource
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -154,9 +143,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
-
-    @Resource
-    private JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
     @Resource
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
@@ -228,7 +214,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
         tabsToPages.put(this.schedulerDashboardTab, this.schedulerAgentDashboardView);
-        //tabsToPages.put(this.contextDebugTab, this.contextDebugBoard);
         tabsToPages.put(this.contextTemplateTab, this.contextTemplateWidget);
 
         tabs.addSelectedChangeListener(event -> {

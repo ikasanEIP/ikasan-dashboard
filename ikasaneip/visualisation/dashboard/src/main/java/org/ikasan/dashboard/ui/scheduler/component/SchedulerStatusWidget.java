@@ -260,7 +260,7 @@ public class SchedulerStatusWidget extends Div {
     /**
      * Helper method to recalculate the flow states and update the UI.
      */
-    public void recalculate() {
+    public synchronized void recalculate() {
         if(ui.isAttached()) {
             this.initialiseStateMap();
 
