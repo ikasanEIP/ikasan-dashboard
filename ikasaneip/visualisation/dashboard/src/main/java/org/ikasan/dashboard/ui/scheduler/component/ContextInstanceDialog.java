@@ -52,7 +52,7 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
-            , jobUtilsService, scheduledContextService, selectedTab, jobStatus, globalEventService, contextInstanceRegistrationService);
+            , jobUtilsService, scheduledContextService, selectedTab, jobStatus, null, globalEventService, contextInstanceRegistrationService);
         this.init();
     }
 

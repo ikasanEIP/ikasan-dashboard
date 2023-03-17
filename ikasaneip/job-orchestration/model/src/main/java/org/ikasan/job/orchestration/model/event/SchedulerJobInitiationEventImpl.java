@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.model.event;
 
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 
@@ -19,6 +20,7 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     private boolean dryRun = false;
     private DryRunParametersImpl dryRunParameters;
     private boolean skipped = false;
+    private ScheduledProcessEvent catalystEvent;
 
     @Override
     public String getAgentName() {
@@ -128,6 +130,16 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     @Override
     public boolean isSkipped() {
         return skipped;
+    }
+
+    @Override
+    public ScheduledProcessEvent getCatalystEvent() {
+        return catalystEvent;
+    }
+
+    @Override
+    public void setCatalystEvent(ScheduledProcessEvent catalystEvent) {
+        this.catalystEvent = catalystEvent;
     }
 
     @Override
