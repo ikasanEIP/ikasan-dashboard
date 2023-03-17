@@ -105,6 +105,7 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     private String contextInstanceId;
     private String selectedTab;
     private String jobStatus;
+    private String jobName;
 
     private IkasanAuthentication ikasanAuthentication;
 
@@ -130,11 +131,11 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
             UI.getCurrent().getPage().setLocation("/scheduler");
         }
         else {
-            if (this.selectedTab != null && this.jobStatus != null) {
+            if (this.selectedTab != null && (this.jobStatus != null || this.jobName != null)) {
                 this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
                     , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-                    , this.jobUtilsService, this.scheduledContextService, this.selectedTab, this.jobStatus, this.globalEventService, this.contextInstanceRegistrationService);
+                    , this.jobUtilsService, this.scheduledContextService, this.selectedTab, this.jobStatus, this.jobName, this.globalEventService, this.contextInstanceRegistrationService);
             } else {
                 this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
                     , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
@@ -157,7 +158,13 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
 
     @Override
     public void setParameter(BeforeEvent beforeEvent, @WildcardParameter String param) {
-        if(param.contains("/")) {
+        if(param.contains("job/")) {
+            String[] params = param.split("/");
+            this.contextInstanceId = params[1];
+            this.selectedTab = params[2];
+            this.jobName = params[3];
+        }
+        else if(param.contains("/")) {
             String[] params = param.split("/");
             this.contextInstanceId = params[0];
             this.selectedTab = params[1];

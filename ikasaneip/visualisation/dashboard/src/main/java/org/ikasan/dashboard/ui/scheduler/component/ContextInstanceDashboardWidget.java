@@ -430,11 +430,11 @@ public class ContextInstanceDashboardWidget extends Div {
                     // The number of items to load
                     int limit = query.getLimit();
 
-                    return this.filter(this.statusFilter).stream();
+                    return this.filter(this.statusFilter, offset, limit).stream();
                 },
                 // Second callback fetches the total number of items currently in the Grid.
                 // The grid can then use it to properly adjust the scrollbars.
-                query -> this.filter(this.statusFilter).size());
+                query -> this.filter(this.statusFilter, -1, -1).size());
 
         dataProvider.withConfigurableFilter().setFilter(this.statusFilter);
         this.contextInstanceAggregateJobStatusGrid.setDataProvider(dataProvider);
@@ -508,7 +508,7 @@ public class ContextInstanceDashboardWidget extends Div {
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
-    private List<ContextInstanceAggregateJobStatus> filter(StatusFilter statusFilter) {
+    private List<ContextInstanceAggregateJobStatus> filter(StatusFilter statusFilter, int offset, int limit) {
         List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
 
         List<ContextInstanceAggregateJobStatus> jobStatuses = this.schedulerJobInstanceService
@@ -517,7 +517,7 @@ public class ContextInstanceDashboardWidget extends Div {
         boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
         Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
 
-        return jobStatuses.stream().filter(item -> {
+        jobStatuses = jobStatuses.stream().filter(item -> {
                 boolean filter = true;
 
                 if(!canAccessAllJobPlans) {
@@ -535,6 +535,15 @@ public class ContextInstanceDashboardWidget extends Div {
                 return filter;
             })
             .collect(Collectors.toList());
+
+        if(offset >= 0 && limit > 0 && offset + limit >= jobStatuses.size()) {
+            jobStatuses = jobStatuses.subList(offset, jobStatuses.size());
+        }
+        else if(offset >= 0 && limit > 0 && offset + limit < jobStatuses.size()) {
+            jobStatuses = jobStatuses.subList(offset, offset + limit);
+        }
+
+        return jobStatuses;
     }
 
     private class StatusFilter {

@@ -250,6 +250,9 @@ public class ContextMachine {
             this.contextInstance.setStartTime(System.currentTimeMillis());
             this.contextInstance.setProjectedEndTime(this.contextInstance.getStartTime()+this.contextInstance.getContextTtlMilliseconds());
 
+            this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl
+                (previousContextInstance.getId(), previousContextInstance, previousContextInstance.getStatus(), InstanceStatus.ENDED));
+
             this.saveContext();
         }
     }
@@ -265,7 +268,7 @@ public class ContextMachine {
             this.contextInstance.setEndTime(System.currentTimeMillis());
             InstanceStatus newStatus = contextInstance.getStatus();
             this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl
-                (contextInstance, previousStatus, newStatus));
+                (contextInstance.getId(), contextInstance, previousStatus, newStatus));
 
             this.saveContext();
 
@@ -672,7 +675,7 @@ public class ContextMachine {
                 ContextInstance child = ContextHelper.getChildContextInstance(schedulerJobInstance.getChildContextName(), this.contextInstance);
                 if (child.getStatus().equals(InstanceStatus.COMPLETE)) {
                     child.setStatus(InstanceStatus.RUNNING);
-                    this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(child, InstanceStatus.COMPLETE, InstanceStatus.RUNNING));
+                    this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(this.contextInstance.getId(), child, InstanceStatus.COMPLETE, InstanceStatus.RUNNING));
                 }
 
 
@@ -898,6 +901,7 @@ public class ContextMachine {
                 for (Map.Entry<String, GlobalEventJobInstance> globalEvents : globalEventJobInstanceMap.entrySet()) {
                     if (StringUtils.equals(globalEvents.getValue().getJobName(), event.getJobName())) {
                         globalEventJobInstance = globalEvents.getValue();
+                        globalEventJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
                         break;
                     }
                 }
@@ -1086,7 +1090,8 @@ public class ContextMachine {
 
         // If the context instance has had as state change, notify all interested parties.
         if(!previousStatus.equals(newStatus)) {
-            this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(contextInstance, previousStatus, newStatus));
+            this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(this.contextInstance.getId()
+                , contextInstance, previousStatus, newStatus));
         }
     }
 
@@ -1217,16 +1222,17 @@ public class ContextMachine {
                 globalContextualisedScheduledProcessEvent.setContextInstanceId(contextInstanceIdFromCache);
                 globalContextualisedScheduledProcessEvent.setJobStarting(false);
                 globalContextualisedScheduledProcessEvent.setSkipped(false);
+                globalContextualisedScheduledProcessEvent.setCatalystEvent(schedulerJobInitiationEvent.getCatalystEvent());
                 //No need to set the childContextNames property in ContextualisedScheduledProcessEvent as JobLogicMachine method getJobInitiationEvents should handle it.
 
-                                // Event object to JSON and then build the BigQueue message
-                                String globalContextualisedScheduledProcessEventJson = objectMapper.writeValueAsString(globalContextualisedScheduledProcessEvent);
-                                BigQueueMessage<String> outgoingBigQueueMessage
-                                    = new BigQueueMessageBuilder<String>().withMessage(globalContextualisedScheduledProcessEventJson)
-                                    .withMessageProperties(
-                                        Map.of("contextName", contextMachineFromCache.getContext().getName(),
-                                            CONTEXT_INSTANCE_ID, contextMachineFromCache.getContext().getId()))
-                                    .build();
+                // Event object to JSON and then build the BigQueue message
+                String globalContextualisedScheduledProcessEventJson = objectMapper.writeValueAsString(globalContextualisedScheduledProcessEvent);
+                BigQueueMessage<String> outgoingBigQueueMessage
+                    = new BigQueueMessageBuilder<String>().withMessage(globalContextualisedScheduledProcessEventJson)
+                    .withMessageProperties(
+                        Map.of("contextName", contextMachineFromCache.getContext().getName(),
+                            CONTEXT_INSTANCE_ID, contextMachineFromCache.getContext().getId()))
+                    .build();
 
                 // BigQueue message to JSON
                 String jsonString = objectMapper.writeValueAsString(outgoingBigQueueMessage);

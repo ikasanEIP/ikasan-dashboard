@@ -89,6 +89,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
     private GlobalEventService globalEventService;
     private String jobStatus;
 
+    private String jobName;
+
     /**
      * Constructor
      *
@@ -113,7 +115,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                           LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, ConfigurationService configurationService,
-                                          MetaDataService metaDataService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String jobStatus,
+                                          MetaDataService metaDataService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String jobStatus, String jobName,
                                           ContextProfileService contextProfileService, GlobalEventService globalEventService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -181,6 +183,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
         this.jobStatus = jobStatus;
+        this.jobName = jobName;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -227,6 +230,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                             ContextInstance contextInstance) {
         // Create a modulesGrid bound to the list
         SchedulerJobInstanceSearchFilter schedulerJobSearchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        schedulerJobSearchFilter.setJobName(this.jobName);
         schedulerJobSearchFilter.setStatus(this.jobStatus);
         schedulerJobInstanceFilteringGrid = new SchedulerJobInstanceFilteringGrid(this.schedulerJobInstanceService, schedulerJobSearchFilter);
         schedulerJobInstanceFilteringGrid.removeAllColumns();
@@ -532,7 +536,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                                 .getSchedulerJobInstance();
 
                             this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
-                                this.contextInstance.getId());
+                                this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
                             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
                                     , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())

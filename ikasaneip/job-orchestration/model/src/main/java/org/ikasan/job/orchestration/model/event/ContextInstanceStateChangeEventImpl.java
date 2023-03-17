@@ -6,10 +6,18 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 public class ContextInstanceStateChangeEventImpl extends StateChangeEventImpl implements ContextInstanceStateChangeEvent {
     private ContextInstance contextInstance;
+    private String contextInstanceId;
 
-    public ContextInstanceStateChangeEventImpl(ContextInstance contextInstance, InstanceStatus previousStatus, InstanceStatus newStatus) {
+    public ContextInstanceStateChangeEventImpl(String contextInstanceId, ContextInstance contextInstance
+        , InstanceStatus previousStatus, InstanceStatus newStatus) {
         super(previousStatus, newStatus);
+        this.contextInstanceId = contextInstanceId;
         this.contextInstance = contextInstance;
+    }
+
+    @Override
+    public String getContextInstanceId() {
+        return contextInstanceId;
     }
 
     public ContextInstance getContextInstance() {
