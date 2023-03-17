@@ -1,8 +1,12 @@
 package org.ikasan.orchestration.service.context.global;
 
+import liquibase.pro.packaged.G;
+import liquibase.pro.packaged.S;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -14,12 +18,27 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GlobalEventServiceImpl implements GlobalEventService {
 
+    public static final String GLOBAL_EVENT_MANUALLY_RAISED = "GLOBAL_EVENT_MANUALLY_RAISED";
     @Override
-    public void raiseGlobalEventJob(GlobalEventJobInstance globalEventJobInstance, String contextInstanceId) {
+    public void raiseGlobalEventJob(GlobalEventJobInstance globalEventJobInstance, String contextInstanceId, String username) {
         SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
         schedulerJobInitiationEvent.setAgentName(JobConstants.GLOBAL_EVENT);
         schedulerJobInitiationEvent.setJobName(globalEventJobInstance.getJobName());
         schedulerJobInitiationEvent.setContextInstanceId(contextInstanceId);
+
+        ContextualisedScheduledProcessEvent catalystEvent = new ContextualisedScheduledProcessEventImpl();
+        catalystEvent.setJobName("Manually raise by user " + username);
+        catalystEvent.setContextName(GLOBAL_EVENT_MANUALLY_RAISED);
+        catalystEvent.setContextInstanceId("Not Applicable");
+        catalystEvent.setFireTime(System.currentTimeMillis());
+        catalystEvent.setCompletionTime(System.currentTimeMillis());
+
+        schedulerJobInitiationEvent.setCatalystEvent(catalystEvent);
+
+        ContextualisedScheduledProcessEvent scheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
+        scheduledProcessEvent.setCatalystEvent(catalystEvent);
+
+        globalEventJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
 

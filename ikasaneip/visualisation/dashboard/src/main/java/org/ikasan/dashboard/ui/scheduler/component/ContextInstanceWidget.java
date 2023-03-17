@@ -138,6 +138,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private SchedulerStatusDiv statusDiv;
     private String selectedTab;
     private String jobStatus;
+    private String jobName;
 
     /**
      * Constructor
@@ -168,13 +169,14 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                 String selectedTab, String jobStatus, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
+                                 String selectedTab, String jobStatus, String jobName, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
         this(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService,
             logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService,
             contextProfileService, jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService);
         this.selectedTab = selectedTab;
         this.jobStatus = jobStatus;
+        this.jobName = jobName;
     }
 
     /**
@@ -460,6 +462,27 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         // Hack to make the tree widget full height.
         this.tabs.setSelectedTab(this.auditTab);
         this.tabs.setSelectedTab(this.treeTab);
+
+        if(this.selectedTab != null) {
+            if(this.selectedTab.equals(ContextInstanceWidget.JOB_INSTANCE_TAB)) {
+                this.tabs.setSelectedTab(this.jobsTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.AUDIT_TAB)) {
+                this.tabs.setSelectedTab(this.auditTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.RAW_CONTEXT_TAB)) {
+                this.tabs.setSelectedTab(this.rawContextTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.STATISTICS_TAB)) {
+                this.tabs.setSelectedTab(this.statisticsTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.VISUALISATION_TAB)) {
+                this.tabs.setSelectedTab(this.visualisationTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.TREE_TAB)) {
+                this.tabs.setSelectedTab(this.treeTab);
+            }
+        }
     }
 
     /**
@@ -528,27 +551,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                 this.contextInstanceTreeViewWidget.setVisible(true);
             }
         });
-
-        if(this.selectedTab != null) {
-            if(this.selectedTab.equals(ContextInstanceWidget.JOB_INSTANCE_TAB)) {
-                this.tabs.setSelectedTab(this.jobsTab);
-            }
-            else if(this.selectedTab.equals(ContextInstanceWidget.AUDIT_TAB)) {
-                this.tabs.setSelectedTab(this.auditTab);
-            }
-            else if(this.selectedTab.equals(ContextInstanceWidget.RAW_CONTEXT_TAB)) {
-                this.tabs.setSelectedTab(this.rawContextTab);
-            }
-            else if(this.selectedTab.equals(ContextInstanceWidget.STATISTICS_TAB)) {
-                this.tabs.setSelectedTab(this.statisticsTab);
-            }
-            else if(this.selectedTab.equals(ContextInstanceWidget.VISUALISATION_TAB)) {
-                this.tabs.setSelectedTab(this.visualisationTab);
-            }
-            else if(this.selectedTab.equals(ContextInstanceWidget.TREE_TAB)) {
-                this.tabs.setSelectedTab(this.treeTab);
-            }
-        }
     }
 
     /**
@@ -990,7 +992,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus, this.contextProfileService, this.globalEventService);
+            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus, this.jobName, this.contextProfileService, this.globalEventService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("100%");
         this.schedulerJobInstanceGridWidget.setVisible(false);

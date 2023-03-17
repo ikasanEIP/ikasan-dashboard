@@ -171,15 +171,18 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
                     SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
 
-                    InternalEventDrivenJobInstance internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier() + "-" + contextInstance.getName());
+                    InternalEventDrivenJobInstance internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier()
+                        + "-" + contextInstance.getName());
 
-                    GlobalEventJobInstance globalEventJobInstance = globalEventJobInstanceMap.get(jobDependency.getJobIdentifier() + "-" + contextInstance.getName());
+                    GlobalEventJobInstance globalEventJobInstance = globalEventJobInstanceMap.get(jobDependency.getJobIdentifier()
+                        + "-" + contextInstance.getName());
 
                     // Find events that can be raised on the back of a GlobalEvents 
                     if (!jobInstance.isInitiationEventRaised() && globalEventJobInstance != null) {
                         if(markAsRaised) jobInstance.setInitiationEventRaised(true);
 
-                        SchedulerJobInitiationEvent event = createGlobalSchedulerJobInitiationEvent(jobInstance, globalEventJobInstance, dryRunParameters, contextInstance);
+                        SchedulerJobInitiationEvent event = createGlobalSchedulerJobInitiationEvent(jobInstance, globalEventJobInstance
+                            , dryRunParameters, parentContextInstance, contextInstance, scheduledProcessEvent);
 
                         if (event != null) {
                             schedulerJobInitiationEvents.add(event);
@@ -349,6 +352,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setContextInstanceId(parentContextInstance.getId());
         schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
+        schedulerJobInitiationEvent.setCatalystEvent(scheduledProcessEvent);
 
         boolean shouldSkip = contextParametersInstanceService.isSkipped(parentContextInstance.getName(), schedulerJobInstance.getJobName());
         schedulerJobInitiationEvent.setSkipped(shouldSkip);
@@ -401,7 +405,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @return
      */
     private SchedulerJobInitiationEvent createGlobalSchedulerJobInitiationEvent(SchedulerJobInstance schedulerJobInstance
-        , GlobalEventJobInstance globalEventJobInstance, DryRunParameters dryRunParameters, ContextInstance parentContextInstance) {
+        , GlobalEventJobInstance globalEventJobInstance, DryRunParameters dryRunParameters, ContextInstance parentContextInstance
+        , ContextInstance contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
         SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
         schedulerJobInitiationEvent.setAgentName(schedulerJobInstance.getAgentName());
         schedulerJobInitiationEvent.setJobName(schedulerJobInstance.getJobName());
@@ -409,8 +414,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setContextInstanceId(parentContextInstance.getId());
         schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
+        schedulerJobInitiationEvent.setCatalystEvent(scheduledProcessEvent);
 
-        boolean shouldSkip = contextParametersInstanceService.isSkipped(parentContextInstance.getName(), schedulerJobInstance.getJobName());
+        boolean shouldSkip = contextParametersInstanceService.isSkipped(contextInstance.getName(), schedulerJobInstance.getJobName());
         schedulerJobInitiationEvent.setSkipped(shouldSkip);
 
         if(schedulerJobInstance.isSkip()) {

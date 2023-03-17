@@ -58,6 +58,7 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
@@ -1263,7 +1264,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                 .getSchedulerJobInstance();
 
                             this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
-                                this.contextInstance.getId());
+                                this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
                             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
                                     , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
@@ -1358,7 +1359,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             event.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 JsonViewerDialog dialog = new JsonViewerDialog(schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent()
-                    , getTranslation("header.scheduled-process-event", UI.getCurrent().getLocale()));
+                    , getTranslation("header.catalyst-job-process-execution-details", UI.getCurrent().getLocale()));
                 dialog.open();
             });
 
@@ -1607,10 +1608,12 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         });
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if(contextInstanceStateChangeEvent.getContextInstance().getId().equals(this.contextInstance.getId())) {
-                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
-                this.manageContextInstanceStateChangeEvent(ui, contextInstanceStateChangeEvent);
-                manageContextStatusIndicators(ui);
+            if(contextInstanceStateChangeEvent.getContextInstanceId().equals(this.contextInstance.getId())) {
+                if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                    this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                    this.manageContextInstanceStateChangeEvent(ui, contextInstanceStateChangeEvent);
+                    manageContextStatusIndicators(ui);
+                }
             }
         });
 
