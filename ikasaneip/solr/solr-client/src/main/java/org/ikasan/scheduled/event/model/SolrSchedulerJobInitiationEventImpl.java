@@ -7,6 +7,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.ikasan.scheduled.instance.model.SolrContextParameterInstanceImpl;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 
@@ -22,6 +23,7 @@ public class SolrSchedulerJobInitiationEventImpl implements SchedulerJobInitiati
     private boolean dryRun = false;
     private SolrDryRunParameters dryRunParameters;
     private boolean skipped = false;
+    private ScheduledProcessEvent catalystEvent;
 
     @Override
     public String getAgentName() {
@@ -131,6 +133,16 @@ public class SolrSchedulerJobInitiationEventImpl implements SchedulerJobInitiati
     @Override
     public boolean isSkipped() {
         return skipped;
+    }
+
+    @Override
+    public ScheduledProcessEvent getCatalystEvent() {
+        return catalystEvent;
+    }
+
+    @Override
+    public void setCatalystEvent(ScheduledProcessEvent catalystEvent) {
+        this.catalystEvent = catalystEvent;
     }
 
     @Override

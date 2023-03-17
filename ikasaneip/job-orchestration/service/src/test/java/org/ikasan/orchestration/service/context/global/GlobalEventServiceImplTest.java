@@ -5,7 +5,10 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.GlobalEventJobInstanceImpl;
 import org.ikasan.orchestration.service.utils.TestUtils;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,20 +87,28 @@ public class GlobalEventServiceImplTest {
 
     @Test(expected = GlobalEventServiceException.class)
     public void test_exception_bad_context_id() {
-        globalEventService.raiseGlobalEventJob(new GlobalEventJobInstanceImpl(), "bad-context-id");
+        globalEventService.raiseGlobalEventJob(new GlobalEventJobInstanceImpl(), "bad-context-id", "username");
     }
 
     @Test(expected = GlobalEventServiceException.class)
     public void test_exception_io_exception_broadcast() throws IOException {
         doThrow(new IOException("test")).when(contextMachine1).broadcastGlobalEvents(any(), eq(false), eq(false));
-        globalEventService.raiseGlobalEventJob(new GlobalEventJobInstanceImpl(), "context1");
+        globalEventService.raiseGlobalEventJob(new GlobalEventJobInstanceImpl(), "context1", "username");
     }
 
     @Test
     public void test_broadcast_success() throws IOException {
-        globalEventService.raiseGlobalEventJob(new GlobalEventJobInstanceImpl(), "context1");
+        GlobalEventJobInstance globalEventJobInstance = new GlobalEventJobInstanceImpl();
+        globalEventService.raiseGlobalEventJob(globalEventJobInstance, "context1", "username");
 
         verify(contextMachine1).broadcastGlobalEvents(any(), eq(false), eq(false));
+
+        ContextualisedScheduledProcessEvent catalystJob = (ContextualisedScheduledProcessEvent) ((ContextualisedScheduledProcessEvent) globalEventJobInstance
+            .getScheduledProcessEvent()).getCatalystEvent();
+
+        Assert.assertNotNull(catalystJob);
+        Assert.assertEquals("Manually raise by user username", catalystJob.getJobName());
+        Assert.assertEquals(GlobalEventServiceImpl.GLOBAL_EVENT_MANUALLY_RAISED, catalystJob.getContextName());
     }
 
     @Test

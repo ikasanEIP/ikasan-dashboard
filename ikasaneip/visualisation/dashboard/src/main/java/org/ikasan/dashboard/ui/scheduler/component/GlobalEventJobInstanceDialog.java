@@ -1,11 +1,14 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -14,30 +17,36 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
+import liquibase.pro.packaged.G;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.List;
 
 public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDialog {
 
@@ -48,15 +57,18 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
     private TextArea jobDescriptionTa;
+
+    private TextField catalystJobNameTf;
+    private TextField catalystContextNameTf;
+    private TextField catalystContextIdentifierTf;
+    private TextField catalystJobFireTimeTf;
+    private TextField catalystJobCompletionTimeTf;
+    private Icon openCatalystJobButton;
+    private Icon viewRawJobButton;
+    private Icon viewProcessExecutionButton;
+
     private Button submitButton;
     private IkasanAuthentication authentication;
-
-
-//    private ScheduledProcessManagementService scheduledProcessManagementService;
-//    private ConfigurationService configurationRestService;
-//    private ModuleMetaData agent;
-//    private ModuleControlService moduleControlRestService;
-//    private MetaDataService metaDataRestService;
     private GlobalEventJobInstance globalEventJob;
     private Binder<GlobalEventJobInstance> formBinder;
     private EditMode editMode = EditMode.NEW;
@@ -105,7 +117,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
     private void init() {
         this.formBinder = new Binder<>(GlobalEventJobInstance.class);
 
-        this.setHeight("500px");
+        this.setHeight("750px");
         this.setWidth("90vw");
 
         VerticalLayout layout = new VerticalLayout();
@@ -134,7 +146,8 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
         formLayout.add(this.statusDiv, 2);
 
-        this.submitButton = new Button(getTranslation("button.submit", UI.getCurrent().getLocale()), new Icon(VaadinIcon.PAPERPLANE));
+        this.submitButton = new Button(getTranslation("button.submit", UI.getCurrent().getLocale())
+            , new Icon(VaadinIcon.PAPERPLANE));
         this.submitButton.setIconAfterText(true);
 
         this.submitButton.addClickListener(event -> {
@@ -152,7 +165,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
                         .getSchedulerJobInstance();
 
                     this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
-                        this.contextInstance.getId());
+                        this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
                     this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
                             , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
@@ -190,7 +203,6 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
-        this.jobNameTf.setRequired(true);
         this.jobNameTf.setEnabled(this.editMode == EditMode.NEW &&
             ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
@@ -202,7 +214,6 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
 
         this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
-        this.jobDescriptionTa.setRequired(true);
         this.jobDescriptionTa.setId("jobDescriptionTa");
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
@@ -210,6 +221,76 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
             .bind(GlobalEventJob::getJobDescription, GlobalEventJob::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
+        H4 catalystJobLabel = new H4(getTranslation("header.catalyst-job", UI.getCurrent().getLocale()));
+        formLayout.add(catalystJobLabel, 2);
+
+        this.catalystJobNameTf = new TextField(getTranslation("label.catalyst-job-name", UI.getCurrent().getLocale()));
+        this.catalystJobNameTf.getElement().getThemeList().add("always-float-label");
+        formLayout.add(this.catalystJobNameTf, 1);
+
+        this.openCatalystJobButton = IconDecorator.decorate(VaadinIcon.EXTERNAL_LINK.create(), getTranslation("tooltip.open-catalyst-job", UI.getCurrent().getLocale())
+            , "16pt", IkasanColours.IKASAN_ORANGE);
+        openCatalystJobButton.addClickListener(event -> {
+            ContextualisedScheduledProcessEvent catalystEvent = (ContextualisedScheduledProcessEvent) ((ContextualisedScheduledProcessEvent)this.globalEventJob.getScheduledProcessEvent())
+                .getCatalystEvent();
+            String route = RouteConfiguration.forSessionScope()
+                .getUrl(ContextInstanceView.class, List.of("job", catalystEvent.getContextInstanceId() +"_scheduledContextInstance"
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, catalystEvent.getJobName()));
+
+            getUI().ifPresent(ui -> ui.getPage().open(route));
+        });
+
+        this.viewRawJobButton = IconDecorator.decorate(VaadinIcon.CALENDAR_CLOCK.create(), getTranslation("tooltip.open-raw-catalyst-job-event", UI.getCurrent().getLocale())
+            , "16pt", IkasanColours.IKASAN_ORANGE);
+        viewRawJobButton.addClickListener(event -> {
+            ContextualisedScheduledProcessEvent catalystEvent = (ContextualisedScheduledProcessEvent) ((ContextualisedScheduledProcessEvent)this.globalEventJob.getScheduledProcessEvent())
+                .getCatalystEvent();
+
+            JsonViewerDialog viewerDialog = new JsonViewerDialog(catalystEvent, getTranslation("header.catalyst-scheduled-process-event", UI.getCurrent().getLocale()));
+            viewerDialog.open();
+        });
+
+        this.viewProcessExecutionButton = IconDecorator.decorate(VaadinIcon.COG.create(), getTranslation("tooltip.open-raw-catalyst-job-event", UI.getCurrent().getLocale())
+            , "16pt", IkasanColours.IKASAN_ORANGE);
+        viewProcessExecutionButton.addClickListener(event -> {
+            ContextualisedScheduledProcessEvent catalystEvent = (ContextualisedScheduledProcessEvent) ((ContextualisedScheduledProcessEvent)this.globalEventJob.getScheduledProcessEvent())
+                .getCatalystEvent();
+
+            TextViewerDialog viewerDialog = new TextViewerDialog(catalystEvent.getExecutionDetails()
+                , getTranslation("header.process-execution-details", UI.getCurrent().getLocale()));
+            viewerDialog.open();
+        });
+
+        VerticalLayout buttonWrapper = new VerticalLayout();
+        buttonWrapper.setWidthFull();
+        buttonWrapper.setPadding(false);
+        buttonWrapper.setMargin(false);
+        buttonWrapper.setSpacing(false);
+
+        HorizontalLayout buttonLayout = new HorizontalLayout(viewRawJobButton
+            , viewProcessExecutionButton, openCatalystJobButton);
+        buttonLayout.setPadding(false);
+        buttonLayout.setMargin(false);
+        buttonWrapper.add(buttonLayout);
+        buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
+
+        formLayout.add(buttonWrapper, 1);
+
+        this.catalystContextNameTf = new TextField(getTranslation("label.catalyst-context-name", UI.getCurrent().getLocale()));
+        this.catalystContextNameTf.getElement().getThemeList().add("always-float-label");
+        formLayout.add(this.catalystContextNameTf, 1);
+
+        this.catalystContextIdentifierTf = new TextField(getTranslation("label.catalyst-context-id", UI.getCurrent().getLocale()));
+        this.catalystContextIdentifierTf.getElement().getThemeList().add("always-float-label");
+        formLayout.add(this.catalystContextIdentifierTf, 1);
+
+        this.catalystJobFireTimeTf = new TextField(getTranslation("label.catalyst-job-fire-time", UI.getCurrent().getLocale()));
+        this.catalystJobFireTimeTf.getElement().getThemeList().add("always-float-label");
+        formLayout.add(this.catalystJobFireTimeTf, 1);
+
+        this.catalystJobCompletionTimeTf = new TextField(getTranslation("label.catalyst-job-completion-time", UI.getCurrent().getLocale()));
+        this.catalystJobCompletionTimeTf.getElement().getThemeList().add("always-float-label");
+        formLayout.add(this.catalystJobCompletionTimeTf, 1);
 
         return formLayout;
     }
@@ -223,14 +304,32 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
 
-        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW &&
-            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
-                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
-                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
-        this.jobDescriptionTa.setEnabled(enabled &&
-            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
-                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
-                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+        this.jobNameTf.setEnabled(enabled);
+        this.jobDescriptionTa.setEnabled(enabled);
+        this.catalystJobNameTf.setEnabled(enabled);
+        this.catalystContextNameTf.setEnabled(enabled);
+        this.catalystContextIdentifierTf.setEnabled(enabled);
+        this.catalystJobFireTimeTf.setEnabled(false);
+        this.catalystJobCompletionTimeTf.setEnabled(false);
+
+        if(this.globalEventJob.getScheduledProcessEvent() == null
+            || ((ContextualisedScheduledProcessEvent)this.globalEventJob.getScheduledProcessEvent()).getCatalystEvent() == null) {
+            this.viewProcessExecutionButton.setVisible(false);
+            this.viewRawJobButton.setVisible(false);
+            this.openCatalystJobButton.setVisible(false);
+        }
+        else {
+            this.viewProcessExecutionButton.setVisible(true);
+            if(((ContextualisedScheduledProcessEvent)((ContextualisedScheduledProcessEvent)this.globalEventJob
+                .getScheduledProcessEvent()).getCatalystEvent()).getContextName().equals(GlobalEventServiceImpl.GLOBAL_EVENT_MANUALLY_RAISED)) {
+                this.openCatalystJobButton.setVisible(false);
+                this.viewRawJobButton.setVisible(false);
+            }
+            else {
+                this.openCatalystJobButton.setVisible(true);
+                this.viewRawJobButton.setVisible(true);
+            }
+        }
     }
 
     /**
@@ -246,8 +345,25 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
         this.formBinder.readBean(this.globalEventJob);
 
+        if(this.globalEventJob.getScheduledProcessEvent() != null
+            && ((ContextualisedScheduledProcessEvent)this.globalEventJob.getScheduledProcessEvent()).getCatalystEvent() != null) {
+            ContextualisedScheduledProcessEvent catalystEvent = (ContextualisedScheduledProcessEvent) ((ContextualisedScheduledProcessEvent)this.globalEventJob.getScheduledProcessEvent())
+                .getCatalystEvent();
+            this.setCatalystJobs(catalystEvent);
+        }
+
         // make sure all value are bound before calling set enabled
         this.setEnabled(this.enabled);
+
+        this.submitButton.setVisible(!this.globalEventJob.getStatus().equals(InstanceStatus.COMPLETE));
+    }
+
+    private void setCatalystJobs(ContextualisedScheduledProcessEvent catalystEvent) {
+        this.catalystJobNameTf.setValue(catalystEvent.getJobName());
+        this.catalystContextNameTf.setValue(catalystEvent.getContextName());
+        this.catalystContextIdentifierTf.setValue(catalystEvent.getContextInstanceId());
+        this.catalystJobFireTimeTf.setValue(DateFormatter.instance().getFormattedDate(catalystEvent.getFireTime()));
+        this.catalystJobCompletionTimeTf.setValue(DateFormatter.instance().getFormattedDate(catalystEvent.getCompletionTime()));
     }
 
     public void setJob(SchedulerJobInstanceRecord schedulerJobRecord) {
@@ -268,9 +384,33 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
                     ui.access(() -> {
                         this.globalEventJob.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                         this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+
+                        if(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null) {
+                            ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent =
+                                (ContextualisedScheduledProcessEvent) jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
+
+                            if(contextualisedScheduledProcessEvent.getCatalystEvent() != null) {
+                                this.globalEventJob.setScheduledProcessEvent(contextualisedScheduledProcessEvent);
+                                setCatalystJobs((ContextualisedScheduledProcessEvent) contextualisedScheduledProcessEvent.getCatalystEvent());
+
+                                this.setEnabled(this.enabled);
+
+                                this.submitButton.setVisible(!this.globalEventJob.getStatus().equals(InstanceStatus.COMPLETE));
+                            }
+                        }
                     });
                 }
             }
         });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+
+        if(this.schedulerJobStateChangeRegistration != null) {
+            this.schedulerJobStateChangeRegistration.remove();
+            this.schedulerJobStateChangeRegistration = null;
+        }
     }
 }

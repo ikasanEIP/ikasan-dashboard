@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.rest.client.dto;
 
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 
@@ -19,6 +20,7 @@ public class SchedulerJobInitiationEventDto implements SchedulerJobInitiationEve
     private boolean dryRun = false;
     private DryRunParametersImpl dryRunParameters;
     private boolean skipped = false;
+    private ScheduledProcessEvent catalystEvent;
 
     @Override
     public String getAgentName() {
@@ -128,5 +130,15 @@ public class SchedulerJobInitiationEventDto implements SchedulerJobInitiationEve
     @Override
     public boolean isSkipped() {
         return skipped;
+    }
+
+    @Override
+    public ScheduledProcessEvent getCatalystEvent() {
+        return catalystEvent;
+    }
+
+    @Override
+    public void setCatalystEvent(ScheduledProcessEvent catalystEvent) {
+        this.catalystEvent = catalystEvent;
     }
 }
