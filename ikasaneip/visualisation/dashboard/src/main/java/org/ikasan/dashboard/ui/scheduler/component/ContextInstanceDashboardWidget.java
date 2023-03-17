@@ -13,9 +13,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
@@ -26,7 +24,6 @@ import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -38,7 +35,9 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
-import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceAggregateJobStatus;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
@@ -182,9 +181,11 @@ public class ContextInstanceDashboardWidget extends Div {
         div.addClassNames("card-counter");
         if(fullscreen) {
             div.setHeight("90vh");
+            contextInstanceAggregateJobStatusGrid.setHeight("90%");
         }
         else {
             div.setHeight("600px");
+            contextInstanceAggregateJobStatusGrid.setHeight("80%");
         }
 
         Button breakOut = new Button();
@@ -237,7 +238,6 @@ public class ContextInstanceDashboardWidget extends Div {
         contextInstanceAggregateJobStatusGrid.removeAllColumns();
         contextInstanceAggregateJobStatusGrid.setVisible(true);
         contextInstanceAggregateJobStatusGrid.setWidthFull();
-        contextInstanceAggregateJobStatusGrid.setHeight("80%");
 
         contextInstanceAggregateJobStatusGrid.addColumn(ContextInstanceAggregateJobStatus::getContextInstanceName)
             .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
