@@ -53,6 +53,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private IntegerField contextTtlMinutes;
     private IntegerField contextTtlHours;
     private IntegerField contextTtlDays;
+    private IntegerField treeViewExpandLevel;
     private DateTimePicker blackoutWindowStartTime;
     private DateTimePicker blackoutWindowEndTime;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
@@ -235,6 +236,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.contextTtlMinutes.setMax(59);
         this.contextTtlMinutes.setErrorMessage(getTranslation("error.context-ttl-minutes", UI.getCurrent().getLocale()));
 
+        this.treeViewExpandLevel = new IntegerField(getTranslation("label.tree-view-expand-level", UI.getCurrent().getLocale()));
+        this.treeViewExpandLevel.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.treeViewExpandLevel)
+            .bind(ContextTemplate::getTreeViewExpandLevel, ContextTemplate::setTreeViewExpandLevel);
+
         binder.readBean(this.contextTemplate);
 
         this.blackoutWindowStartTime = new DateTimePicker(getTranslation("label.blackout-window-start-date-time", UI.getCurrent().getLocale()));
@@ -319,16 +325,17 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         );
         this.formLayout.setWidth("100%");
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
-            , this.contextTtlMinutes, this.timezoneCb, this.descriptionTa, blackoutWindowsGrid, addDateTimePairButton);
+            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.descriptionTa, blackoutWindowsGrid, addDateTimePairButton);
 
-        this.formLayout.setColspan(this.contextNameTf, 7);
+        this.formLayout.setColspan(this.contextNameTf, 6);
         this.formLayout.setColspan(this.startWindowCronExpressionTf, 3);
         this.formLayout.setColspan(this.contextTtlDays, 2);
         this.formLayout.setColspan(this.contextTtlHours, 2);
         this.formLayout.setColspan(this.contextTtlMinutes, 2);
-        this.formLayout.setColspan(this.timezoneCb, 4);
-        this.formLayout.setColspan(this.descriptionTa, 7);
-        this.formLayout.setColspan(blackoutWindowsGrid, 12);
+        this.formLayout.setColspan(this.timezoneCb, 3);
+        this.formLayout.setColspan(this.treeViewExpandLevel, 2);
+        this.formLayout.setColspan(this.descriptionTa, 6);
+        this.formLayout.setColspan(blackoutWindowsGrid, 13);
         this.formLayout.setColspan(addDateTimePairButton, 1);
     }
 
