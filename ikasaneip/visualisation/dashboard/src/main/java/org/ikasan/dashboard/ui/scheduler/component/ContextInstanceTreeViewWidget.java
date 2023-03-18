@@ -769,7 +769,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         grid.setDataProvider(dataProvider);
 
         grid.setSizeFull();
-        grid.expand(contextInstance.getContexts());
+        grid.expandRecursively(Collections.singleton(contextInstance), contextInstance.getTreeViewExpandLevel() - 1);
 
         grid.addExpandListener(e -> this.expandedNodes.addAll(e.getItems()));
         grid.addCollapseListener(e -> this.expandedNodes.removeAll(e.getItems()));
@@ -1757,36 +1757,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private List<Object> getNodeChildren(Object node, Optional<TreeFilter> filter) {
         List<Object> children = new ArrayList<>();
         if(node == null) {
-            if (contextInstance.getContexts() != null
-                && !(contextInstance.getContexts().isEmpty())) {
-                if(filter != null && filter.isPresent() && filter.get().getJobName().isEmpty()) {
-                    children.addAll(contextInstance.getContexts().stream()
-                        .map(instance -> (Object) instance)
-                        .collect(Collectors.toList()));
-                }
-                else {
-                    children.addAll(contextInstance.getContexts().stream()
-                        .filter(instance -> instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
-                        .map(instance -> (Object) instance)
-                        .collect(Collectors.toList()));
-
-                    children.addAll(contextInstance.getContexts().stream()
-                        .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
-                            (instance, filter.get().getJobName()).size() > 0)
-                        .map(instance -> (Object) instance)
-                        .collect(Collectors.toList()));
-                }
-            }
-
-            if (contextInstance.getScheduledJobs() != null
-                && !contextInstance.getScheduledJobs().isEmpty()) {
-                children.addAll(contextInstance.getScheduledJobs().stream()
-                    .filter(instance -> filter != null && filter.isPresent()
-                        ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase())
-                        : true)
-                    .map(instance -> (Object) instance)
-                    .collect(Collectors.toList()));
-            }
+            children.add(contextInstance);
         }
         else if(node instanceof ContextInstance) {
             if (((ContextInstance)node).getContexts() != null

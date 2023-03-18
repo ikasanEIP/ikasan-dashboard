@@ -122,6 +122,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private IntegerField contextTtlMinutes;
     private IntegerField contextTtlHours;
     private IntegerField contextTtlDays;
+    private IntegerField treeViewExpandLevel;
     private VerticalLayout schedulerVisualisationDiv;
     private Tab visualisationTab;
     private Tab rawContextTab;
@@ -356,6 +357,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(ZoneId.systemDefault().getId()));
         }
 
+        this.treeViewExpandLevel = new IntegerField(getTranslation("label.tree-view-expand-level", UI.getCurrent().getLocale()));
+        this.treeViewExpandLevel.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.treeViewExpandLevel)
+            .bind(ContextTemplate::getTreeViewExpandLevel, ContextTemplate::setTreeViewExpandLevel);
+
         this.initialiseBlackoutWindowGrid();
         this.populateBlackoutWindowPairs(contextTemplate);
 
@@ -392,15 +398,16 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             new FormLayout.ResponsiveStep("500px", 20)
         );
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
-            , this.contextTtlMinutes, this.timezoneCb, this.descriptionTa, this.blackoutWindowsGrid);
-        this.formLayout.setColspan(this.contextNameTf, 7);
+            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.descriptionTa, this.blackoutWindowsGrid);
+        this.formLayout.setColspan(this.contextNameTf, 6);
         this.formLayout.setColspan(this.startWindowCronExpressionTf, 3);
         this.formLayout.setColspan(this.contextTtlDays, 2);
         this.formLayout.setColspan(this.contextTtlHours, 2);
         this.formLayout.setColspan(this.contextTtlMinutes, 2);
-        this.formLayout.setColspan(this.timezoneCb, 4);
-        this.formLayout.setColspan(this.descriptionTa, 7);
-        this.formLayout.setColspan(this.blackoutWindowsGrid, 13);
+        this.formLayout.setColspan(this.timezoneCb, 3);
+        this.formLayout.setColspan(this.treeViewExpandLevel, 2);
+        this.formLayout.setColspan(this.descriptionTa, 6);
+        this.formLayout.setColspan(this.blackoutWindowsGrid, 14);
 
         CollapsableLayout collapsableLayout = new CollapsableLayout();
         add(collapsableLayout);

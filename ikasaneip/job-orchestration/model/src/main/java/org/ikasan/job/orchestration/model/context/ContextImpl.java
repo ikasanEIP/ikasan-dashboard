@@ -26,6 +26,7 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected long contextTtlMilliseconds;
     protected String environmentGroup;
     protected boolean isQuartzScheduleDrivenJobsDisabledForContext;
+    int treeViewExpandLevel = 1;
 
     @Override
     public String getName() {
@@ -150,6 +151,16 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setQuartzScheduleDrivenJobsDisabledForContext(boolean quartzScheduleDrivenJobsDisabledForContext) {
         isQuartzScheduleDrivenJobsDisabledForContext = quartzScheduleDrivenJobsDisabledForContext;
+    }
+
+    @Override
+    public int getTreeViewExpandLevel() {
+        return treeViewExpandLevel;
+    }
+
+    @Override
+    public void setTreeViewExpandLevel(int treeViewExpandLevel) {
+        this.treeViewExpandLevel = treeViewExpandLevel;
     }
 
     @Override

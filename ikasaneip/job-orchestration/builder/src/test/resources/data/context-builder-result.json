@@ -134,6 +134,7 @@
   } ],
   "timeWindowStart" : "* * 6 ? * * *",
   "contextTtlMilliseconds" : 100000,
+  "treeViewExpandLevel" : 3,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

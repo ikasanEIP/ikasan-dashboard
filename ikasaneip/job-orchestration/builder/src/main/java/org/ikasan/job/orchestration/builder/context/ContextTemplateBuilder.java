@@ -24,6 +24,7 @@ public class ContextTemplateBuilder {
     protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
     protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
     protected List<JobLock> jobLocks = new ArrayList<>();
+    protected int treeViewExpandLevel = 1;
 
     public ContextTemplateBuilder withName(String name) {
         this.name = name;
@@ -112,6 +113,11 @@ public class ContextTemplateBuilder {
         return this;
     }
 
+    public ContextTemplateBuilder withTreeViewExpandLevel(int treeViewExpandLevel) {
+        this.treeViewExpandLevel = treeViewExpandLevel;
+        return this;
+    }
+
     public SchedulerJobBuilder getSchedulerJobBuilder() {
         return new SchedulerJobBuilder();
     }
@@ -175,6 +181,7 @@ public class ContextTemplateBuilder {
         contextTemplate.setJobLocks(this.jobLocks);
         contextTemplate.setBlackoutWindowCronExpressions(this.blackoutWindowCronExpressions);
         contextTemplate.setBlackoutWindowDateTimeRanges(this.blackoutWindowDateTimeRanges);
+        contextTemplate.setTreeViewExpandLevel(this.treeViewExpandLevel);
 
         return contextTemplate;
     }
