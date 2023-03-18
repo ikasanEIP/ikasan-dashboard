@@ -1,5 +1,7 @@
 package org.ikasan.scheduled.context.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
@@ -22,6 +24,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected long contextTtlMilliseconds;
     protected String environmentGroup;
     private boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
+    int treeViewExpandLevel = 1;
 
     @Override
     public String getName() {
@@ -146,5 +149,20 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @Override
     public void setQuartzScheduleDrivenJobsDisabledForContext(boolean quartzScheduleDrivenJobsDisabledForContext) {
         isQuartzScheduleDrivenJobsDisabledForContext = quartzScheduleDrivenJobsDisabledForContext;
+    }
+
+    @Override
+    public int getTreeViewExpandLevel() {
+        return treeViewExpandLevel;
+    }
+
+    @Override
+    public void setTreeViewExpandLevel(int treeViewExpandLevel) {
+        this.treeViewExpandLevel = treeViewExpandLevel;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

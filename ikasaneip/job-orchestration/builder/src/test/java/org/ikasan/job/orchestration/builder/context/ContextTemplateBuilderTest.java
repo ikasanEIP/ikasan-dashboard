@@ -153,12 +153,13 @@ public class ContextTemplateBuilderTest extends AbstractTest {
                                 .withJobName("Job7")
                                 .build()).build()).build()).build())
                 .build())
+            .withTreeViewExpandLevel(3)
             .build();
 
         ContextService contextService = new ContextService();
 
         JSONAssert.assertEquals(super.loadDataFile("/data/context-builder-result.json"),
-            contextService.getContextTemplateString(contextTemplate1), false);
+            contextService.getContextTemplateString(contextTemplate1), true);
     }
 
     @Test
