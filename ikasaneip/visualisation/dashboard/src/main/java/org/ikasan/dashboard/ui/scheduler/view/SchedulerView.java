@@ -230,6 +230,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         tabsLayout.add(tabs);
         tabsLayout.setWidth("100%");
         this.add(tabsLayout, this.schedulerAgentDashboardView, this.contextTemplateWidget, contextDebugBoard);
+        this.setSizeFull();
     }
 
     @Override

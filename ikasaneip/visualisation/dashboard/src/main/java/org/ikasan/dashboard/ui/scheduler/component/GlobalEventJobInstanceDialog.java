@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -19,28 +18,21 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
-import liquibase.pro.packaged.G;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.module.client.ConfigurationService;
-import org.ikasan.spec.module.client.MetaDataService;
-import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
-import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +60,9 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
     private Icon viewProcessExecutionButton;
 
     private Button submitButton;
+    private Button skipButton;
+    private Button enableButton;
+
     private IkasanAuthentication authentication;
     private GlobalEventJobInstance globalEventJob;
     private Binder<GlobalEventJobInstance> formBinder;
@@ -146,6 +141,48 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
         formLayout.add(this.statusDiv, 2);
 
+        this.skipButton = new Button(getTranslation("button.skip", UI.getCurrent().getLocale()), new Icon(VaadinIcon.BAN));
+        this.skipButton.setIconAfterText(true);
+
+        this.skipButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.skip-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.skip-job", UI.getCurrent().getLocale()));
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                if(this.skipJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.SKIPPED);
+                    this.globalEventJob.setStatus(InstanceStatus.SKIPPED);
+                    this.setButtonVisibility();
+                }
+            });
+        });
+
+        this.enableButton = new Button(getTranslation("button.enable", UI.getCurrent().getLocale()), new Icon(VaadinIcon.PLAY));
+        this.enableButton.setIconAfterText(true);
+
+        this.enableButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.enable-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.enable-job", UI.getCurrent().getLocale()));
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                if(this.enableJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.WAITING);
+                    this.globalEventJob.setStatus(InstanceStatus.WAITING);
+                    this.setButtonVisibility();
+                }
+            });
+        });
+
         this.submitButton = new Button(getTranslation("button.submit", UI.getCurrent().getLocale())
             , new Icon(VaadinIcon.PAPERPLANE));
         this.submitButton.setIconAfterText(true);
@@ -177,6 +214,8 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
                     schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
                     schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
+                    this.setButtonVisibility();
+
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -186,7 +225,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
         });
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(this.submitButton);
+        actionsLayout.add(this.skipButton, this.enableButton, this.submitButton);
         actionsLayout.setMargin(false);
 
         VerticalLayout actionsButtonLayout = new VerticalLayout();
@@ -292,6 +331,8 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
         this.catalystJobCompletionTimeTf.getElement().getThemeList().add("always-float-label");
         formLayout.add(this.catalystJobCompletionTimeTf, 1);
 
+        this.setButtonVisibility();
+
         return formLayout;
     }
 
@@ -354,8 +395,144 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
         // make sure all value are bound before calling set enabled
         this.setEnabled(this.enabled);
+    }
 
-        this.submitButton.setVisible(!this.globalEventJob.getStatus().equals(InstanceStatus.COMPLETE));
+    /**
+     * Helper method to skip the job.
+     *
+     * @return
+     */
+    private boolean skipJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-skipped"
+                , UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.skipJob(this.globalEventJob.getIdentifier(), this.globalEventJob.getChildContextName(), true);
+            this.updateJobState(this.globalEventJob, InstanceStatus.SKIPPED);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
+                , this.globalEventJob.getAgentName(), globalEventJob.getJobName(), true), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.skipped-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to enable the job.
+     *
+     * @return
+     */
+    private boolean enableJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-enabled", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.skipJob(this.globalEventJob.getIdentifier(), this.globalEventJob.getChildContextName(), false);
+            this.updateJobState(this.globalEventJob, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
+                , this.globalEventJob.getAgentName(), globalEventJob.getJobName(), false), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to update a jobs state and persist it before broadcasting the state change.
+     *
+     * @param globalEventJobInstance
+     * @param newStatus
+     */
+    private void updateJobState(GlobalEventJobInstance globalEventJobInstance, InstanceStatus newStatus) {
+        InstanceStatus previousStatus = globalEventJobInstance.getStatus();
+        globalEventJobInstance.setStatus(newStatus);
+        this.updateScheduledJob(globalEventJobInstance, this.authentication);
+
+        SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+            = new SchedulerJobInstanceStateChangeEventImpl(globalEventJobInstance,
+            this.contextInstance, previousStatus, newStatus);
+
+        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+    }
+
+    /**
+     * Update and persist the associated job.
+     *
+     * @param globalJobInstance
+     */
+    public void updateScheduledJob(GlobalEventJobInstance globalJobInstance, IkasanAuthentication authentication) {
+
+        this.schedulerJobInstanceRecord.setModifiedTimestamp(System.currentTimeMillis());
+        this.schedulerJobInstanceRecord.setSchedulerJobInstance(globalJobInstance);
+        this.schedulerJobInstanceRecord.setModifiedBy(authentication.getName());
+        this.schedulerJobInstanceRecord.setStatus(globalJobInstance.getStatus().name());
+
+        this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
+    }
+
+    private void setButtonVisibility() {
+        if(this.globalEventJob.getStatus().equals(InstanceStatus.RUNNING)) {
+            this.submitButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+        }
+        else if(this.globalEventJob.getStatus().equals(InstanceStatus.ERROR)) {
+            this.submitButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+        }
+        else if(this.globalEventJob.getStatus().equals(InstanceStatus.WAITING)) {
+            this.submitButton.setVisible(true &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            this.skipButton.setVisible(true &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            this.enableButton.setVisible(false);
+        }
+        else if(this.globalEventJob.getStatus().equals(InstanceStatus.ON_HOLD)) {
+            this.submitButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+        }
+        else if(this.globalEventJob.getStatus().equals(InstanceStatus.SKIPPED) ||
+            this.globalEventJob.getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
+            this.globalEventJob.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
+            this.submitButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(true &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+        }
+        else if(this.globalEventJob.getStatus().equals(InstanceStatus.COMPLETE)) {
+            this.submitButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+        }
     }
 
     private void setCatalystJobs(ContextualisedScheduledProcessEvent catalystEvent) {

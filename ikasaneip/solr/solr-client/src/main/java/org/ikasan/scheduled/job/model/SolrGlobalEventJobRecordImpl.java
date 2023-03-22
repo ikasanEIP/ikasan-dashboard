@@ -37,6 +37,9 @@ public class SolrGlobalEventJobRecordImpl implements GlobalEventJobRecord {
     @Field(SolrDaoBase.MODIFIED_BY)
     private String modifiedBy;
 
+    @Field(SolrDaoBase.SKIPPED)
+    private boolean skipped;
+
     @Override
     public String getId() {
         return id;

@@ -75,7 +75,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ContextTemplateWidget extends Div {
+public class ContextTemplateWidget extends VerticalLayout {
 
     private Registration contextEnableBroadcasterRegistration;
 
@@ -199,7 +199,7 @@ public class ContextTemplateWidget extends Div {
             , schedulerJobService, logStreamingService, scheduledContextInstanceService, schedulerJobInstanceService, jobInitiationService
             , userService, securityService);
 
-        Div div = new Div();
+        VerticalLayout div = new VerticalLayout();
         div.setSizeFull();
 
         Icon icon = VaadinIcon.SEARCH.create();
@@ -308,7 +308,7 @@ public class ContextTemplateWidget extends Div {
         contextTemplateFilteringGrid.removeAllColumns();
         contextTemplateFilteringGrid.setVisible(true);
         contextTemplateFilteringGrid.setWidthFull();
-        contextTemplateFilteringGrid.setHeight("1000px");
+        contextTemplateFilteringGrid.setHeightFull();
 
 
         contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {

@@ -377,20 +377,35 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     schedulerJobInstanceRecord.getSchedulerJobInstance().setStatus(schedulerJobInstance.getStatus());
 
                     ComponentKey key;
+                    ComponentKey precedingJobKey;
 
-                    if (value instanceof SchedulerJobInstance) {
+                    if(value instanceof SchedulerJobInstance && ((SchedulerJobInstance)value).getAgentName().equals(JobConstants.GLOBAL_EVENT)) {
+                        key = new ComponentKey(JobConstants.GLOBAL_EVENT, schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName()
+                            , schedulerJobInstanceRecord.getJobName());
+
+                        precedingJobKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+JobConstants.GLOBAL_EVENT
+                            ,schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), schedulerJobInstanceRecord.getJobName());
+                    }
+                    else {
                         key = new ComponentKey(this.contextInstance.getName(),
                             schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), schedulerJobInstanceRecord.getJobName());
-                    } else {
-                        key = new ComponentKey(PRECEDING_ITEM_COMPONENT + this.contextInstance.getName(),
+
+                        precedingJobKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+this.contextInstance.getName(),
                             schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), schedulerJobInstanceRecord.getJobName());
                     }
 
                     logger.debug(String.format("refreshing icons JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()
                         , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(),
                         schedulerJobInstanceRecord.getStatus()));
-                    this.getJobInstanceActionComponents(key, schedulerJobInstanceRecord, horizontalLayout);
-                    this.setIconVisibility(schedulerJobInstanceRecord, key);
+
+                    if(value instanceof PrecedingItem) {
+                        this.getJobInstanceActionComponents(precedingJobKey, schedulerJobInstanceRecord, horizontalLayout);
+                        this.setIconVisibility(schedulerJobInstanceRecord, precedingJobKey);
+                    }
+                    else {
+                        this.getJobInstanceActionComponents(key, schedulerJobInstanceRecord, horizontalLayout);
+                        this.setIconVisibility(schedulerJobInstanceRecord, key);
+                    }
                 }
 
                 if(value instanceof PrecedingItem) {
@@ -1476,7 +1491,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
 
         if (skip != null) {
-            if (schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
+            if ((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+                schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)) &&
                 !((schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED)) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
@@ -1498,11 +1514,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon enable = iconMap.get(ENABLE_ICON);
 
         if(enable != null) {
-            if (schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
+            if ((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+                schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)) &&
                 (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
                     !(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED)))) {
                 enable.setVisible(false);
-            } else if (schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
+            } else if ((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
+                schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE))) {
                 enable.setVisible(true &&
                     ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                         SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
