@@ -84,7 +84,7 @@ public class SchedulerStatusDiv extends Div {
         else if(status.equals(InstanceStatus.SKIPPED_COMPLETE.name())) {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
             super.getElement().getStyle().set("color", "#FFF");
-            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.SKIPPED_COMPLETE.name()
+            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.SKIPPED.name()
                 , this.current.getLocale()));
         }
         else if(status.equals(InstanceStatus.RELEASED.name())) {

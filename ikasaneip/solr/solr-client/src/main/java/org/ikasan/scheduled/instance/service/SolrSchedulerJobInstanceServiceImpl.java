@@ -17,6 +17,7 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
+import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -185,8 +186,8 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                         , SolrQuartzScheduleDrivenJobInstanceImpl.class));
                 }
                 else if(schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
-                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
-                        , SolrGlobalEventJobInstanceImpl.class));
+                    schedulerJobInstances.add(objectMapper.readValue
+                        (objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class));
                 }
             }
 
@@ -215,6 +216,11 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                             contextualisedInstance.setHeld(true);
                             contextualisedInstance.setStatus(InstanceStatus.ON_HOLD);
                         }
+                    }
+                    else if(instance instanceof GlobalEventJobInstance
+                        && instance.getSkippedContexts().containsKey(contextInstance.getName())) {
+                        contextualisedInstance.setSkip(true);
+                        contextualisedInstance.setStatus(InstanceStatus.SKIPPED);
                     }
                     contextualisedSchedulerJobInstances.add(contextualisedInstance);
                 }
