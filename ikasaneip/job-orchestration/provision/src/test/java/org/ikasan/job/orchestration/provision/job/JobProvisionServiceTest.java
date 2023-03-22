@@ -121,6 +121,39 @@ public class JobProvisionServiceTest extends AbstractTest {
             , moduleMetaDataService);
     }
 
+    @Test
+    public void test_remove_jobs_for_context_success_no_unique_jobs() throws IOException {
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        List<SchedulerJob> schedulerJobs = this.createSchedulerJobs();
+        List<SchedulerJobRecord> schedulerJobRecords = new ArrayList<>();
+        schedulerJobs.forEach(job -> {
+            TestSchedulerJobRecord schedulerJobRecord = new TestSchedulerJobRecord(job);
+            schedulerJobRecords.add(schedulerJobRecord);
+        });
+
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(schedulerJobRecords, schedulerJobRecords.size(), 100L);
+
+        when(schedulerJobService.findByContext(anyString(), anyInt(), anyInt())).thenReturn(searchResults);
+
+        ModuleMetadataSearchResults moduleMetadataSearchResults = new ModuleMetadataSearchResults(List.of()
+            , 1, 100L);
+
+        when(moduleMetaDataService.find(anyList(), any(), anyInt(), anyInt())).thenReturn(moduleMetadataSearchResults);
+
+        jobProvisionService.removeJobs("contextName");
+
+        verify(schedulerJobService).findByContext(anyString(), anyInt(), anyInt());
+        verify(moduleMetaDataService).find(anyList(), any(), anyInt(), anyInt());
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
     private List<SchedulerJob> createSchedulerJobs() {
         List<SchedulerJob> schedulerJobs = new ArrayList<>();
 

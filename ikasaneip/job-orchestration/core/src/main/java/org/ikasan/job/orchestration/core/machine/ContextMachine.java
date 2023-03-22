@@ -234,6 +234,14 @@ public class ContextMachine {
                 }
             });
 
+            this.globalEventJobInstanceMap.entrySet().forEach(job -> {
+                if(job.getValue().isSkip()) {
+                    ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), this.contextInstance);
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
+            });
+
             contextParametersInstanceService.populateContextParametersOnContextInstance(contextInstance);
 
             // Remove the previous context instance from all agents
@@ -910,7 +918,7 @@ public class ContextMachine {
                     finalEvents.add(event); 
                 } else {
                     logger.warn(String.format("Could not load internal event driven job for initiation event JobName[%s], SchedulerJobInitiationEvent[%s]"
-                        , event.getJobName(), event.toString()));
+                        , event.getJobName(), event));
                 }
             }
         });
@@ -1124,7 +1132,8 @@ public class ContextMachine {
     }
 
     private SchedulerJobInstance getSchedulerJob(ContextInstance contextInstance, String childContextName, String jobIdentifier) {
-        if(contextInstance.getScheduledJobsMap() != null && contextInstance.getScheduledJobsMap().containsKey(jobIdentifier) && contextInstance.getName().equals(childContextName)) {
+        if(contextInstance.getScheduledJobsMap() != null && contextInstance.getScheduledJobsMap().containsKey(jobIdentifier)
+            && contextInstance.getName().equals(childContextName)) {
             return contextInstance.getScheduledJobsMap().get(jobIdentifier);
         }
         else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
@@ -1192,7 +1201,7 @@ public class ContextMachine {
         }
 
         // Only attempt to send the global event to other context instance if the global event exist in this context, or if "forceSending" is set to true.
-        if (globalEventJobInstance != null || forceSending) {
+        if (globalEventJobInstance != null  || forceSending) {
             logger.info("Job [{}] is a Global Event Job - Do not send to the agent [{}] and attempt to send to all Active Contexts by Environment Group",
                 schedulerJobInitiationEvent.getJobName(), schedulerJobInitiationEvent.getAgentUrl());
             logger.info("[{}] Context is part of the EnvironmentGroup [{}]. ignoreEnvironmentGroup is set to [{}]. " +
@@ -1212,6 +1221,12 @@ public class ContextMachine {
                     continue;
                 }
 
+                // We don't broadcast global events to other contexts if they have been skipped.
+                if(schedulerJobInitiationEvent.isSkipped()
+                    && !schedulerJobInitiationEvent.getContextInstanceId().equals(contextInstanceIdFromCache)) {
+                    continue;
+                }
+
                 // Global Job found for this context instance, build the event.
                 ContextualisedScheduledProcessEvent globalContextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
                 globalContextualisedScheduledProcessEvent.setAgentName(JobConstants.GLOBAL_EVENT);
@@ -1221,7 +1236,7 @@ public class ContextMachine {
                 globalContextualisedScheduledProcessEvent.setContextName(schedulerJobInitiationEvent.getContextName());
                 globalContextualisedScheduledProcessEvent.setContextInstanceId(contextInstanceIdFromCache);
                 globalContextualisedScheduledProcessEvent.setJobStarting(false);
-                globalContextualisedScheduledProcessEvent.setSkipped(false);
+                globalContextualisedScheduledProcessEvent.setSkipped(schedulerJobInitiationEvent.isSkipped());
                 globalContextualisedScheduledProcessEvent.setCatalystEvent(schedulerJobInitiationEvent.getCatalystEvent());
                 //No need to set the childContextNames property in ContextualisedScheduledProcessEvent as JobLogicMachine method getJobInitiationEvents should handle it.
 

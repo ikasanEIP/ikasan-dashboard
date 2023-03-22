@@ -3,6 +3,7 @@ package org.ikasan.scheduled.job.service;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
@@ -347,6 +348,12 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
             internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
             this.internalEventDrivenJobRecordDao.skip(internalEventDrivenJobRecord, childContextNames, actor);
         }
+        else if(jobRecord.getJob() instanceof GlobalEventJob) {
+            GlobalEventJobRecord globalEventJobRecord = this.globalEventJobRecord(
+                (GlobalEventJob)jobRecord.getJob(), actor);
+            globalEventJobRecord.setTimestamp(jobRecord.getTimestamp());
+            this.globalEventJobRecordDao.skip(globalEventJobRecord, childContextNames, actor);
+        }
         else {
             throw new IllegalArgumentException("Only internal event driven jobs can be skipped.");
         }
@@ -367,12 +374,20 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
-    public void enable(SchedulerJobRecord jobRecord, String actor) {
+    public void enable(SchedulerJobRecord jobRecord, ContextTemplate contextTemplate, String actor) {
         if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
                 ((InternalEventDrivenJob)jobRecord.getJob(),actor);
             internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
             this.internalEventDrivenJobRecordDao.enable(internalEventDrivenJobRecord, actor);
+        }
+        else if(jobRecord.getJob() instanceof GlobalEventJob) {
+            GlobalEventJob job = (GlobalEventJob)jobRecord.getJob();
+            job.getSkippedContexts().remove(contextTemplate.getName());
+            GlobalEventJobRecord globalEventJobRecord = this.globalEventJobRecord(
+                job, actor);
+            globalEventJobRecord.setTimestamp(jobRecord.getTimestamp());
+            this.globalEventJobRecordDao.enable(globalEventJobRecord, actor);
         }
         else {
             throw new IllegalArgumentException("Only internal event driven jobs can be enabled.");

@@ -47,6 +47,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -59,6 +60,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -283,48 +285,56 @@ public class SchedulerJobGridWidget extends Div {
 
                 if(schedulerJobRecord.getJob() != null && schedulerJobRecord.getJob().getChildContextNames() != null) {
                     schedulerJobRecord.getJob().getChildContextNames().forEach(context -> {
-                        Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-                        Button contextButton = new Button(context);
-                        contextButton.getElement().getStyle().set("font-size", "9pt");
-                        contextButton.getElement().getStyle().set("color", "rgba(0, 0, 0, 1.0)");
-                        contextButton.getElement().getStyle().set("margin-bottom", "5px");
-                        contextButton.setIcon(visualisation);
-                        contextButton.addClickListener(event -> {
-                            try {
-                                JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
-                                    configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
-                                    jobInitiationService, contextProfileService, userService, securityService,
-                                    jobProvisionService, scheduledContextService, schedulerJobExecutionEnvironmentLabel);
-                                jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
-                                jobTemplateVisualisationDialog.open();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                NotificationHelper.showErrorNotification(getTranslation("notification.error-opening-visualisation"
-                                    , UI.getCurrent().getLocale()));
+                        if(ContextHelper.getChildContext(context, this.contextTemplate) != null) {
+                            Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                            Button contextButton = new Button(context);
+                            contextButton.getElement().getStyle().set("font-size", "9pt");
+                            contextButton.getElement().getStyle().set("color", "rgba(0, 0, 0, 1.0)");
+                            contextButton.getElement().getStyle().set("margin-bottom", "5px");
+                            contextButton.setIcon(visualisation);
+                            contextButton.addClickListener(event -> {
+                                try {
+                                    JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
+                                        configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
+                                        jobInitiationService, contextProfileService, userService, securityService,
+                                        jobProvisionService, scheduledContextService, schedulerJobExecutionEnvironmentLabel);
+                                    jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
+                                    jobTemplateVisualisationDialog.open();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    NotificationHelper.showErrorNotification(getTranslation("notification.error-opening-visualisation"
+                                        , UI.getCurrent().getLocale()));
+                                }
+
+                            });
+
+                            if (schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) && schedulerJobRecord.isSkipped()
+                                && schedulerJobRecord.getJob().getSkippedContexts().containsKey(context)
+                                && schedulerJobRecord.getJob().getSkippedContexts().get(context)) {
+                                contextButton.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                                visualisation.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                                contextButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
+                            } else if (schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB)
+                                && schedulerJobRecord.getJob().getSkippedContexts().containsKey(this.contextTemplate.getName())) {
+                                contextButton.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                                visualisation.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                                contextButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
                             }
 
-                        });
+                            if (schedulerJobRecord.isHeld()
+                                && schedulerJobRecord.getJob().getHeldContexts().containsKey(context)
+                                && schedulerJobRecord.getJob().getHeldContexts().get(context)) {
+                                contextButton.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                                visualisation.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                                contextButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
+                            }
 
-                        if(schedulerJobRecord.isSkipped()
-                            && schedulerJobRecord.getJob().getSkippedContexts().containsKey(context)
-                            && schedulerJobRecord.getJob().getSkippedContexts().get(context)) {
-                            contextButton.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
-                            visualisation.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
-                            contextButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
+                            ComponentSecurityVisibility.applyEnabledSecurity(authentication, contextButton, SecurityConstants.ALL_AUTHORITY,
+                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
+                            verticalLayout.add(contextButton);
                         }
-                        else if(schedulerJobRecord.isHeld()
-                            && schedulerJobRecord.getJob().getHeldContexts().containsKey(context)
-                            && schedulerJobRecord.getJob().getHeldContexts().get(context)) {
-                            contextButton.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
-                            visualisation.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
-                            contextButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
-                        }
-
-                        ComponentSecurityVisibility.applyEnabledSecurity(authentication, contextButton, SecurityConstants.ALL_AUTHORITY,
-                            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
-
-                        verticalLayout.add(contextButton);
                     });
                 }
 
@@ -468,7 +478,7 @@ public class SchedulerJobGridWidget extends Div {
             Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-job"
                 , UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(((InternalEventDrivenJob)schedulerJobRecord.getJob()).isTargetResidingContextOnly()
+                if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob && ((InternalEventDrivenJob)schedulerJobRecord.getJob()).isTargetResidingContextOnly()
                     && schedulerJobRecord.getJob().getChildContextNames().size() > 1) {
                     ResidingContextSelectDialog residingContextSelectDialog
                         = new ResidingContextSelectDialog((InternalEventDrivenJob)schedulerJobRecord.getJob()
@@ -487,18 +497,34 @@ public class SchedulerJobGridWidget extends Div {
                     });
                 }
                 else {
-                    this.schedulerJobService.skip(schedulerJobRecord, schedulerJobRecord.getJob().getChildContextNames(), this.authentication.getName());
-                    this.refresh();
+                    if(schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB)) {
+                        this.schedulerJobService.skip(schedulerJobRecord, List.of(this.contextTemplate.getName()), this.authentication.getName());
 
-                    String action = String.format("Scheduler Job[%s], Parent Context[%s], was skipped in the following Child Contexts [%s]."
-                        , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(schedulerJobRecord.getJob().getChildContextNames().toArray(), ","));
-                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, action, authentication.getName());
+                        String action = String.format("Global Scheduler Job[%s] was skipped in the following Job Plan [%s]."
+                            , schedulerJobRecord.getJobName(), this.contextTemplate.getName());
+                        this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, action, authentication.getName());
+                    }
+                    else {
+                        this.schedulerJobService.skip(schedulerJobRecord, schedulerJobRecord.getJob().getChildContextNames(), this.authentication.getName());
+
+                        String action = String.format("Scheduler Job[%s], Parent Job Plan[%s], was skipped in the following Child Job Plan [%s]."
+                            , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(schedulerJobRecord.getJob().getChildContextNames().toArray(), ","));
+                        this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, action, authentication.getName());
+                    }
+                    this.refresh();
                 }
 
             });
 
-            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) && !schedulerJobRecord.isSkipped()
+            if((schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB))
+                && !schedulerJobRecord.isSkipped()
                 && !schedulerJobRecord.isHeld()) {
+                ComponentSecurityVisibility.applySecurity(skip, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+            }
+            else if(schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB) &&
+                !schedulerJobRecord.getJob().getSkippedContexts().containsKey(this.contextTemplate.getName())) {
                 ComponentSecurityVisibility.applySecurity(skip, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
@@ -510,9 +536,10 @@ public class SchedulerJobGridWidget extends Div {
             layout.add(skip);
 
             Icon enable = IconDecorator.decorate(new Icon(VaadinIcon.PLAY), getTranslation("tooltip.enable-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
-            enable.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB));
+            enable.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)
+             || schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB));
             enable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                this.schedulerJobService.enable(schedulerJobRecord, this.authentication.getName());
+                this.schedulerJobService.enable(schedulerJobRecord, this.contextTemplate, this.authentication.getName());
                 refresh();
 
                 String action = String.format("Scheduler Job[%s], Parent Context[%s], has been enabled."
@@ -520,13 +547,19 @@ public class SchedulerJobGridWidget extends Div {
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_ENABLED, action, authentication.getName());
             });
 
-            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
+            if((schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) ||
+                schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB))) {
                 ComponentSecurityVisibility.applySecurity(enable, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
             }
 
-            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) && !schedulerJobRecord.isSkipped()) {
+            if((schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB))
+                && !schedulerJobRecord.isSkipped()) {
+                enable.setVisible(false);
+            }
+            else if(schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB) &&
+                !schedulerJobRecord.getJob().getSkippedContexts().containsKey(this.contextTemplate.getName())) {
                 enable.setVisible(false);
             }
 
@@ -647,14 +680,22 @@ public class SchedulerJobGridWidget extends Div {
                 schedulerStatusDiv.setWidth("100%");
 
 
-                if(schedulerJobRecord.isSkipped()) {
-                    schedulerStatusDiv.setStatus(InstanceStatus.SKIPPED);
-                    labelLayout.add(schedulerStatusDiv);
-                }
+                if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
+                    if (schedulerJobRecord.isSkipped()) {
+                        schedulerStatusDiv.setStatus(InstanceStatus.SKIPPED);
+                        labelLayout.add(schedulerStatusDiv);
+                    }
 
-                if(schedulerJobRecord.isHeld()) {
-                    schedulerStatusDiv.setStatus(InstanceStatus.ON_HOLD);
-                    labelLayout.add(schedulerStatusDiv);
+                    if (schedulerJobRecord.isHeld()) {
+                        schedulerStatusDiv.setStatus(InstanceStatus.ON_HOLD);
+                        labelLayout.add(schedulerStatusDiv);
+                    }
+                }
+                else if(schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB)) {
+                    if (schedulerJobRecord.getJob().getSkippedContexts().containsKey(contextTemplate.getName())) {
+                        schedulerStatusDiv.setStatus(InstanceStatus.SKIPPED);
+                        labelLayout.add(schedulerStatusDiv);
+                    }
                 }
 
                 if(this.contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext() &&

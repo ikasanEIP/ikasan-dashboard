@@ -418,7 +418,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
         this.insertInternalEventDrivenRecords("internal", 400, "context", null);
-        this.insertGlobalEventRecords("global", 10, "context");
+        this.insertGlobalEventRecords("global", 10, "context", false);
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -461,11 +461,65 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_initialise_scheduler_job_instances_with_skipped_global_jobs() throws SchedulerJobInstanceInitialisationException {
+        this.insertFileEventRecords("file", 135, "context");
+        this.insertQuartzScheduleEventRecords("quartz", 75, "context");
+        this.insertInternalEventDrivenRecords("internal", 400, "context", null);
+        this.insertGlobalEventRecords("global", 10, "context", true);
+
+        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
+        ContextInstanceImpl contextInstance = new ContextInstanceImpl();
+        contextInstance.setName("context");
+        contextInstance.setId("contextInstanceId");
+        contextInstance.setScheduledJobs(this.solrSchedulerJobDao.findByContext("context", 1000, 0).getResultList()
+            .stream()
+            .map(schedulerJobRecord -> {
+                try {
+                    if (schedulerJobRecord.getJob() instanceof SolrFileEventDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrFileEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class);
+                    }
+                }
+                catch (Exception e) {
+                    return null;
+                }
+                return null;
+            })
+            .collect(Collectors.toList())
+        );
+
+        SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
+
+        List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
+            (contextInstance, parameters);
+
+        Assert.assertEquals(620, schedulerJobInstances.size());
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.service.getSchedulerJobInstancesByContextInstanceId
+            ("contextInstanceId", 620, 0, null, null);
+
+        Assert.assertEquals(620, searchResults.getResultList().size());
+
+        searchResults.getResultList().forEach(job -> {
+            if(job.getSchedulerJobInstance() instanceof GlobalEventJobInstance) {
+                Assert.assertEquals(InstanceStatus.SKIPPED, job.getSchedulerJobInstance().getStatus());
+                Assert.assertEquals(InstanceStatus.SKIPPED.name(), job.getStatus());
+            }
+        });
+    }
+
+    @Test
     public void test_initialise_scheduler_job_instances_with_jobs_on_hold() throws SchedulerJobInstanceInitialisationException {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
         this.insertInternalEventDrivenRecords("internal", 400, "context", null);
-        this.insertGlobalEventRecords("global", 10, "context");
+        this.insertGlobalEventRecords("global", 10, "context", false);
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -523,7 +577,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
         this.insertInternalEventDrivenRecords("internal", 400, "context",null);
-        this.insertGlobalEventRecords("global", 10, "context");
+        this.insertGlobalEventRecords("global", 10, "context", false);
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -596,7 +650,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.insertQuartzScheduleEventRecords("quartz", 1, "context");
         this.insertInternalEventDrivenRecords("internal", 1, "context", "POWERSHELL"); //expect to be change
         this.insertInternalEventDrivenRecords("internalB", 1, "context", "some-non-replace-value"); // should not change
-        this.insertGlobalEventRecords("global", 1, "context");
+        this.insertGlobalEventRecords("global", 1, "context", false);
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -784,13 +838,17 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         });
     }
 
-    private void insertGlobalEventRecords(String idPrefix, int num, String contextId) {
+    private void insertGlobalEventRecords(String idPrefix, int num, String contextId, boolean skip) {
         IntStream.range(0, num).forEach(i -> {
             SolrGlobalEventJobImpl solrGlobalEventJob = new SolrGlobalEventJobImpl();
             solrGlobalEventJob.setAgentName(idPrefix+"agentName"+i);
             solrGlobalEventJob.setJobName(idPrefix+"jobName"+i);
             solrGlobalEventJob.setIdentifier(solrGlobalEventJob.getAgentName()+"_"+solrGlobalEventJob.getJobName());
             solrGlobalEventJob.setContextName(contextId);
+
+            if(skip) {
+                solrGlobalEventJob.setSkippedContexts(Map.of(contextId, true));
+            }
 
             SolrGlobalEventJobRecordImpl solrGlobalEventJobRecord = new SolrGlobalEventJobRecordImpl();
             solrGlobalEventJobRecord.setAgentName(idPrefix+"agentName"+i);
