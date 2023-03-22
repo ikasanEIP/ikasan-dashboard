@@ -14,6 +14,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class SolrGlobalEventJobDaoImpl extends SolrDaoBase<GlobalEventJobRecord>
@@ -95,5 +96,26 @@ public class SolrGlobalEventJobDaoImpl extends SolrDaoBase<GlobalEventJobRecord>
         } else {
             return null;
         }
+    }
+
+    @Override
+    public void skip(GlobalEventJobRecord jobRecord, List<String> childContextNames, String actor) {
+        GlobalEventJob globalEventJob = jobRecord.getGlobalEventJob();
+        globalEventJob.setSkippedContexts(new HashMap<>());
+        childContextNames.forEach(name ->
+            globalEventJob.getSkippedContexts().put(name, true));
+
+        jobRecord.setGlobalEventJob(globalEventJob);
+        jobRecord.setModifiedBy(actor);
+
+        this.save(jobRecord);
+    }
+    @Override
+    public void enable(GlobalEventJobRecord jobRecord, String actor) {
+        GlobalEventJob globalEventJob = jobRecord.getGlobalEventJob();
+        jobRecord.setGlobalEventJob(globalEventJob);
+        jobRecord.setModifiedBy(actor);
+
+        this.save(jobRecord);
     }
 }

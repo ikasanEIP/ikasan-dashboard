@@ -36,6 +36,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedule
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -982,6 +983,27 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 quartzDrivenScheduledJobDialog.open();
 
                 quartzDrivenScheduledJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobGridWidget.refresh();
+                    }
+                });
+            })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
+        jobTypesSubMenu.addItem(getTranslation("menu-item.global-job", UI.getCurrent().getLocale()), event -> {
+                GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(null, this.scheduledProcessManagementService,
+                    this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+
+                GlobalEventJob globalEventJob = new GlobalEventJobImpl();
+                globalEventJob.setContextName(JobConstants.GLOBAL_EVENT);
+
+                globalEventJobDialog.setJob(globalEventJob, EditMode.NEW);
+                globalEventJobDialog.open();
+
+                globalEventJobDialog.addOpenedChangeListener(openedChangeEvent -> {
                     if(!openedChangeEvent.isOpened()) {
                         this.schedulerJobGridWidget.refresh();
                     }

@@ -1,6 +1,7 @@
 package org.ikasan.notification.monitor.mock;
 
 import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
@@ -160,7 +161,7 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
-    public void enable(SchedulerJobRecord jobRecord, String actor) {
+    public void enable(SchedulerJobRecord jobRecord, ContextTemplate contextTemplate, String actor) {
 
     }
 

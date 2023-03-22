@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.provision.job;
 
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.job.*;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
@@ -146,15 +147,22 @@ public class JobProvisionServiceImpl implements JobProvisionService {
 
         List<String> uniqueAgentNames = this.getUniqueAgentNames(schedulerJobs);
 
-        ModuleMetadataSearchResults agents = this.moduleMetaDataService
-            .find(uniqueAgentNames, ModuleType.SCHEDULER_AGENT, -1, -1);
+        List<ModuleMetaData> agents;
+
+        if(uniqueAgentNames.size() > 0) {
+            agents = this.moduleMetaDataService
+                .find(uniqueAgentNames, ModuleType.SCHEDULER_AGENT, -1, -1).getResultList();
+        }
+        else {
+            agents = new ArrayList<>();
+        }
 
         // As it is possible to provision multiple agents as part of the job
         // provisioning process, we will collect exceptions and report issues
         // once attempts to provision all agents are complete.
         List<JobProvisionException> exceptions = new ArrayList<>();
 
-        agents.getResultList().forEach(agent -> {
+        agents.forEach(agent -> {
             try {
                 logger.info(String.format("Attempting to remove jobs for context[%s] jobs on agent[%s]", contextName, agent.getUrl()));
                 this.jobProvisionModuleRestService.removeJobsForContext(agent.getUrl(), contextName);
