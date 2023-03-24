@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
-import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -104,6 +103,11 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
 
+        if(filter.getContextName() != null && !filter.getContextName().isEmpty()) {
+            queryBuffer.append(AND);
+            queryBuffer.append(MODULE_NAME).append(COLON).append(WILDCARD).append(filter.getContextName()).append(WILDCARD);
+        }
+
         if(filter.getContextNames() != null && !filter.getContextNames().isEmpty()) {
             queryBuffer.append(AND).append(OPEN_BRACKET);
             List<String> predicates = new ArrayList<>();
@@ -126,31 +130,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
             solrQuery.addSort(CREATED_DATE_TIME, SolrQuery.ORDER.desc);
         }
 
-        SearchResults<ScheduledContextRecord> results;
-
-        if(offset > 0 && limit > 0) {
-            results = this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class, offset, limit);
-        }
-        else {
-            results = this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class, 0, 10000);
-        }
-
-        if(filter.getContextName() != null && !filter.getContextName().isEmpty()) {
-            queryBuffer.append(AND);
-            queryBuffer.append(MODULE_NAME).append(COLON).append(WILDCARD).append(filter.getContextName()).append(WILDCARD);
-
-            List<ScheduledContextRecord> filteredResults = new ArrayList<>();
-
-            results.getResultList().forEach(scheduledContextRecord -> {
-                if(scheduledContextRecord.getContextName().toLowerCase().contains(filter.getContextName().toLowerCase())) {
-                    filteredResults.add(scheduledContextRecord);
-                }
-            });
-
-            results = new SearchResultsImpl<>(filteredResults, filteredResults.size(), results.getQueryResponseTime());
-        }
-
-        return results;
+        return this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class, offset, limit);
     }
 
     @Override
