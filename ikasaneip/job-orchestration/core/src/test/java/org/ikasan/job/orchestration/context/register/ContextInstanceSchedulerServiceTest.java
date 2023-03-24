@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.JobDetailImpl;
@@ -103,6 +104,7 @@ public class ContextInstanceSchedulerServiceTest {
         verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName2"), eq(CONTEXT_START_GROUP));
         verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName3"), eq(CONTEXT_START_GROUP));
 
+        verify(scheduler, times(3)).checkExists((JobKey) any());
         verify(scheduler, times(3)).scheduleJob(any(), any());
         verify(scheduler, times(3)).getTriggersOfJob(any());
 
