@@ -272,4 +272,40 @@ public class QuartzTimeWindowCheckerTest {
         blackoutRanges = Map.of(FIRST_SECOND_OF_2023, FIRST_SECOND_OF_2024);
         assertThat(QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(blackoutRanges, new Date(now.getTime())), is(false));
     }
+
+    // Don't need to worry about timezone as we have the millisecond representation
+    @Test
+    public void test_withinOperatingWindowOnRecovery() throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
+        //current time in between
+        String startDate = "2023/01/01 01:00:02";
+        String endDate = "2023/01/02 01:00:00";
+        String currentDate = "2023/01/01 18:00:00";
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(sdf.parse(startDate).getTime(),sdf.parse(endDate).getTime(),sdf.parse(currentDate).getTime()), is(true));
+
+        // current time same time as end date
+        startDate = "2023/01/01 01:00:02";
+        endDate = "2023/01/02 01:00:00";
+        currentDate = "2023/01/02 01:00:00";
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(sdf.parse(startDate).getTime(),sdf.parse(endDate).getTime(),sdf.parse(currentDate).getTime()), is(false));
+
+        // current time after end date
+        startDate = "2023/01/01 01:00:02";
+        endDate = "2023/01/02 01:00:00";
+        currentDate = "2023/01/02 02:00:00";
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(sdf.parse(startDate).getTime(),sdf.parse(endDate).getTime(),sdf.parse(currentDate).getTime()), is(false));
+
+        // impossible situation where start date is after end date...
+        startDate = "2023/02/01 01:00:02";
+        endDate = "2023/01/02 01:00:00";
+        currentDate = "2023/01/02 00:00:00";
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(sdf.parse(startDate).getTime(),sdf.parse(endDate).getTime(),sdf.parse(currentDate).getTime()), is(false));
+
+        // impossible situation where start date is after end date... current time after startDate
+        startDate = "2023/02/01 01:00:02";
+        endDate = "2023/01/02 01:00:00";
+        currentDate = "2023/02/02 00:00:00";
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(sdf.parse(startDate).getTime(),sdf.parse(endDate).getTime(),sdf.parse(currentDate).getTime()), is(false));
+    }
 }

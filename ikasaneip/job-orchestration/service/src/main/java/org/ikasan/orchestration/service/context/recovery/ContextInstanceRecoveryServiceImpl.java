@@ -183,7 +183,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                 LOG.info("Removing context instance[{}], with name[{}] as the projected end time has been passed and the context is not marked to run until manually ended.");
                                 this.contextInstanceRegistrationService.deRegisterById(scheduledContextInstanceRecord.getContextInstanceId());
                             }
-                            else if (QuartzTimeWindowChecker.withinOperatingWindow(context.getTimezone(), context.getTimeWindowStart(), context.getContextTtlMilliseconds(), now)
+                            else if (QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(scheduledContextInstanceRecord.getContextInstance().getStartTime(), scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime(), System.currentTimeMillis())
                                 || (scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded())) {
                                 if (scheduledContextInstanceRecord != null) {
                                     try {

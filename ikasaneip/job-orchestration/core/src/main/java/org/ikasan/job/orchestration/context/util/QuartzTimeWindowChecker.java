@@ -59,6 +59,25 @@ public class QuartzTimeWindowChecker {
         }
     }
 
+    /**
+     * Use when recovery context instance after a restart to the dashboard. Takes in the start and end time stamped
+     * on the context instance and if the dashboard start time sit inside this, then it will be a candidate for
+     * this instance to be registered to the ContextMachine cache.
+     *
+     * @param startTime millisecond of when the context was started
+     * @param endTime millisecond of the projected end time for the context
+     * @param currentTime the current time of when this was called
+     * @return true if current time is within the start time and end time
+     *         false when outside
+     */
+    public static boolean withinOperatingWindowOnRecovery(long startTime, long endTime, long currentTime) {
+        if (startTime < currentTime && endTime > currentTime) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      * If any of the cronExpressions in the blackoutWindowCronExpressions are satisfied by the referenceDate return true
