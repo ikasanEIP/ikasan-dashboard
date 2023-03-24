@@ -79,6 +79,10 @@ public abstract class AbstractDashboardSchedulerService {
                     this.dashboardJobsMap.get(jobkey.toString()).getCronExpression(),
                     this.dashboardJobsMap.get(jobkey.toString()).getTimezone());
 
+                // If we are replacing the job, then check if it exists and then remove before we re-add it.
+                if (scheduler.checkExists(jobDetail.getKey())) {
+                    scheduler.deleteJob(jobDetail.getKey());
+                }
                 final Date scheduledDate = scheduler.scheduleJob(jobDetail, trigger);
 
                 LOG.info("Scheduled job [" + jobkey + "] starting at [" + scheduledDate
