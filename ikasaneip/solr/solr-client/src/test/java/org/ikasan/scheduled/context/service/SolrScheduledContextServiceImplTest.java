@@ -406,6 +406,67 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
         }
     }
 
+    @Test
+    public void test_find_by_filter_case_insensitive() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrContextTemplateImpl solrContextTemplate
+                = ScheduledObjectMapperFactory.newInstance()
+                .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
+
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("Context-Locks-1");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+            this.scheduledContextService.save(scheduledContextRecord);
+
+            solrContextTemplate
+                = ScheduledObjectMapperFactory.newInstance()
+                .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
+            solrContextTemplate.setName("contextName2");
+            scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName2");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+            this.scheduledContextService.save(scheduledContextRecord);
+
+            ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
+            filter.setContextName("context-locks-1");
+
+            SearchResults<ScheduledContextRecord> found = this.dao.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+
+            filter.setContextName("Context-Loc");
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+
+            filter.setContextName("xt-Locks-1");
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+
+            filter.setContextName(null);
+            filter.setContextNames(List.of("Context-Locks-1", "Context-Locks-2", "Context-Locks-3"));
+
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+        }
+    }
+
     public static String TEST_HOME() {
         return getFile("solr/ikasan").getParent();
     }
