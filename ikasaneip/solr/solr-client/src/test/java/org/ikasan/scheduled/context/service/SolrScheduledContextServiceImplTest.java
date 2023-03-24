@@ -442,14 +442,14 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
 
-            filter.setContextName("Context-Loc");
+            filter.setContextName("context-loc");
             found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
 
             Assert.assertEquals(1, found.getResultList().size());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
 
-            filter.setContextName("xt-Locks-1");
+            filter.setContextName("xt-locks-1");
             found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
 
             Assert.assertEquals(1, found.getResultList().size());
