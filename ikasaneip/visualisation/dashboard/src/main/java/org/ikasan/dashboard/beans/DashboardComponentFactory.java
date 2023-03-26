@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.beans;
 
 import com.vaadin.flow.server.*;
+import liquibase.pro.packaged.C;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.dashboard.cache.FlowStateCache;
@@ -11,6 +12,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceSt
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.JobLockCacheEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.SchedulerJobStateChangeEventBroadcasterImpl;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
@@ -43,6 +45,27 @@ public class DashboardComponentFactory
     private ModuleControlService moduleControlRestService;
 
     private static final String INBOUND_QUEUE = "dashboard-inbound-queue";
+
+    @Value("${context-token-replace-string:#{null}}")
+    private String contextTokenReplacementString;
+
+    @Value("${agent-token-replace-string:#{null}}")
+    private String agentTokenReplacementString;
+
+    @Bean
+    public ContextHelper contextHelper() {
+        ContextHelper contextHelper = new ContextHelper();
+
+        if(contextTokenReplacementString != null && !contextTokenReplacementString.isEmpty()) {
+            contextHelper.setContextNameReplacement(contextTokenReplacementString);
+        }
+
+        if(agentTokenReplacementString != null && !agentTokenReplacementString.isEmpty()) {
+            contextHelper.setAgentNameReplacement(agentTokenReplacementString);
+        }
+
+        return contextHelper;
+    }
 
     @Bean
     @ConfigurationProperties(prefix = "scheduler.calendar")

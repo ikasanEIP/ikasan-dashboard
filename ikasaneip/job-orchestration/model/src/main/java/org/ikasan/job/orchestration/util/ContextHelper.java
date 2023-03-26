@@ -1,14 +1,12 @@
 package org.ikasan.job.orchestration.util;
 
 import org.ikasan.job.orchestration.model.context.ContextTransition;
-import org.ikasan.spec.scheduled.context.model.Context;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.model.JobDependency;
-import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.slf4j.Logger;
@@ -25,6 +23,139 @@ import java.util.stream.Stream;
 public class ContextHelper {
 
     static Logger logger = LoggerFactory.getLogger(ContextHelper.class);
+
+    private static String AGENT_NAME_REPLACEMENT = "[[agent-name]]";
+    private static String CONTEXT_NAME_REPLACEMENT = "[[context-name]]";
+
+    /**
+     * Helper method to add replacement tokens to a scheduler job.
+     *
+     * @param schedulerJob
+     */
+    public static void addSchedulerJobReplacementTokens(SchedulerJob schedulerJob) {
+        schedulerJob.setAgentName(AGENT_NAME_REPLACEMENT);
+        schedulerJob.setContextName(CONTEXT_NAME_REPLACEMENT);
+        if(!(schedulerJob instanceof GlobalEventJob)) {
+            schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
+        }
+    }
+
+    /**
+     * Add all replacement tokens to a ContextTemplate
+     *
+     * @param contextTemplate
+     */
+    public static void addContextTemplateReplacementTokens(ContextTemplate contextTemplate) {
+        _addContextTemplateReplacementTokens(contextTemplate);
+        contextTemplate.setName(CONTEXT_NAME_REPLACEMENT);
+    }
+
+    /**
+     * Recursively work through the ContextTemplate to add all relevant replacement tokens.
+     *
+     * @param contextTemplate
+     */
+    private static void _addContextTemplateReplacementTokens(ContextTemplate contextTemplate) {
+        if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+            contextTemplate.getScheduledJobs().forEach(schedulerJob -> {
+                contextTemplate.getJobDependencies().forEach(jobDependency -> {
+                    replaceJobIdentifierJobDependency(schedulerJob, jobDependency);
+                });
+
+                schedulerJob.setAgentName(AGENT_NAME_REPLACEMENT);
+                schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+            });
+        }
+
+        if(contextTemplate.getContexts() != null) {
+            contextTemplate.getContexts().forEach(child -> addContextTemplateReplacementTokens(child));
+        }
+    }
+
+    /**
+     * Replace tokens in job dependencies.
+     *
+     * @param schedulerJob
+     * @param jobDependency
+     */
+    private static void replaceJobIdentifierJobDependency(SchedulerJob schedulerJob, JobDependency jobDependency) {
+        if(jobDependency.getJobIdentifier().equals(schedulerJob.getIdentifier())) {
+            jobDependency.setJobIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+        }
+
+        if(jobDependency.getLogicalGrouping() != null) {
+            replaceJobIdentifierLogicalGrouping(schedulerJob, jobDependency.getLogicalGrouping());
+        }
+    }
+
+    /**
+     * Replace tokens in logical groupings.
+     *
+     * @param schedulerJob
+     * @param logicalGrouping
+     */
+    private static void replaceJobIdentifierLogicalGrouping(SchedulerJob schedulerJob, LogicalGrouping logicalGrouping) {
+        if(logicalGrouping.getAnd() != null) {
+            logicalGrouping.getAnd().forEach(and -> {
+                replaceJobIdentifierAnd(schedulerJob, and);
+                if(and.getLogicalGrouping() != null) {
+                    replaceJobIdentifierLogicalGrouping(schedulerJob, and.getLogicalGrouping());
+                }
+            });
+        }
+
+        if(logicalGrouping.getOr() != null) {
+            logicalGrouping.getOr().forEach(or -> {
+                replaceJobIdentifierOr(schedulerJob, or);
+                if(or.getLogicalGrouping() != null) {
+                    replaceJobIdentifierLogicalGrouping(schedulerJob, or.getLogicalGrouping());
+                }
+            });
+        }
+
+        if(logicalGrouping.getNot() != null) {
+            logicalGrouping.getNot().forEach(not -> {
+                replaceJobIdentifierNot(schedulerJob, not);
+                if(not.getLogicalGrouping() != null) {
+                    replaceJobIdentifierLogicalGrouping(schedulerJob, not.getLogicalGrouping());
+                }
+            });
+        }
+
+        if(logicalGrouping.getLogicalGrouping() != null) {
+            replaceJobIdentifierLogicalGrouping(schedulerJob, logicalGrouping.getLogicalGrouping());
+        }
+    }
+
+    /**
+     * Replace tokens in logical and.
+     *
+     * @param schedulerJob
+     * @param and
+     */
+    private static void replaceJobIdentifierAnd(SchedulerJob schedulerJob, And and) {
+        and.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+    }
+
+    /**
+     * Replace token in logical or.
+     *
+     * @param schedulerJob
+     * @param or
+     */
+    private static void replaceJobIdentifierOr(SchedulerJob schedulerJob, Or or) {
+        or.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+    }
+
+    /**
+     * Replace token in logical not.
+     *
+     * @param schedulerJob
+     * @param not
+     */
+    private static void replaceJobIdentifierNot(SchedulerJob schedulerJob, Not not) {
+        not.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+    }
 
     /**
      * The purpose of this method is to determine if a job has dependencies that transition
@@ -432,6 +563,7 @@ public class ContextHelper {
 
         return not.get();
     }
+
     public static LinkedList<List<SchedulerJob>> traceJobThroughContext(Context context, String jobName, String childContextName) {
         LinkedList<List<SchedulerJob>> results = new LinkedList<>();
         List<String> processedContexts = new ArrayList<>();
@@ -881,5 +1013,13 @@ public class ContextHelper {
                 getAllAgents((Context) c, agentSet);
             });
         }
+    }
+
+    public void setAgentNameReplacement(String agentNameReplacement) {
+        AGENT_NAME_REPLACEMENT = agentNameReplacement;
+    }
+
+    public void setContextNameReplacement(String contextNameReplacement) {
+        CONTEXT_NAME_REPLACEMENT = contextNameReplacement;
     }
 }
