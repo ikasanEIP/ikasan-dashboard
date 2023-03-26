@@ -20,6 +20,7 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
+import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
@@ -536,13 +537,14 @@ public class ContextTemplateWidget extends VerticalLayout {
             StreamResource streamResource = new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
                 try {
                     ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                        scheduledContextRecord.getContext(),
+                        SerializationUtils.clone(scheduledContextRecord.getContext()),
                         this.zipWorkingDirectory,
                         this.schedulerJobService,
                         this.emailNotificationDetailsService,
                         this.emailNotificationContextService,
                         this.contextProfileService,
-                        50 // limit to loop searching solr
+                        50, // limit to loop searching solr
+                        false
                     );
                     return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
                 } catch (Exception e) {
@@ -556,6 +558,34 @@ public class ContextTemplateWidget extends VerticalLayout {
             exportWrapper.wrapComponent(export);
 
             layout.add(exportWrapper);
+
+            Icon exportWithTokens = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD), getTranslation("tooltip.export-jobs-and-associated-artifacts-with-tokens", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            ComponentSecurityVisibility.applySecurity(this.authentication, export, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
+                , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
+            StreamResource streamResourceWithTokens = new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
+                try {
+                    ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                        SerializationUtils.clone(scheduledContextRecord.getContext()),
+                        this.zipWorkingDirectory,
+                        this.schedulerJobService,
+                        this.emailNotificationDetailsService,
+                        this.emailNotificationContextService,
+                        this.contextProfileService,
+                        50, // limit to loop searching solr
+                        true
+                    );
+                    return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
+                    return null;
+                }
+            });
+
+            FileDownloadWrapper exportWrapperWithTokens = new FileDownloadWrapper(streamResourceWithTokens);
+            exportWrapperWithTokens.wrapComponent(exportWithTokens);
+
+            layout.add(exportWrapperWithTokens);
 
             Icon newWindow = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("tooltip.open-in-new-window", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, newWindow, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN

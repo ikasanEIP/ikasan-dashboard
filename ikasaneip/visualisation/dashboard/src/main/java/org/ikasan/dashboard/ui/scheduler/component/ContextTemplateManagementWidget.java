@@ -26,6 +26,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
+import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
@@ -801,10 +802,15 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         this.createJobUploadMenuBar(actions);
         this.createNewJobMenuBar(actions);
-        Anchor download = new Anchor(new StreamResource("jobPlanBundle.zip", () -> this.getContextBundleStreamResource())
+        Anchor download = new Anchor(new StreamResource("jobPlanBundle.zip", () -> this.getContextBundleStreamResource(false))
             , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
         download.getElement().setAttribute("download", true);
         actions.addItem(download);
+
+        Anchor downloadWithTokens = new Anchor(new StreamResource("jobPlanBundleTokens.zip", () -> this.getContextBundleStreamResource(true))
+            , getTranslation("button.download-context-template-with-tokens", UI.getCurrent().getLocale()));
+        downloadWithTokens.getElement().setAttribute("download", true);
+        actions.addItem(downloadWithTokens);
 
         buttonLayout.add(actionsMenuBar, this.synchroniseJobsButton);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, this.synchroniseJobsButton);
@@ -1076,16 +1082,17 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         return item;
     }
 
-    private InputStream getContextBundleStreamResource() {
+    private InputStream getContextBundleStreamResource(boolean withTokens) {
         try {
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                this.contextTemplate,
+                SerializationUtils.clone(this.contextTemplate),
                 this.zipWorkingDirectory,
                 this.schedulerJobService,
                 this.emailNotificationDetailsService,
                 this.emailNotificationContextService,
                 this.contextProfileService,
-                50 // limit to loop searching solr
+                50, // limit to loop searching solr
+                withTokens
             );
             return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         } catch (Exception e) {
