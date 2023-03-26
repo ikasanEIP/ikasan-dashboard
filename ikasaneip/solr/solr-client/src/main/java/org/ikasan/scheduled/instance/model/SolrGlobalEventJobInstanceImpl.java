@@ -14,4 +14,14 @@ public class SolrGlobalEventJobInstanceImpl extends SolrSchedulerJobInstanceImpl
     public final void setAgentName(String agentName) {
         // nothing to do
     }
+
+    @Override
+    public String getIdentifier() {
+        return agentName + "-" + getJobName();
+    }
+
+    @Override
+    public void setIdentifier(String jobIdentifier) {
+        // nothing to do
+    }
 }

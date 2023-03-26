@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
@@ -51,13 +53,20 @@ public final class ContextExportZipUtils {
                                                       EmailNotificationDetailsService emailNotificationDetailsService,
                                                       EmailNotificationContextService emailNotificationContextService,
                                                       ContextProfileService contextProfileService,
-                                                      int searchLimit) {
+                                                      int searchLimit,
+                                                      boolean addReplacementTokens) {
         try {
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
-            String template = objectMapper.writeValueAsString(context);
 
             String contextName = context.getName();
+
+            if(addReplacementTokens) {
+                ContextHelper.addContextTemplateReplacementTokens(context);
+            }
+
+            String template = objectMapper.writeValueAsString(context);
+
 
             // sanitise the contextName as this will be used for the filename and that windows do not allow for certain characters
             String contextFileName = StringUtils.replaceEach(contextName, UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
@@ -94,14 +103,14 @@ public final class ContextExportZipUtils {
             // get all the jobs
             int offset = 0;
             SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(contextName, searchLimit, offset);
-            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, results);
+            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, results, addReplacementTokens);
 
             int retrievedNumber = results.getResultList().size();
             long totalNumberOfResults = results.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
                 results = schedulerJobService.findByContext(contextName, searchLimit, offset);
-                addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, results);
+                addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, results, addReplacementTokens);
             }
 
             // get the overall notifications settings for the context
@@ -203,9 +212,16 @@ public final class ContextExportZipUtils {
         fis.close();
     }
 
-    private static void addJobFilesToZip(ObjectMapper objectMapper, Path p3, Path p4, Path p5, Path p6, SearchResults<SchedulerJobRecord> results) throws IOException {
+    private static void addJobFilesToZip(ObjectMapper objectMapper, Path p3, Path p4, Path p5, Path p6,
+                                         SearchResults<SchedulerJobRecord> results, boolean addReplacementTokens) throws IOException {
         for (SchedulerJobRecord schedulerJobRecord : results.getResultList()) {
-            String jobAsString = objectMapper.writeValueAsString(schedulerJobRecord.getJob());
+            SchedulerJob schedulerJob = schedulerJobRecord.getJob();
+
+            if(addReplacementTokens) {
+                ContextHelper.addSchedulerJobReplacementTokens(schedulerJob);
+            }
+
+            String jobAsString = objectMapper.writeValueAsString(schedulerJob);
             Path jobPath = null;
 
             // sanitise the jobName as this will be used for the filename and that windows do not allow for certain characters
