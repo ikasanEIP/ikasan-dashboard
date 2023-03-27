@@ -12,6 +12,7 @@ import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFil
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecoveryServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -39,6 +40,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 public abstract class ContextInstanceServiceBase {
+    private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceRecoveryServiceImpl.class);
+
     protected final String queueDirectory;
     protected final ScheduledContextInstanceService scheduledContextInstanceService;
     protected final JobInitiationService jobInitiationService;
@@ -161,14 +164,27 @@ public abstract class ContextInstanceServiceBase {
             if(job.getValue().isSkip()) {
                 // FIXME this may cause null pointer exception if the child context name is reused. So we need to decide if all context names need to be unique. This will not recover
                 ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
-                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
-                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                if(child == null) {
+                    LOG.warn("Could not load child context[{}] from context instance name[{}] context instance id[{}] when attempting to initialise the context machine. " +
+                        "This is likely due to the child context name being duplicated in the context. The context instance will not have been recovered with skipped jobs set correctly.");
+                }
+                else {
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
             }
             if(job.getValue().isHeld()) {
                 // FIXME this may cause null pointer exception if the child context name is reused. So we need to decide if all context names need to be unique. This will not recover
                 ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
-                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setHeld(job.getValue().isHeld());
-                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                if(child == null) {
+                    LOG.warn("Could not load child context[{}] from context instance name[{}] context instance id[{}] when attempting to initialise the context machine. " +
+                        "This is likely due to the child context name being duplicated in the context. The context instance will not have been recovered with held jobs set " +
+                        "correctly");
+                }
+                else {
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setHeld(job.getValue().isHeld());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
             }
         });
 
