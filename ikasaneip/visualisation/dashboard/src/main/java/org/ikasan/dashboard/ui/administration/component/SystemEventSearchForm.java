@@ -8,6 +8,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -25,6 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class SystemEventSearchForm extends VerticalLayout {
     private Button searchButton;
@@ -51,12 +53,13 @@ public class SystemEventSearchForm extends VerticalLayout {
         searchLayout.setWidth("1000px");
         searchLayout.setSpacing(false);
         searchLayout.setPadding(false);
+        searchLayout.setMargin(false);
 
         LocalDate nowDate = LocalDate.now();
 
         HorizontalLayout startDateTimeLayout = new HorizontalLayout();
         this.startDate = new DatePicker(nowDate);
-        this.startDate.setLocale(UI.getCurrent().getLocale());
+        this.startDate.setLocale(Locale.UK);
         this.startDate.setWidth("150px");
 
         this.startTimePicker.setStep(Duration.ofMinutes(15l));
@@ -68,7 +71,7 @@ public class SystemEventSearchForm extends VerticalLayout {
 
         HorizontalLayout endDateTimeLayout = new HorizontalLayout();
         this.endDate = new DatePicker(nowDate.plus(1, ChronoUnit.DAYS));
-        this.endDate.setLocale(UI.getCurrent().getLocale());
+        this.endDate.setLocale(Locale.UK);
         this.endDate.setWidth("150px");
 
 
@@ -92,11 +95,8 @@ public class SystemEventSearchForm extends VerticalLayout {
         searchTextLayout.setMargin(true);
         searchTextLayout.add(searchText);
 
-        Image searchButtonImage = new Image("frontend/images/search-icon.png", "");
-        searchButtonImage.setHeight("50px");
-        this.searchButton = new Button(searchButtonImage);
-        this.searchButton.setHeight("54px");
-        this.searchButton.setWidth("54px");
+        this.searchButton = new Button(getTranslation("button.search", UI.getCurrent().getLocale()), VaadinIcon.SEARCH.create());
+        this.searchButton.setIconAfterText(true);
         this.searchButton.setId("systemEventSearchFormSearchButton");
 
         addButtonSearchListener(this.searchButton);
@@ -110,7 +110,9 @@ public class SystemEventSearchForm extends VerticalLayout {
 
         searchLayout.add(dateTimePickersLayout, searchTextLayout);
 
-        this.getElement().getThemeList().remove("padding");
+        this.setPadding(false);
+        this.setSpacing(false);
+        this.setMargin(false);
         this.add(searchLayout);
         this.setHorizontalComponentAlignment(Alignment.CENTER, searchLayout);
     }

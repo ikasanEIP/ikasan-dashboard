@@ -139,6 +139,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private String selectedTab;
     private String jobStatus;
     private String jobName;
+    private UI ui;
 
     /**
      * Constructor
@@ -650,6 +651,9 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                         List<SchedulerJobInstanceRecord> updatedRecords = this.schedulerJobInstanceService
                             .holdJobsWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
 
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
+                            , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+
                         if (updatedRecords.size() > 0) {
                             updatedRecords.forEach(schedulerJobInstanceRecord -> {
                                 SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
@@ -717,6 +721,8 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                         schedulerJobInstanceRecord.getChildContextName());
                                 }
                             }
+                            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RELEASING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
+                                , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                         } catch (Exception e) {
                             e.printStackTrace();
                             error = true;
@@ -791,7 +797,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                         machine.enableQuartzBasedJobs();
                         enableQuartzScheduledJobsButton.setVisible(false);
                         disableQuartzScheduledJobsButton.setVisible(true);
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED, String.format("Context Instance Name[%s], Context Instance Identifier[%s]"
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
                             , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                         ContextInstanceSavedEventBroadcaster.broadcast(ContextMachineCache.instance()
                             .getByContextInstanceId(this.contextInstance.getId()).getContext());
@@ -828,7 +834,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                         machine.disableQuartzBasedJobs();
                         enableQuartzScheduledJobsButton.setVisible(true);
                         disableQuartzScheduledJobsButton.setVisible(false);
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED, String.format("Context Instance Name[%s], Context Instance Identifier[%s]"
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED, String.format("Job Plan Instance Name[%s], Job Plan Instance Identifier[%s]"
                             , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                         ContextInstanceSavedEventBroadcaster.broadcast(ContextMachineCache.instance()
                             .getByContextInstanceId(this.contextInstance.getId()).getContext());
@@ -863,7 +869,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                     try {
                         this.contextInstanceRegistrationService.deregisterManually(this.contextInstance.getId());
 
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_ENDED, String.format("Context Instance Name[%s], Context Instance Identifier[%s]"
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_ENDED, String.format("Job Plan Name[%s], Job Plan Instance Identifier[%s]"
                             , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                         NotificationHelper.showUserNotification(getTranslation("notification.job-plan-ended-successfully", UI.getCurrent().getLocale()));
                         ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
@@ -893,7 +899,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                     this.saveContextInstance(this.contextInstance, this.contextInstance.getStatus());
                     ignoreContextInstanceEndButton.setVisible(false);
                     contextInstanceEndButton.setVisible(true);
-                    this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DURATION_IGNORED, String.format("Context Instance Name[%s], Context Instance Identifier[%s]"
+                    this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DURATION_IGNORED, String.format("Job Plan Name[%s], Job Plan Instance Identifier[%s]"
                         , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                     NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-duration-ignored", UI.getCurrent().getLocale()));
                 }
@@ -939,13 +945,17 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                         ContextMachineCache.instance().remove(machine);
                         machine.resetContextInstance(hold.getValue());
                         ContextMachineCache.instance().put(machine);
+                        ContextInstance newInstance = ContextMachineCache.instance()
+                            .getFirstByContextName(this.contextInstance.getName()).getContext();
                         String route = RouteConfiguration.forSessionScope()
-                            .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
-                                .getFirstByContextName(this.contextInstance.getName()).getContext().getId() + "_scheduledContextInstance");
+                            .getUrl(ContextInstanceView.class, newInstance.getId() + "_scheduledContextInstance");
 
                         getUI().ifPresent(ui -> ui.getPage().open(route));
 
                         resetContextButton.setVisible(false);
+
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RESET, String.format("Job Plan Instance Name[%s], Job Plan Instance Identifier[%s] " +
+                                "has been reset and replaced with Job Plan Instance Identifier[%s]", contextInstance.getName(), contextInstance.getId(), newInstance.getId() ), this.authentication.getName());
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -1073,12 +1083,12 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                if(ui.isAttached()) {
-                    ui.access(() -> {
+                if(this.ui.isAttached()) {
+                    this.ui.access(() -> {
                         if (this.contextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
                             this.contextInstance = contextInstanceStateChangeEvent.getContextInstance();
                             ContextHelper.enrichJobs(this.contextInstance);
@@ -1107,8 +1117,8 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         });
 
         schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
                     ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
                     if (record != null) {
                         this.contextInstance = record.getContextInstance();
@@ -1122,6 +1132,8 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        this.ui = null;
+
         if(this.contextInstanceStateChangeRegistration != null) {
             this.contextInstanceStateChangeRegistration.remove();
             this.contextInstanceStateChangeRegistration = null;

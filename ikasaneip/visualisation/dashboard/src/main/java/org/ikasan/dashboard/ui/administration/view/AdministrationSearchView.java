@@ -2,9 +2,9 @@ package org.ikasan.dashboard.ui.administration.view;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -14,11 +14,10 @@ import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.vaadin.tabs.PagedTabs;
 
 import javax.annotation.Resource;
 
@@ -31,9 +30,9 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
     private Logger logger = LoggerFactory.getLogger(AdministrationSearchView.class);
 
     @Resource
-    private SolrGeneralServiceImpl solrSearchService;
+    private SystemEventSearchService systemEventSearchService;
 
-    private PagedTabs tabs;
+    private Tabs tabs;
 
     private SystemEventSearchView systemEventSearchView;
 
@@ -50,17 +49,18 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
 
     protected void init()
     {
-        tabs = new PagedTabs();
+        tabs = new Tabs();
         tabs.getElement().getThemeList().remove("padding");
-        tabs.setSizeFull();
+        tabs.setId("tabs");
 
-        this.systemEventSearchView = new SystemEventSearchView(this.solrSearchService, this.dateFormatter);
+        this.systemEventSearchView = new SystemEventSearchView(this.systemEventSearchService, this.dateFormatter);
         this.systemEventSearchView.init();
         this.systemEventSearchView.getThemeList().remove("padding");
 
-        tabs.add((SerializableSupplier<com.vaadin.flow.component.Component>) () -> this.systemEventSearchView, "System Events");
+        Tab systemEventTab = new Tab(getTranslation("tab-label.system-events", UI.getCurrent().getLocale()));
+        tabs.add(systemEventTab);
 
-        this.add(tabs);
+        this.add(tabs, systemEventSearchView);
         this.setSizeFull();
     }
 
@@ -68,8 +68,8 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
-        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_WRITE, SecurityConstants.SYSTEM_EVENT_READ,
-            SecurityConstants.ALL_AUTHORITY)) {
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_WRITE
+            , SecurityConstants.SYSTEM_EVENT_READ, SecurityConstants.ALL_AUTHORITY)) {
             UI.getCurrent().navigate("");
             return;
         }

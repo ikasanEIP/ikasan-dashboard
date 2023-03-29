@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 
+// todo clean up
 public class AgentJobFilteringGrid2 extends FilteringGrid<SchedulerJobRecord, AgentJobFilter
     , SearchResults<SchedulerJobRecord>> {
 

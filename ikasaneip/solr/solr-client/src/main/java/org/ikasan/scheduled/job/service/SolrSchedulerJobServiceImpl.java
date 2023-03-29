@@ -1,12 +1,8 @@
 package org.ikasan.scheduled.job.service;
 
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
@@ -19,8 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService<SchedulerJobRecord> {
 
@@ -374,7 +368,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
-    public void enable(SchedulerJobRecord jobRecord, ContextTemplate contextTemplate, String actor) {
+    public void enable(SchedulerJobRecord jobRecord, String contextTemplateName, String actor) {
         if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
                 ((InternalEventDrivenJob)jobRecord.getJob(),actor);
@@ -383,7 +377,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         }
         else if(jobRecord.getJob() instanceof GlobalEventJob) {
             GlobalEventJob job = (GlobalEventJob)jobRecord.getJob();
-            job.getSkippedContexts().remove(contextTemplate.getName());
+            job.getSkippedContexts().remove(contextTemplateName);
             GlobalEventJobRecord globalEventJobRecord = this.globalEventJobRecord(
                 job, actor);
             globalEventJobRecord.setTimestamp(jobRecord.getTimestamp());
@@ -426,11 +420,16 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         filter.setContextSearchFilter(contextName);
         filter.setSkipped(true);
 
-        List<InternalEventDrivenJobRecord> jobsToRelease = this.getFilteredInternalEventDrivenJobRecords(filter);
+        List<InternalEventDrivenJobRecord> jobsToEnable = this.getFilteredInternalEventDrivenJobRecords(filter);
 
-        if(jobsToRelease.size() > 0) {
-            this.internalEventDrivenJobRecordDao.enableAll(jobsToRelease, actor);
+        if(jobsToEnable.size() > 0) {
+            this.internalEventDrivenJobRecordDao.enableAll(jobsToEnable, actor);
         }
+
+        List<SchedulerJobRecord> globalJobsToEnable = this.getSkippedFilteredGlobalEventJobRecords(contextName);
+
+        globalJobsToEnable.forEach(globalEventJobRecord
+            -> this.enable(globalEventJobRecord, contextName, actor));
     }
 
     @Override
@@ -456,6 +455,22 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
                     ((InternalEventDrivenJob)schedulerJobRecord.getJob(),"");
                 internalEventDrivenJobRecord.setTimestamp(schedulerJobRecord.getTimestamp());
                 filteredJobs.add(internalEventDrivenJobRecord);
+            }
+        });
+
+        return filteredJobs;
+    }
+
+    private List<SchedulerJobRecord> getSkippedFilteredGlobalEventJobRecords(String contextName) {
+        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        filter.setJobTypeFilter(JobConstants.GLOBAL_EVENT_JOB);
+        SearchResults<SchedulerJobRecord> searchResults = (SearchResults<SchedulerJobRecord>) this.schedulerJobRecordDao
+            .findByFilter(filter, -1, -1, null, null);
+
+        ArrayList<SchedulerJobRecord> filteredJobs = new ArrayList<>();
+        searchResults.getResultList().forEach(schedulerJobRecord -> {
+            if(schedulerJobRecord.getJob() instanceof GlobalEventJob && schedulerJobRecord.getJob().getSkippedContexts().containsKey(contextName)) {
+                filteredJobs.add(schedulerJobRecord);
             }
         });
 

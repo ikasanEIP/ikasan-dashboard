@@ -52,8 +52,6 @@ public class IkasanI18NProvider implements I18NProvider
             resourceBundle = RESOURCE_BUNDLE_JP;
         }
 
-        //resourceBundle = RESOURCE_BUNDLE_JP;
-
         if (!resourceBundle.containsKey(key))
         {
             logger.info("missing resource key (i18n) " + key);
@@ -70,7 +68,6 @@ public class IkasanI18NProvider implements I18NProvider
                 e.printStackTrace();
                 return "";
             }
-//            return (resourceBundle.containsKey(key)) ? resourceBundle.getString(key) : key;
         }
     }
 }

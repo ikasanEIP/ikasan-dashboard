@@ -97,6 +97,7 @@ public class SchedulerJobGridWidget extends Div {
 
     private Button enableQuartzScheduledJobsButton;
     private Button disableQuartzScheduledJobsButton;
+    private UI ui;
 
     /**
      * Constructor
@@ -429,6 +430,10 @@ public class SchedulerJobGridWidget extends Div {
                     // todo only delete jobs that no longer belong to the context.
                     this.schedulerJobService.delete(schedulerJobRecord);
                     this.schedulerJobFilteringGrid.refresh();
+
+                    String action = String.format("Scheduled Job Deleted[%s], Parent Job Plan[%s]."
+                        , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
+                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_DELETED, action, authentication.getName());
                 });
 
                 confirmDialog.open();
@@ -440,17 +445,18 @@ public class SchedulerJobGridWidget extends Div {
 
             layout.add(delete);
 
-            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
-                underConstructionDialog.open();
-            });
-
-            ComponentSecurityVisibility.applySecurity(chart, SecurityConstants.ALL_AUTHORITY,
-                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
-
-            layout.add(chart);
+            // todo add statistics MVP2
+//            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+//            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+//                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
+//                underConstructionDialog.open();
+//            });
+//
+//            ComponentSecurityVisibility.applySecurity(chart, SecurityConstants.ALL_AUTHORITY,
+//                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+//                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+//
+//            layout.add(chart);
 
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT)
                 , getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
@@ -490,7 +496,7 @@ public class SchedulerJobGridWidget extends Div {
                             this.schedulerJobService.skip(schedulerJobRecord, residingContextSelectDialog.getSelectedContexts(), this.authentication.getName());
                             this.refresh();
 
-                            String action = String.format("Targeted Scheduler Job[%s], Parent Context[%s], was skipped in the following Child Contexts [%s]."
+                            String action = String.format("Targeted Scheduler Job[%s], Parent Job Plan[%s], was skipped in the following Child Contexts [%s]."
                                 , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(residingContextSelectDialog.getSelectedContexts().toArray(), ","));
                             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, action, authentication.getName());
                         }
@@ -539,10 +545,10 @@ public class SchedulerJobGridWidget extends Div {
             enable.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)
              || schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB));
             enable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                this.schedulerJobService.enable(schedulerJobRecord, this.contextTemplate, this.authentication.getName());
+                this.schedulerJobService.enable(schedulerJobRecord, this.contextTemplate.getName(), this.authentication.getName());
                 refresh();
 
-                String action = String.format("Scheduler Job[%s], Parent Context[%s], has been enabled."
+                String action = String.format("Scheduler Job[%s], Parent Job Plan[%s], has been enabled."
                     , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_ENABLED, action, authentication.getName());
             });
@@ -806,6 +812,9 @@ public class SchedulerJobGridWidget extends Div {
                 boolean error = false;
                 try {
                     this.schedulerJobService.enableAll(this.contextTemplate.getName(), this.authentication.getName());
+                    this.systemEventLogger.logEvent(SystemEventConstants.All_SCHEDULED_JOBS_ENABLED_FOR_JOB_PLAN,
+                        String.format("Enabling all skipped jobs for job plan. Job Plan Name[%s]", this.contextTemplate.getName())
+                        , this.authentication.getName());
                     this.refresh();
                 }
                 catch (Exception e) {
@@ -842,6 +851,9 @@ public class SchedulerJobGridWidget extends Div {
                 boolean error = false;
                 try {
                     this.schedulerJobService.holdAll(this.contextTemplate.getName(), this.authentication.getName());
+                    this.systemEventLogger.logEvent(SystemEventConstants.All_SCHEDULED_JOBS_HELD_FOR_JOB_PLAN,
+                        String.format("Holding all jobs for job plan. Job Plan Name[%s]", this.contextTemplate.getName())
+                        , this.authentication.getName());
                     this.refresh();
                 }
                 catch (Exception e) {
@@ -878,6 +890,9 @@ public class SchedulerJobGridWidget extends Div {
                 boolean error = false;
                 try {
                     this.schedulerJobService.releaseAll(this.contextTemplate.getName(), this.authentication.getName());
+                    this.systemEventLogger.logEvent(SystemEventConstants.All_SCHEDULED_JOBS_RELEASED_FOR_JOB_PLAN,
+                        String.format("All scheduled jobs released. Job Plan Name[%s]", this.contextTemplate.getName())
+                        , this.authentication.getName());
                     this.refresh();
                 }
                 catch (Exception e) {
@@ -926,7 +941,7 @@ public class SchedulerJobGridWidget extends Div {
                     this.scheduledContextService.enableScheduledJobs(contextTemplate, authentication.getName());
                     enableQuartzScheduledJobsButton.setVisible(false);
                     disableQuartzScheduledJobsButton.setVisible(true);
-                    this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED, String.format("Context Template Name[%s]"
+                    this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED, String.format("Enabling all scheduled jobs. Job Plan Name[%s]"
                         , contextTemplate.getName()), this.authentication.getName());
                     ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
                 } catch (Exception e) {
@@ -957,7 +972,7 @@ public class SchedulerJobGridWidget extends Div {
                         this.scheduledContextService.disableScheduledJobs(contextTemplate, authentication.getName());
                         enableQuartzScheduledJobsButton.setVisible(true);
                         disableQuartzScheduledJobsButton.setVisible(false);
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED, String.format("Context Template Name[%s]"
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED, String.format("Disabling all scheduled jobs. Job Plan Name[%s]"
                             , contextTemplate.getName()), this.authentication.getName());
                         ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
                     } catch (Exception e) {
@@ -1027,17 +1042,17 @@ public class SchedulerJobGridWidget extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
 
         newSchedulerJobEventBroadcasterRegistration = NewSchedulerJobEventBroadcaster.register(event -> {
-            if(ui.isAttached()) {
-                ui.access(() -> this.schedulerJobFilteringGrid.getDataProvider().refreshAll());
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> this.schedulerJobFilteringGrid.getDataProvider().refreshAll());
             }
         });
 
         this.contextSaveBroadcasterRegistration = ContextTemplateSavedEventBroadcaster.register(contextTemplate -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
                     this.contextTemplate = contextTemplate;
                     this.setButtonVisibility();
                     this.schedulerJobFilteringGrid.refresh();
@@ -1049,6 +1064,8 @@ public class SchedulerJobGridWidget extends Div {
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        this.ui = null;
+
         if(this.newSchedulerJobEventBroadcasterRegistration != null) {
             this.newSchedulerJobEventBroadcasterRegistration.remove();
             this.newSchedulerJobEventBroadcasterRegistration = null;

@@ -88,8 +88,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
     private ContextProfileService contextProfileService;
     private GlobalEventService globalEventService;
     private String jobStatus;
-
     private String jobName;
+    private UI ui;
 
     /**
      * Constructor
@@ -1017,7 +1017,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
             if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
                 SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
@@ -1040,16 +1040,16 @@ public class SchedulerJobInstanceGridWidget extends Div {
                     }
 
                     record.setSchedulerJobInstance(instance);
-                    if(ui.isAttached()) {
-                        ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(record));
+                    if(this.ui.isAttached()) {
+                        this.ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(record));
                     }
                 }
             }
         });
 
         this.contextInstanceSaveBroadcasterRegistration = ContextInstanceSavedEventBroadcaster.register(contextInstance -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
                     if(this.contextInstance.getName().equals(contextInstance.getName())) {
                         this.contextInstance = contextInstance;
                         this.refresh();

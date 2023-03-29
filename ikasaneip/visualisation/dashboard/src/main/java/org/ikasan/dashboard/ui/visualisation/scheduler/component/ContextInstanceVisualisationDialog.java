@@ -60,6 +60,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     private SchedulerStatusDiv statusDiv;
     private ContextProfileService contextProfileService;
     private GlobalEventService globalEventService;
+    private UI ui;
 
     /**
      * Constructor
@@ -235,13 +236,13 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null &&
                 contextInstanceStateChangeEvent.getContextInstance().getName().equals(this.contextInstance.getName())) {
-                if(ui.isAttached()) {
-                    ui.access(() -> {
+                if(this.ui.isAttached()) {
+                    this.ui.access(() -> {
                         this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
                     });
                 }
@@ -251,6 +252,8 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        this.ui = null;
+
         if(this.contextInstanceStateChangeRegistration != null) {
             this.contextInstanceStateChangeRegistration.remove();
             this.contextInstanceStateChangeRegistration = null;

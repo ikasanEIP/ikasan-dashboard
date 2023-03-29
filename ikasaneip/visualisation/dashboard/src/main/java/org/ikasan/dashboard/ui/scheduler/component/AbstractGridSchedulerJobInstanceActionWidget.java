@@ -143,9 +143,9 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
                 , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), true);
             this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.SKIPPED);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
-                , this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, this.contextInstance.getName()
+                    , this.contextInstance.getId()), this.authentication.getName());
 
         }
         catch (Exception e) {
@@ -175,9 +175,9 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
             contextMachine.skipJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), false);
             this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.WAITING);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), false)
-                , this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), false, this.contextInstance.getName()
+                    , this.contextInstance.getId()), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -206,9 +206,9 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
             contextMachine.holdJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
             this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.ON_HOLD);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Held[%s]"
-                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
-                , this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Held[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, this.contextInstance.getName()
+                    , this.contextInstance.getId()), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -237,9 +237,9 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
             contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
             this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.WAITING);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Released[%s]"
-                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
-                , this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Released[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, this.contextInstance.getName()
+                    , this,contextInstance.getId()), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -308,8 +308,8 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
                 contextMachine.resetJob(schedulerJobInstance.getIdentifier(), schedulerJobInstance.getChildContextName());
             }
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s]"
-                , schedulerJobInstance.getAgentName(), schedulerJobInstance.getJobName(), true), this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                , schedulerJobInstance.getAgentName(), schedulerJobInstance.getJobName(), true, this.contextInstance.getName(), this.contextInstance.getId()), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();

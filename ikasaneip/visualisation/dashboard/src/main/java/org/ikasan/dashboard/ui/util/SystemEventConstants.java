@@ -41,6 +41,11 @@
 package org.ikasan.dashboard.ui.util;
 
 
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * 
  * @author Ikasan Development Team
@@ -62,10 +67,15 @@ public class SystemEventConstants
     public static final String SCHEDULED_JOB_DELETED = "Scheduled job deleted";
     public static final String SCHEDULED_JOB_EDIT = "Scheduled job edited";
     public static final String SCHEDULED_JOB_SKIPPED = "Scheduled job skipped";
-    public static final String SCHEDULED_JOB_ENABLED = "Scheduled job skipped";
+    public static final String SCHEDULED_JOB_ENABLED = "Scheduled job enabled";
     public static final String SCHEDULED_JOB_HELD = "Scheduled job held";
+    public static final String All_SCHEDULED_JOBS_HELD_FOR_JOB_PLAN = "All scheduled jobs held for job plan";
+    public static final String All_SCHEDULED_JOBS_ENABLED_FOR_JOB_PLAN = "All scheduled jobs enabled for job plan";
+    public static final String All_SCHEDULED_JOBS_RELEASED_FOR_JOB_PLAN = "All scheduled jobs released for job plan";
     public static final String SCHEDULED_JOB_RELEASED = "Scheduled job released";
     public static final String SCHEDULED_JOB_SUBMITTED = "Scheduled job manually submitted";
+    public static final String CHILD_JOB_PLAN_ADDED_TO_JOB_PLAN = "Child job plan added to job plan";
+    public static final String JOB_PLAN_SAVED = "Job plan saved";
     public static final String SCHEDULED_JOB_RESET = "Scheduled job reset";
     public static final String USER_ADDED_TO_CONTEXT_PROFILE = "User added to context profile";
     public static final String USER_REMOVED_FROM_CONTEXT_PROFILE = "User removed from context profile";
@@ -74,8 +84,32 @@ public class SystemEventConstants
     public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED = "Job plan scheduled jobs enabled";
     public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED = "Job plan instance scheduled jobs disabled";
     public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED = "Job plan instance scheduled jobs enabled";
+    public static final String CONTEXT_INSTANCE_HOLDING_ALL_JOBS = "Job plan instance scheduled jobs held";
+    public static final String CONTEXT_INSTANCE_RELEASING_ALL_JOBS = "Job plan instance scheduled jobs released";
+    public static final String CONTEXT_INSTANCE_RESET = "Job plan instance reset";
     public static final String CONTEXT_INSTANCE_MANUALLY_ENDED = "Job plan instance manually ended";
     public static final String CONTEXT_INSTANCE_DURATION_IGNORED = "Job plan instance duration ignored";
     public static final String CONTEXT_INSTANCE_MANUALLY_CREATED = "Job plan instance manually created";
+    public static final String JOB_PLAN_DELETED = "Job plan deleted";
+    public static final String NEW_JOB_PLAN_CREATED = "New job plan created";
+    public static final String JOB_PLAN_MODIFIED = "Job plan modified";
+    public static final String JOB_PLAN_ENABLED = "Job plan enabled";
+    public static final String JOB_PLAN_DISABLED = "Job plan disabled";
 
+    public static List<String> getSystemEventConstants() {
+        List<String> constantValues = Arrays.stream(SystemEventConstants.class.getDeclaredFields())
+            .filter(field -> Modifier.isStatic(field.getModifiers()))
+            .map(field -> {
+                try {
+                    return (String) field.get(SystemEventConstants.class);
+                } catch (IllegalAccessException e) {
+                    // Ignore as we are interested in all string values only!
+                    return null;
+                }
+            })
+            .filter(value -> value != null)// filter out if needed
+            .collect(Collectors.toList());
+
+        return constantValues;
+    }
 }

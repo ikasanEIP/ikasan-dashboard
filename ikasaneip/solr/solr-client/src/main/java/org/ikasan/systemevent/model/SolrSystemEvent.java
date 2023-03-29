@@ -19,13 +19,16 @@ public class SolrSystemEvent implements SystemEvent
     @Field(SolrDaoBase.MODULE_NAME)
     private String moduleName;
 
-    @Field(SolrDaoBase.FLOW_NAME)
+    @Field(SolrDaoBase.ACTOR)
     private String actor;
 
     @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    private String payload;
+
+    @Field(SolrDaoBase.SYSTEM_EVENT_ACTION)
     private String action;
 
-    @Field(SolrDaoBase.EVENT)
+    @Field(SolrDaoBase.SYSTEM_EVENT_SUBJECT)
     private String subject;
 
     @Field(SolrDaoBase.CREATED_DATE_TIME)
@@ -43,24 +46,6 @@ public class SolrSystemEvent implements SystemEvent
     {
 
     }
-
-    /**
-     * Constructor
-     *
-     * @param moduleName
-     * @param eventTimestamp
-     */
-    public SolrSystemEvent(Long id, final String moduleName, final String actor,
-                           final String action,final String subject, final long eventTimestamp)
-    {
-        this.id = id.toString();
-        this.moduleName = moduleName;
-        this.actor = actor;
-        this.action = action;
-        this.subject = subject;
-        this.timestampLong = eventTimestamp;
-    }
-
 
     @Override
     public String getModuleName()
@@ -147,6 +132,14 @@ public class SolrSystemEvent implements SystemEvent
     public void setExpiryLong(long expiry)
     {
         this.expiryLong = expiry;
+    }
+
+    public String getPayload() {
+        return payload;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
     }
 
     @Override

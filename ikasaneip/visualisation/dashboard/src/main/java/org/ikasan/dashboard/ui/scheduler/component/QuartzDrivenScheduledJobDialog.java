@@ -144,7 +144,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             }
 
             if (this.editMode == EditMode.NEW) {
-                String action = String.format("New quartz scheduled job created [%s].", this.quartzScheduleDrivenJob);
+                String action = String.format("New Quartz Scheduled Job [%s] created. Job Plan Name[%s].", this.quartzScheduleDrivenJob, this.quartzScheduleDrivenJob.getContextName());
                 this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
             }
             else if (this.editMode == EditMode.EDIT) {

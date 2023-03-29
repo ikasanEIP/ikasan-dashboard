@@ -31,6 +31,7 @@ public class ContextTemplateViewMenuBar extends MenuBar {
     private ContextTemplate contextTemplate;
     private ContextProfileService contextProfileService;
     private SchedulerVisualisation schedulerVisualisation;
+    private UI ui;
 
     public ContextTemplateViewMenuBar(ContextTemplate contextTemplate, ContextProfileService contextProfileService, SchedulerVisualisation schedulerVisualisation) {
         this.contextTemplate = contextTemplate;
@@ -111,11 +112,11 @@ public class ContextTemplateViewMenuBar extends MenuBar {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
 
         contextTemplateViewUpdateRegistration = ContextViewUpdateEventBroadcaster.register(event -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
                     this.removeAll();
                     this.init();
                 });
@@ -125,6 +126,8 @@ public class ContextTemplateViewMenuBar extends MenuBar {
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        this.ui = null;
+
         if(this.contextTemplateViewUpdateRegistration != null) {
             this.contextTemplateViewUpdateRegistration.remove();
             this.contextTemplateViewUpdateRegistration = null;
