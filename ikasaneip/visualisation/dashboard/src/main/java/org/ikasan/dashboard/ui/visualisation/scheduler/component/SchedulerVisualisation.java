@@ -586,8 +586,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
 
             try {
-                this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_SAVED, String.format("Job Plan Saved.\nBefore\n[%s]\nAfter\n[%s]"
-                    , this.objectMapper.writeValueAsString(this.contextTemplate) , this.objectMapper.writeValueAsString(updatedContext)), this.authentication.getName());
+                this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_SAVED, String.format("Job Plan Saved. Parent Job Plan [%s]. Name of Saved Job Plan [%s].\nBefore\n[%s]\nAfter\n[%s]"
+                    , this.parentContextTemplate.getName(), this.contextTemplate.getName(), this.objectMapper.writeValueAsString(this.contextTemplate) , this.objectMapper.writeValueAsString(updatedContext)), this.authentication.getName());
             } catch (JsonProcessingException e) {
                // ignoring json exception
             }
