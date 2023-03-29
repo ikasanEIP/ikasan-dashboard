@@ -69,4 +69,7 @@
     <field name="manuallySubmittedBy" type="strings" multiValued="false" stored="true"/>
     <field name="startTime" type="plongs" multiValued="false" stored="true"/>
     <field name="endTime" type="plongs" multiValued="false" stored="true"/>
+    <field name="actor" type="text_general" multiValued="false" stored="true"/>
+    <field name="systemEventSubject" type="text_general" multiValued="false" stored="true"/>
+    <field name="systemEventAction" type="text_general" multiValued="false" stored="true"/>
 </schema>

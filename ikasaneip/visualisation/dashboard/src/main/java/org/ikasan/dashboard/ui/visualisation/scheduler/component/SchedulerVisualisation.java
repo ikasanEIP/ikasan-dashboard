@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -18,6 +20,7 @@ import org.ikasan.dashboard.ui.scheduler.listener.NewContextListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.CanvasJsonToContextTemplateAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.CanvasJsonValidationException;
@@ -28,6 +31,7 @@ import org.ikasan.designer.event.*;
 import org.ikasan.designer.function.SaveFunction;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -100,6 +104,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private boolean saveRequired = false;
     private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
+
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -525,6 +531,9 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.parentContextTemplate.getName());
         scheduledContextRecord.setContext(parentContextTemplate);
         this.scheduledContextService.save(scheduledContextRecord);
+
+        this.systemEventLogger.logEvent(SystemEventConstants.CHILD_JOB_PLAN_ADDED_TO_JOB_PLAN, String.format("Child job plan [%s], has been added to job plan [%s]"
+                , context.getName(), parentContextTemplate.getName()), this.authentication.getName());
     }
 
     private void _save() {
@@ -570,11 +579,20 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             logger.info(this.parentContextTemplate.toString());
 
             ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, updatedContext);
-            this.contextTemplate = updatedContext;
 
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.parentContextTemplate.getName());
             scheduledContextRecord.setContext(this.parentContextTemplate);
             this.scheduledContextService.save(scheduledContextRecord);
+
+
+            try {
+                this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_SAVED, String.format("Job Plan Saved.\nBefore\n[%s]\nAfter\n[%s]"
+                    , this.objectMapper.writeValueAsString(this.contextTemplate) , this.objectMapper.writeValueAsString(updatedContext)), this.authentication.getName());
+            } catch (JsonProcessingException e) {
+               // ignoring json exception
+            }
+
+            this.contextTemplate = updatedContext;
 
             ContextTemplateSavedEventBroadcaster.broadcast(this.parentContextTemplate);
 

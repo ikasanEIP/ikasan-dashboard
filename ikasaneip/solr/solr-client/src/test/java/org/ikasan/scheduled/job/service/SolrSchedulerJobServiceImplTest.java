@@ -210,7 +210,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         });
 
         internalEventDrivenJobs.forEach(job ->
-            this.service.enable(job, new ContextTemplateImpl(), "actor"));
+            this.service.enable(job, "context", "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
             SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());

@@ -6,15 +6,18 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
+import org.ikasan.dashboard.ui.administration.component.SystemEventFilteringGrid;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
-import org.ikasan.dashboard.ui.util.SearchConstants;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.model.IkasanPrincipal;
 import org.ikasan.security.model.Role;
 import org.ikasan.security.model.RoleModule;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventSearchFilter;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
+import org.ikasan.systemevent.model.SolrSystemEvent;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -22,6 +25,7 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,7 +34,7 @@ import java.util.stream.IntStream;
 
 import static com.github.mvysny.kaributesting.v10.ButtonKt._click;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 
 public class SystemEventSearchViewTest extends UITest {
 
@@ -52,19 +56,13 @@ public class SystemEventSearchViewTest extends UITest {
     @MockBean
     private RoleModule roleModule;
 
-    public void setup_expectations() {
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
-            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
-            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
-            .thenReturn(this.getSolrResults(50));
+    @MockBean
+    protected SystemEventSearchService systemEventSearchService;
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(),
-            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
-            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
-            .thenReturn(this.getSolrResults(1));
+    @Override
+    public void setup_expectations() throws IOException {
+
     }
-
-
 
     @Test
     public void test_search_admin_user()
@@ -72,11 +70,9 @@ public class SystemEventSearchViewTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
-            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
-            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("systemEvent")),
-            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
-            .thenReturn(this.getSolrResults(25));
+        Mockito.when(this.systemEventSearchService.findByFilter(Mockito.any(SystemEventSearchFilter.class), Mockito.anyInt()
+                , Mockito.anyInt(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrSystemEventsResults(25));
 
         UI.getCurrent().navigate("adminSearchView");
 
@@ -86,7 +82,7 @@ public class SystemEventSearchViewTest extends UITest {
         _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
         _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
 
-        SolrSearchFilteringGrid searchResultsGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SystemEventFilteringGrid searchResultsGrid = (SystemEventFilteringGrid) ReflectionTestUtils
             .getField(systemEventSearchView, "searchResultsGrid");
 
         Assert.assertEquals(25, searchResultsGrid.getResultSize());
@@ -112,11 +108,9 @@ public class SystemEventSearchViewTest extends UITest {
         Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
         Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
-            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
-            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("systemEvent")),
-            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
-            .thenReturn(this.getSolrResults(10));
+        Mockito.when(this.systemEventSearchService.findByFilter(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()
+                , Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrSystemEventsResults(10));
 
         UI.getCurrent().navigate("adminSearchView");
 
@@ -126,7 +120,7 @@ public class SystemEventSearchViewTest extends UITest {
         _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
         _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
 
-        SolrSearchFilteringGrid searchResultsGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SystemEventFilteringGrid searchResultsGrid = (SystemEventFilteringGrid) ReflectionTestUtils
             .getField(systemEventSearchView, "searchResultsGrid");
 
         Assert.assertEquals(10, searchResultsGrid.getResultSize());
@@ -151,11 +145,9 @@ public class SystemEventSearchViewTest extends UITest {
         Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
         Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
         Mockito.when(this.roleModules.iterator()).thenReturn(new HashSet<RoleModule>().iterator(), new HashSet<RoleModule>().iterator());
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING)),
-            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
-            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("systemEvent")),
-            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
-            .thenReturn(this.getSolrResults(0));
+        Mockito.when(this.systemEventSearchService.findByFilter(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()
+                , Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrSystemEventsResults(0));
 
         UI.getCurrent().navigate("adminSearchView");
 
@@ -165,7 +157,7 @@ public class SystemEventSearchViewTest extends UITest {
         _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
         _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
 
-        SolrSearchFilteringGrid searchResultsGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SystemEventFilteringGrid searchResultsGrid = (SystemEventFilteringGrid) ReflectionTestUtils
             .getField(systemEventSearchView, "searchResultsGrid");
 
         Assert.assertEquals(0, searchResultsGrid.getResultSize());
@@ -177,11 +169,9 @@ public class SystemEventSearchViewTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
-            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
-            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("systemEvent")),
-            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
-            .thenReturn(this.getSolrResults(1));
+        Mockito.when(this.systemEventSearchService.findByFilter(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()
+                , Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrSystemEventsResults(1));
 
         UI.getCurrent().navigate("adminSearchView");
 
@@ -191,7 +181,7 @@ public class SystemEventSearchViewTest extends UITest {
         _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
         _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
 
-        SolrSearchFilteringGrid searchResultsGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
+        SystemEventFilteringGrid searchResultsGrid = (SystemEventFilteringGrid) ReflectionTestUtils
             .getField(systemEventSearchView, "searchResultsGrid");
 
         GridKt._doubleClickItem(searchResultsGrid, 0);
@@ -204,16 +194,15 @@ public class SystemEventSearchViewTest extends UITest {
             .getField(systemEventDialog, "contextTf")).getValue());
     }
 
-    protected IkasanSolrDocumentSearchResults getSolrResults(int size) {
+    protected SearchResults<SystemEvent> getSolrSystemEventsResults(int size) {
 
-        ArrayList<IkasanSolrDocument> ikasanSolrDocuments = new ArrayList<>();
+        ArrayList<SystemEvent> ikasanSolrDocuments = new ArrayList<>();
 
         IntStream.range(0, size).forEach(i -> {
-            IkasanSolrDocument document = new IkasanSolrDocument();
+            SolrSystemEvent document = new SolrSystemEvent();
             document.setId("id" +i);
-            document.setType("systemEvent");
-            document.setTimeStamp(1606203560055L);
-            document.setEvent("{\"moduleName\":\"murex-trade\",\"action\":\"Configuration Updated OldConfig [{\\\"configurationId\\\":" +
+            document.setTimestampLong(1606203560055L);
+            document.setPayload("{\"moduleName\":\"murex-trade\",\"action\":\"Configuration Updated OldConfig [{\\\"configurationId\\\":" +
                 "\\\"murex-trade-tradeConsumer\\\",\\\"description\\\":null,\\\"parameters\\\":[{\\\"id\\\":54,\\\"name\\\":\\\"autoContentConversion\\\"" +
                 ",\\\"value\\\":true,\\\"description\\\":null},{\\\"id\\\":55,\\\"name\\\":\\\"autoSplitBatch\\\",\\\"value\\\":true,\\\"description\\\":null}" +
                 ",{\\\"id\\\":56,\\\"name\\\":\\\"batchMode\\\",\\\"value\\\":true,\\\"description\\\":null},{\\\"id\\\":57,\\\"name\\\":\\\"batchSize\\\"" +
@@ -260,7 +249,7 @@ public class SystemEventSearchViewTest extends UITest {
             ikasanSolrDocuments.add(document);
         });
 
-        return new IkasanSolrDocumentSearchResults(ikasanSolrDocuments
+        return new SearchResultsImpl<>(ikasanSolrDocuments
             , ikasanSolrDocuments.size(), 1);
     }
 }

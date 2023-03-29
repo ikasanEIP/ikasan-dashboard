@@ -40,7 +40,6 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 

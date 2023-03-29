@@ -139,10 +139,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private Grid<BlackoutWindowDateTimePair> blackoutWindowsGrid;
     private String zipWorkingDirectory;
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
-
     private Button synchroniseJobsButton;
-
     private ComboBox<String> searchCb;
+    private UI ui;
 
     /**
      * Constructor
@@ -745,7 +744,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         actions.addItem(getTranslation("button.edit-context-template", UI.getCurrent().getLocale()),
             menuItemClickEvent -> {
-                ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService
+                ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService, this.systemEventLogger
                     , getTranslation("header.manage-context-template", UI.getCurrent().getLocale()), false);
                 contextTemplateDialog.setContextTemplate(this.contextTemplate);
                 contextTemplateDialog.open();
@@ -1104,13 +1103,13 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
         this.contextSaveBroadcasterRegistration = ContextTemplateSavedEventBroadcaster.register(contextTemplate -> {
             if(this.contextTemplate.getName().equals(contextTemplate.getName())) {
                 this.contextTemplate = contextTemplate;
-                if (ui.isAttached()) {
-                    ui.access(() -> {
-                        binder.readBean(contextTemplate);
+                if (this.ui.isAttached()) {
+                    this.ui.access(() -> {
+                        this.binder.readBean(contextTemplate);
 
                         this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
                         this.blackoutWindowDateTimePairs.clear();
@@ -1131,6 +1130,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        this.ui = null;
+
         if(this.contextSaveBroadcasterRegistration != null) {
             this.contextSaveBroadcasterRegistration.remove();
             this.contextSaveBroadcasterRegistration = null;

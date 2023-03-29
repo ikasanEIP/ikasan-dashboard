@@ -80,6 +80,8 @@ public class SplitContextInstanceVisualisation extends VerticalLayout implements
 
     private boolean initialised = false;
 
+    private UI ui;
+
     /**
      * Constructor
      *
@@ -335,12 +337,12 @@ public class SplitContextInstanceVisualisation extends VerticalLayout implements
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                if(ui.isAttached()) {
-                    ui.access(() -> {
+                if(this.ui.isAttached()) {
+                    this.ui.access(() -> {
                         if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                             this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                         }
@@ -354,8 +356,8 @@ public class SplitContextInstanceVisualisation extends VerticalLayout implements
         });
 
         schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
                     if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                         this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                     }
@@ -366,6 +368,8 @@ public class SplitContextInstanceVisualisation extends VerticalLayout implements
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        this.ui = null;
+
         if(this.contextInstanceStateChangeRegistration != null) {
             this.contextInstanceStateChangeRegistration.remove();
             this.contextInstanceStateChangeRegistration = null;

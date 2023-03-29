@@ -198,8 +198,9 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
 
             this.schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
             this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()), this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                , this.contextInstance.getId()), this.authentication.getName());
 
             this.close();
         }
