@@ -68,6 +68,9 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String QUARTZ_SCHEDULED_JOBS_DISABLED = "quartzScheduledJobsDisabled";
     public static final String START_TIME = "startTime";
     public static final String END_TIME = "endTime";
+    public static final String ACTOR = "actor";
+    public static final String SYSTEM_EVENT_SUBJECT = "systemEventSubject";
+    public static final String SYSTEM_EVENT_ACTION ="systemEventAction";
 
 
     public static final String AND = " AND ";

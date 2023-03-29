@@ -117,6 +117,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ContextProfileService contextProfileService;
     private GlobalEventService globalEventService;
+    private UI ui;
 
     /**
      * Constructor
@@ -1223,9 +1224,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                                , this.authentication.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                                    , this.contextInstance.getId()), this.authentication.getName());
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         } catch (Exception e) {
@@ -1250,9 +1251,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                                , this.authentication.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                                    , this.contextInstance.getId()), this.authentication.getName());
 
                             schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
                             schedulerJobInstanceService.save(schedulerJobInstanceRecord);
@@ -1281,9 +1282,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
                                 this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                                , this.authentication.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                                    , this.contextInstance.getId()), this.authentication.getName());
 
                             globalEventJobInstance.setStatus(InstanceStatus.COMPLETE);
                             schedulerJobInstanceRecord.setSchedulerJobInstance(globalEventJobInstance);
@@ -1619,18 +1620,18 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            manageJobStatusStateChangeEvent(ui, jobInstanceStateChangeEvent);
-            manageContextStatusIndicators(ui);
+            manageJobStatusStateChangeEvent(this.ui, jobInstanceStateChangeEvent);
+            manageContextStatusIndicators(this.ui);
         });
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if(contextInstanceStateChangeEvent.getContextInstanceId().equals(this.contextInstance.getId())) {
                 if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                     this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
-                    this.manageContextInstanceStateChangeEvent(ui, contextInstanceStateChangeEvent);
-                    manageContextStatusIndicators(ui);
+                    this.manageContextInstanceStateChangeEvent(this.ui, contextInstanceStateChangeEvent);
+                    manageContextStatusIndicators(this.ui);
                 }
             }
         });
@@ -1639,8 +1640,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             if(contextInstance.getId().equals(this.contextInstance.getId())) {
                 this.contextInstance = contextInstance;
                 ContextHelper.enrichJobs(contextInstance);
-                this.enableDisableScheduledJobs(this.contextInstance, ui);
-                manageContextStatusIndicators(ui);
+                this.enableDisableScheduledJobs(this.contextInstance, this.ui);
+                manageContextStatusIndicators(this.ui);
                 this.createTreeGridDataProvider().refreshAll();
             }
         });
@@ -1649,6 +1650,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         logger.info("Detaching ContextInstanceTreeView");
+        this.ui = null;
+
         if(this.schedulerJobStateChangeRegistration != null) {
             this.schedulerJobStateChangeRegistration.remove();
             this.schedulerJobStateChangeRegistration = null;

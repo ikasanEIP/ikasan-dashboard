@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -20,18 +21,17 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.Divider;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.dashboard.ui.util.IconDecorator;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private ScheduledContextService scheduledContextService;
     private SchedulerJobService schedulerJobService;
+    private SystemEventLogger systemEventLogger;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -74,7 +75,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      * @param title
      * @param editName
      */
-    public ContextTemplateDialog(ScheduledContextService scheduledContextService, SchedulerJobService schedulerJobService, String title,
+    public ContextTemplateDialog(ScheduledContextService scheduledContextService, SchedulerJobService schedulerJobService, SystemEventLogger systemEventLogger, String title,
                                  boolean editName) {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
@@ -83,6 +84,10 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.schedulerJobService = schedulerJobService;
         if(this.schedulerJobService == null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
+        this.systemEventLogger = systemEventLogger;
+        if(this.systemEventLogger == null) {
+            throw new IllegalArgumentException("systemEventLogger cannot be null!");
         }
         if(title == null) {
             throw new IllegalArgumentException("title cannot be null!");
@@ -480,6 +485,10 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             scheduledContextRecord.setModifiedBy(this.authentication.getName());
             scheduledContextRecord.setTimestamp(System.currentTimeMillis());
             this.scheduledContextService.save(scheduledContextRecord);
+
+            String action = String.format("New job plan [%s] has been created.", this.contextTemplate.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.NEW_JOB_PLAN_CREATED, action, authentication.getName());
+
             ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
         }
         catch (Exception e) {
@@ -498,12 +507,20 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      */
     private void saveExisting() {
         try {
+            ContextTemplate beforeModification = SerializationUtils.clone(this.scheduledContextRecord.getContext());
+
             this.scheduledContextRecord.setContextName(this.contextTemplate.getName());
             this.scheduledContextRecord.setContext(this.contextTemplate);
             this.scheduledContextRecord.setModifiedBy(this.authentication.getName());
             this.scheduledContextRecord.setTimestamp(System.currentTimeMillis());
             this.scheduledContextService.save(this.scheduledContextRecord);
             ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+
+            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
+            String action = String.format("Job plan [%s] has been modified.\nBefore\n[%s]After\n[%s]", this.contextTemplate.getName()
+                , objectMapper.writeValueAsString(beforeModification), objectMapper.writeValueAsString(this.contextTemplate));
+            this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_MODIFIED, action, authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();

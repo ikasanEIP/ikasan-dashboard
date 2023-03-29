@@ -4,7 +4,7 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrService;
 import org.ikasan.spec.solr.SolrServiceBase;
 import org.ikasan.spec.systemevent.SystemEvent;
-import org.ikasan.systemevent.dao.SolrSystemEventDao;
+import org.ikasan.systemevent.dao.SolrSystemEventDaoImpl;
 
 import java.util.List;
 
@@ -14,9 +14,9 @@ import java.util.List;
 public class SolrSystemEventServiceImpl extends SolrServiceBase implements SolrService<SystemEvent>, BatchInsert<SystemEvent>
 {
 
-    private SolrSystemEventDao systemEventDao;
+    private SolrSystemEventDaoImpl systemEventDao;
 
-    public SolrSystemEventServiceImpl(SolrSystemEventDao systemEventDao)
+    public SolrSystemEventServiceImpl(SolrSystemEventDaoImpl systemEventDao)
     {
         this.systemEventDao = systemEventDao;
         if(this.systemEventDao == null)

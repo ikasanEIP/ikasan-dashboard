@@ -7,26 +7,23 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
-import org.ikasan.replay.dao.SolrReplayDao;
-import org.ikasan.replay.model.SolrReplayEvent;
-import org.ikasan.spec.replay.ReplayEvent;
+import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.systemevent.model.SolrSystemEvent;
+import org.ikasan.systemevent.model.SolrSystemEventSearchFilter;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Created by Ikasan Development on 29/08/2017.
@@ -47,7 +44,7 @@ public class SolrSystemEventDaoTest extends SolrTestCaseJ4
 
     private NodeConfig config;
 
-    private SolrSystemEventDao dao;
+    private SolrSystemEventDaoImpl dao;
 
     @Before
     public void setup()
@@ -65,8 +62,116 @@ public class SolrSystemEventDaoTest extends SolrTestCaseJ4
         createRequest.setConfigSet("minimal");
         server.request(createRequest);
 
-        dao = new SolrSystemEventDao();
+        dao = new SolrSystemEventDaoImpl();
         dao.setSolrClient(server);
+    }
+
+    @Test
+    public void test_save_and_find_success() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrSystemEvent systemEvent = new SolrSystemEvent();
+            systemEvent.setModuleName("moduleName");
+            systemEvent.setTimestampLong(System.currentTimeMillis());
+            systemEvent.setId("1");
+            systemEvent.setActor("actor");
+            systemEvent.setSubject("subject");
+            systemEvent.setAction("action");
+
+            dao.save(systemEvent);
+
+            SystemEvent found = this.dao.findById("moduleName-systemEvent-1");
+
+            Assert.assertNotNull(found);
+            Assert.assertEquals("moduleName", found.getModuleName());
+            Assert.assertEquals(systemEvent.getTimestampLong(), ((SolrSystemEvent)found).getTimestampLong());
+            Assert.assertEquals("actor", found.getActor());
+            Assert.assertEquals("subject", found.getSubject());
+            Assert.assertTrue(((SolrSystemEvent) found).getExpiryLong() > ((SolrSystemEvent) found).getTimestampLong());
+            Assert.assertEquals("moduleName", found.getModuleName());
+            Assert.assertEquals("action", found.getAction());
+            Assert.assertNotNull(((SolrSystemEvent) found).getPayload());
+        }
+    }
+
+    @Test
+    public void test_find_by_filter() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            IntStream.range(0, 1000).forEach(i -> {
+                SolrSystemEvent systemEvent = new SolrSystemEvent();
+                systemEvent.setModuleName("moduleName"+i);
+                systemEvent.setTimestampLong(System.currentTimeMillis());
+                systemEvent.setId(Integer.toString(i));
+                systemEvent.setActor("the actor "+i);
+                systemEvent.setSubject("the subject "+i);
+                systemEvent.setAction("the action "+i);
+
+                dao.save(systemEvent);
+            });
+
+            SystemEventSearchFilter filter = new SolrSystemEventSearchFilter();
+            filter.setAction("action");
+
+            SearchResults<SystemEvent> found = this.dao.findByFilter(filter, 10000, 0, null, null);
+            Assert.assertEquals(1000, found.getResultList().size());
+            Assert.assertEquals(1000, found.getTotalNumberOfResults());
+
+            found = this.dao.findByFilter(filter, 0, 0, null, null);
+            Assert.assertEquals(0, found.getResultList().size());
+            Assert.assertEquals(1000, found.getTotalNumberOfResults());
+
+            filter = new SolrSystemEventSearchFilter();
+            filter.setAction("ACTION");
+
+            found = this.dao.findByFilter(filter, 10000, 0, null, null);
+            Assert.assertEquals(1000, found.getResultList().size());
+            Assert.assertEquals(1000, found.getTotalNumberOfResults());
+
+            filter = new SolrSystemEventSearchFilter();
+            filter.setAction("action");
+            filter.setActor("actor");
+            filter.setSubject("subject");
+
+            found = this.dao.findByFilter(filter, 10000, 0, null, null);
+            Assert.assertEquals(1000, found.getResultList().size());
+            Assert.assertEquals(1000, found.getTotalNumberOfResults());
+
+            filter = new SolrSystemEventSearchFilter();
+            filter.setAction("action");
+            filter.setActor("actor");
+            filter.setSubject("subject 111");
+
+            found = this.dao.findByFilter(filter, 10000, 0, null, null);
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals(1, found.getTotalNumberOfResults());
+
+            filter = new SolrSystemEventSearchFilter();
+            filter.setAction("ACTION");
+            filter.setActor("ACTOR");
+            filter.setSubject("subject 111");
+
+            found = this.dao.findByFilter(filter, 10000, 0, null, null);
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals(1, found.getTotalNumberOfResults());
+
+            filter = new SolrSystemEventSearchFilter();
+            filter.setAction("ACTION");
+            filter.setActor("actor");
+            filter.setSubject("subject 111");
+            filter.setStartTime(10000L);
+            filter.setEndTime(System.currentTimeMillis() + 10000000L);
+
+            found = this.dao.findByFilter(filter, 10000, 0, null, null);
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals(1, found.getTotalNumberOfResults());
+        }
     }
 
 
@@ -84,7 +189,7 @@ public class SolrSystemEventDaoTest extends SolrTestCaseJ4
             }
         });
 
-        dao = new SolrSystemEventDao();
+        SolrSystemEventDaoImpl dao = new SolrSystemEventDaoImpl();
         dao.setSolrClient(server);
 
         SolrSystemEvent systemEvent = new SolrSystemEvent();
@@ -92,6 +197,8 @@ public class SolrSystemEventDaoTest extends SolrTestCaseJ4
         systemEvent.setTimestampLong(System.currentTimeMillis());
         systemEvent.setExpiryLong(0);
         systemEvent.setId("1");
+        systemEvent.setActor("actor");
+        systemEvent.setSubject("subject");
 
         dao.save(systemEvent);
     }

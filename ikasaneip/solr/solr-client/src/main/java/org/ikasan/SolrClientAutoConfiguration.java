@@ -64,8 +64,10 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.solr.SolrDaoBase;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.ikasan.spec.wiretap.WiretapEvent;
-import org.ikasan.systemevent.dao.SolrSystemEventDao;
+import org.ikasan.systemevent.dao.SolrSystemEventDaoImpl;
+import org.ikasan.systemevent.service.SolrSystemEventSearchServiceImpl;
 import org.ikasan.systemevent.service.SolrSystemEventServiceImpl;
 import org.ikasan.wiretap.dao.SolrWiretapDao;
 import org.ikasan.wiretap.service.SolrWiretapServiceImpl;
@@ -198,6 +200,19 @@ public class SolrClientAutoConfiguration {
         dao.setSolrPassword(solrPassword);
 
         SolrEmailNotificationContextServiceImpl service = new SolrEmailNotificationContextServiceImpl(dao);
+        service.setSolrPassword(solrPassword);
+        service.setSolrUsername(solrUsername);
+        return service;
+    }
+
+    @Bean
+    public SystemEventSearchService systemEventSearchService() {
+        SolrSystemEventDaoImpl dao = new SolrSystemEventDaoImpl();
+        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
+
+        SolrSystemEventSearchServiceImpl service = new SolrSystemEventSearchServiceImpl(dao);
         service.setSolrPassword(solrPassword);
         service.setSolrUsername(solrUsername);
         return service;
@@ -500,7 +515,7 @@ public class SolrClientAutoConfiguration {
 
     private SolrSystemEventServiceImpl createSolrSystemEventServiceImpl()
     {
-        SolrSystemEventDao dao = new SolrSystemEventDao();
+        SolrSystemEventDaoImpl dao = new SolrSystemEventDaoImpl();
         dao.initStandalone(solrUrl, solrRetentionDays);
 
         SolrSystemEventServiceImpl service = new SolrSystemEventServiceImpl(dao);

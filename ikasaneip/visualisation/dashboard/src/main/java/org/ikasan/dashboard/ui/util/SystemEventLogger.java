@@ -24,13 +24,16 @@ public class SystemEventLogger
     public void logEvent(String subject, String action, String actor)
     {
         IkasanAuthentication ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        action += " - Performed by [" + ikasanAuthentication.getName() + "]";
         if(actor == null)
         {
             actor = ikasanAuthentication.getName();
+            action += " - Performed by [" + ikasanAuthentication.getName() + "]";
+        }
+        else {
+            action += " - Performed by [" + actor + "]";
         }
         logger.debug("Logging system event [{}], [{}], [{}]", subject, action, actor);
         systemEventService.logSystemEvent(subject, action, actor);
-        logger.debug("Sucessfully logged system event [{}], [{}], [{}]", subject, action, actor);
+        logger.debug("Successfully logged system event [{}], [{}], [{}]", subject, action, actor);
     }
 }

@@ -34,6 +34,7 @@ public class ContextInstanceViewMenuBar extends MenuBar {
     private ContextInstance contextInstance;
     private ContextProfileService contextProfileService;
     private SchedulerInstanceVisualisation schedulerInstanceVisualisation;
+    private UI ui;
 
     public ContextInstanceViewMenuBar(ContextInstance contextInstance, ContextProfileService contextProfileService, SchedulerInstanceVisualisation schedulerInstanceVisualisation) {
         this.contextInstance = contextInstance;
@@ -155,11 +156,11 @@ public class ContextInstanceViewMenuBar extends MenuBar {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
 
         contextInstanceViewUpdateRegistration = ContextViewUpdateEventBroadcaster.register(event -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
                     this.removeAll();
                     this.init();
                 });
@@ -177,6 +178,8 @@ public class ContextInstanceViewMenuBar extends MenuBar {
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        this.ui = null;
+
         if(this.contextInstanceViewUpdateRegistration != null) {
             this.contextInstanceViewUpdateRegistration.remove();
             this.contextInstanceViewUpdateRegistration = null;

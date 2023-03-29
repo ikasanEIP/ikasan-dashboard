@@ -161,7 +161,7 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
-    public void enable(SchedulerJobRecord jobRecord, ContextTemplate contextTemplate, String actor) {
+    public void enable(SchedulerJobRecord jobRecord, String contextTemplateAnme, String actor) {
 
     }
 

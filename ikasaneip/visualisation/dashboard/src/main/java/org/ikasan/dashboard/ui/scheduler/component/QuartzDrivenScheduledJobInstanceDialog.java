@@ -79,6 +79,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
     private Button viewProcessEventButton;
 
     private ScheduledProcessEvent scheduledProcessEvent;
+    private UI ui;
 
     /**
      * Constructor
@@ -149,8 +150,9 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
                     this.jobInitiationService.raiseQuartzSchedulerJob(
                         this.agent.getUrl(), this.agent.getName(), this.quartzScheduleDrivenJobInstance.getJobName(), this.quartzScheduleDrivenJobInstance.getContextInstanceId());
 
-                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                        , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                        , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()
+                        , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName(), this.schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId())
                         , this.authentication.getName());
 
                     this.schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
@@ -313,15 +315,15 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
             if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.quartzScheduleDrivenJobInstance.getContextInstanceId())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.quartzScheduleDrivenJobInstance.getJobName())) {
                 this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
 
-                if(ui.isAttached()) {
-                    ui.access(() -> {
+                if(this.ui.isAttached()) {
+                    this.ui.access(() -> {
                         this.quartzScheduleDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                         this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                         this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
@@ -333,7 +335,11 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.schedulerJobStateChangeRegistration.remove();
-        this.schedulerJobStateChangeRegistration = null;
+        this.ui = null;
+
+        if(this.schedulerJobStateChangeRegistration != null) {
+            this.schedulerJobStateChangeRegistration.remove();
+            this.schedulerJobStateChangeRegistration = null;
+        }
     }
 }

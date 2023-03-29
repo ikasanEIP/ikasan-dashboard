@@ -80,6 +80,7 @@ public class ContextInstanceDashboardWidget extends Div {
     private TextField contextInstanceIdTf = new TextField();
     private StatusFilter statusFilter = new StatusFilter();
     private IkasanAuthentication ikasanAuthentication;
+    private UI ui;
 
     /**
      * Constructor
@@ -478,10 +479,10 @@ public class ContextInstanceDashboardWidget extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
                     this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
                 });
             }
@@ -490,8 +491,11 @@ public class ContextInstanceDashboardWidget extends Div {
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.schedulerJobStateChangeRegistration.remove();
-        this.schedulerJobStateChangeRegistration = null;
+        this.ui = null;
+        if(schedulerJobStateChangeRegistration != null) {
+            this.schedulerJobStateChangeRegistration.remove();
+            this.schedulerJobStateChangeRegistration = null;
+        }
     }
 
     private void addGridFiltering(HeaderRow hr, String columnKey, TextField textField, Consumer<String> setFilter) {

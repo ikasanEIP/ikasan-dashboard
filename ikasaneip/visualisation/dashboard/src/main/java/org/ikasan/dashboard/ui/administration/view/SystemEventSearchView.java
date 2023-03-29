@@ -9,18 +9,20 @@ import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
+import org.ikasan.dashboard.ui.administration.component.SystemEventFilteringGrid;
 import org.ikasan.dashboard.ui.administration.component.SystemEventSearchForm;
 import org.ikasan.dashboard.ui.administration.util.SystemEventFormatter;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
-import org.ikasan.dashboard.ui.search.component.filter.SearchFilter;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventSearchFilter;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
+import org.ikasan.systemevent.model.SolrSystemEvent;
+import org.ikasan.systemevent.model.SolrSystemEventSearchFilter;
 import org.ikasan.systemevent.model.SystemEventImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +33,10 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
 {
     private Logger logger = LoggerFactory.getLogger(SystemEventSearchView.class);
 
-    private SolrGeneralServiceImpl solrSearchService;
+    private SystemEventSearchService systemEventSearchService;
 
-    private SolrSearchFilteringGrid searchResultsGrid;
-    private SearchFilter searchFilter = new SearchFilter();
+    private SystemEventFilteringGrid searchResultsGrid;
+    private SystemEventSearchFilter searchFilter = new SolrSystemEventSearchFilter();
 
     private SystemEventSearchForm searchForm;
 
@@ -45,12 +47,20 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
     /**
      * Constructor
      */
-    public SystemEventSearchView(SolrGeneralServiceImpl solrSearchService,
+    public SystemEventSearchView(SystemEventSearchService systemEventSearchService,
                                  DateFormatter dateFormatter)
     {
         super();
-        this.solrSearchService = solrSearchService;
+        this.systemEventSearchService = systemEventSearchService;
+        if(this.systemEventSearchService ==  null)
+        {
+            throw new IllegalArgumentException("systemEventSearchService cannot be null!");
+        }
         this.dateFormatter = dateFormatter;
+        if(this.dateFormatter ==  null)
+        {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
+        }
     }
 
     protected void init()
@@ -58,12 +68,17 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
         this.setSizeFull();
         this.setSpacing(false);
         this.setPadding(false);
+        this.setMargin(false);
+        this.setId("identifier");
+
+        this.getElement().getThemeList().remove("padding");
+        this.getElement().getThemeList().remove("spacing");
 
         resultsLabel.setVisible(false);
 
         this.createSearchForm();
 
-        this.searchResultsGrid = new SolrSearchFilteringGrid(this.solrSearchService, this.searchFilter, this.resultsLabel);
+        this.searchResultsGrid = new SystemEventFilteringGrid(this.systemEventSearchService, this.searchFilter, this.resultsLabel);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -72,13 +87,16 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             HorizontalLayout horizontalLayout = new HorizontalLayout();
             horizontalLayout.setWidth("100%");
             horizontalLayout.setJustifyContentMode(JustifyContentMode.START);
-
-            try {
-                horizontalLayout.add(objectMapper.readValue(ikasanSolrDocument.getEvent()
-                    , SystemEventImpl.class).getActor());
+            if(ikasanSolrDocument.getActor() != null && ! ikasanSolrDocument.getActor().isEmpty()) {
+                horizontalLayout.add(ikasanSolrDocument.getActor());
             }
-            catch (JsonProcessingException e) {
-                // Not much we can do if the event is not valid json.
+            else {
+                try {
+                    horizontalLayout.add(objectMapper.readValue(((SolrSystemEvent)ikasanSolrDocument).getPayload()
+                        , SystemEventImpl.class).getActor());
+                } catch (JsonProcessingException e) {
+                    // Not much we can do if the event is not valid json.
+                }
             }
 
             return horizontalLayout;
@@ -92,12 +110,16 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             horizontalLayout.setWidth("100%");
             horizontalLayout.setJustifyContentMode(JustifyContentMode.START);
 
-            try {
-                horizontalLayout.add(SystemEventFormatter.getContext(objectMapper
-                    .readValue(ikasanSolrDocument.getEvent(), SystemEventImpl.class)));
+            if(ikasanSolrDocument.getSubject() != null && ! ikasanSolrDocument.getSubject().isEmpty()) {
+                horizontalLayout.add(ikasanSolrDocument.getSubject());
             }
-            catch (JsonProcessingException e) {
-                // Not much we can do if the event is not valid json.
+            else {
+                try {
+                    horizontalLayout.add(objectMapper.readValue(((SolrSystemEvent)ikasanSolrDocument).getPayload()
+                        , SystemEventImpl.class).getSubject());
+                } catch (JsonProcessingException e) {
+                    // Not much we can do if the event is not valid json.
+                }
             }
 
             return horizontalLayout;
@@ -109,25 +131,27 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             HorizontalLayout horizontalLayout = new HorizontalLayout();
             horizontalLayout.setWidth("100%");
             horizontalLayout.setJustifyContentMode(JustifyContentMode.START);
-
-            try {
-                horizontalLayout.add(SystemEventFormatter.getEvent(objectMapper
-                    .readValue(ikasanSolrDocument.getEvent(), SystemEventImpl.class)));
+            if(ikasanSolrDocument.getAction() != null && ! ikasanSolrDocument.getAction().isEmpty()) {
+                horizontalLayout.add(ikasanSolrDocument.getAction());
             }
-            catch (JsonProcessingException e) {
-                // Not much we can do if the event is not valid json.
+            else {
+                try {
+                    horizontalLayout.add(objectMapper.readValue(((SolrSystemEvent)ikasanSolrDocument).getPayload()
+                        , SystemEventImpl.class).getAction());
+                } catch (JsonProcessingException e) {
+                    // Not much we can do if the event is not valid json.
+                }
             }
-
 
             return horizontalLayout;
         })).setFlexGrow(12)
             .setHeader(getTranslation("header.system-event", UI.getCurrent().getLocale()))
             .setKey("action")
             .setResizable(true);
-        this.searchResultsGrid.addColumn(TemplateRenderer.<IkasanSolrDocument>of(
+        this.searchResultsGrid.addColumn(TemplateRenderer.<SystemEvent>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
-                ikasanSolrDocument -> this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimeStamp())))
+                ikasanSolrDocument -> this.dateFormatter.getFormattedDate(((SolrSystemEvent)ikasanSolrDocument).getTimestampLong())))
             .setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
             .setSortable(true)
             .setKey("timestamp")
@@ -135,15 +159,15 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             .setResizable(true);
 
         HeaderRow hr = searchResultsGrid.appendHeaderRow();
-        this.searchResultsGrid.addGridFiltering(hr, value -> searchFilter.setSystemEventFilter("actor", value), "actor");
-        this.searchResultsGrid.addGridFiltering(hr, value -> searchFilter.setSystemEventFilter("context", value), "context");
-        this.searchResultsGrid.addGridFiltering(hr, value -> searchFilter.setSystemEventFilter("action", value), "action");
+        this.searchResultsGrid.addGridFiltering(hr, value -> searchFilter.setActor(value), "actor");
+        this.searchResultsGrid.addSelectGridFiltering(hr, value -> searchFilter.setSubject(value), SystemEventConstants.getSystemEventConstants(), "context");
+        this.searchResultsGrid.addGridFiltering(hr, value -> searchFilter.setAction(value), "action");
         this.searchResultsGrid.setVisible(true);
 
         this.searchResultsGrid.setWidthFull();
-        this.searchResultsGrid.setHeight("70vh");
+        this.searchResultsGrid.setHeight("100%");
 
-        this.searchResultsGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<IkasanSolrDocument>>)
+        this.searchResultsGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<SystemEvent>>)
             ikasanSolrDocumentItemDoubleClickEvent -> {
                 SystemEventDialog systemEventDialog = new SystemEventDialog(this.dateFormatter);
                 systemEventDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());

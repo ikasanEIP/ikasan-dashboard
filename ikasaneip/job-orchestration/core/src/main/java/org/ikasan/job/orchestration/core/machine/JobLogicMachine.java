@@ -168,8 +168,11 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         if(contextInstance.getJobDependencies() != null) {
             for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
                 if (this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) {
-
                     SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
+                    if(jobInstance == null) {
+                        logger.info("Encountered job dependency[{}] but no scheduled job in job map!", jobDependency.getJobIdentifier());
+                        continue;
+                    }
 
                     InternalEventDrivenJobInstance internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier()
                         + "-" + contextInstance.getName());

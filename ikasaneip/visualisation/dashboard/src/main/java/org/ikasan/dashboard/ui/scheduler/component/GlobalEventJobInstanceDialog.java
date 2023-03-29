@@ -75,6 +75,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
     private SchedulerStatusDiv statusDiv;
     private GlobalEventService globalEventService;
     private ContextInstance contextInstance;
+    private UI ui;
 
     /**
      * Constructor
@@ -204,8 +205,9 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
                     this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
                         this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
-                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                            , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                            , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()
+                            , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId())
                         , this.authentication.getName());
 
                     globalEventJobInstance.setStatus(InstanceStatus.COMPLETE);
@@ -416,8 +418,8 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
             contextMachine.skipJob(this.globalEventJob.getIdentifier(), this.globalEventJob.getChildContextName(), true);
             this.updateJobState(this.globalEventJob, InstanceStatus.SKIPPED);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                , this.globalEventJob.getAgentName(), globalEventJob.getJobName(), true), this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s], Skipped[%s]"
+                , this.globalEventJob.getAgentName(), globalEventJob.getJobName(), globalEventJob.getContextName(), globalEventJob.getContextInstanceId(), true), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -446,8 +448,8 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
             contextMachine.skipJob(this.globalEventJob.getIdentifier(), this.globalEventJob.getChildContextName(), false);
             this.updateJobState(this.globalEventJob, InstanceStatus.WAITING);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                , this.globalEventJob.getAgentName(), globalEventJob.getJobName(), false), this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s], Skipped[%s]"
+                , this.globalEventJob.getAgentName(), globalEventJob.getJobName(), globalEventJob.getContextName(), globalEventJob.getContextInstanceId(), false), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -551,14 +553,14 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
             if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.globalEventJob.getContextInstanceId())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName().equals(this.globalEventJob.getChildContextName())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.globalEventJob.getJobName())) {
-                if(ui.isAttached()) {
-                    ui.access(() -> {
+                if(this.ui.isAttached()) {
+                    this.ui.access(() -> {
                         this.globalEventJob.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                         this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
 
@@ -584,6 +586,8 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
+
+        this.ui = null;
 
         if(this.schedulerJobStateChangeRegistration != null) {
             this.schedulerJobStateChangeRegistration.remove();

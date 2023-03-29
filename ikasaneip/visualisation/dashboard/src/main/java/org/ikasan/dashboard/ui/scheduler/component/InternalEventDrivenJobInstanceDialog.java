@@ -140,10 +140,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private Button viewOutputLogButton;
     private Button viewProcessEventButton;
     private Button viewExecutionDetailsButton;
-
     private ScheduledProcessEvent scheduledProcessEvent;
-
     private LogStreamingService logStreamingService;
+    private UI ui;
 
     /**
      * Constructor
@@ -955,14 +954,14 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
             if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.internalEventDrivenJobInstance.getContextInstanceId())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName().equals(this.internalEventDrivenJobInstance.getChildContextName())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.internalEventDrivenJobInstance.getJobName())) {
-                if(ui.isAttached()) {
-                    ui.access(() -> {
+                if(this.ui.isAttached()) {
+                    this.ui.access(() -> {
                         this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                         this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
 
@@ -1086,7 +1085,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.schedulerJobStateChangeRegistration.remove();
-        this.schedulerJobStateChangeRegistration = null;
+        if(this.schedulerJobStateChangeRegistration != null) {
+            this.schedulerJobStateChangeRegistration.remove();
+            this.schedulerJobStateChangeRegistration = null;
+        }
     }
 }

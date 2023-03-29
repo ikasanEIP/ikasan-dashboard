@@ -22,12 +22,14 @@ import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.solr.model.IkasanSolrDocument;
+import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.systemevent.model.SolrSystemEvent;
 import org.ikasan.systemevent.model.SystemEventImpl;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 
-public class SystemEventDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
+public class SystemEventDialog extends AbstractEntityViewDialog<SystemEvent>
 {
     private TextField actionedByTf;
     private TextField contextTf;
@@ -87,15 +89,15 @@ public class SystemEventDialog extends AbstractEntityViewDialog<IkasanSolrDocume
     }
 
     @Override
-    public void populate(IkasanSolrDocument systemEvent) {
+    public void populate(SystemEvent systemEvent) {
         SystemEventImpl systemEventImpl = null;
         try {
-            systemEventImpl = objectMapper.readValue(systemEvent.getEvent(), SystemEventImpl.class);
+            systemEventImpl = objectMapper.readValue(((SolrSystemEvent)systemEvent).getPayload(), SystemEventImpl.class);
             super.title.setText(getTranslation("header.system-event", UI.getCurrent().getLocale()));
             this.actionedByTf.setValue(systemEventImpl.getActor());
             this.contextTf.setValue(SystemEventFormatter.getContext(systemEventImpl));
 
-            this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(systemEvent.getTimestamp()));
+            this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(((SolrSystemEvent)systemEvent).getTimestampLong()));
 
             open(systemEventImpl.getAction(), systemEventImpl);
         }

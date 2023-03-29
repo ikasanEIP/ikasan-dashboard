@@ -17,6 +17,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import liquibase.pro.packaged.L;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
@@ -28,6 +29,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class SearchForm extends VerticalLayout {
     private Button searchButton;
@@ -77,7 +79,7 @@ public class SearchForm extends VerticalLayout {
 
         HorizontalLayout startDateTimeLayout = new HorizontalLayout();
         this.startDate = new DatePicker(nowDate);
-        this.startDate.setLocale(UI.getCurrent().getLocale());
+        this.startDate.setLocale(Locale.UK);
         this.startDate.setWidth("150px");
 
         this.startTimePicker.setStep(Duration.ofMinutes(15l));
@@ -89,7 +91,7 @@ public class SearchForm extends VerticalLayout {
 
         HorizontalLayout endDateTimeLayout = new HorizontalLayout();
         this.endDate = new DatePicker(nowDate.plus(1, ChronoUnit.DAYS));
-        this.endDate.setLocale(UI.getCurrent().getLocale());
+        this.endDate.setLocale(Locale.UK);
         this.endDate.setWidth("150px");
 
 
@@ -113,11 +115,8 @@ public class SearchForm extends VerticalLayout {
         searchTextLayout.setMargin(true);
         searchTextLayout.add(searchText);
 
-        Image searchButtonImage = new Image("frontend/images/search-icon.png", "");
-        searchButtonImage.setHeight("48px");
-        this.searchButton = new Button(searchButtonImage);
-        this.searchButton.setHeight("54px");
-        this.searchButton.setWidth("54px");
+        this.searchButton = new Button(getTranslation("button.search", UI.getCurrent().getLocale()), VaadinIcon.SEARCH.create());
+        this.searchButton.setIconAfterText(true);
         this.searchButton.setId("searchFormSearchButton");
 
         addButtonSearchListener(this.searchButton);

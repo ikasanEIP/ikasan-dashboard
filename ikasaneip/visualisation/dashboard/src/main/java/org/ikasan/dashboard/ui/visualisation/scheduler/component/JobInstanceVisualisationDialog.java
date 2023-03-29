@@ -60,6 +60,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     private SplitContextInstanceVisualisation splitContextInstanceVisualisation;
     private GlobalEventService globalEventService;
     private SchedulerStatusDiv statusDiv;
+    private UI ui;
 
     public JobInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
@@ -177,13 +178,13 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null &&
                 contextInstanceStateChangeEvent.getContextInstance().getName().equals(this.rootContextInstance.getName())) {
-                if(ui.isAttached()) {
-                    ui.access(() -> {
+                if(this.ui.isAttached()) {
+                    this.ui.access(() -> {
                         this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
                     });
                 }
@@ -193,6 +194,8 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        this.ui = null;
+
         if(this.contextInstanceStateChangeRegistration != null) {
             this.contextInstanceStateChangeRegistration.remove();
             this.contextInstanceStateChangeRegistration = null;

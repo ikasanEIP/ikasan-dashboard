@@ -68,6 +68,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
     private ContextProfileService contextProfileService;
     private Grid<JobLockHolder> grid;
     TextField filterTf = new TextField();
+    private UI ui;
 
     /**
      * Constructor
@@ -432,10 +433,10 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        this.ui = attachEvent.getUI();
         this.registration = JobLockCacheEventBroadcaster.register(jobLockCacheEvent -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
                     populateGrid(this.filterTf.getValue());
                 });
             }
@@ -444,7 +445,11 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.registration.remove();
-        this.registration = null;
+        this.ui = null;
+
+        if(this.registration != null) {
+            this.registration.remove();
+            this.registration = null;
+        }
     }
 }
