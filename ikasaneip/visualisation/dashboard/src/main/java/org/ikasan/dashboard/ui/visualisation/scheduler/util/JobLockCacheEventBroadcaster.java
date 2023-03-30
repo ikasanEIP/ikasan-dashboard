@@ -1,32 +1,29 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.util;
 
-import com.vaadin.flow.shared.Registration;
-import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
 
-import java.util.LinkedList;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 public class JobLockCacheEventBroadcaster {
     static Executor executor = Executors.newSingleThreadExecutor();
 
-    static LinkedList<Consumer<JobLockCacheEvent>> listeners = new LinkedList<>();
+    private static WeakHashMap<JobLockCacheEventBroadcastListener, Object> listeners =
+        new WeakHashMap<>();
 
-    public static synchronized Registration register(Consumer<JobLockCacheEvent> listener) {
-        listeners.add(listener);
-
-        return () -> {
-            synchronized (JobLockCacheEventBroadcaster.class) {
-                listeners.remove(listener);
-            }
-        };
+    public static synchronized void register(JobLockCacheEventBroadcastListener listener) {
+        listeners.put(listener, null);
     }
 
-    public static synchronized void broadcast(JobLockCacheEvent message) {
-        for (Consumer<JobLockCacheEvent> listener : listeners) {
-            executor.execute(() -> listener.accept(message));
+    public static synchronized void unregister(JobLockCacheEventBroadcastListener listener) {
+        listeners.remove(listener);
+    }
+
+    public static synchronized void broadcast(final JobLockCacheEvent event) {
+        for (final JobLockCacheEventBroadcastListener listener: listeners.keySet()) {
+            executor.execute(() -> listener.receiveBroadcast(event));
         }
     }
 }

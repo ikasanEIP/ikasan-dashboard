@@ -51,6 +51,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
@@ -69,11 +70,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResizableDialog {
+public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResizableDialog implements SchedulerJobStateChangeEventBroadcastListener {
 
     Logger logger = LoggerFactory.getLogger(InternalEventDrivenJobInstanceDialog.class);
-
-    private Registration schedulerJobStateChangeRegistration;
 
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -955,40 +954,48 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.internalEventDrivenJobInstance.getContextInstanceId())
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName().equals(this.internalEventDrivenJobInstance.getChildContextName())
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.internalEventDrivenJobInstance.getJobName())) {
-                if(this.ui.isAttached()) {
-                    this.ui.access(() -> {
-                        this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                        this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+        SchedulerJobStateChangeEventBroadcaster.register(this);
+    }
 
-                        this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+    }
 
-                        this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null &&
-                            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
-                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
-                        this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null &&
-                            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
-                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
-                        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null &&
-                            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
-                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
-                        this.viewExecutionDetailsButton.setVisible(this.scheduledProcessEvent != null &&
-                            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
-                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+    @Override
+    public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent jobInstanceStateChangeEvent) {
+        if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.internalEventDrivenJobInstance.getContextInstanceId())
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName().equals(this.internalEventDrivenJobInstance.getChildContextName())
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.internalEventDrivenJobInstance.getJobName())) {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
 
-                        this.setButtonVisibility();
-                    });
-                }
+                    this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
+
+                    this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null &&
+                        ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+                    this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null &&
+                        ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+                    this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null &&
+                        ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+                    this.viewExecutionDetailsButton.setVisible(this.scheduledProcessEvent != null &&
+                        ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+
+                    this.setButtonVisibility();
+                });
             }
-        });
+        }
     }
 
     private void setButtonVisibility() {
@@ -1080,14 +1087,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.submitDownstreamJobsButton.setVisible(false);
-        }
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        if(this.schedulerJobStateChangeRegistration != null) {
-            this.schedulerJobStateChangeRegistration.remove();
-            this.schedulerJobStateChangeRegistration = null;
         }
     }
 }

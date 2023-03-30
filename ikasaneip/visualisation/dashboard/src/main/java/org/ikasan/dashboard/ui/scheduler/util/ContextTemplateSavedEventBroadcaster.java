@@ -1,31 +1,28 @@
 package org.ikasan.dashboard.ui.scheduler.util;
 
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 
-import java.util.LinkedList;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 public class ContextTemplateSavedEventBroadcaster {
     static Executor executor = Executors.newSingleThreadExecutor();
 
-    static LinkedList<Consumer<ContextTemplate>> listeners = new LinkedList<>();
+    private static WeakHashMap<ContextTemplateSavedEventBroadcastListener, Object> listeners =
+        new WeakHashMap<>();
 
-    public static synchronized Registration register(Consumer<ContextTemplate> listener) {
-        listeners.add(listener);
-
-        return () -> {
-            synchronized (ContextTemplateSavedEventBroadcaster.class) {
-                listeners.remove(listener);
-            }
-        };
+    public static synchronized void register(ContextTemplateSavedEventBroadcastListener listener) {
+        listeners.put(listener, null);
     }
 
-    public static synchronized void broadcast(ContextTemplate contextTemplate) {
-        for (Consumer<ContextTemplate> listener : listeners) {
-            executor.execute(() -> listener.accept(contextTemplate));
+    public static synchronized void unregister(ContextTemplateSavedEventBroadcastListener listener) {
+        listeners.remove(listener);
+    }
+
+    public static synchronized void broadcast(final ContextTemplate contextTemplate) {
+        for (final ContextTemplateSavedEventBroadcastListener listener: listeners.keySet()) {
+            executor.execute(() -> listener.receiveContextTemplateSavedEventBroadcast(contextTemplate));
         }
     }
 }

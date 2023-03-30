@@ -11,12 +11,15 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcastListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
@@ -26,10 +29,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 
-public class ContextInstanceViewMenuBar extends MenuBar {
-
-    private Registration contextInstanceViewUpdateRegistration;
-    private Registration contextInstanceStateChangeRegistration;
+public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstanceStateChangeEventBroadcastListener
+    , ContextViewUpdateEventBroadcastListener {
 
     private ContextInstance contextInstance;
     private ContextProfileService contextProfileService;
@@ -158,36 +159,36 @@ public class ContextInstanceViewMenuBar extends MenuBar {
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
 
-        contextInstanceViewUpdateRegistration = ContextViewUpdateEventBroadcaster.register(event -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> {
-                    this.removeAll();
-                    this.init();
-                });
-            }
-        });
-
-        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                if(this.contextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
-                    this.contextInstance = contextInstanceStateChangeEvent.getContextInstance();
-                }
-            }
-        });
+        ContextInstanceStateChangeEventBroadcaster.register(this);
+        ContextViewUpdateEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.contextInstanceViewUpdateRegistration != null) {
-            this.contextInstanceViewUpdateRegistration.remove();
-            this.contextInstanceViewUpdateRegistration = null;
-        }
+        ContextInstanceStateChangeEventBroadcaster.unregister(this);
+        ContextViewUpdateEventBroadcaster.unregister(this);
+    }
 
-        if(this.contextInstanceStateChangeRegistration != null) {
-            this.contextInstanceStateChangeRegistration.remove();
-            this.contextInstanceStateChangeRegistration = null;
+
+
+    @Override
+    public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
+        if (event.getContextInstance() != null) {
+            if(this.contextInstance.getId().equals(event.getContextInstance().getId())) {
+                this.contextInstance = event.getContextInstance();
+            }
+        }
+    }
+
+    @Override
+    public void receiveBroadcast(String message) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                this.removeAll();
+                this.init();
+            });
         }
     }
 }

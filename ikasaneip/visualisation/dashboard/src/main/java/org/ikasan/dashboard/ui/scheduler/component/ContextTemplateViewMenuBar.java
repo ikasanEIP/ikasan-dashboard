@@ -11,11 +11,14 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcastListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -24,10 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 
-public class ContextTemplateViewMenuBar extends MenuBar {
-
-    private Registration contextTemplateViewUpdateRegistration;
-
+public class ContextTemplateViewMenuBar extends MenuBar implements ContextViewUpdateEventBroadcastListener {
     private ContextTemplate contextTemplate;
     private ContextProfileService contextProfileService;
     private SchedulerVisualisation schedulerVisualisation;
@@ -114,23 +114,23 @@ public class ContextTemplateViewMenuBar extends MenuBar {
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
 
-        contextTemplateViewUpdateRegistration = ContextViewUpdateEventBroadcaster.register(event -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> {
-                    this.removeAll();
-                    this.init();
-                });
-            }
-        });
+        ContextViewUpdateEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.contextTemplateViewUpdateRegistration != null) {
-            this.contextTemplateViewUpdateRegistration.remove();
-            this.contextTemplateViewUpdateRegistration = null;
+        ContextViewUpdateEventBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveBroadcast(String message) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                this.removeAll();
+                this.init();
+            });
         }
     }
 }

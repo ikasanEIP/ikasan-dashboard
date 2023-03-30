@@ -365,7 +365,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             internalEventDrivenJob.setSkip(true);
         }
 
-        if(contextParameters != null && internalEventDrivenJob.getContextParameters() != null) {
+        if(contextParameters != null && internalEventDrivenJob != null && internalEventDrivenJob.getContextParameters() != null) {
             schedulerJobInitiationEvent.setContextParameters(contextParameters.stream()
                 .filter(contextParameterInstance -> internalEventDrivenJob
                     .getContextParameters()

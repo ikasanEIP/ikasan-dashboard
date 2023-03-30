@@ -516,6 +516,11 @@ public class ContextMachine {
         this.saveContext();
     }
 
+    public void runContextUntilManuallyEnded() {
+        this.contextInstance.setRunContextUntilManuallyEnded(true);
+        this.saveContext();
+    }
+
     /**
      * Method to set a job as skipped.
      *

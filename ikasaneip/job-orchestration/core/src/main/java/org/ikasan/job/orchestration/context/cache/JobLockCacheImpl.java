@@ -40,7 +40,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
 
     private JobLockCacheService jobLockCacheService;
 
-    private JobLockCacheEventBroadcaster<JobLockCacheEvent> jobLockCacheEventBroadcaster;
+    private JobLockCacheEventBroadcaster jobLockCacheEventBroadcaster;
 
     private ExecutorService executor;
 
@@ -378,7 +378,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
      *
      * @param jobLockCacheEventBroadcaster
      */
-    public void setJobLockCacheEventBroadcaster(JobLockCacheEventBroadcaster<JobLockCacheEvent> jobLockCacheEventBroadcaster) {
+    public void setJobLockCacheEventBroadcaster(JobLockCacheEventBroadcaster jobLockCacheEventBroadcaster) {
         this.jobLockCacheEventBroadcaster = jobLockCacheEventBroadcaster;
     }
 

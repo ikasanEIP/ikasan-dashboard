@@ -5,7 +5,6 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -31,10 +30,12 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.Context;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
@@ -43,7 +44,6 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
-import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -51,10 +51,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.io.IOException;
 import java.util.Map;
 
-public class SplitContextInstanceVisualisation extends VerticalLayout implements ContextOpenedListener, ContextSelectedListener, CanvasInitialisedListener {
+public class SplitContextInstanceVisualisation extends VerticalLayout
+    implements ContextOpenedListener, ContextSelectedListener, CanvasInitialisedListener
+    , ContextInstanceStateChangeEventBroadcastListener, SchedulerJobStateChangeEventBroadcastListener {
     Logger logger = LoggerFactory.getLogger(SplitContextInstanceVisualisation.class);
-    private Registration contextInstanceStateChangeRegistration;
-    private Registration schedulerJobInstanceStateChangeRegistration;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     protected SchedulerInstanceVisualisation schedulerInstanceVisualisation;
@@ -339,52 +339,50 @@ public class SplitContextInstanceVisualisation extends VerticalLayout implements
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
 
-        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                if(this.ui.isAttached()) {
-                    this.ui.access(() -> {
-                        if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                            this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
-                        }
-
-                        if (this.childContextInstance != null && this.childContextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
-                            this.childJobPlansStatusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
-                        }
-                    });
-                }
-            }
-        });
-
-        schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> {
-                    if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                        this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
-                    }
-                });
-            }
-        });
+        ContextInstanceStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.contextInstanceStateChangeRegistration != null) {
-            this.contextInstanceStateChangeRegistration.remove();
-            this.contextInstanceStateChangeRegistration = null;
-        }
-
-        if(this.schedulerJobInstanceStateChangeRegistration != null) {
-            this.schedulerJobInstanceStateChangeRegistration.remove();
-            this.schedulerJobInstanceStateChangeRegistration = null;
-        }
+        ContextInstanceStateChangeEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.unregister(this);
     }
 
     @Override
     public void canvasInitialised() {
         if(this.schedulerInstanceVisualisation != null && this.childContextInstance != null) {
             this.schedulerInstanceVisualisation.addBoundaryToItem(this.childContextInstance.getName(), true);
+        }
+    }
+
+    @Override
+    public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
+        if(event.getContextInstance() != null) {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                        this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                    }
+
+                    if (this.childContextInstance != null && this.childContextInstance.getId().equals(event.getContextInstance().getId())) {
+                        this.childJobPlansStatusDiv.setStatus(event.getNewStatus());
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                    this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                }
+            });
         }
     }
 }

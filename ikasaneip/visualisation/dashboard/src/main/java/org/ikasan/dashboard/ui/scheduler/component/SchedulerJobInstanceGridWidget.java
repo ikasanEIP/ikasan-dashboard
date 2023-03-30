@@ -41,6 +41,8 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -62,12 +64,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class SchedulerJobInstanceGridWidget extends Div {
+public class SchedulerJobInstanceGridWidget extends Div
+    implements SchedulerJobStateChangeEventBroadcastListener, ContextInstanceSavedEventBroadcastListener {
 
     Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceGridWidget.class);
 
-    private Registration schedulerJobStateChangeRegistration;
-    private Registration contextInstanceSaveBroadcasterRegistration;
     private SchedulerJobInstanceFilteringGrid schedulerJobInstanceFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -1018,57 +1019,55 @@ public class SchedulerJobInstanceGridWidget extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
-                SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
-                filter.setContextInstanceId(jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId());
-                filter.setJobName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
-                filter.setChildContextName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
-
-                SearchResults<SchedulerJobInstanceRecord> searchResults = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter
-                    (filter, 1, 0, null, null);
-
-                if(searchResults.getResultList().size() == 1) {
-                    SchedulerJobInstanceRecord record = searchResults.getResultList().get(0);
-                    record.setStatus(jobInstanceStateChangeEvent.getNewStatus().name());
-                    SchedulerJobInstance instance = record.getSchedulerJobInstance();
-                    instance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-
-                    if(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null) {
-                        record.setStartTime(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime());
-                        record.setEndTime(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime());
-                    }
-
-                    record.setSchedulerJobInstance(instance);
-                    if(this.ui.isAttached()) {
-                        this.ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(record));
-                    }
-                }
-            }
-        });
-
-        this.contextInstanceSaveBroadcasterRegistration = ContextInstanceSavedEventBroadcaster.register(contextInstance -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> {
-                    if(this.contextInstance.getName().equals(contextInstance.getName())) {
-                        this.contextInstance = contextInstance;
-                        this.refresh();
-                    }
-                });
-            }
-        });
+        SchedulerJobStateChangeEventBroadcaster.register(this);
+        ContextInstanceSavedEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        if(this.schedulerJobStateChangeRegistration != null) {
-            this.schedulerJobStateChangeRegistration.remove();
-            this.schedulerJobStateChangeRegistration = null;
-        }
+        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        ContextInstanceSavedEventBroadcaster.unregister(this);
+    }
 
-        if(this.contextInstanceSaveBroadcasterRegistration != null) {
-            this.contextInstanceSaveBroadcasterRegistration.remove();
-            this.contextInstanceSaveBroadcasterRegistration = null;
+    @Override
+    public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent jobInstanceStateChangeEvent) {
+        if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+            SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+            filter.setContextInstanceId(jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId());
+            filter.setJobName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+            filter.setChildContextName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
+
+            SearchResults<SchedulerJobInstanceRecord> searchResults = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter
+                (filter, 1, 0, null, null);
+
+            if(searchResults.getResultList().size() == 1) {
+                SchedulerJobInstanceRecord record = searchResults.getResultList().get(0);
+                record.setStatus(jobInstanceStateChangeEvent.getNewStatus().name());
+                SchedulerJobInstance instance = record.getSchedulerJobInstance();
+                instance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+
+                if(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null) {
+                    record.setStartTime(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime());
+                    record.setEndTime(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime());
+                }
+
+                record.setSchedulerJobInstance(instance);
+                if(this.ui.isAttached()) {
+                    this.ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(record));
+                }
+            }
+        }
+    }
+
+    @Override
+    public void receiveBroadcast(ContextInstance contextInstance) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                if(this.contextInstance.getName().equals(contextInstance.getName())) {
+                    this.contextInstance = contextInstance;
+                    this.refresh();
+                }
+            });
         }
     }
 

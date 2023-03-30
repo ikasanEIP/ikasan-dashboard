@@ -1,32 +1,47 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.util;
 
-import com.vaadin.flow.shared.Registration;
-import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 
-import java.util.LinkedList;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 public class SchedulerJobStateChangeEventBroadcaster {
     static Executor executor = Executors.newSingleThreadExecutor();
 
-    static LinkedList<Consumer<SchedulerJobInstanceStateChangeEvent>> listeners = new LinkedList<>();
+//    static LinkedList<Consumer<SchedulerJobInstanceStateChangeEvent>> listeners = new LinkedList<>();
+//
+//    public static synchronized Registration register(Consumer<SchedulerJobInstanceStateChangeEvent> listener) {
+//        listeners.add(listener);
+//
+//        return () -> {
+//            synchronized (SchedulerJobStateChangeEventBroadcaster.class) {
+//                listeners.remove(listener);
+//            }
+//        };
+//    }
+//
+//    public static synchronized void broadcast(SchedulerJobInstanceStateChangeEvent message) {
+//        for (Consumer<SchedulerJobInstanceStateChangeEvent> listener : listeners) {
+//            executor.execute(() -> listener.accept(message));
+//        }
+//    }
 
-    public static synchronized Registration register(Consumer<SchedulerJobInstanceStateChangeEvent> listener) {
-        listeners.add(listener);
+    private static WeakHashMap<SchedulerJobStateChangeEventBroadcastListener, Object> listeners =
+        new WeakHashMap<>();
 
-        return () -> {
-            synchronized (SchedulerJobStateChangeEventBroadcaster.class) {
-                listeners.remove(listener);
-            }
-        };
+    public static synchronized void register(SchedulerJobStateChangeEventBroadcastListener listener) {
+        listeners.put(listener, null);
     }
 
-    public static synchronized void broadcast(SchedulerJobInstanceStateChangeEvent message) {
-        for (Consumer<SchedulerJobInstanceStateChangeEvent> listener : listeners) {
-            executor.execute(() -> listener.accept(message));
+    public static synchronized void unregister(SchedulerJobStateChangeEventBroadcastListener listener) {
+        listeners.remove(listener);
+    }
+
+    public static synchronized void broadcast(final SchedulerJobInstanceStateChangeEvent event) {
+        for (final SchedulerJobStateChangeEventBroadcastListener listener: listeners.keySet()) {
+            executor.execute(() -> listener.receiveBroadcast(event));
         }
     }
 }
