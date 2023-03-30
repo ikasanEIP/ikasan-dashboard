@@ -23,7 +23,9 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import liquibase.pro.packaged.L;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcastListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
+import org.ikasan.dashboard.ui.scheduler.util.NewSchedulerJobEventBroadcastListener;
 import org.ikasan.dashboard.ui.scheduler.util.NewSchedulerJobEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
@@ -47,10 +49,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.JobConstants;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -64,10 +63,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class SchedulerJobGridWidget extends Div {
+public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedEventBroadcastListener
+    , NewSchedulerJobEventBroadcastListener {
 
-    private Registration newSchedulerJobEventBroadcasterRegistration;
-    private Registration contextSaveBroadcasterRegistration;
     private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
@@ -1044,36 +1042,33 @@ public class SchedulerJobGridWidget extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
 
-        newSchedulerJobEventBroadcasterRegistration = NewSchedulerJobEventBroadcaster.register(event -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> this.schedulerJobFilteringGrid.getDataProvider().refreshAll());
-            }
-        });
-
-        this.contextSaveBroadcasterRegistration = ContextTemplateSavedEventBroadcaster.register(contextTemplate -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> {
-                    this.contextTemplate = contextTemplate;
-                    this.setButtonVisibility();
-                    this.schedulerJobFilteringGrid.refresh();
-                });
-            }
-        });
-
+        ContextTemplateSavedEventBroadcaster.register(this);
+        NewSchedulerJobEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.newSchedulerJobEventBroadcasterRegistration != null) {
-            this.newSchedulerJobEventBroadcasterRegistration.remove();
-            this.newSchedulerJobEventBroadcasterRegistration = null;
-        }
+        ContextTemplateSavedEventBroadcaster.unregister(this);
+        NewSchedulerJobEventBroadcaster.unregister(this);
+    }
 
-        if(this.contextSaveBroadcasterRegistration != null) {
-            this.contextSaveBroadcasterRegistration.remove();
-            this.contextSaveBroadcasterRegistration = null;
+    @Override
+    public void receiveContextTemplateSavedEventBroadcast(ContextTemplate contextTemplate) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                this.contextTemplate = contextTemplate;
+                this.setButtonVisibility();
+                this.schedulerJobFilteringGrid.refresh();
+            });
+        }
+    }
+
+    @Override
+    public void receiveBroadcast(SchedulerJob schedulerJob) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> this.schedulerJobFilteringGrid.getDataProvider().refreshAll());
         }
     }
 }

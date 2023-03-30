@@ -31,6 +31,10 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
@@ -45,11 +49,10 @@ import java.util.List;
 import java.util.UUID;
 
 public abstract class SchedulerInstanceVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
-    , CanvasItemDoubleClickEventListener, CanvasInitialisedListener, CanvasItemSingleClickEventListener {
+    , CanvasItemDoubleClickEventListener, CanvasInitialisedListener, CanvasItemSingleClickEventListener, ContextInstanceStateChangeEventBroadcastListener
+    , SchedulerJobStateChangeEventBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerInstanceVisualisation.class);
 
-    protected Registration contextInstanceStateChangeRegistration;
-    protected Registration schedulerJobStateChangeRegistration;
     protected DesignerCanvas designerCanvas;
 
     protected String dynamicImagePath;
@@ -286,57 +289,55 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
 
-        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                logger.debug("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
-                    contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
-                    StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-
-                if(this.ui.isAttached()) {
-                    this.ui.access(() -> {
-                        if (this.designerCanvas != null) {
-                            this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName() + "_status"
-                                , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-                        }
-                    });
-                }
-            }
-        });
-
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(schedulerJobInstanceStateChangeEvent -> {
-            if (schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance() != null
-                && this.contextInstance != null
-                && this.parentContextInstance != null
-                && this.contextInstance.getName().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName())
-                && this.parentContextInstance.getId().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId())) {
-                logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
-                    schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
-                    StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
-
-                if(this.ui.isAttached()) {
-                    this.ui.access(() -> {
-                        if (this.designerCanvas != null) {
-                            this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
-                                , StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
-                        }
-                    });
-                }
-            }
-        });
+        ContextInstanceStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.contextInstanceStateChangeRegistration != null) {
-            this.contextInstanceStateChangeRegistration.remove();
-            this.contextInstanceStateChangeRegistration = null;
-        }
+        ContextInstanceStateChangeEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+    }
 
-        if(this.schedulerJobStateChangeRegistration != null) {
-            this.schedulerJobStateChangeRegistration.remove();
-            this.schedulerJobStateChangeRegistration  = null;
+    @Override
+    public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
+        if (event.getContextInstance() != null) {
+            logger.debug("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
+                event.getContextInstance().getName(), event.getContextInstance().getStatus().toString(),
+                StatusColours.getInstanceStatusColour(event.getContextInstance().getStatus()));
+
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    if (this.designerCanvas != null) {
+                        this.designerCanvas.setBackgroundColor(event.getContextInstance().getName() + "_status"
+                            , StatusColours.getInstanceStatusColour(event.getContextInstance().getStatus()));
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent) {
+        if (schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance() != null
+            && this.contextInstance != null
+            && this.parentContextInstance != null
+            && this.contextInstance.getName().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName())
+            && this.parentContextInstance.getId().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId())) {
+            logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
+                schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
+                StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    if (this.designerCanvas != null) {
+                        this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
+                            , StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+                    }
+                });
+            }
         }
     }
 }

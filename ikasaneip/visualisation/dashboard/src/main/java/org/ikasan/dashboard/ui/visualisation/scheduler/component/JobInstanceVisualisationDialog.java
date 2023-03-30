@@ -9,7 +9,6 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -17,6 +16,8 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -29,11 +30,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDialog {
+public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDialog implements ContextInstanceStateChangeEventBroadcastListener {
 
     private Logger logger = LoggerFactory.getLogger(JobInstanceVisualisationDialog.class);
-
-    private Registration contextInstanceStateChangeRegistration;
 
     private VerticalLayout layout;
 
@@ -180,25 +179,25 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
 
-        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if (contextInstanceStateChangeEvent.getContextInstance() != null &&
-                contextInstanceStateChangeEvent.getContextInstance().getName().equals(this.rootContextInstance.getName())) {
-                if(this.ui.isAttached()) {
-                    this.ui.access(() -> {
-                        this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
-                    });
-                }
-            }
-        });
+        ContextInstanceStateChangeEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.contextInstanceStateChangeRegistration != null) {
-            this.contextInstanceStateChangeRegistration.remove();
-            this.contextInstanceStateChangeRegistration = null;
+        ContextInstanceStateChangeEventBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
+        if (event.getContextInstance() != null &&
+            event.getContextInstance().getName().equals(this.rootContextInstance.getName())) {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    this.statusDiv.setStatus(event.getNewStatus());
+                });
+            }
         }
     }
 }

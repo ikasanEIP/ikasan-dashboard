@@ -53,7 +53,11 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -70,7 +74,9 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class ContextInstanceWidget extends VerticalLayout implements BeforeEnterObserver {
+public class ContextInstanceWidget extends VerticalLayout
+    implements BeforeEnterObserver, ContextInstanceStateChangeEventBroadcastListener
+    , SchedulerJobStateChangeEventBroadcastListener {
 
     private static Logger logger = LoggerFactory.getLogger(ContextInstanceWidget.class);
     public static final String TREE_TAB = "treeTab";
@@ -79,8 +85,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     public static final String JOB_INSTANCE_TAB = "jobsTab";
     public static final String STATISTICS_TAB = "statisticsTab";
     public static final String AUDIT_TAB = "auditTab";
-    private Registration contextInstanceStateChangeRegistration;
-    private Registration schedulerJobInstanceStateChangeRegistration;
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -895,10 +899,12 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 try {
-                    this.contextInstance.setRunContextUntilManuallyEnded(true);
-                    this.saveContextInstance(this.contextInstance, this.contextInstance.getStatus());
-                    ignoreContextInstanceEndButton.setVisible(false);
-                    contextInstanceEndButton.setVisible(true);
+                    if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                        ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId())
+                            .runContextUntilManuallyEnded();
+                        ignoreContextInstanceEndButton.setVisible(false);
+                        contextInstanceEndButton.setVisible(true);
+                    }
                     this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DURATION_IGNORED, String.format("Job Plan Name[%s], Job Plan Instance Identifier[%s]"
                         , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                     NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-duration-ignored", UI.getCurrent().getLocale()));
@@ -1085,64 +1091,16 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
 
-        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                if(this.ui.isAttached()) {
-                    this.ui.access(() -> {
-                        if (this.contextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
-                            this.contextInstance = contextInstanceStateChangeEvent.getContextInstance();
-                            ContextHelper.enrichJobs(this.contextInstance);
-                            this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
-                        } else {
-                            ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
-                            if (record != null) {
-                                this.contextInstance = record.getContextInstance();
-                                ContextHelper.enrichJobs(this.contextInstance);
-                            }
-                        }
-                        this.updateJson(this.contextInstance);
-
-                        if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
-                            this.contextInstanceEndButton.setVisible(false);
-                            this.resetContextButton.setVisible(false);
-                            this.ignoreContextInstanceEndButton.setVisible(false);
-                            this.disableQuartzScheduledJobsButton.setVisible(false);
-                            this.holdContextButton.setVisible(false);
-                            this.releaseContextButton.setVisible(false);
-                            this.enableQuartzScheduledJobsButton.setVisible(false);
-                        }
-                    });
-                }
-            }
-        });
-
-        schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> {
-                    ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
-                    if (record != null) {
-                        this.contextInstance = record.getContextInstance();
-                        ContextHelper.enrichJobs(this.contextInstance);
-                        this.updateJson(this.contextInstance);
-                    }
-                });
-            }
-        });
+        ContextInstanceStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.contextInstanceStateChangeRegistration != null) {
-            this.contextInstanceStateChangeRegistration.remove();
-            this.contextInstanceStateChangeRegistration = null;
-        }
-
-        if(this.schedulerJobInstanceStateChangeRegistration != null) {
-            this.schedulerJobInstanceStateChangeRegistration.remove();
-            this.schedulerJobInstanceStateChangeRegistration = null;
-        }
+        ContextInstanceStateChangeEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.register(this);
     }
 
     @Override
@@ -1150,5 +1108,52 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.init(".", moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
         this.setWidthFull();
+    }
+
+    @Override
+    public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
+        if (event.getContextInstance() != null) {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    if (this.contextInstance.getId().equals(event.getContextInstance().getId())) {
+                        this.contextInstance = event.getContextInstance();
+                        ContextHelper.enrichJobs(this.contextInstance);
+                        this.statusDiv.setStatus(event.getNewStatus());
+                    } else {
+                        ScheduledContextInstanceRecord record = this.scheduledContextInstanceService
+                            .findById(this.contextInstance.getId());
+                        if (record != null) {
+                            this.contextInstance = record.getContextInstance();
+                            ContextHelper.enrichJobs(this.contextInstance);
+                        }
+                    }
+                    this.updateJson(this.contextInstance);
+
+                    if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
+                        this.contextInstanceEndButton.setVisible(false);
+                        this.resetContextButton.setVisible(false);
+                        this.ignoreContextInstanceEndButton.setVisible(false);
+                        this.disableQuartzScheduledJobsButton.setVisible(false);
+                        this.holdContextButton.setVisible(false);
+                        this.releaseContextButton.setVisible(false);
+                        this.enableQuartzScheduledJobsButton.setVisible(false);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
+                if (record != null) {
+                    this.contextInstance = record.getContextInstance();
+                    ContextHelper.enrichJobs(this.contextInstance);
+                    this.updateJson(this.contextInstance);
+                }
+            });
+        }
     }
 }

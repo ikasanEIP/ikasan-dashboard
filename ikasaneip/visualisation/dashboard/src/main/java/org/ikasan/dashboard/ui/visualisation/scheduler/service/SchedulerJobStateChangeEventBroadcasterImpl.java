@@ -1,16 +1,14 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 
-import java.util.function.Consumer;
-
-public class SchedulerJobStateChangeEventBroadcasterImpl implements SchedulerJobStateChangeEventBroadcaster<Registration> {
+public class SchedulerJobStateChangeEventBroadcasterImpl implements SchedulerJobStateChangeEventBroadcaster {
 
     @Override
-    public synchronized Registration register(Consumer<SchedulerJobInstanceStateChangeEvent> listener) {
-        return org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster.register(listener);
+    public synchronized void register(SchedulerJobStateChangeEventBroadcastListener listener) {
+        org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster.register(listener);
     }
 
     @Override
