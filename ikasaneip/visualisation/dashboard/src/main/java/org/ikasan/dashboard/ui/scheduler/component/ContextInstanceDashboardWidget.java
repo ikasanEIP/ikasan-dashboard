@@ -34,6 +34,8 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceAggregateJobStatus;
@@ -55,8 +57,7 @@ import java.util.stream.Collectors;
 
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
-public class ContextInstanceDashboardWidget extends Div {
-    private Registration schedulerJobStateChangeRegistration;
+public class ContextInstanceDashboardWidget extends Div implements SchedulerJobStateChangeEventBroadcastListener {
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
@@ -480,21 +481,21 @@ public class ContextInstanceDashboardWidget extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> {
-                    this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
-                });
-            }
-        });
+        SchedulerJobStateChangeEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
-        if(schedulerJobStateChangeRegistration != null) {
-            this.schedulerJobStateChangeRegistration.remove();
-            this.schedulerJobStateChangeRegistration = null;
+        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+            });
         }
     }
 

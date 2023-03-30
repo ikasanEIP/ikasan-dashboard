@@ -28,6 +28,8 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -40,11 +42,9 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 
-public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableResizableDialog {
+public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableResizableDialog implements SchedulerJobStateChangeEventBroadcastListener {
 
     Logger logger = LoggerFactory.getLogger(QuartzDrivenScheduledJobInstanceDialog.class);
-
-    private Registration schedulerJobStateChangeRegistration;
 
     private TextField agentTf;
 
@@ -316,30 +316,30 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.quartzScheduleDrivenJobInstance.getContextInstanceId())
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.quartzScheduleDrivenJobInstance.getJobName())) {
-                this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
-
-                if(this.ui.isAttached()) {
-                    this.ui.access(() -> {
-                        this.quartzScheduleDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                        this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
-                    });
-                }
-            }
-        });
+        SchedulerJobStateChangeEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.schedulerJobStateChangeRegistration != null) {
-            this.schedulerJobStateChangeRegistration.remove();
-            this.schedulerJobStateChangeRegistration = null;
+        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent jobInstanceStateChangeEvent) {
+        if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.quartzScheduleDrivenJobInstance.getContextInstanceId())
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.quartzScheduleDrivenJobInstance.getJobName())) {
+            this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
+
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    this.quartzScheduleDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
+                });
+            }
         }
     }
 }

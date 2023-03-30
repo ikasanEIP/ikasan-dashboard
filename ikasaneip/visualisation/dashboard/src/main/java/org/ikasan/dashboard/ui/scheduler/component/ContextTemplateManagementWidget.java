@@ -31,6 +31,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
+import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcastListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerVisualisation;
@@ -84,11 +85,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ContextTemplateManagementWidget extends VerticalLayout implements JobSynchronisationRequiredListener {
+public class ContextTemplateManagementWidget extends VerticalLayout implements JobSynchronisationRequiredListener, ContextTemplateSavedEventBroadcastListener {
 
     Logger logger = LoggerFactory.getLogger(ContextTemplateManagementWidget.class);
 
-    private Registration contextSaveBroadcasterRegistration;
     private ScheduledContextService scheduledContextService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -1104,37 +1104,37 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        this.contextSaveBroadcasterRegistration = ContextTemplateSavedEventBroadcaster.register(contextTemplate -> {
-            if(this.contextTemplate.getName().equals(contextTemplate.getName())) {
-                this.contextTemplate = contextTemplate;
-                if (this.ui.isAttached()) {
-                    this.ui.access(() -> {
-                        this.binder.readBean(contextTemplate);
-
-                        this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
-                        this.blackoutWindowDateTimePairs.clear();
-                        this.populateBlackoutWindowPairs(contextTemplate);
-                        this.jobPlanEditorWidget.updateRawContextTemplate(contextTemplate);
-
-                        try {
-                            this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, this.contextTemplate, null, true, ui);
-                            this.initialiseSearchCb();
-                        } catch (Exception e) {
-                            logger.error("Could not recreate visualisation upon context update!", e);
-                        }
-                    });
-                }
-            }
-        });
+        ContextTemplateSavedEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.contextSaveBroadcasterRegistration != null) {
-            this.contextSaveBroadcasterRegistration.remove();
-            this.contextSaveBroadcasterRegistration = null;
+        ContextTemplateSavedEventBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveContextTemplateSavedEventBroadcast(ContextTemplate contextTemplate) {
+        if(this.contextTemplate.getName().equals(contextTemplate.getName())) {
+            this.contextTemplate = contextTemplate;
+            if (this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    this.binder.readBean(contextTemplate);
+
+                    this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
+                    this.blackoutWindowDateTimePairs.clear();
+                    this.populateBlackoutWindowPairs(contextTemplate);
+                    this.jobPlanEditorWidget.updateRawContextTemplate(contextTemplate);
+
+                    try {
+                        this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, this.contextTemplate, null, true, ui);
+                        this.initialiseSearchCb();
+                    } catch (Exception e) {
+                        logger.error("Could not recreate visualisation upon context update!", e);
+                    }
+                });
+            }
         }
     }
 

@@ -11,6 +11,7 @@ import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
@@ -606,8 +607,8 @@ public class JobLockCacheImplTest {
             }
 
             @Override
-            public Object register(Consumer listener) {
-                return null;
+            public void register(JobLockCacheEventBroadcastListener listener) {
+
             }
         };
 
@@ -693,8 +694,8 @@ public class JobLockCacheImplTest {
             }
 
             @Override
-            public Object register(Consumer listener) {
-                return null;
+            public void register(JobLockCacheEventBroadcastListener listener) {
+
             }
         };
         JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);

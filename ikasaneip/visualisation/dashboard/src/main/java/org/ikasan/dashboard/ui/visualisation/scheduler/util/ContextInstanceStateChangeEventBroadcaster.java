@@ -1,31 +1,29 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.util;
 
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
 
-import java.util.LinkedList;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 public class ContextInstanceStateChangeEventBroadcaster {
     static Executor executor = Executors.newSingleThreadExecutor();
 
-    static LinkedList<Consumer<ContextInstanceStateChangeEvent>> listeners = new LinkedList<>();
+    private static WeakHashMap<ContextInstanceStateChangeEventBroadcastListener, Object> listeners =
+        new WeakHashMap<>();
 
-    public static synchronized Registration register(Consumer<ContextInstanceStateChangeEvent> listener) {
-        listeners.add(listener);
-
-        return () -> {
-            synchronized (ContextInstanceStateChangeEventBroadcaster.class) {
-                listeners.remove(listener);
-            }
-        };
+    public static synchronized void register(ContextInstanceStateChangeEventBroadcastListener listener) {
+        listeners.put(listener, null);
     }
 
-    public static synchronized void broadcast(ContextInstanceStateChangeEvent message) {
-        for (Consumer<ContextInstanceStateChangeEvent> listener : listeners) {
-            executor.execute(() -> listener.accept(message));
+    public static synchronized void unregister(ContextInstanceStateChangeEventBroadcastListener listener) {
+        listeners.remove(listener);
+    }
+
+    public static synchronized void broadcast(final ContextInstanceStateChangeEvent event) {
+        for (final ContextInstanceStateChangeEventBroadcastListener listener: listeners.keySet()) {
+            executor.execute(() -> listener.receiveBroadcast(event));
         }
     }
 }

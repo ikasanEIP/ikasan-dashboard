@@ -31,6 +31,8 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -47,9 +49,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
+public class JobLockCacheDialog extends AbstractCloseableResizableDialog implements JobLockCacheEventBroadcastListener {
     Logger logger = LoggerFactory.getLogger(JobLockCacheDialog.class);
-    private Registration registration;
     private ContextInstance contextInstance;
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
@@ -434,22 +435,21 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        this.registration = JobLockCacheEventBroadcaster.register(jobLockCacheEvent -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> {
-                    populateGrid(this.filterTf.getValue());
-                });
-            }
-        });
+        JobLockCacheEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
+        JobLockCacheEventBroadcaster.unregister(this);
+    }
 
-        if(this.registration != null) {
-            this.registration.remove();
-            this.registration = null;
+    @Override
+    public void receiveBroadcast(JobLockCacheEvent event) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                populateGrid(this.filterTf.getValue());
+            });
         }
     }
 }

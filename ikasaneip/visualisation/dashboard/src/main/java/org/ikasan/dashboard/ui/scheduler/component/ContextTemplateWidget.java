@@ -1,13 +1,11 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.cronutils.utils.StringUtils;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -20,14 +18,11 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.shared.Registration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
-import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
-import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateEnableDisableEventBroadcaster;
-import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
+import org.ikasan.dashboard.ui.scheduler.util.*;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
@@ -50,15 +45,13 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
-import org.ikasan.spec.scheduled.job.service.GlobalEventService;
-import org.ikasan.spec.scheduled.job.service.JobInitiationService;
-import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
-import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
+import org.ikasan.spec.scheduled.job.service.*;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -77,13 +70,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ContextTemplateWidget extends VerticalLayout {
-
-    private Registration contextEnableBroadcasterRegistration;
-
-    private Registration contextSaveBroadcasterRegistration;
-
-    private Registration contextInstanceSaveBroadcasterRegistration;
+public class ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
+    , ContextTemplateEnableDisableEventBroadcastListener, ContextTemplateSavedEventBroadcastListener {
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
@@ -924,37 +912,37 @@ public class ContextTemplateWidget extends VerticalLayout {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        this.contextEnableBroadcasterRegistration = ContextTemplateEnableDisableEventBroadcaster.register(flowState -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
-            }
-        });
 
-        this.contextSaveBroadcasterRegistration = ContextTemplateSavedEventBroadcaster.register(contextTemplate -> {
-            if(this.ui.isAttached()) {
-                this.ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
-            }
-        });
-
-        this.contextInstanceSaveBroadcasterRegistration = ContextInstanceSavedEventBroadcaster
-            .register(contextInstance -> this.updateActiveContextMenu());
+        ContextInstanceSavedEventBroadcaster.register(this);
+        ContextTemplateEnableDisableEventBroadcaster.register(this);
+        ContextTemplateSavedEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        if(this.contextEnableBroadcasterRegistration != null) {
-            this.contextEnableBroadcasterRegistration.remove();
-            this.contextEnableBroadcasterRegistration = null;
+        ContextTemplateEnableDisableEventBroadcaster.unregister(this);
+        ContextInstanceSavedEventBroadcaster.unregister(this);
+        ContextTemplateSavedEventBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveBroadcast(ContextInstance event) {
+        this.updateActiveContextMenu();
+    }
+
+    @Override
+    public void receiveContextTemplateSavedEventBroadcast(ContextTemplate contextTemplate) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
         }
-        if(this.contextSaveBroadcasterRegistration != null) {
-            this.contextSaveBroadcasterRegistration.remove();
-            this.contextSaveBroadcasterRegistration = null;
-        }
-        if(this.contextInstanceSaveBroadcasterRegistration != null) {
-            this.contextInstanceSaveBroadcasterRegistration.remove();
-            this.contextInstanceSaveBroadcasterRegistration = null;
+    }
+
+    @Override
+    public void receiveBroadcast(ContextTemplate contextTemplate) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
         }
     }
 }

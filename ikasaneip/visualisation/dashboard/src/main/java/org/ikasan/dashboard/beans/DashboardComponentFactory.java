@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.beans;
 
 import com.vaadin.flow.server.*;
-import liquibase.pro.packaged.C;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.dashboard.cache.FlowStateCache;

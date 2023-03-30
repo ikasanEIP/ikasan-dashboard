@@ -169,7 +169,8 @@ public abstract class ContextInstanceServiceBase {
                         "This is likely due to the child context name being duplicated in the context. The context instance will not have been recovered with skipped jobs set correctly.");
                 }
                 else if(!child.getScheduledJobsMap().containsKey(job.getValue().getIdentifier())){
-                    LOG.warn("Could not set job to skip as job with identifier [{}] was not found in child context [{}].");
+                    LOG.warn("Could not set job to skip as job with identifier [{}] was not found in child context [{}].",
+                        job.getValue().getIdentifier(), child.getName());
                 }
                 else {
                     child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
@@ -185,7 +186,8 @@ public abstract class ContextInstanceServiceBase {
                         "correctly");
                 }
                 else if(!child.getScheduledJobsMap().containsKey(job.getValue().getIdentifier())){
-                    LOG.warn("Could not set job to skip as job with identifier [{}] was not found in child context [{}].");
+                    LOG.warn("Could not set job to skip as job with identifier [{}] was not found in child context [{}].",
+                        job.getValue().getIdentifier(), child.getName());
                 }
                 else {
                     child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setHeld(job.getValue().isHeld());
@@ -195,6 +197,25 @@ public abstract class ContextInstanceServiceBase {
         });
 
         Map<String, GlobalEventJobInstance> globalEventJobMap = this.getGlobalEventJobs(instance.getId());
+
+        globalEventJobMap.entrySet().forEach(job -> {
+            if(job.getValue().getSkippedContexts() != null && job.getValue().getSkippedContexts().containsKey(instance.getName())) {
+                ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
+                if(child == null) {
+                    LOG.warn("Could not load child context[{}] from context instance name[{}] context instance id[{}] when attempting to initialise the context machine. " +
+                        "This is likely due to the child context name being duplicated in the context. The context instance will not have been recovered with skipped jobs set correctly.");
+                }
+                else if(!child.getScheduledJobsMap().containsKey(job.getValue().getIdentifier())){
+                    LOG.warn("Could not set job to skip as job with identifier [{}] was not found in child context [{}].",
+                        job.getValue().getIdentifier(), child.getName());
+                }
+                else {
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
+            }
+        });
+
         Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, queueDirectory, agents,

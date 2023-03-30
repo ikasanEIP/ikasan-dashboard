@@ -30,6 +30,7 @@ import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
@@ -40,11 +41,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
-public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDialog {
+public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDialog implements SchedulerJobStateChangeEventBroadcastListener {
 
     Logger logger = LoggerFactory.getLogger(GlobalEventJobInstanceDialog.class);
-
-    private Registration schedulerJobStateChangeRegistration;
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
@@ -554,33 +553,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.globalEventJob.getContextInstanceId())
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName().equals(this.globalEventJob.getChildContextName())
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.globalEventJob.getJobName())) {
-                if(this.ui.isAttached()) {
-                    this.ui.access(() -> {
-                        this.globalEventJob.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                        this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-
-                        if(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null) {
-                            ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent =
-                                (ContextualisedScheduledProcessEvent) jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
-
-                            if(contextualisedScheduledProcessEvent.getCatalystEvent() != null) {
-                                this.globalEventJob.setScheduledProcessEvent(contextualisedScheduledProcessEvent);
-                                setCatalystJobs((ContextualisedScheduledProcessEvent) contextualisedScheduledProcessEvent.getCatalystEvent());
-
-                                this.setEnabled(this.enabled);
-
-                                this.submitButton.setVisible(!this.globalEventJob.getStatus().equals(InstanceStatus.COMPLETE));
-                            }
-                        }
-                    });
-                }
-            }
-        });
+        SchedulerJobStateChangeEventBroadcaster.register(this);
     }
 
     @Override
@@ -588,10 +561,35 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
         super.onDetach(detachEvent);
 
         this.ui = null;
+        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+    }
 
-        if(this.schedulerJobStateChangeRegistration != null) {
-            this.schedulerJobStateChangeRegistration.remove();
-            this.schedulerJobStateChangeRegistration = null;
+    @Override
+    public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent jobInstanceStateChangeEvent) {
+        if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.globalEventJob.getContextInstanceId())
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName().equals(this.globalEventJob.getChildContextName())
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.globalEventJob.getJobName())) {
+            if(this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    this.globalEventJob.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+
+                    if(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null) {
+                        ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent =
+                            (ContextualisedScheduledProcessEvent) jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
+
+                        if(contextualisedScheduledProcessEvent.getCatalystEvent() != null) {
+                            this.globalEventJob.setScheduledProcessEvent(contextualisedScheduledProcessEvent);
+                            setCatalystJobs((ContextualisedScheduledProcessEvent) contextualisedScheduledProcessEvent.getCatalystEvent());
+
+                            this.setEnabled(this.enabled);
+
+                            this.submitButton.setVisible(!this.globalEventJob.getStatus().equals(InstanceStatus.COMPLETE));
+                        }
+                    }
+                });
+            }
         }
     }
 }
