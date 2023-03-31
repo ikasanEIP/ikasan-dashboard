@@ -456,6 +456,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 return;
             }
 
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_KILLED, String.format("Agent Name[%s], Scheduled Job Name[%s],Job Plan Name[%s], Job Plan Id[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), internalEventDrivenJobInstance.getContextName()
+                , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
+
             NotificationHelper.showUserNotification(getTranslation("notification.job-killed", UI.getCurrent().getLocale()));
         });
 
@@ -746,8 +750,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             contextMachine.skipJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName(), true);
             this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.SKIPPED);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true, internalEventDrivenJobInstance.getContextName()
+                , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -776,8 +781,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             contextMachine.skipJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName(), false);
             this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.WAITING);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), false), this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_ENABLED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), false, internalEventDrivenJobInstance.getContextName()
+                , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -806,8 +812,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             contextMachine.holdJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName());
             this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.ON_HOLD);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Held[%s]"
-                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Held[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true, internalEventDrivenJobInstance.getContextName()
+                , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -836,8 +843,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             contextMachine.releaseJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName());
             this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.WAITING);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Released[%s]"
-                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Released[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true, internalEventDrivenJobInstance.getContextName()
+                , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -866,8 +874,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                     -> contextMachine.resetJob(this.internalEventDrivenJobInstance.getIdentifier(), name));
             }
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s]"
-                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true, internalEventDrivenJobInstance.getContextName()
+                , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();

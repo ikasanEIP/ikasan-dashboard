@@ -505,7 +505,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     protected void initialiseEditor()
     {
         this.jobPlanEditorWidget = new JobPlanEditorWidget(this.contextTemplate
-            , this.scheduledContextService, this.schedulerJobService);
+            , this.scheduledContextService, this.schedulerJobService, this.systemEventLogger);
 
         this.jobPlanEditorWidget.setVisible(false);
     }

@@ -32,7 +32,9 @@ import org.ikasan.security.model.IkasanPrincipalLite;
 import org.ikasan.security.model.Role;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.SecurityService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.systemevent.SystemEventService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -45,6 +47,7 @@ public class GroupManagementDialog extends AbstractCloseableResizableDialog
     private SystemEventLogger systemEventLogger;
 
     private FilteringGrid<Role> roleGrid;
+    private IkasanAuthentication ikasanAuthentication;
 
     /**
      * Constructor
@@ -73,6 +76,7 @@ public class GroupManagementDialog extends AbstractCloseableResizableDialog
             throw new IllegalArgumentException("systemEventLogger cannot be null!");
         }
 
+        this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         init();
     }
 
@@ -121,7 +125,7 @@ public class GroupManagementDialog extends AbstractCloseableResizableDialog
 
                 String action = String.format("Role [%s] removed from group [%s].", role.getName(), principal.getName());
 
-                this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_PRINCIPAL_ROLE_CHANGED_CONSTANTS, action, null);
+                this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_PRINCIPAL_ROLE_CHANGED_CONSTANTS, action, this.ikasanAuthentication.getName());
 
                 this.updateRolesGrid();
             });
@@ -141,7 +145,7 @@ public class GroupManagementDialog extends AbstractCloseableResizableDialog
 
         this.updateRolesGrid();
 
-        Button addRoleButton = new Button(getTranslation("button.add-role", UI.getCurrent().getLocale(), null));
+        Button addRoleButton = new Button(getTranslation("button.add-role", UI.getCurrent().getLocale()));
         addRoleButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
             IkasanPrincipal principal = securityService.findPrincipalByName(group.getName());

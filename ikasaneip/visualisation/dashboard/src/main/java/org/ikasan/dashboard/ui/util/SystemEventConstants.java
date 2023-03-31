@@ -67,6 +67,7 @@ public class SystemEventConstants
     public static final String SCHEDULED_JOB_DELETED = "Scheduled job deleted";
     public static final String SCHEDULED_JOB_EDIT = "Scheduled job edited";
     public static final String SCHEDULED_JOB_SKIPPED = "Scheduled job skipped";
+    public static final String SCHEDULED_JOB_KILLED = "Scheduled job killed";
     public static final String SCHEDULED_JOB_ENABLED = "Scheduled job enabled";
     public static final String SCHEDULED_JOB_HELD = "Scheduled job held";
     public static final String All_SCHEDULED_JOBS_HELD_FOR_JOB_PLAN = "All scheduled jobs held for job plan";
@@ -80,12 +81,12 @@ public class SystemEventConstants
     public static final String USER_ADDED_TO_CONTEXT_PROFILE = "User added to context profile";
     public static final String USER_REMOVED_FROM_CONTEXT_PROFILE = "User removed from context profile";
     public static final String CONTEXT_JOB_LOCKS_MODIFICATION = "Job plan job lock modification";
-    public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED = "Job plan scheduled jobs disabled";
-    public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED = "Job plan scheduled jobs enabled";
-    public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED = "Job plan instance scheduled jobs disabled";
-    public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED = "Job plan instance scheduled jobs enabled";
-    public static final String CONTEXT_INSTANCE_HOLDING_ALL_JOBS = "Job plan instance scheduled jobs held";
-    public static final String CONTEXT_INSTANCE_RELEASING_ALL_JOBS = "Job plan instance scheduled jobs released";
+    public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED = "Job plan all scheduled jobs disabled";
+    public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED = "Job plan all scheduled jobs enabled";
+    public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED = "Job plan instance all scheduled jobs disabled";
+    public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED = "Job plan instance all scheduled jobs enabled";
+    public static final String CONTEXT_INSTANCE_HOLDING_ALL_JOBS = "Job plan instance all scheduled jobs held";
+    public static final String CONTEXT_INSTANCE_RELEASING_ALL_JOBS = "Job plan instance all scheduled jobs released";
     public static final String CONTEXT_INSTANCE_RESET = "Job plan instance reset";
     public static final String CONTEXT_INSTANCE_MANUALLY_ENDED = "Job plan instance manually ended";
     public static final String CONTEXT_INSTANCE_DURATION_IGNORED = "Job plan instance duration ignored";

@@ -186,7 +186,7 @@ public abstract class ContextInstanceServiceBase {
                         "correctly");
                 }
                 else if(!child.getScheduledJobsMap().containsKey(job.getValue().getIdentifier())){
-                    LOG.warn("Could not set job to skip as job with identifier [{}] was not found in child context [{}].",
+                    LOG.warn("Could not set job to hold as job with identifier [{}] was not found in child context [{}].",
                         job.getValue().getIdentifier(), child.getName());
                 }
                 else {
