@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -20,10 +21,14 @@ import org.ikasan.dashboard.ui.scheduler.model.JsonValidationError;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.validation.ContextError;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -31,6 +36,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +50,7 @@ public class JobPlanEditorWidget extends VerticalLayout {
     private ContextTemplate contextTemplate;
     private AceEditor aceEditor;
     private ContextService contextService;
+    private SystemEventLogger systemEventLogger;
 
     private Tabs tabs;
     private Tab errorTab;
@@ -56,9 +63,11 @@ public class JobPlanEditorWidget extends VerticalLayout {
     private VerticalLayout errorWidget;
 
     private SplitLayout editorSplitLayout;
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private IkasanAuthentication ikasanAuthentication;
 
     public JobPlanEditorWidget(ContextTemplate contextTemplate, ScheduledContextService scheduledContextService,
-                               SchedulerJobService<SchedulerJobRecord> schedulerJobService) {
+                               SchedulerJobService<SchedulerJobRecord> schedulerJobService, SystemEventLogger systemEventLogger) {
         this.contextTemplate = contextTemplate;
         if(this.contextTemplate == null) {
             throw new IllegalArgumentException("contextTemplate cannot be null!");
@@ -74,6 +83,12 @@ public class JobPlanEditorWidget extends VerticalLayout {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
         }
 
+        this.systemEventLogger = systemEventLogger;
+        if(this.systemEventLogger == null) {
+            throw new IllegalArgumentException("systemEventLogger cannot be null!");
+        }
+
+        this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.contextService =  new ContextService();
 
         this.setMargin(false);
@@ -131,8 +146,20 @@ public class JobPlanEditorWidget extends VerticalLayout {
             else  {
                 try {
                     ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(this.contextTemplate.getName());
+
+                    ContextTemplate beforeUpdate = scheduledContextRecord.getContext();
+
                     scheduledContextRecord.setContext(contextTemplate);
                     this.scheduledContextService.save(scheduledContextRecord);
+
+                    try {
+                        this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_SAVED, String.format("Job Plan Saved. Parent Job Plan [%s]. Name of Saved Job Plan [%s].\nBefore\n[%s]\nAfter\n[%s]"
+                            , this.contextTemplate.getName(), this.contextTemplate.getName(), this.objectMapper.writeValueAsString(beforeUpdate), this.objectMapper.writeValueAsString(contextTemplate)), this.ikasanAuthentication.getName());
+                    }
+                    catch (JsonProcessingException e) {
+                        // Ignore json exception
+                    }
+
                     ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
                 }
                 catch (Exception e) {
