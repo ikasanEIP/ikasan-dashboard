@@ -43,6 +43,18 @@ public class ContextHelperTest {
     }
 
     @Test
+    public void test_context_template_token_replacement_with_job_locks() throws IOException, JSONException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));
+
+        ContextHelper.addContextTemplateReplacementTokens(contextTemplate);
+
+        Assert.assertNotNull(contextTemplate);
+        JSONAssert.assertEquals(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks-with-tokens.json")
+            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+    }
+
+    @Test
     public void test_scheduler_job_token_replacement() {
         InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
         internalEventDrivenJob.setJobName("jobName");
