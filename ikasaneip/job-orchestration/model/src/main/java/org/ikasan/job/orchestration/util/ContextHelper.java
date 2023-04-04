@@ -602,12 +602,18 @@ public class ContextHelper {
 
         if(!jobs.isEmpty()) {
             results.add(jobs);
-            jobs.forEach(job -> getContextsWhereJobResides(context, job.getJobName()).forEach(filtered
-                -> {
-                if(!filtered.equals(childContextName) && !filtered.isEmpty()) {
-                    _traceJobThroughContext(results, context, job.getJobName(), filtered, processedContexts);
+            jobs.forEach(job -> {
+                if(job != null) {
+                    List<String> contexts = getContextsWhereJobResides(context, job.getJobName());
+                    if (contexts != null) {
+                        contexts.forEach(filtered -> {
+                            if (!filtered.equals(childContextName) && !filtered.isEmpty()) {
+                                _traceJobThroughContext(results, context, job.getJobName(), filtered, processedContexts);
+                            }
+                        });
+                    }
                 }
-            }));
+            });
         }
     }
 

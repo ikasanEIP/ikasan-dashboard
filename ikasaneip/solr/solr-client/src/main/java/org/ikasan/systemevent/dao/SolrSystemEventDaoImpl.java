@@ -96,32 +96,32 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
 
         if(filter.getSubject() != null && !filter.getSubject().isEmpty()) {
             queryBuffer.append(AND);
-            queryBuffer.append(SYSTEM_EVENT_SUBJECT).append(COLON)
-                .append("\"")
-                .append(WILDCARD)
+            queryBuffer.append(SYSTEM_EVENT_SUBJECT).append(COLON);
+            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getSubject()))queryBuffer.append("\"");
+            queryBuffer.append(WILDCARD)
                 .append(SolrSpecialCharacterEscapeUtil.escape(filter.getSubject()))
-                .append(WILDCARD)
-                .append("\"");
+                .append(WILDCARD);
+            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getSubject()))queryBuffer.append("\"");
         }
 
         if(filter.getAction() != null && !filter.getAction().isEmpty()) {
             queryBuffer.append(AND);
-            queryBuffer.append(SYSTEM_EVENT_ACTION).append(COLON)
-                .append("\"")
-                .append(WILDCARD)
+            queryBuffer.append(SYSTEM_EVENT_ACTION).append(COLON);
+            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getAction()))queryBuffer.append("\"");
+            queryBuffer.append(WILDCARD)
                 .append(SolrSpecialCharacterEscapeUtil.escape(filter.getAction()))
-                .append(WILDCARD)
-                .append("\"");
+                .append(WILDCARD);
+            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getAction()))queryBuffer.append("\"");
         }
 
         if(filter.getSearchTerm() != null && !filter.getSearchTerm().isEmpty()) {
             queryBuffer.append(AND);
-            queryBuffer.append(PAYLOAD_CONTENT).append(COLON)
-                .append("\"")
-                .append(WILDCARD)
+            queryBuffer.append(PAYLOAD_CONTENT).append(COLON);
+            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getSearchTerm()))queryBuffer.append("\"");
+            queryBuffer.append(WILDCARD)
                 .append(SolrSpecialCharacterEscapeUtil.escape(filter.getSearchTerm()))
-                .append(WILDCARD)
-                .append("\"");
+                .append(WILDCARD);
+            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getSearchTerm()))queryBuffer.append("\"");
         }
 
         if(filter.getEndTime() > 0 ) {
