@@ -67,8 +67,20 @@ public class ContextHelper {
             });
         }
 
+        if(contextTemplate.getJobLocks() != null) {
+            contextTemplate.getJobLocks().forEach(jobLock -> {
+                jobLock.getJobs().entrySet().forEach(entry -> {
+                    entry.getValue().forEach(job -> {
+                        job.setContextName(CONTEXT_NAME_REPLACEMENT);
+                        job.setAgentName(AGENT_NAME_REPLACEMENT);
+                        job.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + job.getJobName());
+                    });
+                });
+            });
+        }
+
         if(contextTemplate.getContexts() != null) {
-            contextTemplate.getContexts().forEach(child -> addContextTemplateReplacementTokens(child));
+            contextTemplate.getContexts().forEach(child -> _addContextTemplateReplacementTokens(child));
         }
     }
 

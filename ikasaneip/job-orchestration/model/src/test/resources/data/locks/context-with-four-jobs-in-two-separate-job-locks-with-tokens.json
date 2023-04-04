@@ -1,0 +1,181 @@
+{
+  "contexts": [],
+  "scheduledJobs": [
+    {
+      "agentName": "[[agent-name]]",
+      "jobName": "jobName1",
+      "childContextNames": [],
+      "startupControlType": "AUTOMATIC",
+      "skippedContexts": {},
+      "heldContexts": {},
+      "identifier": "[[agent-name]]-jobName1"
+    },
+    {
+      "agentName": "[[agent-name]]",
+      "jobName": "jobName2",
+      "childContextNames": [],
+      "startupControlType": "AUTOMATIC",
+      "skippedContexts": {},
+      "heldContexts": {},
+      "identifier": "[[agent-name]]-jobName2"
+    },
+    {
+      "agentName": "[[agent-name]]",
+      "jobName": "jobName3",
+      "childContextNames": [],
+      "startupControlType": "AUTOMATIC",
+      "skippedContexts": {},
+      "heldContexts": {},
+      "identifier": "[[agent-name]]-jobName3"
+    },
+    {
+      "agentName": "[[agent-name]]",
+      "jobName": "jobName4",
+      "childContextNames": [],
+      "startupControlType": "AUTOMATIC",
+      "skippedContexts": {},
+      "heldContexts": {},
+      "identifier": "[[agent-name]]-jobName4"
+    },
+    {
+      "agentName": "[[agent-name]]",
+      "jobName": "jobName5",
+      "childContextNames": [],
+      "startupControlType": "AUTOMATIC",
+      "skippedContexts": {},
+      "heldContexts": {},
+      "identifier": "[[agent-name]]-jobName5"
+    }
+  ],
+  "jobLocks": [
+    {
+      "name": "TEST-LOCK-1",
+      "lockCount": 1,
+      "jobs": {
+        "context2": [
+          {
+            "agentName": "[[agent-name]]",
+            "jobName": "jobName3",
+            "contextName": "[[context-name]]",
+            "childContextNames": [],
+            "startupControlType": "AUTOMATIC",
+            "skippedContexts": {},
+            "heldContexts": {},
+            "identifier": "[[agent-name]]-jobName3",
+            "jobDescription": "Job3 Description"
+          }
+        ],
+        "context1": [
+          {
+            "agentName": "[[agent-name]]",
+            "jobName": "jobName2",
+            "contextName": "[[context-name]]",
+            "childContextNames": [],
+            "startupControlType": "AUTOMATIC",
+            "skippedContexts": {},
+            "heldContexts": {},
+            "identifier": "[[agent-name]]-jobName2",
+            "jobDescription": "Job2 Description"
+          }
+        ]
+      },
+      "exclusiveJobLock": false
+    },
+    {
+      "name": "TEST-LOCK-2",
+      "lockCount": 1,
+      "jobs": {
+        "context2": [
+          {
+            "agentName": "[[agent-name]]",
+            "jobName": "jobName5",
+            "contextName": "[[context-name]]",
+            "childContextNames": [],
+            "startupControlType": "AUTOMATIC",
+            "skippedContexts": {},
+            "heldContexts": {},
+            "identifier": "[[agent-name]]-jobName5",
+            "jobDescription": "Job5 Description"
+          }
+        ],
+        "context1": [
+          {
+            "agentName": "[[agent-name]]",
+            "jobName": "jobName4",
+            "contextName": "[[context-name]]",
+            "childContextNames": [],
+            "startupControlType": "AUTOMATIC",
+            "skippedContexts": {},
+            "heldContexts": {},
+            "identifier": "[[agent-name]]-jobName4",
+            "jobDescription": "Job5 Description"
+          }
+        ]
+      },
+      "exclusiveJobLock": false
+    }
+  ],
+  "name": "[[context-name]]",
+  "jobDependencies": [
+    {
+      "jobIdentifier": "[[agent-name]]-jobName1"
+    },
+    {
+      "jobIdentifier": "[[agent-name]]-jobName2",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "[[agent-name]]-jobName5"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "[[agent-name]]-jobName3",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "[[agent-name]]-jobName5"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "[[agent-name]]-jobName4",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "[[agent-name]]-jobName5"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "[[agent-name]]-jobName5",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "[[agent-name]]-jobName5"
+          }
+        ]
+      }
+    }
+  ],
+  "contextDependencies": [],
+  "contextParameters": [
+    {
+      "name": "name"
+    },
+    {
+      "name": "name"
+    },
+    {
+      "name": "name"
+    }
+  ],
+  "timeWindowStart": "* * 6 ? * * *",
+  "contextTtlMilliseconds": 0,
+  "treeViewExpandLevel": 1,
+  "disabled": false,
+  "quartzScheduleDrivenJobsDisabledForContext": false
+}
