@@ -11,16 +11,17 @@ import com.github.appreciated.app.layout.component.menu.left.builder.LeftAppMenu
 import com.github.appreciated.app.layout.component.menu.left.builder.LeftSubMenuBuilder;
 import com.github.appreciated.app.layout.component.menu.left.items.LeftNavigationItem;
 import com.github.appreciated.app.layout.component.router.AppLayoutRouterLayout;
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.server.InitialPageSettings;
@@ -34,13 +35,11 @@ import org.ikasan.dashboard.ui.dashboard.view.DashboardView;
 import org.ikasan.dashboard.ui.general.component.AboutIkasanDialog;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.dashboard.ui.search.view.SearchView;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.view.BusinessStreamDesignerView;
 import org.ikasan.dashboard.ui.visualisation.view.GraphView;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Resource;
@@ -60,6 +59,12 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
 {
     @Resource
     private SystemEventLogger systemEventLogger;
+
+    @Value("${banner.text.message:}")
+    private String bannerTextMessage;
+
+    @Value("${banner.text.color:}")
+    private String bannerTextColor;
 
     private LeftMenuComponentWrapper leftAppMenu;
     private LeftSubmenu leftSubmenu;
@@ -194,6 +199,18 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
     @Override
     public void onAttach(AttachEvent attachEvent)
     {
+        if(this.bannerTextMessage != null && !this.bannerTextMessage.isEmpty()) {
+            Span bannerText = new Span(bannerTextMessage);
+            bannerText.getElement().getStyle().set("font-size", "30pt");
+            bannerText.getElement().getStyle().set("color", bannerTextColor);
+
+            HorizontalLayout bannerLayout = new HorizontalLayout(bannerText);
+            bannerLayout.getElement().getStyle().set("position", "absolute");
+            bannerLayout.getElement().getStyle().set("left", "50%");
+            bannerLayout.getElement().getStyle().set("transform", "translate(-50%)");
+            super.getAppLayout().setTitleComponent(bannerLayout);
+        }
+
         super.onAttach(attachEvent);
         this.searchMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SEARCH_ADMIN, SecurityConstants.SEARCH_READ, SecurityConstants.SEARCH_WRITE,
             SecurityConstants.ALL_AUTHORITY));
