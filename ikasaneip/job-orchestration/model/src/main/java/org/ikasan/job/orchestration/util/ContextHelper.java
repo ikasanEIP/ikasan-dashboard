@@ -890,6 +890,10 @@ public class ContextHelper {
             });
         }
 
+        if(context.getName().toLowerCase().contains(jobNameFilter.toLowerCase()) && !results.contains(context.getName())) {
+            results.add(context.getName());
+        }
+
         if(context.getContexts() != null && !context.getContexts().isEmpty()) {
             context.getContexts().forEach(child -> getContextsWhereJobFilterMatchResides(results, (Context) child, jobNameFilter));
         }
