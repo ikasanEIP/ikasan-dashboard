@@ -23,7 +23,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.shared.Registration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
@@ -55,7 +54,6 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationServ
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -73,6 +71,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
 public class ContextInstanceWidget extends VerticalLayout
     implements BeforeEnterObserver, ContextInstanceStateChangeEventBroadcastListener
@@ -144,6 +144,14 @@ public class ContextInstanceWidget extends VerticalLayout
     private String jobStatus;
     private String jobName;
     private UI ui;
+
+    private SchedulerStatusFreeTextDiv waitingStatus = new SchedulerStatusFreeTextDiv();
+    private SchedulerStatusFreeTextDiv completeStatus = new SchedulerStatusFreeTextDiv();
+    private SchedulerStatusFreeTextDiv runningStatus = new SchedulerStatusFreeTextDiv();
+    private SchedulerStatusFreeTextDiv queuedStatus = new SchedulerStatusFreeTextDiv();
+    private SchedulerStatusFreeTextDiv onHoldStatus = new SchedulerStatusFreeTextDiv();
+    private SchedulerStatusFreeTextDiv skippedStatus = new SchedulerStatusFreeTextDiv();
+    private SchedulerStatusFreeTextDiv errorStatus = new SchedulerStatusFreeTextDiv();;
 
     /**
      * Constructor
@@ -426,6 +434,19 @@ public class ContextInstanceWidget extends VerticalLayout
         this.formLayout.add(this.projectedEndTimeTf, 2);
         this.formLayout.add(this.endTimeTf, 2);
 
+        HorizontalLayout jobStatusLayout = new HorizontalLayout();
+        this.waitingStatus.setSizeFull();
+        this.completeStatus.setSizeFull();
+        this.runningStatus.setSizeFull();
+        this.queuedStatus.setSizeFull();
+        this.onHoldStatus.setSizeFull();
+        this.skippedStatus.setSizeFull();
+        this.errorStatus.setSizeFull();
+        jobStatusLayout.add(this.waitingStatus, this.completeStatus, this.runningStatus, this.queuedStatus
+            , this.onHoldStatus, this.skippedStatus, this.errorStatus);
+
+        this.formLayout.add(jobStatusLayout, 11);
+
         CollapsableLayout collapsableLayout = new CollapsableLayout();
         add(collapsableLayout);
 
@@ -575,6 +596,23 @@ public class ContextInstanceWidget extends VerticalLayout
         aceEditor.setVisible(false);
 
         this.updateJson(this.contextInstance);
+    }
+
+    private void refreshJobStatusWidget() {
+        if(this.ui.isAttached()) {
+            ui.access(() -> {
+                List<ContextInstanceAggregateJobStatus> jobStatuses = this.schedulerJobInstanceService
+                    .getJobStatusCountForContextInstances(List.of(this.contextInstance.getId()));
+
+                waitingStatus.setStatus(InstanceStatus.WAITING, jobStatuses.get(0).getStatusCount(InstanceStatus.WAITING) + " " + InstanceStatus.WAITING.getTranslationLabel());
+                completeStatus.setStatus(InstanceStatus.COMPLETE, jobStatuses.get(0).getStatusCount(InstanceStatus.COMPLETE) + " " + InstanceStatus.COMPLETE.getTranslationLabel());
+                runningStatus.setStatus(InstanceStatus.RUNNING, jobStatuses.get(0).getStatusCount(InstanceStatus.RUNNING) + " " + InstanceStatus.RUNNING.getTranslationLabel());
+                queuedStatus.setStatus(InstanceStatus.LOCK_QUEUED, jobStatuses.get(0).getStatusCount(InstanceStatus.LOCK_QUEUED) + " " + InstanceStatus.LOCK_QUEUED.getTranslationLabel());
+                onHoldStatus.setStatus(InstanceStatus.ON_HOLD, jobStatuses.get(0).getStatusCount(InstanceStatus.ON_HOLD) + " " + InstanceStatus.ON_HOLD.getTranslationLabel());
+                skippedStatus.setStatus(InstanceStatus.SKIPPED, jobStatuses.get(0).getStatusCount(InstanceStatus.SKIPPED) + " " + InstanceStatus.SKIPPED.getTranslationLabel());
+                errorStatus.setStatus(InstanceStatus.ERROR, jobStatuses.get(0).getStatusCount(InstanceStatus.ERROR) + " " + InstanceStatus.ERROR.getTranslationLabel());
+            });
+        }
     }
 
     private void updateJson(ContextInstance contextInstance) {
@@ -1091,6 +1129,8 @@ public class ContextInstanceWidget extends VerticalLayout
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
 
+        this.refreshJobStatusWidget();
+
         ContextInstanceStateChangeEventBroadcaster.register(this);
         SchedulerJobStateChangeEventBroadcaster.register(this);
     }
@@ -1100,7 +1140,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.ui = null;
 
         ContextInstanceStateChangeEventBroadcaster.unregister(this);
-        SchedulerJobStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.unregister(this);
     }
 
     @Override
@@ -1113,7 +1153,7 @@ public class ContextInstanceWidget extends VerticalLayout
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         if (event.getContextInstance() != null) {
-            if(this.ui.isAttached()) {
+            if(this.ui != null && this.ui.isAttached()) {
                 this.ui.access(() -> {
                     if (this.contextInstance.getId().equals(event.getContextInstance().getId())) {
                         this.contextInstance = event.getContextInstance();
@@ -1145,13 +1185,15 @@ public class ContextInstanceWidget extends VerticalLayout
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        if(this.ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached()) {
             this.ui.access(() -> {
-                ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
+                ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE);
                 if (record != null) {
                     this.contextInstance = record.getContextInstance();
                     ContextHelper.enrichJobs(this.contextInstance);
                     this.updateJson(this.contextInstance);
+
+                    this.refreshJobStatusWidget();
                 }
             });
         }
