@@ -604,13 +604,13 @@ public class ContextInstanceWidget extends VerticalLayout
                 List<ContextInstanceAggregateJobStatus> jobStatuses = this.schedulerJobInstanceService
                     .getJobStatusCountForContextInstances(List.of(this.contextInstance.getId()));
 
-                waitingStatus.setStatus(InstanceStatus.WAITING, jobStatuses.get(0).getStatusCount(InstanceStatus.WAITING) + " " + InstanceStatus.WAITING.getTranslationLabel());
-                completeStatus.setStatus(InstanceStatus.COMPLETE, jobStatuses.get(0).getStatusCount(InstanceStatus.COMPLETE) + " " + InstanceStatus.COMPLETE.getTranslationLabel());
-                runningStatus.setStatus(InstanceStatus.RUNNING, jobStatuses.get(0).getStatusCount(InstanceStatus.RUNNING) + " " + InstanceStatus.RUNNING.getTranslationLabel());
-                queuedStatus.setStatus(InstanceStatus.LOCK_QUEUED, jobStatuses.get(0).getStatusCount(InstanceStatus.LOCK_QUEUED) + " " + InstanceStatus.LOCK_QUEUED.getTranslationLabel());
-                onHoldStatus.setStatus(InstanceStatus.ON_HOLD, jobStatuses.get(0).getStatusCount(InstanceStatus.ON_HOLD) + " " + InstanceStatus.ON_HOLD.getTranslationLabel());
-                skippedStatus.setStatus(InstanceStatus.SKIPPED, jobStatuses.get(0).getStatusCount(InstanceStatus.SKIPPED) + " " + InstanceStatus.SKIPPED.getTranslationLabel());
-                errorStatus.setStatus(InstanceStatus.ERROR, jobStatuses.get(0).getStatusCount(InstanceStatus.ERROR) + " " + InstanceStatus.ERROR.getTranslationLabel());
+                waitingStatus.setStatus(InstanceStatus.WAITING, jobStatuses.get(0).getStatusCount(InstanceStatus.WAITING) + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale()));
+                completeStatus.setStatus(InstanceStatus.COMPLETE, jobStatuses.get(0).getStatusCount(InstanceStatus.COMPLETE) + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()));
+                runningStatus.setStatus(InstanceStatus.RUNNING, jobStatuses.get(0).getStatusCount(InstanceStatus.RUNNING) + " " + getTranslation(InstanceStatus.RUNNING.getTranslationLabel(), UI.getCurrent().getLocale()));
+                queuedStatus.setStatus(InstanceStatus.LOCK_QUEUED, jobStatuses.get(0).getStatusCount(InstanceStatus.LOCK_QUEUED) + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale()));
+                onHoldStatus.setStatus(InstanceStatus.ON_HOLD, jobStatuses.get(0).getStatusCount(InstanceStatus.ON_HOLD) + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()));
+                skippedStatus.setStatus(InstanceStatus.SKIPPED, jobStatuses.get(0).getStatusCount(InstanceStatus.SKIPPED) + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()));
+                errorStatus.setStatus(InstanceStatus.ERROR, jobStatuses.get(0).getStatusCount(InstanceStatus.ERROR) + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()));
             });
         }
     }
