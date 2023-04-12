@@ -3,6 +3,7 @@ package org.ikasan.job.orchestration.core.machine;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
@@ -366,13 +367,38 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
 
         if(contextParameters != null && internalEventDrivenJob != null && internalEventDrivenJob.getContextParameters() != null) {
-            schedulerJobInitiationEvent.setContextParameters(contextParameters.stream()
-                .filter(contextParameterInstance -> internalEventDrivenJob
-                    .getContextParameters()
-                    .stream()
-                    .filter(contextParameter -> contextParameterInstance.getName().equals(contextParameter.getName()))
-                    .map(instance -> replaceParamIfSet(parentContextInstance.getName(), contextParameterInstance))
-                    .collect(Collectors.toList()).size() > 0)
+            schedulerJobInitiationEvent.setContextParameters(internalEventDrivenJob.getContextParameters().stream()
+                .map(contextParameter -> {
+                    AtomicReference<ContextParameterInstance> instance = new AtomicReference<>();
+                    contextParameters.forEach(contextParameterInstance -> {
+                        if(contextParameter.getName().equals(contextParameterInstance.getName())) {
+                            instance.set(contextParameterInstance);
+                        }
+                    });
+
+                    if(instance.get() != null) {
+                        return this.replaceParamIfSet(parentContextInstance.getName(), instance.get());
+                    }
+                    else {
+                        ContextParameterInstance defaultInstance = new ContextParameterInstanceImpl();
+                        defaultInstance.setName(contextParameter.getName());
+                        defaultInstance.setValue(contextParameter.getDefaultValue());
+                        defaultInstance.setDefaultValue(contextParameter.getDefaultValue());
+
+                        return defaultInstance;
+                    }
+                }).collect(Collectors.toList()));
+        }
+        else if((contextParameters == null || contextParameters.isEmpty()) && internalEventDrivenJob != null && internalEventDrivenJob.getContextParameters() != null) {
+            schedulerJobInitiationEvent.setContextParameters(internalEventDrivenJob.getContextParameters().stream()
+                .map(contextParameter -> {
+                    ContextParameterInstanceImpl contextParameterInstance = new ContextParameterInstanceImpl();
+                    contextParameterInstance.setName(contextParameter.getName());
+                    contextParameterInstance.setValue(contextParameter.getDefaultValue());
+                    contextParameterInstance.setDefaultValue(contextParameter.getDefaultValue());
+
+                    return contextParameterInstance;
+                })
                 .collect(Collectors.toList()));
         }
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
