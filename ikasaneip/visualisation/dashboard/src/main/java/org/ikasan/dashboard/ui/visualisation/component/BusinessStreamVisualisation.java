@@ -14,7 +14,9 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.security.SecurityUtils;
@@ -52,14 +54,12 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BusinessStreamVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasItemDoubleClickEventListener {
+public class BusinessStreamVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
+    , CanvasItemDoubleClickEventListener, FlowStateBroadcastListener, CacheStateBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(BusinessStreamVisualisation.class);
     private DesignerCanvas designerCanvas;
 
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
-
-    private Registration flowStateBroadcasterRegistration;
-    private Registration cacheStateBroadcasterRegistration;
 
     private ModuleControlService moduleControlRestService;
     private ConfigurationService configurationRestService;
@@ -95,6 +95,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
     private DateFormatter dateFormatter;
 
     private int maxDownloadBytes;
+    private UI ui;
 
     public BusinessStreamVisualisation(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService, TriggerService triggerRestService
@@ -439,34 +440,6 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         }
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        if(this.designerCanvas != null){
-            this.redraw();
-        }
-
-        UI ui = attachEvent.getUI();
-        flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            logger.debug("Received flow state: " + flowState);
-            this.drawFlowStatus(ui, flowState);
-        });
-
-        cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState ->
-        {
-            logger.debug("Received flow state: " + flowState);
-            this.drawFlowStatus(ui, flowState);
-        });
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        this.flowStateBroadcasterRegistration.remove();
-        this.flowStateBroadcasterRegistration = null;
-        this.cacheStateBroadcasterRegistration.remove();
-        this.cacheStateBroadcasterRegistration = null;
-    }
-
     protected void drawFlowStatus(UI ui, FlowState flowState) {
         if(ui.isAttached()) {
             ui.access(() ->
@@ -619,5 +592,34 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         tooltip.add(new Paragraph(message));
 
         return tooltip;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        if(this.designerCanvas != null){
+            this.redraw();
+        }
+
+        this.ui = attachEvent.getUI();
+        FlowStateBroadcaster.register(this);
+        CacheStateBroadcaster.register(this);
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        FlowStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveFlowStateBroadcast(FlowState flowState) {
+        logger.debug("Received flow state: " + flowState);
+        this.drawFlowStatus(ui, flowState);
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState flowState) {
+        logger.debug("Received flow state: " + flowState);
+        this.drawFlowStatus(ui, flowState);
     }
 }

@@ -69,9 +69,6 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
 {
     Logger logger = LoggerFactory.getLogger(BusinessStreamDesignerView.class);
 
-
-    private Registration broadcasterRegistration;
-
     private boolean initialised = false;
 
     private Designer businessStreamDesigner;
@@ -458,29 +455,6 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
     public void beforeLeave(BeforeLeaveEvent beforeLeaveEvent) {
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        UI ui = attachEvent.getUI();
-
-        broadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            if(ui.isAttached()) {
-                ui.access(() ->
-                {
-                    // do something interesting here.
-                    logger.debug("Received flow state: " + flowState);
-                });
-            }
-        });
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-        broadcasterRegistration.remove();
-        broadcasterRegistration = null;
-    }
 
     @Override
     public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {

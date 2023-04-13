@@ -1,37 +1,29 @@
 package org.ikasan.dashboard.cache;
 
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
 
-import java.util.LinkedList;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 public class CacheStateBroadcaster
 {
     static Executor executor = Executors.newSingleThreadExecutor();
 
-    static LinkedList<Consumer<FlowState>> listeners = new LinkedList<>();
+    private static WeakHashMap<CacheStateBroadcastListener, Object> listeners =
+        new WeakHashMap<>();
 
-    public static synchronized Registration register(Consumer<FlowState> listener)
-    {
-        listeners.add(listener);
-
-        return () ->
-        {
-            synchronized (CacheStateBroadcaster.class)
-            {
-                listeners.remove(listener);
-            }
-        };
+    public static synchronized void register(CacheStateBroadcastListener listener) {
+        listeners.put(listener, null);
     }
 
-    public static synchronized void broadcast(FlowState message)
-    {
-        for (Consumer<FlowState> listener : listeners)
-        {
-            executor.execute(() -> listener.accept(message));
+    public static synchronized void unregister(CacheStateBroadcastListener listener) {
+        listeners.remove(listener);
+    }
+
+    public static synchronized void broadcast(final FlowState flowState) {
+        for (final CacheStateBroadcastListener listener: listeners.keySet()) {
+            executor.execute(() -> listener.receiveCacheStateBroadcast(flowState));
         }
     }
 }

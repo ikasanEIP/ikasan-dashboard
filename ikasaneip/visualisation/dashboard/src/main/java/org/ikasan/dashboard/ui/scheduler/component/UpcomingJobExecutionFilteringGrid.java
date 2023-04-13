@@ -15,8 +15,10 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.security.SecurityUtils;
@@ -50,18 +52,16 @@ import java.util.List;
 import java.util.function.Consumer;
 
 
-public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingScheduledProcess, ScheduledProcessFilter, ScheduledProcessEventSearchResults<UpcomingScheduledProcess>> implements BatchInsertListener<ScheduledProcessEvent> {
+public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingScheduledProcess, ScheduledProcessFilter
+    , ScheduledProcessEventSearchResults<UpcomingScheduledProcess>> implements BatchInsertListener<ScheduledProcessEvent>
+    , FlowStateBroadcastListener, CacheStateBroadcastListener {
 
-    private Registration flowStateBroadcasterRegistration;
-    private Registration cacheStateBroadcasterRegistration;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private DateFormatter dateFormatter;
-
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
     private ModuleMetaDataService moduleMetaDataService;
-
     private HashMap<String, List<BusinessStreamMetaData>> agentJobBusinessStreams;
     private HashMap<String, ModuleMetaData> agents;
 
@@ -88,7 +88,6 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         this.moduleMetaDataService = moduleMetaDataService;
         this.systemEventLogger = systemEventLogger;
 
-        this.ui = UI.getCurrent();
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.initGrid();
@@ -370,46 +369,44 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-
-        this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
-                    this.dataProvider.refreshAll();
-                    this.filteredDataProvider.refreshAll();
-                });
-            }
-        });
-
-        this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
-                    this.dataProvider.refreshAll();
-                    this.filteredDataProvider.refreshAll();
-                });
-            }
-        });
+        this.ui = attachEvent.getUI();
+        FlowStateBroadcaster.register(this);
+        CacheStateBroadcaster.register(this);
 
         this.scheduledProcessManagementService.addBatchInsertListener(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        if(this.flowStateBroadcasterRegistration != null) {
-            this.flowStateBroadcasterRegistration.remove();
-            this.flowStateBroadcasterRegistration = null;
-        }
-
-        if(this.cacheStateBroadcasterRegistration != null) {
-            this.cacheStateBroadcasterRegistration.remove();
-            this.cacheStateBroadcasterRegistration = null;
-        }
+        FlowStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.unregister(this);
         this.scheduledProcessManagementService.removeBatchInsertListener(this);
     }
 
     @Override
     public void onBatchInsert(BatchInsertEvent<ScheduledProcessEvent> batchInsertEvent) {
-        if(ui.isAttached()) {
+        if(ui != null && ui.isAttached()) {
             ui.access(() -> super.refresh());
+        }
+    }
+
+    @Override
+    public void receiveFlowStateBroadcast(FlowState message) {
+        if(ui != null && ui.isAttached()) {
+            ui.access(() -> {
+                this.dataProvider.refreshAll();
+                this.filteredDataProvider.refreshAll();
+            });
+        }
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState message) {
+        if(ui != null && ui.isAttached()) {
+            ui.access(() -> {
+                this.dataProvider.refreshAll();
+                this.filteredDataProvider.refreshAll();
+            });
         }
     }
 }

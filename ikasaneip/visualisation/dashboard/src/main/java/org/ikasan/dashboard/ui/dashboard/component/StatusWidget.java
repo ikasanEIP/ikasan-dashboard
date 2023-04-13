@@ -9,13 +9,13 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.security.SecurityUtils;
@@ -38,15 +38,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-public class StatusWidget extends Div {
+public class StatusWidget extends Div implements FlowStateBroadcastListener, CacheStateBroadcastListener {
     Logger logger = LoggerFactory.getLogger(StatusWidget.class);
 
     private FlowListFilteringGrid flowsGrid;
     private ModuleMetaDataService moduleMetadataService;
-
-    private Registration flowStateBroadcasterRegistration;
-    private Registration cacheStateBroadcasterRegistration;
-
     private HashMap<State, List<FlowMetaData>> stateMap;
 
     private Div runningDiv;
@@ -343,27 +339,25 @@ public class StatusWidget extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
 
-        this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
-            this.recalculate();
-            logger.debug("Flow state update received!" + flowState);
-        });
-
-        this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
-            this.recalculate();
-            logger.debug("Flow state update received!" + flowState);
-        });
+        FlowStateBroadcaster.register(this);
+        CacheStateBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        if(this.flowStateBroadcasterRegistration != null) {
-            this.flowStateBroadcasterRegistration.remove();
-            this.flowStateBroadcasterRegistration = null;
-        }
+        FlowStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.unregister(this);
+    }
 
-        if(this.cacheStateBroadcasterRegistration != null) {
-            this.cacheStateBroadcasterRegistration.remove();
-            this.cacheStateBroadcasterRegistration = null;
-        }
+    @Override
+    public void receiveFlowStateBroadcast(FlowState flowState) {
+        this.recalculate();
+        logger.debug("Flow state update received!" + flowState);
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState flowState) {
+        this.recalculate();
+        logger.debug("Flow state update received!" + flowState);
     }
 }

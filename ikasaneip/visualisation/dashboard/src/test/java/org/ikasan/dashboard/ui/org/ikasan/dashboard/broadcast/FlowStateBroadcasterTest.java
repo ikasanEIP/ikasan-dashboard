@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.junit.Before;
@@ -33,11 +34,11 @@ public class FlowStateBroadcasterTest
         MyConsumer myConsumer4 = new MyConsumer();
         MyConsumer myConsumer5 = new MyConsumer();
 
-        Registration r1 = FlowStateBroadcaster.register(myConsumer1);
-        Registration r2 = FlowStateBroadcaster.register(myConsumer2);
-        Registration r3 = FlowStateBroadcaster.register(myConsumer3);
-        Registration r4 = FlowStateBroadcaster.register(myConsumer4);
-        Registration r5 = FlowStateBroadcaster.register(myConsumer5);
+        FlowStateBroadcaster.register(myConsumer1);
+        FlowStateBroadcaster.register(myConsumer2);
+        FlowStateBroadcaster.register(myConsumer3);
+        FlowStateBroadcaster.register(myConsumer4);
+        FlowStateBroadcaster.register(myConsumer5);
 
         FlowState flowState = new FlowState("moduleName", "flowState", State.RUNNING_STATE);
         FlowStateBroadcaster.broadcast(flowState);
@@ -52,7 +53,7 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 1, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 1, "One flow state has been broadcast!");
 
-        r1.remove();
+        FlowStateBroadcaster.unregister(myConsumer1);
 
         FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
@@ -64,7 +65,7 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 2, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 2, "One flow state has been broadcast!");
 
-        r2.remove();
+        FlowStateBroadcaster.unregister(myConsumer2);
 
         FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
@@ -76,7 +77,7 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 3, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 3, "One flow state has been broadcast!");
 
-        r3.remove();
+        FlowStateBroadcaster.unregister(myConsumer3);
 
         FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
@@ -88,7 +89,7 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 4, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 4, "One flow state has been broadcast!");
 
-        r4.remove();
+        FlowStateBroadcaster.unregister(myConsumer4);
 
         FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
@@ -100,7 +101,7 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 4, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 5, "One flow state has been broadcast!");
 
-        r5.remove();
+        FlowStateBroadcaster.unregister(myConsumer5);
 
         FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
@@ -114,20 +115,13 @@ public class FlowStateBroadcasterTest
 
     }
 
-    private class MyConsumer implements Consumer<FlowState>
+    private class MyConsumer implements FlowStateBroadcastListener
     {
         private List<FlowState> flowStates = new ArrayList<>();
 
         @Override
-        public void accept(FlowState flowState)
-        {
-            flowStates.add(flowState);
-        }
-
-        @Override
-        public Consumer<FlowState> andThen(Consumer<? super FlowState> after)
-        {
-            return null;
+        public void receiveFlowStateBroadcast(FlowState message) {
+            flowStates.add(message);
         }
     }
 }

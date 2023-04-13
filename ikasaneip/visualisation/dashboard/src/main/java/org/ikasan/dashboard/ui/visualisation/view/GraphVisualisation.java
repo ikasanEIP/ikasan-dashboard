@@ -99,8 +99,6 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
     private GraphViewModuleVisualisation moduleVisualisation;
     private H2 moduleLabel = new H2();
 
-    private Registration broadcasterRegistration;
-
     private boolean initialised = false;
 
     private SlideTab toolSlider;
@@ -585,31 +583,6 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             .build();
 
         super.add(searchSlider);
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        UI ui = attachEvent.getUI();
-
-        broadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            if(ui.isAttached()) {
-                ui.access(() ->
-                {
-                    // do something interesting here.
-                    logger.debug("Received flow state: " + flowState);
-                });
-            }
-        });
-
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-        broadcasterRegistration.remove();
-        broadcasterRegistration = null;
     }
 
     @Override
