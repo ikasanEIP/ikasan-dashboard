@@ -6,7 +6,6 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -15,23 +14,20 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.model.AgentJobFilter;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
-import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
-import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.event.service.SolrScheduledProcessServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
@@ -41,6 +37,9 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
+import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
@@ -50,13 +49,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 
-public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggregateConfiguration, AgentJobFilter
-    , ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration>> {
+// todo clean up
+public class AgentJobFilteringGrid extends FilteringGrid<SchedulerJobRecord, AgentJobFilter
+    , SearchResults<SchedulerJobRecord>> implements FlowStateBroadcastListener, CacheStateBroadcastListener {
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
-
-    private Registration flowStateBroadcasterRegistration;
-    private Registration cacheStateBroadcasterRegistration;
 
     private DateFormatter dateFormatter;
 
@@ -73,6 +70,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
     private SystemEventLogger systemEventLogger;
 
     private SchedulerService schedulerService;
+
+    private SchedulerJobService<SchedulerJobRecord> schedulerJobService;
+
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
     /**
      * Constructor
@@ -91,7 +92,8 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
     public AgentJobFilteringGrid(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService, AgentJobFilter searchFilter,
                                  DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger,
-                                 SchedulerService schedulerService) {
+                                 SchedulerService schedulerService, SchedulerJobService<SchedulerJobRecord> schedulerJobService, Map<String, String> schedulerJobExecutionEnvironmentLabel
+                                  ) {
         super(searchFilter);
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -102,8 +104,9 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         this.moduleMetaDataService = moduleMetaDataService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
+        this.schedulerJobService = schedulerJobService;
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
 
-        this.ui = UI.getCurrent();
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.initGrid();
@@ -114,50 +117,44 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
      */
     private void initGrid() {
 
-        super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal; text-align:top;'>[[item.jobName]]</div>")
-            .withProperty("jobName", ScheduledProcessAggregateConfiguration::getJobName))
+        super.addColumn(TemplateRenderer.<SchedulerJobRecord>of("<div style='white-space:normal; text-align:top;'>[[item.jobName]]</div>")
+            .withProperty("jobName", SchedulerJobRecord::getJobName))
             .setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setKey("jobName")
             .setTextAlign(ColumnTextAlign.START)
             .setFlexGrow(1)
             .setSortable(true);
 
-        super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
-            .withProperty("jobGroup", ScheduledProcessAggregateConfiguration::getJobGroup))
+        super.addColumn(TemplateRenderer.<SchedulerJobRecord>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
+            .withProperty("jobGroup", schedulerJobRecord ->  {
+                SchedulerJob job  = schedulerJobRecord.getJob();
+
+                if(job instanceof QuartzScheduleDrivenJob) {
+                    return ((QuartzScheduleDrivenJob)job).getJobGroup();
+                }
+                else if(job instanceof FileEventDrivenJob) {
+                    return ((FileEventDrivenJob)job).getJobGroup();
+                }
+
+                return "N/A";
+            }))
             .setHeader(getTranslation("table-header.job-group", UI.getCurrent().getLocale()))
             .setKey("jobGroup")
             .setFlexGrow(1)
             .setSortable(true);
-        super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal'>[[item.description]]</div>")
-            .withProperty("description", ScheduledProcessAggregateConfiguration::getJobDescription))
+        super.addColumn(TemplateRenderer.<SchedulerJobRecord>of("<div style='white-space:normal'>[[item.type]]</div>")
+            .withProperty("type", schedulerJobRecord -> schedulerJobRecord.getType()))
+            .setHeader("Type")
+            .setKey("type")
+            .setFlexGrow(3)
+            .setSortable(true);
+        super.addColumn(TemplateRenderer.<SchedulerJobRecord>of("<div style='white-space:normal'>[[item.description]]</div>")
+            .withProperty("description", schedulerJobRecord -> schedulerJobRecord.getJob().getJobDescription()))
             .setHeader(getTranslation("table-header.job-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(3)
             .setSortable(true);
-        super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal'>[[item.nextFireTime]]</div>")
-            .withProperty("nextFireTime", scheduledProcessAggregateConfiguration -> this.dateFormatter.getFormattedDate(scheduledProcessAggregateConfiguration.getNextFireTime())))
-            .setHeader(getTranslation("table-header.next-job-execution-time", UI.getCurrent().getLocale()))
-            .setKey("nextFireTime")
-            .setFlexGrow(1)
-            .setSortable(true);
-        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
-            VerticalLayout layout = new VerticalLayout();
-
-            scheduledProcessAggregateConfiguration.getBusinessStreamMetaData().forEach(businessStreamMetaData -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
-                Anchor link = new Anchor(route, businessStreamMetaData.getName());
-                link.setTarget("_blank");
-                layout.add(link);
-                link.getStyle().set("color", "blue");
-            });
-
-            return layout;
-        }))
-            .setHeader(getTranslation("table-header.related-business-streams", UI.getCurrent().getLocale()))
-            .setKey("businessStreams")
-            .setFlexGrow(2);
-        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
+        super.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
             Icon edit = VaadinIcon.EDIT.create();
@@ -168,20 +165,55 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
-                    this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                    this.metaDataRestService, this.systemEventLogger);
+                if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
+                    InternalEventDrivenJobDialog scheduledJobDialog = new InternalEventDrivenJobDialog(agent,
+                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                        this.metaDataRestService, this.systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel);
 
-                scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.EDIT);
-                scheduledJobDialog.open();
+                    scheduledJobDialog.setJob((InternalEventDrivenJob) schedulerJobRecord.getJob(), EditMode.EDIT);
+                    scheduledJobDialog.open();
 
-                scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
-                    dialogOpenedChangeEvent -> {
-                    if(!dialogOpenedChangeEvent.isOpened()) {
-                        this.dataProvider.refreshAll();
-                        this.filteredDataProvider.refreshAll();
-                    }
-                });
+                    scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
+                        dialogOpenedChangeEvent -> {
+                            if (!dialogOpenedChangeEvent.isOpened()) {
+                                this.dataProvider.refreshAll();
+                                this.filteredDataProvider.refreshAll();
+                            }
+                        });
+
+                }
+                else if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
+                    FileEventJobDialog scheduledJobDialog = new FileEventJobDialog(agent,
+                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                        this.metaDataRestService, this.systemEventLogger, schedulerJobService);
+
+                    scheduledJobDialog.setJob((FileEventDrivenJob) schedulerJobRecord.getJob(), EditMode.EDIT);
+                    scheduledJobDialog.open();
+
+                    scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
+                        dialogOpenedChangeEvent -> {
+                            if (!dialogOpenedChangeEvent.isOpened()) {
+                                this.dataProvider.refreshAll();
+                                this.filteredDataProvider.refreshAll();
+                            }
+                        });
+                }
+                else if(schedulerJobRecord.getJob() instanceof QuartzScheduleDrivenJob) {
+                    QuartzDrivenScheduledJobDialog scheduledJobDialog = new QuartzDrivenScheduledJobDialog(agent,
+                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                        this.metaDataRestService, this.systemEventLogger, schedulerJobService);
+
+                    scheduledJobDialog.setJob((QuartzScheduleDrivenJob) schedulerJobRecord.getJob(), EditMode.EDIT);
+                    scheduledJobDialog.open();
+
+                    scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
+                        dialogOpenedChangeEvent -> {
+                            if (!dialogOpenedChangeEvent.isOpened()) {
+                                this.dataProvider.refreshAll();
+                                this.filteredDataProvider.refreshAll();
+                            }
+                        });
+                }
             });
 
             layout.add(edit);
@@ -193,12 +225,12 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ);
 
             view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
-                    this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                    this.metaDataRestService, systemEventLogger);
-
-                scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.READONLY);
-                scheduledJobDialog.open();
+//                ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
+//                    this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+//                    this.metaDataRestService, systemEventLogger);
+//
+//                scheduledJobDialog.setScheduleProcessAggregateConfiguration(schedulerJobRecord, EditMode.READONLY);
+//                scheduledJobDialog.open();
             });
 
             layout.add(view);
@@ -216,9 +248,9 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                     getTranslation("confirm-dialog.delete-job-body", UI.getCurrent().getLocale()), getTranslation("confirm-dialog.delete-job-text", UI.getCurrent().getLocale())
                     , (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {
                     try {
-                        this.deleteScheduledJobFlow(scheduledProcessAggregateConfiguration);
+//                        this.deleteScheduledJobFlow(schedulerJobRecord);
 
-                        String action = String.format("Deleted scheduled job [%s].", scheduledProcessAggregateConfiguration);
+                        String action = String.format("Deleted scheduled job [%s].", schedulerJobRecord);
                         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
                         this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_DELETED, action, authentication.getName());
@@ -245,20 +277,20 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
             clone.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 try {
-                    ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
-                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                        this.metaDataRestService, this.systemEventLogger);
-
-                    scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.CLONE);
-                    scheduledJobDialog.open();
-
-                    scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
-                        dialogOpenedChangeEvent -> {
-                            if(!dialogOpenedChangeEvent.isOpened()) {
-                                this.dataProvider.refreshAll();
-                                this.filteredDataProvider.refreshAll();
-                            }
-                        });
+//                    ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
+//                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+//                        this.metaDataRestService, this.systemEventLogger);
+//
+//                    scheduledJobDialog.setScheduleProcessAggregateConfiguration(schedulerJobRecord, EditMode.CLONE);
+//                    scheduledJobDialog.open();
+//
+//                    scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
+//                        dialogOpenedChangeEvent -> {
+//                            if(!dialogOpenedChangeEvent.isOpened()) {
+//                                this.dataProvider.refreshAll();
+//                                this.filteredDataProvider.refreshAll();
+//                            }
+//                        });
                 }
                 catch(Exception e) {
                     e.printStackTrace();
@@ -272,7 +304,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             chart.getElement().setAttribute("title", getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()));
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ScheduledJobStatisticsDialog scheduledJobStatisticsDialog = new ScheduledJobStatisticsDialog(this.scheduledProcessManagementService,
-                    this.moduleMetaDataService.findById(scheduledProcessAggregateConfiguration.getAgentName()), scheduledProcessAggregateConfiguration.getJobName());
+                    this.moduleMetaDataService.findById(schedulerJobRecord.getAgentName()), schedulerJobRecord.getJobName());
 
                 scheduledJobStatisticsDialog.open();
             });
@@ -280,7 +312,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             layout.add(chart);
 
             FlowState flowState = FlowStateCache.instance().get(this.agent
-                , scheduledProcessAggregateConfiguration.getJobName());
+                , schedulerJobRecord.getJobName());
 
             if(flowState == null) {
                 return layout;
@@ -296,7 +328,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 ComponentSecurityVisibility.applySecurity(this.authentication, stop, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), schedulerJobRecord.getJobName(), "stop");
                 });
 
                 Icon pause = VaadinIcon.PAUSE.create();
@@ -309,7 +341,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 ComponentSecurityVisibility.applySecurity(this.authentication, pause, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
                 pause.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "pause");
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), schedulerJobRecord.getJobName(), "pause");
                 });
             }
             else if(flowState.getState() == State.RECOVERING_STATE) {
@@ -322,7 +354,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 ComponentSecurityVisibility.applySecurity(this.authentication, stop, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), schedulerJobRecord.getJobName(), "stop");
                 });
             }
             else if(flowState.getState() == State.STOPPED_IN_ERROR_STATE
@@ -337,7 +369,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 ComponentSecurityVisibility.applySecurity(this.authentication, start, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
                 start.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "start");
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), schedulerJobRecord.getJobName(), "start");
                 });
 
                 Icon pause = VaadinIcon.PAUSE.create();
@@ -350,7 +382,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 ComponentSecurityVisibility.applySecurity(this.authentication, pause, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
                 pause.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "pause");
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), schedulerJobRecord.getJobName(), "pause");
                 });
             }
             else if(flowState.getState() == State.PAUSED_STATE) {
@@ -364,7 +396,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 ComponentSecurityVisibility.applySecurity(this.authentication, start, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
                 start.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "start");
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), schedulerJobRecord.getJobName(), "start");
                 });
 
                 Icon stop = VaadinIcon.STOP.create();
@@ -376,7 +408,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 ComponentSecurityVisibility.applySecurity(this.authentication, stop, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), schedulerJobRecord.getJobName(), "stop");
                 });
             }
 
@@ -393,7 +425,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                     ConfirmDialog confirmDialog = new ConfirmDialog(getTranslation("confirm-dialog.confirm-fire-now-header", UI.getCurrent().getLocale()),
                         getTranslation("confirm-dialog.confirm-fire-now-body", UI.getCurrent().getLocale()), getTranslation("confirm-dialog.confirm-fire-now-text", UI.getCurrent().getLocale()),
                         (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {
-                            if(this.schedulerService.triggerFlowNow(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName())) {
+                            if(this.schedulerService.triggerFlowNow(agent.getUrl(), agent.getName(), schedulerJobRecord.getJobName())) {
                                 NotificationHelper.showUserNotification(getTranslation("notification.job-triggered-successfully", UI.getCurrent().getLocale()));
                             }
                             else {
@@ -412,14 +444,14 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
         .setKey("actions")
         .setFlexGrow(2);
-        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
+        super.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             VerticalLayout layout = new VerticalLayout();
             layout.setMargin(false);
             layout.setPadding(false);
             layout.setSpacing(false);
 
             FlowState flowState = FlowStateCache.instance().get(this.agent
-                , scheduledProcessAggregateConfiguration.getJobName());
+                , schedulerJobRecord.getJobName());
 
             if(flowState == null || flowState.getState() == State.UNKNOWN_STATE) {
                 Icon unknown = VaadinIcon.QUESTION.create();
@@ -487,8 +519,8 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
     }
 
     @Override
-    protected ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getResults(AgentJobFilter agentJobFilter, int offset, int limit, String sortField, String sortOrder) {
-        return ((SolrScheduledProcessServiceImpl)this.scheduledProcessManagementService).getScheduleProcessAggregateConfigurations(this.agent.getName(), agentJobFilter.getFilter(), offset, limit, sortField, sortOrder);
+    protected SearchResults getResults(AgentJobFilter agentJobFilter, int offset, int limit, String sortField, String sortOrder) {
+        return this.schedulerJobService.findByAgent(this.agent.getName(), limit, offset);
     }
 
     /**
@@ -569,36 +601,34 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-
-        this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
-                    this.dataProvider.refreshAll();
-                    this.filteredDataProvider.refreshAll();
-                });
-            }
-        });
-
-        this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
-            if(ui.isAttached()) {
-                ui.access(() -> {
-                    this.dataProvider.refreshAll();
-                    this.filteredDataProvider.refreshAll();
-                });
-            }
-        });
+        this.ui = attachEvent.getUI();
+        FlowStateBroadcaster.register(this);
+        CacheStateBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        if(this.flowStateBroadcasterRegistration != null) {
-            this.flowStateBroadcasterRegistration.remove();
-            this.flowStateBroadcasterRegistration = null;
-        }
+        FlowStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.unregister(this);
+    }
 
-        if(this.cacheStateBroadcasterRegistration != null) {
-            this.cacheStateBroadcasterRegistration.remove();
-            this.cacheStateBroadcasterRegistration = null;
+    @Override
+    public void receiveFlowStateBroadcast(FlowState message) {
+        if(ui != null && ui.isAttached()) {
+            ui.access(() -> {
+                this.dataProvider.refreshAll();
+                this.filteredDataProvider.refreshAll();
+            });
+        }
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState message) {
+        if(ui != null && ui.isAttached()) {
+            ui.access(() -> {
+                this.dataProvider.refreshAll();
+                this.filteredDataProvider.refreshAll();
+            });
         }
     }
 }

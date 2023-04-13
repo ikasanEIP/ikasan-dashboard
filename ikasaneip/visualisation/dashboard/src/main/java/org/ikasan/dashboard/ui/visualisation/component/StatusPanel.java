@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
@@ -21,7 +22,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StatusPanel extends HorizontalLayout implements GraphViewChangeListener
+public class StatusPanel extends HorizontalLayout implements GraphViewChangeListener, CacheStateBroadcastListener
 {
     private Logger logger = LoggerFactory.getLogger(StatusPanel.class);
 
@@ -32,8 +33,6 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
     private Button pauseButton;
 
     private Module currentModule;
-
-    private Registration broadcasterRegistration;
     private ModuleControlService moduleControlRestService;
     private ModuleVisualisation moduleVisualisation;
 
@@ -42,6 +41,8 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
     private Tooltip stoppedInErrorButtonTooltip;
     private Tooltip recoveringButtonTooltip;
     private Tooltip pauseButtonTooltip;
+
+    private UI ui;
 
     public StatusPanel(ModuleControlService moduleControlRestService, ModuleVisualisation moduleVisualisation)
     {
@@ -151,30 +152,6 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
         return buttonLayout;
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        UI ui = attachEvent.getUI();
-        broadcasterRegistration = CacheStateBroadcaster.register(flowState ->
-        {
-            if(ui.isAttached()) {
-                ui.access(() ->
-                {
-                    // do something interesting here.
-                    logger.debug("Received flow state: " + flowState);
-
-                    calculateStatus();
-                });
-            }
-        });
-
-        this.stoppedButtonTooltip.attachToComponent(stoppedButton);
-        this.recoveringButtonTooltip.attachToComponent(recoveringButton);
-        this.runningButtonTooltip.attachToComponent(runningButton);
-        this.stoppedInErrorButtonTooltip.attachToComponent(stoppedInErrorButton);
-        this.pauseButtonTooltip.attachToComponent(pauseButton);
-    }
-
     protected void calculateStatus()
     {
         if(currentModule == null){
@@ -238,12 +215,6 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
         }
     }
 
-    @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-        broadcasterRegistration.remove();
-        broadcasterRegistration = null;
-    }
 
     @Override
     public void onChange(GraphViewChangeEvent event)
@@ -255,5 +226,34 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
 
     public void setModuleVisualisation(ModuleVisualisation moduleVisualisation) {
         this.moduleVisualisation = moduleVisualisation;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent)
+    {
+        this.ui = attachEvent.getUI();
+        CacheStateBroadcaster.register(this);
+
+        this.stoppedButtonTooltip.attachToComponent(stoppedButton);
+        this.recoveringButtonTooltip.attachToComponent(recoveringButton);
+        this.runningButtonTooltip.attachToComponent(runningButton);
+        this.stoppedInErrorButtonTooltip.attachToComponent(stoppedInErrorButton);
+        this.pauseButtonTooltip.attachToComponent(pauseButton);
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent)
+    {
+        CacheStateBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState flowState) {
+        if(ui != null && ui.isAttached()) {
+            ui.access(() -> {
+                logger.debug("Received flow state: " + flowState);
+                calculateStatus();
+            });
+        }
     }
 }

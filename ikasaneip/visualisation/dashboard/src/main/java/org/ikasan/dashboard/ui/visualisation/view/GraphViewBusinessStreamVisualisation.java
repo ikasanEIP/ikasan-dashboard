@@ -55,8 +55,6 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
     private H2 businessStreamLabel;
     private Paragraph businessStreamDescription;
 
-    private Registration broadcasterRegistration;
-
     private HospitalAuditService hospitalAuditService;
 
     private ResubmissionService resubmissionRestService;
@@ -207,31 +205,6 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         this.add(this.businessStreamVisualisation);
 
         this.fireModuleFlowChangeEvent();
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        UI ui = attachEvent.getUI();
-
-        broadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            if(ui.isAttached()) {
-                ui.access(() ->
-                {
-                    // do something interesting here.
-                    logger.info("Received flow state: " + flowState);
-                });
-            }
-        });
-
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-        broadcasterRegistration.remove();
-        broadcasterRegistration = null;
     }
 
     protected void fireModuleFlowChangeEvent() {

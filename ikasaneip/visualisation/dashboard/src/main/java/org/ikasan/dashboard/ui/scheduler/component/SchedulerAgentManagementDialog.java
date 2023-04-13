@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -105,7 +104,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         icon.setSize("12pt");
 
         AgentJobFilter agentJobFiler = new AgentJobFilter();
-        AgentJobFilteringGrid2 filteringGrid = new AgentJobFilteringGrid2(this.agent, this.scheduledProcessManagementService
+        AgentJobFilteringGrid filteringGrid = new AgentJobFilteringGrid(this.agent, this.scheduledProcessManagementService
             , agentJobFiler, new DateFormatter(), this.configurationRestService, this.moduleControlRestService,
             this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger, this.schedulerService, this.schedulerJobService, this.schedulerJobExecutionEnvironmentLabel);
         filteringGrid.setSizeFull();

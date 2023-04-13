@@ -16,6 +16,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
@@ -35,7 +36,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.Optional;
 
-public class ModuleStatusDialog extends AbstractCloseableResizableDialog {
+public class ModuleStatusDialog extends AbstractCloseableResizableDialog implements CacheStateBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(ModuleStatusDialog.class);
 
     private Grid<Flow> flowGrid = new Grid<>();
@@ -43,7 +44,7 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog {
     private ModuleControlService moduleControlRestService;
     private ModuleVisualisation moduleVisualisation;
 
-    private Registration cacheStateBroadcasterRegistration;
+    private UI ui;
 
     public ModuleStatusDialog(Module currentModule, ModuleControlService moduleControlRestService,
                               ModuleVisualisation moduleVisualisation) {
@@ -236,25 +237,26 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
+        ui = attachEvent.getUI();
 
-        cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState ->
-        {
-            logger.debug("Received flow state: " + flowState);
-            this.currentModule.getFlows()
-                .stream()
-                .filter(flow -> flowState.getFlowName().equals(flow.getName()))
-                .findFirst().ifPresent(flow -> {
-                    if(ui.isAttached()) {
-                        ui.access(() -> this.flowGrid.getDataProvider().refreshItem(flow));
-                    }
-                });
-        });
+        CacheStateBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.cacheStateBroadcasterRegistration.remove();
-        this.cacheStateBroadcasterRegistration = null;
+        CacheStateBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState flowState) {
+        logger.debug("Received flow state: " + flowState);
+        this.currentModule.getFlows()
+            .stream()
+            .filter(flow -> flowState.getFlowName().equals(flow.getName()))
+            .findFirst().ifPresent(flow -> {
+                if(ui.isAttached()) {
+                    ui.access(() -> this.flowGrid.getDataProvider().refreshItem(flow));
+                }
+            });
     }
 }

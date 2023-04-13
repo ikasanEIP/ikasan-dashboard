@@ -5,74 +5,24 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FlowComboBox extends ComboBox<Flow>
+public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastListener, CacheStateBroadcastListener
 {
     Logger logger = LoggerFactory.getLogger(FlowComboBox.class);
-
-    private Registration flowStateBroadcasterRegistration;
-    private Registration cacheStateBroadcasterRegistration;
-
     private Module currentModule;
+    private UI ui;
 
     public FlowComboBox()
     {
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        UI ui = attachEvent.getUI();
-        this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            if(ui.isAttached()) {
-                ui.access(() ->
-                {
-                    // do something interesting here.
-                    logger.debug("Received flow state: " + flowState);
-
-                    if (this.currentModule != null) {
-                        Flow flow = this.getValue();
-                        removeAll();
-                        setItems(currentModule.getFlows());
-                        this.setValue(flow);
-                    }
-                });
-            }
-        });
-
-        this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState ->
-        {
-            if(ui.isAttached()) {
-                ui.access(() ->
-                {
-                    // do something interesting here.
-                    logger.debug("Received flow state: " + flowState);
-
-                    if (this.currentModule != null) {
-                        Flow flow = this.getValue();
-                        removeAll();
-                        setItems(currentModule.getFlows());
-                        this.setValue(flow);
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-        this.flowStateBroadcasterRegistration.remove();
-        this.flowStateBroadcasterRegistration = null;
-        this.cacheStateBroadcasterRegistration.remove();
-        this.cacheStateBroadcasterRegistration = null;
     }
 
     public void setCurrentModule(Module currentModule)
@@ -81,5 +31,54 @@ public class FlowComboBox extends ComboBox<Flow>
         this.setItems(this.currentModule.getFlows());
         this.setValue(this.currentModule.getFlows().get(0));
         this.setLabel(this.currentModule.getName());
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent)
+    {
+        this.ui = attachEvent.getUI();
+        FlowStateBroadcaster.register(this);
+        CacheStateBroadcaster.register(this);
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent)
+    {
+        FlowStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveFlowStateBroadcast(FlowState flowState) {
+        if(this.ui != null && ui.isAttached()) {
+            ui.access(() ->
+            {
+                logger.debug("Received flow state: " + flowState);
+
+                if (this.currentModule != null) {
+                    Flow flow = this.getValue();
+                    removeAll();
+                    setItems(currentModule.getFlows());
+                    this.setValue(flow);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState flowState) {
+        if(ui != null && ui.isAttached()) {
+            ui.access(() ->
+            {
+                logger.debug("Received flow state: " + flowState);
+
+                if (this.currentModule != null) {
+                    Flow flow = this.getValue();
+                    removeAll();
+                    setItems(currentModule.getFlows());
+                    this.setValue(flow);
+                }
+            });
+        }
     }
 }
