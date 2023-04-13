@@ -536,6 +536,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 this.contextInstanceTreeViewWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
+                this.updateJson(this.contextInstance);
                 this.aceEditor.setVisible(true);
                 this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
@@ -1167,7 +1168,6 @@ public class ContextInstanceWidget extends VerticalLayout
                             ContextHelper.enrichJobs(this.contextInstance);
                         }
                     }
-                    this.updateJson(this.contextInstance);
 
                     if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
                         this.contextInstanceEndButton.setVisible(false);
@@ -1191,8 +1191,6 @@ public class ContextInstanceWidget extends VerticalLayout
                 if (record != null) {
                     this.contextInstance = record.getContextInstance();
                     ContextHelper.enrichJobs(this.contextInstance);
-                    this.updateJson(this.contextInstance);
-
                     this.refreshJobStatusWidget();
                 }
             });
