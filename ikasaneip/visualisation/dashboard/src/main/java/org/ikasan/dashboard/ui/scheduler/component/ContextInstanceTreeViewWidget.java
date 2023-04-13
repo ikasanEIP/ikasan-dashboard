@@ -939,11 +939,18 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                 updatedJobs.forEach(schedulerJobInstanceRecord -> {
                                     SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(schedulerJobInstanceRecord.getJobName(),
                                         schedulerJobInstanceRecord.getChildContextName(), ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
-                                    schedulerJobInstance.setStatus(InstanceStatus.ON_HOLD);
-                                    SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
-                                        = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
-                                        this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
-                                    SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+                                    if(schedulerJobInstance != null) {
+                                        schedulerJobInstance.setStatus(InstanceStatus.ON_HOLD);
+                                        SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+                                            = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
+                                            this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
+                                        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+                                    }
+                                    else {
+                                        logger.info("Could not update job [{}] to ON_HOLD for context instance name[{}], context instance id[{}], child context[{}]",
+                                            schedulerJobInstanceRecord.getJobName(), this.contextInstance.getName(), this.contextInstance.getId()
+                                            , schedulerJobInstanceRecord.getChildContextName());
+                                    }
                                 });
                                 ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).saveContext();
                             }
