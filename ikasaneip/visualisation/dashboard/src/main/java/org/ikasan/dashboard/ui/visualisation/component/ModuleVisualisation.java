@@ -10,8 +10,10 @@ import com.vaadin.flow.shared.Registration;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.FlowControlManagementDialog;
@@ -48,6 +50,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ModuleVisualisation extends VerticalLayout implements BeforeEnterObserver
+    , FlowStateBroadcastListener, CacheStateBroadcastListener
 {
     private Logger logger = LoggerFactory.getLogger(ModuleVisualisation.class);
     private Map<String, Flow> flowMap;
@@ -55,9 +58,6 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
     private Flow currentFlow;
     private Module module;
     private boolean moduleView = false;
-
-    private Registration flowStateBroadcasterRegistration;
-    private Registration cacheStateBroadcasterRegistration;
 
     private ModuleControlService moduleControlRestService;
     private ConfigurationService configurationRestService;
@@ -84,7 +84,7 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
         this.setSpacing(false);
         this.flowMap = new HashMap<>();
 
-        current = UI.getCurrent();
+        this.current = UI.getCurrent();
     }
 
     public void addModule(Module module)
@@ -392,33 +392,6 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
         this.currentFlow = currentFlow;
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        this.redraw();
-        UI ui = attachEvent.getUI();
-        flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            logger.debug("Received flow state: " + flowState);
-            this.drawFlowStatus(ui, flowState);
-        });
-
-        cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState ->
-        {
-            logger.debug("Received flow state: " + flowState);
-            this.drawFlowStatus(ui, flowState);
-        });
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-        this.flowStateBroadcasterRegistration.remove();
-        this.flowStateBroadcasterRegistration = null;
-        this.cacheStateBroadcasterRegistration.remove();
-        this.cacheStateBroadcasterRegistration = null;
-    }
-
     protected void drawFlowStatus(UI ui, FlowState flowState)
     {
         if(ui.isAttached()) {
@@ -438,5 +411,33 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
 
     public Flow getCurrentFlow() {
         return this.currentFlow;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent)
+    {
+        this.redraw();
+        this.current = attachEvent.getUI();
+        FlowStateBroadcaster.register(this);
+        CacheStateBroadcaster.register(this);
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent)
+    {
+        FlowStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveFlowStateBroadcast(FlowState flowState) {
+        logger.debug("Received flow state: " + flowState);
+        this.drawFlowStatus(current, flowState);
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState flowState) {
+        logger.debug("Received flow state: " + flowState);
+        this.drawFlowStatus(current, flowState);
     }
 }

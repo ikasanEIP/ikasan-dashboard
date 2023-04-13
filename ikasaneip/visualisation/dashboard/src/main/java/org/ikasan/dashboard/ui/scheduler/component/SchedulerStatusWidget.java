@@ -12,8 +12,10 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.security.SecurityUtils;
@@ -39,14 +41,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class SchedulerStatusWidget extends Div {
+public class SchedulerStatusWidget extends Div implements FlowStateBroadcastListener, CacheStateBroadcastListener {
     Logger logger = LoggerFactory.getLogger(SchedulerStatusWidget.class);
 
     private FlowListFilteringGrid flowsGrid;
     private ModuleMetaDataService moduleMetadataService;
-
-    private Registration flowStateBroadcasterRegistration;
-    private Registration cacheStateBroadcasterRegistration;
 
     private HashMap<State, List<FlowMetaData>> stateMap;
 
@@ -360,28 +359,25 @@ public class SchedulerStatusWidget extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         this.recalculate();
 
-        this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
-            this.recalculate();
-            logger.debug("Flow state update received!" + flowState);
-        });
-
-        this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
-            this.recalculate();
-            logger.debug("Flow state update received!" + flowState);
-        });
+        FlowStateBroadcaster.register(this);
+        CacheStateBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        if(this.flowStateBroadcasterRegistration != null) {
-            this.flowStateBroadcasterRegistration.remove();
-            this.flowStateBroadcasterRegistration = null;
-        }
-
-        if(this.cacheStateBroadcasterRegistration != null) {
-            this.cacheStateBroadcasterRegistration.remove();
-            this.cacheStateBroadcasterRegistration = null;
-        }
+        FlowStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.unregister(this);
     }
 
+    @Override
+    public void receiveFlowStateBroadcast(FlowState flowState) {
+        this.recalculate();
+        logger.debug("Flow state update received!" + flowState);
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState flowState) {
+        this.recalculate();
+        logger.debug("Flow state update received!" + flowState);
+    }
 }

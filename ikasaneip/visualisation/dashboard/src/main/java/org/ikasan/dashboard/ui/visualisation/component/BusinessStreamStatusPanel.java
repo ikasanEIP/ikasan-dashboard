@@ -12,6 +12,7 @@ import org.ikasan.business.stream.metadata.model.BusinessStream;
 import org.ikasan.business.stream.metadata.model.Flow;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
@@ -27,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class BusinessStreamStatusPanel extends HorizontalLayout implements GraphViewChangeListener
+public class BusinessStreamStatusPanel extends HorizontalLayout implements GraphViewChangeListener, CacheStateBroadcastListener
 {
     private Logger logger = LoggerFactory.getLogger(BusinessStreamStatusPanel.class);
 
@@ -53,6 +54,8 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
     private Map<String, ModuleMetaData> moduleMetaDataMap;
 
     private Div runningDiv;
+
+    private UI ui;
 
     public BusinessStreamStatusPanel(ModuleControlService moduleControlRestService,
                                      ModuleMetaDataService moduleMetaDataService)
@@ -173,29 +176,6 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
         return buttonLayout;
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        UI ui = attachEvent.getUI();
-        broadcasterRegistration = CacheStateBroadcaster.register(flowState ->
-        {
-            if(ui.isAttached()) {
-                ui.access(() ->
-                {
-                    // do something interesting here.
-                    logger.info("Received flow state: " + flowState);
-
-                    calculateStatus();
-                });
-            }
-        });
-
-        this.stoppedButtonTooltip.attachToComponent(stoppedButton);
-        this.recoveringButtonTooltip.attachToComponent(recoveringButton);
-        this.runningButtonTooltip.attachToComponent(runningButton);
-        this.stoppedInErrorButtonTooltip.attachToComponent(stoppedInErrorButton);
-        this.pauseButtonTooltip.attachToComponent(pauseButton);
-    }
 
     protected void calculateStatus()
     {
@@ -248,13 +228,6 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
     }
 
     @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-        broadcasterRegistration.remove();
-        broadcasterRegistration = null;
-    }
-
-    @Override
     public void onChange(GraphViewChangeEvent event)
     {
         calculateStatus();
@@ -266,5 +239,35 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
 
     public void setBusinessStream(BusinessStream businessStream) {
         this.currentBusinessStream = businessStream;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent)
+    {
+        this.ui = attachEvent.getUI();
+        CacheStateBroadcaster.register(this);
+
+        this.stoppedButtonTooltip.attachToComponent(stoppedButton);
+        this.recoveringButtonTooltip.attachToComponent(recoveringButton);
+        this.runningButtonTooltip.attachToComponent(runningButton);
+        this.stoppedInErrorButtonTooltip.attachToComponent(stoppedInErrorButton);
+        this.pauseButtonTooltip.attachToComponent(pauseButton);
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent)
+    {
+        CacheStateBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState flowState) {
+        if(ui != null && ui.isAttached()) {
+            ui.access(() ->
+            {
+                logger.info("Received flow state: " + flowState);
+                calculateStatus();
+            });
+        }
     }
 }

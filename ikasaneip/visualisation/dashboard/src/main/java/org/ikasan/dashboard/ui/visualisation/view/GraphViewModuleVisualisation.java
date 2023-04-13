@@ -55,8 +55,6 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
     private FlowComboBox flowComboBox;
     private ControlPanel controlPanel;
 
-    private Registration broadcasterRegistration;
-
     private StatusPanel statusPanel;
 
     private Module currentModule;
@@ -259,29 +257,6 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
         for (GraphViewChangeListener graphViewChangeListener : this.graphViewChangeListeners) {
             graphViewChangeListener.onChange(graphViewChangeEvent);
         }
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
-
-        broadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            if(ui.isAttached()) {
-                ui.access(() ->
-                {
-                    // do something interesting here.
-                    logger.debug("Received flow state: " + flowState);
-                });
-            }
-        });
-
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        broadcasterRegistration.remove();
-        broadcasterRegistration = null;
     }
 
     public Module getModule() {

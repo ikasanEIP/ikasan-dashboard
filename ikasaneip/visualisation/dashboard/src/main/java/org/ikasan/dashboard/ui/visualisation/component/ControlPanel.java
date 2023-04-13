@@ -9,8 +9,10 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
@@ -30,6 +32,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ControlPanel extends HorizontalLayout implements GraphViewChangeListener
+    , FlowStateBroadcastListener, CacheStateBroadcastListener
 {
     private Logger logger = LoggerFactory.getLogger(ControlPanel.class);
 
@@ -56,9 +59,6 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
     private Image startPauseImage;
     private Image startPauseImageDisabled;
     private Image selectAllImageOff;
-
-    private Registration flowStateBroadcasterRegistration;
-    private Registration cacheStateBroadcasterRegistration;
 
     protected Module module;
     protected Flow currentFlow;
@@ -330,28 +330,6 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
         });
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        current = attachEvent.getUI();
-        flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            logger.debug("Received flow state: " + flowState);
-            setFlowState(current, flowState);
-        });
-
-        cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState ->
-        {
-            logger.debug("Received flow state: " + flowState);
-            setFlowState(current, flowState);
-        });
-
-        this.startButtonTooltip.attachToComponent(startButton);
-        this.stopButtonTooltip.attachToComponent(stopButton);
-        this.pauseButtonTooltip.attachToComponent(pauseButton);
-        this.startPauseButtonTooltip.attachToComponent(startPauseButton);
-    }
-
     protected void setFlowState(UI ui, FlowState flowState)
     {
         if(ui.isAttached()) {
@@ -363,15 +341,6 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
                 }
             });
         }
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-        this.flowStateBroadcasterRegistration.remove();
-        this.flowStateBroadcasterRegistration = null;
-        this.cacheStateBroadcasterRegistration.remove();
-        this.cacheStateBroadcasterRegistration = null;
     }
 
     @Override
@@ -407,5 +376,37 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
         this.stopButton.setEnabled(enabled);
         this.startPauseButton.setEnabled(enabled);
         this.pauseButton.setEnabled(enabled);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent)
+    {
+        current = attachEvent.getUI();
+        FlowStateBroadcaster.register(this);
+        CacheStateBroadcaster.register(this);
+
+        this.startButtonTooltip.attachToComponent(startButton);
+        this.stopButtonTooltip.attachToComponent(stopButton);
+        this.pauseButtonTooltip.attachToComponent(pauseButton);
+        this.startPauseButtonTooltip.attachToComponent(startPauseButton);
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent)
+    {
+        FlowStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.unregister(this);
+    }
+
+    @Override
+    public void receiveFlowStateBroadcast(FlowState flowState) {
+        logger.debug("Received flow state: " + flowState);
+        setFlowState(current, flowState);
+    }
+
+    @Override
+    public void receiveCacheStateBroadcast(FlowState flowState) {
+        logger.debug("Received flow state: " + flowState);
+        setFlowState(current, flowState);
     }
 }

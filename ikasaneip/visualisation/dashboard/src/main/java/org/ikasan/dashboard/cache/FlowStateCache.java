@@ -1,11 +1,9 @@
 package org.ikasan.dashboard.cache;
 
 import org.ikasan.dashboard.broadcast.FlowState;
-import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
-import org.ikasan.rest.client.ModuleControlRestServiceImpl;
 import org.ikasan.rest.client.dto.FlowDto;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -18,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class FlowStateCache implements Consumer<FlowState>
@@ -48,7 +45,6 @@ public class FlowStateCache implements Consumer<FlowState>
     private FlowStateCache()
     {
         cache = new ConcurrentHashMap<>();
-        FlowStateBroadcaster.register(this);
     }
 
     public void init() {

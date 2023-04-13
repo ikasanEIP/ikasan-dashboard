@@ -92,8 +92,6 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
     @Value("${max.download.bytes:50000000}")
     private int maxDownloadBytes;
 
-    private Registration broadcasterRegistration;
-
     private GraphVisualisation graphVisualisation;
 
     private boolean initialised = false;
@@ -131,31 +129,6 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
             this.init();
             this.graphVisualisation.beforeEnter(beforeEnterEvent);
         }
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        UI ui = attachEvent.getUI();
-
-        broadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            if(ui.isAttached()) {
-                ui.access(() ->
-                {
-                    // do something interesting here.
-                    logger.debug("Received flow state: " + flowState);
-                });
-            }
-        });
-
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-        broadcasterRegistration.remove();
-        broadcasterRegistration = null;
     }
 }
 

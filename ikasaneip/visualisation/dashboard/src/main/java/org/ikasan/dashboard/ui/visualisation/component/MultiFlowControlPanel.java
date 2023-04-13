@@ -7,6 +7,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
@@ -163,12 +164,7 @@ public class MultiFlowControlPanel extends ControlPanel {
             catch(Exception e)
             {
                 e.printStackTrace();
-                current.access(() ->
-                {
-                    progressIndicatorDialog.close();
-                });
-
-                return;
+                current.access(() -> progressIndicatorDialog.close());
             }
         });
     }
