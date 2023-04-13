@@ -920,39 +920,51 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                boolean error = false;
-                try {
-                    if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                        List<SchedulerJobInstanceRecord> updatedJobs = schedulerJobInstanceService.holdJobsWithinContext(ContextMachineCache
-                            .instance().getByContextInstanceId(this.contextInstance.getId()).getContext(), contextInstance.getName());
+                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                dialog.setWidth("600px");
+                dialog.setHeight("250px");
+                dialog.open(getTranslation("progress-dialog.hold-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                    getTranslation("progress-dialog.hold-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
-                        if (updatedJobs.size() > 0) {
-                            updatedJobs.forEach(schedulerJobInstanceRecord -> {
-                                SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(schedulerJobInstanceRecord.getJobName(),
-                                    schedulerJobInstanceRecord.getChildContextName(), ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
-                                schedulerJobInstance.setStatus(InstanceStatus.ON_HOLD);
-                                SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
-                                    = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
-                                    this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
-                                SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
-                            });
-                            ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).saveContext();
+                final UI current = UI.getCurrent();
+                Executor executor = Executors.newSingleThreadExecutor();
+                executor.execute(() -> {
+                    boolean error = false;
+                    try {
+                        if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                            List<SchedulerJobInstanceRecord> updatedJobs = schedulerJobInstanceService.holdJobsWithinContext(ContextMachineCache
+                                .instance().getByContextInstanceId(this.contextInstance.getId()).getContext(), contextInstance.getName());
+
+                            if (updatedJobs.size() > 0) {
+                                updatedJobs.forEach(schedulerJobInstanceRecord -> {
+                                    SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(schedulerJobInstanceRecord.getJobName(),
+                                        schedulerJobInstanceRecord.getChildContextName(), ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
+                                    schedulerJobInstance.setStatus(InstanceStatus.ON_HOLD);
+                                    SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+                                        = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
+                                        this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
+                                    SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+                                });
+                                ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).saveContext();
+                            }
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    } finally {
+                        boolean finalError = error;
+                        current.access(() -> {
+                            dialog.close();
+                            if (finalError) {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-hold-error"
+                                    , UI.getCurrent().getLocale()));
+                            } else {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-held"
+                                    , UI.getCurrent().getLocale()));
+                            }
+                        });
                     }
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    error = true;
-                }
-                finally {
-                    if (error) {
-                        NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-hold-error"
-                            , UI.getCurrent().getLocale()));
-                    } else {
-                        NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-held"
-                            , UI.getCurrent().getLocale()));
-                    }
-                }
+                });
             });
         });
 
@@ -1631,58 +1643,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        logger.info("Detaching ContextInstanceTreeView");
+        logger.debug("Detaching ContextInstanceTreeView");
         this.ui = null;
 
         SchedulerJobStateChangeEventBroadcaster.unregister(this);
         ContextInstanceStateChangeEventBroadcaster.unregister(this);
         ContextInstanceSavedEventBroadcaster.unregister(this);
 
-        if(this.jobImageMap != null) {
-            this.jobImageMap.clear();
-            this.jobImageMap = null;
-        }
-
-        if(this.schedulerJobIconMap != null) {
-            this.schedulerJobIconMap.clear();
-            this.schedulerJobIconMap = null;
-        }
-
-        if(this.statusDivMap != null) {
-            this.statusDivMap.clear();
-            this.statusDivMap = null;
-        }
-
-        if(this.schedulerStatusFreeTextDivMap != null) {
-            this.schedulerStatusFreeTextDivMap.clear();
-            this.schedulerStatusFreeTextDivMap = null;
-        }
-
-        if(this.startTimes != null) {
-            this.startTimes.clear();
-            this.startTimes = null;
-        }
-
-        if(this.endTimes != null) {
-            this.endTimes.clear();
-            this.endTimes = null;
-        }
-
-        if(this.manuallySubmittedBy != null) {
-            this.manuallySubmittedBy.clear();
-            this.manuallySubmittedBy = null;
-        }
-
-        if(this.grid != null) {
-            this.grid = null;
-        }
-
-        if(this.expandedNodes != null) {
-            this.expandedNodes.clear();
-            this.expandedNodes = null;
-        }
-
-        logger.info("Finished detaching ContextInstanceTreeView");
+        logger.debug("Finished detaching ContextInstanceTreeView");
     }
 
     @Override
