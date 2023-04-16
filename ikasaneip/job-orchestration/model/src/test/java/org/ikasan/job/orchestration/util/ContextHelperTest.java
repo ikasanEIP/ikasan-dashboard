@@ -30,11 +30,14 @@ public class ContextHelperTest {
 
     ContextService contextService = new ContextService();
 
+    ContextHelper contextHelper = new ContextHelper();
+
     @Test
     public void test_context_template_token_replacement() throws IOException, JSONException {
         ContextTemplate contextTemplate = this.contextService
             .getContextTemplate(loadDataFile("/data/-1793100514.json"));
 
+        contextHelper.setUseUnderscoreSeparatedContextNameConvention(true);
         ContextHelper.addContextTemplateReplacementTokens(contextTemplate);
 
         Assert.assertNotNull(contextTemplate);
@@ -43,10 +46,24 @@ public class ContextHelperTest {
     }
 
     @Test
+    public void test_context_template_token_replacement_not_using_underscore_convention() throws IOException, JSONException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
+
+        contextHelper.setUseUnderscoreSeparatedContextNameConvention(false);
+        ContextHelper.addContextTemplateReplacementTokens(contextTemplate);
+
+        Assert.assertNotNull(contextTemplate);
+        JSONAssert.assertEquals(loadDataFile("/data/-1793100514-with-tokens_no_underscore.json")
+            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+    }
+
+    @Test
     public void test_context_template_token_replacement_with_job_locks() throws IOException, JSONException {
         ContextTemplate contextTemplate = this.contextService
             .getContextTemplate(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));
 
+        contextHelper.setUseUnderscoreSeparatedContextNameConvention(true);
         ContextHelper.addContextTemplateReplacementTokens(contextTemplate);
 
         Assert.assertNotNull(contextTemplate);
@@ -56,49 +73,108 @@ public class ContextHelperTest {
 
     @Test
     public void test_scheduler_job_token_replacement() {
+        contextHelper.setUseUnderscoreSeparatedContextNameConvention(true);
+
         InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
         internalEventDrivenJob.setJobName("jobName");
         internalEventDrivenJob.setAgentName("agentName");
         internalEventDrivenJob.setIdentifier("agentName-jobName");
+        internalEventDrivenJob.setContextName("contextName");
 
         ContextHelper.addSchedulerJobReplacementTokens(internalEventDrivenJob);
 
-        Assert.assertEquals("[[agent-name]]", internalEventDrivenJob.getAgentName());
-        Assert.assertEquals("[[agent-name]]-jobName", internalEventDrivenJob.getIdentifier());
-        Assert.assertEquals("[[context-name]]", internalEventDrivenJob.getContextName());
+        Assert.assertEquals("[[agent.name]]", internalEventDrivenJob.getAgentName());
+        Assert.assertEquals("[[agent.name]]-jobName", internalEventDrivenJob.getIdentifier());
+        Assert.assertEquals("contextName_[[env.name]]", internalEventDrivenJob.getContextName());
 
         QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
         quartzScheduleDrivenJob.setJobName("jobName");
         quartzScheduleDrivenJob.setAgentName("agentName");
         quartzScheduleDrivenJob.setIdentifier("agentName-jobName");
+        quartzScheduleDrivenJob.setContextName("contextName");
 
         ContextHelper.addSchedulerJobReplacementTokens(quartzScheduleDrivenJob);
 
-        Assert.assertEquals("[[agent-name]]", quartzScheduleDrivenJob.getAgentName());
-        Assert.assertEquals("[[agent-name]]-jobName", quartzScheduleDrivenJob.getIdentifier());
-        Assert.assertEquals("[[context-name]]", quartzScheduleDrivenJob.getContextName());
+        Assert.assertEquals("[[agent.name]]", quartzScheduleDrivenJob.getAgentName());
+        Assert.assertEquals("[[agent.name]]-jobName", quartzScheduleDrivenJob.getIdentifier());
+        Assert.assertEquals("contextName_[[env.name]]", quartzScheduleDrivenJob.getContextName());
 
         FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
         fileEventDrivenJob.setJobName("jobName");
         fileEventDrivenJob.setAgentName("agentName");
         fileEventDrivenJob.setIdentifier("agentName-jobName");
+        fileEventDrivenJob.setContextName("contextName");
 
         ContextHelper.addSchedulerJobReplacementTokens(fileEventDrivenJob);
 
-        Assert.assertEquals("[[agent-name]]", fileEventDrivenJob.getAgentName());
-        Assert.assertEquals("[[agent-name]]-jobName", fileEventDrivenJob.getIdentifier());
-        Assert.assertEquals("[[context-name]]", fileEventDrivenJob.getContextName());
+        Assert.assertEquals("[[agent.name]]", fileEventDrivenJob.getAgentName());
+        Assert.assertEquals("[[agent.name]]-jobName", fileEventDrivenJob.getIdentifier());
+        Assert.assertEquals("contextName_[[env.name]]", fileEventDrivenJob.getContextName());
 
         GlobalEventJob globalEventJob = new GlobalEventJobImpl();
         globalEventJob.setJobName("jobName");
         globalEventJob.setAgentName("agentName");
         globalEventJob.setIdentifier("agentName-jobName");
+        globalEventJob.setContextName("contextName");
 
         ContextHelper.addSchedulerJobReplacementTokens(globalEventJob);
 
         Assert.assertEquals("GLOBAL_EVENT", globalEventJob.getAgentName());
         Assert.assertEquals("GLOBAL_EVENT-jobName", globalEventJob.getIdentifier());
-        Assert.assertEquals("[[context-name]]", globalEventJob.getContextName());
+        Assert.assertEquals("contextName_[[env.name]]", globalEventJob.getContextName());
+    }
+
+    @Test
+    public void test_scheduler_job_token_replacement_no_underscore() {
+        contextHelper.setUseUnderscoreSeparatedContextNameConvention(false);
+
+        InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob.setJobName("jobName");
+        internalEventDrivenJob.setAgentName("agentName");
+        internalEventDrivenJob.setIdentifier("agentName-jobName");
+        internalEventDrivenJob.setContextName("contextName");
+
+        ContextHelper.addSchedulerJobReplacementTokens(internalEventDrivenJob);
+
+        Assert.assertEquals("[[agent.name]]", internalEventDrivenJob.getAgentName());
+        Assert.assertEquals("[[agent.name]]-jobName", internalEventDrivenJob.getIdentifier());
+        Assert.assertEquals("[[context.name]]", internalEventDrivenJob.getContextName());
+
+        QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
+        quartzScheduleDrivenJob.setJobName("jobName");
+        quartzScheduleDrivenJob.setAgentName("agentName");
+        quartzScheduleDrivenJob.setIdentifier("agentName-jobName");
+        quartzScheduleDrivenJob.setContextName("contextName");
+
+        ContextHelper.addSchedulerJobReplacementTokens(quartzScheduleDrivenJob);
+
+        Assert.assertEquals("[[agent.name]]", quartzScheduleDrivenJob.getAgentName());
+        Assert.assertEquals("[[agent.name]]-jobName", quartzScheduleDrivenJob.getIdentifier());
+        Assert.assertEquals("[[context.name]]", quartzScheduleDrivenJob.getContextName());
+
+        FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
+        fileEventDrivenJob.setJobName("jobName");
+        fileEventDrivenJob.setAgentName("agentName");
+        fileEventDrivenJob.setIdentifier("agentName-jobName");
+        fileEventDrivenJob.setContextName("contextName");
+
+        ContextHelper.addSchedulerJobReplacementTokens(fileEventDrivenJob);
+
+        Assert.assertEquals("[[agent.name]]", fileEventDrivenJob.getAgentName());
+        Assert.assertEquals("[[agent.name]]-jobName", fileEventDrivenJob.getIdentifier());
+        Assert.assertEquals("[[context.name]]", fileEventDrivenJob.getContextName());
+
+        GlobalEventJob globalEventJob = new GlobalEventJobImpl();
+        globalEventJob.setJobName("jobName");
+        globalEventJob.setAgentName("agentName");
+        globalEventJob.setIdentifier("agentName-jobName");
+        globalEventJob.setContextName("contextName");
+
+        ContextHelper.addSchedulerJobReplacementTokens(globalEventJob);
+
+        Assert.assertEquals("GLOBAL_EVENT", globalEventJob.getAgentName());
+        Assert.assertEquals("GLOBAL_EVENT-jobName", globalEventJob.getIdentifier());
+        Assert.assertEquals("[[context.name]]", globalEventJob.getContextName());
     }
 
     @Test
