@@ -24,8 +24,11 @@ public class ContextHelper {
 
     static Logger logger = LoggerFactory.getLogger(ContextHelper.class);
 
-    private static String AGENT_NAME_REPLACEMENT = "[[agent-name]]";
-    private static String CONTEXT_NAME_REPLACEMENT = "[[context-name]]";
+    private static String AGENT_NAME_REPLACEMENT = "[[agent.name]]";
+    private static String CONTEXT_NAME_REPLACEMENT = "[[context.name]]";
+    private static String ENV_NAME_REPLACEMENT = "[[env.name]]";
+    
+    private static boolean USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION = true;
 
     /**
      * Helper method to add replacement tokens to a scheduler job.
@@ -34,7 +37,7 @@ public class ContextHelper {
      */
     public static void addSchedulerJobReplacementTokens(SchedulerJob schedulerJob) {
         schedulerJob.setAgentName(AGENT_NAME_REPLACEMENT);
-        schedulerJob.setContextName(CONTEXT_NAME_REPLACEMENT);
+        schedulerJob.setContextName(getContextName(schedulerJob.getContextName()));
         if(!(schedulerJob instanceof GlobalEventJob)) {
             schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
         }
@@ -47,7 +50,7 @@ public class ContextHelper {
      */
     public static void addContextTemplateReplacementTokens(ContextTemplate contextTemplate) {
         _addContextTemplateReplacementTokens(contextTemplate);
-        contextTemplate.setName(CONTEXT_NAME_REPLACEMENT);
+        contextTemplate.setName(getContextName(contextTemplate.getName()));
     }
 
     /**
@@ -71,7 +74,9 @@ public class ContextHelper {
             contextTemplate.getJobLocks().forEach(jobLock -> {
                 jobLock.getJobs().entrySet().forEach(entry -> {
                     entry.getValue().forEach(job -> {
-                        job.setContextName(CONTEXT_NAME_REPLACEMENT);
+                        if(job.getContextName() != null) {
+                            job.setContextName(getContextName(job.getContextName()));
+                        }
                         job.setAgentName(AGENT_NAME_REPLACEMENT);
                         job.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + job.getJobName());
                     });
@@ -81,6 +86,18 @@ public class ContextHelper {
 
         if(contextTemplate.getContexts() != null) {
             contextTemplate.getContexts().forEach(child -> _addContextTemplateReplacementTokens(child));
+        }
+    }
+
+    private static String getContextName(String contextName) {
+        if(!USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION) {
+            return CONTEXT_NAME_REPLACEMENT;
+        }
+        else if(!contextName.contains("_")) {
+            return contextName + "_" + ENV_NAME_REPLACEMENT;
+        }
+        else {
+            return contextName.substring(0, contextName.lastIndexOf("_")) + ENV_NAME_REPLACEMENT;
         }
     }
 
@@ -1043,5 +1060,13 @@ public class ContextHelper {
 
     public void setContextNameReplacement(String contextNameReplacement) {
         CONTEXT_NAME_REPLACEMENT = contextNameReplacement;
+    }
+
+    public void setEnvNameReplacement(String envNameReplacement) {
+        ENV_NAME_REPLACEMENT = envNameReplacement;
+    }
+
+    public void setUseUnderscoreSeparatedContextNameConvention(boolean useUnderscoreSeparatedContextNameConvention) {
+        USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION = useUnderscoreSeparatedContextNameConvention;
     }
 }
