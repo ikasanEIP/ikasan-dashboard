@@ -45,11 +45,17 @@ public class DashboardComponentFactory
 
     private static final String INBOUND_QUEUE = "dashboard-inbound-queue";
 
-    @Value("${context-token-replace-string:#{null}}")
+    @Value("${context.export.context.token.replace.string:#{null}}")
     private String contextTokenReplacementString;
 
-    @Value("${agent-token-replace-string:#{null}}")
+    @Value("${context.export.agent.token.replace.string:#{null}}")
     private String agentTokenReplacementString;
+
+    @Value("${context.export.env.token.replace.string:#{null}}")
+    private String envTokenReplacementString;
+
+    @Value("${context.export.use.underscore.separated.context.name.convention:false}")
+    private boolean useUnderscoreSeparatedContextNameConvention;
 
     @Bean
     public ContextHelper contextHelper() {
@@ -62,6 +68,12 @@ public class DashboardComponentFactory
         if(agentTokenReplacementString != null && !agentTokenReplacementString.isEmpty()) {
             contextHelper.setAgentNameReplacement(agentTokenReplacementString);
         }
+
+        if(envTokenReplacementString != null && !envTokenReplacementString.isEmpty()) {
+            contextHelper.setEnvNameReplacement(envTokenReplacementString);
+        }
+
+        contextHelper.setUseUnderscoreSeparatedContextNameConvention(useUnderscoreSeparatedContextNameConvention);
 
         return contextHelper;
     }
