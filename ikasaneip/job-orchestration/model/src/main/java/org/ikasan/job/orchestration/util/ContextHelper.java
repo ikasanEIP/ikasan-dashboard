@@ -97,7 +97,7 @@ public class ContextHelper {
             return contextName + "_" + ENV_NAME_REPLACEMENT;
         }
         else {
-            return contextName.substring(0, contextName.lastIndexOf("_")) + ENV_NAME_REPLACEMENT;
+            return contextName.substring(0, contextName.lastIndexOf("_")) + "_" + ENV_NAME_REPLACEMENT;
         }
     }
 
