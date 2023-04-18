@@ -196,7 +196,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextService).findById(contextName);
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -275,7 +275,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextService).findById(contextName);
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
@@ -365,7 +365,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextService).findById(contextName);
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
@@ -455,7 +455,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextService).findById(contextName);
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
@@ -549,7 +549,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextService).findById(contextName);
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
@@ -831,7 +831,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextService).findById(contextName);
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
@@ -908,7 +908,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         // verify
         verify(scheduledContextService).findById(contextName);
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -1144,7 +1144,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextService).findById(contextName);
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));

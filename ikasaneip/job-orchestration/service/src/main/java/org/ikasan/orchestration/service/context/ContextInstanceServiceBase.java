@@ -240,7 +240,7 @@ public abstract class ContextInstanceServiceBase {
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
         // set the parameters on the instance every time
-        setContextParametersOnInstance(instance);
+        setContextParametersOnInstance(instance, internalJobs);
 
         propagateContextInstanceToAgents(instance, agents);
 
@@ -352,8 +352,8 @@ public abstract class ContextInstanceServiceBase {
         }
     }
 
-    private void setContextParametersOnInstance(ContextInstance contextInstance) {
+    private void setContextParametersOnInstance(ContextInstance contextInstance, Map<String, InternalEventDrivenJobInstance> internalJobs) {
         contextParametersInstanceService.populateContextParameters();
-        contextParametersInstanceService.populateContextParametersOnContextInstance(contextInstance);
+        contextParametersInstanceService.populateContextParametersOnContextInstance(contextInstance, internalJobs);
     }
 }

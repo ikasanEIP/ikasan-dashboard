@@ -739,7 +739,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         MenuBar actionsMenuBar = new MenuBar();
         actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        MenuItem actionsMenuItem = this.createIconItem(actionsMenuBar, VaadinIcon.LINES, "Actions");
+        MenuItem actionsMenuItem = this.createIconItem(actionsMenuBar, VaadinIcon.MENU, "Actions");
         SubMenu actions = actionsMenuItem.getSubMenu();
 
         actions.addItem(getTranslation("button.edit-context-template", UI.getCurrent().getLocale()),
@@ -1110,7 +1110,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
-
         ContextTemplateSavedEventBroadcaster.unregister(this);
     }
 
