@@ -1,14 +1,17 @@
 package org.ikasan.job.orchestration.util;
 
 import org.apache.commons.io.IOUtils;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.*;
@@ -20,10 +23,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // todo extensive tests need to be written here
 public class ContextHelperTest {
@@ -281,6 +281,42 @@ public class ContextHelperTest {
         Assert.assertFalse(aggregateContextInstanceStatus.isHeldJobs());
     }
 
+    @Test
+    public void test_get_unique_context_parameters() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap = createInternalJobsMap(contextTemplate);
+
+        List<ContextParameter> contextParameterInstances1 = new ArrayList<>();
+        contextParameterInstances1.add(newContextParameterInstance("name1", "value1"));
+        contextParameterInstances1.add(newContextParameterInstance("name2", "value2"));
+        contextParameterInstances1.add(newContextParameterInstance("name3", "value3"));
+        contextParameterInstances1.add(newContextParameterInstance("name4", "value4"));
+        contextParameterInstances1.add(newContextParameterInstance("name5", "value5"));
+
+        List<ContextParameter> contextParameterInstances2 = new ArrayList<>();
+        contextParameterInstances2.add(newContextParameterInstance("name1", "value1"));
+        contextParameterInstances2.add(newContextParameterInstance("name4", "value4"));
+        contextParameterInstances2.add(newContextParameterInstance("name5", "value5"));
+
+        int i=0;
+        for(InternalEventDrivenJobInstance instance: internalEventDrivenJobInstanceMap.values()) {
+            if(i%2 == 0) {
+                instance.setContextParameters(contextParameterInstances1);
+            }
+            else {
+                instance.setContextParameters(contextParameterInstances2);
+            }
+        }
+
+        List<ContextParameterInstance> contextParameterInstances
+            = ContextHelper.getUniqueContextParameterInstancesFromJobs(internalEventDrivenJobInstanceMap);
+
+        Assert.assertTrue(contextParameterInstances.size() == 5);
+
+    }
+
     protected String loadDataFile(String fileName) throws IOException {
         String contentToSend = IOUtils.toString(loadDataFileStream(fileName), "UTF-8");
 
@@ -326,5 +362,13 @@ public class ContextHelperTest {
         job.setTargetResidingContextOnly(true);
 
         return job;
+    }
+
+    private ContextParameterInstance newContextParameterInstance(String name, String value) {
+        ContextParameterInstance instance = new ContextParameterInstanceImpl();
+        instance.setName(name);
+        instance.setValue(value);
+
+        return instance;
     }
 }

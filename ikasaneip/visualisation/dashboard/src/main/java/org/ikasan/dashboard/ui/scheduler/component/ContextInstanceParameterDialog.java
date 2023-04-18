@@ -19,8 +19,8 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
-import org.ikasan.spec.scheduled.context.model.ContextParameter;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,16 +29,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class ContextParameterDialog extends AbstractCloseableResizableDialog {
+public class ContextInstanceParameterDialog extends AbstractCloseableResizableDialog {
 
     private boolean isSaveClose = false;
     private VerticalLayout buttonLayout;
-    private List<ContextParameterHolder> contextParameterHolders;
+    private List<ContextParameterInstanceHolder> contextParameterHolders;
     private boolean editable;
-    private Grid<ContextParameterHolder> contextParameterHolderGrid;
+    private Grid<ContextParameterInstanceHolder> contextParameterHolderGrid;
 
-    private DataProvider<ContextParameterHolder, ContextParameterFilter> dataProvider;
-    private ConfigurableFilterDataProvider<ContextParameterHolder, Void, ContextParameterFilter> filteredDataProvider;
+    private DataProvider<ContextParameterInstanceHolder, ContextParameterFilter> dataProvider;
+    private ConfigurableFilterDataProvider<ContextParameterInstanceHolder, Void, ContextParameterFilter> filteredDataProvider;
 
     private ContextParameterFilter searchFilter = new ContextParameterFilter();
 
@@ -47,7 +47,7 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
      *
      * @param editable
      */
-    public ContextParameterDialog(boolean editable) {
+    public ContextInstanceParameterDialog(boolean editable) {
         this.editable = editable;
         super.showResize(false);
         super.title.setText(getTranslation("label.context-parameters", UI.getCurrent().getLocale()));
@@ -77,7 +77,7 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
         contextParameterHolderGrid.addColumn(new ComponentRenderer<>(contextParameterHolder -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
                 horizontalLayout.setWidthFull();
-                horizontalLayout.add(contextParameterHolder.getDefaultValue());
+                horizontalLayout.add(contextParameterHolder.getValue());
                 return horizontalLayout;
             }))
             .setHeader(getTranslation("table-header.parameter-default-value", UI.getCurrent().getLocale()))
@@ -85,80 +85,30 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
             .setResizable(true)
             .setFlexGrow(40);
 
-        if(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
-            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
-            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)) {
-            contextParameterHolderGrid.addColumn(new ComponentRenderer<>(contextParameterHolder -> {
-                    HorizontalLayout horizontalLayout = new HorizontalLayout();
-
-                    Button remove = new Button();
-                    remove.getElement().appendChild(VaadinIcon.MINUS.create().getElement());
-
-                    remove.addClickListener(event -> {
-                        contextParameterHolders.remove(contextParameterHolder);
-                        contextParameterHolderGrid.getDataProvider().refreshAll();
-                    });
-
-                    ComponentSecurityVisibility.applySecurity(remove, SecurityConstants.ALL_AUTHORITY,
-                        SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
-                        SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
-
-                    horizontalLayout.add(remove);
-                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, remove);
-                    return horizontalLayout;
-                }))
-                .setKey("remove")
-                .setFlexGrow(1);
-        }
-
         contextParameterHolderGrid.addClassName("small-header");
         this.initDataProvider();
 
         HeaderRow hr = contextParameterHolderGrid.appendHeaderRow();
         this.addGridFiltering(hr, this.searchFilter::setParameterName, "paramName");
 
-        Button okButton = new Button(getTranslation("button.ok", UI.getCurrent().getLocale()));
+        Button okButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         okButton.setVisible(this.editable && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         okButton.addClickListener(event -> {
             AtomicBoolean isValid = new AtomicBoolean(true);
-            AtomicBoolean isUnique = new AtomicBoolean(true);
-            List<String> uniqueParamNames = new ArrayList<>();
-            List<String> nonUniqueParamNames = new ArrayList<>();
             this.contextParameterHolders.forEach(contextParameterHolder -> {
                 if(!contextParameterHolder.validate()) {
                     isValid.set(false);
                 }
-
-                if(contextParameterHolder.getParamName() != null && !contextParameterHolder.getParamName().isEmpty()
-                    && uniqueParamNames.contains(contextParameterHolder.getParamName().getValue())) {
-                    nonUniqueParamNames.add(contextParameterHolder.getParamName().getValue());
-                    isUnique.set(false);
-                }
-
-                if(contextParameterHolder.getParamName() != null && !contextParameterHolder.getParamName().isEmpty()) {
-                    uniqueParamNames.add(contextParameterHolder.getParamName().getValue());
-                }
             });
 
-            if(isValid.get() && isUnique.get()) {
+            if(isValid.get()) {
                 this.isSaveClose = true;
                 this.close();
             }
-            else if(!isValid.get()){
-                NotificationHelper.showUserNotification(getTranslation("error.configuration-parameters-form"
-                    , UI.getCurrent().getLocale()));
-            }
             else {
-                this.contextParameterHolders.forEach(contextParameterHolder -> {
-                    if(contextParameterHolder.getParamName().getValue() != null &&
-                        !contextParameterHolder.getParamName().getValue().isEmpty() &&
-                        nonUniqueParamNames.contains(contextParameterHolder.getParamName().getValue())) {
-                        contextParameterHolder.setNotUnique();
-                    }
-                });
-                NotificationHelper.showUserNotification(getTranslation("error.job-plan-parameter-names-must-be-unique"
+                NotificationHelper.showErrorNotification(getTranslation("error.configuration-parameters-form"
                     , UI.getCurrent().getLocale()));
             }
         });
@@ -185,36 +135,20 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
      *
      * @param contextParameters
      */
-    public void initParams(List<ContextParameter> contextParameters) {
+    public void initParams(List<ContextParameterInstance> contextParameters) {
         FormLayout formLayout = new FormLayout();
         formLayout.setResponsiveSteps(
             new FormLayout.ResponsiveStep("500px", 15)
         );
 
         contextParameters.forEach(contextParameter -> {
-            ContextParameterHolder contextParameterHolder = new ContextParameterHolder(contextParameter);
+            ContextParameterInstanceHolder contextParameterHolder = new ContextParameterInstanceHolder(contextParameter);
             contextParameterHolders.add(contextParameterHolder);
         });
 
         this.contextParameterHolderGrid.getDataProvider().refreshAll();
 
-        Icon addIcon = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("label.add-context-parameter"
-            , UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        addIcon.setVisible(this.editable &&
-            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
-            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
-            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
-        addIcon.getElement().getStyle().set("margin-left", "auto");
-
-        addIcon.addClickListener(event -> {
-            ContextParameterHolder contextParameterHolder = new ContextParameterHolder(new ContextParameterImpl());
-
-            this.contextParameterHolders.add(0, contextParameterHolder);
-            this.contextParameterHolderGrid.getDataProvider().refreshAll();
-        });
-
-        formLayout.add(this.contextParameterHolderGrid, 14);
-        formLayout.add(addIcon, 1);
+        formLayout.add(this.contextParameterHolderGrid, 15);
         super.content.add(formLayout, buttonLayout);
     }
 
@@ -255,13 +189,13 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
             // The number of items to load
             int limit = query.getLimit();
 
-            List<ContextParameterHolder> results = this.getResults(filter.get(), offset, limit);
+            List<ContextParameterInstanceHolder> results = this.getResults(filter.get(), offset, limit);
 
             return results.stream();
         }, query -> {
             Optional<ContextParameterFilter> filter = query.getFilter();
 
-            List<ContextParameterHolder> results = this.getResults(filter.get(), -1, -1);
+            List<ContextParameterInstanceHolder> results = this.getResults(filter.get(), -1, -1);
 
             return results.size();
         });
@@ -272,8 +206,8 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
         this.contextParameterHolderGrid.setDataProvider(filteredDataProvider);
     }
 
-    private List<ContextParameterHolder> getResults(ContextParameterFilter filter, int offset, int limit) {
-        List<ContextParameterHolder> results = this.contextParameterHolders.stream()
+    private List<ContextParameterInstanceHolder> getResults(ContextParameterFilter filter, int offset, int limit) {
+        List<ContextParameterInstanceHolder> results = this.contextParameterHolders.stream()
             .filter(contextParameterHolder -> {
                 if(filter.getParameterName() == null || filter.getParameterName().isEmpty()) {
                     return true;
@@ -318,8 +252,8 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
      *
      * @return
      */
-    public List<ContextParameter> getContextParameters() {
-        List<ContextParameter> contextParameters = new ArrayList<>();
+    public List<ContextParameterInstance> getContextParameters() {
+        List<ContextParameterInstance> contextParameters = new ArrayList<>();
 
         contextParameterHolders.forEach(contextParameterHolder
             -> contextParameters.add(contextParameterHolder.getContextParameter()));
@@ -331,16 +265,13 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
      * Internal private class to assist managing the parameters
      * and associated UI elements.
      */
-    private class ContextParameterHolder {
+    private class ContextParameterInstanceHolder {
         private TextField paramName = new TextField();
-        private TextField defaultValue = new TextField();
+        private TextField value = new TextField();
 
-        private Icon removeIcon = IconDecorator.decorate(VaadinIcon.MINUS.create()
-            , getTranslation("label.remove-context-parameter", UI.getCurrent().getLocale())
-            , "14pt", "rgba(241, 90, 35, 1.0)");
-        private ContextParameter contextParameter;
+        private ContextParameterInstance contextParameter;
 
-        public ContextParameterHolder(ContextParameter contextParameter) {
+        public ContextParameterInstanceHolder(ContextParameterInstance contextParameter) {
             this.contextParameter = contextParameter;
             this.paramName.setRequired(true);
             if(contextParameter.getName()!= null)this.paramName.setValue(contextParameter.getName());
@@ -348,19 +279,21 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
             this.paramName.getElement().getThemeList().add("always-float-label");
             this.paramName.setWidthFull();
 
-            this.defaultValue.getElement().getThemeList().add("always-float-label");
-            if(contextParameter.getDefaultValue()!= null)this.defaultValue.setValue(contextParameter.getDefaultValue());
-            this.defaultValue.setWidthFull();
+            this.value.getElement().getThemeList().add("always-float-label");
+            if(contextParameter.getValue() != null && !contextParameter.getValue().isEmpty()) {
+                this.value.setValue(contextParameter.getValue());
+            }
+            else if(contextParameter.getDefaultValue()!= null) {
+                this.value.setValue(contextParameter.getDefaultValue());
+            }
+
+            this.value.setWidthFull();
 
             this.paramName.setEnabled(editable &&
                 ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
-            this.defaultValue.setEnabled(editable &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
-                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
-                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
-            this.removeIcon.setVisible(editable &&
+            this.value.setEnabled(editable &&
                 ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
@@ -370,18 +303,14 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
             return this.paramName;
         }
 
-        public TextField getDefaultValue() {
-            return this.defaultValue;
+        public TextField getValue() {
+            return this.value;
         }
 
-        public Icon getRemoveIcon() {
-            return this.removeIcon;
-        }
-
-        public ContextParameter getContextParameter() {
+        public ContextParameterInstance getContextParameter() {
             this.contextParameter.setName(this.paramName.getValue());
-            this.contextParameter.setDefaultValue(this.defaultValue.getValue() != null
-                ? this.defaultValue.getValue() : "");
+            this.contextParameter.setValue(this.value.getValue() != null
+                ? this.value.getValue() : "");
             return this.contextParameter;
         }
 
@@ -403,11 +332,6 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
             }
 
             return isValid;
-        }
-
-        public void setNotUnique() {
-            paramName.setErrorMessage("Job parameters must have a unique name!");
-            paramName.setInvalid(true);
         }
     }
 
