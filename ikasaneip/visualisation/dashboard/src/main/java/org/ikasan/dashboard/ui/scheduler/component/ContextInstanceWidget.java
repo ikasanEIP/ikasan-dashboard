@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.awesomecontrols.quickpopup.QuickPopup;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
@@ -50,6 +51,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
@@ -129,6 +131,8 @@ public class ContextInstanceWidget extends VerticalLayout
     private Button contextInstanceEndButton;
     private Button ignoreContextInstanceEndButton;
     private Button resetContextButton;
+    private Button contextInstanceParameterButton;
+
 
     private Tab treeTab;
     private Tab visualisationTab;
@@ -151,7 +155,9 @@ public class ContextInstanceWidget extends VerticalLayout
     private SchedulerStatusFreeTextDiv queuedStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv onHoldStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv skippedStatus = new SchedulerStatusFreeTextDiv();
-    private SchedulerStatusFreeTextDiv errorStatus = new SchedulerStatusFreeTextDiv();;
+    private SchedulerStatusFreeTextDiv errorStatus = new SchedulerStatusFreeTextDiv();
+
+    QuickPopup qp = null;
 
     /**
      * Constructor
@@ -1010,12 +1016,54 @@ public class ContextInstanceWidget extends VerticalLayout
             });
         });
 
+        this.contextInstanceParameterButton = new Button(getTranslation("button.context-parameters", UI.getCurrent().getLocale()), VaadinIcon.LINES.create());
+        this.contextInstanceParameterButton.setIconAfterText(true);
+        this.contextInstanceParameterButton.addClickListener(event -> {
+            ContextInstanceParameterDialog contextInstanceParameterDialog =  new ContextInstanceParameterDialog(true);
+            contextInstanceParameterDialog.initParams(this.contextInstance.getContextParameters());
+            contextInstanceParameterDialog.open();
+
+            contextInstanceParameterDialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened() && contextInstanceParameterDialog.isSaveClose()) {
+                    try {
+                        if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                            ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId())
+                                .getContext().setContextParameters(contextInstanceParameterDialog.getContextParameters());
+                            ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId())
+                                .saveContext();
+
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-plan-instance-parameters-updated-successfully"
+                                , UI.getCurrent().getLocale()));
+                        } else {
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-plan-instance-parameters-not-updated-no-context-instance"
+                                , UI.getCurrent().getLocale()));
+                        }
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+
+                        NotificationHelper.showUserNotification(getTranslation("notification.error-updating-context-instance-parameters"
+                            , UI.getCurrent().getLocale()));
+                    }
+                }
+            });
+        });
+
         ComponentSecurityVisibility.applySecurity(resetContextButton, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
+        Button actionsButton = new Button(getTranslation("button.actions", UI.getCurrent().getLocale()), VaadinIcon.MENU.create(), event -> qp.show());
+
+        VerticalLayout popupLayout = new VerticalLayout();
+        popupLayout.setSizeFull();
+        popupLayout.add(jobLockDashboard, holdContextButton, releaseContextButton, enableQuartzScheduledJobsButton,
+            disableQuartzScheduledJobsButton, contextInstanceEndButton, ignoreContextInstanceEndButton, resetContextButton,
+            contextInstanceParameterButton);
+
+        qp = new QuickPopup(actionsButton.getElement(), popupLayout);
+
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(jobLockDashboard, holdContextButton, releaseContextButton, enableQuartzScheduledJobsButton,
-            disableQuartzScheduledJobsButton, contextInstanceEndButton, ignoreContextInstanceEndButton, resetContextButton);
+        buttonLayout.add(actionsButton);
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
 

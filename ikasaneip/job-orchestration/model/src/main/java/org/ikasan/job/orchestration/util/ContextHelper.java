@@ -1,11 +1,9 @@
 package org.ikasan.job.orchestration.util;
 
 import org.ikasan.job.orchestration.model.context.ContextTransition;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.spec.scheduled.context.model.*;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -89,6 +87,12 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Helper method to set the context name.
+     *
+     * @param contextName
+     * @return
+     */
     private static String getContextName(String contextName) {
         if(!USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION) {
             return CONTEXT_NAME_REPLACEMENT;
@@ -184,6 +188,31 @@ public class ContextHelper {
      */
     private static void replaceJobIdentifierNot(SchedulerJob schedulerJob, Not not) {
         not.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+    }
+
+    /**
+     *
+     * @param internalJobs
+     * @return
+     */
+    public static List<ContextParameterInstance> getUniqueContextParameterInstancesFromJobs(Map<String, InternalEventDrivenJobInstance> internalJobs) {
+        List<ContextParameterInstance> contextParameterInstances = new ArrayList<>();
+
+        internalJobs.entrySet().forEach(entry ->
+            contextParameterInstances.addAll(entry.getValue().getContextParameters().stream()
+            .map(contextParameter -> {
+                ContextParameterInstance contextParameterInstance = new ContextParameterInstanceImpl();
+                contextParameterInstance.setName(contextParameter.getName());
+                contextParameterInstance.setValue(contextParameter.getDefaultValue());
+                contextParameterInstance.setDefaultValue(contextParameter.getDefaultValue());
+
+                return contextParameterInstance;
+            })
+            .collect(Collectors.toList())));
+
+        return contextParameterInstances.stream()
+            .filter(distinctByKey(contextParameterInstance -> contextParameterInstance.getName()) )
+            .collect( Collectors.toList() );
     }
 
     /**

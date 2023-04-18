@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 
 public class ContextParametersInstanceServiceImpl implements ContextParametersInstanceService {
@@ -41,7 +43,8 @@ public class ContextParametersInstanceServiceImpl implements ContextParametersIn
     }
 
     @Override
-    public void populateContextParametersOnContextInstance(ContextInstance contextInstance) {
+    public void populateContextParametersOnContextInstance(ContextInstance contextInstance,
+                                                           Map<String, InternalEventDrivenJobInstance> internalJobs) {
         List<ContextParameterInstance> propertyBackedContextParameterInstances
             = this.getAllContextParameters(contextInstance.getName());
 
@@ -60,6 +63,19 @@ public class ContextParametersInstanceServiceImpl implements ContextParametersIn
          * list that were not populated from properties.
          */
         defaultContextParameterInstances.forEach(contextParameterInstance -> {
+            if(!finalContextParameters.containsKey(contextParameterInstance.getName())) {
+                contextParameterInstance.setValue(contextParameterInstance.getDefaultValue());
+                finalContextParameters.put(contextParameterInstance.getName(), contextParameterInstance);
+            }
+        });
+
+        List<ContextParameterInstance> parameterInstancesFromJobs
+            = ContextHelper.getUniqueContextParameterInstancesFromJobs(internalJobs);
+
+        /**
+         * Now iterate over any context parameter instances that may be on jobs that have not been included.
+         */
+        parameterInstancesFromJobs.forEach(contextParameterInstance -> {
             if(!finalContextParameters.containsKey(contextParameterInstance.getName())) {
                 contextParameterInstance.setValue(contextParameterInstance.getDefaultValue());
                 finalContextParameters.put(contextParameterInstance.getName(), contextParameterInstance);

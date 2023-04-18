@@ -242,7 +242,8 @@ public class ContextMachine {
                 }
             });
 
-            contextParametersInstanceService.populateContextParametersOnContextInstance(contextInstance);
+            contextParametersInstanceService.populateContextParametersOnContextInstance(this.contextInstance
+                , this.internalEventDrivenJobInstances);
 
             // Remove the previous context instance from all agents
             this.agents.values().forEach(agent

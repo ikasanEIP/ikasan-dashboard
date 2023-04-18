@@ -49,6 +49,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import static java.time.ZonedDateTime.now;
@@ -410,7 +411,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
         verify(contextParametersInstanceService, times(12)).populateContextParameters();
-        verify(contextParametersInstanceService, times(12)).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService, times(12)).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(moduleMetadataService, times(13)).find(any(), any(), eq(-1), eq(-1));
         verify(timeService).getDateNow();
         verify(scheduledContextInstanceService, times(12)).save(any(ScheduledContextInstanceRecord.class));
@@ -468,7 +469,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextService).findAll();
         verify(moduleMetadataService, times(3)).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService, times(2)).populateContextParameters();
-        verify(contextParametersInstanceService, times(2)).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService, times(2)).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(timeService).getDateNow();
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);

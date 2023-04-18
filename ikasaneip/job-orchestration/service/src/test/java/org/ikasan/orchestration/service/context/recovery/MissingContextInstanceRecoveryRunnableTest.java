@@ -41,6 +41,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
 import static org.junit.Assert.*;
@@ -163,7 +164,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         // verify
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(contextParametersUpdateService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextParametersUpdateService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextParametersUpdateService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
@@ -229,7 +230,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         verify(scheduledContextInstanceService, times(2)).save(any());
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 
 public class TestContextParametersInstanceService implements ContextParametersInstanceService {
@@ -37,7 +38,7 @@ public class TestContextParametersInstanceService implements ContextParametersIn
     }
 
     @Override
-    public void populateContextParametersOnContextInstance(ContextInstance contextInstance) {
+    public void populateContextParametersOnContextInstance(ContextInstance contextInstance, Map<String, InternalEventDrivenJobInstance> internalJobs) {
 
     }
 }
