@@ -23,7 +23,6 @@ import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataPr
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
@@ -1680,7 +1679,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     @Override
     public void receiveBroadcast(ContextInstance event) {
         if(contextInstance.getId().equals(this.contextInstance.getId())) {
-            this.contextInstance = contextInstance;
+            this.contextInstance = event;
             ContextHelper.enrichJobs(contextInstance);
             this.enableDisableScheduledJobs(this.contextInstance, this.ui);
             manageContextStatusIndicators(this.ui);
