@@ -1,20 +1,16 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.vaadin.componentfactory.Popup;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.contextmenu.ContextMenu;
-import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -663,11 +659,14 @@ public class ContextInstanceWidget extends VerticalLayout
      * @return
      */
     private VerticalLayout createButtonLayout() {
+        Dialog actionPopup = new Dialog();
+
         Button jobLockDashboard = new Button(getTranslation("button.jobs-locks", UI.getCurrent().getLocale())
             , VaadinIcon.LOCK.create());
         jobLockDashboard.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         jobLockDashboard.setIconAfterText(true);
         jobLockDashboard.addClickListener(event -> {
+            actionPopup.close();
             JobLockCacheDialog jobLockCacheDialog = new JobLockCacheDialog(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobInstanceService,
                 this.logStreamingService, this.jobInitiationService, this.scheduledContextService, this.jobUtilsService, this.scheduledContextInstanceService,
@@ -685,6 +684,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.holdContextButton.setIconAfterText(true);
         this.holdContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.holdContextButton.addClickListener(event -> {
+            actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
@@ -740,6 +740,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.releaseContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
 
         this.releaseContextButton.addClickListener(event -> {
+            actionPopup.close();
             ContextMachine contextMachine = ContextMachineCache.instance()
                 .getByContextInstanceId(this.contextInstance.getId());
             if (contextMachine != null) {
@@ -831,6 +832,7 @@ public class ContextInstanceWidget extends VerticalLayout
         }
 
         enableQuartzScheduledJobsButton.addClickListener(event -> {
+            actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.enable-scheduled-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.enable-scheduled-jobs-body", UI.getCurrent().getLocale()));
@@ -868,6 +870,7 @@ public class ContextInstanceWidget extends VerticalLayout
         });
 
         disableQuartzScheduledJobsButton.addClickListener(event -> {
+            actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.disable-scheduled-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.disable-scheduled-jobs-body", UI.getCurrent().getLocale()));
@@ -909,26 +912,27 @@ public class ContextInstanceWidget extends VerticalLayout
         this.contextInstanceEndButton.setVisible(this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_ADMIN));
         this.contextInstanceEndButton.addClickListener(event -> {
-                ConfirmDialog confirmDialog = new ConfirmDialog();
-                confirmDialog.setHeader(getTranslation("confirm-dialog.end-job-plan-header", UI.getCurrent().getLocale()));
-                confirmDialog.setText(getTranslation("confirm-dialog.end-job-plan-body", UI.getCurrent().getLocale()));
-                confirmDialog.setCancelable(true);
-                confirmDialog.open();
+            actionPopup.close();
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.end-job-plan-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.end-job-plan-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
 
-                confirmDialog.addConfirmListener(confirmEvent -> {
-                    try {
-                        this.contextInstanceRegistrationService.deregisterManually(this.contextInstance.getId());
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                try {
+                    this.contextInstanceRegistrationService.deregisterManually(this.contextInstance.getId());
 
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_ENDED, String.format("Job Plan Name[%s], Job Plan Instance Identifier[%s]"
-                            , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                        NotificationHelper.showUserNotification(getTranslation("notification.job-plan-ended-successfully", UI.getCurrent().getLocale()));
-                        ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-ended-error", UI.getCurrent().getLocale()));
-                    }
-                });
+                    this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_ENDED, String.format("Job Plan Name[%s], Job Plan Instance Identifier[%s]"
+                        , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                    NotificationHelper.showUserNotification(getTranslation("notification.job-plan-ended-successfully", UI.getCurrent().getLocale()));
+                    ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-ended-error", UI.getCurrent().getLocale()));
+                }
+            });
         });
 
         this.ignoreContextInstanceEndButton = new Button(getTranslation("label.ignore-job-plan-duration"
@@ -937,6 +941,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.ignoreContextInstanceEndButton.setVisible(!this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_ADMIN));
         this.ignoreContextInstanceEndButton.addClickListener(event -> {
+            actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.ignore-job-plan-duration-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.ignore-job-plan-duration-body", UI.getCurrent().getLocale()));
@@ -967,6 +972,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.resetContextButton.setIconAfterText(true);
         this.resetContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.resetContextButton.addClickListener(event -> {
+            actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.reset-context", UI.getCurrent().getLocale()));
 
@@ -1020,6 +1026,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.contextInstanceParameterButton = new Button(getTranslation("button.context-parameters", UI.getCurrent().getLocale()), VaadinIcon.LINES.create());
         this.contextInstanceParameterButton.setIconAfterText(true);
         this.contextInstanceParameterButton.addClickListener(event -> {
+            actionPopup.close();
             ContextInstanceParameterDialog contextInstanceParameterDialog =  new ContextInstanceParameterDialog(true);
             contextInstanceParameterDialog.initParams(this.contextInstance.getContextParameters());
             contextInstanceParameterDialog.open();
@@ -1052,8 +1059,6 @@ public class ContextInstanceWidget extends VerticalLayout
 
         ComponentSecurityVisibility.applySecurity(resetContextButton, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
-
-        Dialog actionPopup = new Dialog();
 
         Button actionsButton = new Button(getTranslation("button.actions", UI.getCurrent().getLocale()), VaadinIcon.MENU.create());
         actionsButton.addClickListener(buttonClickEvent -> {
