@@ -1,16 +1,20 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.awesomecontrols.quickpopup.QuickPopup;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.vaadin.componentfactory.Popup;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -51,7 +55,6 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
@@ -156,8 +159,6 @@ public class ContextInstanceWidget extends VerticalLayout
     private SchedulerStatusFreeTextDiv onHoldStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv skippedStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv errorStatus = new SchedulerStatusFreeTextDiv();
-
-    QuickPopup qp = null;
 
     /**
      * Constructor
@@ -1052,15 +1053,30 @@ public class ContextInstanceWidget extends VerticalLayout
         ComponentSecurityVisibility.applySecurity(resetContextButton, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-        Button actionsButton = new Button(getTranslation("button.actions", UI.getCurrent().getLocale()), VaadinIcon.MENU.create(), event -> qp.show());
+        Dialog actionPopup = new Dialog();
+
+        Button actionsButton = new Button(getTranslation("button.actions", UI.getCurrent().getLocale()), VaadinIcon.MENU.create());
+        actionsButton.addClickListener(buttonClickEvent -> {
+            actionPopup.open();
+            actionPopup
+                .getElement()
+                .executeJs(
+                    "$0.$.overlay.$.overlay.style['align-self']='flex-start';" +
+                        "$0.$.overlay.$.overlay.style['position']='absolute';" +
+                        "$0.$.overlay.$.overlay.style['top']= ($1.getBoundingClientRect().top + $1.getBoundingClientRect().height )+ 'px';" +
+                        "$0.$.overlay.$.overlay.style['left']= ($1.getBoundingClientRect().left - 300) + 'px'",
+                    actionPopup,
+                    actionsButton
+                );
+            actionPopup.open();
+        });
 
         VerticalLayout popupLayout = new VerticalLayout();
         popupLayout.setSizeFull();
         popupLayout.add(jobLockDashboard, holdContextButton, releaseContextButton, enableQuartzScheduledJobsButton,
-            disableQuartzScheduledJobsButton, contextInstanceEndButton, ignoreContextInstanceEndButton, resetContextButton,
-            contextInstanceParameterButton);
-
-        qp = new QuickPopup(actionsButton.getElement(), popupLayout);
+            disableQuartzScheduledJobsButton, contextInstanceEndButton, ignoreContextInstanceEndButton,
+            contextInstanceParameterButton, resetContextButton);
+        actionPopup.add(popupLayout);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.add(actionsButton);
