@@ -1678,7 +1678,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
     @Override
     public void receiveBroadcast(ContextInstance event) {
-        if(contextInstance.getId().equals(this.contextInstance.getId())) {
+        if(event.getId().equals(this.contextInstance.getId())) {
             this.contextInstance = event;
             ContextHelper.enrichJobs(contextInstance);
             this.enableDisableScheduledJobs(this.contextInstance, this.ui);
