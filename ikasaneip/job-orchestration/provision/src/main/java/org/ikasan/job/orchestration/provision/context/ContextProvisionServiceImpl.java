@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 
 import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.withinOperatingWindow;
 
-    public class ContextProvisionServiceImpl implements ContextProvisionService {
+public class ContextProvisionServiceImpl implements ContextProvisionService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContextProvisionServiceImpl.class);
 
@@ -49,8 +49,7 @@ import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.
     private final boolean uploadProvisionJobs;
     private final ContextInstanceSchedulerService contextInstanceSchedulerService;
 
-    public ContextProvisionServiceImpl(
-                                       ScheduledContextService scheduledContextService,
+    public ContextProvisionServiceImpl(ScheduledContextService scheduledContextService,
                                        ModuleMetaDataService moduleMetadataService,
                                        SchedulerJobService schedulerJobService,
                                        JobProvisionModuleService jobProvisionModuleRestService,

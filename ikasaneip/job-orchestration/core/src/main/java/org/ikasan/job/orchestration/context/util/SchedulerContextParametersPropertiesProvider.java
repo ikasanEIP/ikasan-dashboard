@@ -14,49 +14,28 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 public class SchedulerContextParametersPropertiesProvider extends Properties {
     private final static Logger LOG = LoggerFactory.getLogger(SchedulerContextParametersPropertiesProvider.class);
 
-    private final boolean useSkipJobs;
-    private final Map<String, Map<String, Boolean>> jobsToSkip;
-    private final boolean replaceContextParameters;
+//    private final boolean replaceContextParameters;
     private Map<String, String> spelExpressionMap;
 
     // Reference to the bean object, reference by this so we can get updates after spring actuator refresh
     private JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration;
 
-    public SchedulerContextParametersPropertiesProvider(boolean useSkipJobs,
-                                                        Map<String, Map<String, Boolean>> jobsToSkip,
-                                                        boolean replaceContextParameters,
-                                                        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration,
+    public SchedulerContextParametersPropertiesProvider(JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration,
                                                         Map<String, String> spelExpressionMap) {
-
-        this.useSkipJobs = useSkipJobs;
-        this.jobsToSkip = jobsToSkip == null ? Collections.emptyMap() : jobsToSkip;
-        this.replaceContextParameters = replaceContextParameters;
         this.jobContextParamsSetupConfiguration = jobContextParamsSetupConfiguration;
         if(this.jobContextParamsSetupConfiguration == null || this.jobContextParamsSetupConfiguration.getParamsToReplace() == null) {
             throw new IllegalArgumentException("jobContextParamsSetupConfiguration cannot be null!");
         }
-        //this.parametersToReplace = parametersToReplace == null ? Collections.emptyMap() : parametersToReplace;
         this.spelExpressionMap = spelExpressionMap == null ? Collections.emptyMap() : spelExpressionMap;
 
-        String message = String.format("Creating SchedulerContextParametersPropertiesProvider configuration with use jobsToSkip %b, " +
-            "jobsToSkips %s, replaceContextParameters %b, parametersToReplaceContext %s, spelExpressionMap %s",
-            this.useSkipJobs, this.jobsToSkip, this.replaceContextParameters, this.jobContextParamsSetupConfiguration.getParamsToReplace().keySet(), this.spelExpressionMap);
+        String message = String.format("Creating SchedulerContextParametersPropertiesProvider configuration with use, " +
+            "parametersToReplaceContext %s, spelExpressionMap %s",
+            this.jobContextParamsSetupConfiguration.getParamsToReplace().keySet(), this.spelExpressionMap);
         LOG.info(message);
     }
 
-    public boolean isSkipped(String contextName, String jobName) {
-        if (useSkipJobs && contextName != null && jobName != null) {
-            Map<String, Boolean> jobsToSkipMap = jobsToSkip.get(contextName);
-            if (jobsToSkipMap != null) {
-                Boolean shouldSkip = jobsToSkipMap.get(jobName);
-                return shouldSkip != null && shouldSkip;
-            }
-        }
-        return false;
-    }
-
     public String getContextParameter(String contextName, String paramName) {
-        if (replaceContextParameters && contextName != null && paramName != null) {
+        if (contextName != null && paramName != null) {
             Map<String, String> paramMap = jobContextParamsSetupConfiguration.getParamsToReplace().get(contextName);
             if (paramMap != null) {
                 return replaceParameterWithSpel(paramName, paramMap.get(paramName));

@@ -1910,13 +1910,11 @@ public class JobLogicMachineTest extends AbstractTest {
 
     @Test
     public void test_hack_hard_coding_context_params() throws IOException {
-
-        Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("AC_SCRIPT_Interface_SOII", true));
         Map<String, Map<String, String>> paramsToReplace = Map.of("Context1", Map.of("BusinessDate", "20220428", "ErrorSearch", "blah", "UseBusinessDate", "1"));
         JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         jobContextParamsSetupConfiguration.setParamsToReplace(paramsToReplace);
 
-        SchedulerContextParametersPropertiesProvider schedulerOverrider = new SchedulerContextParametersPropertiesProvider(true, jobsToSkip, true, jobContextParamsSetupConfiguration, null);
+        SchedulerContextParametersPropertiesProvider schedulerOverrider = new SchedulerContextParametersPropertiesProvider( jobContextParamsSetupConfiguration, null);
         ContextParametersFactory contextParametersFactory = new ContextParametersFactory(schedulerOverrider);
         ContextParametersInstanceService contextParametersInstanceService = new ContextParametersInstanceServiceImpl(contextParametersFactory);
         jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
@@ -1967,7 +1965,6 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
         Assert.assertEquals("AC_SCRIPT_Interface_SOII", events.get(0).getJobName());
         Assert.assertEquals(2, events.get(0).getContextParameters().size());
-        Assert.assertTrue(events.get(0).isSkipped());
         ContextParameterInstanceImpl param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(0);
         Assert.assertEquals("BusinessDate", param.getName());
         Assert.assertEquals("20220428", param.getValue());

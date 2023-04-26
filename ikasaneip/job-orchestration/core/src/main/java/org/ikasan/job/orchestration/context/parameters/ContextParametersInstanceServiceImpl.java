@@ -33,11 +33,6 @@ public class ContextParametersInstanceServiceImpl implements ContextParametersIn
     }
 
     @Override
-    public boolean isSkipped(String contextName, String jobName) {
-        return contextParametersFactory.isSkipped(contextName, jobName);
-    }
-
-    @Override
     public List<ContextParameterInstance> getAllContextParameters(String contextName) {
         return contextParametersFactory.getAllContextParameters(contextName);
     }

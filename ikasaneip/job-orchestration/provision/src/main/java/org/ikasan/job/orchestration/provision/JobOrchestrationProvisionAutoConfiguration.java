@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JobOrchestrationProvisionAutoConfiguration {
 
-    @Value("${ikasan.dashboard.unzip.and.provision.jobs:true}")
+    @Value("${scheduler.provision.jobs.on.upload:true}")
     private boolean uploadProvisionJobs;
 
     @Bean

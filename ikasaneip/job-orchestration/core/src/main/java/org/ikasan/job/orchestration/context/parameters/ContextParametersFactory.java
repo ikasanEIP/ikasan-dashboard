@@ -27,8 +27,4 @@ public class ContextParametersFactory {
     public String getContextParameter(String contextName, String parameterValue) {
         return schedulerContextParametersPropertiesProvider.getContextParameter(contextName, parameterValue);
     }
-
-    public boolean isSkipped(String contextName, String jobName) {
-        return schedulerContextParametersPropertiesProvider.isSkipped(contextName, jobName);
-    }
 }
