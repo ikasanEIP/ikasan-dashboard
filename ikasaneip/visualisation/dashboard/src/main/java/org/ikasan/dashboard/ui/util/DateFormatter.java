@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.util;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -13,6 +14,7 @@ public class DateFormatter
     public static final DateTimeFormatter DATE_FORMAT_WITH_TIMEZONE = DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
     private DateTimeFormatter tableFormatter;
+    private ZoneId zoneId;
     private static DateFormatter instance;
 
     public static DateFormatter instance() {
@@ -23,8 +25,21 @@ public class DateFormatter
         return instance;
     }
 
+    public static DateFormatter instance(ZoneId zoneId) {
+        if(instance == null) {
+            instance = new DateFormatter(zoneId);
+        }
+
+        return instance;
+    }
+
     public DateFormatter() {
         tableFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT_TABLE_VIEWS);
+    }
+
+    public DateFormatter(ZoneId zoneId) {
+        this();
+        this.zoneId = zoneId;
     }
 
     public String getFormattedDate(long timestamp)
@@ -34,8 +49,16 @@ public class DateFormatter
             return "N/A";
         }
 
-        ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
-            DateTimeUtil.getZoneId());
+        ZonedDateTime zdt;
+
+        if(this.zoneId != null) {
+            zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                this.zoneId);
+        }
+        else {
+            zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                DateTimeUtil.getZoneId());
+        }
 
         return this.tableFormatter.format(zdt);
     }

@@ -6,18 +6,23 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
 import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
 import org.ikasan.dashboard.ui.administration.component.SystemEventFilteringGrid;
 import org.ikasan.dashboard.ui.administration.component.SystemEventSearchForm;
 import org.ikasan.dashboard.ui.administration.util.SystemEventFormatter;
+import org.ikasan.dashboard.ui.general.component.LazyDownloadButton;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
@@ -27,7 +32,12 @@ import org.ikasan.systemevent.model.SystemEventImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.time.ZoneId;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SystemEventSearchView extends VerticalLayout implements SearchListener
 {
@@ -44,11 +54,17 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
 
     private DateFormatter dateFormatter;
 
+    private LazyDownloadButton csvExportButton;
+
+    private int maxDownloadBytes;
+
+    private UI ui;
+
     /**
      * Constructor
      */
     public SystemEventSearchView(SystemEventSearchService systemEventSearchService,
-                                 DateFormatter dateFormatter)
+                                 DateFormatter dateFormatter, int maxDownloadBytes)
     {
         super();
         this.systemEventSearchService = systemEventSearchService;
@@ -61,6 +77,10 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
         {
             throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
+
+        this.maxDownloadBytes = maxDownloadBytes;
+
+        this.ui = UI.getCurrent();
     }
 
     protected void init()
@@ -173,11 +193,94 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
                 systemEventDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());
             });
 
+        this.createCsvDownloadButton();
+
         HorizontalLayout resultsLayout = new HorizontalLayout();
         resultsLayout.setWidthFull();
-        resultsLayout.add(resultsLabel);
+        resultsLayout.setHeight("35px");
+        resultsLayout.add(resultsLabel, this.csvExportButton);
+
+        this.csvExportButton.getElement().getStyle().set("position", "absolute");
+        this.csvExportButton.getElement().getStyle().set("right", "30px");
 
         add(searchForm, resultsLayout, this.searchResultsGrid);
+    }
+
+    private void createCsvDownloadButton() {
+        Image excelImage = new Image("/frontend/images/excel.png", "");
+        excelImage.setHeight("25px");
+        Optional<UI> optionalUI = UI.getCurrent().getUI();
+        this.csvExportButton = new LazyDownloadButton(excelImage,
+            () -> "system-events-results-"+System.currentTimeMillis()+".csv",
+            () -> {
+                try {
+                    ZoneId zoneId;
+
+                    if(ui != null && ui.getSession().getAttribute(SessionAttributeConstants.TIMEZONE_ID) != null) {
+                        zoneId = ZoneId.of((String) ui.getSession().getAttribute(SessionAttributeConstants.TIMEZONE_ID));
+
+                    }
+                    else {
+                        zoneId = ZoneId.of("UTC");
+                    }
+
+                    IkasanSystemEventDocumentToCsvConverter csvConverter
+                        = new IkasanSystemEventDocumentToCsvConverter(zoneId);
+
+                    for (int i = 0; i < searchResultsGrid.getResultSize(); i += 100) {
+                        List<SystemEvent> docs = (List<SystemEvent>) searchResultsGrid.getDataProvider().fetch
+                            (new Query<>(i, 100, Collections.EMPTY_LIST, null, null)).collect(Collectors.toList());
+
+                        for (SystemEvent document : docs) {
+                            csvConverter.addDocument(document);
+                        }
+
+                        if (csvConverter.getCvsContents().getBytes().length > this.maxDownloadBytes) {
+                            optionalUI.ifPresent(ui -> {
+                                if (ui.isAttached()) {
+                                    ui.access(() ->
+                                        NotificationHelper.showUserNotification(String.format(getTranslation("notification.download-size-exceeded"
+                                            , UI.getCurrent().getLocale()), this.maxDownloadBytes))
+                                    );
+                                }
+                            });
+
+                            break;
+                        }
+                    }
+
+                    return new ByteArrayInputStream(csvConverter.getCvsContents().getBytes());
+                }
+                catch (JsonProcessingException jsonProcessingException) {
+
+                }
+
+                return new ByteArrayInputStream(new byte[0]);
+            }
+        );
+        csvExportButton.getElement().setAttribute("title"
+            , getTranslation("tooltip.export-to-csv", UI.getCurrent().getLocale()));
+        csvExportButton.setHeight("35px");
+        csvExportButton.setWidth("30px");
+
+        csvExportButton.setDisableOnClick(true);
+        csvExportButton.addClickListener(event -> {
+            if(this.searchResultsGrid.getResultSize() == 0) {
+                NotificationHelper.showUserNotification(getTranslation("notification.no-records-to-download"
+                    , UI.getCurrent().getLocale()));
+                csvExportButton.reset();
+                csvExportButton.setEnabled(true);
+            }
+            else {
+                NotificationHelper.showUserNotification(getTranslation("notification.preparing-download"
+                    , UI.getCurrent().getLocale()));
+            }
+        });
+
+        csvExportButton.addDownloadStartsListener(event -> {
+            event.getSource().setEnabled(true);
+            csvExportButton.reset();
+        });
     }
 
     /**

@@ -17,6 +17,7 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -39,6 +40,9 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
     @Resource
     private DateFormatter dateFormatter;
 
+    @Value("${max.download.bytes:50000000}")
+    private int maxDownloadBytes;
+
     /**
      * Constructor
      */
@@ -53,7 +57,7 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
         tabs.getElement().getThemeList().remove("padding");
         tabs.setId("tabs");
 
-        this.systemEventSearchView = new SystemEventSearchView(this.systemEventSearchService, this.dateFormatter);
+        this.systemEventSearchView = new SystemEventSearchView(this.systemEventSearchService, this.dateFormatter, this.maxDownloadBytes);
         this.systemEventSearchView.init();
         this.systemEventSearchView.getThemeList().remove("padding");
 
