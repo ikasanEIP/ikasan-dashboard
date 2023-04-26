@@ -153,7 +153,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
-    @Value("${ikasan.dashboard.unzip.and.provision.jobs:true}")
+    @Value("${scheduler.provision.jobs.on.upload:true}")
     private boolean uploadProvisionJobs;
 
     private SchedulerAgentDashboardView schedulerAgentDashboardView;

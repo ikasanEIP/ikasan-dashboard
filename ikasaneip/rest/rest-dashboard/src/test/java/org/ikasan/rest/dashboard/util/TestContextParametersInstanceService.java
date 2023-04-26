@@ -28,11 +28,6 @@ public class TestContextParametersInstanceService implements ContextParametersIn
         return params.get(contextName);
     }
 
-    @Override
-    public boolean isSkipped(String contextName, String jobName) {
-        return false;
-    }
-
     public void addParamsToContext(String contextName, List<ContextParameterInstance> contextParams) {
         params.put(contextName, contextParams);
     }
