@@ -30,9 +30,6 @@ public class ContextServiceAutoConfiguration {
     @Value("${scheduled.job.context.queue.directory}")
     private String queueDirectory;
 
-    @Value("${ikasan.dashboard.unzip.and.provision.jobs:true}")
-    private boolean uploadProvisionJobs;
-
     @Bean
     public JobLockCacheInitialisationService jobLockCacheInitialisationService(JobLockCacheService jobLockCacheService) {
         return new JobLockCacheInitialisationServiceImpl(jobLockCacheService);

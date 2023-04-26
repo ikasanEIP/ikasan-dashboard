@@ -23,7 +23,6 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
-import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,18 +55,6 @@ public class JobOrchestrationAutoConfiguration {
 
     @Resource
     JtaTransactionManager transactionManager;
-
-    @Resource
-
-
-    @Value("${use.skip.jobs.flag:false}")
-    private boolean useSkipJobs;
-
-    @Value("#{${jobs.to.skip:{T(java.util.Collections).emptyMap()}}}")
-    private Map<String, Map<String, Boolean>> jobsToSkip;
-
-    @Value("${use.replace.context.params.flag:false}")
-    private boolean replaceContextParams;
 
     @Value("${context.lifecycle.active:true}")
     private boolean isContextLifeCycleActive;
@@ -105,7 +92,7 @@ public class JobOrchestrationAutoConfiguration {
     @Bean
     @DependsOn("jobContextParamsSetupConfiguration")
     public SchedulerContextParametersPropertiesProvider schedulerOverrider() {
-        return new SchedulerContextParametersPropertiesProvider(useSkipJobs, jobsToSkip, replaceContextParams, jobContextParamsSetupConfiguration, spelContextParamsCalculators);
+        return new SchedulerContextParametersPropertiesProvider(jobContextParamsSetupConfiguration, spelContextParamsCalculators);
     }
 
     @Bean

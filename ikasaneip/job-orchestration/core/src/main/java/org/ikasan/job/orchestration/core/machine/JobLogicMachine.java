@@ -358,9 +358,6 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
         schedulerJobInitiationEvent.setCatalystEvent(scheduledProcessEvent);
 
-        boolean shouldSkip = contextParametersInstanceService.isSkipped(parentContextInstance.getName(), schedulerJobInstance.getJobName());
-        schedulerJobInitiationEvent.setSkipped(shouldSkip);
-
         if(schedulerJobInstance.isSkip()) {
             schedulerJobInitiationEvent.setSkipped(true);
             internalEventDrivenJob.setSkip(true);
@@ -444,9 +441,6 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
         schedulerJobInitiationEvent.setCatalystEvent(scheduledProcessEvent);
-
-        boolean shouldSkip = contextParametersInstanceService.isSkipped(contextInstance.getName(), schedulerJobInstance.getJobName());
-        schedulerJobInitiationEvent.setSkipped(shouldSkip);
 
         if(schedulerJobInstance.isSkip()) {
             schedulerJobInitiationEvent.setSkipped(true);
