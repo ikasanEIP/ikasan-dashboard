@@ -24,12 +24,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.administration.component.NewUserDialog;
 import org.ikasan.dashboard.ui.administration.component.UserManagementDialog;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -197,7 +194,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_ADMINISTRATION_ADMIN, SecurityConstants.USER_ADMINISTRATION_WRITE,  SecurityConstants.USER_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
-            UI.getCurrent().navigate("");
+            DashboardContextNavigator.navigateToLandingPage();
             return;
         }
 

@@ -24,6 +24,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
@@ -314,7 +315,7 @@ public class QuartzSchedulerView extends VerticalLayout implements BeforeEnterOb
             SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ALL_WRITE,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_DEV_READ, SecurityConstants.SCHEDULER_DEV_WRITE,
             SecurityConstants.SCHEDULER_DEV_ADMIN, SecurityConstants.ALL_AUTHORITY)) {
-            UI.getCurrent().navigate("");
+            DashboardContextNavigator.navigateToLandingPage();
             return;
         }
 

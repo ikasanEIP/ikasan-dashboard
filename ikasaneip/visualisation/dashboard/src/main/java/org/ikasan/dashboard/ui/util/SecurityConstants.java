@@ -53,6 +53,10 @@ public class SecurityConstants
 
 	public static String ALL_AUTHORITY = "ALL";
 
+    public static String DASHBOARD_READ = "dashboard-read";
+    public static String DASHBOARD_WRITE = "dashboard-write";
+    public static String DASHBOARD_ADMIN = "dashboard-admin";
+
 	// New policies
 	public static String WIRETAP_READ = "wiretap-read";
 	public static String WIRETAP_WRITE = "wiretap-write";

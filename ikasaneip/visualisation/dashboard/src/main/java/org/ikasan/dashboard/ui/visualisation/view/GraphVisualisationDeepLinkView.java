@@ -11,6 +11,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.material.Material;
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
@@ -121,7 +122,7 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
         if(!initialised) {
             // Go to default view if there is no visualisation name
             if(this.visualisationName == null) {
-                UI.getCurrent().navigate("");
+                DashboardContextNavigator.navigateToLandingPage();
             }
             this.init();
             this.graphVisualisation.setVisualisationName(this.visualisationName);

@@ -16,6 +16,7 @@ import org.ikasan.dashboard.ui.administration.filter.GroupFilter;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.security.model.IkasanPrincipalLite;
@@ -96,7 +97,7 @@ public class GroupManagementView extends VerticalLayout implements BeforeEnterOb
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.GROUP_ADMINISTRATION_ADMIN, SecurityConstants.GROUP_ADMINISTRATION_WRITE, SecurityConstants.GROUP_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
-            UI.getCurrent().navigate("");
+            DashboardContextNavigator.navigateToLandingPage();
             return;
         }
 

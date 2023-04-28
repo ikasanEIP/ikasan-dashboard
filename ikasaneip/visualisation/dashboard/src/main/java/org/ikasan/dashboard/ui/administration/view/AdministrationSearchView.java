@@ -12,6 +12,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
@@ -74,7 +75,7 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_WRITE
             , SecurityConstants.SYSTEM_EVENT_READ, SecurityConstants.ALL_AUTHORITY)) {
-            UI.getCurrent().navigate("");
+            DashboardContextNavigator.navigateToLandingPage();
             return;
         }
 
