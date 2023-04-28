@@ -11,6 +11,9 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.dashboard.component.*;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.search.component.ChangePasswordDialog;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -61,6 +64,15 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.DASHBOARD_READ
+            , SecurityConstants.DASHBOARD_WRITE
+            , SecurityConstants.DASHBOARD_ADMIN
+            , SecurityConstants.ALL_AUTHORITY)) {
+            DashboardContextNavigator.navigateToLandingPage(beforeEnterEvent);
+            return;
+        }
+
         if(!initialised) {
             board.addRow(new BusinessStreamWidget(this.businessStreamMetaDataService, this.moduleMetadataService)
                 , new ModuleWidget(moduleMetadataService), new StatusWidget(moduleMetadataService, UI.getCurrent()));

@@ -16,6 +16,7 @@ import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.security.ContextCache;
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -98,7 +99,7 @@ public class LoginView extends VerticalLayout implements PageConfigurator//, Has
                         UI.getCurrent().navigate(context);
                     }
                     else {
-                        UI.getCurrent().navigate("");
+                        DashboardContextNavigator.navigateToLandingPage();
                     }
                 });
             }

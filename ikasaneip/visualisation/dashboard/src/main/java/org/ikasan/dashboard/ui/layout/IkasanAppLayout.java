@@ -212,6 +212,9 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
         }
 
         super.onAttach(attachEvent);
+        this.dashboardMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.DASHBOARD_READ, SecurityConstants.DASHBOARD_WRITE,
+            SecurityConstants.DASHBOARD_ADMIN));
+
         this.searchMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SEARCH_ADMIN, SecurityConstants.SEARCH_READ, SecurityConstants.SEARCH_WRITE,
             SecurityConstants.ALL_AUTHORITY));
 
