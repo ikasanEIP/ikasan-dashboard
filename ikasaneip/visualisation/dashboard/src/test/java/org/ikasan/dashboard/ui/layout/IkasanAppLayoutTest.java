@@ -52,6 +52,9 @@ public class IkasanAppLayoutTest extends UITest {
         Mockito.when(mockIkasanAuthentication.getPrincipal()).thenReturn(this.user);
         when(this.user.getPrincipals()).thenReturn(new HashSet<>());
 
+        Mockito.when(mockIkasanAuthentication.hasGrantedAuthority(SecurityConstants.DASHBOARD_READ))
+            .thenReturn(true);
+
         if(testName.getMethodName().equals("test_admin_user_security")) {
             Mockito.when(mockIkasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
                 .thenReturn(true);

@@ -67,6 +67,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.model.AuthenticationMethod;
 import org.ikasan.security.service.LdapService;
@@ -465,7 +466,7 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_DIRECTORY_ADMIN, SecurityConstants.USER_DIRECTORY_WRITE, SecurityConstants.USER_DIRECTORY_READ,
             SecurityConstants.ALL_AUTHORITY)) {
-            UI.getCurrent().navigate("");
+            DashboardContextNavigator.navigateToLandingPage();
             return;
         }
         this.authentication = (IkasanAuthentication)SecurityContextHolder.getContext().getAuthentication();
