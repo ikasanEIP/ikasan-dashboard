@@ -187,10 +187,12 @@ public class ContextMachine {
     }
 
     /**
+     * Helper method to reset the context instance held by the context machine.
      *
      * @throws JsonProcessingException
      */
-    public void resetContextInstance(boolean holdCommandJobs) throws JsonProcessingException, SchedulerJobInstanceInitialisationException {
+    public void resetContextInstance(boolean holdCommandJobs, boolean initiateWithSameParameters,
+                                     List<ContextParameterInstance> contextParameterInstances) throws JsonProcessingException, SchedulerJobInstanceInitialisationException {
         if(this.context != null) {
             ContextService contextService = new ContextService();
             this.context = scheduledContextService.findByName(this.context.getName()).getContext();
@@ -242,8 +244,16 @@ public class ContextMachine {
                 }
             });
 
-            contextParametersInstanceService.populateContextParametersOnContextInstance(this.contextInstance
-                , this.internalEventDrivenJobInstances);
+            if(contextParameterInstances != null) {
+                this.contextInstance.setContextParameters(contextParameterInstances);
+            }
+            else if(initiateWithSameParameters) {
+                this.contextInstance.setContextParameters(previousContextInstance.getContextParameters());
+            }
+            else {
+                contextParametersInstanceService.populateContextParametersOnContextInstance(this.contextInstance
+                    , this.internalEventDrivenJobInstances);
+            }
 
             // Remove the previous context instance from all agents
             this.agents.values().forEach(agent

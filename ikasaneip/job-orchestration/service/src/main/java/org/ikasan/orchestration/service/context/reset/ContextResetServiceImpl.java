@@ -16,7 +16,7 @@ public class ContextResetServiceImpl implements ContextResetService {
         }
         for(ContextMachine contextMachine : contextMachines) {
             try {
-                contextMachine.resetContextInstance(holdCommandExecutionJob);
+                contextMachine.resetContextInstance(holdCommandExecutionJob, false, null);
             } catch (Exception e) {
                 throw new ContextResetException("Failed to reset context " + e.getMessage());
             }
@@ -30,7 +30,7 @@ public class ContextResetServiceImpl implements ContextResetService {
             throw new ContextResetException(String.format("Could not find context for context instance ID %s to reset", contextInstanceId));
         }
         try {
-            contextMachine.resetContextInstance(holdCommandExecutionJob);
+            contextMachine.resetContextInstance(holdCommandExecutionJob, false, null);
         } catch (Exception e) {
             throw new ContextResetException("Failed to reset context " + e.getMessage());
         }

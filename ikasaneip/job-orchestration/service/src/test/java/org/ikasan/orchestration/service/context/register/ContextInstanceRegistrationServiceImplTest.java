@@ -13,6 +13,7 @@ import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.GlobalEventJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -49,10 +50,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.*;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.time.ZonedDateTime.now;
 import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
@@ -148,7 +146,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         when(scheduledContextService.findById(contextName)).thenReturn(null);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -190,7 +188,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -269,13 +267,101 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            jobLockCacheService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
+        );
+
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        assertNotNull(contextMachine);
+
+        SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+            = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+        assertNotNull(schedulerJobInitiationEventRaisedListener);
+
+        List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+            = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+        assertNotNull(contextInstanceStateChangeEventListeners);
+        assertEquals(1, contextInstanceStateChangeEventListeners.size());
+
+        JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+        assertNotNull(jobLogicMachine);
+        List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+            = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+        assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+        assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+    }
+
+    @Test
+    public void register_with_agents_and_context_parameters() throws Exception {
+        // set up
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        record.setContext(context);
+        record.setContextName(contextName);
+        when(scheduledContextService.findById(contextName)).thenReturn(record);
+
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        List<ContextParameterInstance> params = TestUtils.createParams();
+
+        ContextInstanceImpl contextInstance = this.objectMapper
+            .readValue(this.objectMapper.writeValueAsBytes(record.getContext()), ContextInstanceImpl.class);
+        contextInstance.setContextParameters(params);
+
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+
+        List<ContextParameterInstance> contextParameterInstances = new ArrayList<>();
+        ContextParameterInstance contextParameterInstance = new ContextParameterInstanceImpl();
+        contextParameterInstance.setName("name1");
+        contextParameterInstance.setValue("value1");
+        contextParameterInstance.setDefaultValue("defaul1");
+
+        contextParameterInstances.add(contextParameterInstance);
+
+        // execute
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, contextParameterInstances);
+
+        // verify
+        verify(scheduledContextService).findById(contextName);
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
@@ -359,7 +445,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -449,7 +535,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -543,7 +629,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -626,7 +712,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -679,7 +765,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -738,7 +824,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -774,7 +860,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         when(scheduledContextService.findById(contextName)).thenReturn(record);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -825,7 +911,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -903,7 +989,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -1138,7 +1224,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
 
         // execute
-        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
 
         // verify
         verify(scheduledContextService).findById(contextName);

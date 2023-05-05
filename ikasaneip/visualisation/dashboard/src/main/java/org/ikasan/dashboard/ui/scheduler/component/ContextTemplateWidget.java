@@ -2,10 +2,12 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -29,6 +31,7 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -47,8 +50,11 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationServ
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.*;
@@ -63,11 +69,13 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
@@ -82,6 +90,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private SchedulerJobService schedulerJobService;
     private GlobalEventService globalEventService;
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextParametersInstanceService contextParametersInstanceService;
     private SystemEventLogger systemEventLogger;
     private String zipWorkingDirectory;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
@@ -127,7 +136,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                  Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService,
-                                 ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                 ContextInstanceSchedulerService contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -180,6 +189,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
         if (this.contextInstanceSchedulerService == null) {
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
+        }
+        this.contextParametersInstanceService = contextParametersInstanceService;
+        if (this.contextParametersInstanceService == null) {
+            throw new IllegalArgumentException("contextParametersInstanceService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -598,27 +611,32 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             newContextInstance.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.create-new-context-instance-header", UI.getCurrent().getLocale()));
-                confirmDialog.setText(String.format(getTranslation("confirm-dialog.create-new-context-instance-body", UI.getCurrent().getLocale()), scheduledContextRecord.getContextName()));
+
+                Checkbox modifyParams = new Checkbox(getTranslation("label.update-params-prior-to-initiating-job-plan-instance", UI.getCurrent().getLocale()));
+                VerticalLayout verticalLayout = new VerticalLayout();
+                verticalLayout.setWidthFull();
+                Div body = new Div();
+                body.setText(String.format(getTranslation("confirm-dialog.create-new-context-instance-body"
+                    , UI.getCurrent().getLocale()), scheduledContextRecord.getContextName()));
+
+                verticalLayout.add(body, modifyParams);
+                confirmDialog.setText(verticalLayout);
+
                 confirmDialog.setCancelable(true);
                 confirmDialog.open();
 
                 confirmDialog.addConfirmListener(confirmEvent -> {
-                    String contextInstanceId = null;
-                    try {
-                        contextInstanceId = this.contextInstanceRegistrationService.register(scheduledContextRecord.getContextName());
-                        systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_CREATED, String.format("Job Plan Name [%s] - New Instance Manually Created [%s]"
-                            , scheduledContextRecord.getContextName(), contextInstanceId), this.authentication.getName());
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showErrorNotification(getTranslation("notification.error-creating-job-plan-instance", UI.getCurrent().getLocale()));
-                    }
+                    if(modifyParams.getValue()) {
+                        Map<String, InternalEventDrivenJob> internalJobs = this.schedulerJobService
+                            .getCommandExecutionJobsForContext(scheduledContextRecord.getContextName());
 
-                    if(contextInstanceId != null) {
-                        String route = RouteConfiguration.forSessionScope()
-                            .getUrl(ContextInstanceView.class, contextInstanceId + "_scheduledContextInstance");
+                        List<ContextParameterInstance> contextParameterInstances = this.contextParametersInstanceService
+                            .getContextParameterInstancesForContext(scheduledContextRecord.getContext(), internalJobs);
 
-                        getUI().ifPresent(ui -> ui.getPage().open(route));
+                        this.initialiseContextInstanceWithModifiedContextParams(scheduledContextRecord, contextParameterInstances);
+                    }
+                    else {
+                        this.initialiseContextInstance(scheduledContextRecord, null);
                     }
                 });
             });
@@ -731,7 +749,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 this.jobProvisionService.provisionJobs(this.getSchedulerJobForContext(contextTemplate.getName())
                                     , this.authentication.getName());
                                 this.scheduledContextService.save(refreshedScheduledContextRecord);
-                                this.contextInstanceRegistrationService.register(contextTemplate.getName());
+                                this.contextInstanceRegistrationService.register(contextTemplate.getName(), null);
                                 this.contextInstanceSchedulerService.registerStartJobAndTrigger(contextTemplate.getName(), contextTemplate.getTimeWindowStart(),
                                     contextTemplate.getTimezone());
                                 contextTemplateFilteringGrid.getDataProvider().refreshAll();
@@ -832,6 +850,54 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
         this.contextTemplateFilteringGrid.addGridFiltering(hr, contextSearchFilter::setContextName, "moduleName");
+    }
+
+    /**
+     * Helper method to reset the context instance with modified context parameters.
+     *
+     * @param scheduledContextRecord
+     * @param contextParameterInstances
+     */
+    private void initialiseContextInstanceWithModifiedContextParams(ScheduledContextRecord scheduledContextRecord
+        , List<ContextParameterInstance> contextParameterInstances) {
+        ContextInstanceParameterDialog contextParameterDialog = new ContextInstanceParameterDialog(true);
+        contextParameterDialog.initParams(contextParameterInstances);
+
+        contextParameterDialog.open();
+
+        contextParameterDialog.addOpenedChangeListener(event -> {
+            if(!event.isOpened() && contextParameterDialog.isSaveClose()) {
+                this.initialiseContextInstance(scheduledContextRecord, contextParameterDialog.getContextParameters());
+            }
+        });
+    }
+
+    /**
+     * Helper method to reset the context instance with modified context parameters.
+     *
+     * @param scheduledContextRecord
+     * @param contextParameterInstances
+     */
+    private void initialiseContextInstance(ScheduledContextRecord scheduledContextRecord
+        , List<ContextParameterInstance> contextParameterInstances) {
+        String contextInstanceId = null;
+        try {
+            contextInstanceId = this.contextInstanceRegistrationService.register(scheduledContextRecord.getContextName(),
+                contextParameterInstances);
+            systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_CREATED, String.format("Job Plan Name [%s] - New Instance Manually Created [%s]"
+                , scheduledContextRecord.getContextName(), contextInstanceId), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("notification.error-creating-job-plan-instance", UI.getCurrent().getLocale()));
+        }
+
+        if(contextInstanceId != null) {
+            String route = RouteConfiguration.forSessionScope()
+                .getUrl(ContextInstanceView.class, contextInstanceId + "_scheduledContextInstance");
+
+            getUI().ifPresent(ui -> ui.getPage().open(route));
+        }
     }
 
     /**

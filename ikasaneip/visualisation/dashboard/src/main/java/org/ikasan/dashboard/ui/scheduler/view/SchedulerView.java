@@ -150,6 +150,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
+    @Resource
+    private ContextParametersInstanceService contextParametersInstanceService;
+
     @Value("${scheduler.provision.jobs.on.upload:true}")
     private boolean uploadProvisionJobs;
 
@@ -198,7 +201,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
             this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
-            this.contextInstanceSchedulerService);
+            this.contextInstanceSchedulerService, this.contextParametersInstanceService);
         this.contextTemplateWidget.setVisible(false);
 
 

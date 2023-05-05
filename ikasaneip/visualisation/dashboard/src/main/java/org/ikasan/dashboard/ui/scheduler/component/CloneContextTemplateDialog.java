@@ -148,7 +148,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
                     this.schedulerJobService.save(clonedJobs, authentication.getName());
                     this.scheduledContextService.save(scheduledContextRecord);
 
-                    this.contextInstanceRegistrationService.register(this.contextTemplate.getName());
+                    this.contextInstanceRegistrationService.register(this.contextTemplate.getName(), null   );
                 }
                 catch (Exception e) {
                     e.printStackTrace();

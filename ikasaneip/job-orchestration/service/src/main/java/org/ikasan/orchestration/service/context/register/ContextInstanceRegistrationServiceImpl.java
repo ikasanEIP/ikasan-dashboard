@@ -60,6 +60,7 @@ import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcas
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
@@ -72,6 +73,7 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.quartz.JobExecutionContext;
 
 import java.util.Date;
+import java.util.List;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
@@ -192,10 +194,12 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
      * It will fire even if the plan is disabled, but will not create a new context.
      *
      * @param contextName i.e. plan to create instance for
+     * @param contextParameterInstances the param instances for the context
+     *
      * @return the context instance ID if a new context instance was created, null otherwise.
      */
     @Override
-    public String register(String contextName) {
+    public String register(String contextName, List<ContextParameterInstance> contextParameterInstances) {
         ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
         if (scheduledContextRecord == null) {
             final String message = String.format("Could not find scheduledContextRecord for context name [%s]", contextName);
@@ -219,7 +223,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             // @todo check with mick where the cron expressions are entered
             if(!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                 && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
-                initialiseContextMachine(context, contextInstance, true);
+                initialiseContextMachine(context, contextInstance, true, contextParameterInstances);
                 contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
                     , contextInstance.getTimezone(), contextInstance.getId());
                 LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
