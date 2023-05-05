@@ -168,15 +168,24 @@ public class BusinessStreamFilteringGrid extends Grid<BusinessStreamMetaData>
 
                 if(authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
                     ModuleMetadataSearchResults schedulerResults = this.moduleMetaDataService.find(List.of(), ModuleType.SCHEDULER_AGENT, 0, 10000);
-                    for (ModuleMetaData moduleMetaData : schedulerResults.getResultList()) {
-                        if (schedulerResults.getResultList().contains(moduleMetaData))
-                            accessibleModules.add(moduleMetaData.getName());
+
+                    if(schedulerResults != null) {
+                        for (ModuleMetaData moduleMetaData : schedulerResults.getResultList()) {
+                            if (schedulerResults.getResultList().contains(moduleMetaData))
+                                accessibleModules.add(moduleMetaData.getName());
+                        }
                     }
                 }
 
+                List<ModuleMetaData> accessibleModulesMetaData = new ArrayList<>();
+                ModuleMetadataSearchResults moduleMetadataSearchResults =  this.moduleMetaDataService.find(accessibleModules);
+
+                if(moduleMetadataSearchResults != null) {
+                    accessibleModulesMetaData = moduleMetadataSearchResults.getResultList();
+                }
 
                 return this.solrSearchService.findBusinessStreamsForModules(filter.getBusinessStreamNameFilter(),
-                    this.moduleMetaDataService.find(accessibleModules).getResultList(), offset, limit);
+                    accessibleModulesMetaData, offset, limit);
             }
         }
         catch (Exception e) {

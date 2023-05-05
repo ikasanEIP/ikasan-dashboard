@@ -976,12 +976,14 @@ public class ContextInstanceWidget extends VerticalLayout
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.reset-context", UI.getCurrent().getLocale()));
 
-            Checkbox hold = new Checkbox("Hold All Command Execution Jobs");
+            Checkbox hold = new Checkbox(getTranslation("label.hold-all-command-execution-jobs", UI.getCurrent().getLocale()));
+            Checkbox initiateSameParams = new Checkbox(getTranslation("label.initiate-job-plan-instance-with-same-params", UI.getCurrent().getLocale()));
+            Checkbox modifyParams = new Checkbox(getTranslation("label.update-params-prior-to-initiating-job-plan-instance", UI.getCurrent().getLocale()));
             VerticalLayout verticalLayout = new VerticalLayout();
             verticalLayout.setWidthFull();
             Div body = new Div();
             body.setText(getTranslation("confirm-dialog-text.reset-context", UI.getCurrent().getLocale()));
-            verticalLayout.add(body, hold);
+            verticalLayout.add(body, hold, initiateSameParams, modifyParams);
             confirmDialog.setText(verticalLayout);
 
             confirmDialog.setCancelable(true);
@@ -989,36 +991,11 @@ public class ContextInstanceWidget extends VerticalLayout
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                ContextMachine machine = ContextMachineCache.instance()
-                    .getByContextInstanceId(this.contextInstance.getId());
-                if (machine != null) {
-                    try {
-                        machine.setDryRunParameters(null);
-                        machine.getContext().setEndTime(System.currentTimeMillis());
-                        this.saveContextInstance(machine.getContext(), InstanceStatus.ENDED);
-                        machine.getContext().getAllNestedJobLocks().forEach(jobLockInstance -> {
-                            JobLockCacheImpl.instance().resetLock(jobLockInstance.getName());
-                        });
-                        this.statusDiv.setStatus(InstanceStatus.ENDED);
-                        ContextMachineCache.instance().remove(machine);
-                        machine.resetContextInstance(hold.getValue());
-                        ContextMachineCache.instance().put(machine);
-                        ContextInstance newInstance = ContextMachineCache.instance()
-                            .getFirstByContextName(this.contextInstance.getName()).getContext();
-                        String route = RouteConfiguration.forSessionScope()
-                            .getUrl(ContextInstanceView.class, newInstance.getId() + "_scheduledContextInstance");
-
-                        getUI().ifPresent(ui -> ui.getPage().open(route));
-
-                        resetContextButton.setVisible(false);
-
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RESET, String.format("Job Plan Instance Name[%s], Job Plan Instance Identifier[%s] " +
-                                "has been reset and replaced with Job Plan Instance Identifier[%s]", contextInstance.getName(), contextInstance.getId(), newInstance.getId() ), this.authentication.getName());
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showErrorNotification(getTranslation("error.reset-context", UI.getCurrent().getLocale()));
-                    }
+                if(modifyParams.getValue()) {
+                    this.resetContextInstanceWithModifiedContextParams(hold.getValue(), initiateSameParams.getValue());
+                }
+                else {
+                    this.resetContextInstance(hold.getValue(), initiateSameParams.getValue(), null);
                 }
             });
         });
@@ -1095,6 +1072,69 @@ public class ContextInstanceWidget extends VerticalLayout
         wrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
 
         return wrapper;
+    }
+
+    /**
+     * Helper method to reset the context instance with modified context parameters.
+     *
+     * @param hold - hold all command execution jobs.
+     * @param initiateSameParams - init the new context instance with parameters from the one it is replacing.
+     */
+    private void resetContextInstanceWithModifiedContextParams(boolean hold, boolean initiateSameParams) {
+        ContextMachine machine = ContextMachineCache.instance()
+            .getByContextInstanceId(this.contextInstance.getId());
+        if (machine != null) {
+            ContextInstanceParameterDialog contextParameterDialog = new ContextInstanceParameterDialog(true);
+            contextParameterDialog.initParams(machine.getContext().getContextParameters());
+
+            contextParameterDialog.open();
+
+            contextParameterDialog.addOpenedChangeListener(event -> {
+                if(!event.isOpened() && contextParameterDialog.isSaveClose()) {
+                    this.resetContextInstance(hold, initiateSameParams, contextParameterDialog.getContextParameters());
+                }
+            });
+        }
+    }
+
+    /**
+     * Helper method to reset the context instance.
+     *
+     * @param hold - hold all command execution jobs.
+     * @param initiateSameParams - init the new context instance with parameters from the one it is replacing.
+     */
+    private void resetContextInstance(boolean hold, boolean initiateSameParams, List<ContextParameterInstance> contextParameterInstances) {
+        ContextMachine machine = ContextMachineCache.instance()
+            .getByContextInstanceId(this.contextInstance.getId());
+        if (machine != null) {
+            try {
+                machine.setDryRunParameters(null);
+                machine.getContext().setEndTime(System.currentTimeMillis());
+                this.saveContextInstance(machine.getContext(), InstanceStatus.ENDED);
+                machine.getContext().getAllNestedJobLocks().forEach(jobLockInstance -> {
+                    JobLockCacheImpl.instance().resetLock(jobLockInstance.getName());
+                });
+                this.statusDiv.setStatus(InstanceStatus.ENDED);
+                ContextMachineCache.instance().remove(machine);
+                machine.resetContextInstance(hold, initiateSameParams, contextParameterInstances);
+                ContextMachineCache.instance().put(machine);
+                ContextInstance newInstance = ContextMachineCache.instance()
+                    .getFirstByContextName(this.contextInstance.getName()).getContext();
+                String route = RouteConfiguration.forSessionScope()
+                    .getUrl(ContextInstanceView.class, newInstance.getId() + "_scheduledContextInstance");
+
+                getUI().ifPresent(ui -> ui.getPage().open(route));
+
+                resetContextButton.setVisible(false);
+
+                this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RESET, String.format("Job Plan Instance Name[%s], Job Plan Instance Identifier[%s] " +
+                    "has been reset and replaced with Job Plan Instance Identifier[%s]", contextInstance.getName(), contextInstance.getId(), newInstance.getId() ), this.authentication.getName());
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                NotificationHelper.showErrorNotification(getTranslation("error.reset-context", UI.getCurrent().getLocale()));
+            }
+        }
     }
 
     /**

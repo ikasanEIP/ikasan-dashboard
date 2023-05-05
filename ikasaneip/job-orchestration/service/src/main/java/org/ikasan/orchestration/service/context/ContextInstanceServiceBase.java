@@ -150,7 +150,8 @@ public abstract class ContextInstanceServiceBase {
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
     }
 
-    protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance, boolean isInitialContextInstantiation) throws Exception {
+    protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance
+        , boolean isInitialContextInstantiation, List<ContextParameterInstance> contextParameterInstances) throws Exception {
         if(isInitialContextInstantiation) {
             SchedulerJobInstancesInitialisationParameters parameters
                 = new SchedulerJobInstancesInitialisationParametersImpl(false);
@@ -240,7 +241,12 @@ public abstract class ContextInstanceServiceBase {
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
         // set the parameters on the instance every time
-        setContextParametersOnInstance(instance, internalJobs);
+        if(contextParameterInstances == null) {
+            setContextParametersOnInstance(instance, internalJobs);
+        }
+        else {
+            instance.setContextParameters(contextParameterInstances);
+        }
 
         propagateContextInstanceToAgents(instance, agents);
 

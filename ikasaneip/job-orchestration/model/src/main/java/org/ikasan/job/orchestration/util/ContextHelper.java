@@ -195,7 +195,7 @@ public class ContextHelper {
      * @param internalJobs
      * @return
      */
-    public static List<ContextParameterInstance> getUniqueContextParameterInstancesFromJobs(Map<String, InternalEventDrivenJobInstance> internalJobs) {
+    public static List<ContextParameterInstance> getUniqueContextParameterInstancesFromJobInstances(Map<String, InternalEventDrivenJobInstance> internalJobs) {
         List<ContextParameterInstance> contextParameterInstances = new ArrayList<>();
 
         internalJobs.entrySet().forEach(entry ->
@@ -209,6 +209,31 @@ public class ContextHelper {
                 return contextParameterInstance;
             })
             .collect(Collectors.toList())));
+
+        return contextParameterInstances.stream()
+            .filter(distinctByKey(contextParameterInstance -> contextParameterInstance.getName()) )
+            .collect( Collectors.toList() );
+    }
+
+    /**
+     *
+     * @param internalJobs
+     * @return
+     */
+    public static List<ContextParameterInstance> getUniqueContextParameterInstancesFromJobs(Map<String, InternalEventDrivenJob> internalJobs) {
+        List<ContextParameterInstance> contextParameterInstances = new ArrayList<>();
+
+        internalJobs.entrySet().forEach(entry ->
+            contextParameterInstances.addAll(entry.getValue().getContextParameters().stream()
+                .map(contextParameter -> {
+                    ContextParameterInstance contextParameterInstance = new ContextParameterInstanceImpl();
+                    contextParameterInstance.setName(contextParameter.getName());
+                    contextParameterInstance.setValue(contextParameter.getDefaultValue());
+                    contextParameterInstance.setDefaultValue(contextParameter.getDefaultValue());
+
+                    return contextParameterInstance;
+                })
+                .collect(Collectors.toList())));
 
         return contextParameterInstances.stream()
             .filter(distinctByKey(contextParameterInstance -> contextParameterInstance.getName()) )
