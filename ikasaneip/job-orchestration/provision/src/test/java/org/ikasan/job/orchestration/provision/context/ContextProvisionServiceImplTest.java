@@ -232,7 +232,7 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-        verify(contextInstanceRegistrationService).register(contextName);
+        verify(contextInstanceRegistrationService).register(contextName, null);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
@@ -283,7 +283,7 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-        verify(contextInstanceRegistrationService).register(contextName);
+        verify(contextInstanceRegistrationService).register(contextName, null);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
@@ -361,7 +361,7 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-        verify(contextInstanceRegistrationService).register(contextName);
+        verify(contextInstanceRegistrationService).register(contextName, null);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
@@ -417,7 +417,7 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-        verify(contextInstanceRegistrationService).register(contextName);
+        verify(contextInstanceRegistrationService).register(contextName, null);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
@@ -459,7 +459,7 @@ public class ContextProvisionServiceImplTest {
         assertNotNull(actualContextRecord.getContext());
         assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
 
-        verify(contextInstanceRegistrationService).register(contextName);
+        verify(contextInstanceRegistrationService).register(contextName, null);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
@@ -522,7 +522,7 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-        verify(contextInstanceRegistrationService).register(contextName);
+        verify(contextInstanceRegistrationService).register(contextName, null);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
@@ -588,7 +588,7 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-        verify(contextInstanceRegistrationService).register(contextName);
+        verify(contextInstanceRegistrationService).register(contextName, null);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
@@ -648,7 +648,7 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-        verify(contextInstanceRegistrationService).register(contextName);
+        verify(contextInstanceRegistrationService).register(contextName, null);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,

@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
 public class TestContextParametersInstanceService implements ContextParametersInstanceService {
 
@@ -35,5 +37,10 @@ public class TestContextParametersInstanceService implements ContextParametersIn
     @Override
     public void populateContextParametersOnContextInstance(ContextInstance contextInstance, Map<String, InternalEventDrivenJobInstance> internalJobs) {
 
+    }
+
+    @Override
+    public List<ContextParameterInstance> getContextParameterInstancesForContext(ContextTemplate contextTemplate, Map<String, InternalEventDrivenJob> internalJobs) {
+        return null;
     }
 }

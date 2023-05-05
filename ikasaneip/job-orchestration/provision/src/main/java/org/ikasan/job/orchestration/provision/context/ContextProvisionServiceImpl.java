@@ -151,7 +151,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             if (withinOperatingWindow(contextBundle.getContextTemplate().getTimezone(), contextBundle.getContextTemplate().getTimeWindowStart()
                 , contextBundle.getContextTemplate().getContextTtlMilliseconds(), new Date())) {
                 // NOTE: this will create a new context machine and instance and initialise it so overwriting existing context machine
-                contextInstanceRegistrationService.register(jobName);
+                contextInstanceRegistrationService.register(jobName, null);
             }
         } catch (Exception e) {
             String message = String.format("Could not upload context and jobs. Error [%s]", e.getMessage());

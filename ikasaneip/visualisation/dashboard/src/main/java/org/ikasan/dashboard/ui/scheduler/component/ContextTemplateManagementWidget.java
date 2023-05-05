@@ -858,9 +858,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                         List<SchedulerJob> schedulerJobs = jobRecords.getResultList().stream()
                             .map(record -> record.getJob())
                             .collect(Collectors.toList());
-// this is where we need to init context if we are sync job like org.ikasan.dashboard.ui.scheduler.component.ContextTemplateWidget.createGrid (Y)
+
                         this.jobProvisionService.provisionJobs(schedulerJobs, this.authentication.getName());
-                        this.contextInstanceRegistrationService.register(this.contextTemplate.getName());
+                        this.contextInstanceRegistrationService.register(this.contextTemplate.getName(), null);
                     }
                     catch (Exception e) {
                         e.printStackTrace();

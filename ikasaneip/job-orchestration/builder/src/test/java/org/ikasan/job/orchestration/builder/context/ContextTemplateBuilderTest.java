@@ -164,7 +164,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
 
     @Test
     public void test_builder_success_complex() throws IOException, JSONException {
-            ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
+        ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
 
         ContextTemplate contextTemplate1 = contextTemplateBuilder.withName("test-context")
             .withDescription("Context Template Description")

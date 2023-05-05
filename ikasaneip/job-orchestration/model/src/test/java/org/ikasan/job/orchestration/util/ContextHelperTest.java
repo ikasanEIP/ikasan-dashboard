@@ -203,7 +203,7 @@ public class ContextHelperTest {
 
         ContextHelper.enrichJobs(contextInstance);
 
-        ContextHelper.holdAllJobs(contextInstance, createInternalJobsMap(contextTemplate));
+        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate));
 
         AggregateContextInstanceStatus aggregateContextInstanceStatus
             = ContextHelper.getAggregateContextInstanceStatus(contextInstance);
@@ -282,11 +282,11 @@ public class ContextHelperTest {
     }
 
     @Test
-    public void test_get_unique_context_parameters() throws IOException {
+    public void test_get_unique_context_parameters_from_job_instances() throws IOException {
         ContextTemplate contextTemplate = this.contextService
             .getContextTemplate(loadDataFile("/data/-1793100514.json"));
 
-        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap = createInternalJobsMap(contextTemplate);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap = createInternalJobsInstancesMap(contextTemplate);
 
         List<ContextParameter> contextParameterInstances1 = new ArrayList<>();
         contextParameterInstances1.add(newContextParameterInstance("name1", "value1"));
@@ -311,7 +311,43 @@ public class ContextHelperTest {
         }
 
         List<ContextParameterInstance> contextParameterInstances
-            = ContextHelper.getUniqueContextParameterInstancesFromJobs(internalEventDrivenJobInstanceMap);
+            = ContextHelper.getUniqueContextParameterInstancesFromJobInstances(internalEventDrivenJobInstanceMap);
+
+        Assert.assertTrue(contextParameterInstances.size() == 5);
+
+    }
+
+    @Test
+    public void test_get_unique_context_parameters_from_jobs() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
+
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = createInternalJobsMap(contextTemplate);
+
+        List<ContextParameter> contextParameterInstances1 = new ArrayList<>();
+        contextParameterInstances1.add(newContextParameterInstance("name1", "value1"));
+        contextParameterInstances1.add(newContextParameterInstance("name2", "value2"));
+        contextParameterInstances1.add(newContextParameterInstance("name3", "value3"));
+        contextParameterInstances1.add(newContextParameterInstance("name4", "value4"));
+        contextParameterInstances1.add(newContextParameterInstance("name5", "value5"));
+
+        List<ContextParameter> contextParameterInstances2 = new ArrayList<>();
+        contextParameterInstances2.add(newContextParameterInstance("name1", "value1"));
+        contextParameterInstances2.add(newContextParameterInstance("name4", "value4"));
+        contextParameterInstances2.add(newContextParameterInstance("name5", "value5"));
+
+        int i=0;
+        for(InternalEventDrivenJob instance: internalEventDrivenJobMap.values()) {
+            if(i%2 == 0) {
+                instance.setContextParameters(contextParameterInstances1);
+            }
+            else {
+                instance.setContextParameters(contextParameterInstances2);
+            }
+        }
+
+        List<ContextParameterInstance> contextParameterInstances
+            = ContextHelper.getUniqueContextParameterInstancesFromJobs(internalEventDrivenJobMap);
 
         Assert.assertTrue(contextParameterInstances.size() == 5);
 
@@ -327,12 +363,27 @@ public class ContextHelperTest {
         return getClass().getResourceAsStream(fileName);
     }
 
-    public Map<String, InternalEventDrivenJobInstance> createInternalJobsMap(ContextTemplate contextTemplate) {
+    public Map<String, InternalEventDrivenJobInstance> createInternalJobsInstancesMap(ContextTemplate contextTemplate) {
         HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
 
         if(contextTemplate.getScheduledJobs() != null) {
             contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier() + "-" + contextTemplate.getName(),
-                newInternalEventDrivenJob(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
+                newInternalEventDrivenJobInstance(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
+        }
+
+        if (contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
+            contextTemplate.getContexts().forEach(template -> addInternalJobInstances(template, internalEventDrivenJobs));
+        }
+
+        return internalEventDrivenJobs;
+    }
+
+    public Map<String, InternalEventDrivenJob> createInternalJobsMap(ContextTemplate contextTemplate) {
+        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
+
+        if(contextTemplate.getScheduledJobs() != null) {
+            contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier() + "-" + contextTemplate.getName(),
+                newInternalEventDrivenJobInstance(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
         }
 
         if (contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
@@ -342,7 +393,29 @@ public class ContextHelperTest {
         return internalEventDrivenJobs;
     }
 
-    private void addInternalJobs(ContextTemplate contextTemplate, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs) {
+    private void addInternalJobInstances(ContextTemplate contextTemplate, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs) {
+        if (contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+            contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier() + "-" + contextTemplate.getName(),
+                newInternalEventDrivenJobInstance(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
+        }
+
+        if (contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
+            contextTemplate.getContexts().forEach(template -> addInternalJobInstances(template, internalEventDrivenJobs));
+        }
+    }
+
+    private InternalEventDrivenJobInstance newInternalEventDrivenJobInstance(String jobIdentifier, String childContextName, String jobName) {
+        InternalEventDrivenJobInstance job = new InternalEventDrivenJobInstanceImpl();
+        job.setJobName(jobName);
+        job.setIdentifier(jobIdentifier);
+        job.setChildContextName(childContextName);
+        job.setChildContextNames(List.of(childContextName));
+        job.setTargetResidingContextOnly(true);
+
+        return job;
+    }
+
+    private void addInternalJobs(ContextTemplate contextTemplate, Map<String, InternalEventDrivenJob> internalEventDrivenJobs) {
         if (contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
             contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier() + "-" + contextTemplate.getName(),
                 newInternalEventDrivenJob(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
@@ -353,11 +426,10 @@ public class ContextHelperTest {
         }
     }
 
-    private InternalEventDrivenJobInstance newInternalEventDrivenJob(String jobIdentifier, String childContextName, String jobName) {
-        InternalEventDrivenJobInstance job = new InternalEventDrivenJobInstanceImpl();
+    private InternalEventDrivenJob newInternalEventDrivenJob(String jobIdentifier, String childContextName, String jobName) {
+        InternalEventDrivenJob job = new InternalEventDrivenJobImpl();
         job.setJobName(jobName);
         job.setIdentifier(jobIdentifier);
-        job.setChildContextName(childContextName);
         job.setChildContextNames(List.of(childContextName));
         job.setTargetResidingContextOnly(true);
 
