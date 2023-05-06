@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
@@ -141,6 +142,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private Button synchroniseJobsButton;
     private ComboBox<String> searchCb;
+    private Checkbox isAbleToRunConcurrentlyCb;
     private UI ui;
 
     /**
@@ -362,6 +364,12 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.treeViewExpandLevel.getElement().getThemeList().add("always-float-label");
         binder.forField(this.treeViewExpandLevel)
             .bind(ContextTemplate::getTreeViewExpandLevel, ContextTemplate::setTreeViewExpandLevel);
+        this.treeViewExpandLevel.setEnabled(false);
+        this.isAbleToRunConcurrentlyCb = new Checkbox(getTranslation("label.concurrent", UI.getCurrent().getLocale()));
+        this.isAbleToRunConcurrentlyCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.isAbleToRunConcurrentlyCb)
+            .bind(ContextTemplate::isAbleToRunConcurrently, ContextTemplate::setAbleToRunConcurrently);
+        this.isAbleToRunConcurrentlyCb.setEnabled(false);
 
         this.initialiseBlackoutWindowGrid();
         this.populateBlackoutWindowPairs(contextTemplate);
@@ -396,19 +404,20 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         this.formLayout = new FormLayout();
         this.formLayout.setResponsiveSteps(
-            new FormLayout.ResponsiveStep("500px", 20)
+            new FormLayout.ResponsiveStep("500px", 40)
         );
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
-            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.descriptionTa, this.blackoutWindowsGrid);
-        this.formLayout.setColspan(this.contextNameTf, 6);
-        this.formLayout.setColspan(this.startWindowCronExpressionTf, 3);
-        this.formLayout.setColspan(this.contextTtlDays, 2);
-        this.formLayout.setColspan(this.contextTtlHours, 2);
-        this.formLayout.setColspan(this.contextTtlMinutes, 2);
-        this.formLayout.setColspan(this.timezoneCb, 3);
-        this.formLayout.setColspan(this.treeViewExpandLevel, 2);
-        this.formLayout.setColspan(this.descriptionTa, 6);
-        this.formLayout.setColspan(this.blackoutWindowsGrid, 14);
+            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.isAbleToRunConcurrentlyCb, this.descriptionTa, this.blackoutWindowsGrid);
+        this.formLayout.setColspan(this.contextNameTf, 12);
+        this.formLayout.setColspan(this.startWindowCronExpressionTf, 6);
+        this.formLayout.setColspan(this.contextTtlDays, 3);
+        this.formLayout.setColspan(this.contextTtlHours, 3);
+        this.formLayout.setColspan(this.contextTtlMinutes, 3);
+        this.formLayout.setColspan(this.timezoneCb, 5);
+        this.formLayout.setColspan(this.treeViewExpandLevel, 4);
+        this.formLayout.setColspan(this.isAbleToRunConcurrentlyCb, 3);
+        this.formLayout.setColspan(this.descriptionTa, 12);
+        this.formLayout.setColspan(blackoutWindowsGrid, 25);
 
         CollapsableLayout collapsableLayout = new CollapsableLayout();
         add(collapsableLayout);

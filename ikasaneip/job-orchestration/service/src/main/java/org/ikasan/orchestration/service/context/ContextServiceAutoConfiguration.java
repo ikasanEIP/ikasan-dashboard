@@ -20,6 +20,7 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.systemevent.SystemEventService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -92,7 +93,8 @@ public class ContextServiceAutoConfiguration {
         JobLockCacheInitialisationService jobLockCacheInitialisationService,
         ContextInstanceSchedulerService contextInstanceSchedulerService,
         TimeService timeService,
-        ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster) {
+        ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
+        SystemEventService systemEventService) {
 
         return new ContextInstanceRegistrationServiceImpl(queueDirectory,
             scheduledContextInstanceService,
@@ -109,7 +111,8 @@ public class ContextServiceAutoConfiguration {
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
             timeService,
-            contextInstanceSavedEventBroadcaster
+            contextInstanceSavedEventBroadcaster,
+            systemEventService
         );
     }
 

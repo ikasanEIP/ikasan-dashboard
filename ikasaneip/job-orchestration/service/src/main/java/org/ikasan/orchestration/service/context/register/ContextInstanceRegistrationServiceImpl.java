@@ -51,6 +51,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -70,7 +71,9 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.systemevent.SystemEventService;
 import org.quartz.JobExecutionContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Date;
 import java.util.List;
@@ -78,6 +81,8 @@ import java.util.List;
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
     private ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster;
+
+    private SystemEventService systemEventService;
 
     public ContextInstanceRegistrationServiceImpl(String queueDirectory,
                                                   ScheduledContextInstanceService scheduledContextInstanceService,
@@ -94,7 +99,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                                   ContextInstanceSchedulerService contextInstanceSchedulerService,
                                                   TimeService timeService,
-                                                  ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster) {
+                                                  ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
+                                                  SystemEventService systemEventService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -114,6 +120,10 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         this.contextInstanceSavedEventBroadcaster = contextInstanceSavedEventBroadcaster;
         if (this.contextInstanceSavedEventBroadcaster == null) {
             throw new IllegalArgumentException("contextInstanceSavedEventBroadcaster cannot be null!");
+        }
+        this.systemEventService = systemEventService;
+        if (this.systemEventService == null) {
+            throw new IllegalArgumentException("systemEventService cannot be null!");
         }
     }
     /**
@@ -209,6 +219,15 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
         if (scheduledContextRecord.isDisabled()) {
             LOG.info(String.format("Context name [%s] is disabled and will not be registered!", contextName));
+            return null;
+        }
+
+        if (!scheduledContextRecord.getContext().isAbleToRunConcurrently()
+            && ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null) {
+            LOG.info(String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
+                "A new instance will not be created automatically.", contextName));
+            systemEventService.logSystemEvent("Context Instance Not Created", String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
+                "A new instance will not be created automatically.", contextName), "ContextMachine");
             return null;
         }
 

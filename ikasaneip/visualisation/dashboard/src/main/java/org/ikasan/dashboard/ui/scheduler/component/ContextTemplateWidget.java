@@ -609,6 +609,12 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             ComponentSecurityVisibility.applySecurity(this.authentication, newContextInstance, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
                 , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
             newContextInstance.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!scheduledContextRecord.getContext().isAbleToRunConcurrently()
+                    && ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null) {
+                    NotificationHelper.showUserNotification(getTranslation("notification.cannot-create-new-instance-as-job-plan-not-concurrent"
+                        , UI.getCurrent().getLocale()));
+                    return;
+                }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.create-new-context-instance-header", UI.getCurrent().getLocale()));
 
@@ -889,7 +895,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         }
         catch (Exception e) {
             e.printStackTrace();
-            NotificationHelper.showErrorNotification(getTranslation("notification.error-creating-job-plan-instance", UI.getCurrent().getLocale()));
+            NotificationHelper.showUserNotification(getTranslation("notification.error-creating-job-plan-instance", UI.getCurrent().getLocale()));
         }
 
         if(contextInstanceId != null) {
