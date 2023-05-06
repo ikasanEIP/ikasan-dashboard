@@ -172,6 +172,7 @@
   "timeWindowStart": "* * 6 ? * * *",
   "contextTtlMilliseconds": 0,
   "treeViewExpandLevel": 1,
+  "ableToRunConcurrently": true,
   "disabled": false,
   "quartzScheduleDrivenJobsDisabledForContext": false
 }

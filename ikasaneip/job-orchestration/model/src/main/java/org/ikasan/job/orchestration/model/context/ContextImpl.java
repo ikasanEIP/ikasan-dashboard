@@ -26,7 +26,8 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected long contextTtlMilliseconds;
     protected String environmentGroup;
     protected boolean isQuartzScheduleDrivenJobsDisabledForContext;
-    int treeViewExpandLevel = 1;
+    protected int treeViewExpandLevel = 1;
+    protected boolean ableToRunConcurrently = true;
 
     @Override
     public String getName() {
@@ -161,6 +162,16 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setTreeViewExpandLevel(int treeViewExpandLevel) {
         this.treeViewExpandLevel = treeViewExpandLevel;
+    }
+
+    @Override
+    public boolean isAbleToRunConcurrently() {
+        return ableToRunConcurrently;
+    }
+
+    @Override
+    public void setAbleToRunConcurrently(boolean ableToRunConcurrently) {
+        this.ableToRunConcurrently = ableToRunConcurrently;
     }
 
     @Override
