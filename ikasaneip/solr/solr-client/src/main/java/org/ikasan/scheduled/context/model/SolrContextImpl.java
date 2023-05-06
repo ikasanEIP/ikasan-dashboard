@@ -23,8 +23,9 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected String timeWindowStart;
     protected long contextTtlMilliseconds;
     protected String environmentGroup;
-    private boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
-    int treeViewExpandLevel = 1;
+    protected boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
+    protected int treeViewExpandLevel = 1;
+    protected boolean ableToRunConcurrently = true;
 
     @Override
     public String getName() {
@@ -159,6 +160,16 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @Override
     public void setTreeViewExpandLevel(int treeViewExpandLevel) {
         this.treeViewExpandLevel = treeViewExpandLevel;
+    }
+
+    @Override
+    public boolean isAbleToRunConcurrently() {
+        return ableToRunConcurrently;
+    }
+
+    @Override
+    public void setAbleToRunConcurrently(boolean ableToRunConcurrently) {
+        this.ableToRunConcurrently = ableToRunConcurrently;
     }
 
     @Override

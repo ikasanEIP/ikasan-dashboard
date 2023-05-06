@@ -135,6 +135,7 @@
   "timeWindowStart" : "* * 6 ? * * *",
   "contextTtlMilliseconds" : 100000,
   "treeViewExpandLevel" : 3,
+  "ableToRunConcurrently" : true,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

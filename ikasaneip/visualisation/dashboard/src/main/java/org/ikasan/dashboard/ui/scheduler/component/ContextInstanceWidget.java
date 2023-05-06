@@ -123,6 +123,8 @@ public class ContextInstanceWidget extends VerticalLayout
     private TextField endTimeTf;
     private TextField timezoneTf;
 
+    private CollapsableLayout contextInstanceDetailsCollapsableLayout;
+
     private Button holdContextButton;
     private Button releaseContextButton;
     private Button enableQuartzScheduledJobsButton;
@@ -376,7 +378,11 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.projectedEndTimeTf = new TextField(getTranslation("label.projected-end-date-time", UI.getCurrent().getLocale()));
         this.projectedEndTimeTf.getElement().getThemeList().add("always-float-label");
-        if(this.contextInstance.getProjectedEndTime() > 0) {
+        if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext()
+            .isRunContextUntilManuallyEnded()) {
+            this.projectedEndTimeTf.setValue("This instance must be ended manually!");
+        }
+        else if(this.contextInstance.getProjectedEndTime() > 0) {
             this.projectedEndTimeTf.setValue(DateFormatter.instance().getFormattedDate(this.contextInstance.getProjectedEndTime()));
         }
         this.projectedEndTimeTf.setEnabled(false);
@@ -450,24 +456,28 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.formLayout.add(jobStatusLayout, 11);
 
-        CollapsableLayout collapsableLayout = new CollapsableLayout();
-        add(collapsableLayout);
+        this.contextInstanceDetailsCollapsableLayout = new CollapsableLayout();
+        add(this.contextInstanceDetailsCollapsableLayout);
 
         //A border to show the outline of the layout itself
-        collapsableLayout.getElement().getStyle().set("border", "1px solid #aaa");
+        this.contextInstanceDetailsCollapsableLayout.getElement().getStyle().set("border", "1px solid #aaa");
 
-        collapsableLayout.addContentComponent(formLayout);
+        this.contextInstanceDetailsCollapsableLayout.addContentComponent(formLayout);
 
         //Add a header button that toggles the visibility on click
         Button collapseButton = new Button(getTranslation("button.show", UI.getCurrent().getLocale())
-            , e -> collapsableLayout.toggleContentVisibility());
-        collapsableLayout.addHeaderComponentAsLastAndAlignToRight(collapseButton);
+            , e -> this.contextInstanceDetailsCollapsableLayout.toggleContentVisibility());
+        if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext()
+            .isRunContextUntilManuallyEnded()) {
+            this.addManuallyEndMessage();
+        }
+        this.contextInstanceDetailsCollapsableLayout.addHeaderComponentAsLastAndAlignToRight(collapseButton);
 
         //Change the button caption based on the collapse state change
-        collapsableLayout.addCollapseChangeListener(e -> {
+        this.contextInstanceDetailsCollapsableLayout.addCollapseChangeListener(e -> {
             collapseButton.setText(e.isCurrentlyVisible() ? getTranslation("button.hide", UI.getCurrent().getLocale())
                 : getTranslation("button.show", UI.getCurrent().getLocale()));
-            collapsableLayout.getElement().getStyle().set("border", !e.isCurrentlyVisible() ? "1px solid #aaa" : "");
+            contextInstanceDetailsCollapsableLayout.getElement().getStyle().set("border", !e.isCurrentlyVisible() ? "1px solid #aaa" : "");
         });
 
         this.initialiseEditor();
@@ -483,7 +493,7 @@ public class ContextInstanceWidget extends VerticalLayout
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
         this.getStyle().set("padding-top", "0px");
-        this.add(statusLayout, headerLayout, collapsableLayout, tabLayout, this.contextInstanceTreeViewWidget, this.aceEditor, this.splitContextInstanceVisualisation
+        this.add(statusLayout, headerLayout, contextInstanceDetailsCollapsableLayout, tabLayout, this.contextInstanceTreeViewWidget, this.aceEditor, this.splitContextInstanceVisualisation
             , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
         this.expand(this.splitContextInstanceVisualisation, this.aceEditor);
         this.setHeight("100%");
@@ -617,6 +627,15 @@ public class ContextInstanceWidget extends VerticalLayout
                 errorStatus.setStatus(InstanceStatus.ERROR, jobStatuses.get(0).getStatusCount(InstanceStatus.ERROR) + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()));
             });
         }
+    }
+
+    private void addManuallyEndMessage() {
+        H4 endManually = new H4("This instance must be ended manually!".toUpperCase());
+        endManually.getElement().getStyle().set("color", IkasanColours.SCHEDULER_ERROR);
+        endManually.getStyle().set("position", "absolute");
+        endManually.getStyle().set("left", "50%");
+        endManually.getStyle().set("margin-left", "-220px");
+        this.contextInstanceDetailsCollapsableLayout.addHeaderComponent(endManually);
     }
 
     private void updateJson(ContextInstance contextInstance) {
@@ -955,14 +974,17 @@ public class ContextInstanceWidget extends VerticalLayout
                             .runContextUntilManuallyEnded();
                         ignoreContextInstanceEndButton.setVisible(false);
                         contextInstanceEndButton.setVisible(true);
+
+                        this.projectedEndTimeTf.setValue("This instance must be ended manually!");
                     }
                     this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DURATION_IGNORED, String.format("Job Plan Name[%s], Job Plan Instance Identifier[%s]"
                         , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                    NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-duration-ignored", UI.getCurrent().getLocale()));
+                    NotificationHelper.showUserNotification(getTranslation("notification.job-plan-duration-ignored", UI.getCurrent().getLocale()));
+                    this.addManuallyEndMessage();
                 }
                 catch (Exception e) {
                     e.printStackTrace();
-                    NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-duration-ignored-error", UI.getCurrent().getLocale()));
+                    NotificationHelper.showUserNotification(getTranslation("notification.job-plan-duration-ignored-error", UI.getCurrent().getLocale()));
                 }
 
             });

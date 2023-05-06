@@ -6,6 +6,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -55,6 +56,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private IntegerField contextTtlHours;
     private IntegerField contextTtlDays;
     private IntegerField treeViewExpandLevel;
+    private Checkbox isAbleToRunConcurrentlyCb;
     private DateTimePicker blackoutWindowStartTime;
     private DateTimePicker blackoutWindowEndTime;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
@@ -107,7 +109,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private void init() {
         this.blackoutWindowDateTimePairs = new ArrayList<>();
         this.setHeight("780px");
-        this.setWidth("95vw");
+        this.setWidth("98vw");
 
         super.showResize(false);
         super.setResizable(false);
@@ -246,6 +248,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         binder.forField(this.treeViewExpandLevel)
             .bind(ContextTemplate::getTreeViewExpandLevel, ContextTemplate::setTreeViewExpandLevel);
 
+        this.isAbleToRunConcurrentlyCb = new Checkbox(getTranslation("label.concurrent", UI.getCurrent().getLocale()));
+        this.isAbleToRunConcurrentlyCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.isAbleToRunConcurrentlyCb)
+            .bind(ContextTemplate::isAbleToRunConcurrently, ContextTemplate::setAbleToRunConcurrently);
+
         binder.readBean(this.contextTemplate);
 
         this.blackoutWindowStartTime = new DateTimePicker(getTranslation("label.blackout-window-start-date-time", UI.getCurrent().getLocale()));
@@ -326,22 +333,23 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
         this.formLayout = new FormLayout();
         this.formLayout.setResponsiveSteps(
-            new FormLayout.ResponsiveStep("500px", 20)
+            new FormLayout.ResponsiveStep("500px", 40)
         );
         this.formLayout.setWidth("100%");
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
-            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.descriptionTa, blackoutWindowsGrid, addDateTimePairButton);
+            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.isAbleToRunConcurrentlyCb, this.descriptionTa, blackoutWindowsGrid, addDateTimePairButton);
 
-        this.formLayout.setColspan(this.contextNameTf, 6);
-        this.formLayout.setColspan(this.startWindowCronExpressionTf, 3);
-        this.formLayout.setColspan(this.contextTtlDays, 2);
-        this.formLayout.setColspan(this.contextTtlHours, 2);
-        this.formLayout.setColspan(this.contextTtlMinutes, 2);
-        this.formLayout.setColspan(this.timezoneCb, 3);
-        this.formLayout.setColspan(this.treeViewExpandLevel, 2);
-        this.formLayout.setColspan(this.descriptionTa, 6);
-        this.formLayout.setColspan(blackoutWindowsGrid, 13);
-        this.formLayout.setColspan(addDateTimePairButton, 1);
+        this.formLayout.setColspan(this.contextNameTf, 12);
+        this.formLayout.setColspan(this.startWindowCronExpressionTf, 6);
+        this.formLayout.setColspan(this.contextTtlDays, 3);
+        this.formLayout.setColspan(this.contextTtlHours, 3);
+        this.formLayout.setColspan(this.contextTtlMinutes, 3);
+        this.formLayout.setColspan(this.timezoneCb, 5);
+        this.formLayout.setColspan(this.treeViewExpandLevel, 4);
+        this.formLayout.setColspan(this.isAbleToRunConcurrentlyCb, 3);
+        this.formLayout.setColspan(this.descriptionTa, 12);
+        this.formLayout.setColspan(blackoutWindowsGrid, 25);
+        this.formLayout.setColspan(addDateTimePairButton, 3);
     }
 
     /**
