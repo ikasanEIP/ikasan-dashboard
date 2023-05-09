@@ -122,6 +122,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private TextField projectedEndTimeTf;
     private TextField endTimeTf;
     private TextField timezoneTf;
+    private Checkbox isAbleToRunConcurrentlyCb;
 
     private CollapsableLayout contextInstanceDetailsCollapsableLayout;
 
@@ -362,6 +363,12 @@ public class ContextInstanceWidget extends VerticalLayout
         this.contextTtlMinutes.setValue(ContextDurationUtils.getMinutes(this.contextTemplate.getContextTtlMilliseconds()));
         this.contextTtlMinutes.setEnabled(false);
 
+        this.isAbleToRunConcurrentlyCb = new Checkbox(getTranslation("label.concurrent", UI.getCurrent().getLocale()));
+        this.isAbleToRunConcurrentlyCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.isAbleToRunConcurrentlyCb)
+            .bind(ContextInstance::isAbleToRunConcurrently, ContextInstance::setAbleToRunConcurrently);
+        this.isAbleToRunConcurrentlyCb.setEnabled(false);
+
 
         this.timezoneTf = new TextField(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         this.timezoneTf.getElement().getThemeList().add("always-float-label");
@@ -427,21 +434,22 @@ public class ContextInstanceWidget extends VerticalLayout
 
         formLayout.setResponsiveSteps(
             // Use four columns by default
-            new FormLayout.ResponsiveStep("0", 11)
+            new FormLayout.ResponsiveStep("0", 22)
         );
 
         this.formLayout.setWidth("100%");
 
-        this.formLayout.add(this.contextInstanceId, 4);
-        this.formLayout.add(this.startWindowCronExpressionTf, 2);
-        this.formLayout.add(this.contextTtlDays, 1);
-        this.formLayout.add(this.contextTtlHours, 1);
-        this.formLayout.add(this.contextTtlMinutes, 1);
-        this.formLayout.add(this.timezoneTf, 2);
-        this.formLayout.add(this.descriptionTa, 4);
-        this.formLayout.add(this.startTimeTf, 2);
-        this.formLayout.add(this.projectedEndTimeTf, 2);
-        this.formLayout.add(this.endTimeTf, 2);
+        this.formLayout.add(this.contextInstanceId, 7);
+        this.formLayout.add(this.startWindowCronExpressionTf, 4);
+        this.formLayout.add(this.contextTtlDays, 2);
+        this.formLayout.add(this.contextTtlHours, 2);
+        this.formLayout.add(this.contextTtlMinutes, 2);
+        this.formLayout.add(this.timezoneTf, 3);
+        this.formLayout.add(this.isAbleToRunConcurrentlyCb, 2);
+        this.formLayout.add(this.descriptionTa, 7);
+        this.formLayout.add(this.startTimeTf, 4);
+        this.formLayout.add(this.projectedEndTimeTf, 4);
+        this.formLayout.add(this.endTimeTf, 4);
 
         HorizontalLayout jobStatusLayout = new HorizontalLayout();
         this.waitingStatus.setSizeFull();
@@ -454,7 +462,7 @@ public class ContextInstanceWidget extends VerticalLayout
         jobStatusLayout.add(this.waitingStatus, this.completeStatus, this.runningStatus, this.queuedStatus
             , this.onHoldStatus, this.skippedStatus, this.errorStatus);
 
-        this.formLayout.add(jobStatusLayout, 11);
+        this.formLayout.add(jobStatusLayout, 22);
 
         this.contextInstanceDetailsCollapsableLayout = new CollapsableLayout();
         add(this.contextInstanceDetailsCollapsableLayout);
