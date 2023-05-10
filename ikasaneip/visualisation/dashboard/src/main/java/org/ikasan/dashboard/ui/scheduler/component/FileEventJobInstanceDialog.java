@@ -390,6 +390,9 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         }
         catch (Exception e) {
             e.printStackTrace();
+            logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
+                , fileEventDrivenJobInstance.getJobName(), fileEventDrivenJobInstance.getContextName()
+                , fileEventDrivenJobInstance.getContextInstanceId()), e);
             NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
             return false;
         }
