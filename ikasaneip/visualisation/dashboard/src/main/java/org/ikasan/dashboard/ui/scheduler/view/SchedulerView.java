@@ -98,9 +98,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource(name = "moduleMetadataService")
     private ModuleMetaDataService moduleMetaDataService;
 
-    @Value("${scheduled.job.context.queue.directory}")
-    private String queueDirectory;
-
+    @Value("${job.plan.export.remove.trailing.plan.name.context.after.underscore:true}")
+    private boolean removeTrailingPlanNameContextAfterUnderscore;
 
     @Resource
     private LogStreamingService logStreamingService;
@@ -201,7 +200,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
             this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
-            this.contextInstanceSchedulerService, this.contextParametersInstanceService);
+            this.contextInstanceSchedulerService, this.contextParametersInstanceService, removeTrailingPlanNameContextAfterUnderscore);
         this.contextTemplateWidget.setVisible(false);
 
 

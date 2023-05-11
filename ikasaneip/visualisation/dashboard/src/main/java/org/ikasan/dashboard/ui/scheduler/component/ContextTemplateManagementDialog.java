@@ -36,12 +36,12 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                            SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory, EmailNotificationDetailsService emailNotificationDetailsService,
                                            EmailNotificationContextService emailNotificationContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
-                                           ContextInstanceRegistrationService contextInstanceRegistrationService, SpringCloudConfigRefreshService springCloudConfigRefreshService) {
+                                           ContextInstanceRegistrationService contextInstanceRegistrationService, SpringCloudConfigRefreshService springCloudConfigRefreshService, boolean removeTrailingPlanNameContextAfterUnderscore) {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobProvisionService
             , userService, securityService, jobUtilsService, zipWorkingDirectory, emailNotificationDetailsService, emailNotificationContextService, schedulerJobExecutionEnvironmentLabel, globalEventService
-            , contextInstanceRegistrationService, springCloudConfigRefreshService);
+            , contextInstanceRegistrationService, springCloudConfigRefreshService, removeTrailingPlanNameContextAfterUnderscore);
 
         this.setHeight("95vh");
         this.setWidth("90vw");
