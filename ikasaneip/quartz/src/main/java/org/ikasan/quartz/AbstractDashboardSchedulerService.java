@@ -113,7 +113,7 @@ public abstract class AbstractDashboardSchedulerService {
             jobDataMap,
             this.dashboardJobsMap.get(jobkey.toString()).getCronExpression(),
             this.dashboardJobsMap.get(jobkey.toString()).getTimezone());
-        LOG.info(showAllTriggers(scheduler));
+        LOG.debug(showAllTriggers(scheduler));
         try
         {
             Date scheduledDate ;
@@ -121,7 +121,7 @@ public abstract class AbstractDashboardSchedulerService {
                 // First time so we register the job and the trigger
                 scheduledDate = scheduler.scheduleJob(jobDetail, trigger);
             } else {
-                // Sebsequent times we onlt need register a new trigger
+                // Subsequent times we only need register a new trigger
                 scheduledDate = scheduler.scheduleJob(trigger);
             }
             LOG.info("Scheduled job [" + jobkey
@@ -163,7 +163,7 @@ public abstract class AbstractDashboardSchedulerService {
         unscheduleJob(jobName);
         dashboardJobDetailsMap.remove(jobName);
         dashboardJobsMap.remove(jobName);
-        LOG.info("After remove job" + showAllTriggers(scheduler));
+        LOG.debug("After remove job" + showAllTriggers(scheduler));
     }
 
     /**
