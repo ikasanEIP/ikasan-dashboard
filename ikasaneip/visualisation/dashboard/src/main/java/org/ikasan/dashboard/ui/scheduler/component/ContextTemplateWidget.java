@@ -100,6 +100,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private SubMenu activeContextSubMenu;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
     private UI ui;
+    private boolean removeTrailingPlanNameContextAfterUnderscore;
 
     /**
      * Constructor
@@ -136,7 +137,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                  Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService,
-                                 ContextInstanceSchedulerService contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService) {
+                                 ContextInstanceSchedulerService contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService, boolean removeTrailingPlanNameContextAfterUnderscore) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -196,6 +197,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
+        this.removeTrailingPlanNameContextAfterUnderscore = removeTrailingPlanNameContextAfterUnderscore;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -356,7 +358,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
                     , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                     , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
-                    , this.springCloudConfigRefreshService
+                    , this.springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore
                 );
                 contextTemplateManagementDialog.open();
             });
@@ -568,10 +570,17 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             Icon exportWithTokens = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD), getTranslation("tooltip.export-jobs-and-associated-artifacts-with-tokens", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, export, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
                 , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
-            StreamResource streamResourceWithTokens = new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
+            String downloadName = scheduledContextRecord.getContextName();
+            if(this.removeTrailingPlanNameContextAfterUnderscore && downloadName.contains("_")) {
+                downloadName = downloadName.substring(0, downloadName.lastIndexOf("_"));
+            }
+                String finalDownloadName = downloadName;
+                StreamResource streamResourceWithTokens = new StreamResource(ContextExportZipUtils.getExportZipFileName(downloadName), () -> {
                 try {
+                    ContextTemplate downloadClone = SerializationUtils.clone(scheduledContextRecord.getContext());
+                    downloadClone.setName(finalDownloadName);
                     ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                        SerializationUtils.clone(scheduledContextRecord.getContext()),
+                        downloadClone,
                         this.zipWorkingDirectory,
                         this.schedulerJobService,
                         this.emailNotificationDetailsService,

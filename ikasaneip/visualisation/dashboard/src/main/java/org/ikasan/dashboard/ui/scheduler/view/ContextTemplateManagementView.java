@@ -86,6 +86,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Value("${ikasan.dashboard.zip.working.directory:.}")
     private String zipWorkingDirectory;
 
+    @Value("${job.plan.export.remove.trailing.plan.name.context.after.underscore:true}")
+    private boolean removeTrailingPlanNameContextAfterUnderscore;
+
     @Value("#{${scheduler.job.execution.environment.label}}")
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
@@ -160,7 +163,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
                 , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                 , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                 , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
-                , springCloudConfigRefreshService);
+                , springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore);
 
             this.getElement().getStyle().set("padding-top", "0px");
             this.add(this.contextTemplateManagementWidget);

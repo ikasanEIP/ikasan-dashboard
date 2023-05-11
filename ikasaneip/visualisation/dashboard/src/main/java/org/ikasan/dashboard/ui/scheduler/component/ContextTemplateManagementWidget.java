@@ -26,7 +26,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.shared.Registration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
@@ -145,6 +144,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private Checkbox isAbleToRunConcurrentlyCb;
     private UI ui;
 
+    private boolean removeTrailingPlanNameContextAfterUnderscore;
+
     /**
      * Constructor
      *
@@ -167,6 +168,14 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
      * @param userService
      * @param securityService
      * @param jobUtilsService
+     * @param zipWorkingDirectory
+     * @param emailNotificationDetailsService
+     * @param emailNotificationContextService
+     * @param schedulerJobExecutionEnvironmentLabel
+     * @param globalEventService
+     * @param contextInstanceRegistrationService
+     * @param springCloudConfigRefreshService
+     * @param removeTrailingPlanNameContextAfterUnderscore
      */
     public ContextTemplateManagementWidget(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
                                            ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -177,7 +186,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            UserService userService, SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory,
                                            EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                            Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                           SpringCloudConfigRefreshService springCloudConfigRefreshService) {
+                                           SpringCloudConfigRefreshService springCloudConfigRefreshService, boolean removeTrailingPlanNameContextAfterUnderscore) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -279,6 +288,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
+        this.removeTrailingPlanNameContextAfterUnderscore = removeTrailingPlanNameContextAfterUnderscore;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -810,12 +820,17 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         this.createJobUploadMenuBar(actions);
         this.createNewJobMenuBar(actions);
-        Anchor download = new Anchor(new StreamResource("jobPlanBundle.zip", () -> this.getContextBundleStreamResource(false))
+        Anchor download = new Anchor(new StreamResource(this.contextTemplate.getName() + ".zip", () -> this.getContextBundleStreamResource(false))
             , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
         download.getElement().setAttribute("download", true);
         actions.addItem(download);
 
-        Anchor downloadWithTokens = new Anchor(new StreamResource("jobPlanBundleTokens.zip", () -> this.getContextBundleStreamResource(true))
+        String downloadFileName = this.contextTemplate.getName();
+        if(this.removeTrailingPlanNameContextAfterUnderscore && downloadFileName.contains("_")) {
+            downloadFileName = downloadFileName.substring(0, downloadFileName.lastIndexOf("_"));
+        }
+
+        Anchor downloadWithTokens = new Anchor(new StreamResource(downloadFileName + ".zip", () -> this.getContextBundleStreamResource(true))
             , getTranslation("button.download-context-template-with-tokens", UI.getCurrent().getLocale()));
         downloadWithTokens.getElement().setAttribute("download", true);
         actions.addItem(downloadWithTokens);
@@ -1092,8 +1107,14 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
     private InputStream getContextBundleStreamResource(boolean withTokens) {
         try {
+            ContextTemplate clone = SerializationUtils.clone(this.contextTemplate);
+
+            if(this.removeTrailingPlanNameContextAfterUnderscore && clone.getName().contains("_") && withTokens) {
+                clone.setName(clone.getName().substring(0, clone.getName().lastIndexOf("_")));
+            }
+
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                SerializationUtils.clone(this.contextTemplate),
+                clone,
                 this.zipWorkingDirectory,
                 this.schedulerJobService,
                 this.emailNotificationDetailsService,
