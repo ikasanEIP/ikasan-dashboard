@@ -385,8 +385,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.projectedEndTimeTf = new TextField(getTranslation("label.projected-end-date-time", UI.getCurrent().getLocale()));
         this.projectedEndTimeTf.getElement().getThemeList().add("always-float-label");
-        if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext()
-            .isRunContextUntilManuallyEnded()) {
+        if(this.contextInstance.isRunContextUntilManuallyEnded()) {
             this.projectedEndTimeTf.setValue("This instance must be ended manually!");
         }
         else if(this.contextInstance.getProjectedEndTime() > 0) {
