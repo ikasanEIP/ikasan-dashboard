@@ -474,8 +474,7 @@ public class ContextInstanceWidget extends VerticalLayout
         //Add a header button that toggles the visibility on click
         Button collapseButton = new Button(getTranslation("button.show", UI.getCurrent().getLocale())
             , e -> this.contextInstanceDetailsCollapsableLayout.toggleContentVisibility());
-        if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext()
-            .isRunContextUntilManuallyEnded()) {
+        if(this.contextInstance.isRunContextUntilManuallyEnded()) {
             this.addManuallyEndMessage();
         }
         this.contextInstanceDetailsCollapsableLayout.addHeaderComponentAsLastAndAlignToRight(collapseButton);
