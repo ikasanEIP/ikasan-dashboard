@@ -136,7 +136,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
             timeService,
-            contextInstanceRegistrationService
+            contextInstanceRegistrationService,
+            true
         );
 
         ReflectionTestUtils.setField(contextInstanceRecoveryServiceImpl, "executor", executor);

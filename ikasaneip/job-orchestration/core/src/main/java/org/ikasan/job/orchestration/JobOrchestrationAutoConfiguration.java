@@ -26,6 +26,7 @@ import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceServi
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
@@ -49,9 +50,6 @@ public class JobOrchestrationAutoConfiguration {
 
     @Resource
     ConfigurationService configurationService;
-
-    @Resource
-    Module<Flow> inboundFlowModule;
 
     @Resource
     JtaTransactionManager transactionManager;
@@ -118,6 +116,7 @@ public class JobOrchestrationAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public StartupApplicationListener startupApplicationListener(DashboardRestService moduleMetadataDashboardRestService,
                                                                  DashboardRestService configurationMetadataDashboardRestService,
                                                                  Module<Flow> inboundFlowModule) {
@@ -126,6 +125,7 @@ public class JobOrchestrationAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public StartupCompleteApplicationListener startupCompleteApplicationListener(Module<Flow> inboundFlowModule) {
         return new StartupCompleteApplicationListener(transactionManager, inboundFlowModule);
     }

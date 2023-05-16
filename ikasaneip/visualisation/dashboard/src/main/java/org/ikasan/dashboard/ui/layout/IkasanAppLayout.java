@@ -66,6 +66,9 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
     @Value("${banner.text.color:}")
     private String bannerTextColor;
 
+    @Value("${is.ikasan.enterprise.scheduler.instance:true}")
+    private boolean isIkasanEnterpriseSchedulerInstance;
+
     private LeftMenuComponentWrapper leftAppMenu;
     private LeftSubmenu leftSubmenu;
     private LeftNavigationItem dashboardMenuItem;
@@ -220,7 +223,8 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
 
         this.schedulerMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY
             , SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ, SecurityConstants.SCHEDULER_WRITE
-            , SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_ADMIN));
+            , SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_ADMIN)
+            && isIkasanEnterpriseSchedulerInstance);
 
         this.visualisationMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
 
