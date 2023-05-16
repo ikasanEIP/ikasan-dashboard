@@ -68,6 +68,7 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -78,6 +79,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
+
+    private boolean isIkasanEnterpriseSchedulerInstance;
 
 
     /**
@@ -115,7 +118,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                               JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                               ContextInstanceSchedulerService contextInstanceSchedulerService,
                                               TimeService timeService,
-                                              ContextInstanceRegistrationService contextInstanceRegistrationService) {
+                                              ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                              boolean isIkasanEnterpriseSchedulerInstance) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -136,6 +140,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
         if (this.contextInstanceRegistrationService == null) {
             throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
         }
+
+        this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
     }
 
     /**
@@ -146,6 +152,10 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
      * Likewise, if the dashboard has been down until after the plan has ended, all the status information will be lost.
      */
     public void recoverInstances() {
+        if(!isIkasanEnterpriseSchedulerInstance) {
+            LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance recovery will run!");
+            return;
+        }
         SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords = scheduledContextInstanceService
             .getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING, InstanceStatus.ERROR));
 

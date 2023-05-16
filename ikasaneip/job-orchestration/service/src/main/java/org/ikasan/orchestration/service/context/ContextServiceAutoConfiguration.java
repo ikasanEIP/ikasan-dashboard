@@ -7,6 +7,7 @@ import org.ikasan.orchestration.service.context.register.ContextInstanceRegistra
 import org.ikasan.orchestration.service.context.reset.ContextResetServiceImpl;
 import org.ikasan.orchestration.service.context.status.ContextStatusServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
@@ -22,6 +23,7 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationServi
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -30,6 +32,9 @@ public class ContextServiceAutoConfiguration {
 
     @Value("${scheduled.job.context.queue.directory}")
     private String queueDirectory;
+
+    @Value("${is.ikasan.enterprise.scheduler.instance:true}")
+    private boolean isIkasanEnterpriseSchedulerInstance;
 
     @Bean
     public JobLockCacheInitialisationService jobLockCacheInitialisationService(JobLockCacheService jobLockCacheService) {
@@ -41,7 +46,7 @@ public class ContextServiceAutoConfiguration {
     }
 
     @Bean
-    public ContextInstanceRecoveryServiceImpl contextInstanceRecoveryService(
+    public ContextInstanceRecoveryService contextInstanceRecoveryService(
         ScheduledContextInstanceService scheduledContextInstanceService,
         JobInitiationService jobInitiationService,
         ModuleMetaDataService moduleMetadataService,
@@ -73,12 +78,13 @@ public class ContextServiceAutoConfiguration {
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
             timeService,
-            contextInstanceRegistrationService
+            contextInstanceRegistrationService,
+            this.isIkasanEnterpriseSchedulerInstance
         );
     }
 
     @Bean
-    public ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService(
+    public ContextInstanceRegistrationService contextInstanceRegistrationService(
         ScheduledContextInstanceService scheduledContextInstanceService,
         JobInitiationService jobInitiationService,
         ModuleMetaDataService moduleMetadataService,
@@ -112,7 +118,8 @@ public class ContextServiceAutoConfiguration {
             contextInstanceSchedulerService,
             timeService,
             contextInstanceSavedEventBroadcaster,
-            systemEventService
+            systemEventService,
+            this.isIkasanEnterpriseSchedulerInstance
         );
     }
 
