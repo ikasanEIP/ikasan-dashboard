@@ -134,7 +134,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceSchedulerService,
             timeService,
             contextInstanceSavedEventBroadcaster,
-            systemEventService);
+            systemEventService,
+            true);
         ContextMachineCache.instance().resetAllCache();
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }

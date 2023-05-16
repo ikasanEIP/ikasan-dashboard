@@ -48,6 +48,7 @@ import org.ikasan.spec.flow.Flow;
 import org.ikasan.spec.module.Module;
 import org.ikasan.spec.module.ModuleType;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -65,6 +66,7 @@ import javax.annotation.Resource;
     "classpath:ikasan-transaction-pointcut-ikasanMessageListener.xml"
 } )
 @Import({ ScheduledProcessEventInboundFlowComponentFactory.class, ScheduledProcessEventInboundFlowFactory.class})
+@ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
 public class InboundModuleFactory
 {
     @Value( "${module.name}" )

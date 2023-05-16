@@ -84,6 +84,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
     private SystemEventService systemEventService;
 
+    private boolean isIkasanEnterpriseSchedulerInstance;
+
     public ContextInstanceRegistrationServiceImpl(String queueDirectory,
                                                   ScheduledContextInstanceService scheduledContextInstanceService,
                                                   JobInitiationService jobInitiationService,
@@ -100,7 +102,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   ContextInstanceSchedulerService contextInstanceSchedulerService,
                                                   TimeService timeService,
                                                   ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
-                                                  SystemEventService systemEventService) {
+                                                  SystemEventService systemEventService,
+                                                  boolean isIkasanEnterpriseSchedulerInstance) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -125,6 +128,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         if (this.systemEventService == null) {
             throw new IllegalArgumentException("systemEventService cannot be null!");
         }
+        this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
     }
     /**
      * Remove the all contextInstance associated with this context name, all jobsDetails & triggers.
@@ -163,6 +167,10 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
      * @param contextInstanceId / plan for which we need to deregister.
      */
     private void _deRegisterById(String contextInstanceId, boolean endManually) {
+        if(!isIkasanEnterpriseSchedulerInstance) {
+            LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance de-registration will occur!");
+            return;
+        }
         final ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         if (contextMachine == null) {
             LOG.info(String.format("Could not find context machine for context Instance ID [%s], so therefore nothing to de-register.", contextInstanceId));
@@ -210,6 +218,10 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
      */
     @Override
     public String register(String contextName, List<ContextParameterInstance> contextParameterInstances) {
+        if(!isIkasanEnterpriseSchedulerInstance) {
+            LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance registration will occur");
+            return null;
+        }
         ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
         if (scheduledContextRecord == null) {
             final String message = String.format("Could not find scheduledContextRecord for context name [%s]", contextName);
