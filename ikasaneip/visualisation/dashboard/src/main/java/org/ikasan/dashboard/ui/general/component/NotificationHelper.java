@@ -28,16 +28,13 @@ public class NotificationHelper
         notification.setPosition(Notification.Position.MIDDLE);
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         notification.setDuration(errorNotificationDuration);
-        Icon closeIcon = new Icon("lumo", "cross");
-        closeIcon.getStyle().set("color", "white");
 
-        Button closeButton = new Button(closeIcon, click -> notification.close());
-        closeButton.addClickListener(event -> {
-            notification.close();
-        });
-
-        notification.add(closeButton);
-        notification.add(new Text(errorMessage));
+        Div textDiv = new Div();
+        textDiv.setSizeFull();
+        Text text = new Text(errorMessage);
+        textDiv.add(text);
+        textDiv.getElement().getStyle().set("text-align", "center");
+        notification.add(textDiv);
 
         notification.open();
         lastMessage = errorMessage;

@@ -29,13 +29,16 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
+import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.quartz.CronExpression;
@@ -49,6 +52,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private ScheduledContextService scheduledContextService;
     private SchedulerJobService schedulerJobService;
     private SystemEventLogger systemEventLogger;
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -68,6 +73,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private ScheduledContextRecord scheduledContextRecord;
     private IkasanAuthentication authentication;
     private boolean editName;
+    private int jobPlanIntervalMultiple;
 
     /**
      * Constructor
@@ -77,8 +83,9 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      * @param title
      * @param editName
      */
-    public ContextTemplateDialog(ScheduledContextService scheduledContextService, SchedulerJobService schedulerJobService, SystemEventLogger systemEventLogger, String title,
-                                 boolean editName) {
+    public ContextTemplateDialog(ScheduledContextService scheduledContextService, SchedulerJobService schedulerJobService, ContextInstanceRegistrationService contextInstanceRegistrationService
+        , ContextInstanceSchedulerService contextInstanceSchedulerService,  SystemEventLogger systemEventLogger, String title,
+                                 boolean editName, int jobPlanIntervalMultiple) {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
@@ -86,6 +93,14 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.schedulerJobService = schedulerJobService;
         if(this.schedulerJobService == null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
+        this.contextInstanceRegistrationService = contextInstanceRegistrationService;
+        if(this.contextInstanceRegistrationService == null) {
+            throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
+        }
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if(this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
         this.systemEventLogger = systemEventLogger;
         if(this.systemEventLogger == null) {
@@ -97,6 +112,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         super.title.setText(title);
 
         this.editName = editName;
+        this.jobPlanIntervalMultiple = jobPlanIntervalMultiple;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -137,11 +153,21 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
                 }
 
                 if(this.scheduledContextRecord != null) {
+                    boolean hasStartTimeChanged = !scheduledContextRecord.getContext().getTimeWindowStart().equals(this.startWindowCronExpressionTf.getValue());
                     this.saveExisting();
+                    if(!this.contextTemplate.isDisabled() && hasStartTimeChanged) {
+                        this.contextInstanceRegistrationService.register(this.contextTemplate.getName(), null);
+                        this.contextInstanceSchedulerService.registerStartJobAndTrigger(contextTemplate.getName(), contextTemplate.getTimeWindowStart(),
+                            contextTemplate.getTimezone());
+                    }
                 }
                 else {
                     this.saveNew();
                 }
+            }
+            else {
+                NotificationHelper.showErrorNotification(getTranslation("error.validating-job-plan-form-error"
+                    , UI.getCurrent().getLocale()));
             }
         });
 
@@ -474,6 +500,19 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
 
         boolean isValid = this.binder.validate().isOk();
+
+        if(isValid && blackoutWindowsDefined.get() && timezoneValid && blackoutWindowsValid.get()
+            && !this.contextTtlHours.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid()) {
+            boolean intervalGreaterThanNextFireTime = CronUtils.isDurationGreaterThanNextFireTime(this.startWindowCronExpressionTf.getValue(), ContextDurationUtils.getMilliseconds(this.contextTtlDays.getValue()
+                , this.contextTtlHours.getValue(), this.contextTtlMinutes.getValue()), 3);
+
+            if(!intervalGreaterThanNextFireTime) {
+                this.startWindowCronExpressionTf.setInvalid(true);
+                this.startWindowCronExpressionTf.setErrorMessage("The cron expression fires to frequently for its given duration!");
+            }
+
+            return intervalGreaterThanNextFireTime;
+        }
 
         return isValid && blackoutWindowsDefined.get() && timezoneValid && blackoutWindowsValid.get()
             && !this.contextTtlHours.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid();

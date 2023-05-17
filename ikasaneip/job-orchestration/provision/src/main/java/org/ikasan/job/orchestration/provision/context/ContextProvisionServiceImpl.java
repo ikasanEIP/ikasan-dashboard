@@ -2,6 +2,8 @@ package org.ikasan.job.orchestration.provision.context;
 
 import com.esotericsoftware.minlog.Log;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
+import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -109,17 +111,17 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     public void provisionContext(ContextBundle contextBundle) {
         try {
             // TODO need to expand validate
-            final String jobName = contextBundle.getContextTemplate().getName();
+            final String jobPlanName = contextBundle.getContextTemplate().getName();
             this.validate(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
             // delete all the jobs if they exist
-            this.deleteAllJobs(jobName);
+            this.deleteAllJobs(jobPlanName);
             // delete the context profiles
-            this.deleteContextProfiles(jobName);
+            this.deleteContextProfiles(jobPlanName);
             // delete the email notification associated to the context
-            this.deleteEmailNotificationDetailsByContext(jobName);
-            this.deleteEmailNotificationContextByContext(jobName);
+            this.deleteEmailNotificationDetailsByContext(jobPlanName);
+            this.deleteEmailNotificationContextByContext(jobPlanName);
             // delete any running context instances since this may be a re-import over an existing context.
-            contextInstanceRegistrationService.deRegisterByName(jobName);
+            contextInstanceRegistrationService.deRegisterByName(jobPlanName);
 
             // set job participates in lock flag on relevant jobs
             this.setJobsParticipateInJobLock(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
@@ -144,14 +146,14 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                 provisionJobs(contextBundle.getSchedulerJobs());
             }
             // Even though the next start job may be tomorrow, the trigger must be setup
-            contextInstanceSchedulerService.registerStartJobAndTrigger(jobName, contextBundle.getContextTemplate().getTimeWindowStart(),
+            contextInstanceSchedulerService.registerStartJobAndTrigger(jobPlanName, contextBundle.getContextTemplate().getTimeWindowStart(),
                 contextBundle.getContextTemplate().getTimezone());
 
             // todo sort out with ttl
             if (withinOperatingWindow(contextBundle.getContextTemplate().getTimezone(), contextBundle.getContextTemplate().getTimeWindowStart()
                 , contextBundle.getContextTemplate().getContextTtlMilliseconds(), new Date())) {
                 // NOTE: this will create a new context machine and instance and initialise it so overwriting existing context machine
-                contextInstanceRegistrationService.register(jobName, null);
+                contextInstanceRegistrationService.register(jobPlanName, null);
             }
         } catch (Exception e) {
             String message = String.format("Could not upload context and jobs. Error [%s]", e.getMessage());
@@ -169,6 +171,14 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         if (contextJobs == null) {
             LOG.warn("Context jobs can not be null");
             throw new RuntimeException("Context jobs can not be null");
+        }
+
+        if(!CronUtils.isDurationGreaterThanNextFireTime(contextTemplate.getTimeWindowStart(),
+            contextTemplate.getContextTtlMilliseconds(), 3)) {
+            LOG.warn("The job plan cron expression and duration are not within an acceptable tolerance" +
+                ". The job plan is therefore considered invalid!");
+            throw new RuntimeException("The job plan cron expression and duration are not within an acceptable tolerance" +
+                ". The job plan is therefore considered invalid!");
         }
     }
 

@@ -9,6 +9,7 @@ import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateManagementWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -92,6 +93,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Value("#{${scheduler.job.execution.environment.label}}")
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
+    @Value("${job.plan.einterval.multiple:3}")
+    private int jobPlanIntervalMultiple;
+
     @Resource
     private LogStreamingService logStreamingService;
 
@@ -121,6 +125,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
 
     @Resource
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+
+    @Resource
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
     @Resource
     private GlobalEventService globalEventService;
@@ -163,7 +170,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
                 , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                 , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                 , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
-                , springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore);
+                , this.contextInstanceSchedulerService, springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple);
 
             this.getElement().getStyle().set("padding-top", "0px");
             this.add(this.contextTemplateManagementWidget);
