@@ -122,6 +122,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Value("#{${scheduler.job.execution.environment.label}}")
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
+    @Value("${job.plan.einterval.multiple:3}")
+    private int jobPlanIntervalMultiple;
+
     @Resource
     private ContextProvisionService contextProvisionService;
 
@@ -200,7 +203,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
             this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
-            this.contextInstanceSchedulerService, this.contextParametersInstanceService, removeTrailingPlanNameContextAfterUnderscore);
+            this.contextInstanceSchedulerService, this.contextParametersInstanceService, removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple);
         this.contextTemplateWidget.setVisible(false);
 
 

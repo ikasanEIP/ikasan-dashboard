@@ -101,6 +101,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
     private UI ui;
     private boolean removeTrailingPlanNameContextAfterUnderscore;
+    private int jobPlanIntervalMultiple;
 
     /**
      * Constructor
@@ -137,7 +138,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                  Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService,
-                                 ContextInstanceSchedulerService contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService, boolean removeTrailingPlanNameContextAfterUnderscore) {
+                                 ContextInstanceSchedulerService contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService,
+                                 boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -198,6 +200,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.removeTrailingPlanNameContextAfterUnderscore = removeTrailingPlanNameContextAfterUnderscore;
+        this.jobPlanIntervalMultiple = jobPlanIntervalMultiple;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -238,8 +241,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         Button newContextButton = new Button(getTranslation("button.new-job-plan", UI.getCurrent().getLocale()), newContextIcon);
         newContextButton.setIconAfterText(true);
         newContextButton.addClickListener(buttonClickEvent -> {
-            ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService, this.systemEventLogger
-                , getTranslation("label.new-context-template", UI.getCurrent().getLocale()), true);
+            ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService, this.contextInstanceRegistrationService
+                , this.contextInstanceSchedulerService, this.systemEventLogger, getTranslation("label.new-context-template", UI.getCurrent().getLocale()), true
+                , this.jobPlanIntervalMultiple);
             contextTemplateDialog.open();
             contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> this.updateActiveContextMenu());
             contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
@@ -358,7 +362,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
                     , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                     , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
-                    , this.springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore
+                    , this.contextInstanceSchedulerService, this.springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple
                 );
                 contextTemplateManagementDialog.open();
             });
