@@ -85,6 +85,26 @@ public class ContextProvisionServiceImplTest {
         service.provisionContext(contextBundle);
     }
 
+    @Test(expected = RuntimeException.class)
+    public void should_throw_exception_if_job_plan_cron_and_duration_tolerance_is_unacceptable() {
+        ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
+        String contextName = "ContextName";
+        contextTemplate.setTimeWindowStart("* * * ? * * *");
+        contextTemplate.setContextTtlMilliseconds(1000000000L);
+        contextTemplate.setName(contextName);
+
+        List<SchedulerJob> contextJobs = new ArrayList<>();
+        FileEventDrivenJob fileJobRecord = new FileEventDrivenJobImpl();
+        fileJobRecord.setAgentName("agentName1");
+        QuartzScheduleDrivenJob quartzDrivenJob = new QuartzScheduleDrivenJobImpl();
+        quartzDrivenJob.setAgentName("agentName1");
+        contextJobs.add(fileJobRecord);
+        contextJobs.add(quartzDrivenJob);
+
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        service.provisionContext(contextBundle);
+    }
+
     @Test
     public void should_upload_provision_jobs_and_not_create_context_outside_of_window() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();

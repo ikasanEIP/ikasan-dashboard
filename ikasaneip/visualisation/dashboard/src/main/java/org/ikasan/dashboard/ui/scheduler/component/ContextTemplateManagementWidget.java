@@ -36,6 +36,7 @@ import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcast
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
@@ -118,6 +119,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private LogStreamingService logStreamingService;
     private GlobalEventService globalEventService;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -145,6 +147,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private UI ui;
 
     private boolean removeTrailingPlanNameContextAfterUnderscore;
+    private int jobPlanIntervalMultiple;
 
     /**
      * Constructor
@@ -185,8 +188,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService,
                                            UserService userService, SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory,
                                            EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
-                                           Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                           SpringCloudConfigRefreshService springCloudConfigRefreshService, boolean removeTrailingPlanNameContextAfterUnderscore) {
+                                           Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
+                                           ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                           SpringCloudConfigRefreshService springCloudConfigRefreshService, boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -281,6 +285,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         if (this.contextInstanceRegistrationService == null) {
             throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
         }
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if (this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
+        }
 
         this.springCloudConfigRefreshService = springCloudConfigRefreshService;
         if (this.springCloudConfigRefreshService == null) {
@@ -289,6 +297,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.removeTrailingPlanNameContextAfterUnderscore = removeTrailingPlanNameContextAfterUnderscore;
+        this.jobPlanIntervalMultiple = jobPlanIntervalMultiple;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -763,8 +772,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         actions.addItem(getTranslation("button.edit-context-template", UI.getCurrent().getLocale()),
             menuItemClickEvent -> {
-                ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService, this.systemEventLogger
-                    , getTranslation("header.manage-context-template", UI.getCurrent().getLocale()), false);
+                ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService
+                    , this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventLogger
+                    , getTranslation("header.manage-context-template", UI.getCurrent().getLocale()), false, this.jobPlanIntervalMultiple);
                 contextTemplateDialog.setContextTemplate(this.contextTemplate);
                 contextTemplateDialog.open();
             })
