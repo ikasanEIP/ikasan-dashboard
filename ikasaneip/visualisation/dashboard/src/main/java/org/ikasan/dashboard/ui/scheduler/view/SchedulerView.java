@@ -122,7 +122,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Value("#{${scheduler.job.execution.environment.label}}")
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
-    @Value("${job.plan.einterval.multiple:3}")
+    @Value("${job.plan.interval.multiple:3}")
     private int jobPlanIntervalMultiple;
 
     @Resource
