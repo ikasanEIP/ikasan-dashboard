@@ -21,6 +21,9 @@ public class JobOrchestrationProvisionAutoConfiguration {
     @Value("${scheduler.provision.jobs.on.upload:true}")
     private boolean uploadProvisionJobs;
 
+    @Value("${job.plan.interval.multiple:3}")
+    private int jobPlanIntervalMultiple;
+
     @Bean
     public JobProvisionServiceImpl jobProvisionService(SchedulerJobService schedulerJobService, ModuleMetaDataService moduleMetadataService,
                                                        JobProvisionModuleService jobProvisionModuleService) {
@@ -50,7 +53,8 @@ public class JobOrchestrationProvisionAutoConfiguration {
             emailNotificationDetailsService,
             emailNotificationContextService,
             uploadProvisionJobs,
-            contextInstanceSchedulerService
+            contextInstanceSchedulerService,
+            jobPlanIntervalMultiple
         );
     }
 }

@@ -504,7 +504,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         if(isValid && blackoutWindowsDefined.get() && timezoneValid && blackoutWindowsValid.get()
             && !this.contextTtlHours.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid()) {
             boolean intervalGreaterThanNextFireTime = CronUtils.isDurationGreaterThanNextFireTime(this.startWindowCronExpressionTf.getValue(), ContextDurationUtils.getMilliseconds(this.contextTtlDays.getValue()
-                , this.contextTtlHours.getValue(), this.contextTtlMinutes.getValue()), 3);
+                , this.contextTtlHours.getValue(), this.contextTtlMinutes.getValue()), this.jobPlanIntervalMultiple);
 
             if(!intervalGreaterThanNextFireTime) {
                 this.startWindowCronExpressionTf.setInvalid(true);
