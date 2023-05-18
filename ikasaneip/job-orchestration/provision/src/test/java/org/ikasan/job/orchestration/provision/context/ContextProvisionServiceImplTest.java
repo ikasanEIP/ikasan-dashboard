@@ -70,7 +70,7 @@ public class ContextProvisionServiceImplTest {
         service = new ContextProvisionServiceImpl(
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService,
-            emailNotificationContextService, true, contextInstanceSchedulerService);
+            emailNotificationContextService, true, contextInstanceSchedulerService, 3);
     }
 
     @Test(expected = RuntimeException.class)

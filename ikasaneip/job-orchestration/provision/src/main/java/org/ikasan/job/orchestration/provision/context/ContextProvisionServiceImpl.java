@@ -50,6 +50,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     private final EmailNotificationContextService emailNotificationContextService;
     private final boolean uploadProvisionJobs;
     private final ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private int jobPlanIntervalMultiple;
 
     public ContextProvisionServiceImpl(ScheduledContextService scheduledContextService,
                                        ModuleMetaDataService moduleMetadataService,
@@ -60,7 +61,8 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                                        EmailNotificationDetailsService emailNotificationDetailsService,
                                        EmailNotificationContextService emailNotificationContextService,
                                        boolean uploadProvisionJobs,
-                                       ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                       ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                       int jobPlanIntervalMultiple) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -102,6 +104,8 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         if (this.contextInstanceSchedulerService == null) {
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
+
+        this.jobPlanIntervalMultiple = jobPlanIntervalMultiple;
     }
 
     /**
@@ -174,7 +178,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         }
 
         if(!CronUtils.isDurationGreaterThanNextFireTime(contextTemplate.getTimeWindowStart(),
-            contextTemplate.getContextTtlMilliseconds(), 3)) {
+            contextTemplate.getContextTtlMilliseconds(), this.jobPlanIntervalMultiple)) {
             LOG.warn("The job plan cron expression and duration are not within an acceptable tolerance" +
                 ". The job plan is therefore considered invalid!");
             throw new RuntimeException("The job plan cron expression and duration are not within an acceptable tolerance" +
