@@ -201,6 +201,36 @@ window.Vaadin.Flow.designerConnector = {
             _this.getCommandStack().execute(command);
         }
 
+        designer.$connector.addIconNoCoordinates = function (identifier, image, h, w, isClickable) {
+            debugger;
+            let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
+
+            let inputLocator  = new draw2d.layout.locator.InputPortLocator();
+            let outputLocator = new draw2d.layout.locator.OutputPortLocator();
+
+
+            icon.createPort("hybrid", inputLocator);
+            icon.createPort("hybrid", inputLocator);
+            icon.createPort("hybrid", inputLocator);
+
+            icon.createPort("hybrid", outputLocator);
+            icon.createPort("hybrid", outputLocator);
+            icon.createPort("hybrid", outputLocator);
+
+            let ports = icon.getPorts();
+
+            ports.each((i, port) => {
+                port.setDiameter(5);
+            });
+
+            let command = new draw2d.command.CommandAdd(_this, icon, x, y);
+            _this.getCommandStack().execute(command);
+
+            if(isClickable === true) {
+                icon.shape.attr({"cursor": "pointer"});
+            }
+        }
+
         designer.$connector.addIcon = function (identifier, image, x, y, h, w, showPorts, isClickable) {
             let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
 
