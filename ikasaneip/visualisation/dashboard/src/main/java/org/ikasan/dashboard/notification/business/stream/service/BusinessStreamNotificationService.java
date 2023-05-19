@@ -28,7 +28,7 @@ public class BusinessStreamNotificationService {
 
     public Optional<BusinessStreamExclusions> getBusinessStreamExclusions(String businessStreamName, Long startTimestamp, Integer resultSize) {
         BusinessStreamMetaData<BusinessStream> businessStreamMetaData = this.businessStreamMetaDataService
-            .findById("businessStream-" + businessStreamName);
+            .findById(businessStreamName);
 
         if(businessStreamMetaData == null) {
             return Optional.empty();

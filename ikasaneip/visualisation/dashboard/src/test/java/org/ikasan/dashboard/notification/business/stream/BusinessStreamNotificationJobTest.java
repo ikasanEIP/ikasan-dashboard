@@ -315,7 +315,7 @@ public class BusinessStreamNotificationJobTest extends SolrTestCaseJ4 {
 
     private void initialiseDataBusinessStream(EmbeddedSolrServer server) throws IOException, SolrServerException {
         SolrInputDocument doc = new SolrInputDocument();
-        doc.addField("id", "businessStream-wriggle");
+        doc.addField("id", "wriggle");
         doc.addField("type", "businessStreamMetaData");
         doc.addField("moduleName", "wriggle");
         doc.addField("payload", this.loadDataFile(BUSINESS_STREAM_PAYLOAD));
