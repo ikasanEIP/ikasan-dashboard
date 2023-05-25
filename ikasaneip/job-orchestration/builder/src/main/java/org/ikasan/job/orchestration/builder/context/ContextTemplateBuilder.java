@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.builder.context;
 
 import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
+import org.ikasan.job.orchestration.builder.job.SchedulerJobLockParticipantBuilder;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -126,6 +127,10 @@ public class ContextTemplateBuilder {
 
     public SchedulerJobBuilder getSchedulerJobBuilder() {
         return new SchedulerJobBuilder();
+    }
+
+    public SchedulerJobLockParticipantBuilder getSchedulerJobLockParticipantBuilder() {
+        return new SchedulerJobLockParticipantBuilder();
     }
 
     public JobDependencyBuilder getJobDependencyBuilder() {

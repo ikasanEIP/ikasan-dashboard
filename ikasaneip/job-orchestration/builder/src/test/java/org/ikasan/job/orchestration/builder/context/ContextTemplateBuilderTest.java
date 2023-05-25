@@ -4,6 +4,7 @@ import org.ikasan.job.orchestration.AbstractTest;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -548,6 +549,30 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .withDescription("Job4 Description")
             .build();
 
+        SchedulerJobLockParticipant jobP1 = contextTemplateBuilder.getSchedulerJobLockParticipantBuilder()
+            .withJobName("Job1")
+            .withAgentName("AgentName")
+            .withDescription("Job1 Description")
+            .build();
+
+        SchedulerJobLockParticipant jobP2 = contextTemplateBuilder.getSchedulerJobLockParticipantBuilder()
+            .withJobName("Job2")
+            .withAgentName("AgentName")
+            .withDescription("Job2 Description")
+            .build();
+
+        SchedulerJobLockParticipant jobP3 = contextTemplateBuilder.getSchedulerJobLockParticipantBuilder()
+            .withJobName("Job3")
+            .withAgentName("AgentName")
+            .withDescription("Job3 Description")
+            .build();
+
+        SchedulerJobLockParticipant jobP4 = contextTemplateBuilder.getSchedulerJobLockParticipantBuilder()
+            .withJobName("Job4")
+            .withAgentName("AgentName")
+            .withDescription("Job4 Description")
+            .build();
+
         ContextTemplate contextTemplate1 = contextTemplateBuilder.withName("Context Template Name")
             .withDescription("Context Template Description")
             .withTimeWindowStartCronExpression("* * 6 ? * * *")
@@ -567,12 +592,12 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .addSchedulerJob(job4)
             // job locks
             .addJobLocks(contextTemplateBuilder.getJobLockBuilder().withLockName("TEST-LOCK-1")
-                .withJob("context1", job1)
-                .withJob("context2", job2)
+                .withJob("context1", jobP1)
+                .withJob("context2", jobP2)
                 .withLockCount(1).build())
             .addJobLocks(contextTemplateBuilder.getJobLockBuilder().withLockName("TEST-LOCK-2")
-                .withJob("context1", job3)
-                .withJob("context2", job4).withLockCount(1).build())
+                .withJob("context1", jobP3)
+                .withJob("context2", jobP4).withLockCount(1).build())
             // scheduler jobs
             .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
                 .withJobName("Job5")

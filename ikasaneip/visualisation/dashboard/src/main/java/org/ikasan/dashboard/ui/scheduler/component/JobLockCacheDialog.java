@@ -37,6 +37,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
@@ -200,7 +201,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                     verticalLayout.add(new Text(getTranslation("label.exclusive", UI.getCurrent().getLocale())));
                 }
                 else {
-                    verticalLayout.add(new Text(Integer.toString(jobLockHolder.getLockCount())));
+                    verticalLayout.add(new Text(Long.toString(jobLockHolder.getLockCount())));
                 }
 
                 return verticalLayout;
@@ -245,7 +246,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                 return;
                             }
 
-                            List<SchedulerJob> schedulerJobs = jobLockHolder.getSchedulerJobs().get(contextName);
+                            List<SchedulerJobLockParticipant> schedulerJobs = jobLockHolder.getSchedulerJobs().get(contextName);
 
                             if(schedulerJobs == null && jobLockHolder.isExclusiveJobLock()) {
                                 verticalLayout.add(new Text(getTranslation("label.exclusive-lock-held", UI.getCurrent().getLocale())));

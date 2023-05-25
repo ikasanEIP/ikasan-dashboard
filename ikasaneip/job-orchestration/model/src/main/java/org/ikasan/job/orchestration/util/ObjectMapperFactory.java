@@ -9,11 +9,8 @@ import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEv
 import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.*;
-import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.spec.scheduled.context.model.*;
@@ -22,10 +19,7 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiatio
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
@@ -53,6 +47,7 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(Context.class, ContextImpl.class)
             .addAbstractTypeMapping(ContextParameter.class, ContextParameterImpl.class)
             .addAbstractTypeMapping(SchedulerJob.class, SchedulerJobImpl.class)
+            .addAbstractTypeMapping(SchedulerJobLockParticipant.class, SchedulerJobLockParticipantImpl.class)
             .addAbstractTypeMapping(JobDependency.class, JobDependencyImpl.class)
             .addAbstractTypeMapping(ContextDependency.class, ContextDependencyImpl.class)
             .addAbstractTypeMapping(LogicalGrouping.class, LogicalGroupingImpl.class)
