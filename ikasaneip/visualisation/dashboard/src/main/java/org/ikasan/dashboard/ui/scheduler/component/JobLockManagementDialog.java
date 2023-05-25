@@ -356,7 +356,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         this.lockCountTf.setMax(Integer.MAX_VALUE);
         this.lockCountTf.setEnabled(false);
         this.lockCountTf.addValueChangeListener(event -> {
-            if(event.getValue() == null || event.getValue() < 1 || event.getValue() > Integer.MAX_VALUE) {
+            if(comboBox.getValue() != null && (event.getValue() == null || event.getValue() < 1 || event.getValue() > Integer.MAX_VALUE)) {
                 this.lockCountTf.setInvalid(true);
                 this.lockCountTf.setErrorMessage(String.format(getTranslation("error.job-lock-size", UI.getCurrent().getLocale()), Integer.MAX_VALUE));
                 return;
@@ -426,12 +426,24 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                this.contextTemplate.getJobLocks().remove(this.comboBox.getValue());
-                this.contextTemplate.getJobLocksMap().remove(this.comboBox.getValue().getName());
-                this.saveContextTemplate();
-                this.comboBox.setItems(this.contextTemplate.getJobLocks());
-                grid.setItems(new ArrayList<>());
-                lockCountTf.setValue(null);
+                try {
+                    // jobs no longer appear in locks to update the jobs
+                    this.comboBox.getValue().getJobs().values()
+                        .forEach(jobList ->
+                            jobList.forEach(job ->
+                                this.updateScheduledJob(job, false)));
+
+                    this.contextTemplate.getJobLocks().remove(this.comboBox.getValue());
+                    this.contextTemplate.getJobLocksMap().remove(this.comboBox.getValue().getName());
+                    this.saveContextTemplate();
+                    this.comboBox.setItems(this.contextTemplate.getJobLocks());
+                    grid.setItems(new ArrayList<>());
+                    lockCountTf.setValue(null);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    NotificationHelper.showErrorNotification(getTranslation("error.deleting-job-lock", UI.getCurrent().getLocale()));
+                }
             });
         });
 
