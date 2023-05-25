@@ -10,6 +10,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
@@ -27,6 +28,7 @@ public class NewJobLockDialog extends AbstractCloseableResizableDialog {
     private Map<String, JobLock> existingLocks;
     private String lockName;
     private Integer lockCount;
+
     public NewJobLockDialog(Map<String, JobLock> existingLocks) {
         this.existingLocks = existingLocks;
         this.init();
@@ -37,11 +39,15 @@ public class NewJobLockDialog extends AbstractCloseableResizableDialog {
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
 
-        TextField lockNameTf = new TextField("Lock Name");
+        TextField lockNameTf = new TextField(getTranslation("label.lock-name", UI.getCurrent().getLocale()));
+        lockNameTf.getElement().getThemeList().add("always-float-label");
         lockNameTf.setRequired(true);
 
-        TextField lockCountTf = new TextField("Lock Count");
-        lockCountTf.setRequired(true);
+        IntegerField lockCountTf = new IntegerField(getTranslation("label.lock-count", UI.getCurrent().getLocale()));
+        lockCountTf.getElement().getThemeList().add("always-float-label");
+        lockCountTf.setHasControls(true);
+        lockCountTf.setMin(1);
+        lockCountTf.setMax(Integer.MAX_VALUE);
 
         FormLayout formLayout = new FormLayout();
         formLayout.add(lockNameTf, lockCountTf);
@@ -53,35 +59,26 @@ public class NewJobLockDialog extends AbstractCloseableResizableDialog {
             boolean error = false;
             if(lockNameTf.getValue() == null || lockNameTf.getValue().isEmpty()) {
                 lockNameTf.setInvalid(true);
-                lockNameTf.setErrorMessage("A lock name is required!");
+                lockNameTf.setErrorMessage(getTranslation("error.lock-name-required", UI.getCurrent().getLocale()));
                 error = true;
             }
             else if(this.existingLocks.containsKey(lockNameTf.getValue())) {
                 lockNameTf.setInvalid(true);
-                lockNameTf.setErrorMessage("A lock with that name already exists! Lock names must be unique.");
+                lockNameTf.setErrorMessage(getTranslation("error.lock-name-exists", UI.getCurrent().getLocale()));
                 error = true;
             }
 
-            if(lockCountTf.getValue() == null || lockCountTf.getValue().isEmpty()) {
+            if(lockCountTf.getValue() == null || lockCountTf.getValue() < 1 || lockCountTf.getValue() > Integer.MAX_VALUE) {
                 lockCountTf.setInvalid(true);
-                lockCountTf.setErrorMessage("A lock count is required!");
+                lockCountTf.setErrorMessage(String.format(getTranslation("error.job-lock-size"
+                    , UI.getCurrent().getLocale()), Integer.MAX_VALUE));
                 error = true;
-            }
-            else {
-                try {
-                    Long.parseLong(lockCountTf.getValue());
-                }
-                catch (NumberFormatException e) {
-                    lockCountTf.setInvalid(true);
-                    lockCountTf.setErrorMessage("The lock count must be a number!");
-                    error = true;
-                }
             }
 
             if(error)return;
 
             this.lockName = lockNameTf.getValue();
-            this.lockCount = Integer.parseInt(lockCountTf.getValue());
+            this.lockCount = lockCountTf.getValue();
 
             this.close();
         });
