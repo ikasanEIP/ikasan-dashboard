@@ -1,8 +1,10 @@
 package org.ikasan.job.orchestration.builder.context;
 
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
+import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +14,7 @@ import java.util.Map;
 public class JobLockBuilder {
 
     private String lockName;
-    private Map<String, List<SchedulerJob>> schedulerJobs;
+    private Map<String, List<SchedulerJobLockParticipant>> schedulerJobs;
     private int lockCount = 1;
 
     private boolean exclusiveJobLock;
@@ -25,7 +27,7 @@ public class JobLockBuilder {
         return this;
     }
 
-    public JobLockBuilder withJob(String contextName, SchedulerJob job) {
+    public JobLockBuilder withJob(String contextName, SchedulerJobLockParticipant job) {
         if(this.schedulerJobs == null) {
             schedulerJobs = new HashMap<>();
         }

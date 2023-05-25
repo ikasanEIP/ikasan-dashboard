@@ -336,8 +336,13 @@ public class ContextProvisionServiceImplTest {
         contextJobs.add(internalEventDrivenJob1);
         contextJobs.add(internalEventDrivenJob2);
 
-        Map<String, List<SchedulerJob>> lockMap = new HashMap<>();
-        lockMap.put("ContextName", List.of(internalEventDrivenJob1));
+        SchedulerJobLockParticipant lockParticipant1 = new SchedulerJobLockParticipantImpl();
+        lockParticipant1.setJobName("jobName1");
+        lockParticipant1.setAgentName("agentName1");
+        lockParticipant1.setIdentifier("agentName1-jobName1");
+
+        Map<String, List<SchedulerJobLockParticipant>> lockMap = new HashMap<>();
+        lockMap.put("ContextName", List.of(lockParticipant1));
 
         JobLock jobLock = new JobLockImpl();
         jobLock.setName("testLock");

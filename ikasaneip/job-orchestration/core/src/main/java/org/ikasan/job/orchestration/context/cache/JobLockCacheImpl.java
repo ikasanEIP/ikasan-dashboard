@@ -15,6 +15,7 @@ import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
@@ -26,6 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventListener {
@@ -77,11 +81,11 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
                 jobLockHolder.setLockName(jobLock.getName());
                 jobLockHolder.setLockCount(jobLock.getLockCount());
                 jobLockHolder.setExclusiveJobLock(jobLock.isExclusiveJobLock());
-                for (Map.Entry<String, List<SchedulerJob>> entry : jobLock.getJobs().entrySet()) {
+                for (Map.Entry<String, List<SchedulerJobLockParticipant>> entry : jobLock.getJobs().entrySet()) {
                     jobLockHolder.addSchedulerJobs(entry.getKey(), entry.getValue());
                 }
             } else {
-                for (Map.Entry<String, List<SchedulerJob>> entry : jobLock.getJobs().entrySet()) {
+                for (Map.Entry<String, List<SchedulerJobLockParticipant>> entry : jobLock.getJobs().entrySet()) {
                     jobLockHolder.setLockCount(jobLock.getLockCount());
                     jobLockHolder.setExclusiveJobLock(jobLock.isExclusiveJobLock());
                     jobLockHolder.addSchedulerJobs(entry.getKey(), entry.getValue());
@@ -190,7 +194,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
             return !canTakeExclusiveLock();
         }
         else {
-            return jlh != null && (workingCountIsGreaterThanOrEqualToLockCount(jlh)
+            return jlh != null && (workingCountIsGreaterThanToLockCount(jlh, jobIdentifier)
                 || !this.jobLockCacheData.getExclusiveLockHolder().getLockHolders().isEmpty());
         }
     }
@@ -462,13 +466,43 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
     }
 
     /**
-     * Determine if the lock count equals or exceeds the number of locks that can be taken.
+     * Determine if the lock count exceeds the number of locks that can be taken.
      *
      * @param jlh
      * @return
      */
-    private boolean workingCountIsGreaterThanOrEqualToLockCount(JobLockHolder jlh) {
-        return jlh.getLockHolders().size() >= jlh.getLockCount();
+    private boolean workingCountIsGreaterThanToLockCount(JobLockHolder jlh, String jobIdentifier) {
+        Map<String, SchedulerJobLockParticipant> schedulerJobLockParticipantMap
+            = new HashMap<>();
+
+        AtomicReference<SchedulerJobLockParticipant> jobLockParticipant = new AtomicReference<>();
+
+        jlh.getSchedulerJobs().entrySet().forEach(entry -> {
+            entry.getValue().forEach(job -> {
+                if(!schedulerJobLockParticipantMap.containsKey(job.getIdentifier())) {
+                    schedulerJobLockParticipantMap.put(job.getIdentifier(), job);
+                }
+
+                if(jobLockParticipant.get() == null && job.getIdentifier().equals(jobIdentifier)) {
+                    jobLockParticipant.set(job);
+                }
+            });
+        });
+
+        AtomicLong lockParticipantCount = new AtomicLong();
+        schedulerJobLockParticipantMap.values().forEach(schedulerJobLockParticipant -> {
+            jlh.getLockHolders().forEach(holder -> {
+                if(holder.contains(schedulerJobLockParticipant.getIdentifier())) {
+                    lockParticipantCount.addAndGet(schedulerJobLockParticipant.getLockCount());
+                }
+            });
+        });
+
+        if(jobLockParticipant != null) {
+            lockParticipantCount.addAndGet(jobLockParticipant.get().getLockCount());
+        }
+
+        return lockParticipantCount.get() > jlh.getLockCount();
     }
 
     /**

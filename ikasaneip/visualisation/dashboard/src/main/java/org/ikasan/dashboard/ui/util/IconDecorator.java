@@ -9,7 +9,7 @@ public class IconDecorator {
         icon.getStyle().set("cursor", "pointer");
         icon.setSize(size);
         icon.getStyle().set("color", colour);
-        icon.getElement().setAttribute("title", tooltip);
+        if(tooltip != null) icon.getElement().setAttribute("title", tooltip);
 
         return icon;
     }
@@ -18,7 +18,7 @@ public class IconDecorator {
         icon.getStyle().set("cursor", "pointer");
         icon.setSize(size);
         icon.getStyle().set("color", colour);
-        icon.getElement().setAttribute("title", tooltip);
+        if(tooltip != null) icon.getElement().setAttribute("title", tooltip);
 
         return icon;
     }

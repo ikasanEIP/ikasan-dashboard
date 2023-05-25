@@ -10,6 +10,7 @@ import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitia
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduled.context.model.SolrJobLockImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobLockParticipantImpl;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheAuditDaoImpl;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheDaoImpl;
 import org.ikasan.scheduled.joblock.model.SolrJobLockCacheDataImpl;
@@ -18,6 +19,7 @@ import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheAuditRecord;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
@@ -257,9 +259,9 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         JobLock jobLock = new SolrJobLockImpl();
         jobLock.setName(jobLockName);
         jobLock.setLockCount(jobLockCount);
-        Map<String, List<SchedulerJob>> jobs = new HashMap<>();
+        Map<String, List<SchedulerJobLockParticipant>> jobs = new HashMap<>();
         for (int i = 0; i < count; i++) {
-            jobs.put("contextName"+i, makeSchedulerJob(i, jobLockName));
+            jobs.put("contextName"+i, makeSchedulerJobLockParticipant(i, jobLockName));
         }
         jobLock.setJobs(jobs);
         return jobLock;
@@ -270,6 +272,15 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         job.setAgentName("AgentName" + count);
         job.setJobName(jobLockName + "-" + "JobName" + count);
         job.setIdentifier(job.getAgentName() + "-" + job.getJobName());
+        return List.of(job);
+    }
+
+    private List<SchedulerJobLockParticipant> makeSchedulerJobLockParticipant(int count, String jobLockName) {
+        SchedulerJobLockParticipant job = new SolrSchedulerJobLockParticipantImpl();
+        job.setAgentName("AgentName" + count);
+        job.setJobName(jobLockName + "-" + "JobName" + count);
+        job.setIdentifier(job.getAgentName() + "-" + job.getJobName());
+        job.setLockCount(1);
         return List.of(job);
     }
 
@@ -287,7 +298,7 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
                 jobLockHolder = new JobLockHolderImpl();
                 jobLockHolder.setLockName(jobLock.getName());
                 jobLockHolder.setLockCount(jobLock.getLockCount());
-                for (Map.Entry<String, List<SchedulerJob>> entry : jobLock.getJobs().entrySet()) {
+                for (Map.Entry<String, List<SchedulerJobLockParticipant>> entry : jobLock.getJobs().entrySet()) {
                     jobLockHolder.addSchedulerJobs(entry.getKey(), entry.getValue());
                     SchedulerJobInitiationEventImpl schedulerJobInitiationEvent
                         = new SchedulerJobInitiationEventImpl();
@@ -300,7 +311,7 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
                     jobLockHolder.getSchedulerJobInitiationEventWaitQueue().offer(contextualisedSchedulerJobInitiationEvent);
                 }
             } else {
-                for (Map.Entry<String, List<SchedulerJob>> entry : jobLock.getJobs().entrySet()) {
+                for (Map.Entry<String, List<SchedulerJobLockParticipant>> entry : jobLock.getJobs().entrySet()) {
                     jobLockHolder.addSchedulerJobs(entry.getKey(), entry.getValue());
                 }
             }

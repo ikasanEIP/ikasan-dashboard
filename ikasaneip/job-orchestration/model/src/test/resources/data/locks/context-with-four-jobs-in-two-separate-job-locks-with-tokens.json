@@ -60,8 +60,9 @@
             "startupControlType": "AUTOMATIC",
             "skippedContexts": {},
             "heldContexts": {},
-            "jobDescription": "Job3 Description",
-            "identifier": "[[agent.name]]-jobName3"
+            "lockCount": 1,
+            "identifier": "[[agent.name]]-jobName3",
+            "jobDescription": "Job3 Description"
           }
         ],
         "context1": [
@@ -72,8 +73,9 @@
             "startupControlType": "AUTOMATIC",
             "skippedContexts": {},
             "heldContexts": {},
-            "jobDescription": "Job2 Description",
-            "identifier": "[[agent.name]]-jobName2"
+            "lockCount": 1,
+            "identifier": "[[agent.name]]-jobName2",
+            "jobDescription": "Job2 Description"
           }
         ]
       },
@@ -91,8 +93,9 @@
             "startupControlType": "AUTOMATIC",
             "skippedContexts": {},
             "heldContexts": {},
-            "jobDescription": "Job5 Description",
-            "identifier": "[[agent.name]]-jobName5"
+            "lockCount": 1,
+            "identifier": "[[agent.name]]-jobName5",
+            "jobDescription": "Job5 Description"
           }
         ],
         "context1": [
@@ -103,8 +106,9 @@
             "startupControlType": "AUTOMATIC",
             "skippedContexts": {},
             "heldContexts": {},
-            "jobDescription": "Job5 Description",
-            "identifier": "[[agent.name]]-jobName4"
+            "lockCount": 1,
+            "identifier": "[[agent.name]]-jobName4",
+            "jobDescription": "Job5 Description"
           }
         ]
       },

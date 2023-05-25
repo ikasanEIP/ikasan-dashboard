@@ -12,6 +12,7 @@ import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobLockParticipantImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
 import org.ikasan.spec.scheduled.context.model.*;
@@ -22,6 +23,7 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
@@ -49,6 +51,7 @@ public class ScheduledObjectMapperFactory {
             .addAbstractTypeMapping(Context.class, SolrContextImpl.class)
             .addAbstractTypeMapping(ContextParameter.class, SolrContextParameterImpl.class)
             .addAbstractTypeMapping(SchedulerJob.class, SolrSchedulerJobImpl.class)
+            .addAbstractTypeMapping(SchedulerJobLockParticipant.class, SolrSchedulerJobLockParticipantImpl.class)
             .addAbstractTypeMapping(JobDependency.class, SolrJobDependencyImpl.class)
             .addAbstractTypeMapping(ContextDependency.class, SolrContextDependencyImpl.class)
             .addAbstractTypeMapping(LogicalGrouping.class, SolrLogicalGroupingImpl.class)
