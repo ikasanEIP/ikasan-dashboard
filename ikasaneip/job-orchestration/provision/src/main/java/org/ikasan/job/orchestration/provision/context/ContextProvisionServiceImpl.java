@@ -241,11 +241,9 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     private void setJobsParticipateInJobLock(ContextTemplate contextTemplate, List<SchedulerJob> contextJobs) {
         List<JobLock> jobLocks = contextTemplate.getAllNestedJobLocks();
         Set<String> jobInJobLocks = new HashSet<>();
-        jobLocks.forEach(jobLock -> {
-            jobLock.getJobs().values().forEach(jobs -> {
-                jobs.forEach(job -> jobInJobLocks.add(job.getIdentifier()));
-            });
-        });
+        jobLocks.forEach(jobLock -> jobLock.getJobs().values()
+            .forEach(jobs -> jobs
+                .forEach(job -> jobInJobLocks.add(job.getIdentifier()))));
 
         contextJobs.forEach(job -> {
             if(job instanceof InternalEventDrivenJob) {

@@ -6,7 +6,6 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -26,6 +25,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
+import org.ikasan.job.orchestration.builder.job.SchedulerJobLockParticipantBuilder;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class JobLockManagementDialog extends AbstractCloseableResizableDialog implements SchedulerJobSelectedListener {
@@ -83,6 +84,12 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
 
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
     private String initialJobLocks = "";
+
+    private IntegerField lockCountTf;
+    private Map<String, IntegerField> jobLockCountsMap;
+
+    private boolean ignoreComboChange = false;
+
 
     public JobLockManagementDialog(ContextTemplate contextTemplate, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                    ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -186,11 +193,71 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
 
+        this.jobLockCountsMap = new HashMap<>();
+
         grid = new Grid<>();
         grid.addColumn(SchedulerJob::getJobName)
             .setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setKey("jobName")
             .setFlexGrow(8);
+        grid.addColumn(new ComponentRenderer<>(
+                job -> {
+                    VerticalLayout verticalLayout = new VerticalLayout();
+                    verticalLayout.setWidth("100%");
+                    verticalLayout.setSpacing(false);
+                    verticalLayout.setPadding(false);
+
+                    IntegerField lockCountTf = new IntegerField(getTranslation("label.lock-count", UI.getCurrent().getLocale()));
+                    lockCountTf.getElement().getThemeList().add("always-float-label");
+                    lockCountTf.setHasControls(true);
+                    lockCountTf.setMin(1);
+                    lockCountTf.setMax(Integer.MAX_VALUE);
+                    lockCountTf.setWidth("100%");
+
+                    verticalLayout.add(lockCountTf);
+
+                    this.jobLockCountsMap.put(job.getJobName(), lockCountTf);
+
+                    lockCountTf.setValue((int)((SchedulerJobLockParticipant)job).getLockCount());
+
+                    AtomicBoolean ignoreValueChange = new AtomicBoolean(false);
+
+                    lockCountTf.addValueChangeListener(event -> {
+                        if(ignoreValueChange.get()) {
+                            ignoreValueChange.set(false);
+                            return;
+                        }
+                        if(event.getValue() == null || event.getValue() < 1 || event.getValue() > Integer.MAX_VALUE) {
+                            lockCountTf.setInvalid(true);
+                            lockCountTf.setErrorMessage(String.format(getTranslation("error.job-lock-size", UI.getCurrent().getLocale()), Integer.MAX_VALUE));
+                            return;
+                        }
+                        if(event.getValue() > comboBox.getValue().getLockCount()) {
+                            ignoreValueChange.set(true);
+                            lockCountTf.setValue((int)comboBox.getValue().getLockCount());
+                            lockCountTf.setInvalid(true);
+                            lockCountTf.setErrorMessage(String.format(getTranslation("error.job-lock-size-cannot-exceed-lock-size", UI.getCurrent().getLocale()), Integer.MAX_VALUE));
+                            return;
+                        }
+
+                        lockCountTf.setInvalid(false);
+                        job.getChildContextNames().forEach(child -> {
+                            List<SchedulerJobLockParticipant> schedulerJobLockParticipants
+                                = this.comboBox.getValue().getJobs().get(child);
+
+                            schedulerJobLockParticipants.forEach(schedulerJobLockParticipant -> {
+                                if(schedulerJobLockParticipant.getIdentifier().equals(job.getIdentifier())) {
+                                    schedulerJobLockParticipant.setLockCount(event.getValue());
+                                }
+                            });
+                        });
+                    });
+
+                    return verticalLayout;
+                }
+            ))
+            .setHeader(getTranslation("table-header.lock-count", UI.getCurrent().getLocale()))
+            .setFlexGrow(3);
         grid.addColumn(new ComponentRenderer<>(
                 job -> {
                     VerticalLayout verticalLayout = new VerticalLayout();
@@ -243,9 +310,10 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                 delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     JobLock jobLock = this.comboBox.getValue();
                     job.getChildContextNames().forEach(child -> {
-                        List<SchedulerJob> jobs = jobLock.getJobs().get(child);
+                        List<SchedulerJobLockParticipant> jobs = jobLock.getJobs().get(child);
                         if(jobs!=null) {
                             jobs.remove(job);
+                            this.jobLockCountsMap.remove(job.getJobName());
                         }
                     });
 
@@ -281,34 +349,32 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         comboBox.setItems(contextTemplate.getJobLocks());
         comboBox.setItemLabelGenerator(JobLock::getName);
 
-        IntegerField lockCountTf = new IntegerField(getTranslation("label.lock-count", UI.getCurrent().getLocale()));
-        lockCountTf.setHasControls(true);
-        lockCountTf.setMin(1);
-        lockCountTf.setEnabled(false);
-        lockCountTf.addValueChangeListener(event -> {
-           if(event.getValue() != null && event.getOldValue() != null && comboBox.getValue() != null) {
+        this.lockCountTf = new IntegerField(getTranslation("label.lock-count", UI.getCurrent().getLocale()));
+        this.lockCountTf.getElement().getThemeList().add("always-float-label");
+        this.lockCountTf.setHasControls(true);
+        this.lockCountTf.setMin(1);
+        this.lockCountTf.setMax(Integer.MAX_VALUE);
+        this.lockCountTf.setEnabled(false);
+        this.lockCountTf.addValueChangeListener(event -> {
+            if(event.getValue() == null || event.getValue() < 1 || event.getValue() > Integer.MAX_VALUE) {
+                this.lockCountTf.setInvalid(true);
+                this.lockCountTf.setErrorMessage(String.format(getTranslation("error.job-lock-size", UI.getCurrent().getLocale()), Integer.MAX_VALUE));
+                return;
+            }
+
+           if(comboBox.getValue() != null) {
                this.updateLockCount(lockCountTf.getValue());
            }
-        });
-
-        Checkbox exclusiveLockCb = new Checkbox(getTranslation("label.exclusive", UI.getCurrent().getLocale()));
-        exclusiveLockCb.setEnabled(false);
-        exclusiveLockCb.addValueChangeListener(checkboxBooleanComponentValueChangeEvent -> {
-            if(checkboxBooleanComponentValueChangeEvent.getValue()) {
-                lockCountTf.setEnabled(false);
-                lockCountTf.setValue(null);
-            }
-            else {
-                lockCountTf.setEnabled(true);
-                lockCountTf.setValue(1);
-            }
-
-            this.updateExclusive(checkboxBooleanComponentValueChangeEvent.getValue());
         });
 
         Button newJobLockButton = new Button(getTranslation("button.new-job-lock", UI.getCurrent().getLocale()), VaadinIcon.LOCK.create());
         newJobLockButton.setIconAfterText(true);
         newJobLockButton.addClickListener(event -> {
+            if(this.comboBox.getValue() != null && !this.validate()) {
+                NotificationHelper.showErrorNotification(getTranslation("error.job-lock-form", UI.getCurrent().getLocale()));
+                return;
+            }
+
             NewJobLockDialog newJobLockDialog = new NewJobLockDialog(this.contextTemplate.getJobLocksMap());
             newJobLockDialog.open();
 
@@ -347,8 +413,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         jobLockManagementLabel.getElement().getStyle().set("margin-top", "10px");
         formLayout.add(jobLockManagementLabel, 5);
         formLayout.add(comboBox, 2);
-        formLayout.add(lockCountTf, 1);
-        formLayout.add(exclusiveLockCb, 1);
+        formLayout.add(lockCountTf, 2);
 
         Button deleteJobLockButton = new Button(getTranslation("button.delete-selected-job-lock", UI.getCurrent().getLocale()), VaadinIcon.TRASH.create());
         deleteJobLockButton.setIconAfterText(true);
@@ -402,19 +467,29 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         layout.add(formLayout, addJobButton, grid);
 
         comboBox.addValueChangeListener(event -> {
+            if(this.ignoreComboChange) {
+                this.ignoreComboChange = false;
+                return;
+            }
+
+            if(event.getOldValue() != null) {
+                if(!this.validate()) {
+                    NotificationHelper.showErrorNotification(getTranslation("error.job-lock-form", UI.getCurrent().getLocale()));
+                    this.ignoreComboChange = true;
+                    this.comboBox.setValue(event.getOldValue());
+                    return;
+                }
+            }
+
             lockCountTf.setValue(null);
             if(event.getValue() != null) {
                 lockCountTf.setEnabled(true);
-                lockCountTf.setValue(event.getValue().getLockCount());
-                exclusiveLockCb.setEnabled(true);
-                exclusiveLockCb.setValue(event.getValue().isExclusiveJobLock());
+                lockCountTf.setValue((int)event.getValue().getLockCount());
                 this.populateGrid(event.getValue(), filterTf.getValue());
                 addJobButton.setEnabled(true);
                 deleteJobLockButton.setEnabled(true);
             }
             else {
-                exclusiveLockCb.setValue(false);
-                exclusiveLockCb.setEnabled(false);
                 lockCountTf.setEnabled(false);
                 lockCountTf.setValue(null);
                 addJobButton.setEnabled(false);
@@ -423,13 +498,18 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         });
 
 
-        Button okButton = new Button(getTranslation("button.done", UI.getCurrent().getLocale()));
-        okButton.addClickListener(event -> {
-            this.close();
+        Button doneButton = new Button(getTranslation("button.done", UI.getCurrent().getLocale()));
+        doneButton.addClickListener(event -> {
+            if(this.comboBox.getValue() != null && !this.validate()) {
+                NotificationHelper.showErrorNotification(getTranslation("error.job-lock-form", UI.getCurrent().getLocale()));
+            }
+            else {
+                this.close();
+            }
         });
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(okButton);
+        buttonLayout.add(doneButton);
 
         layout.add(buttonLayout);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
@@ -442,6 +522,24 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
 
         super.setHeight("80vh");
         super.setWidth("90vw");
+    }
+
+    private boolean validate() {
+        AtomicBoolean valid = new AtomicBoolean(true);
+        if(this.lockCountTf.getValue() == null || this.lockCountTf.getValue() < 1 || this.lockCountTf.getValue() > Integer.MAX_VALUE) {
+            this.lockCountTf.setInvalid(true);
+            this.lockCountTf.setErrorMessage(String.format(getTranslation("error.job-lock-size", UI.getCurrent().getLocale()), Integer.MAX_VALUE));
+            valid.set(false);
+        }
+        this.jobLockCountsMap.entrySet().forEach(entry -> {
+            if(entry.getValue().getValue() == null || entry.getValue().getValue() < 1 || entry.getValue().getValue() > Integer.MAX_VALUE) {
+                entry.getValue().setInvalid(true);
+                entry.getValue().setErrorMessage(String.format(getTranslation("error.job-lock-size", UI.getCurrent().getLocale()), Integer.MAX_VALUE));
+                valid.set(false);
+            }
+        });
+
+        return valid.get();
     }
 
     public void addGridFiltering(HeaderRow hr, String columnKey) {
@@ -464,13 +562,21 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         this.contextTemplate.getJobLocksMap().put(jobLock.getName(), jobLock);
         this.contextTemplate.getJobLocks().remove(jobLock);
 
+        SchedulerJobLockParticipantBuilder schedulerJobLockParticipantBuilder
+            = new SchedulerJobLockParticipantBuilder();
+
+        SchedulerJobLockParticipant schedulerJobLockParticipant = schedulerJobLockParticipantBuilder.withJobName(schedulerJob.getJobName())
+                    .withAgentName(schedulerJob.getAgentName())
+                    .withContextName(schedulerJob.getContextName())
+                    .build();
+
         schedulerJob.getChildContextNames().forEach(child -> {
             if(jobLock.getJobs().containsKey(child)) {
-                jobLock.getJobs().get(child).add(schedulerJob);
+                jobLock.getJobs().get(child).add(schedulerJobLockParticipant);
             }
             else {
-                ArrayList<SchedulerJob> jobs = new ArrayList<>();
-                jobs.add(schedulerJob);
+                ArrayList<SchedulerJobLockParticipant> jobs = new ArrayList<>();
+                jobs.add(schedulerJobLockParticipant);
                 jobLock.getJobs().put(child, jobs);
             }
         });
@@ -490,12 +596,6 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         this.saveContextTemplate();
     }
 
-    public void updateExclusive(boolean exclusive) {
-        JobLock jobLock = this.comboBox.getValue();
-        jobLock.setExclusiveJobLock(exclusive);
-        this.saveContextTemplate();
-    }
-
     public void setJobLock(String jobLockName) {
         this.contextTemplate.getJobLocks().forEach(lock -> {
             if(lock.getName().equals(jobLockName)) {
@@ -505,6 +605,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
     }
 
     private void populateGrid(JobLock jobLock, String filter) {
+        this.jobLockCountsMap = new HashMap<>();
         Map<String, SchedulerJob> jobMap = new HashMap<>();
         jobLock.getJobs().entrySet().forEach(entry -> {
             entry.getValue().forEach(job -> {
@@ -562,7 +663,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
     }
 
     public void updateScheduledJob(SchedulerJob schedulerJob, boolean inlock) {
-        SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(schedulerJob.getContextName(), schedulerJob.getJobName());
+        SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.contextTemplate.getName(), schedulerJob.getJobName());
         InternalEventDrivenJob internalEventDrivenJob = (InternalEventDrivenJob) schedulerJobRecord.getJob();
         internalEventDrivenJob.setParticipatesInLock(inlock);
         this.schedulerJobService.saveInternalEventDrivenJob(internalEventDrivenJob,

@@ -7,10 +7,11 @@ import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 
 public class SolrJobLockHolderImpl extends AbstractJobLockHolder implements JobLockHolder {
     private String lockName;
-    private int lockCount = 1;
+    private long lockCount = 1;
     private final Set<String> lockHolders = new HashSet<>();
 
     private boolean exclusiveJobLock = false;
@@ -25,15 +26,15 @@ public class SolrJobLockHolderImpl extends AbstractJobLockHolder implements JobL
         this.lockName = lockName;
     }
 
-    public int getLockCount() {
+    public long getLockCount() {
         return lockCount;
     }
 
-    public void setLockCount(int lockCount) {
+    public void setLockCount(long lockCount) {
         this.lockCount = lockCount;
     }
 
-    public Map<String, List<SchedulerJob>> getSchedulerJobs() {
+    public Map<String, List<SchedulerJobLockParticipant>> getSchedulerJobs() {
         return schedulerJobs;
     }
 
