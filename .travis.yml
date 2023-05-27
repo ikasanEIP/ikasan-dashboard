@@ -13,6 +13,7 @@ before_install:
   - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
   - nvm install 10.17.0
+  - npm install --save-dev @babel/core
   - npm install --save-dev @babel/plugin-proposal-object-rest-spread
 
 install:
