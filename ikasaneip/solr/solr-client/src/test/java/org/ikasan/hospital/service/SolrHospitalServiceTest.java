@@ -20,6 +20,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -57,6 +58,42 @@ public class SolrHospitalServiceTest extends SolrTestCaseJ4
 
             SolrExclusionEventActionImpl event = new SolrExclusionEventActionImpl("moduleName", "flowName"
                 , "uri", "actionedBy",  "action", "event", 12345L, "comment");
+
+
+            solrExclusionService.save(event);
+
+            assertEquals(1, server.query(new SolrQuery("*:*")).getResults().getNumFound());
+            assertEquals(1, server.query("ikasan", new SolrQuery("*:*")).getResults().getNumFound());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_save_large_action() throws Exception {
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
+            .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
+            .build();
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            CoreAdminRequest.Create createRequest = new CoreAdminRequest.Create();
+            createRequest.setCoreName("ikasan");
+            createRequest.setConfigSet("minimal");
+            server.request(createRequest);
+
+            SolrHospitalDao dao = new SolrHospitalDao ();
+            dao.setSolrClient(server);
+            dao.setDaysToKeep(0);
+
+            SolrHospitalServiceImpl solrExclusionService = new SolrHospitalServiceImpl(dao);
+
+            char[] chars = new char[5000000];
+            Arrays.fill(chars, 'a');
+
+            String action = new String(chars);
+
+            SolrExclusionEventActionImpl event = new SolrExclusionEventActionImpl("moduleName", "flowName"
+                , "uri", "actionedBy",  action, "event", 12345L, "comment");
 
 
             solrExclusionService.save(event);
