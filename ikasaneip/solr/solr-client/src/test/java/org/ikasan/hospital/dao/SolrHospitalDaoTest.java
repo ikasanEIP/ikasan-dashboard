@@ -71,7 +71,7 @@ public class SolrHospitalDaoTest
         Assert.assertEquals("uri", solrInputDocument.getFieldValue(SolrDaoBase.ID));
         Assert.assertEquals("moduleName", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
         Assert.assertEquals("flowName", solrInputDocument.getFieldValue(SolrDaoBase.FLOW_NAME));
-        Assert.assertEquals("action", solrInputDocument.getFieldValue(SolrDaoBase.EVENT));
+        Assert.assertEquals("action", solrInputDocument.getFieldValue(SolrDaoBase.HOSPITAL_EVENT_ACTION));
         Assert.assertEquals("event", solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT));
         Assert.assertEquals("exclusionEventAction", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
         Assert.assertEquals(1L, solrInputDocument.getFieldValue(SolrDaoBase.EXPIRY));
