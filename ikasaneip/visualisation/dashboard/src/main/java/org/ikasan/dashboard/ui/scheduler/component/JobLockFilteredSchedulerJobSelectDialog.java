@@ -7,12 +7,13 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
-public class FilteredSchedulerJobSelectDialog extends AbstractCloseableResizableDialog {
-    private SchedulerJobSelectGridWidget schedulerJobSelectGridWidget;
+public class JobLockFilteredSchedulerJobSelectDialog extends AbstractCloseableResizableDialog {
+    private JobLockSchedulerJobSelectGridWidget schedulerJobSelectGridWidget;
 
-    public FilteredSchedulerJobSelectDialog(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate,
-                                            SchedulerJobSearchFilter schedulerJobSearchFilter, String headerLabel, String bodyLabel) {
-        this.schedulerJobSelectGridWidget = new SchedulerJobSelectGridWidget(schedulerJobService, contextTemplate, this,
+    public JobLockFilteredSchedulerJobSelectDialog(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate,
+                                                   SchedulerJobSearchFilter schedulerJobSearchFilter, String headerLabel,
+                                                   String bodyLabel) {
+        this.schedulerJobSelectGridWidget = new JobLockSchedulerJobSelectGridWidget(schedulerJobService, contextTemplate, this,
             schedulerJobSearchFilter, bodyLabel);
 
         this.setHeight("90vh");
