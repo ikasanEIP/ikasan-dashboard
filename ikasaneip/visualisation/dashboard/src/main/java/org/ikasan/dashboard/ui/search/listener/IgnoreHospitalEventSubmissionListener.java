@@ -147,14 +147,12 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                         });
                     }
                     catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("An error has occurred managing hospital events!", e);
                         current.access(() ->
                         {
                             progressIndicatorDialog.close();
                             NotificationHelper.showErrorNotification(getTranslation("message.error-bulk-ignore-exclusions", UI.getCurrent().getLocale()));
                         });
-
-                        return;
                     }
                 });
             }

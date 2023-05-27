@@ -148,7 +148,7 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                         current.access(() -> this.searchResultsGrid.getDataProvider().refreshAll());
                     }
                     catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("An error has occurred managing hospital events!", e);
                         current.access(() ->
                         {
                             progressIndicatorDialog.close();
