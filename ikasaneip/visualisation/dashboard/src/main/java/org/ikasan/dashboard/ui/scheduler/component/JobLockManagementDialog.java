@@ -464,10 +464,16 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         addJobButton.addClickListener(event -> {
             SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setJobTypeFilter(JobConstants.INTERNAL_EVENT_DRIVEN_JOB);
-            filter.setParticipatesInLock(Boolean.FALSE);
-            FilteredSchedulerJobSelectDialog filteredSchedulerJobSelectDialog
-                = new FilteredSchedulerJobSelectDialog(this.schedulerJobService, this.contextTemplate, filter
-                    , getTranslation("label.select-job", UI.getCurrent().getLocale()), getTranslation("label.select-job", UI.getCurrent().getLocale()));
+
+            List<String> jobsInLock = new ArrayList<>();
+            this.comboBox.getValue().getJobs().entrySet().forEach(entry ->
+                entry.getValue().forEach(job -> jobsInLock.add(job.getJobName())));
+            filter.setNotJobNameInFilter(jobsInLock);
+
+            JobLockFilteredSchedulerJobSelectDialog filteredSchedulerJobSelectDialog
+                = new JobLockFilteredSchedulerJobSelectDialog(this.schedulerJobService, this.contextTemplate, filter
+                    , getTranslation("label.select-job", UI.getCurrent().getLocale())
+                    , getTranslation("label.select-job", UI.getCurrent().getLocale()));
             filteredSchedulerJobSelectDialog.open();
             filteredSchedulerJobSelectDialog.addSchedulerJobSelectedListener(this);
         });

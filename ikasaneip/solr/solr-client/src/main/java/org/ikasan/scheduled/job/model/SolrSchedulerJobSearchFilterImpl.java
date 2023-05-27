@@ -25,6 +25,7 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
     }
 
     private String jobNameFilter = null;
+    List<String> notJobNameInFilter;
     private String jobTypeFilter = null;
     private String contextSearchFilter = null;
     private boolean held;
@@ -40,6 +41,16 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
     public void setJobNameFilter(String jobNameFilter)
     {
         this.jobNameFilter = jobNameFilter;
+    }
+
+    @Override
+    public List<String> getNotJobNameInFilter() {
+        return notJobNameInFilter;
+    }
+
+    @Override
+    public void setNotJobNameInFilter(List<String> notJobNameInFilter) {
+        this.notJobNameInFilter = notJobNameInFilter;
     }
 
     public String getJobTypeFilter() {

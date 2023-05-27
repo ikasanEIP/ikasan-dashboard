@@ -2,6 +2,7 @@ package org.ikasan.scheduled.job.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     implements SchedulerJobDao<SchedulerJobRecord> {
@@ -161,6 +163,23 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
                 .append(WILDCARD);
         }
 
+        if(filter.getNotJobNameInFilter() != null && !filter.getNotJobNameInFilter().isEmpty()) {
+            StringBuffer orString = new StringBuffer();
+            filter.getNotJobNameInFilter().forEach(jobName ->
+                orString.append(jobName).append(OR));
+
+            String finalOr = orString.toString();
+            finalOr = finalOr.substring(0, finalOr.lastIndexOf(OR));
+
+            queryBuffer.append(AND)
+                .append(" NOT ")
+                .append(FLOW_NAME)
+                .append(COLON)
+                .append(OPEN_BRACKET)
+                .append(finalOr)
+                .append(CLOSE_BRACKET);
+        }
+
         if(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
             queryBuffer.append(AND)
                 .append(OPEN_BRACKET)
@@ -216,7 +235,10 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
 
         logger.debug("query: " + solrQuery);
 
-        return this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class, offset, limit);
+        SearchResults<? extends SchedulerJobRecord> results
+            = this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class, offset, limit);
+
+        return results;
     }
 
     @Override
