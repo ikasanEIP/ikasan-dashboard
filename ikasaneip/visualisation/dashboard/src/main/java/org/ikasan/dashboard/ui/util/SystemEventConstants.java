@@ -86,7 +86,10 @@ public class SystemEventConstants
     public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED = "Job plan instance all scheduled jobs disabled";
     public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED = "Job plan instance all scheduled jobs enabled";
     public static final String CONTEXT_INSTANCE_HOLDING_ALL_JOBS = "Job plan instance all scheduled jobs held";
-    public static final String CONTEXT_INSTANCE_RELEASING_ALL_JOBS = "Job plan instance all scheduled jobs released";
+    public static final String CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START = "Job plan instance all scheduled jobs released - start";
+    public static final String CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END = "Job plan instance all scheduled jobs released - end";
+    public static final String CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START = "Job plan instance all scheduled jobs released - start";
+    public static final String CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END = "Job plan instance all scheduled jobs released - end";
     public static final String CONTEXT_INSTANCE_RESET = "Job plan instance reset";
     public static final String CONTEXT_INSTANCE_MANUALLY_ENDED = "Job plan instance manually ended";
     public static final String CONTEXT_INSTANCE_DURATION_IGNORED = "Job plan instance duration ignored";
