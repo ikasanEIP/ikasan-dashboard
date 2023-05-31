@@ -4,8 +4,6 @@
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "MANUAL",
-  "skippedContexts" : { },
-  "heldContexts" : { },
   "cronExpression" : "cronExpression",
   "jobGroup" : "jobGroup",
   "timeZone" : "timezone",
@@ -32,6 +30,6 @@
   "ignoreFileRenameWhilstScanning" : false,
   "minFileAgeSeconds" : 180,
   "dropEventOnBlackout" : false,
-  "identifier" : "agentName-jobName",
-  "jobDescription" : "description"
+  "jobDescription" : "description",
+  "identifier" : "agentName-jobName"
 }

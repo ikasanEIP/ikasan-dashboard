@@ -70,6 +70,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
+
 public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResizableDialog implements SchedulerJobStateChangeEventBroadcastListener {
 
     Logger logger = LoggerFactory.getLogger(InternalEventDrivenJobInstanceDialog.class);
@@ -280,6 +282,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.holdButton.setIconAfterText(true);
 
         this.holdButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.hold-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.hold-job", UI.getCurrent().getLocale()));
@@ -301,6 +306,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.releaseButton.setIconAfterText(true);
 
         this.releaseButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.release-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.release-job", UI.getCurrent().getLocale()));
@@ -322,6 +330,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.skipButton.setIconAfterText(true);
 
         this.skipButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.skip-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.skip-job", UI.getCurrent().getLocale()));
@@ -343,6 +354,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.enableButton.setIconAfterText(true);
 
         this.enableButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.enable-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.enable-job", UI.getCurrent().getLocale()));
@@ -364,6 +378,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.submitButton.setIconAfterText(true);
 
         this.submitButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
             InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
                 this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, schedulerJobInstanceRecord, this.schedulerJobInstanceService);
 
@@ -374,7 +391,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.submitDownstreamJobsButton.setIconAfterText(true);
         this.submitDownstreamJobsButton.setVisible(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ERROR));
         this.submitDownstreamJobsButton.addClickListener(event -> {
-
+            if(!canPerformAction()) {
+                return;
+            }
             ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(this.contextInstance.getName());
             ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
             contextualisedScheduledProcessEvent.setJobStarting(false);
@@ -424,6 +443,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.resetButton.setIconAfterText(true);
         this.resetButton.getElement().setAttribute("title", "Reset Job");
         this.resetButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.reset-job-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.reset-job-body", UI.getCurrent().getLocale()));
@@ -447,6 +469,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.killButton.setIconAfterText(true);
 
         this.killButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
+
             try {
                 this.jobUtilsService.killJob(agent.getUrl(), scheduledProcessEvent.getPid(), true);
             }
@@ -905,6 +931,27 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
      }
+
+    /**
+     * Helper method to confirm that actions can be performed on a job plan
+     * @return
+     */
+    private boolean canPerformAction() {
+        if(!ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
+                NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+            else {
+                NotificationHelper.showErrorNotification(getTranslation("error.cannot-locate-job-plan-instance-in-cache-and-is-not-ended"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Helper method to set controls on the form elements if the form is read only

@@ -258,7 +258,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
 
         FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog
             (moduleMetaDataService.findById(schedulerJobRecord.getSchedulerJobInstance().getAgentName()),
-                this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService);
+                this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService, this.contextInstance);
         fileEventJobDialog.setJob(schedulerJobRecord);
 
         fileEventJobDialog.open();
@@ -292,7 +292,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
 
         QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobInstanceDialog = new QuartzDrivenScheduledJobInstanceDialog
             (moduleMetaDataService.findById(schedulerJobRecord.getSchedulerJobInstance().getAgentName()),
-                this.jobInitiationService, systemEventLogger, this.schedulerJobInstanceService);
+                this.jobInitiationService, systemEventLogger, this.schedulerJobInstanceService, this.contextInstance);
 
         quartzDrivenScheduledJobInstanceDialog.setJob(schedulerJobRecord);
         quartzDrivenScheduledJobInstanceDialog.open();

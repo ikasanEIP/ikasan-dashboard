@@ -4,8 +4,6 @@
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "MANUAL",
-  "skippedContexts" : { },
-  "heldContexts" : { },
   "identifier" : "GLOBAL_EVENT-jobName",
   "jobDescription" : "description"
 }
