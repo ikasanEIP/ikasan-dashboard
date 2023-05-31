@@ -727,9 +727,6 @@ public class ContextInstanceWidget extends VerticalLayout
                         List<SchedulerJobInstanceRecord> updatedRecords = this.schedulerJobInstanceService
                             .holdJobsWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
 
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                            , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-
                         if (updatedRecords.size() > 0) {
                             updatedRecords.forEach(schedulerJobInstanceRecord -> {
                                 SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
@@ -738,6 +735,9 @@ public class ContextInstanceWidget extends VerticalLayout
                                 SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
                             });
                         }
+
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
+                            , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -792,13 +792,15 @@ public class ContextInstanceWidget extends VerticalLayout
                     executor.execute(() -> {
                         boolean error = false;
                         try {
+                            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
+                                , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                             if (jobsToReleaseWithinContext.size() > 0) {
                                 for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : jobsToReleaseWithinContext) {
                                     contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
                                         schedulerJobInstanceRecord.getChildContextName());
                                 }
                             }
-                            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RELEASING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
+                            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
                                 , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                         } catch (Exception e) {
                             e.printStackTrace();
