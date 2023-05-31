@@ -953,8 +953,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                 });
                                 ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).saveContext();
 
-                                this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                                    , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                                this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]"
+                                    ,this.contextInstance.getName() , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                             }
                         }
                     } catch (Exception e) {
@@ -1013,8 +1013,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         boolean error = false;
                         try {
                             if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                                this.systemEventLogger.logEvent(SystemEventConstants.CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                                    , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                                this.systemEventLogger.logEvent(SystemEventConstants.CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START, String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]"
+                                    , this.contextInstance.getName(), contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                                 if (jobsToReleaseWithinContext.size() > 0) {
                                     for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : jobsToReleaseWithinContext) {
                                         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
@@ -1022,8 +1022,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                             schedulerJobInstanceRecord.getChildContextName());
                                     }
                                 }
-                                this.systemEventLogger.logEvent(SystemEventConstants.CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                                    , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                                this.systemEventLogger.logEvent(SystemEventConstants.CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END, String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]"
+                                    , this.contextInstance.getName(), contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
