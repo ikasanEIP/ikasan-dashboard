@@ -4,8 +4,6 @@
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "AUTOMATIC",
-  "skippedContexts" : { },
-  "heldContexts" : { },
   "successfulReturnCodes" : [ "0" ],
   "workingDirectory" : "working directory",
   "commandLine" : "commandLine",

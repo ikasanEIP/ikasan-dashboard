@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.model.job;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.*;
@@ -10,10 +11,13 @@ public class SchedulerJobImpl implements SchedulerJob {
     protected String agentName;
     protected String jobName;
     protected String contextName;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<String> childContextNames;
     protected String description;
     protected String startupControlType = "AUTOMATIC";
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected Map<String, Boolean> skippedContexts = new HashMap<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected Map<String, Boolean> heldContexts = new HashMap<>();
 
     @Override

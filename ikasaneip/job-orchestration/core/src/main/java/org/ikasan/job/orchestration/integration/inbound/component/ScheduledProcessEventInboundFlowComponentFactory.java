@@ -111,6 +111,9 @@ public class ScheduledProcessEventInboundFlowComponentFactory
     @Value("${scheduler.inbound.producer.ignore.errors:false}")
     private boolean schedulerInboundProducerIgnoreErrors;
 
+    @Value("${scheduler.inbound.producer.log.details:false}")
+    private boolean schedulerInboundProducerLogDetails;
+
     @Resource
     BuilderFactory builderFactory;
 
@@ -137,6 +140,7 @@ public class ScheduledProcessEventInboundFlowComponentFactory
         ScheduleProcessInboundProducerConfiguration configuration
             = new ScheduleProcessInboundProducerConfiguration();
         configuration.setIgnoreErrors(this.schedulerInboundProducerIgnoreErrors);
+        configuration.setLogDetails(this.schedulerInboundProducerLogDetails);
         ScheduleProcessInboundProducer producer
             = new ScheduleProcessInboundProducer(this.transactionManager.getTransactionManager());
         producer.setConfiguration(configuration);

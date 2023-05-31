@@ -72,6 +72,41 @@ public class ScheduleProcessInboundProducerTest {
             , contextMachine);
     }
 
+    @Test
+    public void test_invoke_success_with_logging() throws IOException, XAException {
+        when(contextMachine.getContext()).thenReturn(contextInstance);
+        when(contextInstance.getName()).thenReturn("contextInstanceName");
+        when(contextInstance.getId()).thenReturn("contextInstanceId");
+
+
+        ContextMachineCache.instance().put(contextMachine);
+
+        BigQueueMessageImpl<String> bigQueueMessage = new BigQueueMessageImpl();
+        ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
+        contextualisedScheduledProcessEvent.setContextInstanceId("contextInstanceId");
+
+        bigQueueMessage.setMessage(ObjectMapperFactory.newInstance().writeValueAsString(contextualisedScheduledProcessEvent));
+
+        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer(transactionManager);
+        ScheduleProcessInboundProducerConfiguration configuration = new ScheduleProcessInboundProducerConfiguration();
+        configuration.setIgnoreErrors(false);
+        configuration.setLogDetails(true);
+        scheduleProcessInboundProducer.setConfiguration(configuration);
+
+
+        scheduleProcessInboundProducer.invoke(ObjectMapperFactory.newInstance().writeValueAsString(bigQueueMessage));
+        scheduleProcessInboundProducer.commit(xid, true);
+
+        verify(contextInstance, times(2)).getName();
+        verify(contextInstance, times(3)).getId();
+        verify(contextMachine, times(5)).getContext();
+        verify(contextMachine).registerToNotificationMonitors();
+        verify(contextMachine).eventReceived(anyString());
+
+        verifyNoMoreInteractions(contextInstance
+            , contextMachine);
+    }
+
     @Test(expected = InvalidContextInstanceIdException.class)
     public void test_invoke_exception_context_instance_not_found_in_cache() throws IOException {
         when(contextMachine.getContext()).thenReturn(contextInstance);

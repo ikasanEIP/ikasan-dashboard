@@ -8,9 +8,7 @@ import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.job.model.JobConstants;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
@@ -30,6 +28,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -103,14 +103,18 @@ public final class ContextExportZipUtils {
             // get all the jobs
             int offset = 0;
             SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(contextName, searchLimit, offset);
-            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, results, addReplacementTokens);
+            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir
+                , results.getResultList().stream().map(schedulerJobRecord -> schedulerJobRecord.getJob()).collect(Collectors.toList())
+                , addReplacementTokens);
 
             int retrievedNumber = results.getResultList().size();
             long totalNumberOfResults = results.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
                 results = schedulerJobService.findByContext(contextName, searchLimit, offset);
-                addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, results, addReplacementTokens);
+                addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir
+                    , results.getResultList().stream().map(schedulerJobRecord -> schedulerJobRecord.getJob()).collect(Collectors.toList())
+                    , addReplacementTokens);
             }
 
             // get the overall notifications settings for the context
@@ -182,6 +186,95 @@ public final class ContextExportZipUtils {
             return null;
         }
     }
+
+    /**
+     * Creates a simple zip file from a job list with no notifications or profiles.
+     *
+     * @param context
+     * @param workingDirectory
+     * @param schedulerJobList
+     * @param addReplacementTokens
+     * @return
+     */
+    public static ByteArrayOutputStream createZipFile(ContextTemplate context,
+                                                      String workingDirectory,
+                                                      List<SchedulerJob> schedulerJobList,
+                                                      boolean addReplacementTokens) {
+        try {
+            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
+
+            String contextName = context.getName();
+
+            if(addReplacementTokens) {
+                ContextHelper.addContextTemplateReplacementTokens(context);
+            }
+
+            String template = objectMapper.writeValueAsString(context);
+
+
+            // sanitise the contextName as this will be used for the filename and that windows do not allow for certain characters
+            String contextFileName = StringUtils.replaceEach(contextName, UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
+
+            // clean up the working directory if it exists
+            deleteWorkingDirectory(getWorkingDirectory(workingDirectory) + contextFileName);
+
+            // create the paths and directories on disk
+            Path contextDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + CONTEXT_DIR);
+            Path jobsDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR);
+            Path jobsFileDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + FILE_DIR);
+            Path jobsInternalDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + INTERNAL_DIR);
+            Path jobsQuartzDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + QUARTZ_DIR);
+            Path jobsGlobalDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + GLOBAL_JOB_DIR);
+            Path notificationDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + NOTIFICATION_DIR);
+            Path notificationDetailDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + NOTIFICATION_DETAILS_DIR);
+            Path profilesDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + PROFILE_DIR);
+
+            Files.createDirectories(contextDir);
+            Files.createDirectories(jobsDir);
+            Files.createDirectories(jobsFileDir);
+            Files.createDirectories(jobsInternalDir);
+            Files.createDirectories(jobsQuartzDir);
+            Files.createDirectories(jobsGlobalDir);
+            Files.createDirectories(notificationDir);
+            Files.createDirectories(notificationDetailDir);
+            Files.createDirectories(profilesDir);
+
+            // create the context template as json
+            Path contextFilePath = Paths.get(contextDir + File.separator + contextFileName + ".json");
+            Files.createFile(contextFilePath);
+            Files.write(contextFilePath, template.getBytes());
+
+            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir
+                , schedulerJobList, addReplacementTokens);
+
+            // create the outputstream
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ZipOutputStream zipOut = new ZipOutputStream(baos);
+
+            File fileToZip = new File(getWorkingDirectory(workingDirectory) + contextFileName);
+            zipDirectory(fileToZip, fileToZip.getName(), zipOut);
+
+            // close the streams
+            zipOut.close();
+            baos.close();
+
+            // clean up everything in case there is anything there
+            deleteWorkingDirectory(getWorkingDirectory(workingDirectory) + contextFileName);
+
+            return baos;
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOG.warn(String.format("Got exception creating zip file. Error [%s]", e.getMessage()));
+            // clean up everything in case there is anything there
+            try {
+                deleteWorkingDirectory(getWorkingDirectory(workingDirectory) +
+                    StringUtils.replaceEach(context.getName(), UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR));
+            } catch (IOException ex) {}
+
+            return null;
+        }
+    }
     private static void zipDirectory(File fileToZip, String fileName, ZipOutputStream zipOutputStream) throws IOException {
         if (fileToZip.isDirectory()) {
             if (fileName.endsWith("/")) {
@@ -213,9 +306,8 @@ public final class ContextExportZipUtils {
     }
 
     private static void addJobFilesToZip(ObjectMapper objectMapper, Path p3, Path p4, Path p5, Path p6,
-                                         SearchResults<SchedulerJobRecord> results, boolean addReplacementTokens) throws IOException {
-        for (SchedulerJobRecord schedulerJobRecord : results.getResultList()) {
-            SchedulerJob schedulerJob = schedulerJobRecord.getJob();
+                                         List<SchedulerJob> results, boolean addReplacementTokens) throws IOException {
+        for (SchedulerJob schedulerJob : results) {
 
             if(addReplacementTokens) {
                 ContextHelper.addSchedulerJobReplacementTokens(schedulerJob);
@@ -225,25 +317,24 @@ public final class ContextExportZipUtils {
             Path jobPath = null;
 
             // sanitise the jobName as this will be used for the filename and that windows do not allow for certain characters
-            String jobName = StringUtils.replaceEach(schedulerJobRecord.getJob().getJobName(),
+            String jobName = StringUtils.replaceEach(schedulerJob.getJobName(),
                 UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
-            switch (schedulerJobRecord.getType()) {
-                case JobConstants.FILE_EVENT_DRIVEN_JOB:
-                    jobPath = Paths.get(p3 + File.separator + jobName + ".json");
-                    break;
-                case JobConstants.INTERNAL_EVENT_DRIVEN_JOB:
-                    jobPath = Paths.get(p4 + File.separator + jobName + ".json");
-                    break;
-                case JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB:
-                    jobPath = Paths.get(p5 + File.separator + jobName + ".json");
-                    break;
-                case JobConstants.GLOBAL_EVENT_JOB:_JOB:
-                    jobPath = Paths.get(p6 + File.separator + jobName + ".json");
-                    break;
-                default:
-                    LOG.warn("Unknown job type: " + schedulerJobRecord.getType());
-                    break;
+            if (schedulerJob instanceof FileEventDrivenJob) {
+                jobPath = Paths.get(p3 + File.separator + jobName + ".json");
             }
+            else if (schedulerJob instanceof InternalEventDrivenJob) {
+                jobPath = Paths.get(p4 + File.separator + jobName + ".json");
+            }
+            else if (schedulerJob instanceof QuartzScheduleDrivenJob) {
+                jobPath = Paths.get(p5 + File.separator + jobName + ".json");
+            }
+            else if (schedulerJob instanceof GlobalEventJob) {
+                jobPath = Paths.get(p6 + File.separator + jobName + ".json");
+            }
+            else {
+                LOG.warn("Unknown job type: " + schedulerJob.getClass().getName());
+            }
+
             if (jobPath != null) {
                 Files.createFile(jobPath);
                 Files.write(jobPath, jobAsString.getBytes());
