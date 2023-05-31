@@ -105,14 +105,14 @@ public class SchedulerJobLockParticipantBuilder  {
      * @return
      */
     public SchedulerJobLockParticipantBuilder withLockCount(int lockCount) {
-        this.agentName = agentName;
+        this.lockCount = lockCount;
 
         return this;
     }
 
     public SchedulerJobLockParticipant build() {
         if(this.agentName == null || this.jobName == null) {
-            throw new ContextBuilderException("Both agent name and job name must no be null!");
+            throw new ContextBuilderException("Both agent name and job name must not be null!");
         }
 
         SchedulerJobLockParticipant schedulerJob = new SchedulerJobLockParticipantImpl();
