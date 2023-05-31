@@ -188,6 +188,9 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
         this.submitButton.setIconAfterText(true);
 
         this.submitButton.addClickListener(event -> {
+            if(!this.canPerformAction()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-global-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.submit-global-job", UI.getCurrent().getLocale()));
@@ -335,6 +338,27 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
         this.setButtonVisibility();
 
         return formLayout;
+    }
+
+    /**
+     * Helper method to confirm that actions can be performed on a job plan
+     * @return
+     */
+    private boolean canPerformAction() {
+        if(!ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
+                NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+            else {
+                NotificationHelper.showErrorNotification(getTranslation("error.cannot-locate-job-plan-instance-in-cache-and-is-not-ended"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

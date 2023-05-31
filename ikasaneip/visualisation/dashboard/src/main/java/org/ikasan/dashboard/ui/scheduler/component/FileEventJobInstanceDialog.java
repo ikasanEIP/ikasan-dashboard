@@ -35,6 +35,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
@@ -90,6 +91,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
     private ScheduledProcessEvent scheduledProcessEvent;
     private UI ui;
+    private ContextInstance contextInstance;
 
     /**
      * Constructor
@@ -100,7 +102,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
      * @param schedulerJobInstanceService
      */
     public FileEventJobInstanceDialog(ModuleMetaData agent, JobInitiationService jobInitiationService, SystemEventLogger systemEventLogger,
-                                      SchedulerJobInstanceService schedulerJobInstanceService) {
+                                      SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance) {
         super.showResize(false);
         super.title.setText(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
 
@@ -108,6 +110,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.systemEventLogger = systemEventLogger;
         this.jobInitiationService = jobInitiationService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
+        this.contextInstance = contextInstance;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
@@ -158,6 +161,9 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
         submitButton.addClickListener(event -> {
+            if(!this.canPerformAction()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-file-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.submit-file-job", UI.getCurrent().getLocale()));
@@ -333,6 +339,27 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         formLayout.add(timezoneTf);
 
         return formLayout;
+    }
+
+    /**
+     * Helper method to confirm that actions can be performed on a job plan
+     * @return
+     */
+    private boolean canPerformAction() {
+        if(!ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
+                NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+            else {
+                NotificationHelper.showErrorNotification(getTranslation("error.cannot-locate-job-plan-instance-in-cache-and-is-not-ended"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

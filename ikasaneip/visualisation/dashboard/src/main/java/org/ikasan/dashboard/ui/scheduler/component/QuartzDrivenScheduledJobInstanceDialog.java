@@ -24,12 +24,15 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -79,6 +82,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
     private Button viewProcessEventButton;
 
     private ScheduledProcessEvent scheduledProcessEvent;
+    private ContextInstance contextInstance;
     private UI ui;
 
     /**
@@ -90,7 +94,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
      * @param schedulerJobInstanceService
      */
     public QuartzDrivenScheduledJobInstanceDialog(ModuleMetaData agent, JobInitiationService jobInitiationService, SystemEventLogger systemEventLogger,
-                                                  SchedulerJobInstanceService schedulerJobInstanceService) {
+                                                  SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance) {
         super.showResize(false);
         super.title.setText(getTranslation("label.scheduled-job", UI.getCurrent().getLocale()));
 
@@ -98,6 +102,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
         this.jobInitiationService = jobInitiationService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
+        this.contextInstance = contextInstance;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
@@ -137,6 +142,9 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
         submitButton.getElement().setAttribute("title", "Submit Job");
 
         submitButton.addClickListener(event -> {
+            if(!this.canPerformAction()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-quartz-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.submit-quartz-job", UI.getCurrent().getLocale()));
@@ -271,6 +279,27 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
         formLayout.add(timezoneCb);
 
         return formLayout;
+    }
+
+    /**
+     * Helper method to confirm that actions can be performed on a job plan
+     * @return
+     */
+    private boolean canPerformAction() {
+        if(!ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
+                NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+            else {
+                NotificationHelper.showErrorNotification(getTranslation("error.cannot-locate-job-plan-instance-in-cache-and-is-not-ended"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

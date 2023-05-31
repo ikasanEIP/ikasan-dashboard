@@ -134,6 +134,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private Button ignoreContextInstanceEndButton;
     private Button resetContextButton;
     private Button contextInstanceParameterButton;
+    private Button jobLockDashboard;
 
 
     private Tab treeTab;
@@ -686,9 +687,9 @@ public class ContextInstanceWidget extends VerticalLayout
     private VerticalLayout createButtonLayout() {
         Dialog actionPopup = new Dialog();
 
-        Button jobLockDashboard = new Button(getTranslation("button.jobs-locks", UI.getCurrent().getLocale())
+        jobLockDashboard = new Button(getTranslation("button.jobs-locks", UI.getCurrent().getLocale())
             , VaadinIcon.LOCK.create());
-        jobLockDashboard.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        jobLockDashboard.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         jobLockDashboard.setIconAfterText(true);
         jobLockDashboard.addClickListener(event -> {
             actionPopup.close();
@@ -707,7 +708,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.holdContextButton = new Button(getTranslation("button.hold-context"
             , UI.getCurrent().getLocale()), VaadinIcon.HAND.create());
         this.holdContextButton.setIconAfterText(true);
-        this.holdContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        this.holdContextButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.holdContextButton.addClickListener(event -> {
             actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -762,7 +763,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.releaseContextButton = new Button(getTranslation("button.release-all-held-jobs"
             , UI.getCurrent().getLocale()), VaadinIcon.HANDS_UP.create());
         this.releaseContextButton.setIconAfterText(true);
-        this.releaseContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        this.releaseContextButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
 
         this.releaseContextButton.addClickListener(event -> {
             actionPopup.close();
@@ -829,11 +830,13 @@ public class ContextInstanceWidget extends VerticalLayout
             , UI.getCurrent().getLocale()), VaadinIcon.PLAY.create());
         this.enableQuartzScheduledJobsButton.setIconAfterText(true);
         this.enableQuartzScheduledJobsButton.setVisible(false);
+        this.enableQuartzScheduledJobsButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
 
         this.disableQuartzScheduledJobsButton = new Button(getTranslation("button.disable-quartz-scheduled-jobs"
             , UI.getCurrent().getLocale()), VaadinIcon.BAN.create());
         this.disableQuartzScheduledJobsButton.setIconAfterText(true);
         this.disableQuartzScheduledJobsButton.setVisible(false);
+        this.disableQuartzScheduledJobsButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
 
@@ -936,6 +939,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.contextInstanceEndButton.setIconAfterText(true);
         this.contextInstanceEndButton.setVisible(this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_ADMIN));
+        this.contextInstanceEndButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.contextInstanceEndButton.addClickListener(event -> {
             actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -965,6 +969,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.ignoreContextInstanceEndButton.setIconAfterText(true);
         this.ignoreContextInstanceEndButton.setVisible(!this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_ADMIN));
+        this.ignoreContextInstanceEndButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.ignoreContextInstanceEndButton.addClickListener(event -> {
             actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -998,7 +1003,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.resetContextButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
         this.resetContextButton.setIconAfterText(true);
-        this.resetContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        this.resetContextButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.resetContextButton.addClickListener(event -> {
             actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -1030,6 +1035,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.contextInstanceParameterButton = new Button(getTranslation("button.context-parameters", UI.getCurrent().getLocale()), VaadinIcon.LINES.create());
         this.contextInstanceParameterButton.setIconAfterText(true);
+        this.contextInstanceParameterButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.contextInstanceParameterButton.addClickListener(event -> {
             actionPopup.close();
             ContextInstanceParameterDialog contextInstanceParameterDialog =  new ContextInstanceParameterDialog(true);
@@ -1307,13 +1313,15 @@ public class ContextInstanceWidget extends VerticalLayout
                     }
 
                     if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
-                        this.contextInstanceEndButton.setVisible(false);
-                        this.resetContextButton.setVisible(false);
-                        this.ignoreContextInstanceEndButton.setVisible(false);
-                        this.disableQuartzScheduledJobsButton.setVisible(false);
-                        this.holdContextButton.setVisible(false);
-                        this.releaseContextButton.setVisible(false);
-                        this.enableQuartzScheduledJobsButton.setVisible(false);
+                        this.jobLockDashboard.setEnabled(false);
+                        this.contextInstanceEndButton.setEnabled(false);
+                        this.resetContextButton.setEnabled(false);
+                        this.ignoreContextInstanceEndButton.setEnabled(false);
+                        this.disableQuartzScheduledJobsButton.setEnabled(false);
+                        this.holdContextButton.setEnabled(false);
+                        this.releaseContextButton.setEnabled(false);
+                        this.enableQuartzScheduledJobsButton.setEnabled(false);
+                        this.contextInstanceParameterButton.setEnabled(false);
                     }
                 });
             }

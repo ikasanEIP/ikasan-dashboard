@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.model.context;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -11,6 +12,7 @@ import java.util.Objects;
 public class ContextTransition {
     private SchedulerJob proceedingJob;
     private SchedulerJob subsequentJob;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<String> contexts = new ArrayList<>();;
 
     public SchedulerJob getPrecedingJob() {

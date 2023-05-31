@@ -1069,14 +1069,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             if(refreshedRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
                 FileEventJobInstanceDialog fileEventJobInstanceDialog
                     = new FileEventJobInstanceDialog(this.moduleMetaDataService.findById(refreshedRecord.getSchedulerJobInstance().getAgentName()),
-                    this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService);
+                    this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService, this.contextInstance);
                 fileEventJobInstanceDialog.setJob(refreshedRecord);
                 fileEventJobInstanceDialog.open();
             }
             else if(refreshedRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
                 QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobInstanceDialog
                     = new QuartzDrivenScheduledJobInstanceDialog(this.moduleMetaDataService.findById(refreshedRecord.getSchedulerJobInstance().getAgentName()),
-                    this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService);
+                    this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService, this.contextInstance);
                 quartzDrivenScheduledJobInstanceDialog.setJob(refreshedRecord);
                 quartzDrivenScheduledJobInstanceDialog.open();
             }

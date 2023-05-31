@@ -4,8 +4,6 @@
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "MANUAL",
-  "skippedContexts" : { },
-  "heldContexts" : { },
   "cronExpression" : "cronExpression",
   "jobGroup" : "jobGroup",
   "timeZone" : "timezone",

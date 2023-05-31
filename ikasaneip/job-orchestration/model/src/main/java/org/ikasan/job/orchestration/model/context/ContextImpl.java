@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.model.context;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.*;
@@ -17,10 +18,15 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected String timezone;
     // blackoutWindowDateTimeRanges - The UTC millisecond timestamp begin -> end for which a blackout occurs
     // Map<beginMilliSecondTimestamp -> endMilliSecondTimestamp>
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected Map<Long, Long> blackoutWindowDateTimeRanges;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<String> blackoutWindowCronExpressions;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<JobDependency> jobDependencies;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<ContextDependency> contextDependencies = new ArrayList<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>();
     protected String timeWindowStart;
     protected long contextTtlMilliseconds;

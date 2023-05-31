@@ -6,10 +6,6 @@
     "name": "context-instance-2",
     "description": null,
     "timezone": null,
-    "blackoutWindowDateTimeRanges": null,
-    "blackoutWindowCronExpressions": null,
-    "jobDependencies": null,
-    "contextDependencies": [],
     "contextParameters": [
       {
         "name": "BusinessDate",
@@ -20,6 +16,8 @@
     "timeWindowStart": null,
     "contextTtlMilliseconds": 0,
     "environmentGroup": null,
+    "treeViewExpandLevel": 1,
+    "ableToRunConcurrently": true,
     "id": "UUID2",
     "createdDateTime": 22,
     "updatedDateTime": 222,
@@ -38,10 +36,6 @@
     "name": "context-instance-1",
     "description": null,
     "timezone": null,
-    "blackoutWindowDateTimeRanges": null,
-    "blackoutWindowCronExpressions": null,
-    "jobDependencies": null,
-    "contextDependencies": [],
     "contextParameters": [
       {
         "name": "BusinessDate",
@@ -57,6 +51,8 @@
     "timeWindowStart": null,
     "contextTtlMilliseconds": 0,
     "environmentGroup": null,
+    "treeViewExpandLevel": 1,
+    "ableToRunConcurrently": true,
     "id": "UUID1",
     "createdDateTime": 11,
     "updatedDateTime": 111,

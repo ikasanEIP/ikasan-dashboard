@@ -9,7 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class QuartzScheduleDrivenJobBuilder extends SchedulerJobBuilder {
+public class QuartzScheduleDrivenJobBuilder {
+    protected String agentName;
+    protected String jobName;
+    protected String contextName;
+    protected List<String> childContextNames;
+    protected String description;
+    protected String startupControlType = "AUTOMATIC";
     protected String cronExpression;
     protected String jobGroup;
     protected String timeZone;
@@ -21,6 +27,82 @@ public class QuartzScheduleDrivenJobBuilder extends SchedulerJobBuilder {
     protected long recoveryTolerance = 30 * 60 * 1000;
     protected Map<String, String> blackoutWindowDateTimeRanges = new HashMap<>();
     protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
+
+    /**
+     * Set the agent name.
+     *
+     * @param agentName
+     * @return
+     */
+    public QuartzScheduleDrivenJobBuilder withAgentName(String agentName) {
+        this.agentName = agentName;
+
+        return this;
+    }
+
+    /**
+     * Set the job name.
+     *
+     * @param jobName
+     * @return
+     */
+    public QuartzScheduleDrivenJobBuilder withJobName(String jobName) {
+        this.jobName = jobName;
+
+        return this;
+    }
+
+    /**
+     * Set the context name.
+     *
+     * @param contextName
+     * @return
+     */
+    public QuartzScheduleDrivenJobBuilder withContextName(String contextName) {
+        this.contextName = contextName;
+
+        return this;
+    }
+
+    /**
+     * Add a child context id.
+     *
+     * @param childContextId
+     * @return
+     */
+    public QuartzScheduleDrivenJobBuilder addChildContextId(String childContextId) {
+        if(this.childContextNames == null) {
+            this.childContextNames = new ArrayList<>();
+        }
+
+        this.childContextNames.add(childContextId);
+
+        return this;
+    }
+
+    /**
+     * Set the job description.
+     *
+     * @param description
+     * @return
+     */
+    public QuartzScheduleDrivenJobBuilder withDescription(String description) {
+        this.description = description;
+
+        return this;
+    }
+
+    /**
+     * Set the job startupControlType.
+     *
+     * @param startupControlType
+     * @return
+     */
+    public QuartzScheduleDrivenJobBuilder withStartupControlType(String startupControlType) {
+        this.startupControlType = startupControlType;
+
+        return this;
+    }
 
     public QuartzScheduleDrivenJobBuilder withCronExpression(String cronExpression) {
         this.cronExpression = cronExpression;
@@ -88,13 +170,13 @@ public class QuartzScheduleDrivenJobBuilder extends SchedulerJobBuilder {
 
     public QuartzScheduleDrivenJob build() {
         QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
-        quartzScheduleDrivenJob.setAgentName(super.agentName);
-        quartzScheduleDrivenJob.setIdentifier(super.agentName+"-"+super.jobName);
-        quartzScheduleDrivenJob.setJobDescription(super.description);
-        quartzScheduleDrivenJob.setJobName(super.jobName);
-        quartzScheduleDrivenJob.setContextName(super.contextName);
-        quartzScheduleDrivenJob.setChildContextNames(super.childContextNames);
-        quartzScheduleDrivenJob.setStartupControlType(super.startupControlType);
+        quartzScheduleDrivenJob.setAgentName(this.agentName);
+        quartzScheduleDrivenJob.setIdentifier(this.agentName+"-"+this.jobName);
+        quartzScheduleDrivenJob.setJobDescription(this.description);
+        quartzScheduleDrivenJob.setJobName(this.jobName);
+        quartzScheduleDrivenJob.setContextName(this.contextName);
+        quartzScheduleDrivenJob.setChildContextNames(this.childContextNames);
+        quartzScheduleDrivenJob.setStartupControlType(this.startupControlType);
         quartzScheduleDrivenJob.setCronExpression(this.cronExpression);
         quartzScheduleDrivenJob.setTimeZone(this.timeZone);
         quartzScheduleDrivenJob.setJobGroup(this.jobGroup);

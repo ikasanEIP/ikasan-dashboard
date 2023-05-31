@@ -63,6 +63,18 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                     " Cache Contents - %s", contextualisedScheduledProcessEvent.getContextName(), contextualisedScheduledProcessEvent.getContextInstanceId(), ContextMachineCache.instance().toString()));
             }
 
+            if(this.configuration.isLogDetails()) {
+                logger.info(String.format("Received contextualisedScheduledProcessEvent with context instance id[%s]. " +
+                    "Processing that against context instance name[%s], with id[%s]", contextualisedScheduledProcessEvent.getContextInstanceId(),
+                    contextMachine.getContext().getName(), contextMachine.getContext().getId()));
+
+                if(!contextualisedScheduledProcessEvent.getContextInstanceId().equals(contextMachine.getContext().getId())) {
+                    logger.warn(String.format("contextualisedScheduledProcessEvent context instance id[%s] does not machine " +
+                        "context machine instance id[%s] for context[%s]", contextualisedScheduledProcessEvent.getContextInstanceId(),
+                        contextMachine.getContext().getId(), contextMachine.getContext().getName()));
+                }
+            }
+
             this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, contextMachine);
         }
         catch (InvalidContextInstanceIdException | ConfigurationException e) {
