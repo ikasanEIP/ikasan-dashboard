@@ -192,16 +192,20 @@ public class ContextMachine {
      * @throws JsonProcessingException
      */
     public void resetContextInstance(boolean holdCommandJobs, boolean initiateWithSameParameters,
-                                     List<ContextParameterInstance> contextParameterInstances) throws JsonProcessingException, SchedulerJobInstanceInitialisationException {
+                                     List<ContextParameterInstance> contextParameterInstances) throws IOException, SchedulerJobInstanceInitialisationException {
         if(this.context != null) {
+            String contextName = this.contextInstance.getName();
+            this.teardownBigQueue();
             ContextService contextService = new ContextService();
-            this.context = scheduledContextService.findByName(this.context.getName()).getContext();
+            this.context = scheduledContextService.findByName(contextName).getContext();
 
             ContextInstance previousContextInstance = SerializationUtils.clone(this.contextInstance);
 
             this.contextInstance = contextService.getContextInstance(contextService.getContextTemplateString(this.context));
             this.contextInstance.setId(UUID.randomUUID().toString());
             ContextHelper.enrichJobs(contextInstance);
+
+            this.init();
 
             SchedulerJobInstancesInitialisationParameters parameters
                 = new SchedulerJobInstancesInitialisationParametersImpl(holdCommandJobs);
@@ -273,6 +277,32 @@ public class ContextMachine {
                 (previousContextInstance.getId(), previousContextInstance, previousContextInstance.getStatus(), InstanceStatus.ENDED));
 
             this.saveContext();
+        }
+    }
+
+    private void teardownBigQueue() throws IOException {
+        BigQueueManagementService bigQueueManagementService =
+            new BigQueueContextMachineManagementServiceImpl(getInboundQueueName(),
+                inboundQueue, getOutboundQueueName(), outboundQueue);
+
+        BigQueueDirectoryManagementService bigQueueDirectoryManagementService
+            = new BigQueueDirectoryManagementServiceImpl(bigQueueManagementService, this.queueDir);
+
+        if (this.inboundQueue != null) {
+            this.inboundQueueMessageRunner.stop();
+            this.inboundQueue.close();
+            this.inboundQueue.removeAll();
+            this.inboundQueue.gc();
+            bigQueueDirectoryManagementService.deleteQueue(getInboundQueueName());
+            this.inboundQueueMessageRunner.start();
+        }
+        if (this.outboundQueue != null) {
+            this.outboundQueueMessageRunner.stop();
+            this.outboundQueue.close();
+            this.outboundQueue.removeAll();
+            this.outboundQueue.gc();
+            bigQueueDirectoryManagementService.deleteQueue(getOutboundQueueName());
+            this.outboundQueueMessageRunner.start();
         }
     }
 
