@@ -280,6 +280,11 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Method to tear down big queue only.
+     *
+     * @throws IOException
+     */
     private void teardownBigQueue() throws IOException {
         BigQueueManagementService bigQueueManagementService =
             new BigQueueContextMachineManagementServiceImpl(getInboundQueueName(),
@@ -307,6 +312,7 @@ public class ContextMachine {
     }
 
     /**
+     * Method to tear down context machine internals.
      *
      * @throws IOException
      */
@@ -780,7 +786,8 @@ public class ContextMachine {
                     event.getChildContextNames().clear();
                     event.getChildContextNames().add(schedulerJobInstance.getChildContextName());
                 }
-                this.contextInstance.getHeldJobs().remove(schedulerJobInstance.getIdentifier() + "_" + schedulerJobInstance.getChildContextName());
+                this.contextInstance.getHeldJobs().remove(schedulerJobInstance.getIdentifier()
+                    + "_" + schedulerJobInstance.getChildContextName());
 
                 BigQueueMessage bigQueueMessage
                     = new BigQueueMessageBuilder<>()

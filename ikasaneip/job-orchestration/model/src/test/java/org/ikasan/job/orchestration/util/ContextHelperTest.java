@@ -10,10 +10,7 @@ import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.json.JSONException;
 import org.junit.Assert;
@@ -211,6 +208,27 @@ public class ContextHelperTest {
         Assert.assertFalse(aggregateContextInstanceStatus.isDisabledJobs());
         Assert.assertFalse(aggregateContextInstanceStatus.isSkippedJobs());
         Assert.assertTrue(aggregateContextInstanceStatus.isHeldJobs());
+    }
+
+    @Test
+    public void test_hold_all_jobs_for_context_instance_when_job_in_error() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
+        ContextInstance contextInstance = this.contextService
+            .getContextInstance(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
+
+        contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> schedulerJobInstance.setStatus(InstanceStatus.ERROR));
+
+        ContextHelper.enrichJobs(contextInstance);
+
+        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate));
+
+        AggregateContextInstanceStatus aggregateContextInstanceStatus
+            = ContextHelper.getAggregateContextInstanceStatus(contextInstance);
+
+        Assert.assertFalse(aggregateContextInstanceStatus.isDisabledJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isSkippedJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isHeldJobs());
     }
 
     @Test
