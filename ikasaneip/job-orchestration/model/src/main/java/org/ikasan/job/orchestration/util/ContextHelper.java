@@ -865,7 +865,8 @@ public class ContextHelper {
     private static void _holdAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
         if(context.getScheduledJobs() != null) {
             context.getScheduledJobs().forEach(job -> {
-                if(internalEventDrivenJobInstanceMap.containsKey(job.getIdentifier() + "-" + job.getChildContextName())) {
+                if(internalEventDrivenJobInstanceMap.containsKey(job.getIdentifier() + "-" + job.getChildContextName())
+                    && (job.getStatus().equals(InstanceStatus.WAITING) || job.getStatus().equals(InstanceStatus.RELEASED))) {
                     if (job.getChildContextNames() != null) {
                         Map<String, Boolean> heldMap = new HashMap<>();
                         job.getChildContextNames()
@@ -890,7 +891,9 @@ public class ContextHelper {
 
     private static void _releaseAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
         if(context.getScheduledJobs() != null) {
-            context.getScheduledJobs().stream().filter(job -> internalEventDrivenJobInstanceMap.containsKey(job.getIdentifier()+job.getChildContextName()))
+            context.getScheduledJobs().stream()
+                .filter(job -> internalEventDrivenJobInstanceMap.containsKey(job.getIdentifier()+job.getChildContextName())
+                    && job.getStatus().equals(InstanceStatus.ON_HOLD))
                 .forEach(job -> {
                     Map<String, Boolean> heldMap = new HashMap<>();
                     job.setHeldContexts(heldMap);
