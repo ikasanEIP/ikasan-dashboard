@@ -6,8 +6,9 @@
     <artifactId>\${artifactId}-parent</artifactId>
     <packaging>pom</packaging>
     <version>\${version}</version>
-    <name>\${artifactId} Integration Module Parent POM</name>
-    <description>Describe the purpose of this Integration Module</description>
+    <name>\${artifactId} Job Plan Builder Demo Parent POM</name>
+    <description>The purpose of this module is to demonstate the job plan builder features of the Ikasan Enterprise Scheduler</description>
+
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
