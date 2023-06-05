@@ -81,7 +81,7 @@ The following additional directories are created on first execution of the demo.
 - ```logs``` directory contains the runtime output logs (std.out, std.err redirected) for the demo.
  
 
-### Running the Integration Module
+### Running the Demo
 The job plan builder demo performs 3 different functions:
 - Build the sample job plan bundle.
 - Build and deploy the sample job plan bundle to a running Ikasan Enterprise Scheduler instance.
