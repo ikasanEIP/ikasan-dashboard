@@ -640,7 +640,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         statusDiv.setStatus(schedulerJobInstance.getStatus());
                     }
 
-                    ComponentKey componentKey = new ComponentKey(schedulerJobInstance.getContextName()
+                    ComponentKey componentKey = new ComponentKey(schedulerJobInstance instanceof GlobalEventJob ? JobConstants.GLOBAL_EVENT :  schedulerJobInstance.getContextName()
                         , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName());
                     this.statusDivMap.put(componentKey, statusDiv);
                 }
@@ -671,7 +671,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         statusDiv.setStatus(schedulerJobInstance.getStatus());
                     }
 
-                    ComponentKey componentKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+schedulerJobInstance.getContextName()
+                    ComponentKey componentKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+(schedulerJobInstance instanceof GlobalEventJob ? JobConstants.GLOBAL_EVENT :  schedulerJobInstance.getContextName())
                         , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName());
                     this.statusDivMap.put(componentKey, statusDiv);
                 }
