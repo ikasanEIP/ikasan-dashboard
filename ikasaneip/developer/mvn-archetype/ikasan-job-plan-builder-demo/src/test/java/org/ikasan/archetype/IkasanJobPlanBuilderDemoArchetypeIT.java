@@ -59,7 +59,7 @@ import java.nio.file.Paths;
  * 
  * @author Ikasan Development Team
  */
-public class IkasanJobPlanBuilderDemoArchetypeTest
+public class IkasanJobPlanBuilderDemoArchetypeIT
 {
     File projectLocation;
     File archetypeLocation;
