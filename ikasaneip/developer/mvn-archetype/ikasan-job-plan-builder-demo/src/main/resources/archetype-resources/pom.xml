@@ -1,0 +1,26 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>\${groupId}</groupId>
+    <artifactId>\${artifactId}-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>\${version}</version>
+    <name>\${artifactId} Integration Module Parent POM</name>
+    <description>Describe the purpose of this Integration Module</description>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <version.org.springboot>2.5.12</version.org.springboot>
+        <version.ikasan>${project.version}</version.ikasan>
+    </properties>
+
+    <!-- standard modules -->
+    <modules>
+        <module>jar</module>
+        <module>distribution</module>
+    </modules>
+
+</project>
