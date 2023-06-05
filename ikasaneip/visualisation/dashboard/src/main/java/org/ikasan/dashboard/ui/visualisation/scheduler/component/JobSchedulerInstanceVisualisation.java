@@ -258,7 +258,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
 
         FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog
             (moduleMetaDataService.findById(schedulerJobRecord.getSchedulerJobInstance().getAgentName()),
-                this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService, this.contextInstance);
+                this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService, this.parentContextInstance);
         fileEventJobDialog.setJob(schedulerJobRecord);
 
         fileEventJobDialog.open();
