@@ -49,7 +49,7 @@
 
     <artifactId>ikasan-dashboard-mvn-archetype</artifactId>
     <packaging>pom</packaging>
-    <name>Ikasan Enterprise Integration Platform Developer Maven Archetypes</name>
+    <name>Ikasan Dashboard Developer Maven Archetypes</name>
 
     <modules>
         <module>ikasan-job-plan-builder-demo</module>

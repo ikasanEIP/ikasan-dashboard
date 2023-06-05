@@ -52,7 +52,7 @@
     <artifactId>ikasan-job-plan-builder-demo-maven-plugin</artifactId>
     <version>3.3.0-scheduler-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
-    <name>IkasanEIP Maven Archetype for a standalone DB to JMS to DB Integration Module</name>
+    <name>Ikasan Enterprise Scheduler Job Plan Builder Demo</name>
 
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -119,6 +119,17 @@
                             <goal>helpmojo</goal>
                         </goals>
                         <phase>process-classes</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
