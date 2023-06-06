@@ -502,7 +502,12 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
             lockParticipantCount.addAndGet(jobLockParticipant.get().getLockCount());
         }
 
-        return lockParticipantCount.get() > jlh.getLockCount();
+        if(jlh.getLockHolders().isEmpty()) {
+            return false;
+        }
+        else {
+            return lockParticipantCount.get() > jlh.getLockCount();
+        }
     }
 
     /**
