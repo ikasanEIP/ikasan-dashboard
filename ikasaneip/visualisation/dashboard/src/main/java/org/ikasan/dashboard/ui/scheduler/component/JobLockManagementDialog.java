@@ -232,13 +232,6 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                             lockCountTf.setErrorMessage(String.format(getTranslation("error.job-lock-size", UI.getCurrent().getLocale()), Integer.MAX_VALUE));
                             return;
                         }
-                        if(event.getValue() > comboBox.getValue().getLockCount()) {
-                            ignoreValueChange.set(true);
-                            lockCountTf.setValue((int)comboBox.getValue().getLockCount());
-                            lockCountTf.setInvalid(true);
-                            lockCountTf.setErrorMessage(String.format(getTranslation("error.job-lock-size-cannot-exceed-lock-size", UI.getCurrent().getLocale()), Integer.MAX_VALUE));
-                            return;
-                        }
 
                         lockCountTf.setInvalid(false);
                         job.getChildContextNames().forEach(child -> {
