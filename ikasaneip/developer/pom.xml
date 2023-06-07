@@ -49,7 +49,7 @@
 
     <artifactId>ikasan-dashboard-developer</artifactId>
     <packaging>pom</packaging>
-    <name>Ikasan Enterprise Integration Platform Developer Tools</name>
+    <name>Ikasan Dashboard Developer Tools</name>
 
     <modules>
         <module>mvn-archetype</module>

@@ -53,6 +53,7 @@
 
     <modules>
         <module>ikasan-job-plan-builder-demo</module>
+        <module>ikasan-scheduler-distribution-deployment-demo</module>
     </modules>
 
     <build>
