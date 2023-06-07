@@ -3,4 +3,5 @@
 This page contains links to archetypes that provide useful tooling for the Ikasan Dashboard.
 
 - [Ikasan Enterprise Scheduler Job Plan Demo](./ikasan-job-plan-builder-demo/Readme.md)
+- [Ikasan Enterprise Scheduler Distribution Deployment Demo](./ikasan-scheduler-distribution-deployment-demo/Readme.md)
 

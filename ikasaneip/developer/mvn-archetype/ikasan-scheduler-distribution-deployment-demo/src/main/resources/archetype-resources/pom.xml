@@ -1,0 +1,124 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>\${groupId}</groupId>
+    <artifactId>\${artifactId}-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>\${version}</version>
+    <name>\${artifactId} Job Plan Builder Demo Parent POM</name>
+    <description>The purpose of this module is to demonstate the job plan builder features of the Ikasan Enterprise Scheduler</description>
+
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <version.ikasan>${project.version}</version.ikasan>
+        <scheduler-dashboard-distribution-deploy-directory>.</scheduler-dashboard-distribution-deploy-directory>
+        <scheduler-agent-distribution-deploy-directory>.</scheduler-agent-distribution-deploy-directory>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>scheduler-agent-distribution</artifactId>
+            <version>${version.ikasan}</version>
+            <type>zip</type>
+            <classifier>dist</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-dashboard-distrbution</artifactId>
+            <version>${version.ikasan}</version>
+            <type>zip</type>
+            <classifier>dist</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <id>unpack dashboard distribution</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.ikasan</groupId>
+                                    <artifactId>ikasan-dashboard-distrbution</artifactId>
+                                    <version>${version.ikasan}</version>
+                                    <classifier>dist</classifier>
+                                    <type>zip</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${scheduler-dashboard-distribution-deploy-directory}</outputDirectory>
+                                    <includes/>
+                                    <excludes/>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.ikasan</groupId>
+                                    <artifactId>scheduler-agent-distribution</artifactId>
+                                    <version>${version.ikasan}</version>
+                                    <classifier>dist</classifier>
+                                    <type>zip</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${scheduler-agent-distribution-deploy-directory}</outputDirectory>
+                                    <includes/>
+                                    <excludes/>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>release</id>
+            <name>nexus</name>
+            <url>http://oss.sonatype.org/content/repositories/releases</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>snapshot</id>
+            <name>nexus-snapshot</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+</project>
