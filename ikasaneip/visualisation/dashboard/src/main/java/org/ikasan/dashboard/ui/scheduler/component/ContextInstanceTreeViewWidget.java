@@ -1401,7 +1401,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             event = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR_CLOCK), getTranslation("tooltip.view-scheduled-process-event"
                 , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             event.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                JsonViewerDialog dialog = new JsonViewerDialog(schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent()
+                SchedulerJobInstanceRecord updated = this.schedulerJobInstanceService.findById(schedulerJobInstanceRecord.getId());
+
+                JsonViewerDialog dialog = new JsonViewerDialog(updated.getSchedulerJobInstance().getScheduledProcessEvent()
                     , getTranslation("header.catalyst-job-process-execution-details", UI.getCurrent().getLocale()));
                 dialog.open();
             });
@@ -1420,7 +1422,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             executionDetails = IconDecorator.decorate(new Icon(VaadinIcon.COG), getTranslation("tooltip.view-process-execution-details"
                 , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             executionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                TextViewerDialog dialog = new TextViewerDialog(schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent().getExecutionDetails()
+                SchedulerJobInstanceRecord updated = this.schedulerJobInstanceService.findById(schedulerJobInstanceRecord.getId());
+                TextViewerDialog dialog = new TextViewerDialog(updated.getSchedulerJobInstance().getScheduledProcessEvent().getExecutionDetails()
                     , getTranslation("header.process-execution-details", UI.getCurrent().getLocale()));
                 dialog.open();
             });
