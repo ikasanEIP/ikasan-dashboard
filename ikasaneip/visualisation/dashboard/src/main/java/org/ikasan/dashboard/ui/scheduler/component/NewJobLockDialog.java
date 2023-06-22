@@ -94,7 +94,7 @@ public class NewJobLockDialog extends AbstractCloseableResizableDialog {
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
 
         super.content.add(layout);
-        super.title.setText(getTranslation("table-header.context-name", UI.getCurrent().getLocale()));
+        super.title.setText(getTranslation("label.new-job-lock", UI.getCurrent().getLocale()));
 
         super.showResize(false);
         super.setResizable(false);

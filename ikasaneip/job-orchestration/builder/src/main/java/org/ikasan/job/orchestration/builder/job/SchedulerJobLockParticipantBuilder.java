@@ -87,18 +87,6 @@ public class SchedulerJobLockParticipantBuilder  {
     }
 
     /**
-     * Set the job startupControlType.
-     *
-     * @param startupControlType
-     * @return
-     */
-    public SchedulerJobLockParticipantBuilder withStartupControlType(String startupControlType) {
-        this.startupControlType = startupControlType;
-
-        return this;
-    }
-
-    /**
      * Set the lock count
      *
      * @param lockCount
