@@ -1,7 +1,7 @@
 {
   "agentName": "agentName",
   "jobName": "jobName",
-  "startupControlType": "MANUAL",
+  "startupControlType": "AUTOMATIC",
   "lockCount": 10,
   "identifier": "agentName-jobName"
 }

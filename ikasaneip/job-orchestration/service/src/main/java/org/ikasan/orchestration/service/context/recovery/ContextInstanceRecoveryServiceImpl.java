@@ -157,7 +157,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             return;
         }
         SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords = scheduledContextInstanceService
-            .getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING, InstanceStatus.ERROR));
+            .getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING, InstanceStatus.ERROR, InstanceStatus.COMPLETE));
 
         Map<String, List<ScheduledContextInstanceRecord>> contextNameToInstances = new HashMap<>();
 

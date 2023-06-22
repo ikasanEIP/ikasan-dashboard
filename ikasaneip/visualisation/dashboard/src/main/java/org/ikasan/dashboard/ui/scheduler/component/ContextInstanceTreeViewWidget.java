@@ -1404,7 +1404,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 SchedulerJobInstanceRecord updated = this.schedulerJobInstanceService.findById(schedulerJobInstanceRecord.getId());
 
                 JsonViewerDialog dialog = new JsonViewerDialog(updated.getSchedulerJobInstance().getScheduledProcessEvent()
-                    , getTranslation("header.catalyst-job-process-execution-details", UI.getCurrent().getLocale()));
+                    , getTranslation("header.catalyst-scheduled-process-event", UI.getCurrent().getLocale()));
                 dialog.open();
             });
 
