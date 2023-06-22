@@ -24,7 +24,6 @@ public class SchedulerJobLockParticipantBuilderTest extends AbstractTest {
             .withAgentName("agentName")
             .withContextName("contextId")
             .withJobName("jobName")
-            .withStartupControlType("MANUAL")
             .withLockCount(10);
 
         JSONAssert.assertEquals(super.loadDataFile("/data/scheduler-job-lock-participant.json"),

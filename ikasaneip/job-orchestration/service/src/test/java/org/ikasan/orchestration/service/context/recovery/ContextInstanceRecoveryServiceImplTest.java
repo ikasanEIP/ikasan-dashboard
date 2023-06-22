@@ -561,6 +561,6 @@ public class ContextInstanceRecoveryServiceImplTest {
     }
 
     private List<InstanceStatus> getStatusesToLookFor() {
-        return List.of(WAITING, RUNNING, ERROR);
+        return List.of(WAITING, RUNNING, ERROR, COMPLETE);
     }
 }

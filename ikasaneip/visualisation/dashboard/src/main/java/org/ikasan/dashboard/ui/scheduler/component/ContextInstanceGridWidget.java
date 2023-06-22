@@ -205,33 +205,34 @@ public class ContextInstanceGridWidget extends Div {
 
             layout.add(view);
 
-            Icon chart = VaadinIcon.CHART.create();
-            chart.setSize("14pt");
-            chart.getStyle().set("cursor", "pointer");
-            chart.getElement().setAttribute("title", getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()));
-            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+            // todo will incorporate statistics into a future version of the scheduler
+//            Icon chart = VaadinIcon.CHART.create();
+//            chart.setSize("14pt");
+//            chart.getStyle().set("cursor", "pointer");
+//            chart.getElement().setAttribute("title", getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()));
+//            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+//
+//            });
+//
+//            ComponentSecurityVisibility.applySecurity(chart, SecurityConstants.ALL_AUTHORITY,
+//                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+//                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+//
+//            layout.add(chart);
 
-            });
-
-            ComponentSecurityVisibility.applySecurity(chart, SecurityConstants.ALL_AUTHORITY,
-                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
-
-            layout.add(chart);
-
-            Icon export = VaadinIcon.DOWNLOAD_ALT.create();
-            export.setSize("14pt");
-            export.getStyle().set("cursor", "pointer");
-            export.getElement().setAttribute("title", "Export");
-            export.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
-            });
-
-            ComponentSecurityVisibility.applySecurity(export, SecurityConstants.ALL_AUTHORITY,
-                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
-
-            layout.add(export);
+//            Icon export = VaadinIcon.DOWNLOAD_ALT.create();
+//            export.setSize("14pt");
+//            export.getStyle().set("cursor", "pointer");
+//            export.getElement().setAttribute("title", "Export");
+//            export.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+//
+//            });
+//
+//            ComponentSecurityVisibility.applySecurity(export, SecurityConstants.ALL_AUTHORITY,
+//                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+//                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+//
+//            layout.add(export);
 
             Icon newWindow = VaadinIcon.EXTERNAL_LINK.create();
             newWindow.setSize("14pt");

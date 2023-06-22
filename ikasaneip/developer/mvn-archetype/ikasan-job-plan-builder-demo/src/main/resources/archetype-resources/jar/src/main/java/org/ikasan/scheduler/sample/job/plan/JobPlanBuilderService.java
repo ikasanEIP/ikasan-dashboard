@@ -106,6 +106,28 @@ public class JobPlanBuilderService {
         contextTemplateBuilder.addContext(this.buildScriptProcessingContext())
                 .addContext(this.buildGlobalEventContext());
 
+        contextTemplateBuilder.addContextParameter(this.buildContextParameter("sample_param", "sample default value"));
+        contextTemplateBuilder.addJobLocks(contextTemplateBuilder.getJobLockBuilder()
+            .withLockCount(1)
+            .withLockName("MyFirstLock")
+            .withJob("ScriptProcessingContext", contextTemplateBuilder.getSchedulerJobLockParticipantBuilder()
+                .withJobName(this.internalEventDrivenJobs.get("SampleCommandExecutionJob7").getJobName())
+                .withAgentName(this.internalEventDrivenJobs.get("SampleCommandExecutionJob7").getAgentName())
+                .addChildContextId("SampleCommandExecutionJob7")
+                .withContextName(this.internalEventDrivenJobs.get("SampleCommandExecutionJob7").getContextName())
+                .withLockCount(1)
+                .withDescription(this.internalEventDrivenJobs.get("SampleCommandExecutionJob7").getJobDescription())
+                .build())
+            .withJob("ScriptProcessingContext", contextTemplateBuilder.getSchedulerJobLockParticipantBuilder()
+                .withJobName(this.internalEventDrivenJobs.get("SampleCommandExecutionJob2").getJobName())
+                .withAgentName(this.internalEventDrivenJobs.get("SampleCommandExecutionJob2").getAgentName())
+                .addChildContextId("ScriptProcessingContext")
+                .withContextName(this.internalEventDrivenJobs.get("SampleCommandExecutionJob2").getContextName())
+                .withLockCount(1)
+                .withDescription(this.internalEventDrivenJobs.get("SampleCommandExecutionJob2").getJobDescription())
+                .build())
+            .build());
+
         ContextTemplate contextTemplate = contextTemplateBuilder.build();
 
         ArrayList<SchedulerJob> allJobs = new ArrayList<>();
@@ -135,142 +157,167 @@ public class JobPlanBuilderService {
      * @return
      * @throws JsonProcessingException
      */
-    private ContextTemplate buildScriptProcessingContext() throws JsonProcessingException {
+    public ContextTemplate buildScriptProcessingContext() throws JsonProcessingException {
         ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
 
         contextTemplateBuilder.withName("ScriptProcessingContext")
-                .withDescription("This context demonstrates executing some command execution jobs along with a file job");
+            .withDescription("This context demonstrates executing some command execution jobs along with a file job");
 
 
         InternalEventDrivenJob sampleCommandExecutionJob2 = this.buildCommandExecutionJob("SampleCommandExecutionJob2", "scheduler-agent",
-                "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext"),
-                "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
-                List.of(this.buildContextParameter("sample_param", "sample default value")));
+            "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext"),
+            "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
+            List.of(this.buildContextParameter("sample_param", "sample default value")));
 
         contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                        .withJobName(sampleCommandExecutionJob2.getJobName())
-                        .withAgentName(sampleCommandExecutionJob2.getAgentName())
-                        .withDescription(sampleCommandExecutionJob2.getJobDescription())
-                        .build());
+            .withJobName(sampleCommandExecutionJob2.getJobName())
+            .withAgentName(sampleCommandExecutionJob2.getAgentName())
+            .withDescription(sampleCommandExecutionJob2.getJobDescription())
+            .build());
 
         InternalEventDrivenJob sampleCommandExecutionJob3 = this.buildCommandExecutionJob("SampleCommandExecutionJob3", "scheduler-agent",
-                "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext"),
-                "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
-                List.of(this.buildContextParameter("sample_param", "sample default value")));
+            "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext"),
+            "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
+            List.of(this.buildContextParameter("sample_param", "sample default value")));
 
         contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                        .withJobName(sampleCommandExecutionJob3.getJobName())
-                        .withAgentName(sampleCommandExecutionJob3.getAgentName())
-                        .withDescription(sampleCommandExecutionJob3.getJobDescription())
-                        .build());
+            .withJobName(sampleCommandExecutionJob3.getJobName())
+            .withAgentName(sampleCommandExecutionJob3.getAgentName())
+            .withDescription(sampleCommandExecutionJob3.getJobDescription())
+            .build());
 
         InternalEventDrivenJob sampleCommandExecutionJob4 = this.buildCommandExecutionJob("SampleCommandExecutionJob4", "scheduler-agent",
-                "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext"),
-                "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
-                List.of(this.buildContextParameter("sample_param", "sample default value")));
+            "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext"),
+            "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
+            List.of(this.buildContextParameter("sample_param", "sample default value")));
 
         contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                        .withJobName(sampleCommandExecutionJob4.getJobName())
-                        .withAgentName(sampleCommandExecutionJob4.getAgentName())
-                        .withDescription(sampleCommandExecutionJob4.getJobDescription())
-                        .build());
+            .withJobName(sampleCommandExecutionJob4.getJobName())
+            .withAgentName(sampleCommandExecutionJob4.getAgentName())
+            .withDescription(sampleCommandExecutionJob4.getJobDescription())
+            .build());
 
         InternalEventDrivenJob sampleCommandExecutionJob5 = this.buildCommandExecutionJob("SampleCommandExecutionJob4", "scheduler-agent",
-                "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext"),
-                "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
-                List.of(this.buildContextParameter("sample_param", "sample default value")));
+            "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext"),
+            "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
+            List.of(this.buildContextParameter("sample_param", "sample default value")));
 
         contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                        .withJobName(sampleCommandExecutionJob5.getJobName())
-                        .withAgentName(sampleCommandExecutionJob5.getAgentName())
-                        .withDescription(sampleCommandExecutionJob5.getJobDescription())
-                        .build());
+            .withJobName(sampleCommandExecutionJob5.getJobName())
+            .withAgentName(sampleCommandExecutionJob5.getAgentName())
+            .withDescription(sampleCommandExecutionJob5.getJobDescription())
+            .build());
 
         InternalEventDrivenJob sampleCommandExecutionJob6 = this.buildCommandExecutionJob("SampleCommandExecutionJob6", "scheduler-agent",
-                "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext", "MyGlobalEventContext"),
-                "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
-                List.of(this.buildContextParameter("sample_param", "sample default value")));
+            "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext", "MyGlobalEventContext"),
+            "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
+            List.of(this.buildContextParameter("sample_param", "sample default value")));
 
         contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                        .withJobName(sampleCommandExecutionJob6.getJobName())
-                        .withAgentName(sampleCommandExecutionJob6.getAgentName())
-                        .withDescription(sampleCommandExecutionJob6.getJobDescription())
-                        .build());
-        
+            .withJobName(sampleCommandExecutionJob6.getJobName())
+            .withAgentName(sampleCommandExecutionJob6.getAgentName())
+            .withDescription(sampleCommandExecutionJob6.getJobDescription())
+            .build());
+
+        InternalEventDrivenJob sampleCommandExecutionJob7 = this.buildCommandExecutionJob("SampleCommandExecutionJob7", "scheduler-agent",
+            "This is a simple script to demonstrate how command execution jobs work.", List.of("ScriptProcessingContext"),
+            "MyFirstJobPlan", "echo \"Running Job :- SampleCommandExecutionJob1\"\nls -la\nsleep 10\necho $sample_param",
+            List.of(this.buildContextParameter("sample_param", "sample default value")));
+
+        contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
+            .withJobName(sampleCommandExecutionJob7.getJobName())
+            .withAgentName(sampleCommandExecutionJob7.getAgentName())
+            .withDescription(sampleCommandExecutionJob7.getJobDescription())
+            .build());
+
         QuartzScheduleDrivenJob fileWatcherJob1 = this.buildFileEventDrivenJob("FileWatcherJob1", "scheduler-agent", "This is a file watcher job looking for a file on the file system.",
-                List.of("ScriptProcessingContext"), "MyFirstJobPlan", "0 0/1 * * * ?", "the file path", List.of("file.1.txt"));
+            List.of("ScriptProcessingContext"), "MyFirstJobPlan", "0 0/1 * * * ?", "the file path", List.of("file.1.txt"));
 
         contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                .withJobName(fileWatcherJob1.getJobName())
-                .withAgentName(fileWatcherJob1.getAgentName())
-                .withDescription(fileWatcherJob1.getJobDescription())
-                .build());
+            .withJobName(fileWatcherJob1.getJobName())
+            .withAgentName(fileWatcherJob1.getAgentName())
+            .withDescription(fileWatcherJob1.getJobDescription())
+            .build());
 
         InternalEventDrivenJob sampleCommandExecutionJob1 = this.internalEventDrivenJobs.get("SampleCommandExecutionJob1");
 
         contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                .withJobName(sampleCommandExecutionJob1.getJobName())
-                .withAgentName(sampleCommandExecutionJob1.getAgentName())
-                .withDescription(sampleCommandExecutionJob1.getJobDescription())
-                .build());
+            .withJobName(sampleCommandExecutionJob1.getJobName())
+            .withAgentName(sampleCommandExecutionJob1.getAgentName())
+            .withDescription(sampleCommandExecutionJob1.getJobDescription())
+            .build());
 
-                // Add the job dependencies
+        // Add the job dependencies
         contextTemplateBuilder.addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
-                        .withJobName(sampleCommandExecutionJob2.getJobName())
+                .withJobName(sampleCommandExecutionJob2.getJobName())
+                .withAgentName(sampleCommandExecutionJob2.getAgentName())
+                .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                    .addAnd(contextTemplateBuilder.getJobAndBuilder()
+                        .withAgentName(sampleCommandExecutionJob1.getAgentName())
+                        .withJobName(sampleCommandExecutionJob1.getJobName())
+                        .build())
+                    .build())
+                .build())
+            .addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
+                .withJobName(sampleCommandExecutionJob7.getJobName())
+                .withAgentName(sampleCommandExecutionJob7.getAgentName())
+                .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                    .addAnd(contextTemplateBuilder.getJobAndBuilder()
+                        .withAgentName(sampleCommandExecutionJob1.getAgentName())
+                        .withJobName(sampleCommandExecutionJob1.getJobName())
+                        .build())
+                    .build())
+                .build())
+            .addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
+                .withJobName(sampleCommandExecutionJob3.getJobName())
+                .withAgentName(sampleCommandExecutionJob3.getAgentName())
+                .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                    .addAnd(contextTemplateBuilder.getJobAndBuilder()
                         .withAgentName(sampleCommandExecutionJob2.getAgentName())
-                        .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
-                                .addAnd(contextTemplateBuilder.getJobAndBuilder()
-                                        .withAgentName(sampleCommandExecutionJob1.getAgentName())
-                                        .withJobName(sampleCommandExecutionJob1.getJobName())
-                                        .build())
-                                .build())
+                        .withJobName(sampleCommandExecutionJob2.getJobName())
                         .build())
-                .addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
-                        .withJobName(sampleCommandExecutionJob3.getJobName())
+                    .addAnd(contextTemplateBuilder.getJobAndBuilder()
+                        .withAgentName(sampleCommandExecutionJob7.getAgentName())
+                        .withJobName(sampleCommandExecutionJob7.getJobName())
+                        .build())
+                    .addAnd(contextTemplateBuilder.getJobAndBuilder()
+                        .withAgentName(fileWatcherJob1.getAgentName())
+                        .withJobName(fileWatcherJob1.getJobName())
+                        .build())
+                    .build())
+                .build())
+            .addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
+                .withJobName(sampleCommandExecutionJob4.getJobName())
+                .withAgentName(sampleCommandExecutionJob4.getAgentName())
+                .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                    .addAnd(contextTemplateBuilder.getJobAndBuilder()
                         .withAgentName(sampleCommandExecutionJob3.getAgentName())
-                        .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
-                                .addAnd(contextTemplateBuilder.getJobAndBuilder()
-                                        .withAgentName(sampleCommandExecutionJob2.getAgentName())
-                                        .withJobName(sampleCommandExecutionJob2.getJobName())
-                                        .build())
-                                .addAnd(contextTemplateBuilder.getJobAndBuilder()
-                                        .withAgentName(fileWatcherJob1.getAgentName())
-                                        .withJobName(fileWatcherJob1.getJobName())
-                                        .build())
-                                .build())
+                        .withJobName(sampleCommandExecutionJob3.getJobName())
                         .build())
-                .addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
-                        .withJobName(sampleCommandExecutionJob4.getJobName())
-                        .withAgentName(sampleCommandExecutionJob4.getAgentName())
-                        .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
-                                .addAnd(contextTemplateBuilder.getJobAndBuilder()
-                                        .withAgentName(sampleCommandExecutionJob3.getAgentName())
-                                        .withJobName(sampleCommandExecutionJob3.getJobName())
-                                        .build())
-                                .build())
+                    .build())
+                .build())
+            .addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
+                .withJobName(sampleCommandExecutionJob5.getJobName())
+                .withAgentName(sampleCommandExecutionJob5.getAgentName())
+                .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                    .addAnd(contextTemplateBuilder.getJobAndBuilder()
+                        .withAgentName(sampleCommandExecutionJob3.getAgentName())
+                        .withJobName(sampleCommandExecutionJob3.getJobName())
                         .build())
-                .addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
-                        .withJobName(sampleCommandExecutionJob5.getJobName())
+                    .build())
+                .build())
+            .addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
+                .withJobName(sampleCommandExecutionJob6.getJobName())
+                .withAgentName(sampleCommandExecutionJob6.getAgentName())
+                .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                    .addAnd(contextTemplateBuilder.getJobAndBuilder()
                         .withAgentName(sampleCommandExecutionJob5.getAgentName())
-                        .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
-                                .addAnd(contextTemplateBuilder.getJobAndBuilder()
-                                        .withAgentName(sampleCommandExecutionJob3.getAgentName())
-                                        .withJobName(sampleCommandExecutionJob3.getJobName())
-                                        .build())
-                                .build())
+                        .withJobName(sampleCommandExecutionJob5.getJobName())
                         .build())
-                .addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
-                        .withJobName(sampleCommandExecutionJob6.getJobName())
-                        .withAgentName(sampleCommandExecutionJob6.getAgentName())
-                        .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
-                                .addAnd(contextTemplateBuilder.getJobAndBuilder()
-                                        .withAgentName(sampleCommandExecutionJob5.getAgentName())
-                                        .withJobName(sampleCommandExecutionJob5.getJobName())
-                                        .build())
-                                .build())
-                        .build())
-                .withTreeViewExpandLevel(1)
-                .build();
+                    .build())
+                .build())
+            .withTreeViewExpandLevel(1)
+            .build();
 
         return contextTemplateBuilder.build();
     }
