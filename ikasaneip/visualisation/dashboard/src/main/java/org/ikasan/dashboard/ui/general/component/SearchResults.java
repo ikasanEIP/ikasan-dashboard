@@ -102,6 +102,8 @@ public class SearchResults extends Div {
 
     private int maxDownloadBytes;
 
+    private IkasanAuthentication ikasanAuthentication;
+
     public SearchResults(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
                          HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService,
                          ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService,
@@ -145,6 +147,8 @@ public class SearchResults extends Div {
 
         translatedEventActionMessage = getTranslation("message.resubmission-event-action"
             , UI.getCurrent().getLocale());
+
+        this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
 
     /**
@@ -547,7 +551,7 @@ public class SearchResults extends Div {
     /**
      * Helper method to toggle the selected check box.
      */
-    private void toggleSelected()
+    public void toggleSelected()
     {
         if(this.selected)
         {
@@ -613,7 +617,8 @@ public class SearchResults extends Div {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.resubmitHospitalEventSubmissionListener = new  ResubmitHospitalEventSubmissionListener(this.hospitalAuditService, this.resubmissionRestService
-            , this.moduleMetadataService, this.solrGeneralService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes, this.selectionItems, authentication, this.dateFormatter);
+            , this.moduleMetadataService, this.solrGeneralService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes
+            , this.selectionItems, authentication, this.dateFormatter, this);
         this.resubmitHospitalEventRegistration = this.resubmitButton.addClickListener(this.resubmitHospitalEventSubmissionListener);
     }
 
@@ -631,7 +636,7 @@ public class SearchResults extends Div {
 
         this.ignoreHospitalEventSubmissionListener = new IgnoreHospitalEventSubmissionListener(this.hospitalAuditService, this.resubmissionRestService
             , this.moduleMetadataService, this.solrGeneralService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes
-            , this.selectionItems, authentication, this.dateFormatter);
+            , this.selectionItems, authentication, this.dateFormatter, this);
         this.ignoreHospitalEventRegistration = this.ignoreButton.addClickListener(ignoreHospitalEventSubmissionListener);
     }
 
@@ -654,13 +659,13 @@ public class SearchResults extends Div {
         {
             buttonLayout.add(this.replayButton, this.selectAllButton, this.csvExportButton, this.downloadButton);
 
-            ComponentSecurityVisibility.applySecurity(replayButton
+            ComponentSecurityVisibility.applySecurity(this.ikasanAuthentication, replayButton
                 , SecurityConstants.REPLAY_WRITE
                 , SecurityConstants.REPLAY_ADMIN
                 , SecurityConstants.REPLAY_ALL_MODULES_WRITE
                 , SecurityConstants.REPLAY_ALL_MODULES_ADMIN
                 , SecurityConstants.ALL_AUTHORITY);
-            ComponentSecurityVisibility.applySecurity(selectAllButton
+            ComponentSecurityVisibility.applySecurity(this.ikasanAuthentication, selectAllButton
                 , SecurityConstants.REPLAY_WRITE
                 , SecurityConstants.REPLAY_ADMIN
                 , SecurityConstants.REPLAY_ALL_MODULES_WRITE
@@ -673,19 +678,19 @@ public class SearchResults extends Div {
         {
             buttonLayout.add(this.resubmitButton, this.ignoreButton, this.selectAllButton, this.csvExportButton, downloadButton);
 
-            ComponentSecurityVisibility.applySecurity(resubmitButton
+            ComponentSecurityVisibility.applySecurity(this.ikasanAuthentication, resubmitButton
                 , SecurityConstants.EXCLUSION_WRITE
                 , SecurityConstants.EXCLUSION_ADMIN
                 , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
                 , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
                 , SecurityConstants.ALL_AUTHORITY);
-            ComponentSecurityVisibility.applySecurity(ignoreButton
+            ComponentSecurityVisibility.applySecurity(this.ikasanAuthentication, ignoreButton
                 , SecurityConstants.EXCLUSION_WRITE
                 , SecurityConstants.EXCLUSION_ADMIN
                 , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
                 , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
                 , SecurityConstants.ALL_AUTHORITY);
-            ComponentSecurityVisibility.applySecurity(selectAllButton
+            ComponentSecurityVisibility.applySecurity(this.ikasanAuthentication, selectAllButton
                 , SecurityConstants.EXCLUSION_WRITE
                 , SecurityConstants.EXCLUSION_ADMIN
                 , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE

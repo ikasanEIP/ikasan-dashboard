@@ -13,6 +13,7 @@ import com.vaadin.flow.data.provider.SortDirection;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.HospitalCommentsDialog;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.general.component.SearchResults;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
@@ -42,12 +43,15 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
     private Logger logger = LoggerFactory.getLogger(IgnoreHospitalEventSubmissionListener.class);
 
     private HospitalAuditService hospitalAuditService;
-    private ResubmissionService resubmissionRestService;
+
+    private boolean success = false;
+
+    private SearchResults searchResults;
 
     public IgnoreHospitalEventSubmissionListener(HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
         , ModuleMetaDataService moduleMetadataService, SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService
         , String actionMessage, SolrSearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes
-        , HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication, DateFormatter dateFormatter) {
+        , HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication, DateFormatter dateFormatter, SearchResults searchResults) {
         super(actionMessage, solrGeneralService, moduleMetadataService, resubmissionRestService, searchResultsGrid
             , selectionBoxes, selectionItems, ikasanAuthentication, dateFormatter);
 
@@ -55,9 +59,9 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
         if (this.hospitalAuditService == null) {
             throw new IllegalArgumentException("hospitalAuditService cannot be null!");
         }
-        this.resubmissionRestService = resubmissionRestService;
-        if (this.hospitalAuditService == null) {
-            throw new IllegalArgumentException("hospitalAuditService cannot be null!");
+        this.searchResults = searchResults;
+        if (this.searchResults == null) {
+            throw new IllegalArgumentException("searchResults cannot be null!");
         }
 
         this.searchResultsGrid = searchResultsGrid;
@@ -97,6 +101,7 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                 executor.execute(() ->
                 {
                     try {
+                        this.success = false;
                         List<ExclusionEventAction> exclusionEventActions = null;
 
                         if (!selected) {
@@ -146,15 +151,17 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                             });
                         }
 
-                        current.access(() ->
-                        {
-                            this.searchResultsGrid.getDataProvider().refreshAll();
-                        });
+                        current.access(() -> this.searchResultsGrid.getDataProvider().refreshAll());
+                        this.success = true;
+                        if(this.selected) {
+                            searchResults.toggleSelected();
+                        }
                     }
                     catch (Exception e) {
                         logger.error("An error has occurred managing hospital events!", e);
                         current.access(() ->
                         {
+                            this.searchResultsGrid.getDataProvider().refreshAll();
                             progressIndicatorDialog.close();
                             NotificationHelper.showErrorNotification(getTranslation("message.error-bulk-ignore-exclusions", UI.getCurrent().getLocale()));
                         });
@@ -162,5 +169,9 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                 });
             }
         });
+    }
+
+    public boolean isSuccess() {
+        return success;
     }
 }
