@@ -19,7 +19,7 @@ public class ContextInstanceRecoveryManagerTest {
 
     @Before
     public void setUp() {
-        contextInstanceRecoveryManager = new ContextInstanceRecoveryManager(contextInstanceRecoveryService, true);
+        contextInstanceRecoveryManager = new ContextInstanceRecoveryManager(contextInstanceRecoveryService, true, true);
     }
 
     @Test
