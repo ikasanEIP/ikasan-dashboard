@@ -57,6 +57,9 @@ public class JobOrchestrationAutoConfiguration {
     @Value("${context.lifecycle.active:true}")
     private boolean isContextLifeCycleActive;
 
+    @Value("${s.ikasan.enterprise.scheduler.instance:true}")
+    private boolean isIkasanEnterpriseSchedulerInstance;
+
     @Resource
     private JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration;
 
@@ -96,13 +99,12 @@ public class JobOrchestrationAutoConfiguration {
     @Bean
     @DependsOn({"stateChangeMonitor","overdueFileMonitor","monitorManagement"})
     public ContextInstanceRecoveryManager contextInstanceRecoveryManager(@Lazy ContextInstanceRecoveryService contextInstanceRecoveryService) {
-        return new ContextInstanceRecoveryManager(contextInstanceRecoveryService, isContextLifeCycleActive);
+        return new ContextInstanceRecoveryManager(contextInstanceRecoveryService, isContextLifeCycleActive, isIkasanEnterpriseSchedulerInstance);
     }
 
     @Bean
     @DependsOn("contextInstanceRecoveryManager")
-    public ContextInstanceSchedulerService contextInstanceSchedulerService(@Lazy ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                                                           ScheduledContextService scheduledContextService) {
+    public ContextInstanceSchedulerService contextInstanceSchedulerService(@Lazy ContextInstanceRegistrationService contextInstanceRegistrationService, ScheduledContextService scheduledContextService) {
         return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler(),
             CachingScheduledJobFactory.getInstance(),
             scheduledContextService,

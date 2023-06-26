@@ -11,9 +11,12 @@ public class ContextInstanceRecoveryManager {
 
     private final boolean isContextLifeCycleActive;
 
+    private final boolean isIkasanEnterpriseSchedulerInstance;
+
     private final ContextInstanceRecoveryService contextInstanceRecoveryService;
 
-    public ContextInstanceRecoveryManager(ContextInstanceRecoveryService contextInstanceRecoveryService, boolean isContextLifeCycleActive) {
+    public ContextInstanceRecoveryManager(ContextInstanceRecoveryService contextInstanceRecoveryService, boolean isContextLifeCycleActive,
+                                          boolean isIkasanEnterpriseSchedulerInstance) {
 
         this.contextInstanceRecoveryService = contextInstanceRecoveryService;
         if (this.contextInstanceRecoveryService == null) {
@@ -21,6 +24,7 @@ public class ContextInstanceRecoveryManager {
         }
 
         this.isContextLifeCycleActive = isContextLifeCycleActive;
+        this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
     }
 
     @PostConstruct
@@ -28,7 +32,11 @@ public class ContextInstanceRecoveryManager {
         // NOTE: This executes before ContextInstanceSchedulerService
         logger.info("Recovering context instances!");
         if (!isContextLifeCycleActive) {
-            logger.info("ContextInstanceRecoveryManager not running as usePostConstructs is false");
+            logger.info("ContextInstanceRecoveryManager not running as context lifecycle is false");
+            return;
+        }
+        if (!isIkasanEnterpriseSchedulerInstance) {
+            logger.info("ContextInstanceRecoveryManager not running as an Ikasan Enterprise Scheduler instance");
             return;
         }
 
