@@ -9,6 +9,8 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.provider.QuerySortOrder;
+import com.vaadin.flow.data.provider.SortDirection;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.HospitalCommentsDialog;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
@@ -30,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -100,6 +103,8 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                                 .filter(document -> this.shouldActionEvent(document))
                                 .collect(Collectors.toList());
 
+                            resubmissionEvents.sort(Comparator.comparingLong(IkasanSolrDocument::getTimestamp));
+
                             resubmitCount.set(resubmissionEvents.size());
 
                             exclusionEventActions = super.actionHospitalEvents(resubmissionEvents, exclusionEventAction, progressIndicatorDialog,
@@ -116,8 +121,9 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                                     break;
                                 }
 
-                                List<IkasanSolrDocument> docs = (List<IkasanSolrDocument>) searchResultsGrid.getDataProvider().fetch
-                                    (new Query<>(0, 100, Collections.EMPTY_LIST, null, null)).collect(Collectors.toList());
+                                List<IkasanSolrDocument> docs = searchResultsGrid.getDataProvider()
+                                    .fetch(new Query<>(0, 100, List.of(new QuerySortOrder("timestamp", SortDirection.ASCENDING)), null, null))
+                                    .collect(Collectors.toList());
 
                                 List<IkasanSolrDocument> resubmissionEvents = docs
                                     .stream()
