@@ -470,6 +470,8 @@ public class ContextHelper {
                 if (instance.isTargetResidingContextOnly()) continue;
             }
 
+            if (child.getJobDependencies() == null) continue;
+
             Optional<JobDependency> jobDependency = child.getJobDependencies().stream().filter(dependency
                     -> schedulerJobInstance.get().getIdentifier().equals(((JobDependency)dependency).getJobIdentifier()))
                 .findFirst();
