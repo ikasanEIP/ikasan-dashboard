@@ -537,6 +537,8 @@ public class ContextHelper {
                 if (instance.isTargetResidingContextOnly()) continue;
             }
 
+            if (child.getJobDependencies() == null) continue;
+
             Optional<JobDependency> jobDependency = child.getJobDependencies().stream().filter(dependency
                     -> schedulerJob.get().getIdentifier().equals(((JobDependency)dependency).getJobIdentifier()))
                 .findFirst();
@@ -678,10 +680,12 @@ public class ContextHelper {
 
         if(schedulerJobInstance.isPresent()) {
             schedulerJobInstance.ifPresent(job -> {
-                ((List<JobDependency>)child.getJobDependencies()).forEach(jobDependency -> {
-                    getNextJob(child, jobDependency.getJobIdentifier()
-                        , jobDependency.getLogicalGrouping(), schedulerJobInstance.get(), jobs);
-                });
+                if(child.getJobDependencies() != null) {
+                    ((List<JobDependency>) child.getJobDependencies()).forEach(jobDependency -> {
+                        getNextJob(child, jobDependency.getJobIdentifier()
+                            , jobDependency.getLogicalGrouping(), schedulerJobInstance.get(), jobs);
+                    });
+                }
             });
         }
 
