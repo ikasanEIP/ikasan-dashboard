@@ -1334,7 +1334,8 @@ public class ContextInstanceWidget extends VerticalLayout
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
         if(this.ui != null && this.ui.isAttached()) {
             this.ui.access(() -> {
-                ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE);
+                ScheduledContextInstanceRecord record = this.scheduledContextInstanceService
+                    .findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE);
                 if (record != null) {
                     this.contextInstance = record.getContextInstance();
                     ContextHelper.enrichJobs(this.contextInstance);

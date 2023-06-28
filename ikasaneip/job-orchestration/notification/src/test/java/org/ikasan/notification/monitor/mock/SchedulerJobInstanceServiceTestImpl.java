@@ -137,4 +137,9 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
     public List<SchedulerJobInstanceRecord> getJobsToReleaseWithinContext(ContextInstance contextInstance, String childContextName) {
         return null;
     }
+
+    @Override
+    public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstancesConsiderNonTargetedDuplication(List<String> contextInstanceIds) {
+        return null;
+    }
 }

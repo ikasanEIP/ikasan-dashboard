@@ -228,6 +228,10 @@ public abstract class ContextInstanceServiceBase {
         contextMachine.setSchedulerJobInitiationEventRaisedListener(event ->
             jobInitiationService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event));
 
+        // We add a listener to update scheduler job instances when a state change occurs.
+        contextMachine.addSchedulerJobStateChangeEventListener(event ->
+            this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
+
         // We add a listener to broadcast any context state changes to interested parties.
         contextMachine.addContextInstanceStateChangeEventListener(event ->
             contextInstanceStateChangeEventBroadcaster.broadcast(event));
@@ -235,10 +239,6 @@ public abstract class ContextInstanceServiceBase {
         // We add a listener to broadcast any job state changes to interested parties.
         contextMachine.addSchedulerJobStateChangeEventListener(event ->
             schedulerJobStateChangeEventBroadcaster.broadcast(event));
-
-        // We add a listener to update scheduler job instances when a state change occurs.
-        contextMachine.addSchedulerJobStateChangeEventListener(event ->
-            this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
         // set the parameters on the instance every time
         if(contextParameterInstances == null) {
