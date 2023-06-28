@@ -41,10 +41,12 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
     private SolrSchedulerJobInstanceDaoImpl solrSchedulerJobInstanceDao;
     private SolrSchedulerJobDaoImpl solrSchedulerJobDao;
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+    private boolean useLegacyJobStatusCount;
 
     public SolrSchedulerJobInstanceServiceImpl(SolrSchedulerJobInstanceDaoImpl solrSchedulerJobInstanceDao,
                                                SolrSchedulerJobDaoImpl solrSchedulerJobDao,
-                                               Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                               Map<String, String> schedulerJobExecutionEnvironmentLabel,
+                                               boolean useLegacyJobStatusCount) {
         this.solrSchedulerJobInstanceDao = solrSchedulerJobInstanceDao;
         if (solrSchedulerJobInstanceDao == null) {
             throw new IllegalArgumentException("solrSchedulerJobInstanceDao cannot be null!");
@@ -54,6 +56,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
             throw new IllegalArgumentException("solrSchedulerJobDao cannot be null!");
         }
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
+        this.useLegacyJobStatusCount = useLegacyJobStatusCount;
     }
 
     @Override
@@ -259,7 +262,17 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
 
     @Override
     public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstances(List<String> contextInstanceIds) {
-        return this.solrSchedulerJobInstanceDao.getJobStatusCountForContextInstances(contextInstanceIds);
+        if(this.useLegacyJobStatusCount) {
+            return this.solrSchedulerJobInstanceDao.getJobStatusCountForContextInstances(contextInstanceIds);
+        }
+        else {
+            return this.getJobStatusCountForContextInstancesConsiderNonTargetedDuplication(contextInstanceIds);
+        }
+    }
+
+    @Override
+    public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstancesConsiderNonTargetedDuplication(List<String> contextInstanceIds) {
+        return this.solrSchedulerJobInstanceDao.getJobStatusCountForContextInstancesConsiderNonTargetedDuplication(contextInstanceIds);
     }
 
     @Override

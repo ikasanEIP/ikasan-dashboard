@@ -110,6 +110,9 @@ public class SolrClientAutoConfiguration {
     @Value("${notify.scheduled.events.batch.insert.listeners:false}")
     private boolean notifyBatchInsertListeners;
 
+    @Value("${ikasan.enterprise.scheduler.use.legacy.job.status.count:false}")
+    private boolean useLegacyJobStatusCount = false;
+
     @Bean
     public JobLockCacheService jobLockCacheService() {
         SolrJobLockCacheDaoImpl solrJobLockCacheDao = new SolrJobLockCacheDaoImpl();
@@ -260,7 +263,8 @@ public class SolrClientAutoConfiguration {
         scheduledContextInstanceDao.setSolrUsername(solrUsername);
         scheduledContextInstanceDao.setSolrPassword(solrPassword);
 
-        return new SolrSchedulerJobInstanceServiceImpl(scheduledContextInstanceDao, schedulerJobDao, schedulerJobExecutionEnvironmentLabel);
+        return new SolrSchedulerJobInstanceServiceImpl(scheduledContextInstanceDao, schedulerJobDao
+            , schedulerJobExecutionEnvironmentLabel, useLegacyJobStatusCount);
     }
 
     @Bean

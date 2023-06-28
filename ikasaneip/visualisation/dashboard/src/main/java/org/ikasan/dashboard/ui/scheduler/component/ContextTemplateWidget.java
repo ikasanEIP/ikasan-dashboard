@@ -209,6 +209,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             , userService, securityService);
 
         VerticalLayout div = new VerticalLayout();
+        div.setMargin(false);
         div.setSizeFull();
 
         Icon icon = VaadinIcon.SEARCH.create();
@@ -287,6 +288,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         this.add(div);
         this.setSizeFull();
+        this.setMargin(false);
     }
 
     /**
