@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ContextServiceAutoConfiguration {
 
-    @Value("${scheduled.job.context.queue.directory}")
+    @Value("${scheduled.job.context.queue.directory:.}")
     private String queueDirectory;
 
     @Value("${is.ikasan.enterprise.scheduler.instance:true}")

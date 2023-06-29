@@ -10,6 +10,7 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 
@@ -23,11 +24,13 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
     private final ScheduledContextService scheduledContextService;
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
     private final boolean isContextLifeCycleActive;
+    private boolean isIkasanEnterpriseSchedulerInstance;
 
     public ContextInstanceSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory,
                                            ScheduledContextService scheduledContextService,
                                            ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                           boolean isContextLifeCycleActive) {
+                                           boolean isContextLifeCycleActive,
+                                           boolean isIkasanEnterpriseSchedulerInstance) {
 
         super(scheduler, scheduledJobFactory);
         this.scheduledContextService = scheduledContextService;
@@ -41,6 +44,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         }
 
         this.isContextLifeCycleActive = isContextLifeCycleActive;
+        this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
     }
 
     /**
@@ -50,6 +54,10 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
     @PostConstruct
     public void registerJobs() {
         LOG.info("ContextInstanceSchedulerService Registering Jobs!");
+        if (!isIkasanEnterpriseSchedulerInstance) {
+            LOG.info("ContextInstanceSchedulerService not running as dashboard is not configured as scheduler instance");
+            return;
+        }
         if (!isContextLifeCycleActive) {
             LOG.info("ContextInstanceSchedulerService not running as usePostConstructs is false");
             return;

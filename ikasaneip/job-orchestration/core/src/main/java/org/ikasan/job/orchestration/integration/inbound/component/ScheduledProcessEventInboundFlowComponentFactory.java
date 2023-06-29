@@ -88,6 +88,7 @@ import org.ikasan.job.orchestration.integration.inbound.component.endpoint.confi
 import org.ikasan.spec.component.endpoint.Consumer;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.transaction.jta.JtaTransactionManager;
@@ -100,6 +101,7 @@ import javax.annotation.Resource;
  * @author Ikasan Development Team
  */
 @Configuration
+@ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
 public class ScheduledProcessEventInboundFlowComponentFactory
 {
     @Value( "${module.name}" )

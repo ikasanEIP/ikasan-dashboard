@@ -44,6 +44,7 @@ import org.ikasan.builder.BuilderFactory;
 import org.ikasan.job.orchestration.integration.inbound.component.ScheduledProcessEventInboundFlowComponentFactory;
 import org.ikasan.spec.flow.Flow;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -56,6 +57,7 @@ import java.io.IOException;
  * @author Ikasan Development Team
  */
 @Configuration
+@ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
 public class ScheduledProcessEventInboundFlowFactory
 {
     @Value( "${module.name}" )
