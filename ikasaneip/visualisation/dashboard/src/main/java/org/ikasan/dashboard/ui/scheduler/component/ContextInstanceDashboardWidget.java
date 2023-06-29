@@ -494,7 +494,11 @@ public class ContextInstanceDashboardWidget extends Div implements SchedulerJobS
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
-                this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+                List<ContextInstanceAggregateJobStatus> statuses = this.schedulerJobInstanceService
+                    .getJobStatusCountForContextInstances(List.of(event.getContextInstance().getId()));
+                if(!statuses.isEmpty()) {
+                    statuses.forEach(status -> this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshItem(status));
+                }
             });
         }
     }
