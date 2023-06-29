@@ -109,7 +109,8 @@ public class JobOrchestrationAutoConfiguration {
             CachingScheduledJobFactory.getInstance(),
             scheduledContextService,
             contextInstanceRegistrationService,
-            isContextLifeCycleActive);
+            this.isContextLifeCycleActive,
+            this.isIkasanEnterpriseSchedulerInstance);
     }
 
     @Bean

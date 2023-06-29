@@ -58,6 +58,8 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.scheduled.reset.ContextResetService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -70,7 +72,7 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private BatchInsert scheduledProcessEventBatchInsert;
 
-    @Resource
+    @Autowired(required = false)
     private IBigQueue inboundQueue;
 
     @Resource
@@ -104,6 +106,7 @@ public class IkasanRestAutoConfiguration {
     private GlobalEventService globalEventService;
 
     @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public ScheduledProcessEventController scheduledProcessEventController() {
         return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue, this.globalEventService);
     }
