@@ -25,6 +25,7 @@ import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +38,7 @@ import java.io.IOException;
 @Configuration
 public class DashboardComponentFactory
 {
-    @Value("${scheduled.job.context.queue.directory}")
+    @Value("${scheduled.job.context.queue.directory:.}")
     private String queueDirectory;
 
     @Resource
@@ -85,6 +86,7 @@ public class DashboardComponentFactory
     }
 
     @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public IBigQueue inboundQueue() throws IOException {
         return new BigQueueImpl(queueDirectory, INBOUND_QUEUE);
     }

@@ -31,12 +31,12 @@ public class ContextInstanceRecoveryManager {
     public void recoverContextInstances() {
         // NOTE: This executes before ContextInstanceSchedulerService
         logger.info("Recovering context instances!");
-        if (!isContextLifeCycleActive) {
-            logger.info("ContextInstanceRecoveryManager not running as context lifecycle is false");
-            return;
-        }
         if (!isIkasanEnterpriseSchedulerInstance) {
             logger.info("ContextInstanceRecoveryManager not running as an Ikasan Enterprise Scheduler instance");
+            return;
+        }
+        if (!isContextLifeCycleActive) {
+            logger.info("ContextInstanceRecoveryManager not running as context lifecycle is false");
             return;
         }
 

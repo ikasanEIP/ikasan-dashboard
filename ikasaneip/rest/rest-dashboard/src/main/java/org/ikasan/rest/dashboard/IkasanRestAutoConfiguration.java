@@ -51,8 +51,10 @@ import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -63,7 +65,7 @@ import javax.annotation.Resource;
 public class IkasanRestAutoConfiguration
 {
 
-    @Value("${scheduled.job.context.queue.directory}")
+    @Value("${scheduled.job.context.queue.directory:.}")
     private String queueDir;
 
     @Resource(name="errorOccurrenceBatchInsert")
@@ -90,9 +92,6 @@ public class IkasanRestAutoConfiguration
     @Resource(name="flowInvocationMetricBatchInsert")
     private BatchInsert flowInvocationMetricBatchInsert;
 
-//    @Resource
-//    @Qualifier("moduleMetadataService")
-//    private BatchInsert scheduledProcessEventBatchInsert;
 
     @Resource
     private ContextParametersInstanceService contextParametersInstanceService;
@@ -107,7 +106,7 @@ public class IkasanRestAutoConfiguration
     @Resource
     private BigQueueModuleService bigQueueModuleService;
 
-    @Resource
+    @Autowired(required = false)
     private IBigQueue inboundQueue;
 
     @Resource
@@ -174,16 +173,19 @@ public class IkasanRestAutoConfiguration
     }
 
     @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public BigQueueDashboardController bigQueueManagementController() {
         return new BigQueueDashboardController();
     }
 
     @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public BigQueueDirectoryManagementService bigQueueDirectoryManagementService() {
         return new BigQueueDirectoryManagementServiceImpl(new BigQueueDashboardServiceImpl(inboundQueue), this.queueDir);
     }
 
     @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public BigQueueModuleController bigQueueModuleController() {
         return new BigQueueModuleController(bigQueueModuleService, moduleMetadataService);
     }
