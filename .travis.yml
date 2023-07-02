@@ -1,44 +1,50 @@
 sudo: false
 language: java
 jdk:
-   - openjdk11
+  - openjdk11
 node_js:
   - 10.17.0
 cache:
   directories:
-  - $HOME/.m2
+    - $HOME/.m2
+    - $HOME/apache-maven-3.8.4
 ## export GPG details
 before_install:
-#  - echo -e "machine github.com\n  login $GITHUB_USER\n  password $GITHUB_PASSWORD" > $HOME/.netrc
+  #  - echo -e "machine github.com\n  login $GITHUB_USER\n  password $GITHUB_PASSWORD" > $HOME/.netrc
   - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
   - nvm install 10.17.0
   - npm install --save-dev @babel/core
   - npm install --save-dev @babel/plugin-proposal-object-rest-spread
+  - export M2_HOME=$HOME/apache-maven-3.8.4
+  - if [ ! -d $M2_HOME/bin ]; then curl https://archive.apache.org/dist/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz | tar zxf - -C $HOME; fi
+  - export PATH=$M2_HOME/bin:$PATH
 
 install:
-  - mvn --file ikasaneip/pom.xml --settings .settings.xml test -Dmaven.javadoc.skip=true -Djava.security.egd=file:/dev/./urandom -Pall -B -V
-#  - if [[ $TRAVIS_BRANCH == "feature/travis-release-IKASAN-1758" ]]; then  mvn --file ikasaneip/pom.xml  clean deploy -Djava.security.egd=file:/dev/./urandom -Pall,release-sign-artifacts -B  -V --settings .settings.xml; fi
-
-## Build and release to maven central
-#script:
-  ##  mvn clean deploy --settings .maven.xml -DskipTests=true -B -U -Prelease
-#  - if [[ $TRAVIS_BRANCH == "feature/travis-release-IKASAN-1758" ]]; then  mvn --file ikasaneip/pom.xml  clean deploy -Djava.security.egd=file:/dev/./urandom -Pall,release-sign-artifacts -B  -V --settings .settings.xml; fi
+  - mvn -U  --file ikasaneip/pom.xml --settings .settings.xml test -Dmaven.javadoc.skip=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B -V
 
 deploy:
   # deploy develop 3.1.x to oss
   - provider: script
-    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.offlineKey=eyJraWQiOiI1NDI3NjRlNzAwMDkwOGU2NWRjM2ZjMWRhYmY0ZTJjZDI4OTY2NzU4IiwidHlwIjoiSldUIiwiYWxnIjoiRVM1MTIifQ.eyJhbGxvd2VkUHJvZHVjdHMiOlsidmFhZGluLWNvbGxhYm9yYXRpb24tZW5naW5lIiwidmFhZGluLXRlc3RiZW5jaCIsInZhYWRpbi1kZXNpZ25lciIsInZhYWRpbi1jaGFydCIsInZhYWRpbi1ib2FyZCIsInZhYWRpbi1jb25maXJtLWRpYWxvZyIsInZhYWRpbi1jb29raWUtY29uc2VudCIsInZhYWRpbi1yaWNoLXRleHQtZWRpdG9yIiwidmFhZGluLWdyaWQtcHJvIiwidmFhZGluLW1hcCIsInZhYWRpbi1zcHJlYWRzaGVldC1mbG93IiwidmFhZGluLWNydWQiXSwic3ViIjoiNDdjZWVkOWUtZTA1MS00M2NkLWE3ZjAtNzAzN2FiMWFkYzE3IiwidmVyIjoxLCJpc3MiOiJWYWFkaW4iLCJuYW1lIjoiTWljaGFlbCBTdGV3YXJ0IiwiYWxsb3dlZEZlYXR1cmVzIjpbImNlcnRpZmljYXRpb25zIiwic3ByZWFkc2hlZXQiLCJ0ZXN0YmVuY2giLCJkZXNpZ25lciIsImNoYXJ0cyIsImJvYXJkIiwiYXBwc3RhcnRlciIsInZpZGVvdHJhaW5pbmciLCJwcm8tcHJvZHVjdHMtMjAyMjEwIl0sIm1hY2hpbmVfaWQiOm51bGwsInN1YnNjcmlwdGlvbiI6IlZhYWRpbiBQcm8iLCJidWlsZF90eXBlcyI6WyJwcm9kdWN0aW9uIl0sImV4cCI6MTY4NzM5MjAwMCwiaWF0IjoxNjg1MTcwODQyLCJhY2NvdW50IjoiSHVtZSBFbnRlcnByaXNlcyJ9.AI3pBSz8A42YISLEecAHME4btE3QCWQUC1GOVYzhePrSQPHygbXegAWnw1tTbtdCW38JlqZtuKiFae7WBt4t7R05AZjSA5Y53U8mFJ3p-2tH0yA8fmCVWHK30GG8_1bMuF0IteoJs5aey4cGtT3vUDWaLYSkzJcwLdFyvF_IWnuGtMAw -Pall -B  -V --settings .settings.xml
+    skip_cleanup: true
+    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V --settings .settings.xml
     on:
       branch: 3.2.x
   # deploy develop 3.2.x to oss
   - provider: script
-    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.offlineKey=eyJraWQiOiI1NDI3NjRlNzAwMDkwOGU2NWRjM2ZjMWRhYmY0ZTJjZDI4OTY2NzU4IiwidHlwIjoiSldUIiwiYWxnIjoiRVM1MTIifQ.eyJhbGxvd2VkUHJvZHVjdHMiOlsidmFhZGluLWNvbGxhYm9yYXRpb24tZW5naW5lIiwidmFhZGluLXRlc3RiZW5jaCIsInZhYWRpbi1kZXNpZ25lciIsInZhYWRpbi1jaGFydCIsInZhYWRpbi1ib2FyZCIsInZhYWRpbi1jb25maXJtLWRpYWxvZyIsInZhYWRpbi1jb29raWUtY29uc2VudCIsInZhYWRpbi1yaWNoLXRleHQtZWRpdG9yIiwidmFhZGluLWdyaWQtcHJvIiwidmFhZGluLW1hcCIsInZhYWRpbi1zcHJlYWRzaGVldC1mbG93IiwidmFhZGluLWNydWQiXSwic3ViIjoiNDdjZWVkOWUtZTA1MS00M2NkLWE3ZjAtNzAzN2FiMWFkYzE3IiwidmVyIjoxLCJpc3MiOiJWYWFkaW4iLCJuYW1lIjoiTWljaGFlbCBTdGV3YXJ0IiwiYWxsb3dlZEZlYXR1cmVzIjpbImNlcnRpZmljYXRpb25zIiwic3ByZWFkc2hlZXQiLCJ0ZXN0YmVuY2giLCJkZXNpZ25lciIsImNoYXJ0cyIsImJvYXJkIiwiYXBwc3RhcnRlciIsInZpZGVvdHJhaW5pbmciLCJwcm8tcHJvZHVjdHMtMjAyMjEwIl0sIm1hY2hpbmVfaWQiOm51bGwsInN1YnNjcmlwdGlvbiI6IlZhYWRpbiBQcm8iLCJidWlsZF90eXBlcyI6WyJwcm9kdWN0aW9uIl0sImV4cCI6MTY4NzM5MjAwMCwiaWF0IjoxNjg1MTcwODQyLCJhY2NvdW50IjoiSHVtZSBFbnRlcnByaXNlcyJ9.AI3pBSz8A42YISLEecAHME4btE3QCWQUC1GOVYzhePrSQPHygbXegAWnw1tTbtdCW38JlqZtuKiFae7WBt4t7R05AZjSA5Y53U8mFJ3p-2tH0yA8fmCVWHK30GG8_1bMuF0IteoJs5aey4cGtT3vUDWaLYSkzJcwLdFyvF_IWnuGtMAw -Pall -B  -V --settings .settings.xml
+    skip_cleanup: true
+    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V -q --settings .settings.xml
     on:
       branch: 3.3.x
+  - provider: script
+    skip_cleanup: true
+    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V -q --settings .settings.xml
+    on:
+      branch: 3.3.x-scheduler-working-branch
   # Push release to oss
   - provider: script
-    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.offlineKey=eyJraWQiOiI1NDI3NjRlNzAwMDkwOGU2NWRjM2ZjMWRhYmY0ZTJjZDI4OTY2NzU4IiwidHlwIjoiSldUIiwiYWxnIjoiRVM1MTIifQ.eyJhbGxvd2VkUHJvZHVjdHMiOlsidmFhZGluLWNvbGxhYm9yYXRpb24tZW5naW5lIiwidmFhZGluLXRlc3RiZW5jaCIsInZhYWRpbi1kZXNpZ25lciIsInZhYWRpbi1jaGFydCIsInZhYWRpbi1ib2FyZCIsInZhYWRpbi1jb25maXJtLWRpYWxvZyIsInZhYWRpbi1jb29raWUtY29uc2VudCIsInZhYWRpbi1yaWNoLXRleHQtZWRpdG9yIiwidmFhZGluLWdyaWQtcHJvIiwidmFhZGluLW1hcCIsInZhYWRpbi1zcHJlYWRzaGVldC1mbG93IiwidmFhZGluLWNydWQiXSwic3ViIjoiNDdjZWVkOWUtZTA1MS00M2NkLWE3ZjAtNzAzN2FiMWFkYzE3IiwidmVyIjoxLCJpc3MiOiJWYWFkaW4iLCJuYW1lIjoiTWljaGFlbCBTdGV3YXJ0IiwiYWxsb3dlZEZlYXR1cmVzIjpbImNlcnRpZmljYXRpb25zIiwic3ByZWFkc2hlZXQiLCJ0ZXN0YmVuY2giLCJkZXNpZ25lciIsImNoYXJ0cyIsImJvYXJkIiwiYXBwc3RhcnRlciIsInZpZGVvdHJhaW5pbmciLCJwcm8tcHJvZHVjdHMtMjAyMjEwIl0sIm1hY2hpbmVfaWQiOm51bGwsInN1YnNjcmlwdGlvbiI6IlZhYWRpbiBQcm8iLCJidWlsZF90eXBlcyI6WyJwcm9kdWN0aW9uIl0sImV4cCI6MTY4NzM5MjAwMCwiaWF0IjoxNjg1MTcwODQyLCJhY2NvdW50IjoiSHVtZSBFbnRlcnByaXNlcyJ9.AI3pBSz8A42YISLEecAHME4btE3QCWQUC1GOVYzhePrSQPHygbXegAWnw1tTbtdCW38JlqZtuKiFae7WBt4t7R05AZjSA5Y53U8mFJ3p-2tH0yA8fmCVWHK30GG8_1bMuF0IteoJs5aey4cGtT3vUDWaLYSkzJcwLdFyvF_IWnuGtMAw -Pall,release-sign-artifacts -B  -V --settings .settings.xml
+    skip_cleanup: true
+    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall,release-sign-artifacts -B  -V -q --settings .settings.xml
     on:
       tags: true
 
