@@ -455,7 +455,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
      * @param jobIdentifier
      * @return
      */
-    private JobLockHolder getJobLockHolderForJobIdentifier(String jobIdentifier) {
+    private JobLockHolder   getJobLockHolderForJobIdentifier(String jobIdentifier) {
         JobLockHolder jlh = null;
         if (jobIdentifier != null &&  this.jobLockCacheData.getJobLocksByIdentifier().containsKey(jobIdentifier)
             && this.jobLockCacheData.getJobLocksByLockName().containsKey(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier))) {
