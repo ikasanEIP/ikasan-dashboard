@@ -176,17 +176,6 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
         try {
 
             results =  this.solrSearchService.find(moduleNames, offset, limit);
-
-            if(authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
-                ModuleMetadataSearchResults schedulerResults = this.solrSearchService.find(List.of(), ModuleType.SCHEDULER_AGENT, offset, limit);
-                for (ModuleMetaData moduleMetaData : schedulerResults.getResultList()) {
-                    if (schedulerResults.getResultList().contains(moduleMetaData))
-                        results.getResultList().add(moduleMetaData);
-                }
-
-                results = new ModuleMetadataSearchResults(results.getResultList(), schedulerResults.getTotalNumberOfResults()
-                    + results.getTotalNumberOfResults(), schedulerResults.getQueryResponseTime());
-            }
         }
         catch (Exception e) {
             final UI current = UI.getCurrent();
