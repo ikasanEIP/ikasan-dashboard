@@ -894,7 +894,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                             .collect(Collectors.toList());
 
                         this.jobProvisionService.provisionJobs(schedulerJobs, this.authentication.getName());
-                        this.contextInstanceRegistrationService.register(this.contextTemplate.getName(), null);
                     }
                     catch (Exception e) {
                         e.printStackTrace();

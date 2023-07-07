@@ -770,7 +770,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 this.jobProvisionService.provisionJobs(this.getSchedulerJobForContext(contextTemplate.getName())
                                     , this.authentication.getName());
                                 this.scheduledContextService.save(refreshedScheduledContextRecord);
-                                this.contextInstanceRegistrationService.register(contextTemplate.getName(), null);
                                 this.contextInstanceSchedulerService.registerStartJobAndTrigger(contextTemplate.getName(), contextTemplate.getTimeWindowStart(),
                                     contextTemplate.getTimezone());
                                 contextTemplateFilteringGrid.getDataProvider().refreshAll();
