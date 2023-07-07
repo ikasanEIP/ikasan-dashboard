@@ -153,12 +153,6 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             contextInstanceSchedulerService.registerStartJobAndTrigger(jobPlanName, contextBundle.getContextTemplate().getTimeWindowStart(),
                 contextBundle.getContextTemplate().getTimezone());
 
-            // todo sort out with ttl
-            if (withinOperatingWindow(contextBundle.getContextTemplate().getTimezone(), contextBundle.getContextTemplate().getTimeWindowStart()
-                , contextBundle.getContextTemplate().getContextTtlMilliseconds(), new Date())) {
-                // NOTE: this will create a new context machine and instance and initialise it so overwriting existing context machine
-                contextInstanceRegistrationService.register(jobPlanName, null);
-            }
         } catch (Exception e) {
             String message = String.format("Could not upload context and jobs. Error [%s]", e.getMessage());
             LOG.warn(message, e);
