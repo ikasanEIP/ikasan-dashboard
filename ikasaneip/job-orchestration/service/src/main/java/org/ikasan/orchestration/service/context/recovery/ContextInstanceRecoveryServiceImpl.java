@@ -68,7 +68,6 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -191,7 +190,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                             if((scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() == 0 || scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() < System.currentTimeMillis())
                                 && !scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded()) {
                                 LOG.info("Removing context instance[{}], with name[{}] as the projected end time has been passed and the context is not marked to run until manually ended.");
-                                this.contextInstanceRegistrationService.deRegisterById(scheduledContextInstanceRecord.getContextInstanceId());
+                                removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
+                                saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
                             }
                             else if (QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(scheduledContextInstanceRecord.getContextInstance().getStartTime(), scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime(), System.currentTimeMillis())
                                 || (scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded())) {
@@ -209,22 +209,30 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                             }
                                         } else {
                                             LOG.info(String.format("Not Recovering context [%s] instance ID [%s] falls withing a blackout time window and will not be registered!", contextInstance.getName(), contextInstance.getId()));
+                                            removeAgentInstances(contextInstance);
+                                            saveContextInstance(contextInstance, InstanceStatus.ENDED);
                                         }
 
                                     } catch (Exception e) {
                                         // todo probably want to send a notification here.
-                                        LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due to an ", scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
+                                        LOG.error(String.format("Removing context [%s] instance ID [%s] due to an issue that makes it unrecoverable: ", scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
+                                        removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
+                                        saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
                                     }
                                 }
                             } else {
-                                Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because we are now outside it time window");
+                                Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because we are now outside it time window. Ending it");
+                                removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
+                                saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
                             }
                         } catch (Exception e) {
                             // todo probably want to send a notification here.
                             e.printStackTrace();
                             if(scheduledContextInstanceRecord != null) {
-                                LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due an issue with the definition of the cron expression for the time windows."
+                                LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due an issue with the definition of the cron expression for the time windows. Ending it"
                                     , scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
+                                removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
+                                saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
                             }
                         }
                     }

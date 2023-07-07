@@ -308,10 +308,12 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
+        verify(scheduledContextInstanceService, times(2)).save(any()); // updating two context to InstanceStatus.ENDED
         verify(scheduledContextService).findAll();
         verify(timeService).getDateNow();
         verify(contextInstancePublicationService, times(3)).removeAll(anyString());
-        verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
+        verify(contextInstancePublicationService, times(6)).remove(anyString(), any()); // due to updating 2 instances to Ended, will remove contextId from 3 agent as mocking 3 agents at part of the moduleMetadataService
+        verify(moduleMetadataService, times(3)).find(any(), any(), eq(-1), eq(-1));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
