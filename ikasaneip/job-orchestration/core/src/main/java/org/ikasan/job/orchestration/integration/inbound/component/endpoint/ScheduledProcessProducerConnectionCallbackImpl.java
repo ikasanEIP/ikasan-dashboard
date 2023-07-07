@@ -15,6 +15,9 @@ public class ScheduledProcessProducerConnectionCallbackImpl implements Scheduled
 
     @Override
     public void execute() throws IOException {
-        this.contextMachine.eventReceived(payload);
+        // check to make sure the context machine exist to avoid null pointer exception at the point of commit
+        if (this.contextMachine != null) {
+            this.contextMachine.eventReceived(payload);
+        }
     }
 }

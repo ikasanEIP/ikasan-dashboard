@@ -9,13 +9,29 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.configuration.ScheduleProcessInboundProducerConfiguration;
 import org.ikasan.job.orchestration.integration.inbound.exception.InvalidContextInstanceIdException;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.component.endpoint.EndpointException;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.ikasan.spec.configuration.ConfigurationException;
 import org.ikasan.spec.configuration.ConfiguredResource;
+import org.ikasan.spec.error.reporting.ErrorReportingService;
+import org.ikasan.spec.error.reporting.IsErrorReportingServiceAware;
+import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.module.ModuleType;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,18 +41,29 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.HashMap;
+import java.util.List;
 
-public class ScheduleProcessInboundProducer implements Producer<String>, ConfiguredResource<ScheduleProcessInboundProducerConfiguration>, LastResourceCommitOptimisation {
+public class ScheduleProcessInboundProducer implements Producer<String>, ConfiguredResource<ScheduleProcessInboundProducerConfiguration>, LastResourceCommitOptimisation, IsErrorReportingServiceAware {
 
+    private static final String FLOW_NAME = "Scheduled Process Event Inbound Flow";
     private Logger logger = LoggerFactory.getLogger(ScheduleProcessInboundProducer.class);
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
     private ScheduleProcessInboundProducerConfiguration configuration;
     private String configurationId;
     private ScheduledProcessProducerConnectionCallback scheduledProcessProducerConnectionCallback;
     private TransactionManager transactionManager;
+    private ErrorReportingService errorReportingService;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
+    private ContextInstancePublicationService contextInstancePublicationService;
+    private ModuleMetaDataService moduleMetadataService;
 
-    public ScheduleProcessInboundProducer(TransactionManager transactionManager) {
+    public ScheduleProcessInboundProducer(TransactionManager transactionManager, ScheduledContextInstanceService scheduledContextInstanceService,
+                                          ContextInstancePublicationService contextInstancePublicationService, ModuleMetaDataService moduleMetadataService) {
         this.transactionManager = transactionManager;
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
+        this.contextInstancePublicationService = contextInstancePublicationService;
+        this.moduleMetadataService = moduleMetadataService;
     }
 
     @Override
@@ -50,16 +77,53 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
             ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent
                 = objectMapper.readValue(message, ContextualisedScheduledProcessEventImpl.class);
 
+            // Warn on the dashboard but do not create an exclude event as we cannot resubmit a null context id.
             if(contextualisedScheduledProcessEvent.getContextInstanceId() == null) {
-                throw new InvalidContextInstanceIdException(String.format("Received scheduler event with null context instance id [%s]." +
-                    " Cache Contents - %s", contextualisedScheduledProcessEvent, ContextMachineCache.instance().toString()));
+                String errorMessage = String.format("Received scheduler event with null context instance id [%s]." +
+                    " Cache Contents - %s", contextualisedScheduledProcessEvent, ContextMachineCache.instance().toString());
+                logger.warn(errorMessage);
+                errorReportingService.notify(FLOW_NAME, payload, new InvalidContextInstanceIdException(errorMessage));
+                this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, null);
+                return;
             }
 
             ContextMachine contextMachine = ContextMachineCache.instance()
                 .getByContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
 
             if(contextMachine == null) {
-                throw new InvalidContextInstanceIdException(String.format("Could not resolve context machine with context name[%s] and context instance id [%s]." +
+
+                // before raising a hospital event, check the context instance id is terminated. If it is then send a notification to the agent
+                // to remove the context instance and just write an error to the dashboard and do not raise a hospital event as we cannot do anything to the payload
+                if (contextualisedScheduledProcessEvent.getContextName() != null) {
+
+                    // Create a search query to find out the instance id from solr.
+                    ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+                    filter.setContextSearchFilter(contextualisedScheduledProcessEvent.getContextName());
+                    filter.setContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
+                    SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords =
+                        scheduledContextInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+                    // Check if we see a context instance id in solr with the instance ofs ENDED or COMPLETED, if so ignore the payload and send notification to the agent.
+                    for (ScheduledContextInstanceRecord scheduledContextInstanceRecord : contextInstanceRecords.getResultList()) {
+                        if (scheduledContextInstanceRecord.getContextName().equals(contextualisedScheduledProcessEvent.getContextName()) &&
+                            scheduledContextInstanceRecord.getContextInstanceId().equals(contextualisedScheduledProcessEvent.getContextInstanceId()) &&
+                            (scheduledContextInstanceRecord.getContextInstance().getStatus().equals(InstanceStatus.ENDED)) || (scheduledContextInstanceRecord.getContextInstance().getStatus().equals(InstanceStatus.COMPLETE))) {
+
+                            String errorMessage = String.format("Context name[%s] and context instance id [%s] has the status of [%s], therefore this event will be discarded. No further action is required. " +
+                                "Active ContextMachineCache Contents - %s", contextualisedScheduledProcessEvent.getContextName(),
+                                contextualisedScheduledProcessEvent.getContextInstanceId(), scheduledContextInstanceRecord.getContextInstance().getStatus(),
+                                ContextMachineCache.instance().toString());
+
+                            this.removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
+                            logger.warn(errorMessage);
+                            errorReportingService.notify(FLOW_NAME, payload, new InvalidContextInstanceIdException(errorMessage));
+                            this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, null);
+                            return;
+                        }
+                    }
+                }
+
+                throw new InvalidContextInstanceIdException(String.format("Could not resolve context machine with context name[%s] and context instance id [%s]. Does not exist in the system! " +
                     " Cache Contents - %s", contextualisedScheduledProcessEvent.getContextName(), contextualisedScheduledProcessEvent.getContextInstanceId(), ContextMachineCache.instance().toString()));
             }
 
@@ -95,6 +159,29 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                 throw new EndpointException(e);
             }
         }
+    }
+
+    private void removeAgentInstances(ContextInstance instance) {
+        HashMap<String, ModuleMetaData> agents = getAgents(instance);
+        if (!agents.keySet().isEmpty()) {
+            for (String key : agents.keySet()) {
+                ModuleMetaData agent = agents.get(key);
+                contextInstancePublicationService.remove(agent.getUrl(), instance);
+            }
+        }
+    }
+
+    private HashMap<String, ModuleMetaData> getAgents(Context context) {
+        HashMap<String, ModuleMetaData> agents = new HashMap<>();
+
+        List<String> contextAgents = ContextHelper.getAllAgents(context);
+
+        ModuleMetadataSearchResults searchResults = moduleMetadataService
+            .find(contextAgents, ModuleType.SCHEDULER_AGENT, -1, -1);
+
+        searchResults.getResultList().forEach(agent -> agents.put(agent.getName(), agent));
+
+        return agents;
     }
 
     /**
@@ -187,5 +274,10 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
     @Override
     public void start(Xid xid, int flags) throws XAException {
         logger.debug("start");
+    }
+
+    @Override
+    public void setErrorReportingService(ErrorReportingService errorReportingService) {
+        this.errorReportingService = errorReportingService;
     }
 }

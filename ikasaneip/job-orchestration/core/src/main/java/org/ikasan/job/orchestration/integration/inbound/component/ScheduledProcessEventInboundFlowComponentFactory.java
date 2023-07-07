@@ -87,6 +87,10 @@ import org.ikasan.job.orchestration.integration.inbound.component.endpoint.Sched
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.configuration.ScheduleProcessInboundProducerConfiguration;
 import org.ikasan.spec.component.endpoint.Consumer;
 import org.ikasan.spec.component.endpoint.Producer;
+import org.ikasan.spec.error.reporting.ErrorReportingService;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
@@ -122,6 +126,17 @@ public class ScheduledProcessEventInboundFlowComponentFactory
     @Resource
     JtaTransactionManager transactionManager;
 
+    @Resource
+    ErrorReportingService errorReportingService;
+
+    @Resource
+    ScheduledContextInstanceService scheduledContextInstanceService;
+
+    @Resource
+    ContextInstancePublicationService contextInstancePublicationService;
+
+    @Resource
+    ModuleMetaDataService moduleMetadataService;
 
     @DependsOn("inboundQueue")
     public Consumer getInboundBigQueueConsumer() {
@@ -144,9 +159,11 @@ public class ScheduledProcessEventInboundFlowComponentFactory
         configuration.setIgnoreErrors(this.schedulerInboundProducerIgnoreErrors);
         configuration.setLogDetails(this.schedulerInboundProducerLogDetails);
         ScheduleProcessInboundProducer producer
-            = new ScheduleProcessInboundProducer(this.transactionManager.getTransactionManager());
+            = new ScheduleProcessInboundProducer(this.transactionManager.getTransactionManager(),
+            scheduledContextInstanceService, contextInstancePublicationService, moduleMetadataService);
         producer.setConfiguration(configuration);
         producer.setConfiguredResourceId("scheduleProcessInboundProducer");
+        producer.setErrorReportingService(errorReportingService);
         return producer;
     }
 
