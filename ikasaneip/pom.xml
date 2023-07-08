@@ -378,7 +378,7 @@
         <version.reactor.netty.http>1.0.11</version.reactor.netty.http>
         <version.okhttp3>3.7.0</version.okhttp3>
         <version.cron.utils>9.1.6</version.cron.utils>
-
+        <version.tech.huffman.re-retrying>3.0.0</version.tech.huffman.re-retrying>
     </properties>
 
     <!-- Distribution for releases -->
@@ -1690,6 +1690,12 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
                 <version>${version.logback}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>tech.huffman.re-retrying</groupId>
+                <artifactId>re-retrying</artifactId>
+                <version>${version.tech.huffman.re-retrying}</version>
             </dependency>
 
             <dependency>
