@@ -1,85 +1,30 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.scheduler.model.AgentJobFilter;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.ConfigurationService;
-import org.ikasan.spec.module.client.MetaDataService;
-import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.general.SchedulerService;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
-
-import java.util.Map;
 
 public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDialog {
-
-    private ModuleMetaData agent;
-
-    private ScheduledProcessManagementService scheduledProcessManagementService;
-    private ConfigurationService configurationRestService;
-    private ModuleControlService moduleControlRestService;
-    private MetaDataService metaDataRestService;
-    private ModuleMetaDataService moduleMetaDataService;
-    private TextField filterTf;
-    private SchedulerService schedulerService;
-
-    private SystemEventLogger systemEventLogger;
-
-    private SchedulerJobService<SchedulerJobRecord> schedulerJobService;
-
-    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
     /**
      * Constructor
      *
      * @param agent
-     * @param scheduledProcessManagementService
-     * @param configurationRestService
-     * @param moduleControlRestService
-     * @param metaDataRestService
-     * @param moduleMetaDataService
-     * @param systemEventLogger
-     * @param schedulerService
      */
-    public SchedulerAgentManagementDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
-                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService,
-                                          SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService,
-                                          Map<String, String> schedulerJobExecutionEnvironmentLabel) {
-        this.agent = agent;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        this.configurationRestService = configurationRestService;
-        this.moduleControlRestService = moduleControlRestService;
-        this.metaDataRestService = metaDataRestService;
-        this.moduleMetaDataService = moduleMetaDataService;
-        this.systemEventLogger = systemEventLogger;
-        this.schedulerService = schedulerService;
-        this.schedulerJobService = schedulerJobService;
-        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
+    public SchedulerAgentManagementDialog(ModuleMetaData agent) {
         super.showResize(false);
+        super.setResizable(false);
         super.title.setText(getTranslation("header.scheduler-agent-management", UI.getCurrent().getLocale()));
 
-        this.setHeight("850px");
-        this.setWidth("95%");
+        this.setHeight("350px");
+        this.setWidth("70%");
 
         H4 agentDetails = new H4(getTranslation("header.agent-details", UI.getCurrent().getLocale()));
-
 
         FormLayout formLayout = new FormLayout();
 
@@ -97,40 +42,9 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         agentUrlLf.setValue(" ");
         formLayout.add(agentUrlLf);
 
-
-        H4 scheduledJobsLabel = new H4(getTranslation("header.scheduled-jobs", UI.getCurrent().getLocale()));
-
-        Icon icon = VaadinIcon.SEARCH.create();
-        icon.setSize("12pt");
-
-        AgentJobFilter agentJobFiler = new AgentJobFilter();
-        AgentJobFilteringGrid filteringGrid = new AgentJobFilteringGrid(this.agent, this.scheduledProcessManagementService
-            , agentJobFiler, new DateFormatter(), this.configurationRestService, this.moduleControlRestService,
-            this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger, this.schedulerService, this.schedulerJobService, this.schedulerJobExecutionEnvironmentLabel);
-        filteringGrid.setSizeFull();
-
-        this.filterTf = new TextField();
-        this.filterTf.setPrefixComponent(icon);
-        HorizontalLayout filterLayout = new HorizontalLayout();
-
-        this.filterTf.getElement().getStyle().set("margin-left", "auto");
-
-        Button refreshButton = new Button();
-        refreshButton.addClickListener(buttonClickEvent -> {
-            filteringGrid.refresh();
-        });
-        refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
-        refreshButton.getElement().getStyle().set("margin-left", "auto");
-
-        filterLayout.add(this.filterTf, refreshButton);
-        filterLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, this.filterTf);
-        filterLayout.getElement().getStyle().set("margin-left", "auto");
-
-        filteringGrid.addGridFiltering(this.filterTf, agentJobFiler::setFilter);
-
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(agentDetails, formLayout, scheduledJobsLabel, filterLayout, filteringGrid);
+        layout.add(agentDetails, formLayout);
         super.content.add(layout);
     }
 }

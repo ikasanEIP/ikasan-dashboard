@@ -815,6 +815,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         executor.execute(() -> {
                             try {
                                 ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                                ScheduledContextRecord refreshedScheduledContextRecord = this.scheduledContextService.findByName(contextTemplate.getName());
+                                contextTemplate = refreshedScheduledContextRecord.getContext();
                                 contextTemplate.setDisabled(true);
                                 scheduledContextRecord.setContext(contextTemplate);
                                 scheduledContextRecord.setModifiedBy(authentication.getName());
