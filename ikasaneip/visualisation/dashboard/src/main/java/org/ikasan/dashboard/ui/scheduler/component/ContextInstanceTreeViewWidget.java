@@ -1707,7 +1707,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 // returns the number of immediate child items
                 @Override
                 public int getChildCount(HierarchicalQuery<Object, TreeFilter> query) {
-                    return getNodeChildren(query.getParent(), query.getFilter()).size();
+                    return getNodeChildren(query.getParent(), query.getFilter(), 0, 0).size();
                 }
                 // checks if a given item should be expandable
                 @Override
@@ -1743,7 +1743,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 // returns the immediate child items based on offset and limit
                 @Override
                 protected Stream<Object> fetchChildrenFromBackEnd(HierarchicalQuery<Object, TreeFilter> query) {
-                    return getNodeChildren(query.getParent(), query.getFilter()).stream();
+                    return getNodeChildren(query.getParent(), query.getFilter(), query.getLimit(), query.getOffset()).stream();
                 }
             }.withConfigurableFilter();
     }
@@ -1758,7 +1758,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      *
      * @return relevant filtered children for the given node.
      */
-    private List<Object> getNodeChildren(Object node, Optional<TreeFilter> filter) {
+    private List<Object> getNodeChildren(Object node, Optional<TreeFilter> filter, int limit, int offset) {
         List<Object> children = new ArrayList<>();
         if(node == null) {
             children.add(contextInstance);
@@ -1808,6 +1808,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 .map(instance -> (Object) new PrecedingItem(instance))
                 .collect(Collectors.toList()));
         }
+
+        if(offset >= 0 && limit > 0 && offset + limit >= children.size()) {
+            children = children.subList(offset, children.size());
+        }
+        else if(offset >= 0 && limit > 0 && offset + limit < children.size()) {
+            children = children.subList(offset, offset + limit);
+        }
+
         return children.stream().distinct().collect(Collectors.toList());
     }
 
