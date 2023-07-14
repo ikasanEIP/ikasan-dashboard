@@ -66,7 +66,7 @@ public class JobPlanBuilderService {
 
         QuartzScheduleDrivenJob quartzScheduleDrivenJob = this.buildQuartzScheduleDrivenJob("7amScheduledEvent",
                 "scheduler-agent", "This event fires at 7am Monday through Friday."
-                , List.of("MyFirstJobPlan"), "MyFirstJobPlan", "* * 7 ? * * *");
+                , List.of("MyFirstJobPlan"), "MyFirstJobPlan", "0 0 7 ? * * *");
 
 
         contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
