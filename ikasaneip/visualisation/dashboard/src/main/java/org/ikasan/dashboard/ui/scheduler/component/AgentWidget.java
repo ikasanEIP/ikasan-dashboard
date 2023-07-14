@@ -109,9 +109,7 @@ public class AgentWidget extends Div {
 
         this.scheduledAgentsFilteringGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<ModuleMetaData>>) moduleMetaDataItemDoubleClickEvent -> {
             SchedulerAgentManagementDialog schedulerAgentManagementDialog
-                = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem()
-                    , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
-                    , this.moduleMetadataService, systemEventLogger, schedulerService, this.schedulerJobService, this.schedulerJobExecutionEnvironmentLabel);
+                = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem());
 
             schedulerAgentManagementDialog.open();
         });
