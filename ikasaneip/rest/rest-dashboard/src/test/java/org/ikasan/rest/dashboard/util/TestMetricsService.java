@@ -13,6 +13,7 @@ import java.util.List;
 
 public class TestMetricsService implements MetricsService<FlowInvocationMetric> {
     public static final String METRICS_JSON = "/data/metrics.json";
+    public static final String METRICS_JSON_LARGE = "/data/flowInvocationMetricsLarge.json";
 
     private ObjectMapper objectMapper;
 
@@ -48,6 +49,105 @@ public class TestMetricsService implements MetricsService<FlowInvocationMetric> 
         try {
             return objectMapper.readValue(loadDataFile(METRICS_JSON)
                 , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<FlowInvocationMetric> getMetrics(long startTime, long endTime, int offset, int limit) {
+        try {
+            List<FlowInvocationMetric> metrics = objectMapper.readValue(loadDataFile(METRICS_JSON_LARGE)
+                , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+
+            if(offset >= 0 && limit > 0 && offset + limit >= metrics.size()) {
+                metrics = metrics.subList(offset, metrics.size());
+            }
+            else if(offset >= 0 && limit > 0 && offset + limit < metrics.size()) {
+                metrics = metrics.subList(offset, offset + limit);
+            }
+
+            return metrics;
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public long count(long startTime, long endTime) {
+        try {
+            List<FlowInvocationMetric> metrics = objectMapper.readValue(loadDataFile(METRICS_JSON_LARGE)
+                , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+
+            return metrics.size();
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<FlowInvocationMetric> getMetrics(String moduleName, long startTime, long endTime, int offset, int limit) {
+        try {
+            List<FlowInvocationMetric> metrics = objectMapper.readValue(loadDataFile(METRICS_JSON_LARGE)
+                , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+
+            if(offset >= 0 && limit > 0 && offset + limit >= metrics.size()) {
+                metrics = metrics.subList(offset, metrics.size());
+            }
+            else if(offset >= 0 && limit > 0 && offset + limit < metrics.size()) {
+                metrics = metrics.subList(offset, offset + limit);
+            }
+
+            return metrics;
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public long count(String moduleName, long startTime, long endTime) {
+        try {
+            List<FlowInvocationMetric> metrics = objectMapper.readValue(loadDataFile(METRICS_JSON_LARGE)
+                , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+
+            return metrics.size();
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<FlowInvocationMetric> getMetrics(String moduleName, String flowName, long startTime, long endTime, int offset, int limit) {
+        try {
+            List<FlowInvocationMetric> metrics = objectMapper.readValue(loadDataFile(METRICS_JSON_LARGE)
+                , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+
+            if(offset >= 0 && limit > 0 && offset + limit >= metrics.size()) {
+                metrics = metrics.subList(offset, metrics.size());
+            }
+            else if(offset >= 0 && limit > 0 && offset + limit < metrics.size()) {
+                metrics = metrics.subList(offset, offset + limit);
+            }
+
+            return metrics;
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public long count(String moduleName, String flowName, long startTime, long endTime) {
+        try {
+            List<FlowInvocationMetric> metrics = objectMapper.readValue(loadDataFile(METRICS_JSON_LARGE)
+                , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+
+            return metrics.size();
         }
         catch (IOException e) {
             throw new RuntimeException(e);

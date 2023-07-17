@@ -90,7 +90,7 @@ public class SolrMetricsServiceTest extends SolrTestCaseJ4
         createRequest.setConfigSet("minimal");
         server.request(createRequest);
 
-        dao = new SolrMetricsDao();
+        dao = new SolrMetricsDao(200);
         dao.setSolrClient(server);
     }
 
@@ -102,7 +102,7 @@ public class SolrMetricsServiceTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao();
+            dao = new SolrMetricsDao(200);
             dao.setSolrClient(server);
 
             SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
@@ -119,12 +119,84 @@ public class SolrMetricsServiceTest extends SolrTestCaseJ4
 
     @Test
     @DirtiesContext
+    public void test_get_results_by_module_flow_name_within_timeframe_with_paging() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            long count = solrMetricsService.count(10000000L, System.currentTimeMillis() + 10000000L);
+
+            assertEquals(575, count);
+
+            List<FlowInvocationMetric> results = solrMetricsService.getMetrics("My Module", "Trade Consumer Flow",10000000L
+                , System.currentTimeMillis() + 10000000L, 0, 200);
+
+            assertEquals(200, results.size());
+
+            results = solrMetricsService.getMetrics("My Module", "Trade Consumer Flow",10000000L
+                , System.currentTimeMillis() + 10000000L, 200, 200);
+
+            assertEquals(200, results.size());
+
+            results = solrMetricsService.getMetrics("My Module", "Trade Consumer Flow",10000000L
+                , System.currentTimeMillis() + 10000000L, 400, 200);
+
+            assertEquals(175, results.size());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_get_results_within_timeframe_with_paging() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            long count = solrMetricsService.count(10000000L, System.currentTimeMillis() + 10000000L);
+
+            assertEquals(575, count);
+
+            List<FlowInvocationMetric> results = solrMetricsService.getMetrics(10000000L
+                , System.currentTimeMillis() + 10000000L, 0, 200);
+
+            assertEquals(200, results.size());
+
+            results = solrMetricsService.getMetrics(10000000L
+                , System.currentTimeMillis() + 10000000L, 200, 200);
+
+            assertEquals(200, results.size());
+
+            results = solrMetricsService.getMetrics(10000000L
+                , System.currentTimeMillis() + 10000000L, 400, 200);
+
+            assertEquals(175, results.size());
+        }
+    }
+
+    @Test
+    @DirtiesContext
     public void test_get_results_by_module_name_within_timeframe() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {
             init(server);
 
-            dao = new SolrMetricsDao();
+            dao = new SolrMetricsDao(200);
             dao.setSolrClient(server);
 
             SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
@@ -152,7 +224,7 @@ public class SolrMetricsServiceTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao();
+            dao = new SolrMetricsDao(200);
             dao.setSolrClient(server);
 
             SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
@@ -169,6 +241,206 @@ public class SolrMetricsServiceTest extends SolrTestCaseJ4
                 , System.currentTimeMillis() + 10000000L);
 
             assertEquals(0, results.size());
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    @DirtiesContext
+    public void test_get_results_within_timeframe_exception_exceeds_query_limit() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            solrMetricsService.getMetrics(10000000L
+                , System.currentTimeMillis() + 10000000L, 0, 300);
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    @DirtiesContext
+    public void test_get_large_by_module_name_flow_name_within_timeframe_exceeds_query_limit() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            solrMetricsService.getMetrics("My Module", "Trade Consumer Flow",10000000L
+                , System.currentTimeMillis() + 10000000L, 0, 300);
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_get_results_by_module_within_timeframe_with_paging() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            long count = solrMetricsService.count(10000000L, System.currentTimeMillis() + 10000000L);
+
+            assertEquals(575, count);
+
+            List<FlowInvocationMetric> results = solrMetricsService.getMetrics("My Module",10000000L
+                , System.currentTimeMillis() + 10000000L, 0, 200);
+
+            assertEquals(200, results.size());
+
+            results = solrMetricsService.getMetrics("My Module",10000000L
+                , System.currentTimeMillis() + 10000000L, 200, 200);
+
+            assertEquals(200, results.size());
+
+            results = solrMetricsService.getMetrics("My Module",10000000L
+                , System.currentTimeMillis() + 10000000L, 400, 200);
+
+            assertEquals(175, results.size());
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    @DirtiesContext
+    public void test_get_large_by_module_name_within_timeframe_exceeds_query_limit() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            solrMetricsService.getMetrics("My Module",10000000L
+                , System.currentTimeMillis() + 10000000L, 0, 300);
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_get_count_by_module_name_flow_name_within_timeframe() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetrics.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            long results = solrMetricsService.count("My Module", "Trade Consumer Flow",10000000L
+                , System.currentTimeMillis() + 10000000L);
+
+            assertEquals(5, results);
+
+            results = solrMetricsService.count("Bad module name", "Trade Consumer Flow",10000000L
+                , System.currentTimeMillis() + 10000000L);
+
+            assertEquals(0, results);
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_get_count_by_module_name_within_timeframe() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetrics.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            long results = solrMetricsService.count("My Module", 10000000L
+                , System.currentTimeMillis() + 10000000L);
+
+            assertEquals(5, results);
+
+            results = solrMetricsService.count("Bad module name", 10000000L
+                , System.currentTimeMillis() + 10000000L);
+
+            assertEquals(0, results);
+
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_get_count_within_timeframe() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetrics.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            long results = solrMetricsService.count(10000000L
+                , System.currentTimeMillis() + 10000000L);
+
+            assertEquals(5, results);
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_get_count_large_by_module_name_flow_name_within_timeframe() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            dao = new SolrMetricsDao(200);
+            dao.setSolrClient(server);
+
+            SolrMetricsServiceImpl solrMetricsService = new SolrMetricsServiceImpl(dao);
+
+            solrMetricsService.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
+                , mapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)));
+
+            long results = solrMetricsService.count("My Module", "Trade Consumer Flow",10000000L
+                , System.currentTimeMillis() + 10000000L);
+
+            assertEquals(575, results);
+
+            results = solrMetricsService.count("Bad module name", "Trade Consumer Flow",10000000L
+                , System.currentTimeMillis() + 10000000L);
+
+            assertEquals(0, results);
         }
     }
 

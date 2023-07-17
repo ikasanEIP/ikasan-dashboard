@@ -37,9 +37,12 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
      */
     public static final String METRIC_ENTITY_TYPE = "metric";
 
+    private int solrMetricsQueryLimit;
+
     private ObjectMapper mapper;
 
-    public SolrMetricsDao() {
+    public SolrMetricsDao(int solrMetricsQueryLimit) {
+        this.solrMetricsQueryLimit = solrMetricsQueryLimit;
         this.mapper = new ObjectMapper();
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
@@ -61,7 +64,7 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
             logger.warn(String.format("Could not set metric payload content[%s]", flowInvocationMetric), e);
         }
 
-        document.addField(CREATED_DATE_TIME, flowInvocationMetric.getInvocationStartTime());
+        document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
         document.setField(EXPIRY, expiry);
 
         return document;
@@ -70,9 +73,9 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
     public List<FlowInvocationMetric> getMetrics(long startTime, long endTime) {
         try {
             String query = super.buildQuery(Set.of(), Set.of(), new Date(startTime), new Date(endTime), null
-                , null, "metric", false);
+                , null, METRIC_ENTITY_TYPE, false);
 
-            List<FlowInvocationMetric> results = this.findByQuery(query)
+            List<FlowInvocationMetric> results = this.findByQuery(query, 0, this.solrMetricsQueryLimit)
                 .stream()
                 .map(bean -> convert(bean.getFlowInvocationMetric()))
                 .collect(Collectors.toList());
@@ -81,15 +84,44 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
         }
         catch (IOException e) {
             throw new RuntimeException("Could not execute solr metrics query!", e);
+        }
+    }
+
+    public List<FlowInvocationMetric> getMetrics(long startTime, long endTime, int offset, int limit) {
+        try {
+            String query = super.buildQuery(Set.of(), Set.of(), new Date(startTime), new Date(endTime), null
+                , null, METRIC_ENTITY_TYPE, false);
+
+            List<FlowInvocationMetric> results = this.findByQuery(query, offset, limit)
+                .stream()
+                .map(bean -> convert(bean.getFlowInvocationMetric()))
+                .collect(Collectors.toList());
+
+            return results;
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Could not execute solr metrics query!", e);
+        }
+    }
+
+    public long count(long startTime, long endTime) {
+        try {
+            String query = super.buildQuery(Set.of(), Set.of(), new Date(startTime), new Date(endTime), null
+                , null, METRIC_ENTITY_TYPE, false);
+
+            return this.count(query);
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Could not execute solr metrics count query!", e);
         }
     }
 
     public List<FlowInvocationMetric> getMetrics(String moduleName, long startTime, long endTime) {
         try {
             String query = super.buildQuery(Set.of(moduleName), Set.of(), new Date(startTime), new Date(endTime), null
-                , null, "metric", false);
+                , null, METRIC_ENTITY_TYPE, false);
 
-            List<FlowInvocationMetric> results = this.findByQuery(query)
+            List<FlowInvocationMetric> results = this.findByQuery(query, 0, this.solrMetricsQueryLimit)
                 .stream()
                 .map(bean -> convert(bean.getFlowInvocationMetric()))
                 .collect(Collectors.toList());
@@ -101,12 +133,12 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
         }
     }
 
-    public List<FlowInvocationMetric> getMetrics(String moduleName, String flowName, long startTime, long endTime) {
+    public List<FlowInvocationMetric> getMetrics(String moduleName, long startTime, long endTime, int offset, int limit) {
         try {
-            String query = super.buildQuery(Set.of(moduleName), Set.of(flowName), new Date(startTime), new Date(endTime), null
-                , null, "metric", false);
+            String query = super.buildQuery(Set.of(moduleName), Set.of(), new Date(startTime), new Date(endTime), null
+                , null, METRIC_ENTITY_TYPE, false);
 
-            List<FlowInvocationMetric> results = this.findByQuery(query)
+            List<FlowInvocationMetric> results = this.findByQuery(query, offset, limit)
                 .stream()
                 .map(bean -> convert(bean.getFlowInvocationMetric()))
                 .collect(Collectors.toList());
@@ -115,6 +147,65 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
         }
         catch (IOException e) {
             throw new RuntimeException("Could not execute solr metrics query!", e);
+        }
+    }
+
+    public long count(String moduleName, long startTime, long endTime) {
+        try {
+            String query = super.buildQuery(Set.of(moduleName), Set.of(), new Date(startTime), new Date(endTime), null
+                , null, METRIC_ENTITY_TYPE, false);
+
+            return this.count(query);
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Could not execute solr metrics count query!", e);
+        }
+    }
+
+    public List<FlowInvocationMetric> getMetrics(String moduleName, String flowName, long startTime, long endTime) {
+        try {
+            String query = super.buildQuery(Set.of(moduleName), Set.of(flowName), new Date(startTime), new Date(endTime), null
+                , null, METRIC_ENTITY_TYPE, false);
+
+            List<FlowInvocationMetric> results = this.findByQuery(query, 0, this.solrMetricsQueryLimit)
+                .stream()
+                .map(bean -> convert(bean.getFlowInvocationMetric()))
+                .collect(Collectors.toList());
+
+            return results;
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Could not execute solr metrics query!", e);
+        }
+    }
+
+
+    public List<FlowInvocationMetric> getMetrics(String moduleName, String flowName, long startTime, long endTime, int offset, int limit) {
+        try {
+            String query = super.buildQuery(Set.of(moduleName), Set.of(flowName), new Date(startTime), new Date(endTime), null
+                , null, METRIC_ENTITY_TYPE, false);
+
+            List<FlowInvocationMetric> results = this.findByQuery(query, offset, limit)
+                .stream()
+                .map(bean -> convert(bean.getFlowInvocationMetric()))
+                .collect(Collectors.toList());
+
+            return results;
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Could not execute solr metrics query!", e);
+        }
+    }
+
+    public long count(String moduleName, String flowName, long startTime, long endTime) {
+        try {
+            String query = super.buildQuery(Set.of(moduleName), Set.of(flowName), new Date(startTime), new Date(endTime), null
+                , null, METRIC_ENTITY_TYPE, false);
+
+            return this.count(query);
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Could not execute solr metrics count query!", e);
         }
     }
 
@@ -123,7 +214,38 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
      *
      * @param query
      */
-    private List<SolrFlowInvocationMetric> findByQuery(String query)
+    private List<SolrFlowInvocationMetric> findByQuery(String query, int offset, int limit)
+    {
+        logger.debug("queryString: " + query);
+
+        if(limit > this.solrMetricsQueryLimit) {
+            throw new RuntimeException(String.format("Error resolving solr flow invocation metric by query [" + query + "] " +
+                "from the ikasan solr index! The limit on the query[%s] exceeds the maximum limit configured [%s]. The limit " +
+                "can be increased by setting configuration property 'solr.metrics.query.limit'.", limit, this.solrMetricsQueryLimit ));
+        }
+
+        try
+        {
+            SolrQuery solrQuery = new SolrQuery();
+            solrQuery.setQuery(query);
+            solrQuery.setStart(offset);
+            solrQuery.setRows(limit);
+
+            QueryRequest req = new QueryRequest(solrQuery);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+            return rsp.getBeans(SolrFlowInvocationMetric.class);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error resolving solr flow invocation metric by query [" + query + "] " +
+                "from the ikasan solr index!", e);
+        }
+    }
+
+    private long count(String query)
     {
         logger.debug("queryString: " + query);
 
@@ -137,11 +259,11 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
 
-            return rsp.getBeans(SolrFlowInvocationMetric.class);
+            return rsp.getResults().getNumFound();
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving solr flow invocation metric by query [" + query + "] " +
+            throw new RuntimeException("Error resolving solr flow invocation metric count by query [" + query + "] " +
                 "from the ikasan solr index!", e);
         }
     }
