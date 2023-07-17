@@ -61,4 +61,46 @@ public class SolrMetricsServiceImpl extends SolrServiceBase implements SolrServi
         this.solrMetricsDao.setSolrPassword(this.solrPassword);
         return this.solrMetricsDao.getMetrics(moduleName, flowName, startTime, endTime);
     }
+
+    @Override
+    public List<FlowInvocationMetric> getMetrics(long startTime, long endTime, int offset, int limit) {
+        this.solrMetricsDao.setSolrUsername(this.solrUsername);
+        this.solrMetricsDao.setSolrPassword(this.solrPassword);
+        return this.solrMetricsDao.getMetrics(startTime, endTime, offset, limit);
+    }
+
+    @Override
+    public long count(long startTime, long endTime) {
+        this.solrMetricsDao.setSolrUsername(this.solrUsername);
+        this.solrMetricsDao.setSolrPassword(this.solrPassword);
+        return this.solrMetricsDao.count(startTime, endTime);
+    }
+
+    @Override
+    public List<FlowInvocationMetric> getMetrics(String moduleName, long startTime, long endTime, int offset, int limit) {
+        this.solrMetricsDao.setSolrUsername(this.solrUsername);
+        this.solrMetricsDao.setSolrPassword(this.solrPassword);
+        return this.solrMetricsDao.getMetrics(moduleName, startTime, endTime, offset, limit);
+    }
+
+    @Override
+    public long count(String moduleName, long startTime, long endTime) {
+        this.solrMetricsDao.setSolrUsername(this.solrUsername);
+        this.solrMetricsDao.setSolrPassword(this.solrPassword);
+        return this.solrMetricsDao.count(moduleName, startTime, endTime);
+    }
+
+    @Override
+    public List<FlowInvocationMetric> getMetrics(String moduleName, String flowName, long startTime, long endTime, int offset, int limit) {
+        this.solrMetricsDao.setSolrUsername(this.solrUsername);
+        this.solrMetricsDao.setSolrPassword(this.solrPassword);
+        return this.solrMetricsDao.getMetrics(moduleName, flowName, startTime, endTime, offset, limit);
+    }
+
+    @Override
+    public long count(String moduleName, String flowName, long startTime, long endTime) {
+        this.solrMetricsDao.setSolrUsername(this.solrUsername);
+        this.solrMetricsDao.setSolrPassword(this.solrPassword);
+        return this.solrMetricsDao.count(moduleName, flowName, startTime, endTime);
+    }
 }

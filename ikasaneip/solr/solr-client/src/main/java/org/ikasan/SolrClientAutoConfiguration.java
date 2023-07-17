@@ -98,6 +98,9 @@ public class SolrClientAutoConfiguration {
     @Value("${solr.scheduler.instance.retention.days:90}")
     private int solrSchedulerInstanceRetentionDays;
 
+    @Value("${solr.metrics.query.limit:200}")
+    private int solrMetricsQueryLimit;
+
     @Value("${solr.save.context.instance.audits:true}")
     private boolean saveContextInstanceAuditRecords;
 
@@ -396,7 +399,7 @@ public class SolrClientAutoConfiguration {
     @Bean("flowInvocationMetricBatchInsert")
     public BatchInsert<FlowInvocationMetric> solrMetricsBatchInsert()
     {
-        SolrMetricsDao dao = new SolrMetricsDao();
+        SolrMetricsDao dao = new SolrMetricsDao(this.solrMetricsQueryLimit);
         dao.initStandalone(solrUrl, solrRetentionDays);
 
         SolrMetricsServiceImpl service = new SolrMetricsServiceImpl(dao);
@@ -421,7 +424,7 @@ public class SolrClientAutoConfiguration {
 
     public MetricsService solrMetricsService()
     {
-        SolrMetricsDao dao = new SolrMetricsDao();
+        SolrMetricsDao dao = new SolrMetricsDao(this.solrMetricsQueryLimit);
         dao.initStandalone(solrUrl, solrRetentionDays);
 
         SolrMetricsServiceImpl service = new SolrMetricsServiceImpl(dao);

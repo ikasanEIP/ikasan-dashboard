@@ -127,6 +127,44 @@ public class MetricsController
     }
 
     @RequestMapping(method = RequestMethod.GET,
+        value = "/metrics/count/{startTime}/{endTime}")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
+    public ResponseEntity count(@PathVariable("startTime") long startTime,
+                                     @PathVariable("endTime") long endTime)
+    {
+        try {
+            return new ResponseEntity(this.metricsService.count(startTime, endTime), HttpStatus.OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to get count of metrics events! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/metrics/paged/{startTime}/{endTime}/{offset}/{limit}")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
+    public ResponseEntity getMetricsLimitOffset(@PathVariable("startTime") long startTime,
+                                                @PathVariable("endTime") long endTime,
+                                                @PathVariable("offset") int offset,
+                                                @PathVariable("limit") int limit)
+    {
+        try {
+            List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(startTime, endTime, offset, limit);
+
+            return new ResponseEntity(dtos, HttpStatus.OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
         value = "/metrics/{moduleName}/{startTime}/{endTime}")
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
     public ResponseEntity getMetrics(@PathVariable("moduleName") String moduleName,
@@ -135,6 +173,48 @@ public class MetricsController
     {
         try {
             List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(moduleName, startTime, endTime);
+
+            return new ResponseEntity(dtos, HttpStatus.OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/metrics/count/{moduleName}/{startTime}/{endTime}")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
+    public ResponseEntity count(@PathVariable("moduleName") String moduleName,
+                                     @PathVariable("startTime") long startTime,
+                                     @PathVariable("endTime") long endTime)
+    {
+        try {
+            return new ResponseEntity(this.metricsService.count(moduleName, startTime, endTime), HttpStatus.OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to get count of metrics events! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/metrics/paged/{moduleName}/{startTime}/{endTime}/{offset}/{limit}")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
+    public ResponseEntity getMetricsLimitOffset(@PathVariable("moduleName") String moduleName,
+                                     @PathVariable("startTime") long startTime,
+                                     @PathVariable("endTime") long endTime,
+                                     @PathVariable("offset") int offset,
+                                     @PathVariable("limit") int limit)
+    {
+        try {
+            List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(moduleName, startTime, endTime, offset, limit);
 
             return new ResponseEntity(dtos, HttpStatus.OK);
         }
@@ -157,6 +237,50 @@ public class MetricsController
     {
         try {
             List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(moduleName, flowName, startTime, endTime);
+
+            return new ResponseEntity(dtos, HttpStatus.OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/metrics/count/{moduleName}/{flowName}/{startTime}/{endTime}")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
+    public ResponseEntity count(@PathVariable("moduleName") String moduleName,
+                                     @PathVariable("flowName") String flowName,
+                                     @PathVariable("startTime") long startTime,
+                                     @PathVariable("endTime") long endTime)
+    {
+        try {
+            return new ResponseEntity(this.metricsService.count(moduleName, flowName, startTime, endTime), HttpStatus.OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to get count of metrics events! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/metrics/paged/{moduleName}/{flowName}/{startTime}/{endTime}/{offset}/{limit}")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
+    public ResponseEntity getMetricsLimitOffset(@PathVariable("moduleName") String moduleName,
+                                     @PathVariable("flowName") String flowName,
+                                     @PathVariable("startTime") long startTime,
+                                     @PathVariable("endTime") long endTime,
+                                     @PathVariable("offset") int offset,
+                                     @PathVariable("limit") int limit)
+    {
+        try {
+            List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(moduleName, flowName, startTime, endTime, offset, limit);
 
             return new ResponseEntity(dtos, HttpStatus.OK);
         }

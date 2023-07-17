@@ -48,8 +48,6 @@
 
     <bean id="cacheAdapter" class="org.ikasan.job.orchestration.rest.dashboard.util.TestCacheAdapter" />
 
-    <bean id="metricsService" class="org.ikasan.job.orchestration.rest.dashboard.util.TestMetricsService" />
-
     <bean id="emailNotificationDetailsService" class="org.ikasan.job.orchestration.rest.dashboard.util.TestEmailNotificationDetailsService" />
 
 </beans>

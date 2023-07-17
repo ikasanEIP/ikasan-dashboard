@@ -65,7 +65,9 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
         String uri = "/rest/harvest/metrics";
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri)
-            .contentType(MediaType.APPLICATION_JSON_VALUE).content(super.loadDataFile(METRICS_JSON))).andReturn();
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .content(super.loadDataFile(METRICS_JSON)))
+            .andReturn();
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(HttpStatus.OK.value(), status);
@@ -102,6 +104,35 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
     }
 
     @Test
+    public void get_metrics_within_timeframe_success_paging() throws Exception
+    {
+        String uri = "/rest/metrics/paged/0/100000000/0/200";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        List<FlowInvocationMetricImpl> results = objectMapper.readValue(mvcResult.getResponse().getContentAsString()
+            , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+
+        Assert.assertEquals(200, results.size());
+    }
+
+    @Test
+    public void get_metrics_within_timeframe_success_count() throws Exception
+    {
+        String uri = "/rest/metrics/count/0/100000000";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        Assert.assertEquals("575", mvcResult.getResponse().getContentAsString());
+    }
+
+    @Test
     public void get_metrics_within_timeframe_success_exception_bad_time() throws Exception
     {
         String uri = "/rest/metrics/0/badtime";
@@ -128,6 +159,35 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
     }
 
     @Test
+    public void get_metrics_for_module_within_timeframe_success_paged() throws Exception
+    {
+        String uri = "/rest/metrics/paged/my-module/0/100000000/0/200";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        List<FlowInvocationMetricImpl> results = objectMapper.readValue(mvcResult.getResponse().getContentAsString()
+            , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+
+        Assert.assertEquals(200, results.size());
+    }
+
+    @Test
+    public void get_metrics_for_module_within_timeframe_success_count() throws Exception
+    {
+        String uri = "/rest/metrics/count/my-module/0/100000000";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        Assert.assertEquals("575", mvcResult.getResponse().getContentAsString());
+    }
+
+    @Test
     public void get_metrics_for_module_within_timeframe_exception_bad_time() throws Exception
     {
         String uri = "/rest/metrics/my-module/0/badtime";
@@ -151,6 +211,35 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
         JSONAssert.assertEquals(objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile(METRICS_JSON)
             , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)))
             , mvcResult.getResponse().getContentAsString(), false);
+    }
+
+    @Test
+    public void get_metrics_for_module_and_flow_within_timeframe_success_paged() throws Exception
+    {
+        String uri = "/rest/metrics/paged/my-module/my-flow/0/100000000/0/200";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        List<FlowInvocationMetricImpl> results = objectMapper.readValue(mvcResult.getResponse().getContentAsString()
+            , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class));
+
+        Assert.assertEquals(200, results.size());
+    }
+
+    @Test
+    public void get_metrics_for_module_and_flow_within_timeframe_success_count() throws Exception
+    {
+        String uri = "/rest/metrics/count/my-module/my-flow/0/100000000";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        Assert.assertEquals("575", mvcResult.getResponse().getContentAsString());
     }
 
     @Test
