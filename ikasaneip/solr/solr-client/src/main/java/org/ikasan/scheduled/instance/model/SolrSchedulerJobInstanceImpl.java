@@ -1,5 +1,6 @@
 package org.ikasan.scheduled.instance.model;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
@@ -78,6 +79,11 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
         int result = super.hashCode();
         result = 31 * result + (childContextName != null ? childContextName.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
 
     @Override

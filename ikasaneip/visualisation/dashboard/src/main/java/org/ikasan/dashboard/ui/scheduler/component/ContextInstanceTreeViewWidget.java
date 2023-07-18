@@ -1809,6 +1809,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 .collect(Collectors.toList()));
         }
 
+        children = children.stream().distinct().collect(Collectors.toList());
+
         if(offset >= 0 && limit > 0 && offset + limit >= children.size()) {
             children = children.subList(offset, children.size());
         }
@@ -1816,7 +1818,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             children = children.subList(offset, offset + limit);
         }
 
-        return children.stream().distinct().collect(Collectors.toList());
+        return children.stream().collect(Collectors.toList());
     }
 
     /**
