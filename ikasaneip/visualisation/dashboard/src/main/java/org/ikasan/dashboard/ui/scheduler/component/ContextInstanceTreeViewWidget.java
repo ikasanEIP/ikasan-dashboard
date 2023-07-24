@@ -1842,7 +1842,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 filter.setJobName("");
                 dataProvider.refreshAll();
                 grid.collapseRecursively(Collections.singleton(contextInstance), 1);
-                grid.expand(this.expandedNodes);
+                grid.expandRecursively( Collections.singleton(contextInstance),this.contextInstance.getTreeViewExpandLevel()-1);
+                // todo determine if expanding nodes makes sense
+                //grid.expand(this.expandedNodes);
             } else {
                 filter.setJobName(event.getValue());
                 dataProvider.refreshAll();
