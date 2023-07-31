@@ -7,6 +7,7 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
@@ -140,19 +141,24 @@ public abstract class ContextInstanceServiceBase {
     }
 
     protected void saveContextInstance(ContextInstance contextInstance, InstanceStatus instanceStatus) {
+        InstanceStatus previousStatus = contextInstance.getStatus();
         contextInstance.setStatus(instanceStatus);
         ScheduledContextInstanceRecord scheduledContextInstanceRecord = new ScheduledContextInstanceRecordImpl();
         scheduledContextInstanceRecord.setContextName(contextInstance.getName());
         scheduledContextInstanceRecord.setContextInstance(contextInstance);
         scheduledContextInstanceRecord.setTimestamp(contextInstance.getCreatedDateTime());
+        scheduledContextInstanceRecord.setStartTime(contextInstance.getStartTime());
         scheduledContextInstanceRecord.setStatus(contextInstance.getStatus().name());
 
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
+
+        this.contextInstanceStateChangeEventBroadcaster.broadcast(new ContextInstanceStateChangeEventImpl(contextInstance.getId(), contextInstance,
+            previousStatus, contextInstance.getStatus()));
     }
 
     protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance
-        , boolean isInitialContextInstantiation, List<ContextParameterInstance> contextParameterInstances) throws Exception {
-        if(isInitialContextInstantiation) {
+        , boolean initialiseJobs, boolean isInitialContextInstantiation, List<ContextParameterInstance> contextParameterInstances) throws Exception {
+        if(initialiseJobs) {
             SchedulerJobInstancesInitialisationParameters parameters
                 = new SchedulerJobInstancesInitialisationParametersImpl(false);
             schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance, parameters);
@@ -255,6 +261,81 @@ public abstract class ContextInstanceServiceBase {
             instance.setProjectedEndTime(instance.getStartTime()+instance.getContextTtlMilliseconds());
             this.saveContextInstance(instance, InstanceStatus.WAITING);
         }
+
+        ContextMachineCache.instance().put(contextMachine);
+    }
+
+    protected void prepareContextInstance(ContextTemplate context, ContextInstance instance) throws Exception {
+
+        SchedulerJobInstancesInitialisationParameters parameters
+            = new SchedulerJobInstancesInitialisationParametersImpl(false);
+        schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance, parameters);
+
+
+        Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
+        HashMap<String, ModuleMetaData> agents = getAgents(context);
+
+        internalJobs.entrySet().forEach(job -> {
+            if(job.getValue().isSkip()) {
+                // FIXME this may cause null pointer exception if the child context name is reused. So we need to decide if all context names need to be unique. This will not recover
+                ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
+                if(child == null) {
+                    LOG.warn("Could not load child context[{}] from context instance name[{}] context instance id[{}] when attempting to initialise the context machine. " +
+                        "This is likely due to the child context name being duplicated in the context. The context instance will not have been recovered with skipped jobs set correctly.");
+                }
+                else if(!child.getScheduledJobsMap().containsKey(job.getValue().getIdentifier())){
+                    LOG.warn("Could not set job to skip as job with identifier [{}] was not found in child context [{}].",
+                        job.getValue().getIdentifier(), child.getName());
+                }
+                else {
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
+            }
+            if(job.getValue().isHeld()) {
+                // FIXME this may cause null pointer exception if the child context name is reused. So we need to decide if all context names need to be unique. This will not recover
+                ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
+                if(child == null) {
+                    LOG.warn("Could not load child context[{}] from context instance name[{}] context instance id[{}] when attempting to initialise the context machine. " +
+                        "This is likely due to the child context name being duplicated in the context. The context instance will not have been recovered with held jobs set " +
+                        "correctly");
+                }
+                else if(!child.getScheduledJobsMap().containsKey(job.getValue().getIdentifier())){
+                    LOG.warn("Could not set job to hold as job with identifier [{}] was not found in child context [{}].",
+                        job.getValue().getIdentifier(), child.getName());
+                }
+                else {
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setHeld(job.getValue().isHeld());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
+            }
+        });
+
+        Map<String, GlobalEventJobInstance> globalEventJobMap = this.getGlobalEventJobs(instance.getId());
+
+        globalEventJobMap.entrySet().forEach(job -> {
+            if(job.getValue().getSkippedContexts() != null && job.getValue().getSkippedContexts().containsKey(instance.getName())) {
+                ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
+                if(child == null) {
+                    LOG.warn("Could not load child context[{}] from context instance name[{}] context instance id[{}] when attempting to initialise the context machine. " +
+                        "This is likely due to the child context name being duplicated in the context. The context instance will not have been recovered with skipped jobs set correctly.");
+                }
+                else if(!child.getScheduledJobsMap().containsKey(job.getValue().getIdentifier())){
+                    LOG.warn("Could not set job to skip as job with identifier [{}] was not found in child context [{}].",
+                        job.getValue().getIdentifier(), child.getName());
+                }
+                else {
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
+            }
+        });
+
+        Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
+
+        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, queueDirectory, agents,
+            null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
+            this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
         ContextMachineCache.instance().put(contextMachine);
     }

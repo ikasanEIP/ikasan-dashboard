@@ -909,7 +909,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-all-nested-jobs", UI.getCurrent().getLocale()
             , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
         hold.addClickListener(event -> {
-            if(!this.canPerformAction()) {
+            if(!this.canPerformAction(true)) {
                 return;
             }
             ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -986,7 +986,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-all-nested-jobs", UI.getCurrent().getLocale()
             , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
         release.addClickListener(event -> {
-            if(!this.canPerformAction()) {
+            if(!this.canPerformAction(true)) {
                 return;
             }
             List<SchedulerJobInstanceRecord> jobsToReleaseWithinContext = schedulerJobInstanceService.getJobsToReleaseWithinContext(ContextMachineCache
@@ -1112,7 +1112,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
 
             skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(!this.canPerformAction()) {
+                if(!this.canPerformAction(true)) {
                     return;
                 }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -1139,7 +1139,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             enable = IconDecorator.decorate(new Icon(VaadinIcon.PLAY), getTranslation("tooltip.enable-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             enable.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
             enable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(!this.canPerformAction()) {
+                if(!this.canPerformAction(true)) {
                     return;
                 }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -1167,7 +1167,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             hold.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
             hold.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(!this.canPerformAction()) {
+                if(!this.canPerformAction(true)) {
                     return;
                 }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -1195,7 +1195,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             release.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
             release.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(!this.canPerformAction()) {
+                if(!this.canPerformAction(true)) {
                     return;
                 }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -1223,7 +1223,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         if(!iconMap.containsKey(SUBMIT_ICON)) {
             submit = IconDecorator.decorate(new Icon(VaadinIcon.PAPERPLANE), getTranslation("tooltip.submit-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             submit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(!this.canPerformAction()) {
+                if(!this.canPerformAction(false)) {
                     return;
                 }
                 if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
@@ -1442,7 +1442,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             reset = IconDecorator.decorate(new Icon(VaadinIcon.ARROW_BACKWARD), getTranslation("tooltip.reset-job"
                 , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             reset.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(!this.canPerformAction()) {
+                if(!this.canPerformAction(false)) {
                     return;
                 }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -1472,7 +1472,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             submitDownstreamJobs = IconDecorator.decorate(new Icon(VaadinIcon.FAST_FORWARD), getTranslation("button.initiate-downstream-jobs"
                 , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             submitDownstreamJobs.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(!this.canPerformAction()) {
+                if(!this.canPerformAction(false)) {
                     return;
                 }
                 submitDownstreamJobs((InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance());
@@ -1491,7 +1491,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * Helper method to confirm that actions can be performed on a job plan
      * @return
      */
-    private boolean canPerformAction() {
+    private boolean canPerformAction(boolean isAllowedWhenPrepared) {
         if(!ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
             this.contextInstance = this.scheduledContextInstanceService
                 .findById(this.contextInstance.getId()+ "_" + SCHEDULED_CONTEXT_INSTANCE).getContextInstance();
@@ -1505,6 +1505,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     , UI.getCurrent().getLocale()));
                 return false;
             }
+        }
+        else if(this.contextInstance.getStatus().equals(InstanceStatus.PREPARED) && !isAllowedWhenPrepared) {
+            NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-prepared-plan"
+                , UI.getCurrent().getLocale()));
+            return false;
         }
 
         return true;
@@ -1680,6 +1685,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
             if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                 this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                this.manageContextInstanceStateChangeEvent(this.ui, event);
+                manageContextStatusIndicators(this.ui);
+            }
+            else {
                 this.manageContextInstanceStateChangeEvent(this.ui, event);
                 manageContextStatusIndicators(this.ui);
             }
@@ -2050,7 +2059,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param contextInstanceStateChangeEvent event received when a context instance state change occurs.
      */
     private void manageContextInstanceStateChangeEvent(UI ui, ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
-        if (contextInstanceStateChangeEvent.getContextInstance() != null) {
+        if (contextInstanceStateChangeEvent.getContextInstance() != null
+            && contextInstanceStateChangeEvent.getContextInstance().getId().equals(this.contextInstance.getId())) {
 
             ComponentKey key = new ComponentKey(contextInstance.getName()
                 , contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getName());

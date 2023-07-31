@@ -1,30 +1,37 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceMonitoringView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -34,12 +41,14 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.general.SchedulerService;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextInstanceAggregateJobStatus;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
@@ -47,18 +56,19 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
-public class ContextInstanceDashboardWidget extends Div implements SchedulerJobStateChangeEventBroadcastListener {
+public class ContextInstanceDashboardWidget extends Div
+    implements SchedulerJobStateChangeEventBroadcastListener, ContextInstanceStateChangeEventBroadcastListener, ContextInstanceSavedEventBroadcastListener {
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
+    private Grid<ScheduledContextInstanceRecord> preparedFutureContextInstanceGrid;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
@@ -79,9 +89,21 @@ public class ContextInstanceDashboardWidget extends Div implements SchedulerJobS
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private TextField contextNameTf = new TextField();
     private TextField contextInstanceIdTf = new TextField();
+
+    private TextField preparedContextNameTf = new TextField();
+    private TextField preparedContextInstanceIdTf = new TextField();
     private StatusFilter statusFilter = new StatusFilter();
+    private ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
     private IkasanAuthentication ikasanAuthentication;
     private UI ui;
+
+    private Tabs tabs;
+    private Tab activeJobPlanInstancesTab;
+    private Tab preparedFutureJobPlanInstancesTab;
+    private VerticalLayout activeInstancesDiv;
+    private VerticalLayout preparedFutureInstancesDiv;
+
+    private DateFormatter dateFormatter = DateFormatter.instance();
 
     /**
      * Constructor
@@ -177,18 +199,54 @@ public class ContextInstanceDashboardWidget extends Div implements SchedulerJobS
 
         this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        this.createGrid();
-
-        Div div = new Div();
-        div.addClassNames("card-counter");
+        this.createContextInstanceGrid();
+        this.createPreparedFutureContextInstanceGrid();
+        this.createActiveInstancesTab(fullscreen);
+        this.createPreparedFutureInstancesTab(fullscreen);
+        this.initialiseTabs();
+        this.add(this.tabs, this.activeInstancesDiv, this.preparedFutureInstancesDiv);
+        this.addClassNames("card-counter");
         if(fullscreen) {
-            div.setHeight("90vh");
+            this.setHeight("90vh");
             contextInstanceAggregateJobStatusGrid.setHeight("90%");
         }
         else {
-            div.setHeight("600px");
+            this.setHeight("600px");
             contextInstanceAggregateJobStatusGrid.setHeight("80%");
         }
+    }
+
+    private void initialiseTabs() {
+        this.activeJobPlanInstancesTab = new Tab(getTranslation("header.active-context-instances", UI.getCurrent().getLocale()));
+        this.activeJobPlanInstancesTab.setId("activeJobPlanInstancesTab");
+        this.preparedFutureJobPlanInstancesTab = new Tab("Prepared Future Job Plan Instances");
+        this.preparedFutureJobPlanInstancesTab.setId("contextTemplateTab");
+
+        this.tabs = new Tabs(this.activeJobPlanInstancesTab, this.preparedFutureJobPlanInstancesTab);
+
+        Map<Tab, Component> tabsToPages = new HashMap<>();
+        tabsToPages.put(this.activeJobPlanInstancesTab, this.activeInstancesDiv);
+        tabsToPages.put(this.preparedFutureJobPlanInstancesTab, this.preparedFutureInstancesDiv);
+
+        tabs.addSelectedChangeListener(event -> {
+            tabsToPages.values().forEach(page -> page.setVisible(false));
+            com.vaadin.flow.component.Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
+            selectedPage.setVisible(true);
+        });
+    }
+
+    private void createActiveInstancesTab(boolean fullscreen) {
+        this.activeInstancesDiv = new VerticalLayout();
+        this.activeInstancesDiv.setSizeFull();
+       // activeInstancesDiv.addClassNames("card-counter");
+//        if(fullscreen) {
+//            activeInstancesDiv.setHeight("90vh");
+//            contextInstanceAggregateJobStatusGrid.setHeight("90%");
+//        }
+//        else {
+//            activeInstancesDiv.setHeight("600px");
+//            contextInstanceAggregateJobStatusGrid.setHeight("80%");
+//        }
 
         Button breakOut = new Button();
         breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
@@ -220,20 +278,61 @@ public class ContextInstanceDashboardWidget extends Div implements SchedulerJobS
         rightSideButtons.add(clearFiltersButton, refresh, breakOut);
 
         HorizontalLayout layout = new HorizontalLayout();
-        H4 modules = new H4(getTranslation("header.active-context-instances", UI.getCurrent().getLocale()));
-        layout.add(modules, rightSideButtons);
+        layout.add(rightSideButtons);
         layout.setWidth("100%");
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, rightSideButtons);
 
         rightSideButtons.getElement().getStyle().set("margin-left", "auto");
 
-        div.add(layout);
-        div.add(this.contextInstanceAggregateJobStatusGrid);
-
-        this.add(div);
+        activeInstancesDiv.add(layout);
+        activeInstancesDiv.add(this.contextInstanceAggregateJobStatusGrid);
     }
 
-    private void createGrid() {
+    private void createPreparedFutureInstancesTab(boolean fullscreen) {
+        this.preparedFutureInstancesDiv = new VerticalLayout();
+        this.preparedFutureInstancesDiv.setSizeFull();
+
+        Button breakOut = new Button();
+        breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
+        breakOut.setVisible(!fullscreen);
+        breakOut.setWidth("50px");
+        breakOut.setHeight("50px");
+        breakOut.addClickListener(event -> {
+            String route = RouteConfiguration.forSessionScope()
+                .getUrl(ContextInstanceMonitoringView.class);
+
+            getUI().ifPresent(ui -> ui.getPage().open(route));
+        });
+
+        Button refresh = new Button("Refresh", VaadinIcon.REFRESH.create());
+        refresh.setIconAfterText(true);
+        refresh.addClickListener(event -> {
+            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+        });
+
+        Button clearFiltersButton = new Button("Clear Filters", VaadinIcon.FILTER.create());
+        clearFiltersButton.setIconAfterText(true);
+        clearFiltersButton.addClickListener(event -> {
+            this.preparedContextNameTf.setValue("");
+            this.preparedContextInstanceIdTf.setValue("");
+            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+        });
+
+        HorizontalLayout rightSideButtons = new HorizontalLayout();
+        rightSideButtons.add(clearFiltersButton, refresh, breakOut);
+
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.add(rightSideButtons);
+        layout.setWidth("100%");
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, rightSideButtons);
+
+        rightSideButtons.getElement().getStyle().set("margin-left", "auto");
+
+        preparedFutureInstancesDiv.add(layout);
+        preparedFutureInstancesDiv.add(this.preparedFutureContextInstanceGrid);
+    }
+
+    private void createContextInstanceGrid() {
         // Create a modulesGrid bound to the list
         contextInstanceAggregateJobStatusGrid = new Grid<>();
         contextInstanceAggregateJobStatusGrid.setId("contextInstanceAggregateJobStatusGrid");
@@ -432,15 +531,84 @@ public class ContextInstanceDashboardWidget extends Div implements SchedulerJobS
                     // The number of items to load
                     int limit = query.getLimit();
 
-                    return this.filter(this.statusFilter, offset, limit).stream();
+                    return this.filterContextInstanceAggregateJobStatus(this.statusFilter, offset, limit).stream();
                 },
                 // Second callback fetches the total number of items currently in the Grid.
                 // The grid can then use it to properly adjust the scrollbars.
-                query -> this.filter(this.statusFilter, -1, -1).size());
+                query -> this.filterContextInstanceAggregateJobStatus(this.statusFilter, -1, -1).size());
 
         dataProvider.withConfigurableFilter().setFilter(this.statusFilter);
         this.contextInstanceAggregateJobStatusGrid.setDataProvider(dataProvider);
         this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+    }
+
+    private void createPreparedFutureContextInstanceGrid() {
+        // Create a modulesGrid bound to the list
+        this.preparedFutureContextInstanceGrid = new Grid<>();
+        this.preparedFutureContextInstanceGrid.setId("preparedFutureContextInstanceGrid");
+        this.preparedFutureContextInstanceGrid.removeAllColumns();
+        this.preparedFutureContextInstanceGrid.setVisible(true);
+        this.preparedFutureContextInstanceGrid.setWidthFull();
+
+        this.preparedFutureContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextName)
+            .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
+            .setFlexGrow(2)
+            .setResizable(true);
+        this.preparedFutureContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextInstanceId)
+            .setHeader(getTranslation("table-header.context-instance-id", UI.getCurrent().getLocale())).setKey("id")
+            .setFlexGrow(2)
+            .setResizable(true);
+        this.preparedFutureContextInstanceGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of("<div style='white-space:normal'>[[item.startTime]]</div>")
+                .withProperty("startTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getStartTime())))
+            .setHeader(getTranslation("table-header.context-instance-start-date-time", UI.getCurrent().getLocale()))
+            .setKey("startTime")
+            .setWidth("130px");
+        this.preparedFutureContextInstanceGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
+            VerticalLayout layout = new VerticalLayout();
+            layout.setSpacing(false);
+            layout.setMargin(false);
+            layout.setPadding(false);
+            layout.setSizeFull();
+
+            Button breakOut = this.buildStatusBreakoutButton(IkasanColours.BLACK, IkasanColours.WHITE);
+            breakOut.addClickListener(event -> {
+                String route = RouteConfiguration.forSessionScope()
+                    .getUrl(ContextInstanceView.class, List.of(scheduledContextInstanceRecord.getContextInstanceId() +"_scheduledContextInstance"));
+
+                getUI().ifPresent(ui -> ui.getPage().open(route));
+            });
+
+            layout.add(breakOut);
+            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, breakOut);
+
+            return layout;
+        }));
+
+        this.preparedContextNameTf = new TextField();
+        this.preparedContextInstanceIdTf = new TextField();
+        HeaderRow hr = this.preparedFutureContextInstanceGrid.appendHeaderRow();
+        this.addPreparedContextInstanceGridFiltering(hr, "name", this.preparedContextNameTf, this.contextInstanceSearchFilter::setContextSearchFilter);
+        this.addPreparedContextInstanceGridFiltering(hr, "id", this.preparedContextInstanceIdTf, this.contextInstanceSearchFilter::setContextInstanceId);
+
+        DataProvider<ScheduledContextInstanceRecord, ContextInstanceSearchFilter> dataProvider =
+            DataProvider.fromFilteringCallbacks(
+                // First callback fetches items based on a query
+                query -> {
+                    // The index of the first item to load
+                    int offset = query.getOffset();
+
+                    // The number of items to load
+                    int limit = query.getLimit();
+
+                    return this.filterPreparedContextInstances(this.contextInstanceSearchFilter, offset, limit).stream();
+                },
+                // Second callback fetches the total number of items currently in the Grid.
+                // The grid can then use it to properly adjust the scrollbars.
+                query -> this.filterPreparedContextInstances(this.contextInstanceSearchFilter, -1, -1).size());
+
+        dataProvider.withConfigurableFilter().setFilter(this.contextInstanceSearchFilter);
+        this.preparedFutureContextInstanceGrid.setDataProvider(dataProvider);
+        this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
     }
 
     private Button buildStatusCountButton(String label, String backgroundColour, String fontColour, int count) {
@@ -482,12 +650,16 @@ public class ContextInstanceDashboardWidget extends Div implements SchedulerJobS
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
         SchedulerJobStateChangeEventBroadcaster.register(this);
+        ContextInstanceStateChangeEventBroadcaster.register(this);
+        ContextInstanceSavedEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
         SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        ContextInstanceStateChangeEventBroadcaster.unregister(this);
+        ContextInstanceSavedEventBroadcaster.unregister(this);
     }
 
     @Override
@@ -517,8 +689,27 @@ public class ContextInstanceDashboardWidget extends Div implements SchedulerJobS
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
-    private List<ContextInstanceAggregateJobStatus> filter(StatusFilter statusFilter, int offset, int limit) {
+    private void addPreparedContextInstanceGridFiltering(HeaderRow hr, String columnKey, TextField textField, Consumer<String> setFilter) {
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("12pt");
+        textField.setSuffixComponent(filterIcon);
+        textField.setWidthFull();
+
+        textField.addValueChangeListener(ev-> {
+            setFilter.accept(textField.getValue());
+            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+        });
+
+        hr.getCell(this.preparedFutureContextInstanceGrid.getColumnByKey(columnKey)).setComponent(textField);
+    }
+
+    private List<ContextInstanceAggregateJobStatus> filterContextInstanceAggregateJobStatus(StatusFilter statusFilter, int offset, int limit) {
         List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
+
+        contextInstanceIdentifiers = contextInstanceIdentifiers.stream()
+            .filter(id -> ContextMachineCache.instance().getByContextInstanceId(id) != null
+                && !ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(InstanceStatus.PREPARED))
+            .collect(Collectors.toList());
 
         List<ContextInstanceAggregateJobStatus> jobStatuses = this.schedulerJobInstanceService
             .getJobStatusCountForContextInstances(contextInstanceIdentifiers);
@@ -555,6 +746,46 @@ public class ContextInstanceDashboardWidget extends Div implements SchedulerJobS
         return jobStatuses;
     }
 
+    private List<ScheduledContextInstanceRecord> filterPreparedContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit) {
+
+        ContextInstanceSearchFilter prepared = new SolrContextInstanceSearchFilterImpl();
+        prepared.setStatus(InstanceStatus.PREPARED.name());
+
+        List<ScheduledContextInstanceRecord> jobStatuses = this.scheduledContextInstanceService
+            .getScheduledContextInstancesByFilter(prepared, -1, -1, null, null).getResultList();
+
+        boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
+        Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
+
+        jobStatuses = jobStatuses.stream().filter(item -> {
+                boolean filter = true;
+
+                if(!canAccessAllJobPlans) {
+                    filter = accessibleJobPlans.contains(item.getContextName());
+                }
+
+                if(contextInstanceSearchFilter.getContextSearchFilter() != null && !contextInstanceSearchFilter.getContextSearchFilter().isEmpty()) {
+                    filter = item.getContextName().toLowerCase().contains(contextInstanceSearchFilter.getContextSearchFilter().toLowerCase());
+                }
+
+                if(contextInstanceSearchFilter.getContextInstanceId() != null && !contextInstanceSearchFilter.getContextInstanceId().isEmpty()) {
+                    filter = item.getContextInstanceId().toLowerCase().contains(contextInstanceSearchFilter.getContextInstanceId().toLowerCase());
+                }
+
+                return filter;
+            })
+            .collect(Collectors.toList());
+
+        if(offset >= 0 && limit > 0 && offset + limit >= jobStatuses.size()) {
+            jobStatuses = jobStatuses.subList(offset, jobStatuses.size());
+        }
+        else if(offset >= 0 && limit > 0 && offset + limit < jobStatuses.size()) {
+            jobStatuses = jobStatuses.subList(offset, offset + limit);
+        }
+
+        return jobStatuses;
+    }
+
     private class StatusFilter {
         private String contextName;
         private String contextInstanceId;
@@ -573,6 +804,26 @@ public class ContextInstanceDashboardWidget extends Div implements SchedulerJobS
 
         public void setContextInstanceId(String contextInstanceId) {
             this.contextInstanceId = contextInstanceId;
+        }
+    }
+
+    @Override
+    public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+                this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+            });
+        }
+    }
+
+    @Override
+    public void receiveBroadcast(ContextInstance event) {
+        if(this.ui.isAttached()) {
+            this.ui.access(() -> {
+                this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+                this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+            });
         }
     }
 }

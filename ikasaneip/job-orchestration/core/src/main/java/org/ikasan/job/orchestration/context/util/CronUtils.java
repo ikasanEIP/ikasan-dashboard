@@ -97,4 +97,22 @@ public class CronUtils {
         // Now determine if duration multiplied with an arbitrary multiplier, is greater then the duration of the plan.
         return timeToNextExecution.isPresent() && (timeToNextExecution.get().getSeconds() * 1000 * intervalMultiplier) > duration;
     }
+
+    /**
+     * Get the epoch in milliseconds of next fire time for cron expression.
+     *
+     * @param cronExpression
+     * @return
+     */
+    public static long getEpochMilliOfNextFireTime(String cronExpression) {
+        ZonedDateTime now = ZonedDateTime.now();
+        ExecutionTime executionTime = ExecutionTime.forCron(cronParser.parse(cronExpression));
+
+        Optional<ZonedDateTime> nextExecutionTime = executionTime.nextExecution(now);
+        if(nextExecutionTime.isPresent()) {
+            return nextExecutionTime.get().toInstant().toEpochMilli();
+        }
+
+        return -1;
+    }
 }

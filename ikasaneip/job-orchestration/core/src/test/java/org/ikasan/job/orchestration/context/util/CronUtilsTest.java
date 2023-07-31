@@ -3,6 +3,11 @@ package org.ikasan.job.orchestration.context.util;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
 public class CronUtilsTest {
 
     @Test
@@ -63,6 +68,26 @@ public class CronUtilsTest {
         String cron = CronUtils.buildCronFromOriginalWithMillisecondOffset(secondOfMarch1973, ttl, "Europe/London");
 
         Assert.assertEquals("0 0 0 2 3 ? 1974", cron);
+    }
+
+    @Test
+    public void test_get_epoch_in_past() {
+        Assert.assertEquals(-1, CronUtils.getEpochMilliOfNextFireTime("0 0 0 2 3 ? 1974"));
+    }
+
+    @Test
+    public void test_get_epoch_in_future() {
+        Assert.assertEquals(4076092800000L, CronUtils.getEpochMilliOfNextFireTime("0 0 0 2 3 ? 2099"));
+
+        Calendar c = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        c.setTime(new Date(4076092800000L));
+
+        Assert.assertEquals(2, c.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(Calendar.MARCH, c.get(Calendar.MONTH));
+        Assert.assertEquals(2099, c.get(Calendar.YEAR));
+        Assert.assertEquals(0, c.get(Calendar.HOUR));
+        Assert.assertEquals(0, c.get(Calendar.MINUTE));
+        Assert.assertEquals(0, c.get(Calendar.SECOND));
     }
 
     @Test

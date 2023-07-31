@@ -74,7 +74,7 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             // @todo check with mick where the cron expressions are entered
             if(!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                 && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(),now)) {
-                initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, null);
+                initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, true,null);
 
                 contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
                     , contextInstance.getTimezone(), contextInstance.getId());
