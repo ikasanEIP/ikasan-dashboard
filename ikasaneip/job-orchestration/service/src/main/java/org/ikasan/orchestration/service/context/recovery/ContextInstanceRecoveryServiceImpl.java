@@ -201,7 +201,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                         // @todo check with mick where the cron expressions are entered
                                         if (!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                                             && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
-                                            initialiseContextMachine(context, contextInstance, false, null);
+                                            initialiseContextMachine(context, contextInstance, false, false, null);
                                             if (!contextInstance.isRunContextUntilManuallyEnded()) {
                                                 contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
                                                     , contextInstance.getTimezone(), contextInstance.getId());

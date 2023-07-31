@@ -59,7 +59,7 @@ public class ContextInstanceRegisterJob implements DashboardJob {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         logger.info("Executing jobExecutionContext start context " + jobName);
         try {
-            contextInstanceRegistrationService.register(jobName, null);
+            contextInstanceRegistrationService.register(jobName);
         } catch (Exception e) {
             // TODO hook in notification here
             logger.error(String.format("An error has occurred executing ContextInstanceRegisterJob[%s]", e.getMessage()), e);
