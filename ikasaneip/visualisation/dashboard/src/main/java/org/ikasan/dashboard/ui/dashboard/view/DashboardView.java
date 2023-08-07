@@ -22,6 +22,7 @@ import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.DownloadLogFileService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,6 +43,9 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
 
     @Autowired
     private ModuleMetaDataService moduleMetadataService;
+
+    @Resource
+    private DownloadLogFileService downloadLogFileService;
 
     @Resource
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
@@ -75,7 +79,7 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
 
         if(!initialised) {
             board.addRow(new BusinessStreamWidget(this.businessStreamMetaDataService, this.moduleMetadataService)
-                , new ModuleWidget(moduleMetadataService), new StatusWidget(moduleMetadataService, UI.getCurrent()));
+                , new ModuleWidget(moduleMetadataService, downloadLogFileService), new StatusWidget(moduleMetadataService, UI.getCurrent()));
             board.addRow(new HospitalEventsWidget(solrGeneralService), new ErrorEventWidget(solrGeneralService));
 
             initialised = true;

@@ -11,10 +11,7 @@ import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.ConfigurationService;
-import org.ikasan.spec.module.client.LogStreamingService;
-import org.ikasan.spec.module.client.MetaDataService;
-import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
@@ -54,8 +51,8 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
     private GlobalEventService globalEventService;
-
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+    private DownloadLogFileService downloadLogFileService;
 
     private Board board;
 
@@ -79,7 +76,8 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                                        ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                        JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                        JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                       GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
+                                       GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                       DownloadLogFileService downloadLogFileService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -99,6 +97,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.scheduledContextService = scheduledContextService;
         this.globalEventService = globalEventService;
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
+        this.downloadLogFileService = downloadLogFileService;
 
         board = new Board();
         board.addClassName("styled");
@@ -112,7 +111,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         if(!initialised) {
             board.addRow(new AgentWidget(this.moduleMetadataService, this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
-                , this.schedulerService, this.schedulerJobService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
+                , this.schedulerService, this.schedulerJobService, this.downloadLogFileService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
 
             board.addRow(new ContextInstanceDashboardWidget(this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger

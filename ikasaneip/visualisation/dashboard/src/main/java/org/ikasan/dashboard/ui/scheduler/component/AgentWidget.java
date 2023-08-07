@@ -17,6 +17,7 @@ import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.DownloadLogFileService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
@@ -37,6 +38,7 @@ public class AgentWidget extends Div {
     private SchedulerService schedulerService;
     private SchedulerJobService schedulerJobService;
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+    private DownloadLogFileService downloadLogFileService;
     /**
      * Constructor
      *
@@ -50,7 +52,8 @@ public class AgentWidget extends Div {
      */
     public AgentWidget(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                       SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService) {
+                       SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService,
+                       DownloadLogFileService downloadLogFileService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -59,6 +62,7 @@ public class AgentWidget extends Div {
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
         this.schedulerJobService = schedulerJobService;
+        this.downloadLogFileService = downloadLogFileService;
         this.textField = new TextField();
         this.createGrid();
 
@@ -109,7 +113,7 @@ public class AgentWidget extends Div {
 
         this.scheduledAgentsFilteringGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<ModuleMetaData>>) moduleMetaDataItemDoubleClickEvent -> {
             SchedulerAgentManagementDialog schedulerAgentManagementDialog
-                = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem());
+                = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem(), downloadLogFileService);
 
             schedulerAgentManagementDialog.open();
         });
