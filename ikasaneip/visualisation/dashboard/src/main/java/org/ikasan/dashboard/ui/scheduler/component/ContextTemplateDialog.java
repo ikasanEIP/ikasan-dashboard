@@ -42,6 +42,8 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationServ
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.quartz.CronExpression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.*;
@@ -49,6 +51,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
+
+    private static Logger logger = LoggerFactory.getLogger(ContextInstanceWidget.class);
+
     private ScheduledContextService scheduledContextService;
     private SchedulerJobService schedulerJobService;
     private SystemEventLogger systemEventLogger;
@@ -153,13 +158,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
                 }
 
                 if(this.scheduledContextRecord != null) {
-                    boolean hasStartTimeChanged = !scheduledContextRecord.getContext().getTimeWindowStart().equals(this.startWindowCronExpressionTf.getValue());
                     this.saveExisting();
-                    if(!this.contextTemplate.isDisabled() && hasStartTimeChanged) {
-                        this.contextInstanceRegistrationService.register(this.contextTemplate.getName(), null);
-                        this.contextInstanceSchedulerService.registerStartJobAndTrigger(contextTemplate.getName(), contextTemplate.getTimeWindowStart(),
-                            contextTemplate.getTimezone());
-                    }
                 }
                 else {
                     this.saveNew();
@@ -561,6 +560,20 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             this.scheduledContextRecord.setModifiedBy(this.authentication.getName());
             this.scheduledContextRecord.setTimestamp(System.currentTimeMillis());
             this.scheduledContextService.save(this.scheduledContextRecord);
+
+            if(!this.contextTemplate.isDisabled() &&
+                (!beforeModification.getTimeWindowStart().equals(this.contextTemplate.getTimeWindowStart()) ||
+                    (beforeModification.getBlackoutWindowCronExpressions() != null && this.contextTemplate.getBlackoutWindowCronExpressions() != null &&
+                    !beforeModification.getBlackoutWindowCronExpressions().equals(this.contextTemplate.getBlackoutWindowCronExpressions())) ||
+                    (beforeModification.getBlackoutWindowCronExpressions() != null && this.contextTemplate.getBlackoutWindowCronExpressions() == null) ||
+                    (beforeModification.getBlackoutWindowCronExpressions() == null && this.contextTemplate.getBlackoutWindowCronExpressions() != null) ||
+                    (beforeModification.getBlackoutWindowDateTimeRanges() != null && this.contextTemplate.getBlackoutWindowDateTimeRanges() != null &&
+                    !beforeModification.getBlackoutWindowDateTimeRanges().equals(this.contextTemplate.getBlackoutWindowDateTimeRanges()))) ||
+                    (beforeModification.getBlackoutWindowDateTimeRanges() != null && this.contextTemplate.getBlackoutWindowDateTimeRanges() == null) ||
+                    (beforeModification.getBlackoutWindowDateTimeRanges() == null && this.contextTemplate.getBlackoutWindowDateTimeRanges() != null)) {
+                this.contextInstanceRegistrationService.reSchedule(this.contextTemplate.getName());
+            }
+
             ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
 
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -573,6 +586,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             e.printStackTrace();
             NotificationHelper.showErrorNotification(getTranslation("error.error-saving-context-template"
                 , UI.getCurrent().getLocale()));
+            return;
         }
 
         NotificationHelper.showUserNotification(getTranslation("notification.context-template-saved-successfully"

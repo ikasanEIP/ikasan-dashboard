@@ -29,6 +29,8 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
+import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.*;
@@ -135,8 +137,6 @@ public class ContextInstanceWidget extends VerticalLayout
     private Button resetContextButton;
     private Button contextInstanceParameterButton;
     private Button jobLockDashboard;
-
-
     private Tab treeTab;
     private Tab visualisationTab;
     private Tab rawContextTab;
@@ -711,49 +711,10 @@ public class ContextInstanceWidget extends VerticalLayout
         this.holdContextButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.holdContextButton.addClickListener(event -> {
             actionPopup.close();
-            ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader(getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
-            confirmDialog.setText(getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
-            confirmDialog.setCancelable(true);
-            confirmDialog.open();
-
-            confirmDialog.addConfirmListener(confirmEvent -> {
-                ContextMachine contextMachine = ContextMachineCache.instance()
-                    .getByContextInstanceId(this.contextInstance.getId());
-
-                if (contextMachine != null) {
-                    boolean error = false;
-                    try {
-                        List<SchedulerJobInstanceRecord> updatedRecords = this.schedulerJobInstanceService
-                            .holdJobsWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
-
-                        if (updatedRecords.size() > 0) {
-                            updatedRecords.forEach(schedulerJobInstanceRecord -> {
-                                SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
-                                    = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
-                                    this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
-                                SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
-                            });
-                        }
-
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                            , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        error = true;
-                    }
-                    finally {
-                        if (error) {
-                            NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-hold-error"
-                                , UI.getCurrent().getLocale()));
-                        } else {
-                            NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-held"
-                                , UI.getCurrent().getLocale()));
-                        }
-                    }
-                }
-            });
+            HoldAllCommandExecutionJobsForContextInstanceCommand holdAllCommandExecutionJobsForContextInstanceCommand
+                = new HoldAllCommandExecutionJobsForContextInstanceCommand(this.contextInstance, this.schedulerJobInstanceService,
+                this.systemEventLogger, this.authentication);
+            holdAllCommandExecutionJobsForContextInstanceCommand.execute();
         });
 
         ComponentSecurityVisibility.applySecurity(holdContextButton, SecurityConstants.ALL_AUTHORITY,
@@ -767,61 +728,10 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.releaseContextButton.addClickListener(event -> {
             actionPopup.close();
-            ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextInstanceId(this.contextInstance.getId());
-            if (contextMachine != null) {
-                List<SchedulerJobInstanceRecord> jobsToReleaseWithinContext = this.schedulerJobInstanceService
-                    .getJobsToReleaseWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
-
-                ConfirmDialog confirmDialog = new ConfirmDialog();
-                confirmDialog.setHeader(getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
-                confirmDialog.setText(String.format(getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale())
-                    , jobsToReleaseWithinContext.size()));
-                confirmDialog.setCancelable(true);
-                confirmDialog.open();
-
-                confirmDialog.addConfirmListener(confirmEvent -> {
-                    ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                    dialog.setWidth("600px");
-                    dialog.setHeight("250px");
-                    dialog.open(getTranslation("progress-dialog.release-all-jobs-jobs-header", UI.getCurrent().getLocale()),
-                        getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
-
-                    final UI current = UI.getCurrent();
-                    Executor executor = Executors.newSingleThreadExecutor();
-                    executor.execute(() -> {
-                        boolean error = false;
-                        try {
-                            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                                , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                            if (jobsToReleaseWithinContext.size() > 0) {
-                                for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : jobsToReleaseWithinContext) {
-                                    contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
-                                        schedulerJobInstanceRecord.getChildContextName());
-                                }
-                            }
-                            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                                , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            error = true;
-                        } finally {
-                            boolean finalError = error;
-                            current.access(() -> {
-                                dialog.close();
-
-                                if (finalError) {
-                                    NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-released-error"
-                                        , UI.getCurrent().getLocale()));
-                                } else {
-                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-released"
-                                        , UI.getCurrent().getLocale()));
-                                }
-                            });
-                        }
-                    });
-                });
-            }
+            ReleaseAllCommandExecutionJobsForContextInstanceCommand releaseAllCommandExecutionJobsForContextInstanceCommand
+                = new ReleaseAllCommandExecutionJobsForContextInstanceCommand(this.contextInstance, this.schedulerJobInstanceService,
+                this.systemEventLogger, this.authentication);
+            releaseAllCommandExecutionJobsForContextInstanceCommand.execute();
         });
 
         ComponentSecurityVisibility.applySecurity(releaseContextButton, SecurityConstants.ALL_AUTHORITY,

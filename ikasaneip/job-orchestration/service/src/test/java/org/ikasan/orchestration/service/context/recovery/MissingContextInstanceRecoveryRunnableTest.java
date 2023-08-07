@@ -177,6 +177,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -231,6 +232,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,

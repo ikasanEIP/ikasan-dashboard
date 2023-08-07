@@ -1,7 +1,7 @@
 {
   "name": "CONTEXT-1436221681",
   "description": "Context Template Description",
-  "blackoutWindowCronExpressions":["*/1 * * * * ?"],
+  "blackoutWindowDateTimeRanges":{"0":"999999999999999999"} ,
   "jobDependencies": [
     {
       "jobIdentifier": "scheduler-agent--801842677",
@@ -1059,7 +1059,8 @@
       "identifier": "scheduler-agent--1409548854"
     }
   ],
-  "timeWindowStart": "0 15 10 1 APR ? *",
+  "timeWindowStart": "* * 6 ? * * *",
+  "timeWindowEnd": "* * 15 ? * * *",
   "jobLocks": [
     {
       "name": "AC_DEV4.AC_BB_LK",

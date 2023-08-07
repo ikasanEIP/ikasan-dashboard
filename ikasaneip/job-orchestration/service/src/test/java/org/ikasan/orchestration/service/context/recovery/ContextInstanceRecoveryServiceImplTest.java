@@ -14,6 +14,7 @@ import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.orchestration.service.context.JobLockCacheInitialisationServiceImpl;
 import org.ikasan.orchestration.service.utils.*;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
@@ -51,6 +52,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.time.ZonedDateTime.now;
 import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults.CONTEXT_NAME;
@@ -210,6 +212,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
         jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
+        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
         when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
             .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
                 , TestUtils.createModuleMetaData("3")), 3, 0));
@@ -219,10 +223,13 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(scheduledContextService).findAll();
+        verify(scheduledContextInstanceService).save(any());
         verify(executor).execute(any(MissingContextInstanceRecoveryRunnable.class));
-        verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService, times(2)).find(any(), any(), eq(-1), eq(-1));
         verify(contextInstancePublicationService, times(3)).removeAll(anyString());
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -237,8 +244,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
             );
 
-        // ensure no contexts
-        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+        // ensure prepared context in cache
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName("ContextName1"));
+        assertEquals(InstanceStatus.PREPARED, ContextMachineCache.instance().getFirstByContextName("ContextName1").getContext().getStatus());
     }
 
     @Test
@@ -256,6 +264,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
         jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
         when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
             .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
@@ -266,6 +276,7 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(scheduledContextService).findAll();
         verify(contextInstancePublicationService, times(3)).removeAll(anyString());
         verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
@@ -283,8 +294,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        // ensure no contexts
-        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+        // ensure cache is empty
+        assertNull(ContextMachineCache.instance().getFirstByContextName("ContextName1"));
     }
 
     @Test
@@ -298,6 +309,8 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, true);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
         when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
             .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
@@ -308,12 +321,15 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
-        verify(scheduledContextInstanceService, times(2)).save(any()); // updating two context to InstanceStatus.ENDED
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
+        verify(scheduledContextInstanceService, times(3)).save(any()); // updating two context to InstanceStatus.ENDED
+        verify(scheduledContextInstanceService, times(3)).save(any());
         verify(scheduledContextService).findAll();
         verify(timeService).getDateNow();
         verify(contextInstancePublicationService, times(3)).removeAll(anyString());
         verify(contextInstancePublicationService, times(6)).remove(anyString(), any()); // due to updating 2 instances to Ended, will remove contextId from 3 agent as mocking 3 agents at part of the moduleMetadataService
-        verify(moduleMetadataService, times(3)).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService, times(4)).find(any(), any(), eq(-1), eq(-1));
+        verify(contextInstanceStateChangeEventBroadcaster, times(3)).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -329,8 +345,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             timeService
             );
 
-        // ensure no contexts
-        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+        // ensure prepared context in cache
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName("ContextName1"));
+        assertEquals(InstanceStatus.PREPARED, ContextMachineCache.instance().getFirstByContextName("ContextName1").getContext().getStatus());
     }
 
     @Test
@@ -343,6 +360,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, true);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
         when(scheduledContextService.findAll()).thenReturn(contextResults);
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
         when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
@@ -354,9 +373,12 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(scheduledContextService).findAll();
         verify(contextInstancePublicationService, times(3)).removeAll(anyString());
-        verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService, times(2)).find(any(), any(), eq(-1), eq(-1));
+        verify(scheduledContextInstanceService, times(1)).save(any());
+        verify(contextInstanceStateChangeEventBroadcaster, times(1)).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -371,8 +393,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
             );
 
-        // ensure no contexts
-        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+        // ensure prepared context in cache
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName("ContextName1"));
+        assertEquals(InstanceStatus.PREPARED, ContextMachineCache.instance().getFirstByContextName("ContextName1").getContext().getStatus());
     }
 
     @Test
@@ -392,6 +415,9 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(3, false);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
+
+        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
 
         InternalEventDrivenJobTestSearchResults internalJobResults = new InternalEventDrivenJobTestSearchResults(3);
         schedulerJobInstanceService.save(internalJobResults.getResultList());
@@ -415,11 +441,13 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextService).findAll();
         verify(contextParametersInstanceService, times(12)).populateContextParameters();
         verify(contextParametersInstanceService, times(12)).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
-        verify(moduleMetadataService, times(13)).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService, times(16)).find(any(), any(), eq(-1), eq(-1));
         verify(timeService).getDateNow();
-        verify(scheduledContextInstanceService, times(12)).save(any(ScheduledContextInstanceRecord.class));
+        verify(scheduledContextInstanceService, times(15)).save(any(ScheduledContextInstanceRecord.class));
         verify(contextInstancePublicationService, times(36)).publish(any(String.class), any(ContextInstance.class));
         verify(contextInstancePublicationService, times(3)).removeAll(anyString());
+        verify(scheduledContextInstanceService, times(3)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
+        verify(contextInstanceStateChangeEventBroadcaster, times(3)).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -435,15 +463,27 @@ public class ContextInstanceRecoveryServiceImplTest {
             timeService
             );
 
-        assertNotNull(ContextMachineCache.instance().getFirstByContextName("ContextName1"));
-        assertNotNull(ContextMachineCache.instance().getFirstByContextName("ContextName2"));
-        assertNotNull(ContextMachineCache.instance().getFirstByContextName("ContextName3"));
+        assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName1").size());
+        assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName2").size());
+        assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName3").size());
 
         assertEquals(3, ContextMachineCache.instance().contextNames().size());
+        assertEquals(6, ContextMachineCache.instance().contextInstanceIdentifiers().size());
 
-        verifyContextMachine("ContextName1");
-        verifyContextMachine("ContextName2");
-        verifyContextMachine("ContextName3");
+        AtomicInteger preparedCount = new AtomicInteger();
+        AtomicInteger waitingCount = new AtomicInteger();
+        ContextMachineCache.instance().contextInstanceIdentifiers().forEach(id -> {
+            if(ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(WAITING)) {
+                verifyContextMachineById(id);
+                waitingCount.getAndIncrement();
+            }
+            else if(ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(PREPARED)) {
+                preparedCount.getAndIncrement();
+            }
+        });
+
+        assertEquals(3, preparedCount.get());
+        assertEquals(3, waitingCount.get());
     }
 
     @Test
@@ -464,19 +504,24 @@ public class ContextInstanceRecoveryServiceImplTest {
         when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1))).thenReturn(new ModuleMetadataSearchResults(List.of(), 0, 0));
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
 
+        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
+
         // execute
         contextInstanceRecoveryServiceImpl.recoverInstances();
 
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
-        verify(moduleMetadataService, times(3)).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService, times(4)).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService, times(2)).populateContextParameters();
         verify(contextParametersInstanceService, times(2)).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(timeService).getDateNow();
+        verify(scheduledContextInstanceService, times(1)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
+        verify(contextInstanceStateChangeEventBroadcaster, times(1)).broadcast(any());
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals("ContextName1", actualContextInstanceRecord.getContextName());
         assertEquals(WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -501,7 +546,22 @@ public class ContextInstanceRecoveryServiceImplTest {
         ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName("ContextName1");
         assertNotNull(contextMachine);
         assertEquals(1, ContextMachineCache.instance().contextNames().size());
-        verifyContextMachine("ContextName1");
+        assertEquals(2, ContextMachineCache.instance().contextInstanceIdentifiers().size());
+
+        AtomicInteger preparedCount = new AtomicInteger();
+        AtomicInteger waitingCount = new AtomicInteger();
+        ContextMachineCache.instance().contextInstanceIdentifiers().forEach(id -> {
+            if(ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(WAITING)) {
+                verifyContextMachineById(id);
+                waitingCount.getAndIncrement();
+            }
+            else if(ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(PREPARED)) {
+                preparedCount.getAndIncrement();
+            }
+        });
+
+        assertEquals(1, preparedCount.get());
+        assertEquals(1, waitingCount.get());
     }
 
     @Test
@@ -543,6 +603,27 @@ public class ContextInstanceRecoveryServiceImplTest {
 
     private void verifyContextMachine(String contextName) {
         ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        assertNotNull(contextMachine);
+
+        SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+            = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+        assertNotNull(schedulerJobInitiationEventRaisedListener);
+
+        List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+            = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+        assertNotNull(contextInstanceStateChangeEventListeners);
+        assertEquals(1, contextInstanceStateChangeEventListeners.size());
+
+        JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+        assertNotNull(jobLogicMachine);
+        List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+            = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+        assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+        assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+    }
+
+    private void verifyContextMachineById(String contextId) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextId);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener

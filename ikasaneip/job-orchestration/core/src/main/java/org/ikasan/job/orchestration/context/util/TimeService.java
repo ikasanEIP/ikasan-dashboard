@@ -7,4 +7,8 @@ public class TimeService {
     public Date getDateNow() {
         return new Date();
     }
+
+    public Date getDate(long milliSinceEpoch) {
+        return new Date(milliSinceEpoch);
+    }
 }

@@ -40,13 +40,13 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
             // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
             e.printStackTrace();
-            String message = String.format("Could not update context parameters for for agent url %s, params %s, responseCode: %d, error: %s",
-                url, instance, e.getRawStatusCode(), e.getMessage());
+            String message = String.format("Could not update context parameters for for agent url %s, instance %s, responseCode: %d, error: %s",
+                url, instance.getId(), e.getRawStatusCode(), e.getMessage());
             LOGGER.warn(message);
         } catch (Exception e) {
             e.printStackTrace();
-            String message = String.format("Could not update context parameters for for agent url %s, params %s, error: %s",
-                url, instance, e.getMessage());
+            String message = String.format("Could not update context parameters for for agent url %s, instance %s, error: %s",
+                url, instance.getId(), e.getMessage());
             LOGGER.warn(message);
         }
     }

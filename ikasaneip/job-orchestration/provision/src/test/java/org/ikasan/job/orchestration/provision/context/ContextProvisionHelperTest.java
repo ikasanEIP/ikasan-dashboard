@@ -66,7 +66,7 @@ public class ContextProvisionHelperTest extends AbstractTest {
 
     @Before
     public void init() {
-        solrModuleMetadataDao.initStandalone("http://localhost:8983/solr", 30);
+        solrModuleMetadataDao.initStandalone("http://localhost:8983/solr", 30, 10000, 10000);
         solrModuleMetadataDao.setSolrUsername("ikasan");
         solrModuleMetadataDao.setSolrPassword("1ka5an");
 
@@ -74,23 +74,23 @@ public class ContextProvisionHelperTest extends AbstractTest {
         moduleMetaDataService.setSolrUsername("ikasan");
         moduleMetaDataService.setSolrPassword("1ka5an");
 
-        fileEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        fileEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30, 10000, 10000);
         fileEventDrivenJobRecordDao.setSolrUsername("ikasan");
         fileEventDrivenJobRecordDao.setSolrPassword("1ka5an");
 
-        internalEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        internalEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30, 10000, 10000);
         internalEventDrivenJobRecordDao.setSolrUsername("ikasan");
         internalEventDrivenJobRecordDao.setSolrPassword("1ka5an");
 
-        quartzScheduleDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        quartzScheduleDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30, 10000, 10000);
         quartzScheduleDrivenJobRecordDao.setSolrUsername("ikasan");
         quartzScheduleDrivenJobRecordDao.setSolrPassword("1ka5an");
 
-        globalEventJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        globalEventJobRecordDao.initStandalone("http://localhost:8983/solr", 30, 10000, 10000);
         globalEventJobRecordDao.setSolrUsername("ikasan");
         globalEventJobRecordDao.setSolrPassword("1ka5an");
 
-        schedulerJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        schedulerJobRecordDao.initStandalone("http://localhost:8983/solr", 30, 10000, 10000);
         schedulerJobRecordDao.setSolrUsername("ikasan");
         schedulerJobRecordDao.setSolrPassword("1ka5an");
 

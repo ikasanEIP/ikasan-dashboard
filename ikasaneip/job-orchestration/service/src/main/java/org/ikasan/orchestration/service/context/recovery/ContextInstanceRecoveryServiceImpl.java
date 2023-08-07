@@ -45,6 +45,7 @@ import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerSer
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -178,9 +179,32 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
 
             // We do not recover disabled contexts!
             if(context.isDisabled()) {
+                // Remove prepared context instances if they exist.
+                List<ContextInstance> contextInstances = this.findPrepared(context.getName());
+                contextInstances.forEach(contextInstance -> this.scheduledContextInstanceService.deleteById(contextInstance.getId()));
                 Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because the context is disabled");
             }
             else {
+                try {
+                    List<ContextInstance> contextInstances = this.findPrepared(context.getName());
+
+                    if (contextInstances.isEmpty()) {
+                        byte[] contextBytes = objectMapper.writeValueAsBytes(context);
+                        ContextInstanceImpl preparedFutureContextInstance = objectMapper.readValue(contextBytes, ContextInstanceImpl.class);
+                        preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(context.getTimeWindowStart()
+                            , context.getBlackoutWindowCronExpressions(), context.getBlackoutWindowDateTimeRanges(), context.getTimezone()));
+                        this.saveContextInstance(preparedFutureContextInstance, InstanceStatus.PREPARED);
+                        contextInstances.add(preparedFutureContextInstance);
+                    }
+
+                    for (ContextInstance instance : contextInstances) {
+                        super.prepareContextInstance(context, instance);
+                    }
+                }
+                catch (Exception e) {
+                    Log.warn(String.format("Could not recover prepared instance for context[%s]", context.getName()), e);
+                }
+
                 // if outside the operating window instances will be created when ContextInstanceRegistrationServiceImpl.register is triggered
                 List<ScheduledContextInstanceRecord> scheduledContextInstanceRecords = contextNameToInstances.get(context.getName());
 
@@ -189,7 +213,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                         try {
                             if((scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() == 0 || scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() < System.currentTimeMillis())
                                 && !scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded()) {
-                                LOG.info("Removing context instance[{}], with name[{}] as the projected end time has been passed and the context is not marked to run until manually ended.");
+                                LOG.info("Removing context instance[{}], with name[{}] as the projected end time has been passed and the context is not marked to run until manually ended.",
+                                    scheduledContextInstanceRecord.getContextInstanceId(), scheduledContextInstanceRecord.getContextName());
                                 removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
                                 saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
                             }
@@ -208,14 +233,14 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                                 LOG.info(String.format("Recovering context [%s] instance id [%s]", contextInstance.getName(), contextInstance.getId()));
                                             }
                                         } else {
-                                            LOG.info(String.format("Not Recovering context [%s] instance ID [%s] falls withing a blackout time window and will not be registered!", contextInstance.getName(), contextInstance.getId()));
+                                            LOG.info(String.format("Not Recovering. Job Plan [%s] instance ID [%s] falls within a blackout time window and will not be registered!", contextInstance.getName(), contextInstance.getId()));
                                             removeAgentInstances(contextInstance);
                                             saveContextInstance(contextInstance, InstanceStatus.ENDED);
                                         }
 
                                     } catch (Exception e) {
                                         // todo probably want to send a notification here.
-                                        LOG.error(String.format("Removing context [%s] instance ID [%s] due to an issue that makes it unrecoverable: ", scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
+                                        LOG.error(String.format("Removing Job Plan [%s] instance ID [%s] due to an issue that makes it unrecoverable: ", scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
                                         removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
                                         saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
                                     }

@@ -51,8 +51,8 @@ public class ContextResetServiceImplTest {
         contextResetService = new ContextResetServiceImpl();
     }
 
-    @Test
-    public void shouldThrowExceptionIfContextNotFound() throws Exception {
+    @Test(expected = ContextResetException.class)
+    public void should_throw_exception_if_context_not_found() throws Exception {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
@@ -66,6 +66,7 @@ public class ContextResetServiceImplTest {
             fail("should not get here");
         } catch (ContextResetException e) {
             assertEquals("Could not find context for context name [UNKNOWN_CONTEXT] to reset", e.getMessage());
+            throw e;
         }
     }
 

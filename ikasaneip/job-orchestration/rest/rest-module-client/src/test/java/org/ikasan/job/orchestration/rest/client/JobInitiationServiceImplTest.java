@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.ikasan.job.orchestration.rest.client.dto.JobDryRunModeDto;
 import org.ikasan.job.orchestration.rest.client.dto.SchedulerJobInitiationEventDto;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,6 +21,7 @@ import org.springframework.web.client.RestClientException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
@@ -83,7 +85,7 @@ public class JobInitiationServiceImplTest {
     public void test_submit_quartz_job_success() throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName_contextName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -92,9 +94,9 @@ public class JobInitiationServiceImplTest {
                 .withStatus(200)));
 
 
-        uut.raiseQuartzSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
+        uut.raiseQuartzSchedulerJob(contextBaseUrl, "agentName", this.getJob(), "correlationId");
 
-        verify(getRequestedFor(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
+        verify(getRequestedFor(urlEqualTo("/rest/scheduler/agentName/jobName_contextName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
     }
@@ -103,7 +105,7 @@ public class JobInitiationServiceImplTest {
     public void test_exception_raise_quartz_job() throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName_contextName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -112,21 +114,21 @@ public class JobInitiationServiceImplTest {
                 .withStatus(400)));
 
 
-        uut.raiseQuartzSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
+        uut.raiseQuartzSchedulerJob(contextBaseUrl, "agentName", this.getJob(), "correlationId");
     }
 
     @Test
     public void test_submit_file_job_success() throws JsonProcessingException, InterruptedException {
         JobDryRunModeDto jobDryRunTrue = new JobDryRunModeDto();
-        jobDryRunTrue.setJobName("jobName");
+        jobDryRunTrue.setJobName("jobName_contextName");
         jobDryRunTrue.setIsDryRun(true);
 
         JobDryRunModeDto jobDryRunFalse = new JobDryRunModeDto();
-        jobDryRunFalse.setJobName("jobName");
+        jobDryRunFalse.setJobName("jobName_contextName");
         jobDryRunFalse.setIsDryRun(false);
 
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName_contextName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -154,10 +156,10 @@ public class JobInitiationServiceImplTest {
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(200)));
 
-        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
+        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", this.getJob(), "correlationId");
 
         Thread.sleep(5000);
-        verify(getRequestedFor(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
+        verify(getRequestedFor(urlEqualTo("/rest/scheduler/agentName/jobName_contextName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
 
@@ -176,11 +178,11 @@ public class JobInitiationServiceImplTest {
     public void test_submit_file_job_exception_set_job_dry_run_true() throws JsonProcessingException
     {
         JobDryRunModeDto jobDryRunTrue = new JobDryRunModeDto();
-        jobDryRunTrue.setJobName("jobName");
+        jobDryRunTrue.setJobName("jobName_contextName");
         jobDryRunTrue.setIsDryRun(true);
 
         JobDryRunModeDto jobDryRunFalse = new JobDryRunModeDto();
-        jobDryRunFalse.setJobName("jobName");
+        jobDryRunFalse.setJobName("jobName_contextName");
         jobDryRunFalse.setIsDryRun(false);
 
         String jobDryRunTrueJson = objectMapper.writeValueAsString(jobDryRunTrue);
@@ -193,18 +195,18 @@ public class JobInitiationServiceImplTest {
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(403)));
 
-        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
+        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", this.getJob(), "correlationId");
     }
 
     @Test(expected = RestClientException.class)
     public void test_submit_file_job_exception_trigger_job() throws JsonProcessingException
     {
         JobDryRunModeDto jobDryRunTrue = new JobDryRunModeDto();
-        jobDryRunTrue.setJobName("jobName");
+        jobDryRunTrue.setJobName("jobName_contextName");
         jobDryRunTrue.setIsDryRun(true);
 
         JobDryRunModeDto jobDryRunFalse = new JobDryRunModeDto();
-        jobDryRunFalse.setJobName("jobName");
+        jobDryRunFalse.setJobName("jobName_contextName");
         jobDryRunFalse.setIsDryRun(false);
 
         String jobDryRunTrueJson = objectMapper.writeValueAsString(jobDryRunTrue);
@@ -218,7 +220,7 @@ public class JobInitiationServiceImplTest {
                     .withStatus(200)));
 
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName_contextName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -226,17 +228,17 @@ public class JobInitiationServiceImplTest {
                 .withBody(mapper.writeValueAsString(List.of(new MockTrigger(), new MockTrigger(), new MockTrigger())))
                 .withStatus(403)));
 
-        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
+        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", this.getJob(), "correlationId");
     }
 
     @Test
     public void test_submit_file_job_exception_set_job_dry_run_false() throws JsonProcessingException, InterruptedException {
         JobDryRunModeDto jobDryRunTrue = new JobDryRunModeDto();
-        jobDryRunTrue.setJobName("jobName");
+        jobDryRunTrue.setJobName("jobName_contextName");
         jobDryRunTrue.setIsDryRun(true);
 
         JobDryRunModeDto jobDryRunFalse = new JobDryRunModeDto();
-        jobDryRunFalse.setJobName("jobName");
+        jobDryRunFalse.setJobName("jobName_contextName");
         jobDryRunFalse.setIsDryRun(false);
 
         String jobDryRunTrueJson = objectMapper.writeValueAsString(jobDryRunTrue);
@@ -250,7 +252,7 @@ public class JobInitiationServiceImplTest {
                     .withStatus(200)));
 
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName_contextName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -268,7 +270,7 @@ public class JobInitiationServiceImplTest {
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(403)));
 
-        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
+        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", this.getJob(), "correlationId");
 
         Thread.sleep(5000);
     }
@@ -364,5 +366,99 @@ public class JobInitiationServiceImplTest {
         public int compareTo(Trigger trigger) {
             return 0;
         }
+    }
+
+    private SchedulerJob getJob() {
+        return new SchedulerJob() {
+            @Override
+            public String getContextName() {
+                return "contextName";
+            }
+
+            @Override
+            public void setContextName(String contextName) {
+
+            }
+
+            @Override
+            public List<String> getChildContextNames() {
+                return null;
+            }
+
+            @Override
+            public void setChildContextNames(List<String> contextIds) {
+
+            }
+
+            @Override
+            public String getIdentifier() {
+                return null;
+            }
+
+            @Override
+            public void setIdentifier(String jobIdentifier) {
+
+            }
+
+            @Override
+            public String getAgentName() {
+                return null;
+            }
+
+            @Override
+            public void setAgentName(String agentName) {
+
+            }
+
+            @Override
+            public String getJobName() {
+                return "jobName";
+            }
+
+            @Override
+            public void setJobName(String jobName) {
+
+            }
+
+            @Override
+            public String getJobDescription() {
+                return null;
+            }
+
+            @Override
+            public void setJobDescription(String jobDescription) {
+
+            }
+
+            @Override
+            public String getStartupControlType() {
+                return null;
+            }
+
+            @Override
+            public void setStartupControlType(String startupControlType) {
+
+            }
+
+            @Override
+            public void setSkippedContexts(Map<String, Boolean> skippedContexts) {
+
+            }
+
+            @Override
+            public Map<String, Boolean> getSkippedContexts() {
+                return null;
+            }
+
+            @Override
+            public void setHeldContexts(Map<String, Boolean> heldContexts) {
+
+            }
+
+            @Override
+            public Map<String, Boolean> getHeldContexts() {
+                return null;
+            }
+        };
     }
 }

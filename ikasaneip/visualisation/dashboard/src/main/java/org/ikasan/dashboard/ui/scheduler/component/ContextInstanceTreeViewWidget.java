@@ -1247,7 +1247,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                             this.jobInitiationService.raiseFileEventSchedulerJob(
-                                agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName(), schedulerJobInstanceRecord.getContextInstanceId());
+                                agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getSchedulerJobInstance(), schedulerJobInstanceRecord.getContextInstanceId());
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
@@ -1274,7 +1274,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     confirmDialog.addConfirmListener(confirmEvent -> {
                         try {
                             ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
-                            this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName(), schedulerJobInstanceRecord.getContextInstanceId());
+                            this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getSchedulerJobInstance(), schedulerJobInstanceRecord.getContextInstanceId());
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
@@ -2059,8 +2059,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param contextInstanceStateChangeEvent event received when a context instance state change occurs.
      */
     private void manageContextInstanceStateChangeEvent(UI ui, ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
-        if (contextInstanceStateChangeEvent.getContextInstance() != null
-            && contextInstanceStateChangeEvent.getContextInstance().getId().equals(this.contextInstance.getId())) {
+        if (contextInstanceStateChangeEvent.getContextInstance() != null) {
 
             ComponentKey key = new ComponentKey(contextInstance.getName()
                 , contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getName());

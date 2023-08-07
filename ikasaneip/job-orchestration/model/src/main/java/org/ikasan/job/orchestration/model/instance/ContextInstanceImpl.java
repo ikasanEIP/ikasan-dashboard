@@ -1,7 +1,9 @@
 package org.ikasan.job.orchestration.model.instance;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.model.context.ContextImpl;
@@ -135,6 +137,11 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        try {
+            return this.objectMapper.writeValueAsString(this);
+        }
+        catch (JsonProcessingException e) {
+            return String.format("Could not resolve context instance as string. Context Name[%s], Context Instance Id[%s]", this.name, this.id);
+        }
     }
 }

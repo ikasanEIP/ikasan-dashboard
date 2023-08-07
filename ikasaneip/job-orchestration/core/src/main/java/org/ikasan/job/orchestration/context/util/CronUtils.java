@@ -6,6 +6,7 @@ import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import liquibase.pro.packaged.T;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -13,6 +14,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.cronutils.model.field.expression.FieldExpressionFactory.on;
@@ -21,6 +25,7 @@ import static com.cronutils.model.field.expression.FieldExpressionFactory.questi
 public class CronUtils {
 
     private static CronParser cronParser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
+    private static TimeService timeService = new TimeService();
 
     /**
      * Helper method to take a start time in millis from epoch, add an offset to it and a zone context,
@@ -111,6 +116,36 @@ public class CronUtils {
         Optional<ZonedDateTime> nextExecutionTime = executionTime.nextExecution(now);
         if(nextExecutionTime.isPresent()) {
             return nextExecutionTime.get().toInstant().toEpochMilli();
+        }
+
+        return -1;
+    }
+
+    /**
+     * Get the epoch in milliseconds of next fire time for cron expression.
+     *
+     * @param cronExpression
+     * @return
+     */
+    public static long getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(String cronExpression, List<String> blackoutCronExpressions,
+                                                                              Map<Long, Long> blackoutWindowDateTimeRanges, String timezone) {
+        ZonedDateTime now = ZonedDateTime.now();
+        ExecutionTime executionTime = ExecutionTime.forCron(cronParser.parse(cronExpression));
+
+        Optional<ZonedDateTime> nextExecutionTime = Optional.of(now);
+
+        while (nextExecutionTime.isPresent()) {
+            nextExecutionTime = executionTime.nextExecution(nextExecutionTime.get());
+
+            if (nextExecutionTime.isPresent()) {
+                Date compareDate = timeService.getDate(nextExecutionTime.get().toInstant().toEpochMilli());
+                // We want to work our way forward until we find the next execution time that does not fall into
+                // a blackout time window.
+                if (!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(blackoutCronExpressions, timezone, compareDate)
+                    && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(blackoutWindowDateTimeRanges, compareDate)) {
+                    return nextExecutionTime.get().toInstant().toEpochMilli();
+                }
+            }
         }
 
         return -1;

@@ -97,6 +97,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
         LOG.info(String.format("Registering context instance job [%s]", jobDetail.getKey().getName()));
         try {
+            this.contextInstanceRegistrationService.prepareFutureContextInstance(contextName);
             this.addJob(jobDetail);
         } catch (RuntimeException e) {
             //TODO alert that we were not able to re-schedule the start up job
