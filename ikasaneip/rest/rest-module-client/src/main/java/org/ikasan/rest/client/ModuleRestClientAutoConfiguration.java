@@ -87,4 +87,10 @@ public class ModuleRestClientAutoConfiguration
         return new BigQueueModuleRestServiceImpl(environment, httpComponentsClientHttpRequestFactory);
     }
 
+    @Bean
+    public DownloadLogFileService downloadLogFileService(Environment environment
+        , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
+        return new DownloadLogFileServiceImpl(environment, httpComponentsClientHttpRequestFactory);
+    }
+
 }

@@ -12,21 +12,31 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouterLink;
+import org.ikasan.dashboard.ui.general.component.DownloadModulesLogDialog;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.IconDecorator;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.ModuleSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.DownloadLogFileService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class ModuleWidget extends Div {
 
     private ModuleFilteringGrid modulesGrid;
     private ModuleMetaDataService moduleMetadataService;
+    private DownloadLogFileService downloadLogFileService;
     private TextField textField;
 
-    public ModuleWidget(ModuleMetaDataService moduleMetadataService) {
+    public ModuleWidget(ModuleMetaDataService moduleMetadataService, DownloadLogFileService downloadLogFileService) {
         this.moduleMetadataService = moduleMetadataService;
+        this.downloadLogFileService = downloadLogFileService;
         this.textField = new TextField();
         this.createGrid();
 
@@ -83,8 +93,33 @@ public class ModuleWidget extends Div {
             horizontalLayout.add(link);
             link.getStyle().set("color", "blue");
 
+            // Add Icon to download log files for modules
+            Icon downloadLogFileIcon = IconDecorator.decorate(new Icon(VaadinIcon.FILE_TEXT_O), getTranslation("label.download-module-log-file", UI.getCurrent().getLocale()), "10pt", "rgba(0, 0, 0, 1.0)");
+            downloadLogFileIcon.addClickListener(buttonClickEvent -> {
+                DownloadModulesLogDialog downloadModulesLogDialog = new DownloadModulesLogDialog(moduleMetaData, downloadLogFileService);
+                downloadModulesLogDialog.open();
+            });
+
+            add(downloadLogFileIcon);
+
+            // wrap it in a router link
+            RouterLink routerLinkLogFile = new RouterLink();
+            routerLinkLogFile.add(downloadLogFileIcon);
+            add(routerLinkLogFile);
+
+            ComponentSecurityVisibility.applySecurity((IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication(), routerLinkLogFile,
+                SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE,
+                SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_WRITE,
+                SecurityConstants.DASHBOARD_WRITE,
+                SecurityConstants.DASHBOARD_ADMIN);
+
+            horizontalLayout.add(routerLinkLogFile);
+
             return horizontalLayout;
-        })).setWidth("60px");
+        })).setWidth("90px");
 
         this.modulesGrid.addGridFiltering(textField, moduleSearchFilter::setModuleNameFilter);
     }
