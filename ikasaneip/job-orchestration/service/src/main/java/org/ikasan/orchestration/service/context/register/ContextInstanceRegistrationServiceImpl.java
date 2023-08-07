@@ -49,11 +49,8 @@ import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
-import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -68,12 +65,11 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventService;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
@@ -203,6 +199,98 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         }
     }
 
+    @Override
+    public void reSchedule(String contextName) {
+        if(!isIkasanEnterpriseSchedulerInstance) {
+            LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance registration will occur");
+            return;
+        }
+        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
+        if (scheduledContextRecord == null) {
+            final String message = String.format("Could not find scheduledContextRecord for context name [%s]", contextName);
+            LOG.error(message);
+            throw new RuntimeException(message);
+        }
+
+        if (scheduledContextRecord.isDisabled()) {
+            LOG.info(String.format("Context name [%s] is disabled and will not be registered!", contextName));
+            return;
+        }
+
+        try {
+            List<ContextInstance> contextInstances = this.findPrepared(contextName);
+
+            // We need to deregister all prepared instances as they are no longer relevant on the new schedule.
+            contextInstances.forEach(contextInstance -> this.deRegisterById(contextInstance.getId()));
+
+            // Now remove the previous schedule associated with the context
+            super.contextInstanceSchedulerService.removeJob(contextName);
+
+            // Now set up the new schedule.
+            super.contextInstanceSchedulerService.registerStartJobAndTrigger(scheduledContextRecord.getContextName(),
+                scheduledContextRecord.getContext().getTimeWindowStart(), scheduledContextRecord.getContext().getTimezone());
+
+            byte[] scheduledContextRecordContext = objectMapper.writeValueAsBytes(scheduledContextRecord.getContext());
+
+            ContextInstanceImpl preparedFutureContextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
+            preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(scheduledContextRecord.getContext().getTimeWindowStart()
+                , scheduledContextRecord.getContext().getBlackoutWindowCronExpressions(), scheduledContextRecord.getContext().getBlackoutWindowDateTimeRanges()
+                , scheduledContextRecord.getContext().getTimezone()));
+            this.saveContextInstance(preparedFutureContextInstance, InstanceStatus.PREPARED);
+            super.prepareContextInstance(scheduledContextRecord.getContext(), preparedFutureContextInstance);
+        }
+        catch (Exception e) {
+            LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void prepareFutureContextInstance(String contextName) {
+        if(!isIkasanEnterpriseSchedulerInstance) {
+            LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance registration will occur");
+            return;
+        }
+        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
+        if (scheduledContextRecord == null) {
+            final String message = String.format("Could not find scheduledContextRecord for context name [%s] when attempting to prepare instance!", contextName);
+            LOG.error(message);
+            throw new RuntimeException(message);
+        }
+
+        if (scheduledContextRecord.isDisabled()) {
+            LOG.info(String.format("Context name [%s] is disabled and will not be prepared!", contextName));
+            return;
+        }
+
+        try {
+            byte[] scheduledContextRecordContext = objectMapper.writeValueAsBytes(scheduledContextRecord.getContext());
+            ContextTemplate context = objectMapper.readValue(scheduledContextRecordContext, ContextTemplateImpl.class);
+            List<ContextInstance> contextInstances = this.findPrepared(context.getName());
+
+            ContextInstanceImpl preparedFutureContextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
+            preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(context.getTimeWindowStart()
+                , context.getBlackoutWindowCronExpressions(), context.getBlackoutWindowDateTimeRanges(), context.getTimezone()));
+
+            AtomicBoolean preparedInstanceExists = new AtomicBoolean(false);
+
+            contextInstances.forEach(contextInstance -> {
+                if(preparedFutureContextInstance.getStartTime() == contextInstance.getStartTime()) {
+                    preparedInstanceExists.set(true);
+                }
+            });
+
+            if(!preparedInstanceExists.get() && preparedFutureContextInstance.getStartTime() > 0) {
+                super.prepareContextInstance(context, preparedFutureContextInstance);
+                this.saveContextInstance(preparedFutureContextInstance, InstanceStatus.PREPARED);
+            }
+
+        } catch (Exception e) {
+            LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Create a new instance of the plan and register it.
      * This will be invoked when a plan start trigger fires.
@@ -246,18 +334,15 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
             List<ContextInstance> contextInstances = this.findPrepared(context.getName());
 
+            // There is the edge case where a prepared context instance does not already exist for the context,
+            // therefore wee need to create an instance to be initialised along with all of its jobs.
             boolean initialiseJobs = false;
-
             if(contextInstances.isEmpty()) {
                 contextInstances.add(objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class));
                 initialiseJobs = true;
             }
 
-            ContextInstanceImpl preparedFutureContextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
-            preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTime(context.getTimeWindowStart()));
-            this.saveContextInstance(preparedFutureContextInstance, InstanceStatus.PREPARED);
-            super.prepareContextInstance(context, preparedFutureContextInstance);
-
+            this.prepareFutureContextInstance(contextName);
 
             for (ContextInstance contextInstance : contextInstances) {
                 Date now = timeService.getDateNow();
@@ -343,19 +428,5 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             throw new RuntimeException(e);
         }
         return null;
-    }
-
-    private List<ContextInstance> findPrepared(String contextName) {
-        ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
-        filter.setStatus(InstanceStatus.PREPARED.name());
-        filter.setContextSearchFilter(contextName);
-
-        SearchResults<ScheduledContextInstanceRecord> results = this.scheduledContextInstanceService
-            .getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
-
-
-        return results.getResultList().stream()
-            .map(scheduledContextInstanceRecord -> scheduledContextInstanceRecord.getContextInstance())
-            .collect(Collectors.toList());
     }
 }

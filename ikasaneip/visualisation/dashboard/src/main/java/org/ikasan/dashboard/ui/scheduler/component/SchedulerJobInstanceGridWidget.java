@@ -490,7 +490,7 @@ public class SchedulerJobInstanceGridWidget extends Div
                         try {
                             ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
                             this.jobInitiationService.raiseFileEventSchedulerJob(
-                                agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName(), schedulerJobInstanceRecord.getContextInstanceId());
+                                agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getSchedulerJobInstance(), schedulerJobInstanceRecord.getContextInstanceId());
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
@@ -521,7 +521,8 @@ public class SchedulerJobInstanceGridWidget extends Div
                     confirmDialog.addConfirmListener(confirmEvent -> {
                         try {
                             ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
-                            this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName(), schedulerJobInstanceRecord.getContextInstanceId());
+                            this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getSchedulerJobInstance()
+                                , schedulerJobInstanceRecord.getContextInstanceId());
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 

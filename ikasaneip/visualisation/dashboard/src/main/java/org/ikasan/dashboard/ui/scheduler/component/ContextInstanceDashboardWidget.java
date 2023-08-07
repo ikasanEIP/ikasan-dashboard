@@ -5,9 +5,13 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -16,20 +20,29 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.provider.SortOrder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
+import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceMonitoringView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.IkasanColours;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -59,7 +72,13 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -238,15 +257,6 @@ public class ContextInstanceDashboardWidget extends Div
     private void createActiveInstancesTab(boolean fullscreen) {
         this.activeInstancesDiv = new VerticalLayout();
         this.activeInstancesDiv.setSizeFull();
-       // activeInstancesDiv.addClassNames("card-counter");
-//        if(fullscreen) {
-//            activeInstancesDiv.setHeight("90vh");
-//            contextInstanceAggregateJobStatusGrid.setHeight("90%");
-//        }
-//        else {
-//            activeInstancesDiv.setHeight("600px");
-//            contextInstanceAggregateJobStatusGrid.setHeight("80%");
-//        }
 
         Button breakOut = new Button();
         breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
@@ -553,43 +563,99 @@ public class ContextInstanceDashboardWidget extends Div
         this.preparedFutureContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextName)
             .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(2)
-            .setResizable(true);
+            .setResizable(true)
+            .setSortable(true);
         this.preparedFutureContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextInstanceId)
             .setHeader(getTranslation("table-header.context-instance-id", UI.getCurrent().getLocale())).setKey("id")
             .setFlexGrow(2)
-            .setResizable(true);
+            .setResizable(true)
+            .setSortable(true);
         this.preparedFutureContextInstanceGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of("<div style='white-space:normal'>[[item.startTime]]</div>")
                 .withProperty("startTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getStartTime())))
             .setHeader(getTranslation("table-header.context-instance-start-date-time", UI.getCurrent().getLocale()))
             .setKey("startTime")
-            .setWidth("130px");
+            .setFlexGrow(4)
+            .setSortable(true);
         this.preparedFutureContextInstanceGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
-            VerticalLayout layout = new VerticalLayout();
-            layout.setSpacing(false);
-            layout.setMargin(false);
-            layout.setPadding(false);
-            layout.setSizeFull();
+                VerticalLayout layout = new VerticalLayout();
+                layout.setSpacing(false);
+                layout.setMargin(false);
+                layout.setPadding(false);
+                layout.setSizeFull();
 
-            Button breakOut = this.buildStatusBreakoutButton(IkasanColours.BLACK, IkasanColours.WHITE);
-            breakOut.addClickListener(event -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, List.of(scheduledContextInstanceRecord.getContextInstanceId() +"_scheduledContextInstance"));
+                ContextInstance instance = scheduledContextInstanceRecord.getContextInstance();
 
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            });
+                if(ContextMachineCache.instance().containsInstanceIdentifier(scheduledContextInstanceRecord.getContextInstance().getId())) {
+                    instance = ContextMachineCache.instance().getByContextInstanceId(scheduledContextInstanceRecord.getContextInstance().getId()).getContext();
+                }
 
-            layout.add(breakOut);
-            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, breakOut);
+                AggregateContextInstanceStatus aggregateContextInstanceStatus =
+                    ContextHelper.getAggregateContextInstanceStatus(instance);
 
-            return layout;
-        }));
+                HorizontalLayout statusLayout = new HorizontalLayout();
+                statusLayout.setWidthFull();
+
+                if(aggregateContextInstanceStatus.isHeldJobs()) {
+                    SchedulerStatusIconDiv onHoldStatusDiv = new SchedulerStatusIconDiv();
+                    onHoldStatusDiv.setStatus(InstanceStatus.ON_HOLD, getTranslation("label.prepared-job-plan-contains-held-jobs", UI.getCurrent().getLocale()));
+                    statusLayout.add(onHoldStatusDiv);
+                }
+
+                layout.add(statusLayout);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, statusLayout);
+
+                return layout;
+            }))
+            .setFlexGrow(1);
+        this.preparedFutureContextInstanceGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
+                VerticalLayout layout = new VerticalLayout();
+                layout.setMargin(false);
+                layout.setSizeFull();
+
+                Icon breakOut = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("tooltip.open-in-new-window", UI.getCurrent().getLocale()
+                    , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(scheduledContextInstanceRecord.getContextInstanceId() +"_scheduledContextInstance"));
+
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+
+                Icon holdButton = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-all-command-execution-jobs-in-instance", UI.getCurrent().getLocale()
+                    , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                holdButton.addClickListener(event -> {
+                    HoldAllCommandExecutionJobsForContextInstanceCommand holdAllCommandExecutionJobsForContextInstanceCommand
+                        = new HoldAllCommandExecutionJobsForContextInstanceCommand(scheduledContextInstanceRecord.getContextInstance(), this.schedulerJobInstanceService,
+                            this.systemEventLogger, this.ikasanAuthentication);
+                    holdAllCommandExecutionJobsForContextInstanceCommand.execute();
+                });
+
+                Icon releaseButton = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-all-command-execution-jobs-in-instance", UI.getCurrent().getLocale()
+                    , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                releaseButton.addClickListener(event -> {
+                    ReleaseAllCommandExecutionJobsForContextInstanceCommand releaseAllCommandExecutionJobsForContextInstanceCommand
+                        = new ReleaseAllCommandExecutionJobsForContextInstanceCommand(scheduledContextInstanceRecord.getContextInstance(), this.schedulerJobInstanceService,
+                            this.systemEventLogger, this.ikasanAuthentication);
+                    releaseAllCommandExecutionJobsForContextInstanceCommand.execute();
+                });
+
+                HorizontalLayout buttonLayout = new HorizontalLayout();
+                buttonLayout.setMargin(false);
+                buttonLayout.add(holdButton, releaseButton, breakOut);
+
+                layout.add(buttonLayout);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
+
+                return layout;
+            }))
+            .setFlexGrow(2);
 
         this.preparedContextNameTf = new TextField();
         this.preparedContextInstanceIdTf = new TextField();
         HeaderRow hr = this.preparedFutureContextInstanceGrid.appendHeaderRow();
         this.addPreparedContextInstanceGridFiltering(hr, "name", this.preparedContextNameTf, this.contextInstanceSearchFilter::setContextSearchFilter);
         this.addPreparedContextInstanceGridFiltering(hr, "id", this.preparedContextInstanceIdTf, this.contextInstanceSearchFilter::setContextInstanceId);
-
+        this.addDateTimeGridFiltering(hr, contextInstanceSearchFilter::setStartTime, contextInstanceSearchFilter::setEndTime, "startTime");
         DataProvider<ScheduledContextInstanceRecord, ContextInstanceSearchFilter> dataProvider =
             DataProvider.fromFilteringCallbacks(
                 // First callback fetches items based on a query
@@ -600,11 +666,16 @@ public class ContextInstanceDashboardWidget extends Div
                     // The number of items to load
                     int limit = query.getLimit();
 
-                    return this.filterPreparedContextInstances(this.contextInstanceSearchFilter, offset, limit).stream();
+                    if(query.getSortOrders().size() > 0) {
+                        return this.filterPreparedContextInstances(this.contextInstanceSearchFilter, offset, limit
+                            , query.getSortOrders().get(0).getSorted(), query.getSortOrders().get(0).getDirection().name()).stream();
+                    }
+
+                    return this.filterPreparedContextInstances(this.contextInstanceSearchFilter, offset, limit, null, null).stream();
                 },
                 // Second callback fetches the total number of items currently in the Grid.
                 // The grid can then use it to properly adjust the scrollbars.
-                query -> this.filterPreparedContextInstances(this.contextInstanceSearchFilter, -1, -1).size());
+                query -> this.filterPreparedContextInstances(this.contextInstanceSearchFilter, -1, -1, null, null).size());
 
         dataProvider.withConfigurableFilter().setFilter(this.contextInstanceSearchFilter);
         this.preparedFutureContextInstanceGrid.setDataProvider(dataProvider);
@@ -703,6 +774,212 @@ public class ContextInstanceDashboardWidget extends Div
         hr.getCell(this.preparedFutureContextInstanceGrid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
+    /**
+     * Add filtering to a column.
+     *
+     * @param hr
+     * @param setStartTime
+     * @param columnKey
+     */
+    public void addDateTimeGridFiltering(HeaderRow hr, Consumer<Long> setStartTime, Consumer<Long> setEndTime, String columnKey) {
+        DatePicker startDatePicker = new DatePicker(getTranslation("label.start-date", UI.getCurrent().getLocale()));
+        startDatePicker.setLocale(Locale.UK);
+        startDatePicker.getElement().getThemeList().add("always-float-label");
+
+        TimePicker startTimePicker = new TimePicker(getTranslation("label.start-time", UI.getCurrent().getLocale()));
+        startTimePicker.setStep(Duration.ofMinutes(15));
+        startTimePicker.setLocale(Locale.UK);
+        startTimePicker.getElement().getThemeList().add("always-float-label");
+
+        DatePicker endDatePicker = new DatePicker(getTranslation("label.end-date", UI.getCurrent().getLocale()));
+        endDatePicker.setLocale(Locale.UK);
+        endDatePicker.getElement().getThemeList().add("always-float-label");
+
+        TimePicker endTimePicker = new TimePicker(getTranslation("label.end-time", UI.getCurrent().getLocale()));
+        endTimePicker.setStep(Duration.ofMinutes(15));
+        endTimePicker.setLocale(Locale.UK);
+        endTimePicker.getElement().getThemeList().add("always-float-label");
+
+        Label timeLabel = new Label();
+        Icon clearFilter = IconDecorator.decorate(VaadinIcon.CLOSE_SMALL.create()
+            , getTranslation("tooltip.clear-filter", UI.getCurrent().getLocale()), "14px", "");
+        clearFilter.setSize("14px");
+        clearFilter.setVisible(false);
+
+        Dialog dateTimeDialog = new Dialog();
+        dateTimeDialog.setWidth("900px");
+
+        startDatePicker.addValueChangeListener(event -> {
+            if(endDatePicker.getValue() != null && startDatePicker.getValue() != null
+                && startTimePicker.getValue() != null && endTimePicker.getValue() != null) {
+                long startOfDayMilli = startDatePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long endOfDayMilli = endDatePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long startMilli = startTimePicker.getValue().toSecondOfDay() * 1000;
+                long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
+
+                setStartTime.accept(startOfDayMilli + startMilli);
+                setEndTime.accept(endOfDayMilli + endMilli);
+                dateTimeDialog.close();
+            }
+            else {
+                setStartTime.accept(-1L);
+                setEndTime.accept(-1L);
+            }
+
+            if(startDatePicker.getValue() != null && startTimePicker.getValue() != null
+                && endDatePicker.getValue() != null && endTimePicker.getValue() != null) {
+                timeLabel.setText(startDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " "
+                    + startTimePicker.getValue() + " " + getTranslation("label.to-lower-case", UI.getCurrent().getLocale())
+                    + " " + endDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " " + endTimePicker.getValue());
+                clearFilter.setVisible(true);
+            }
+
+            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+        });
+
+        startTimePicker.addValueChangeListener(event->{
+            if(endDatePicker.getValue() != null && startDatePicker.getValue() != null
+                && startTimePicker.getValue() != null && endTimePicker.getValue() != null) {
+                long startOfDayMilli = startDatePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long endOfDayMilli = endDatePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long startMilli = startTimePicker.getValue().toSecondOfDay() * 1000;
+                long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
+
+                setStartTime.accept(startOfDayMilli + startMilli);
+                setEndTime.accept(endOfDayMilli + endMilli);
+                dateTimeDialog.close();
+            }
+            else {
+                setStartTime.accept(-1L);
+                setEndTime.accept(-1L);
+            }
+
+            if(startDatePicker.getValue() != null && startTimePicker.getValue() != null
+                && endDatePicker.getValue() != null && endTimePicker.getValue() != null) {
+                timeLabel.setText(startDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " "
+                    + startTimePicker.getValue() + " " + getTranslation("label.to-lower-case", UI.getCurrent().getLocale())
+                    + " " + endDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " " + endTimePicker.getValue());
+                clearFilter.setVisible(true);
+            }
+
+            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+        });
+
+        endDatePicker.addValueChangeListener(event -> {
+            if(endDatePicker.getValue() != null && startDatePicker.getValue() != null
+                && startTimePicker.getValue() != null && endTimePicker.getValue() != null) {
+                long startOfDayMilli = startDatePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long endOfDayMilli = endDatePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long startMilli = startTimePicker.getValue().toSecondOfDay() * 1000;
+                long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
+
+                setStartTime.accept(startOfDayMilli + startMilli);
+                setEndTime.accept(endOfDayMilli + endMilli);
+                dateTimeDialog.close();
+            }
+            else {
+                setStartTime.accept(-1L);
+                setEndTime.accept(-1L);
+            }
+
+            if(startDatePicker.getValue() != null && startTimePicker.getValue() != null
+                && endDatePicker.getValue() != null && endTimePicker.getValue() != null) {
+                timeLabel.setText(startDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " "
+                    + startTimePicker.getValue() + " " + getTranslation("label.to-lower-case", UI.getCurrent().getLocale())
+                    + " " + endDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " " + endTimePicker.getValue());
+                clearFilter.setVisible(true);
+            }
+
+            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+        });
+
+        endTimePicker.addValueChangeListener(event->{
+            if(endDatePicker.getValue() != null && startDatePicker.getValue() != null
+                && startTimePicker.getValue() != null && endTimePicker.getValue() != null) {
+                long startOfDayMilli = startDatePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long endOfDayMilli = endDatePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long startMilli = startTimePicker.getValue().toSecondOfDay() * 1000;
+                long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
+
+                setStartTime.accept(startOfDayMilli + startMilli);
+                setEndTime.accept(endOfDayMilli + endMilli);
+                dateTimeDialog.close();
+            }
+            else {
+                setStartTime.accept(-1L);
+                setEndTime.accept(-1L);
+            }
+
+            if(startDatePicker.getValue() != null && startTimePicker.getValue() != null
+                && endDatePicker.getValue() != null && endTimePicker.getValue() != null) {
+                timeLabel.setText(startDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " "
+                    + startTimePicker.getValue() + " " + getTranslation("label.to-lower-case", UI.getCurrent().getLocale())
+                    + " " + endDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " " + endTimePicker.getValue());
+                clearFilter.setVisible(true);
+            }
+
+            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+        });
+
+        HorizontalLayout layout = new HorizontalLayout(startDatePicker, startTimePicker, endDatePicker, endTimePicker);
+        layout.setMargin(true);
+
+        VerticalLayout wrapper = new VerticalLayout();
+        wrapper.setWidthFull();
+        wrapper.add(layout);
+        wrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, layout);
+
+        dateTimeDialog.add(wrapper);
+
+        Icon icon = IconDecorator.decorate(VaadinIcon.CALENDAR_CLOCK.create(), getTranslation("tooltip.add-time-filter", UI.getCurrent().getLocale()), "16pt", "");
+        icon.addClickListener(event -> {
+            dateTimeDialog.open();
+        });
+
+        dateTimeDialog.addOpenedChangeListener(event -> {
+            if(!event.isOpened()) {
+                if(startDatePicker.getValue() != null && startTimePicker.getValue() != null
+                    && endTimePicker.getValue() != null) {
+                    timeLabel.setText(startDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " "
+                        + startTimePicker.getValue() + " " + getTranslation("label.to-lower-case", UI.getCurrent().getLocale())
+                        + " " + endDatePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " " + endTimePicker.getValue());
+                    clearFilter.setVisible(true);
+                }
+            }
+        });
+
+        clearFilter.addClickListener(event -> {
+            clearFilter.setVisible(false);
+            startDatePicker.setValue(null);
+            startTimePicker.setValue(null);
+            endDatePicker.setValue(null);
+            endTimePicker.setValue(null);
+            timeLabel.setText("");
+        });
+
+        HorizontalLayout filterLayout = new HorizontalLayout(icon, timeLabel, clearFilter);
+        filterLayout.setWidth("450px");
+        filterLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, clearFilter);
+
+        hr.getCell(this.preparedFutureContextInstanceGrid.getColumnByKey(columnKey)).setComponent(filterLayout);
+    }
+
     private List<ContextInstanceAggregateJobStatus> filterContextInstanceAggregateJobStatus(StatusFilter statusFilter, int offset, int limit) {
         List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
 
@@ -746,13 +1023,13 @@ public class ContextInstanceDashboardWidget extends Div
         return jobStatuses;
     }
 
-    private List<ScheduledContextInstanceRecord> filterPreparedContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit) {
-
-        ContextInstanceSearchFilter prepared = new SolrContextInstanceSearchFilterImpl();
-        prepared.setStatus(InstanceStatus.PREPARED.name());
+    private List<ScheduledContextInstanceRecord> filterPreparedContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
+                                                                                String sortField, String sortOrder) {
+        ContextInstanceSearchFilter preparedSearchFilter = new SolrContextInstanceSearchFilterImpl();
+        preparedSearchFilter.setStatus(InstanceStatus.PREPARED.name());
 
         List<ScheduledContextInstanceRecord> jobStatuses = this.scheduledContextInstanceService
-            .getScheduledContextInstancesByFilter(prepared, -1, -1, null, null).getResultList();
+            .getScheduledContextInstancesByFilter(preparedSearchFilter, -1, -1, null, null).getResultList();
 
         boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
         Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
@@ -772,6 +1049,11 @@ public class ContextInstanceDashboardWidget extends Div
                     filter = item.getContextInstanceId().toLowerCase().contains(contextInstanceSearchFilter.getContextInstanceId().toLowerCase());
                 }
 
+                if(contextInstanceSearchFilter.getStartTime() > 0 && contextInstanceSearchFilter.getEndTime() > 0) {
+                    filter = item.getStartTime() > contextInstanceSearchFilter.getStartTime() && item.getStartTime()
+                        < contextInstanceSearchFilter.getEndTime();
+                }
+
                 return filter;
             })
             .collect(Collectors.toList());
@@ -781,6 +1063,36 @@ public class ContextInstanceDashboardWidget extends Div
         }
         else if(offset >= 0 && limit > 0 && offset + limit < jobStatuses.size()) {
             jobStatuses = jobStatuses.subList(offset, offset + limit);
+        }
+
+        if(sortField != null) {
+            jobStatuses.sort((o1, o2) -> {
+                if(sortField.equals("name")) {
+                    if(sortOrder.equals(SortDirection.ASCENDING.name())) {
+                        return o1.getContextName().compareTo(o2.getContextName());
+                    }
+                    else {
+                        return o2.getContextName().compareTo(o1.getContextName());
+                    }
+                }
+                else if(sortField.equals("id")) {
+                    if(sortOrder.equals(SortDirection.ASCENDING.name())) {
+                        return o1.getContextInstanceId().compareTo(o2.getContextInstanceId());
+                    }
+                    else {
+                        return o2.getContextInstanceId().compareTo(o1.getContextInstanceId());
+                    }
+                }
+                else if(sortField.equals("startTime")) {
+                    if(sortOrder.equals(SortDirection.ASCENDING.name())) {
+                        return Long.compare(o1.getStartTime(), o2.getStartTime());
+                    }
+                    else {
+                        return Long.compare(o2.getStartTime(), o1.getStartTime());
+                    }
+                }
+                return 0;
+            });
         }
 
         return jobStatuses;

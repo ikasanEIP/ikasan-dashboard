@@ -15,6 +15,11 @@ public class ScheduledContextInstanceServiceTestImpl implements ScheduledContext
     }
 
     @Override
+    public void deleteById(String id) {
+
+    }
+
+    @Override
     public void save(ScheduledContextInstanceRecord scheduledContextInstanceRecord) {
     }
 

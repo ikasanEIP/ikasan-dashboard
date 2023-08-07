@@ -55,6 +55,6 @@ public class ContextInstanceRegisterJobTest {
     public void execute() throws Exception {
         contextInstanceRegisterJob.execute(new JobExecutionContextDefaultImpl());
 
-        verify(contextInstanceRegistrationService).register(contextName, null);
+        verify(contextInstanceRegistrationService).register(contextName);
     }
 }

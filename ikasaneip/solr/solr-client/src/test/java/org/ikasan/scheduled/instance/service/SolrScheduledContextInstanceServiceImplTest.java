@@ -74,7 +74,7 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         this.scheduledContextInstanceAuditDao.setSolrClient(this.server);
 
         service = new SolrScheduledContextInstanceServiceImpl(this.scheduledContextInstanceDao, this.scheduledContextInstanceAuditDao
-            , this.scheduledContextInstanceAuditAggregateDao, true);
+            , this.scheduledContextInstanceAuditAggregateDao, true, true);
     }
 
     @After
@@ -86,13 +86,13 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfContextInstanceDaoIsNull() {
         service = new SolrScheduledContextInstanceServiceImpl(null, this.scheduledContextInstanceAuditDao
-            , scheduledContextInstanceAuditAggregateDao, true);
+            , scheduledContextInstanceAuditAggregateDao, true, true);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfContextInstanceAuditDaoIsNull() {
         service = new SolrScheduledContextInstanceServiceImpl(scheduledContextInstanceDao, null
-            , scheduledContextInstanceAuditAggregateDao, true);
+            , scheduledContextInstanceAuditAggregateDao, true, true);
     }
 
     @Test
@@ -108,6 +108,45 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
 
         SearchResults<ScheduledContextInstanceAuditAggregateRecord> allAuditRecords = service.findAllAuditRecords(100, 0, null, null);
         assertEquals(0, allAuditRecords.getResultList().size());
+    }
+
+    @Test
+    public void test_save_find_audit_record_deltas_not_saved() {
+        SearchResults<ScheduledContextInstanceAuditAggregateRecord> allAuditRecords = service.findAllAuditRecords(100, 0, null, null);
+        assertEquals(0, allAuditRecords.getResultList().size());
+
+        ScheduledContextInstanceAuditAggregateRecord record = createAuditRecord();
+
+        SolrContextInstanceImpl previous = new SolrContextInstanceImpl();
+        SolrContextInstanceImpl updated = new SolrContextInstanceImpl();
+        service = new SolrScheduledContextInstanceServiceImpl(this.scheduledContextInstanceDao, this.scheduledContextInstanceAuditDao
+            , this.scheduledContextInstanceAuditAggregateDao, true, false);
+        service.saveAudit(record, previous, updated);
+
+        allAuditRecords = service.findAllAuditRecords(100, 1, null, null);
+        assertEquals(0, allAuditRecords.getResultList().size());
+
+        allAuditRecords = service.findAllAuditRecords(100, 0, null, null);
+        assertEquals(1, allAuditRecords.getResultList().size());
+
+        ScheduledContextInstanceAuditAggregateRecord savedRecord = allAuditRecords.getResultList().get(0);
+
+        ContextualisedScheduledProcessEvent<String, DryRunParameters> processEvent = record.getScheduledContextInstanceAuditAggregate().getProcessEvent();
+        List<SchedulerJobInitiationEvent> jobInitiationEvents = record.getScheduledContextInstanceAuditAggregate().getSchedulerJobInitiationEvents();
+
+        validateAuditRecord(processEvent, jobInitiationEvents, record, savedRecord);
+
+        String id = record.getScheduledContextInstanceAuditAggregate().getPreviousContextInstanceAuditId();
+
+        ScheduledContextInstanceRecord scheduledContextInstanceRecord = this.service.findAuditRecordById(id);
+        assertNull(scheduledContextInstanceRecord);
+
+        savedRecord = allAuditRecords.getResultList().get(0);
+
+        validateAuditRecordNoDeltas(processEvent, jobInitiationEvents, record, savedRecord);
+
+        scheduledContextInstanceRecord = this.service.findById("bad_id");
+        assertNull(scheduledContextInstanceRecord);
     }
 
     @Test
@@ -185,6 +224,8 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
                                      ScheduledContextInstanceAuditAggregateRecord record,
                                      ScheduledContextInstanceAuditAggregateRecord savedRecord) {
 
+        assertNotNull(processEventInstance);
+        assertFalse(jobInitiationEvents.isEmpty());
         assertTrue(savedRecord.getId().startsWith("scheduledContextInstanceAuditAggregateId_"));
         // make sure we have an uuid length afterwards
         assertEquals(36, savedRecord.getId().substring("scheduledContextInstanceAuditAggregateId_".length()).length());
@@ -193,6 +234,24 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         assertTrue(savedRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && savedRecord.getTimestamp() <= System.currentTimeMillis());
         assertEquals(record.getScheduledContextInstanceAuditAggregate().getPreviousContextInstanceAuditId()
             , savedRecord.getScheduledContextInstanceAuditAggregate().getPreviousContextInstanceAuditId());
+    }
+
+    private void validateAuditRecordNoDeltas(ContextualisedScheduledProcessEvent<String, DryRunParameters> processEventInstance,
+                                     List<SchedulerJobInitiationEvent> jobInitiationEvents,
+                                     ScheduledContextInstanceAuditAggregateRecord record,
+                                     ScheduledContextInstanceAuditAggregateRecord savedRecord) {
+
+        assertNotNull(processEventInstance);
+        assertFalse(jobInitiationEvents.isEmpty());
+        assertTrue(savedRecord.getId().startsWith("scheduledContextInstanceAuditAggregateId_"));
+        // make sure we have an uuid length afterwards
+        assertEquals(36, savedRecord.getId().substring("scheduledContextInstanceAuditAggregateId_".length()).length());
+        assertEquals(record.getContextName(), savedRecord.getContextName());
+        // make sure the timestamp is within the last little bit
+        assertNull(record.getScheduledContextInstanceAuditAggregate().getPreviousContextInstanceAuditId());
+        assertNull(record.getScheduledContextInstanceAuditAggregate().getUpdatedContextInstanceAuditId());
+        assertNull(savedRecord.getScheduledContextInstanceAuditAggregate().getPreviousContextInstanceAuditId());
+        assertNull(savedRecord.getScheduledContextInstanceAuditAggregate().getUpdatedContextInstanceAuditId());
     }
 
     @Test
@@ -614,55 +673,6 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
 
         Assert.assertEquals(3, searchResults.getResultList().size());
         Assert.assertEquals(1000003L, searchResults.getResultList().get(0).getTimestamp());
-    }
-
-    @Test
-    @Ignore
-    public void test_save() throws IOException {
-        SolrScheduledContextInstanceDaoImpl scheduledContextInstanceDao = new SolrScheduledContextInstanceDaoImpl();
-        scheduledContextInstanceDao.setSolrUsername("ikasan");
-        scheduledContextInstanceDao.setSolrPassword("1ka5an");
-        scheduledContextInstanceDao.initStandalone("http://localhost:8983/solr", 365);
-
-        SolrScheduledContextInstanceAuditDaoImpl scheduledContextInstanceAuditDao = new SolrScheduledContextInstanceAuditDaoImpl();
-        scheduledContextInstanceAuditDao.setSolrUsername("ikasan");
-        scheduledContextInstanceAuditDao.setSolrPassword("1ka5an");
-        scheduledContextInstanceAuditDao.initStandalone("http://localhost:8983/solr", 365);
-
-        SolrScheduledContextInstanceAuditAggregateDaoImpl scheduledContextInstanceAuditAggregateDao = new SolrScheduledContextInstanceAuditAggregateDaoImpl();
-        scheduledContextInstanceAuditAggregateDao.setSolrUsername("ikasan");
-        scheduledContextInstanceAuditAggregateDao.setSolrPassword("1ka5an");
-        scheduledContextInstanceAuditAggregateDao.initStandalone("http://localhost:8983/solr", 365);
-
-        IntStream.range(0, 1000).forEach(i -> {
-
-        SolrScheduledContextInstanceServiceImpl service = new SolrScheduledContextInstanceServiceImpl(scheduledContextInstanceDao, scheduledContextInstanceAuditDao
-            , scheduledContextInstanceAuditAggregateDao, true);
-
-            String data = null;
-            try {
-                data = loadDataFile("/data/contexts/CONTEXT-369160711-with-or-logic.json");
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            ContextService contextService = new ContextService();
-            ContextInstance contextInstance = null;
-            try {
-                contextInstance = contextService.getContextInstance(data);
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
-            scheduledContextRecord.setContextName("CONTEXT-369160711");
-            scheduledContextRecord.setContextInstance(contextInstance);
-            scheduledContextRecord.setTimestamp(System.currentTimeMillis() - (i * 5000));
-            scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
-
-            service.save(scheduledContextRecord);
-        });
     }
 
     private ScheduledContextInstanceAuditAggregateRecord createAuditRecord() {

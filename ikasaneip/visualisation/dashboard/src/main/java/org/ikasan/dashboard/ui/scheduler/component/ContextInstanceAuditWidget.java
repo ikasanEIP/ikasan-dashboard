@@ -173,41 +173,61 @@ public class ContextInstanceAuditWidget extends Div {
             .setResizable(true);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+            VerticalLayout verticalLayout = new VerticalLayout();
             HorizontalLayout horizontalLayout = new HorizontalLayout();
-            Button button = new Button("Open");
-            button.addClickListener(event -> {
-                JsonViewerDialog dialog = new JsonViewerDialog(this.contextInstanceService
-                    .findAuditRecordById(scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate()
-                        .getPreviousContextInstanceAuditId()));
-                dialog.open();
-            });
+            if(scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate()
+                .getPreviousContextInstanceAuditId() != null) {
+                Button button = new Button(getTranslation("button.open", UI.getCurrent().getLocale()));
+                button.addClickListener(event -> {
+                    JsonViewerDialog dialog = new JsonViewerDialog(this.contextInstanceService
+                        .findAuditRecordById(scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate()
+                            .getPreviousContextInstanceAuditId()));
+                    dialog.open();
+                });
 
-            ComponentSecurityVisibility.applySecurity(button, SecurityConstants.ALL_AUTHORITY,
-                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+                ComponentSecurityVisibility.applySecurity(button, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
-            horizontalLayout.add(button);
-            return horizontalLayout;
+                horizontalLayout.add(button);
+            }
+            else {
+                horizontalLayout.add(getTranslation("label.not-captured", UI.getCurrent().getLocale()));
+            }
+            verticalLayout.add(horizontalLayout);
+            verticalLayout.setWidthFull();
+            verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, horizontalLayout);
+            return verticalLayout;
         })).setHeader(getTranslation("table-header.instance-before", UI.getCurrent().getLocale()))
             .setFlexGrow(1)
             .setResizable(true);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+            VerticalLayout verticalLayout = new VerticalLayout();
             HorizontalLayout horizontalLayout = new HorizontalLayout();
-            Button button = new Button("Open");
-            button.addClickListener(event -> {
-                JsonViewerDialog dialog = new JsonViewerDialog(this.contextInstanceService
-                    .findAuditRecordById(scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate()
-                        .getUpdatedContextInstanceAuditId()));
-                dialog.open();
-            });
+            if(scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate()
+                .getUpdatedContextInstanceAuditId() != null) {
+                Button button = new Button(getTranslation("button.open", UI.getCurrent().getLocale()));
+                button.addClickListener(event -> {
+                    JsonViewerDialog dialog = new JsonViewerDialog(this.contextInstanceService
+                        .findAuditRecordById(scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate()
+                            .getUpdatedContextInstanceAuditId()));
+                    dialog.open();
+                });
 
-            ComponentSecurityVisibility.applySecurity(button, SecurityConstants.ALL_AUTHORITY,
-                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+                ComponentSecurityVisibility.applySecurity(button, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
-            horizontalLayout.add(button);
-            return horizontalLayout;
+                horizontalLayout.add(button);
+            }
+            else {
+                horizontalLayout.add(getTranslation("label.not-captured", UI.getCurrent().getLocale()));
+            }
+                verticalLayout.add(horizontalLayout);
+                verticalLayout.setWidthFull();
+                verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, horizontalLayout);
+                return verticalLayout;
         })).setHeader(getTranslation("table-header.instance-after", UI.getCurrent().getLocale()))
             .setFlexGrow(1)
             .setResizable(true);

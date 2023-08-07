@@ -156,7 +156,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
             confirmDialog.addConfirmListener(confirmEvent -> {
                 try {
                     this.jobInitiationService.raiseQuartzSchedulerJob(
-                        this.agent.getUrl(), this.agent.getName(), this.quartzScheduleDrivenJobInstance.getJobName(), this.quartzScheduleDrivenJobInstance.getContextInstanceId());
+                        this.agent.getUrl(), this.agent.getName(), this.quartzScheduleDrivenJobInstance, this.quartzScheduleDrivenJobInstance.getContextInstanceId());
 
                     this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
                         , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()

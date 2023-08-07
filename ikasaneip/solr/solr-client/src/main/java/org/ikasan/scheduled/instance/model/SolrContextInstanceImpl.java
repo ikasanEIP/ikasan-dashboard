@@ -1,9 +1,12 @@
 package org.ikasan.scheduled.instance.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.context.model.SolrContextImpl;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -13,6 +16,8 @@ import java.util.UUID;
 
 public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
     private String id;
     private long createdDateTime;
     private long updatedDateTime;
@@ -133,7 +138,12 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        try {
+            return this.objectMapper.writeValueAsString(this);
+        }
+        catch (JsonProcessingException e) {
+            return String.format("Could not resolve context instance as string. Context Name[%s], Context Instance Id[%s]", this.name, this.id);
+        }
     }
 
     @Override

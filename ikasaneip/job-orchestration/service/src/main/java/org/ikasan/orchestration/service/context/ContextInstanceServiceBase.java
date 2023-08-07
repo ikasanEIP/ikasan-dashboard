@@ -14,6 +14,7 @@ import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitiali
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecoveryServiceImpl;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -337,6 +338,14 @@ public abstract class ContextInstanceServiceBase {
             null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
+        // We add a listener to update scheduler job instances when a state change occurs.
+        contextMachine.addSchedulerJobStateChangeEventListener(event ->
+            this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
+
+        // We add a listener to broadcast any job state changes to interested parties.
+        contextMachine.addSchedulerJobStateChangeEventListener(event ->
+            schedulerJobStateChangeEventBroadcaster.broadcast(event));
+
         ContextMachineCache.instance().put(contextMachine);
     }
 
@@ -442,5 +451,19 @@ public abstract class ContextInstanceServiceBase {
     private void setContextParametersOnInstance(ContextInstance contextInstance, Map<String, InternalEventDrivenJobInstance> internalJobs) {
         contextParametersInstanceService.populateContextParameters();
         contextParametersInstanceService.populateContextParametersOnContextInstance(contextInstance, internalJobs);
+    }
+
+    protected List<ContextInstance> findPrepared(String contextName) {
+        ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStatus(InstanceStatus.PREPARED.name());
+        filter.setContextSearchFilter(contextName);
+
+        SearchResults<ScheduledContextInstanceRecord> results = this.scheduledContextInstanceService
+            .getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+
+        return results.getResultList().stream()
+            .map(scheduledContextInstanceRecord -> scheduledContextInstanceRecord.getContextInstance())
+            .collect(Collectors.toList());
     }
 }

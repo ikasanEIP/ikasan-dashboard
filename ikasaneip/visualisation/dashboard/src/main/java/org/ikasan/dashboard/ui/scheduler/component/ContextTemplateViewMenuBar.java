@@ -102,10 +102,10 @@ public class ContextTemplateViewMenuBar extends MenuBar implements ContextViewUp
     }
 
     private com.vaadin.flow.component.contextmenu.MenuItem createMenuItem(com.vaadin.flow.component.menubar.MenuBar menu, Icon icon, String label) {
-        com.vaadin.flow.component.button.Button quickAccessButton = new Button(label, icon);
-        quickAccessButton.setIconAfterText(true);
+        com.vaadin.flow.component.button.Button menuButton = new Button(label, icon);
+        menuButton.setIconAfterText(true);
 
-        MenuItem item = menu.addItem(quickAccessButton);
+        MenuItem item = menu.addItem(menuButton);
 
         return item;
     }

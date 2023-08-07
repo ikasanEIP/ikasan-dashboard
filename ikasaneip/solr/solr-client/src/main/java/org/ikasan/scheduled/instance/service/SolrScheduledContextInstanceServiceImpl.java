@@ -16,30 +16,36 @@ public class SolrScheduledContextInstanceServiceImpl implements ScheduledContext
     private final ScheduledContextInstanceAuditDao scheduledContextInstanceAuditDao;
     private final ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao;
     private final boolean saveContextInstanceAuditRecords;
-
+    private final boolean saveContextInstanceAuditDeltaRecords;
     public SolrScheduledContextInstanceServiceImpl(ScheduledContextInstanceDao scheduledContextInstanceDao,
                                                    ScheduledContextInstanceAuditDao scheduledContextInstanceAuditDao,
                                                    ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao,
-                                                   boolean saveContextInstanceAuditRecords) {
-        if (scheduledContextInstanceDao == null) {
+                                                   boolean saveContextInstanceAuditRecords, boolean saveContextInstanceAuditDeltaRecords) {
+        this.scheduledContextInstanceDao = scheduledContextInstanceDao;
+        if (this.scheduledContextInstanceDao == null) {
             throw new IllegalArgumentException("scheduledContextInstanceDao cannot be null!");
         }
-        if (scheduledContextInstanceAuditDao == null) {
+        this.scheduledContextInstanceAuditDao = scheduledContextInstanceAuditDao;
+        if (this.scheduledContextInstanceAuditDao == null) {
             throw new IllegalArgumentException("scheduledContextInstanceAuditDao cannot be null!");
         }
-        if (scheduledContextInstanceAuditAggregateDao == null) {
+        this.scheduledContextInstanceAuditAggregateDao = scheduledContextInstanceAuditAggregateDao;
+        if (this.scheduledContextInstanceAuditAggregateDao == null) {
             throw new IllegalArgumentException("scheduledContextInstanceAuditAggregateDao cannot be null!");
         }
 
-        this.scheduledContextInstanceDao = scheduledContextInstanceDao;
-        this.scheduledContextInstanceAuditDao = scheduledContextInstanceAuditDao;
-        this.scheduledContextInstanceAuditAggregateDao = scheduledContextInstanceAuditAggregateDao;
         this.saveContextInstanceAuditRecords = saveContextInstanceAuditRecords;
+        this.saveContextInstanceAuditDeltaRecords = saveContextInstanceAuditDeltaRecords;
     }
 
     @Override
     public ScheduledContextInstanceRecord findById(String id) {
         return this.scheduledContextInstanceDao.findById(id);
+    }
+
+    @Override
+    public void deleteById(String id) {
+        this.scheduledContextInstanceDao.deleteById(id);
     }
 
     @Override
@@ -61,23 +67,26 @@ public class SolrScheduledContextInstanceServiceImpl implements ScheduledContext
     public void saveAudit(ScheduledContextInstanceAuditAggregateRecord scheduledContextInstanceAuditAggregateRecord, ContextInstance previousContextInstance,
                           ContextInstance updatedContextInstance) {
         if (this.saveContextInstanceAuditRecords) {
-            SolrScheduledContextInstanceAuditRecordImpl previousContextInstanceRecord = new SolrScheduledContextInstanceAuditRecordImpl();
-            previousContextInstanceRecord.setContextName(previousContextInstance.getName());
-            previousContextInstanceRecord.setContextInstanceId(previousContextInstance.getId());
-            previousContextInstanceRecord.setContextInstance(previousContextInstance);
-            this.scheduledContextInstanceAuditDao.save(previousContextInstanceRecord);
-
-            SolrScheduledContextInstanceAuditRecordImpl updatedContextInstanceRecord = new SolrScheduledContextInstanceAuditRecordImpl();
-            updatedContextInstanceRecord.setContextName(updatedContextInstance.getName());
-            updatedContextInstanceRecord.setContextInstanceId(updatedContextInstance.getId());
-            updatedContextInstanceRecord.setContextInstance(updatedContextInstance);
-            this.scheduledContextInstanceAuditDao.save(updatedContextInstanceRecord);
-
             ScheduledContextInstanceAuditAggregate auditAggregate = scheduledContextInstanceAuditAggregateRecord
                 .getScheduledContextInstanceAuditAggregate();
 
-            auditAggregate.setPreviousContextInstanceAuditId(previousContextInstanceRecord.getId());
-            auditAggregate.setUpdatedContextInstanceAuditId(updatedContextInstanceRecord.getId());
+            if(this.saveContextInstanceAuditDeltaRecords) {
+                SolrScheduledContextInstanceAuditRecordImpl previousContextInstanceRecord = new SolrScheduledContextInstanceAuditRecordImpl();
+                previousContextInstanceRecord.setContextName(previousContextInstance.getName());
+                previousContextInstanceRecord.setContextInstanceId(previousContextInstance.getId());
+                previousContextInstanceRecord.setContextInstance(previousContextInstance);
+                this.scheduledContextInstanceAuditDao.save(previousContextInstanceRecord);
+
+                SolrScheduledContextInstanceAuditRecordImpl updatedContextInstanceRecord = new SolrScheduledContextInstanceAuditRecordImpl();
+                updatedContextInstanceRecord.setContextName(updatedContextInstance.getName());
+                updatedContextInstanceRecord.setContextInstanceId(updatedContextInstance.getId());
+                updatedContextInstanceRecord.setContextInstance(updatedContextInstance);
+                this.scheduledContextInstanceAuditDao.save(updatedContextInstanceRecord);
+
+
+                auditAggregate.setPreviousContextInstanceAuditId(previousContextInstanceRecord.getId());
+                auditAggregate.setUpdatedContextInstanceAuditId(updatedContextInstanceRecord.getId());
+            }
 
             scheduledContextInstanceAuditAggregateRecord.setScheduledContextInstanceAuditAggregate(auditAggregate);
 

@@ -1274,6 +1274,12 @@ public class ContextMachine {
                     continue;
                 }
 
+                if(contextMachineFromCache.getContext().getStatus().equals(InstanceStatus.PREPARED)) {
+                    logger.info("Will not broadcast global event to instance [{}], Global Event [{}]. The instance is currently in a prepared state.",
+                        contextInstanceIdFromCache, schedulerJobInitiationEvent.getJobName());
+                    continue;
+                }
+
                 // We don't broadcast global events to other contexts if they have been skipped.
                 if(schedulerJobInitiationEvent.isSkipped()
                     && !schedulerJobInitiationEvent.getContextInstanceId().equals(contextInstanceIdFromCache)) {

@@ -306,7 +306,7 @@ public class ContextHelper {
             -> !contextTransition.getContexts().isEmpty()).distinct().collect(Collectors.toList());
     }
 
-    public static AggregateContextInstanceStatus    getAggregateContextInstanceStatus(ContextInstance contextInstance) {
+    public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance contextInstance) {
         AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
         getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus);
 

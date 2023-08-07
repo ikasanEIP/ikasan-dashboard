@@ -175,7 +175,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             confirmDialog.addConfirmListener(confirmEvent -> {
                 try {
                     this.jobInitiationService.raiseFileEventSchedulerJob(
-                        this.agent.getUrl(), this.agent.getName(), this.fileEventDrivenJobInstance.getJobName(), this.fileEventDrivenJobInstance.getContextInstanceId());
+                        this.agent.getUrl(), this.agent.getName(), this.fileEventDrivenJobInstance, this.fileEventDrivenJobInstance.getContextInstanceId());
 
                     this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
                         , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()

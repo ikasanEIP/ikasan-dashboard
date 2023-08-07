@@ -51,6 +51,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -78,7 +79,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
+public class    ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
     , ContextTemplateEnableDisableEventBroadcastListener, ContextTemplateSavedEventBroadcastListener {
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
@@ -968,6 +969,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         ContextMachineCache.instance().contextInstanceIdentifiers().forEach(identifier -> {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(identifier);
+            if(contextMachine.getContext().getStatus().equals(InstanceStatus.PREPARED)) return;
             if (canAccessAllJobPlans || accessibleJobPlans.contains(contextMachine.getContext().getName())) {
                 this.activeContextSubMenu.addItem(contextMachine.getContext().getName() + " (" + identifier + ")", itemClickEvent -> {
                     String route = RouteConfiguration.forSessionScope()

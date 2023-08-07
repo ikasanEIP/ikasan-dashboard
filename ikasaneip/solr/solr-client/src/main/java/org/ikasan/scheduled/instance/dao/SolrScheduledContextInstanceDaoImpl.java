@@ -76,6 +76,11 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
     }
 
     @Override
+    public void deleteById(String id) {
+        super.removeById(SCHEDULED_CONTEXT_INSTANCE, id + "_" + SCHEDULED_CONTEXT_INSTANCE);
+    }
+
+    @Override
     public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses) {
         return this.getScheduledContextInstancesByStatus(instanceStatuses, -1, -1);
     }

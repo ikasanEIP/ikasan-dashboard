@@ -168,6 +168,7 @@ public abstract class AbstractDashboardSchedulerService {
 
     /**
      * This could be part of complete job delete or refresh of existing job
+     *
      * @param jobName to be unscheduled
      */
     public void unscheduleJob(final String jobName)

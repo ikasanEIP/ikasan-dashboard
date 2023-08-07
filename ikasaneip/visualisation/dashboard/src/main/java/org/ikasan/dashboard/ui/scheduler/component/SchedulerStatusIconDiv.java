@@ -38,23 +38,43 @@ public class SchedulerStatusIconDiv extends Div {
         this.setStatus(status.name());
     }
 
+    public void setStatus(InstanceStatus status, String tooltip) {
+        if(status == null) return;
+
+        this.setStatus(status.name(), tooltip);
+    }
+
     public void setStatus(String status) {
+        if(status == null) return;
+
+        if(status.equals(InstanceStatus.ON_HOLD.name())) {
+            this.setStatus(status, getTranslation("tooltip.context-nested-on-hold", UI.getCurrent().getLocale()));
+        }
+        else if(status.equals(InstanceStatus.SKIPPED.name()) || status.equals(InstanceStatus.SKIPPED_RUNNING.name())) {
+            this.setStatus(status, getTranslation("tooltip.context-nested-skipped", UI.getCurrent().getLocale()));
+        }
+        else if(status.equals(InstanceStatus.DISABLED.name())) {
+            this.setStatus(status, getTranslation("tooltip.context-nested-disabled", UI.getCurrent().getLocale()));
+        }
+    }
+
+    private void setStatus(String status, String tooltip) {
         if(status == null) return;
 
         if(status.equals(InstanceStatus.ON_HOLD.name())) {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
             super.getElement().getStyle().set("color", "#FFF");
-            super.add(IconDecorator.decorate(VaadinIcon.HAND.create(), getTranslation("tooltip.context-nested-on-hold", UI.getCurrent().getLocale()), "14pt", "#FFF"));
+            super.add(IconDecorator.decorate(VaadinIcon.HAND.create(), tooltip, "14pt", "#FFF"));
         }
         else if(status.equals(InstanceStatus.SKIPPED.name()) || status.equals(InstanceStatus.SKIPPED_RUNNING.name())) {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
             super.getElement().getStyle().set("color", "#FFF");
-            super.add(IconDecorator.decorate(VaadinIcon.BAN.create(), getTranslation("tooltip.context-nested-skipped", UI.getCurrent().getLocale()), "14pt", "#FFF"));
+            super.add(IconDecorator.decorate(VaadinIcon.BAN.create(), tooltip, "14pt", "#FFF"));
         }
         else if(status.equals(InstanceStatus.DISABLED.name())) {
             super.getElement().getStyle().set("background-color", "#000000");
             super.getElement().getStyle().set("color", "#FFF");
-            super.add(IconDecorator.decorate(VaadinIcon.CLOCK.create(), getTranslation("tooltip.context-nested-disabled", UI.getCurrent().getLocale()), "14pt", "#FFF"));
+            super.add(IconDecorator.decorate(VaadinIcon.CLOCK.create(), tooltip, "14pt", "#FFF"));
         }
     }
 }

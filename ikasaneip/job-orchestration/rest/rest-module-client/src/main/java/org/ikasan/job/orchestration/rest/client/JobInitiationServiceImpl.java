@@ -3,6 +3,7 @@ package org.ikasan.job.orchestration.rest.client;
 import org.ikasan.job.orchestration.rest.client.dto.JobDryRunModeDto;
 import org.ikasan.rest.client.ModuleRestService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,18 +46,18 @@ public class JobInitiationServiceImpl extends ModuleRestService implements JobIn
     }
 
     @Override
-    public void raiseQuartzSchedulerJob(String contextUrl, String agentName, String jobName, String correlationId) {
-        this.triggerJobNow(contextUrl, agentName, jobName, correlationId);
+    public void raiseQuartzSchedulerJob(String contextUrl, String agentName, SchedulerJob job, String correlationId) {
+        this.triggerJobNow(contextUrl, agentName, job.getAggregateJobName(), correlationId);
     }
 
     @Override
-    public void raiseFileEventSchedulerJob(String contextUrl, String agentName, String jobName, String correlationId) {
-        this.setJobDryRunMode(contextUrl, jobName, true);
-        this.triggerJobNow(contextUrl, agentName, jobName, correlationId);
+    public void raiseFileEventSchedulerJob(String contextUrl, String agentName, SchedulerJob job, String correlationId) {
+        this.setJobDryRunMode(contextUrl, job.getAggregateJobName(), true);
+        this.triggerJobNow(contextUrl, agentName, job.getAggregateJobName(), correlationId);
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.schedule(() -> {
                 try {
-                    this.setJobDryRunMode(contextUrl, jobName, false);
+                    this.setJobDryRunMode(contextUrl, job.getAggregateJobName(), false);
                 }
                 catch (RestClientException e) {
                     LOG.error("An error has occurred setting job dry run to false", e);
