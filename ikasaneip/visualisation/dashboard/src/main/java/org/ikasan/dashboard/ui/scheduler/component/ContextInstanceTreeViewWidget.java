@@ -1801,6 +1801,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
                             instance.getChildContextName().toLowerCase().contains(filter.get().getJobName().toLowerCase())
                         : true)
+                    .sorted(Comparator.comparingInt(SchedulerJob::getOrdinal))
                     .map(instance -> (Object) instance)
                     .collect(Collectors.toList()));
             }
