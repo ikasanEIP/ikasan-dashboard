@@ -3,6 +3,7 @@ package org.ikasan.rest.client;
 import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.scheduled.general.SchedulerService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
@@ -18,6 +19,9 @@ public class ModuleRestClientAutoConfiguration
 {
     @Resource
     private JsonConfigurationMetaDataProvider jsonConfigurationMetaDataProvider;
+
+    @Value("${bes.monitor.alerts.label:20971520}") // 20MB
+    private long downloadLogFileMaxByteSize;
 
     @Bean
     @ConfigurationProperties(prefix = "module.rest.connection")
@@ -90,7 +94,7 @@ public class ModuleRestClientAutoConfiguration
     @Bean
     public DownloadLogFileService downloadLogFileService(Environment environment
         , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
-        return new DownloadLogFileServiceImpl(environment, httpComponentsClientHttpRequestFactory);
+        return new DownloadLogFileServiceImpl(environment, httpComponentsClientHttpRequestFactory, downloadLogFileMaxByteSize);
     }
 
 }

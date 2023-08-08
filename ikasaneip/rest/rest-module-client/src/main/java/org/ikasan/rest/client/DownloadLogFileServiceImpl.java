@@ -16,11 +16,13 @@ import java.util.Map;
 public class DownloadLogFileServiceImpl extends ModuleRestService implements DownloadLogFileService {
     private static final Logger LOG = LoggerFactory.getLogger(DownloadLogFileServiceImpl.class);
 
-    private final static String GET_LIST_LOG_FILES_URL = "/rest/logs/listLogFiles";
-    private final static String GET_DOWNLOAD_LOG_FILES_URL = "/rest/logs/downloadLogFile?fullFilePath={fullFilePath}";
+    private final static String GET_LIST_LOG_FILES_URL = "/rest/logs/listLogFiles?maxFileSize={maxFileSize}";
+    private final static String GET_DOWNLOAD_LOG_FILES_URL = "/rest/logs/downloadLogFile?maxFileSize={maxFileSize}&fullFilePath={fullFilePath}";
+    private long maxFileSizeInBytes;
 
-    public DownloadLogFileServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
+    public DownloadLogFileServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory, long maxFileSizeInBytes) {
         super(environment, httpComponentsClientHttpRequestFactory);
+        this.maxFileSizeInBytes = maxFileSizeInBytes;
     }
 
     @Override
@@ -28,8 +30,9 @@ public class DownloadLogFileServiceImpl extends ModuleRestService implements Dow
         HttpHeaders headers = createHttpHeaders();
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl + GET_LIST_LOG_FILES_URL;
+        Map<String, String> parameters = new HashMap<>() {{  put("maxFileSize", String.valueOf(maxFileSizeInBytes)); }};
         try {
-            ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, new ParameterizedTypeReference<>() {});
+            ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, new ParameterizedTypeReference<>() {}, parameters);
             return responseEntity.getBody();
         }
         catch(RestClientException e){
@@ -45,7 +48,7 @@ public class DownloadLogFileServiceImpl extends ModuleRestService implements Dow
         HttpHeaders headers = createOctetStreamHttpHeaders();
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl + GET_DOWNLOAD_LOG_FILES_URL;
-        Map<String, String> parameters = new HashMap<>() {{ put("fullFilePath", fullFilePath); }};
+        Map<String, String> parameters = new HashMap<>() {{ put("fullFilePath", fullFilePath); put("maxFileSize", String.valueOf(maxFileSizeInBytes)); }};
         try {
             ResponseEntity<byte[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, new ParameterizedTypeReference<>() {}, parameters);
             return responseEntity.getBody();
