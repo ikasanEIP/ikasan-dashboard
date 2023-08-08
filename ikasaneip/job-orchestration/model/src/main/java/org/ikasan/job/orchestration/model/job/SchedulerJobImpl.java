@@ -19,6 +19,7 @@ public class SchedulerJobImpl implements SchedulerJob {
     protected Map<String, Boolean> skippedContexts = new HashMap<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected Map<String, Boolean> heldContexts = new HashMap<>();
+    protected int ordinal = -1;
 
     @Override
     public String getContextName() {
@@ -111,6 +112,16 @@ public class SchedulerJobImpl implements SchedulerJob {
     @Override
     public void setHeldContexts(Map<String, Boolean> heldContexts) {
         this.heldContexts = heldContexts;
+    }
+
+    @Override
+    public int getOrdinal() {
+        return ordinal;
+    }
+
+    @Override
+    public void setOrdinal(int ordinal) {
+        this.ordinal = ordinal;
     }
 
     @Override

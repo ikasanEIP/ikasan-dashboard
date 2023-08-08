@@ -14,6 +14,7 @@ public class SchedulerJobBuilder {
     protected List<String> childContextNames;
     protected String description;
     protected String startupControlType = "AUTOMATIC";
+    protected int ordinal = -1;
 
     public SchedulerJobBuilder() {
     }
@@ -94,6 +95,19 @@ public class SchedulerJobBuilder {
         return this;
     }
 
+    /**
+     * Set the job ordinal.
+     *
+     * @param ordinal
+     * @return
+     */
+    public SchedulerJobBuilder withOrdinal(int ordinal) {
+        this.ordinal = ordinal;
+
+        return this;
+    }
+
+
     public SchedulerJob build() {
         if(this.agentName == null || this.jobName == null) {
             throw new ContextBuilderException("Both agent name and job name must no be null!");
@@ -105,6 +119,7 @@ public class SchedulerJobBuilder {
         schedulerJob.setJobName(this.jobName);
         schedulerJob.setJobDescription(this.description);
         schedulerJob.setStartupControlType(this.startupControlType);
+        schedulerJob.setOrdinal(this.ordinal);
 
         return schedulerJob;
     }
