@@ -23,6 +23,7 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     protected boolean skip = false;
     protected Map<String, Boolean> skippedContexts = new HashMap<>();
     protected Map<String, Boolean> heldContexts = new HashMap<>();
+    protected int ordinal = -1;
 
     @Override
     public String getContextName() {
@@ -123,6 +124,16 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     @Override
     public void setHeldContexts(Map<String, Boolean> heldContexts) {
         this.heldContexts = heldContexts;
+    }
+
+    @Override
+    public int getOrdinal() {
+        return ordinal;
+    }
+
+    @Override
+    public void setOrdinal(int ordinal) {
+        this.ordinal = ordinal;
     }
 
     @Override
