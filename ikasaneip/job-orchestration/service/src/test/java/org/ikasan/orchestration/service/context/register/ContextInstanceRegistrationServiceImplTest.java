@@ -2855,51 +2855,9 @@ public class ContextInstanceRegistrationServiceImplTest {
             systemEventService,
             false);
 
-        // set up
-        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
-        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
-        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
-
-        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
-        record.setContext(context);
-        record.setContextName(contextName);
-        when(scheduledContextService.findById(contextName)).thenReturn(record);
-
-//        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
-//        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
-//        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
-//            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
-//                , TestUtils.createModuleMetaData("3")), 3, 0));
-//        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
-//            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
-//
-//        List<ContextParameterInstance> params = TestUtils.createParams();
-//
-//        ContextInstanceImpl contextInstance = this.objectMapper
-//            .readValue(this.objectMapper.writeValueAsBytes(record.getContext()), ContextInstanceImpl.class);
-//        contextInstance.setContextParameters(params);
-//
-//        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
-//        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
-//        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
-//        jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
         contextInstanceRegistrationService.reSchedule(contextName);
-
-//        // verify
-//        verify(scheduledContextService).findById(contextName);
-//        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
-//        verify(scheduledContextInstanceService, times(1)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
-//        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-//        verify(scheduledContextInstanceService, times(1)).save(contextInstanceCaptor.capture());
-//        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
-//        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
-//        assertEquals(contextName, actualContextInstanceRecord.getContextName());
-//        assertEquals(InstanceStatus.PREPARED.name(), actualContextInstanceRecord.getStatus());
-//        assertNull(null, actualContextInstanceRecord.getId());
-//        assertNotNull(actualContextInstanceRecord.getContextInstance());
-//        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
