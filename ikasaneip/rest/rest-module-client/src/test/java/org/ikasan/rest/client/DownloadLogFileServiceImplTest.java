@@ -31,7 +31,7 @@ public class DownloadLogFileServiceImplTest {
     public void setup() {
         contextBaseUrl = "http://localhost:" + wireMockRule.port();
         Environment environment = new StandardEnvironment();
-        uut = new DownloadLogFileServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
+        uut = new DownloadLogFileServiceImpl(environment, new HttpComponentsClientHttpRequestFactory(), 20971520);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class DownloadLogFileServiceImplTest {
         expected.put("application.log", "/opt/somedir/application.log");
         expected.put("h2.log", "/opt/somedir/h2.log");
 
-        stubFor(get(urlEqualTo("/rest/logs/listLogFiles"))
+        stubFor(get(urlEqualTo("/rest/logs/listLogFiles?maxFileSize=20971520"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -58,7 +58,7 @@ public class DownloadLogFileServiceImplTest {
 
     @Test
     public void test_listLogFiles_204() {
-        stubFor(get(urlEqualTo("/rest/logs/listLogFiles"))
+        stubFor(get(urlEqualTo("/rest/logs/listLogFiles?maxFileSize=20971520"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -71,7 +71,7 @@ public class DownloadLogFileServiceImplTest {
 
     @Test(expected = RestClientException.class)
     public void test_listLogFiles_404() {
-        stubFor(get(urlEqualTo("/rest/logs/listLogFiles"))
+        stubFor(get(urlEqualTo("/rest/logs/listLogFiles?maxFileSize=20971520"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -83,7 +83,7 @@ public class DownloadLogFileServiceImplTest {
 
     @Test(expected = RestClientException.class)
     public void test_listLogFiles_500() {
-        stubFor(get(urlEqualTo("/rest/logs/listLogFiles"))
+        stubFor(get(urlEqualTo("/rest/logs/listLogFiles?maxFileSize=20971520"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -95,7 +95,7 @@ public class DownloadLogFileServiceImplTest {
 
     @Test
     public void test_downloadLogFile_200() {
-        stubFor(get(urlEqualTo("/rest/logs/downloadLogFile?fullFilePath=/some/dir/application.log"))
+        stubFor(get(urlEqualTo("/rest/logs/downloadLogFile?maxFileSize=20971520&fullFilePath=/some/dir/application.log"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString()))
             .willReturn(aResponse()
@@ -109,7 +109,7 @@ public class DownloadLogFileServiceImplTest {
 
     @Test
     public void test_downloadLogFile_204() {
-        stubFor(get(urlEqualTo("/rest/logs/downloadLogFile?fullFilePath=/some/dir/application.log"))
+        stubFor(get(urlEqualTo("/rest/logs/downloadLogFile?maxFileSize=20971520&fullFilePath=/some/dir/application.log"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString()))
             .willReturn(aResponse()
@@ -122,7 +122,7 @@ public class DownloadLogFileServiceImplTest {
 
     @Test(expected = RestClientException.class)
     public void test_downloadLogFile_404() {
-        stubFor(get(urlEqualTo("/rest/logs/downloadLogFile?fullFilePath=/some/dir/application.log"))
+        stubFor(get(urlEqualTo("/rest/logs/downloadLogFile?maxFileSize=20971520&fullFilePath=/some/dir/application.log"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString()))
             .willReturn(aResponse()
@@ -134,7 +134,7 @@ public class DownloadLogFileServiceImplTest {
 
     @Test(expected = RestClientException.class)
     public void test_downloadLogFile_500() {
-        stubFor(get(urlEqualTo("/rest/logs/downloadLogFile?fullFilePath=/some/dir/application.log"))
+        stubFor(get(urlEqualTo("/rest/logs/downloadLogFile?maxFileSize=20971520&fullFilePath=/some/dir/application.log"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString()))
             .willReturn(aResponse()
