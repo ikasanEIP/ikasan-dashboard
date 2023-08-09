@@ -20,7 +20,7 @@ public class ModuleRestClientAutoConfiguration
     @Resource
     private JsonConfigurationMetaDataProvider jsonConfigurationMetaDataProvider;
 
-    @Value("${bes.monitor.alerts.label:20971520}") // 20MB
+    @Value("${module.download.log.file.max.size:20971520}") // 20MB
     private long downloadLogFileMaxByteSize;
 
     @Bean
