@@ -16,7 +16,6 @@ import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheDaoImpl;
 import org.ikasan.scheduled.joblock.model.SolrJobLockCacheDataImpl;
 import org.ikasan.scheduled.joblock.model.SolrJobLockCacheRecordImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
-import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
@@ -34,7 +33,10 @@ import org.springframework.util.FileSystemUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {

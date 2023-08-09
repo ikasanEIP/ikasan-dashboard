@@ -1,7 +1,6 @@
 package org.ikasan.configuration.metadata.model;
 
 import org.ikasan.spec.metadata.ConfigurationMetaData;
-import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 
 import java.util.List;
 

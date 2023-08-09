@@ -1,36 +1,16 @@
 package org.ikasan.wiretap.dao;
 
-import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrRequest;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
-import org.ikasan.replay.dao.SolrReplayDao;
-import org.ikasan.replay.model.SolrReplayEvent;
-import org.ikasan.spec.search.PagedSearchResult;
 import org.ikasan.spec.solr.SolrDaoBase;
-import org.ikasan.spec.wiretap.WiretapEvent;
 import org.ikasan.wiretap.model.SolrWiretapEvent;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.annotation.DirtiesContext;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Date;
-import java.util.HashSet;
 
 /**
  * Created by Ikasan Development Team on 04/08/2017.

@@ -1,6 +1,5 @@
 package org.ikasan.designer.builder;
 
-import org.ikasan.designer.model.Circle;
 import org.ikasan.designer.model.Group;
 import org.ikasan.designer.model.Port;
 

@@ -5,30 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
-import org.apache.solr.client.solrj.request.UpdateRequest;
-import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.metrics.dao.SolrMetricsDao;
-import org.ikasan.metrics.model.ComponentInvocationMetricImpl;
-import org.ikasan.metrics.model.CustomMetric;
 import org.ikasan.metrics.model.FlowInvocationMetricImpl;
-import org.ikasan.metrics.model.MetricEventImpl;
 import org.ikasan.spec.history.FlowInvocationMetric;
-import org.ikasan.spec.solr.SolrDaoBase;
-import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
-import org.json.JSONException;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.FileSystemUtils;
 
@@ -37,7 +25,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by Ikasan Development Team on 04/08/2017.

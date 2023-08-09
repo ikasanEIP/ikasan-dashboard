@@ -12,7 +12,6 @@ import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.job.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

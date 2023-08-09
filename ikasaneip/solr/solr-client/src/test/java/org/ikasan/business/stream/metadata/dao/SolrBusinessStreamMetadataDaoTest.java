@@ -10,7 +10,6 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.business.stream.metadata.model.SolrBusinessStream;
 import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
 import org.ikasan.module.metadata.model.SolrFlowElementMetaDataImpl;

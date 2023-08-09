@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.ikasan.rest.client.TriggerRestServiceImpl;
 import org.ikasan.rest.client.dto.TriggerDto;
 import org.ikasan.spec.trigger.TriggerRelationship;
 import org.junit.Assert;
@@ -18,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
 import static org.junit.Assert.assertEquals;
 
 public class TriggerRestServiceImplTest

@@ -2,7 +2,6 @@ package org.ikasan.designer.builder;
 
 import org.ikasan.designer.model.Image;
 import org.ikasan.designer.model.Port;
-import org.ikasan.designer.model.Rectangle;
 import org.ikasan.designer.model.UserData;
 
 import java.util.ArrayList;

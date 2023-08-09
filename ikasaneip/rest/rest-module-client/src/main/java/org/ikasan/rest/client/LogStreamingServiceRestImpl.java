@@ -1,10 +1,5 @@
 package org.ikasan.rest.client;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +9,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import reactor.core.publisher.Flux;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class LogStreamingServiceRestImpl extends ModuleRestService implements LogStreamingService<ServerSentEvent<String>> {
 

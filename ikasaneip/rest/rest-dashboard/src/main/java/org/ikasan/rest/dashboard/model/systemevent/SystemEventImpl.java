@@ -44,8 +44,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.ikasan.spec.systemevent.SystemEvent;
 
 import java.util.Date;
-import java.util.Objects;
-import java.util.StringJoiner;
 
 @JsonIgnoreProperties(value = { "harvested",  "harvestedDateTime"})
 public class SystemEventImpl implements SystemEvent

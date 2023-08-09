@@ -4,6 +4,7 @@
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "MANUAL",
+  "ordinal" : -1,
   "cronExpression" : "cronExpression",
   "jobGroup" : "jobGroup",
   "timeZone" : "timezone",

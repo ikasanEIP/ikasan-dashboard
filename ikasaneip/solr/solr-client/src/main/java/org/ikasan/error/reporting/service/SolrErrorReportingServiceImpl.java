@@ -1,19 +1,12 @@
 package org.ikasan.error.reporting.service;
 
 import org.ikasan.error.reporting.dao.SolrErrorReportingServiceDao;
-import org.ikasan.error.reporting.model.SolrErrorOccurrence;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
-import org.ikasan.spec.error.reporting.ErrorReportingManagementService;
-import org.ikasan.spec.error.reporting.ErrorReportingService;
-import org.ikasan.spec.error.reporting.ErrorReportingServiceDao;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.search.PagedSearchResult;
 import org.ikasan.spec.solr.SolrService;
 import org.ikasan.spec.solr.SolrServiceBase;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Ikasan Development Team on 23/09/2017.

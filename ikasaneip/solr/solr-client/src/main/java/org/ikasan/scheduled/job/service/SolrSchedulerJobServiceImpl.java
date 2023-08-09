@@ -2,7 +2,6 @@ package org.ikasan.scheduled.job.service;
 
 import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.model.*;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;

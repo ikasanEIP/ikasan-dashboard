@@ -1,16 +1,14 @@
 package org.ikasan.vaadin.visjs.network.options;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.Nonnull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.ikasan.vaadin.visjs.network.options.edges.Edges;
 import org.ikasan.vaadin.visjs.network.options.edges.Layout;
 import org.ikasan.vaadin.visjs.network.options.nodes.Nodes;
 import org.ikasan.vaadin.visjs.network.options.physics.Physics;
+
+import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Options {
 

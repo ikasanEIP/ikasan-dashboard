@@ -1,7 +1,6 @@
 package org.ikasan.vaadin.visjs.network.listener;
 
 import com.vaadin.flow.component.ComponentEventListener;
-
 import org.ikasan.vaadin.visjs.network.event.DeselectEdgeEvent;
 
 /**

@@ -23,7 +23,6 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
-import nc.unc.vaadin.flow.polymer.iron.icons.IronImageIcons;
 import org.ikasan.designer.action.IgnoreSaveAndNavigateAction;
 import org.ikasan.designer.action.IgnoreSaveAndNewAction;
 import org.ikasan.designer.action.IgnoreSaveAndOpenAction;

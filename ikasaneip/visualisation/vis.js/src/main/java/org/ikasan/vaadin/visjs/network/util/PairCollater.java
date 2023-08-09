@@ -1,9 +1,9 @@
 package org.ikasan.vaadin.visjs.network.util;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Maps steam of objects to pairs.

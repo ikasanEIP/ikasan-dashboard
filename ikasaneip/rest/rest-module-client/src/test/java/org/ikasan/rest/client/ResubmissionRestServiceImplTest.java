@@ -1,11 +1,7 @@
 package org.ikasan.rest.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.ikasan.rest.client.ResubmissionRestServiceImpl;
-import org.ikasan.rest.client.dto.TriggerDto;
-import org.ikasan.spec.trigger.TriggerRelationship;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;

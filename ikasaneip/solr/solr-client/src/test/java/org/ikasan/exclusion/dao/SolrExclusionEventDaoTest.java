@@ -3,8 +3,6 @@ package org.ikasan.exclusion.dao;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.error.reporting.dao.SolrErrorReportingServiceDao;
-import org.ikasan.error.reporting.model.SolrErrorOccurrence;
 import org.ikasan.exclusion.model.SolrExclusionEventImpl;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.jmock.Expectations;

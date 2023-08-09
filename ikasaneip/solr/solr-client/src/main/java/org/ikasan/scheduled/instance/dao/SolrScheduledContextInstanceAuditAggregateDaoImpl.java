@@ -6,7 +6,6 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceAuditAggregateRecordImpl;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;

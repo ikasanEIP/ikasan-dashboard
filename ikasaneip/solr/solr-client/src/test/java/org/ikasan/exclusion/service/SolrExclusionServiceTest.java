@@ -4,9 +4,7 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
-import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.exclusion.dao.SolrExclusionEventDao;
 import org.ikasan.exclusion.model.SolrExclusionEventImpl;
 import org.ikasan.spec.exclusion.ExclusionEvent;
@@ -17,7 +15,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**

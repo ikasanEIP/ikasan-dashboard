@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.configurationService.metadata.ConfigurationMetaDataImpl;
 import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
-import org.ikasan.rest.client.dto.ModuleDto;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,7 +23,6 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;

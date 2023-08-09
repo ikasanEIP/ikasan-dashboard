@@ -2,11 +2,10 @@ package org.ikasan.vaadin.visjs.network.event;
 
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
-
-import org.ikasan.vaadin.visjs.network.NetworkDiagram;
-import org.ikasan.vaadin.visjs.network.api.Event;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
+import org.ikasan.vaadin.visjs.network.NetworkDiagram;
+import org.ikasan.vaadin.visjs.network.api.Event;
 
 @SuppressWarnings("serial")
 @DomEvent("vaadin-initRedraw")

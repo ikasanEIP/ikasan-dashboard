@@ -1,7 +1,7 @@
 package org.ikasan.scheduled.converter;
 
-import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.event.model.ScheduleProcessConfigurationBucket;
+import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.event.model.ScheduledProcessConfigurationConstants;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;

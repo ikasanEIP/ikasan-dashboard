@@ -3,8 +3,6 @@ package org.ikasan.designer.pallet;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.server.StreamResource;
 
-import java.util.UUID;
-
 public abstract class DesignerPalletImageItem extends Image implements DesignerPalletItem<Image>  {
     private String identifier;
     private DesignerPalletItemType designerPalletItemType;

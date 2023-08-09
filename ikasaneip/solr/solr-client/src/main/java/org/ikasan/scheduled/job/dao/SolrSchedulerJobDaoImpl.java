@@ -2,7 +2,6 @@ package org.ikasan.scheduled.job.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
@@ -15,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     implements SchedulerJobDao<SchedulerJobRecord> {

@@ -1,12 +1,11 @@
 package org.ikasan.vaadin.visjs.network.options.edges;
 
-import javax.annotation.Nonnull;
-
-import org.apache.commons.lang3.ObjectUtils;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.apache.commons.lang3.ObjectUtils;
+
+import javax.annotation.Nonnull;
 
 @JsonDeserialize(builder = Smooth.Builder.class)
 public class Smooth {

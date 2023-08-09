@@ -1,8 +1,6 @@
 package org.ikasan.scheduled.profile.service;
 
 import org.ikasan.scheduled.profile.dao.SolrContextProfileDaoImpl;
-import org.ikasan.scheduled.profile.model.SolrContextProfileImpl;
-import org.ikasan.spec.scheduled.profile.dao.ContextProfileDao;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;

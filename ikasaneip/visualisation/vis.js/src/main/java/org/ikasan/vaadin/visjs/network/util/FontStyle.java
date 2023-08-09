@@ -1,8 +1,8 @@
 package org.ikasan.vaadin.visjs.network.util;
 
-import javax.annotation.Nonnull;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import javax.annotation.Nonnull;
 
 @JsonDeserialize(builder = FontStyle.Builder.class)
 public class FontStyle {

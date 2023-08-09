@@ -1,13 +1,5 @@
 package org.ikasan.scheduled.instance.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.stream.IntStream;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.solr.SolrTestCaseJ4;
@@ -15,7 +7,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.context.model.SolrContextParameterImpl;
 import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduled.event.model.SolrDryRunParameters;
@@ -24,19 +15,25 @@ import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditAggreg
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl;
 import org.ikasan.scheduled.instance.model.*;
-import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.FileSystemUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 {
 

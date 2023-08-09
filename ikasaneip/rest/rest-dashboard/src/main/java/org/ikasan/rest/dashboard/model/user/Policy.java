@@ -40,12 +40,8 @@
  */
 package org.ikasan.rest.dashboard.model.user;
 
-import org.ikasan.security.model.PolicyLink;
-import org.springframework.security.core.GrantedAuthority;
-
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Set;
 
 /**
  * @author Ikasan Development Team

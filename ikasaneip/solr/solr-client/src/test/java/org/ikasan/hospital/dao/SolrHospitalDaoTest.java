@@ -3,8 +3,6 @@ package org.ikasan.hospital.dao;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.exclusion.dao.SolrExclusionEventDao;
-import org.ikasan.exclusion.model.SolrExclusionEventImpl;
 import org.ikasan.hospital.model.SolrExclusionEventActionImpl;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.jmock.Expectations;

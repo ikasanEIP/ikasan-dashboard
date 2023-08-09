@@ -1,8 +1,8 @@
 package org.ikasan.vaadin.visjs.network.options.edges;
 
-import javax.annotation.Nonnull;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import javax.annotation.Nonnull;
 
 @JsonDeserialize(builder = EdgeColor.Builder.class)
 public class EdgeColor {

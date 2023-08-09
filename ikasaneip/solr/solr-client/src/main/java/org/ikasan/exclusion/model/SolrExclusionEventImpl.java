@@ -43,8 +43,6 @@ package org.ikasan.exclusion.model;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.spec.exclusion.ExclusionEvent;
 
-import java.util.Arrays;
-
 /**
  * ExclusionEvent window instance.
  *
