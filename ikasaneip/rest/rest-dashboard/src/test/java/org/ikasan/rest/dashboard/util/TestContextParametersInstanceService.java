@@ -1,15 +1,15 @@
 package org.ikasan.rest.dashboard.util;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TestContextParametersInstanceService implements ContextParametersInstanceService {
 

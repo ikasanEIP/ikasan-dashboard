@@ -2,15 +2,10 @@ package org.ikasan.rest.client;
 
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.ikasan.rest.client.ReplayRestServiceImpl;
-import org.ikasan.rest.client.dto.TriggerDto;
-import org.ikasan.spec.trigger.TriggerRelationship;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;

@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * House keeping related configuration required by dashboard.

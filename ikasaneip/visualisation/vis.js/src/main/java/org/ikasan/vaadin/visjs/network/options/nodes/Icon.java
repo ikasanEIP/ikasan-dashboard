@@ -1,8 +1,8 @@
 package org.ikasan.vaadin.visjs.network.options.nodes;
 
-import javax.annotation.Nonnull;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import javax.annotation.Nonnull;
 
 @JsonDeserialize(builder = Icon.Builder.class)
 public class Icon {

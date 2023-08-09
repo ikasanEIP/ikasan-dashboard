@@ -2,14 +2,9 @@ package org.ikasan.scheduled.joblock.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
-import org.ikasan.spec.scheduled.context.model.JobLockHolder;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.solr.SolrDaoBase;

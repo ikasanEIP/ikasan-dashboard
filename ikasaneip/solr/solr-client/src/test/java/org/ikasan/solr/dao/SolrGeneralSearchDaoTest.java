@@ -13,7 +13,10 @@ import org.ikasan.solr.model.IkasanSolrDocument;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.FileSystemUtils;
 

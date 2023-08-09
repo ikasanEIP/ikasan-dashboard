@@ -5,15 +5,10 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
-import org.ikasan.exclusion.dao.SolrExclusionEventDao;
-import org.ikasan.exclusion.model.SolrExclusionEventImpl;
 import org.ikasan.exclusion.service.SolrExclusionServiceImpl;
 import org.ikasan.hospital.dao.SolrHospitalDao;
 import org.ikasan.hospital.model.SolrExclusionEventActionImpl;
-import org.ikasan.spec.exclusion.ExclusionEvent;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
-import org.ikasan.spec.persistence.BatchInsert;
 import org.junit.Test;
 import org.springframework.test.annotation.DirtiesContext;
 

@@ -1,9 +1,8 @@
 package org.ikasan.vaadin.visjs.network.api;
 
 import com.vaadin.flow.component.ComponentEvent;
-
-import org.ikasan.vaadin.visjs.network.NetworkDiagram;
 import elemental.json.JsonObject;
+import org.ikasan.vaadin.visjs.network.NetworkDiagram;
 
 @SuppressWarnings("serial")
 public abstract class Event extends ComponentEvent<NetworkDiagram> {

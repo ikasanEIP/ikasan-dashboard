@@ -1,14 +1,12 @@
 package org.ikasan.vaadin.visjs.network.options.nodes;
 
-import javax.annotation.Nonnull;
-
-import org.apache.commons.lang3.ObjectUtils;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
+import org.apache.commons.lang3.ObjectUtils;
 import org.ikasan.vaadin.visjs.network.util.SimpleColor;
+
+import javax.annotation.Nonnull;
 
 @JsonDeserialize(builder = NodeColor.Builder.class)
 public class NodeColor {

@@ -12,7 +12,6 @@ import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.context.model.SolrContextTemplateImpl;
 import org.ikasan.scheduled.context.model.SolrJobLockImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
-import org.ikasan.scheduled.context.service.SolrScheduledContextServiceImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;

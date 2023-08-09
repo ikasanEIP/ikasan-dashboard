@@ -1,7 +1,5 @@
 package org.ikasan.designer.json;
 
-import com.helger.commons.state.EContinue;
-import com.vaadin.flow.component.html.Image;
 import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.json.JSONArray;
 import org.json.JSONObject;

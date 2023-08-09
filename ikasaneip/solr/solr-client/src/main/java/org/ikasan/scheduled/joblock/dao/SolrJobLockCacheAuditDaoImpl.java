@@ -1,7 +1,7 @@
 package org.ikasan.scheduled.joblock.dao;
 
-import java.util.UUID;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
@@ -13,8 +13,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
 
 public class SolrJobLockCacheAuditDaoImpl extends SolrDaoBase<JobLockCacheAuditRecord> implements JobLockCacheAuditDao {
     private static final String JOB_LOCK_AUDIT_CACHE_TYPE = "jockLockCacheRecordAudit";

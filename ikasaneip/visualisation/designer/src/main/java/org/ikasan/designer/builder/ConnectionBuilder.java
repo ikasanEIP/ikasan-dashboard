@@ -2,7 +2,6 @@ package org.ikasan.designer.builder;
 
 import org.ikasan.designer.model.Connection;
 import org.ikasan.designer.model.ConnectionDetails;
-import org.ikasan.designer.model.Port;
 import org.ikasan.designer.model.Vertex;
 
 import java.util.ArrayList;

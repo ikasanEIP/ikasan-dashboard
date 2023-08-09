@@ -1,13 +1,11 @@
 package org.ikasan.scheduled.job.model;
 
-import java.util.*;
-
 import org.ikasan.spec.scheduled.context.model.AbstractJobLockHolder;
-import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
+
+import java.util.*;
 
 public class SolrJobLockHolderImpl extends AbstractJobLockHolder implements JobLockHolder {
     private String lockName;

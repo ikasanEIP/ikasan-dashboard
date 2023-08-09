@@ -1,11 +1,8 @@
 package org.ikasan.rest.client;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,12 +13,14 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.junit.Assert.assertEquals;
 
 public class LogStreamingServiceRestImplTest {
 

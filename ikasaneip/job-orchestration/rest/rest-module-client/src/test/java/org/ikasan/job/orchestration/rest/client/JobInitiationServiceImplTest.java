@@ -459,6 +459,21 @@ public class JobInitiationServiceImplTest {
             public Map<String, Boolean> getHeldContexts() {
                 return null;
             }
+
+            @Override
+            public String getAggregateJobName() {
+                return SchedulerJob.super.getAggregateJobName();
+            }
+
+            @Override
+            public void setOrdinal(int ordinal) {
+
+            }
+
+            @Override
+            public int getOrdinal() {
+                return 0;
+            }
         };
     }
 }

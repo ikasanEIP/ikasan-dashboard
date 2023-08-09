@@ -1,17 +1,11 @@
 package org.ikasan.vaadin.visjs.network.options.nodes;
 
-import javax.annotation.Nonnull;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.ikasan.vaadin.visjs.network.util.*;
 
-import org.ikasan.vaadin.visjs.network.util.Fixed;
-import org.ikasan.vaadin.visjs.network.util.Font;
-import org.ikasan.vaadin.visjs.network.util.Scaling;
-import org.ikasan.vaadin.visjs.network.util.Shadow;
-import org.ikasan.vaadin.visjs.network.util.Shape;
-import org.ikasan.vaadin.visjs.network.util.ShapeProperties;
+import javax.annotation.Nonnull;
 
 /**
  */

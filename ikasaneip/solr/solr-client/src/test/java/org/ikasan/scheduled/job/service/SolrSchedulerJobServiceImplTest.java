@@ -6,7 +6,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.model.*;

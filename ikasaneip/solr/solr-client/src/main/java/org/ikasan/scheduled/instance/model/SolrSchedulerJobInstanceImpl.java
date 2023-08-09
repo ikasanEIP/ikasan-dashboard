@@ -9,8 +9,6 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.StatefulEntity;
 
-import java.util.Objects;
-
 public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implements SchedulerJobInstance, StatefulEntity {
     private String contextInstanceId;
     private String childContextName;

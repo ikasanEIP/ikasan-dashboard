@@ -1,17 +1,15 @@
 package org.ikasan.vaadin.visjs.network.options.edges;
 
-import javax.annotation.Nonnull;
-
-import org.apache.commons.lang3.ObjectUtils;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
+import org.apache.commons.lang3.ObjectUtils;
 import org.ikasan.vaadin.visjs.network.util.Font;
 import org.ikasan.vaadin.visjs.network.util.Scaling;
 import org.ikasan.vaadin.visjs.network.util.Shadow;
+
+import javax.annotation.Nonnull;
 
 @JsonDeserialize(builder = Edges.Builder.class)
 public class Edges {

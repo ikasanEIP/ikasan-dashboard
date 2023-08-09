@@ -2,16 +2,11 @@ package org.ikasan.replay.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.replay.model.SolrReplayAudit;
 import org.ikasan.replay.model.SolrReplayAuditEvent;
-import org.ikasan.replay.model.SolrReplayEvent;
 import org.ikasan.spec.replay.ReplayAudit;
-import org.ikasan.spec.replay.ReplayAuditEvent;
 import org.ikasan.spec.solr.SolrDaoBase;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.Assert;
 import org.junit.Test;
 

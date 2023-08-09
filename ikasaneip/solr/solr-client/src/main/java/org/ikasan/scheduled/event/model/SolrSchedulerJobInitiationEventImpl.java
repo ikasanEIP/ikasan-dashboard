@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.event.model;
 
-import java.util.List;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -10,6 +8,8 @@ import org.ikasan.scheduled.instance.model.SolrContextParameterInstanceImpl;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+
+import java.util.List;
 
 public class SolrSchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<SolrContextParameterInstanceImpl, InternalEventDrivenJobInstance, SolrDryRunParameters> {
     private String agentName;

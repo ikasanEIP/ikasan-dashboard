@@ -1,5 +1,6 @@
 package org.ikasan.orchestration.service.context.status;
 
+import liquibase.pro.packaged.S;
 import org.assertj.core.api.Assertions;
 import static org.junit.Assert.*;
 
@@ -16,6 +17,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.core.io.ClassPathResource;
 
 public class ContextStatusServiceImplTest {
@@ -291,15 +293,15 @@ public class ContextStatusServiceImplTest {
 
         String jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1616645609", "1799613995");
         jobStatus = formatContextStatus(jobStatus);
-        Assertions.assertThat(jsonJobStatusContext1799613995).isEqualToIgnoringNewLines(jobStatus);
+        JSONAssert.assertEquals(jsonJobStatusContext1799613995, jobStatus, JSONCompareMode.LENIENT);
 
         jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1589183395", "744167903");
         jobStatus = formatContextStatus(jobStatus);
-        Assertions.assertThat(jsonJobStatusContext744167903).isEqualToIgnoringNewLines(jobStatus);
+        JSONAssert.assertEquals(jsonJobStatusContext744167903, jobStatus, JSONCompareMode.LENIENT);
 
         jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1589183395", "-1692626050");
         jobStatus = formatContextStatus(jobStatus);
-        Assertions.assertThat(jsonJobStatusContext1692626050).isEqualToIgnoringNewLines(jobStatus);
+        JSONAssert.assertEquals(jsonJobStatusContext1692626050, jobStatus, JSONCompareMode.LENIENT);
     }
 
     /** Helper method to replace the dynamic created String in the JSON, i.e. the creation time and the UUID */

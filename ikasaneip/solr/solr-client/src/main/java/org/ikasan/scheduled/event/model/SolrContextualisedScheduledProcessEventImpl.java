@@ -1,8 +1,5 @@
 package org.ikasan.scheduled.event.model;
 
-import java.io.Serializable;
-import java.util.List;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -10,6 +7,9 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+
+import java.io.Serializable;
+import java.util.List;
 
 public class SolrContextualisedScheduledProcessEventImpl implements ContextualisedScheduledProcessEvent<String, SolrDryRunParameters>, Serializable {
     private Long id;

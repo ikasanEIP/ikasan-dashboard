@@ -26,7 +26,10 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialis
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;

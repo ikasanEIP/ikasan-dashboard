@@ -13,8 +13,6 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
-
 public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<ScheduledContextInstanceRecord> implements ScheduledContextInstanceAuditDao {
     private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
 

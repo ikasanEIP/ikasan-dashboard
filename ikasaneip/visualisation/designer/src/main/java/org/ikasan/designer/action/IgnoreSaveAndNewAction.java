@@ -1,7 +1,6 @@
 package org.ikasan.designer.action;
 
 import org.ikasan.designer.DesignerCanvas;
-import org.ikasan.designer.function.OpenFunction;
 
 public class IgnoreSaveAndNewAction implements DesignerAction {
 

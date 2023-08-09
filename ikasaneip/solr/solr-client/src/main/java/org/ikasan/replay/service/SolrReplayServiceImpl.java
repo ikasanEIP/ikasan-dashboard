@@ -2,11 +2,10 @@ package org.ikasan.replay.service;
 
 import org.ikasan.replay.dao.SolrReplayDao;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.replay.*;
+import org.ikasan.spec.replay.ReplayEvent;
 import org.ikasan.spec.solr.SolrService;
 import org.ikasan.spec.solr.SolrServiceBase;
 
-import java.util.Date;
 import java.util.List;
 
 /**
