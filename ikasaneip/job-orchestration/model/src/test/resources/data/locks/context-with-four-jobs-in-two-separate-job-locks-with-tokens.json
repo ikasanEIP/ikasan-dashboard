@@ -5,30 +5,35 @@
       "agentName": "[[agent.name]]",
       "jobName": "jobName1",
       "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
       "identifier": "[[agent.name]]-jobName1"
     },
     {
       "agentName": "[[agent.name]]",
       "jobName": "jobName2",
       "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
       "identifier": "[[agent.name]]-jobName2"
     },
     {
       "agentName": "[[agent.name]]",
       "jobName": "jobName3",
       "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
       "identifier": "[[agent.name]]-jobName3"
     },
     {
       "agentName": "[[agent.name]]",
       "jobName": "jobName4",
       "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
       "identifier": "[[agent.name]]-jobName4"
     },
     {
       "agentName": "[[agent.name]]",
       "jobName": "jobName5",
       "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
       "identifier": "[[agent.name]]-jobName5"
     }
   ],
@@ -42,9 +47,10 @@
             "agentName": "[[agent.name]]",
             "jobName": "jobName3",
             "startupControlType": "AUTOMATIC",
+            "ordinal": -1,
             "lockCount": 1,
-            "identifier": "[[agent.name]]-jobName3",
-            "jobDescription": "Job3 Description"
+            "jobDescription": "Job3 Description",
+            "identifier": "[[agent.name]]-jobName3"
           }
         ],
         "context1": [
@@ -52,9 +58,10 @@
             "agentName": "[[agent.name]]",
             "jobName": "jobName2",
             "startupControlType": "AUTOMATIC",
+            "ordinal": -1,
             "lockCount": 1,
-            "identifier": "[[agent.name]]-jobName2",
-            "jobDescription": "Job2 Description"
+            "jobDescription": "Job2 Description",
+            "identifier": "[[agent.name]]-jobName2"
           }
         ]
       },
@@ -69,9 +76,10 @@
             "agentName": "[[agent.name]]",
             "jobName": "jobName5",
             "startupControlType": "AUTOMATIC",
+            "ordinal": -1,
             "lockCount": 1,
-            "identifier": "[[agent.name]]-jobName5",
-            "jobDescription": "Job5 Description"
+            "jobDescription": "Job5 Description",
+            "identifier": "[[agent.name]]-jobName5"
           }
         ],
         "context1": [
@@ -79,9 +87,10 @@
             "agentName": "[[agent.name]]",
             "jobName": "jobName4",
             "startupControlType": "AUTOMATIC",
+            "ordinal": -1,
             "lockCount": 1,
-            "identifier": "[[agent.name]]-jobName4",
-            "jobDescription": "Job5 Description"
+            "jobDescription": "Job5 Description",
+            "identifier": "[[agent.name]]-jobName4"
           }
         ]
       },
