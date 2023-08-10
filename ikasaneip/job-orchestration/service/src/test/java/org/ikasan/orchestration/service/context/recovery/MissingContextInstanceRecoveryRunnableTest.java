@@ -110,6 +110,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         record = new ScheduledContextRecordImpl();
         record.setContextName(contextName);
         ContextTemplateImpl context = new ContextTemplateImpl();
+        context.setTimeWindowStart("0 0 0 2 3 ? 1999");
         context.setName(contextName);
         record.setContext(context);
 

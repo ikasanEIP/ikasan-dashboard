@@ -393,4 +393,21 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         });
         return results;
     }
+
+    @Override
+    public void deleteSchedulerJobInstances(String contextInstanceId) {
+        StringBuffer queryBuffer = new StringBuffer(COMPONENT_NAME).append(COLON).append("\"").append(contextInstanceId).append("\"")
+            .append(AND)
+            .append(OPEN_BRACKET)
+            .append(TYPE).append(COLON).append(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)
+            .append(OR)
+            .append(TYPE).append(COLON).append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)
+            .append(OR)
+            .append(TYPE).append(COLON).append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)
+            .append(OR)
+            .append(TYPE).append(COLON).append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)
+            .append(CLOSE_BRACKET);
+
+        super.deleteByQuery(queryBuffer.toString());
+    }
 }

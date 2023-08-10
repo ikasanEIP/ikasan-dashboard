@@ -109,6 +109,11 @@ public class StubSchedulerJobInstanceServiceTestImpl implements SchedulerJobInst
         return null;
     }
 
+    @Override
+    public void deleteSchedulerJobInstances(String contextInstanceId) {
+
+    }
+
     public class SearchResultsStubImpl<T> implements SearchResults<T> {
         private List<T> results;
         private long totalNumberOfResults;

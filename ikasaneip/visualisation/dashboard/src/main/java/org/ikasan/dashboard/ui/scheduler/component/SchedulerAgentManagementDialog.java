@@ -6,6 +6,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
@@ -62,11 +63,13 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
             SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN,
             SecurityConstants.SCHEDULER_ALL_WRITE);
-        formLayout.add(downloadLogFileButton, 2);
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(agentDetails, formLayout);
+        layout.add(agentDetails, formLayout, downloadLogFileButton);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadLogFileButton);
+        downloadLogFileButton.getElement().getStyle().set("position", "absolute");
+        downloadLogFileButton.getElement().getStyle().set("bottom", "30px");
         super.content.add(layout);
     }
 }

@@ -5,9 +5,12 @@ import liquibase.pro.packaged.L;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
@@ -22,6 +25,7 @@ import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
@@ -39,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 public abstract class ContextInstanceServiceBase {
@@ -259,18 +264,21 @@ public abstract class ContextInstanceServiceBase {
 
         if (isInitialContextInstantiation) {
             instance.setStartTime(System.currentTimeMillis());
-            instance.setProjectedEndTime(instance.getStartTime()+instance.getContextTtlMilliseconds());
+            instance.setProjectedEndTime(CronUtils.getEpochMilliOfPreviousFireTime(instance.getTimeWindowStart())+instance.getContextTtlMilliseconds());
             this.saveContextInstance(instance, InstanceStatus.WAITING);
         }
 
         ContextMachineCache.instance().put(contextMachine);
     }
 
-    protected void prepareContextInstance(ContextTemplate context, ContextInstance instance) throws Exception {
+    protected void prepareContextInstance(ContextTemplate context, ContextInstance instance, boolean initialiseJobs) throws Exception {
 
         SchedulerJobInstancesInitialisationParameters parameters
             = new SchedulerJobInstancesInitialisationParametersImpl(false);
-        schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance, parameters);
+
+        if(initialiseJobs) {
+            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance, parameters);
+        }
 
 
         Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
@@ -347,6 +355,47 @@ public abstract class ContextInstanceServiceBase {
             schedulerJobStateChangeEventBroadcaster.broadcast(event));
 
         ContextMachineCache.instance().put(contextMachine);
+    }
+
+    protected void prepareFutureContextInstance(String contextName) {
+        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
+        if (scheduledContextRecord == null) {
+            final String message = String.format("Could not find scheduledContextRecord for context name [%s] when attempting to prepare instance!", contextName);
+            LOG.error(message);
+            throw new RuntimeException(message);
+        }
+
+        if (scheduledContextRecord.isDisabled()) {
+            LOG.info(String.format("Context name [%s] is disabled and will not be prepared!", contextName));
+            return;
+        }
+
+        try {
+            byte[] scheduledContextRecordContext = objectMapper.writeValueAsBytes(scheduledContextRecord.getContext());
+            ContextTemplate context = objectMapper.readValue(scheduledContextRecordContext, ContextTemplateImpl.class);
+            List<ContextInstance> contextInstances = this.findPrepared(context.getName());
+
+            ContextInstanceImpl preparedFutureContextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
+            preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(context.getTimeWindowStart()
+                , context.getBlackoutWindowCronExpressions(), context.getBlackoutWindowDateTimeRanges(), context.getTimezone()));
+
+            AtomicBoolean preparedInstanceExists = new AtomicBoolean(false);
+
+            contextInstances.forEach(contextInstance -> {
+                if(preparedFutureContextInstance.getStartTime() == contextInstance.getStartTime()) {
+                    preparedInstanceExists.set(true);
+                }
+            });
+
+            if(!preparedInstanceExists.get() && preparedFutureContextInstance.getStartTime() > 0) {
+                this.prepareContextInstance(context, preparedFutureContextInstance, true);
+                this.saveContextInstance(preparedFutureContextInstance, InstanceStatus.PREPARED);
+            }
+
+        } catch (Exception e) {
+            LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
+            throw new RuntimeException(e);
+        }
     }
 
     protected void removeAgentInstances(ContextInstance instance) {
@@ -465,5 +514,26 @@ public abstract class ContextInstanceServiceBase {
         return results.getResultList().stream()
             .map(scheduledContextInstanceRecord -> scheduledContextInstanceRecord.getContextInstance())
             .collect(Collectors.toList());
+    }
+
+    protected void removeAllPrepared(String contextName) {
+        ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStatus(InstanceStatus.PREPARED.name());
+        filter.setContextSearchFilter(contextName);
+
+        SearchResults<ScheduledContextInstanceRecord> results = this.scheduledContextInstanceService
+            .getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+
+
+        results.getResultList().forEach(scheduledContextInstanceRecord -> {
+            this.schedulerJobInstanceService.deleteSchedulerJobInstances(scheduledContextInstanceRecord.getContextInstanceId());
+            this.scheduledContextInstanceService.deleteById(scheduledContextInstanceRecord.getId());
+        });
+    }
+
+    protected void removeContextInstance(String contextInstanceId) {
+        this.scheduledContextInstanceService.deleteById(contextInstanceId);
+        this.schedulerJobInstanceService.deleteSchedulerJobInstances(contextInstanceId);
     }
 }

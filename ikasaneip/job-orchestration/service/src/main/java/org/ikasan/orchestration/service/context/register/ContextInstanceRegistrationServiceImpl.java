@@ -237,7 +237,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 , scheduledContextRecord.getContext().getBlackoutWindowCronExpressions(), scheduledContextRecord.getContext().getBlackoutWindowDateTimeRanges()
                 , scheduledContextRecord.getContext().getTimezone()));
             this.saveContextInstance(preparedFutureContextInstance, InstanceStatus.PREPARED);
-            super.prepareContextInstance(scheduledContextRecord.getContext(), preparedFutureContextInstance);
+            super.prepareContextInstance(scheduledContextRecord.getContext(), preparedFutureContextInstance, true);
         }
         catch (Exception e) {
             LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
@@ -251,44 +251,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance registration will occur");
             return;
         }
-        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
-        if (scheduledContextRecord == null) {
-            final String message = String.format("Could not find scheduledContextRecord for context name [%s] when attempting to prepare instance!", contextName);
-            LOG.error(message);
-            throw new RuntimeException(message);
-        }
-
-        if (scheduledContextRecord.isDisabled()) {
-            LOG.info(String.format("Context name [%s] is disabled and will not be prepared!", contextName));
-            return;
-        }
-
-        try {
-            byte[] scheduledContextRecordContext = objectMapper.writeValueAsBytes(scheduledContextRecord.getContext());
-            ContextTemplate context = objectMapper.readValue(scheduledContextRecordContext, ContextTemplateImpl.class);
-            List<ContextInstance> contextInstances = this.findPrepared(context.getName());
-
-            ContextInstanceImpl preparedFutureContextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
-            preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(context.getTimeWindowStart()
-                , context.getBlackoutWindowCronExpressions(), context.getBlackoutWindowDateTimeRanges(), context.getTimezone()));
-
-            AtomicBoolean preparedInstanceExists = new AtomicBoolean(false);
-
-            contextInstances.forEach(contextInstance -> {
-                if(preparedFutureContextInstance.getStartTime() == contextInstance.getStartTime()) {
-                    preparedInstanceExists.set(true);
-                }
-            });
-
-            if(!preparedInstanceExists.get() && preparedFutureContextInstance.getStartTime() > 0) {
-                super.prepareContextInstance(context, preparedFutureContextInstance);
-                this.saveContextInstance(preparedFutureContextInstance, InstanceStatus.PREPARED);
-            }
-
-        } catch (Exception e) {
-            LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
-            throw new RuntimeException(e);
-        }
+        super.prepareFutureContextInstance(contextName);
     }
 
     /**
@@ -319,7 +282,9 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         }
 
         if (!scheduledContextRecord.getContext().isAbleToRunConcurrently()
-            && ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null) {
+            && ((ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null
+            && !ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()).getContext().getStatus().equals(InstanceStatus.PREPARED))
+            || (ContextMachineCache.instance().getAllByContextName(scheduledContextRecord.getContextName()).size() > 1))) {
             LOG.info(String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
                 "A new instance will not be created automatically.", contextName));
             systemEventService.logSystemEvent("Context Instance Not Created", String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
@@ -393,7 +358,9 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         }
 
         if (!scheduledContextRecord.getContext().isAbleToRunConcurrently()
-            && ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null) {
+            && ((ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null
+            && !ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()).getContext().getStatus().equals(InstanceStatus.PREPARED))
+            || (ContextMachineCache.instance().getAllByContextName(scheduledContextRecord.getContextName()).size() > 1))) {
             LOG.info(String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
                 "A new instance will not be created automatically.", contextName));
             systemEventService.logSystemEvent("Context Instance Not Created", String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +

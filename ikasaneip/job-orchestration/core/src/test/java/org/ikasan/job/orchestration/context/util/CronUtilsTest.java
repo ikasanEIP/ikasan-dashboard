@@ -91,6 +91,26 @@ public class CronUtilsTest {
     }
 
     @Test
+    public void test_get_previous_epoch_in_past() {
+        Assert.assertEquals(920332800000L, CronUtils.getEpochMilliOfPreviousFireTime("0 0 0 2 3 ? 1999"));
+
+        Calendar c = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        c.setTime(new Date(920332800000L));
+
+        Assert.assertEquals(2, c.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(Calendar.MARCH, c.get(Calendar.MONTH));
+        Assert.assertEquals(1999, c.get(Calendar.YEAR));
+        Assert.assertEquals(0, c.get(Calendar.HOUR));
+        Assert.assertEquals(0, c.get(Calendar.MINUTE));
+        Assert.assertEquals(0, c.get(Calendar.SECOND));
+    }
+
+    @Test
+    public void test_get_previous_epoch_in_future() {
+        Assert.assertEquals(-1, CronUtils.getEpochMilliOfPreviousFireTime("0 0 0 2 3 ? 2099"));
+    }
+
+    @Test
     public void test_duration_against_fire_time() {
         long twentyThreeHours = 23 * 60 * 60 * 1000;
         long threeHours = 3 * 60 * 60 * 1000;

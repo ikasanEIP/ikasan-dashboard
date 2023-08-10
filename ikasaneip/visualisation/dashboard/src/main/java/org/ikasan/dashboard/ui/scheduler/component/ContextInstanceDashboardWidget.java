@@ -230,7 +230,7 @@ public class ContextInstanceDashboardWidget extends Div
             contextInstanceAggregateJobStatusGrid.setHeight("90%");
         }
         else {
-            this.setHeight("600px");
+            this.setHeight("800px");
             contextInstanceAggregateJobStatusGrid.setHeight("80%");
         }
     }

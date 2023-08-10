@@ -389,4 +389,9 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
 
         return updatedRecords;
     }
+
+    @Override
+    public void deleteSchedulerJobInstances(String contextInstanceId) {
+        this.solrSchedulerJobInstanceDao.deleteSchedulerJobInstances(contextInstanceId);
+    }
 }

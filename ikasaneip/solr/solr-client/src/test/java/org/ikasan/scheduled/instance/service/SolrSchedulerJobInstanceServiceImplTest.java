@@ -757,6 +757,47 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
             });
     }
 
+    @Test
+    public void test_delete_by_context_instance_id() {
+        IntStream.range(0, 371).forEach(i -> {
+            this.service.save(this.createQuartzSchedulerJobInstanceRecord("contextInstance1",
+                "context1", "job1"+i));
+            this.service.save(this.createCommandExecutionJobInstanceRecord("contextInstance1",
+                "context1", "job1-1"+i, List.of(), false, InstanceStatus.WAITING));
+        });
+
+        IntStream.range(0, 275).forEach(i -> {
+            this.service.save(this.createQuartzSchedulerJobInstanceRecord("contextInstance2",
+                "context1", "job2"+i));
+        });
+
+        IntStream.range(0, 167).forEach(i -> {
+            this.service.save(this.createQuartzSchedulerJobInstanceRecord("contextInstance3",
+                "context2", "context2Job"+i));
+        });
+
+
+        this.service.deleteSchedulerJobInstances("contextInstance1");
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.service
+            .getSchedulerJobInstancesByContextInstanceId("contextInstance1", 1000, 0, null, null);
+
+        Assert.assertEquals(0, searchResults.getResultList().size());
+        Assert.assertEquals(0, searchResults.getTotalNumberOfResults());
+
+        searchResults = this.service
+            .getSchedulerJobInstancesByContextInstanceId("contextInstance2", 1000, 0, null, null);
+
+        Assert.assertEquals(275, searchResults.getResultList().size());
+        Assert.assertEquals(275, searchResults.getTotalNumberOfResults());
+
+        searchResults = this.service
+            .getSchedulerJobInstancesByContextInstanceId("contextInstance3", 1000, 0, null, null);
+
+        Assert.assertEquals(167, searchResults.getResultList().size());
+        Assert.assertEquals(167, searchResults.getTotalNumberOfResults());
+    }
+
     private SchedulerJobInstanceRecord createQuartzSchedulerJobInstanceRecord(String contextInstanceId, String contextName, String jobName) {
         SolrQuartzScheduleDrivenJobInstanceImpl solrSchedulerJobInstance = new SolrQuartzScheduleDrivenJobInstanceImpl();
         solrSchedulerJobInstance.setJobName(jobName);
