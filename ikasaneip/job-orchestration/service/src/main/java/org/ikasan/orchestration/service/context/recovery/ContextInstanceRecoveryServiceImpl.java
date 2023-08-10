@@ -180,25 +180,28 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             // We do not recover disabled contexts!
             if(context.isDisabled()) {
                 // Remove prepared context instances if they exist.
-                List<ContextInstance> contextInstances = this.findPrepared(context.getName());
-                contextInstances.forEach(contextInstance -> this.scheduledContextInstanceService.deleteById(contextInstance.getId()));
+                super.removeAllPrepared(context.getName());
                 Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because the context is disabled");
             }
             else {
                 try {
-                    List<ContextInstance> contextInstances = this.findPrepared(context.getName());
+                    List<ContextInstance> prepared = this.findPrepared(context.getName());
+                    List<ContextInstance> future = new ArrayList<>();
 
-                    if (contextInstances.isEmpty()) {
-                        byte[] contextBytes = objectMapper.writeValueAsBytes(context);
-                        ContextInstanceImpl preparedFutureContextInstance = objectMapper.readValue(contextBytes, ContextInstanceImpl.class);
-                        preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(context.getTimeWindowStart()
-                            , context.getBlackoutWindowCronExpressions(), context.getBlackoutWindowDateTimeRanges(), context.getTimezone()));
-                        this.saveContextInstance(preparedFutureContextInstance, InstanceStatus.PREPARED);
-                        contextInstances.add(preparedFutureContextInstance);
+                    for (ContextInstance contextInstance : prepared) {
+                        if (contextInstance.getStartTime() < System.currentTimeMillis()) {
+                            super.removeContextInstance(contextInstance.getId());
+                            if(contextNameToInstances.containsKey(contextInstance.getName())) {
+                                contextNameToInstances.get(contextInstance.getName()).remove(contextInstance);
+                            }
+                        } else {
+                            future.add(contextInstance);
+                            super.prepareContextInstance(context, contextInstance, false);
+                        }
                     }
 
-                    for (ContextInstance instance : contextInstances) {
-                        super.prepareContextInstance(context, instance);
+                    if (future.isEmpty()) {
+                        super.prepareFutureContextInstance(context.getName());
                     }
                 }
                 catch (Exception e) {

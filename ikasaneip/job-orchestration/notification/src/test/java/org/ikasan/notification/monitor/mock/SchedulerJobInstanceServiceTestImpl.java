@@ -142,4 +142,9 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
     public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstancesConsiderNonTargetedDuplication(List<String> contextInstanceIds) {
         return null;
     }
+
+    @Override
+    public void deleteSchedulerJobInstances(String contextInstanceId) {
+
+    }
 }

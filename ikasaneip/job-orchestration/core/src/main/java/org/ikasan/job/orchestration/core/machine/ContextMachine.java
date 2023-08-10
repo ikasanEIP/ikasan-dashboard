@@ -13,6 +13,7 @@ import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
@@ -271,7 +272,7 @@ public class ContextMachine {
             this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
 
             this.contextInstance.setStartTime(System.currentTimeMillis());
-            this.contextInstance.setProjectedEndTime(this.contextInstance.getStartTime()+this.contextInstance.getContextTtlMilliseconds());
+            this.contextInstance.setProjectedEndTime(CronUtils.getEpochMilliOfPreviousFireTime(this.contextInstance.getTimeWindowStart())+this.contextInstance.getContextTtlMilliseconds());
 
             this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl
                 (previousContextInstance.getId(), previousContextInstance, previousContextInstance.getStatus(), InstanceStatus.ENDED));

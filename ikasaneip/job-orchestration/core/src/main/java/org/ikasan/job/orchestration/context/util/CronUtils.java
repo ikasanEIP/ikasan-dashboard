@@ -127,6 +127,24 @@ public class CronUtils {
      * @param cronExpression
      * @return
      */
+    public static long getEpochMilliOfPreviousFireTime(String cronExpression) {
+        ZonedDateTime now = ZonedDateTime.now();
+        ExecutionTime executionTime = ExecutionTime.forCron(cronParser.parse(cronExpression));
+
+        Optional<ZonedDateTime> previousExecutionTime = executionTime.lastExecution(now);
+        if(previousExecutionTime.isPresent()) {
+            return previousExecutionTime.get().toInstant().toEpochMilli();
+        }
+
+        return -1;
+    }
+
+    /**
+     * Get the epoch in milliseconds of next fire time for cron expression.
+     *
+     * @param cronExpression
+     * @return
+     */
     public static long getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(String cronExpression, List<String> blackoutCronExpressions,
                                                                               Map<Long, Long> blackoutWindowDateTimeRanges, String timezone) {
         ZonedDateTime now = ZonedDateTime.now();
