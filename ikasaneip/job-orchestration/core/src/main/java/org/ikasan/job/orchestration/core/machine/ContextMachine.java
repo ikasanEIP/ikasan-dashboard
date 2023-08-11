@@ -415,7 +415,13 @@ public class ContextMachine {
         bigQueueMessageBuilder.withMessage(this.objectMapper.writeValueAsString(contextualisedScheduledProcessEvent))
             .withMessageId(UUID.randomUUID().toString())
             .withCreatedTime(System.currentTimeMillis());
-        this.inboundQueue.enqueue(this.objectMapper.writeValueAsBytes(bigQueueMessageBuilder.build()));
+
+        // We have the edge case where the inbound queue might have been torn down when an event
+        // is raised. If it has the inbound queue could be null so let's protect ourselves against
+        // that.
+        if(this.inboundQueue != null) {
+            this.inboundQueue.enqueue(this.objectMapper.writeValueAsBytes(bigQueueMessageBuilder.build()));
+        }
     }
 
 
