@@ -227,7 +227,8 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
             this.scheduledProcessProducerConnectionCallback.execute();
         }
         catch (Exception e) {
-            throw new XAException("Could not commit transaction!");
+            e.printStackTrace();
+            throw new XAException(String.format("Could not commit transaction! Cause[%s]", e.getMessage()));
         }
     }
 
@@ -263,7 +264,7 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
 
     @Override
     public void rollback(Xid xid) throws XAException {
-        logger.debug("commit");
+        logger.debug("rollback");
     }
 
     @Override
