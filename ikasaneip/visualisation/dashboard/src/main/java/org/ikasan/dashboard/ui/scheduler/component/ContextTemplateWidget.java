@@ -79,7 +79,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class    ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
+public class ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
     , ContextTemplateEnableDisableEventBroadcastListener, ContextTemplateSavedEventBroadcastListener {
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
@@ -625,8 +625,10 @@ public class    ContextTemplateWidget extends VerticalLayout implements ContextI
             ComponentSecurityVisibility.applySecurity(this.authentication, newContextInstance, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
                 , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
             newContextInstance.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(!scheduledContextRecord.getContext().isAbleToRunConcurrently()
-                    && ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null) {
+                if((!scheduledContextRecord.getContext().isAbleToRunConcurrently()
+                    && ((ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null
+                    && !ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()).getContext().getStatus().equals(InstanceStatus.PREPARED))
+                    || (ContextMachineCache.instance().getAllByContextName(scheduledContextRecord.getContextName()).size() > 1)))) {
                     NotificationHelper.showUserNotification(getTranslation("notification.cannot-create-new-instance-as-job-plan-not-concurrent"
                         , UI.getCurrent().getLocale()));
                     return;
