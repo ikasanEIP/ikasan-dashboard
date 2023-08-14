@@ -91,8 +91,8 @@ public class ScheduleProcessInboundProducerTest {
         scheduleProcessInboundProducer.commit(xid, true);
 
         verify(contextInstance).getName();
-        verify(contextInstance, times(2)).getId();
-        verify(contextMachine, times(4)).getContext();
+        verify(contextInstance, times(3)).getId();
+        verify(contextMachine, times(5)).getContext();
         verify(contextMachine).registerToNotificationMonitors();
         verify(contextMachine).eventReceived(anyString());
 
@@ -127,8 +127,8 @@ public class ScheduleProcessInboundProducerTest {
         scheduleProcessInboundProducer.commit(xid, true);
 
         verify(contextInstance, times(2)).getName();
-        verify(contextInstance, times(4)).getId();
-        verify(contextMachine, times(7)).getContext();
+        verify(contextInstance, times(5)).getId();
+        verify(contextMachine, times(8)).getContext();
         verify(contextMachine).registerToNotificationMonitors();
         verify(contextMachine).eventReceived(anyString());
 
