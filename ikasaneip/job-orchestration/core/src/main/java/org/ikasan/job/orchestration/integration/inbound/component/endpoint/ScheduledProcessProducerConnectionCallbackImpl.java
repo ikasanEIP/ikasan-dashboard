@@ -21,7 +21,7 @@ public class ScheduledProcessProducerConnectionCallbackImpl implements Scheduled
     @Override
     public void execute() throws IOException {
         // check to make sure the context machine exist to avoid null pointer exception at the point of commit
-        if(this.contextMachine.getContext() != null && ContextMachineCache.instance()
+        if(this.contextMachine != null && this.contextMachine.getContext() != null && ContextMachineCache.instance()
             .containsInstanceIdentifier(this.contextMachine.getContext().getId())) {
             this.contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextMachine.getContext().getId());
             if (this.contextMachine != null) {
@@ -31,5 +31,10 @@ public class ScheduledProcessProducerConnectionCallbackImpl implements Scheduled
         else {
             logger.info(String.format("Context machine not available in cache. Ignoring payload!. Payload[%s]", payload));
         }
+    }
+
+    @Override
+    public String getPayload() {
+        return payload;
     }
 }

@@ -410,8 +410,11 @@ public class ContextMachine {
      */
     public void eventReceived(String bigQueueMessage) throws IOException {
         // If the context machine is torn down we ignore the message.
-        if(!this.tornDown) {
+        if(!this.tornDown && this.inboundQueue != null) {
             this.inboundQueue.enqueue(bigQueueMessage.getBytes());
+        }
+        else {
+            logger.warn("Ignoring inbound message[{}], tornDown[{}]].", bigQueueMessage, tornDown);
         }
     }
 

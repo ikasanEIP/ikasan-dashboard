@@ -9,5 +9,11 @@ public interface ScheduledProcessProducerConnectionCallback {
      *
      * @throws IOException
      */
-    public void execute() throws IOException;
+    void execute() throws IOException;
+
+    /**
+     * Get the payload associated with the callback.
+     * @return
+     */
+    String getPayload();
 }
