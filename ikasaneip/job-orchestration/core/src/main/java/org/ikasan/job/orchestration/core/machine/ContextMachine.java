@@ -101,6 +101,7 @@ public class ContextMachine {
 
     private InboundQueueMessageRunner inboundQueueMessageRunner;
     private ContextStateHelper contextStateHelper;
+    private boolean tornDown = false;
 
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, GlobalEventJobInstance> globalEventJobInstanceMap,
@@ -318,6 +319,7 @@ public class ContextMachine {
      * @throws IOException
      */
     public void teardown() throws IOException {
+        this.tornDown = true;
         try {
             InstanceStatus previousStatus = contextInstance.getStatus();
             this.contextInstance.setStatus(InstanceStatus.ENDED);
@@ -407,7 +409,10 @@ public class ContextMachine {
      * @return
      */
     public void eventReceived(String bigQueueMessage) throws IOException {
-        this.inboundQueue.enqueue(bigQueueMessage.getBytes());
+        // If the context machine is torn down we ignore the message.
+        if(!this.tornDown) {
+            this.inboundQueue.enqueue(bigQueueMessage.getBytes());
+        }
     }
 
     public void raiseEvent(ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent) throws IOException {
