@@ -224,11 +224,12 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
     public void commit(Xid xid, boolean onePhase) throws XAException {
         logger.debug("commit");
         try {
-            this.scheduledProcessProducerConnectionCallback.execute();
+                this.scheduledProcessProducerConnectionCallback.execute();
         }
         catch (Exception e) {
             e.printStackTrace();
-            throw new XAException(String.format("Could not commit transaction! Cause[%s]", e.getMessage()));
+            logger.error("Could not commit transaction! Exception!", e);
+            throw new XAException(String.format("Could not commit transaction! Exception Class[%s], Message[%s]", e, e.getMessage()));
         }
     }
 
