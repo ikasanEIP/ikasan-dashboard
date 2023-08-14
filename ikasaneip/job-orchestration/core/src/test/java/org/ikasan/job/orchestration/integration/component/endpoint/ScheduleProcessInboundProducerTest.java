@@ -71,6 +71,7 @@ public class ScheduleProcessInboundProducerTest {
         when(contextMachine.getContext()).thenReturn(contextInstance);
         when(contextInstance.getName()).thenReturn("contextInstanceName");
         when(contextInstance.getId()).thenReturn("contextInstanceId");
+        when(contextInstance.getStatus()).thenReturn(InstanceStatus.RUNNING);
 
 
         ContextMachineCache.instance().put(contextMachine);
@@ -92,12 +93,51 @@ public class ScheduleProcessInboundProducerTest {
 
         verify(contextInstance).getName();
         verify(contextInstance, times(3)).getId();
-        verify(contextMachine, times(5)).getContext();
+        verify(contextMachine, times(8)).getContext();
         verify(contextMachine).registerToNotificationMonitors();
         verify(contextMachine).eventReceived(anyString());
+        verify(contextInstance, times(2)).getStatus();
 
         verifyNoMoreInteractions(contextInstance
             , contextMachine);
+    }
+
+    @Test
+    public void test_invoke_success_prepared_instance() throws IOException, XAException {
+        when(contextMachine.getContext()).thenReturn(contextInstance);
+        when(contextInstance.getName()).thenReturn("contextInstanceName");
+        when(contextInstance.getId()).thenReturn("contextInstanceId");
+        when(contextInstance.getStatus()).thenReturn(InstanceStatus.PREPARED);
+
+
+        ContextMachineCache.instance().put(contextMachine);
+
+        BigQueueMessageImpl<String> bigQueueMessage = new BigQueueMessageImpl();
+        ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
+        contextualisedScheduledProcessEvent.setContextInstanceId("contextInstanceId");
+
+        bigQueueMessage.setMessage(ObjectMapperFactory.newInstance().writeValueAsString(contextualisedScheduledProcessEvent));
+
+        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer(transactionManager, scheduledContextInstanceService, contextInstancePublicationService, moduleMetadataService);
+        ScheduleProcessInboundProducerConfiguration configuration = new ScheduleProcessInboundProducerConfiguration();
+        configuration.setIgnoreErrors(false);
+        scheduleProcessInboundProducer.setConfiguration(configuration);
+        scheduleProcessInboundProducer.setErrorReportingService(this.errorReportingService);
+
+
+        scheduleProcessInboundProducer.invoke(ObjectMapperFactory.newInstance().writeValueAsString(bigQueueMessage));
+        scheduleProcessInboundProducer.commit(xid, true);
+
+        verify(contextInstance, times(2)).getName();
+        verify(contextInstance, times(2)).getId();
+        verify(contextMachine, times(8)).getContext();
+        verify(contextMachine).registerToNotificationMonitors();
+        verify(contextInstance, times(3)).getStatus();
+        verify(this.errorReportingService).notify(any(String.class), any(String.class), any());
+
+        verifyNoMoreInteractions(contextInstance
+            , contextMachine
+            , this.errorReportingService);
     }
 
     @Test
@@ -105,6 +145,7 @@ public class ScheduleProcessInboundProducerTest {
         when(contextMachine.getContext()).thenReturn(contextInstance);
         when(contextInstance.getName()).thenReturn("contextInstanceName");
         when(contextInstance.getId()).thenReturn("contextInstanceId");
+        when(contextInstance.getStatus()).thenReturn(InstanceStatus.RUNNING);
 
 
         ContextMachineCache.instance().put(contextMachine);
@@ -128,7 +169,8 @@ public class ScheduleProcessInboundProducerTest {
 
         verify(contextInstance, times(2)).getName();
         verify(contextInstance, times(5)).getId();
-        verify(contextMachine, times(8)).getContext();
+        verify(contextMachine, times(11)).getContext();
+        verify(contextInstance, times(2)).getStatus();
         verify(contextMachine).registerToNotificationMonitors();
         verify(contextMachine).eventReceived(anyString());
 

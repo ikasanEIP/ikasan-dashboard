@@ -107,7 +107,8 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                     for (ScheduledContextInstanceRecord scheduledContextInstanceRecord : contextInstanceRecords.getResultList()) {
                         if (scheduledContextInstanceRecord.getContextName().equals(contextualisedScheduledProcessEvent.getContextName()) &&
                             scheduledContextInstanceRecord.getContextInstanceId().equals(contextualisedScheduledProcessEvent.getContextInstanceId()) &&
-                            (scheduledContextInstanceRecord.getContextInstance().getStatus().equals(InstanceStatus.ENDED)) || (scheduledContextInstanceRecord.getContextInstance().getStatus().equals(InstanceStatus.COMPLETE))) {
+                            (scheduledContextInstanceRecord.getContextInstance().getStatus().equals(InstanceStatus.ENDED))
+                            || (scheduledContextInstanceRecord.getContextInstance().getStatus().equals(InstanceStatus.COMPLETE))) {
 
                             String errorMessage = String.format("Context name[%s] and context instance id [%s] has the status of [%s], therefore this event will be discarded. No further action is required. " +
                                 "Active ContextMachineCache Contents - %s", contextualisedScheduledProcessEvent.getContextName(),
@@ -116,7 +117,10 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
 
                             this.removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
                             logger.warn(errorMessage);
-                            errorReportingService.notify(FLOW_NAME, payload, new InvalidContextInstanceIdException(errorMessage));
+                            if(this.errorReportingService != null) {
+                                errorReportingService.notify(FLOW_NAME, payload, new InvalidContextInstanceIdException(errorMessage));
+                            }
+
                             this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, null);
                             return;
                         }
@@ -137,6 +141,22 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                         "context machine instance id[%s] for context[%s]", contextualisedScheduledProcessEvent.getContextInstanceId(),
                         contextMachine.getContext().getId(), contextMachine.getContext().getName()));
                 }
+            }
+
+            if(contextMachine.getContext() != null && contextMachine.getContext().getStatus() != null
+                && contextMachine.getContext().getStatus().equals(InstanceStatus.PREPARED)) {
+                String errorMessage = String.format("Context name[%s] and context instance id [%s] has the status of [%s], therefore this event will be discarded. No further action is required. " +
+                        "Active ContextMachineCache Contents - %s", contextualisedScheduledProcessEvent.getContextName(),
+                    contextualisedScheduledProcessEvent.getContextInstanceId(), contextMachine.getContext().getStatus(),
+                    ContextMachineCache.instance().toString());
+
+                logger.warn(errorMessage);
+                if(this.errorReportingService != null) {
+                    errorReportingService.notify(FLOW_NAME, payload, new InvalidContextInstanceIdException(errorMessage));
+                }
+
+                this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, null);
+                return;
             }
 
             this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, contextMachine);
@@ -229,7 +249,8 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
         catch (Exception e) {
             e.printStackTrace();
             logger.error("Could not commit transaction! Exception!", e);
-            throw new XAException(String.format("Could not commit transaction! Exception Class[%s], Message[%s]", e, e.getMessage()));
+            throw new XAException(String.format("Could not commit transaction! Exception Class[%s], Message[%s], Payload"
+                , e, e.getMessage(), this.scheduledProcessProducerConnectionCallback.getPayload()));
         }
     }
 
