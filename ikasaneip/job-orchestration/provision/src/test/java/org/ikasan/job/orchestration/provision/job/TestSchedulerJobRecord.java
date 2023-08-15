@@ -32,6 +32,11 @@ public class TestSchedulerJobRecord implements SchedulerJobRecord<SchedulerJob> 
     }
 
     @Override
+    public String getDisplayName() {
+        return null;
+    }
+
+    @Override
     public String getContextName() {
         return null;
     }

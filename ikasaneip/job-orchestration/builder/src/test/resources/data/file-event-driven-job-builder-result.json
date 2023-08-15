@@ -1,6 +1,7 @@
 {
   "agentName" : "agentName",
   "jobName" : "jobName",
+  "displayName" : "displayName",
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "MANUAL",
@@ -31,6 +32,6 @@
   "ignoreFileRenameWhilstScanning" : false,
   "minFileAgeSeconds" : 180,
   "dropEventOnBlackout" : false,
-  "identifier" : "agentName-jobName",
-  "jobDescription" : "description"
+  "jobDescription" : "description",
+  "identifier" : "agentName-jobName"
 }

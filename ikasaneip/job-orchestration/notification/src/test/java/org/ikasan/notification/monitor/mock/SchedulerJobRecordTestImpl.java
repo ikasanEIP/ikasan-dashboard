@@ -15,6 +15,11 @@ public class SchedulerJobRecordTestImpl implements SchedulerJobRecord {
     }
 
     @Override
+    public String getDisplayName() {
+        return null;
+    }
+
+    @Override
     public String getType() {
         return null;
     }

@@ -24,6 +24,7 @@ public class GlobalEventJobBuilderTest extends AbstractTest {
             .addChildContextId("childContextId")
             .withDescription("description")
             .withJobName("jobName")
+            .withDisplayName("displayName")
             .withStartupControlType("MANUAL");
 
         JSONAssert.assertEquals(super.loadDataFile("/data/global-event-job-builder-result.json"),

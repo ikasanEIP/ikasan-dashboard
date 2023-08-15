@@ -39,7 +39,8 @@ public class InternalEventDrivenJobBuilderTest extends AbstractTest {
             .withContextName("contextId")
             .addChildContextId("childContextId")
             .withDescription("description")
-            .withJobName("jobName");
+            .withJobName("jobName")
+            .withDisplayName("displayName");
 
         JSONAssert.assertEquals(super.loadDataFile("/data/internal-event-driven-job-buildr-result.json"),
             service.getInternalEventDrivenJobString(internalEventDrivenJobBuilder.build()), JSONCompareMode.STRICT);

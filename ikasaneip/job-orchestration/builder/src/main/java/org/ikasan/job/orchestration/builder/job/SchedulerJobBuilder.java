@@ -10,6 +10,7 @@ import java.util.List;
 public class SchedulerJobBuilder {
     protected String agentName;
     protected String jobName;
+    protected String displayName;
     protected String contextName;
     protected List<String> childContextNames;
     protected String description;
@@ -107,6 +108,18 @@ public class SchedulerJobBuilder {
         return this;
     }
 
+    /**
+     * Set the display name.
+     *
+     * @param displayName
+     * @return
+     */
+    public SchedulerJobBuilder withDisplayName(String displayName) {
+        this.displayName = displayName;
+
+        return this;
+    }
+
 
     public SchedulerJob build() {
         if(this.agentName == null || this.jobName == null) {
@@ -120,6 +133,7 @@ public class SchedulerJobBuilder {
         schedulerJob.setJobDescription(this.description);
         schedulerJob.setStartupControlType(this.startupControlType);
         schedulerJob.setOrdinal(this.ordinal);
+        schedulerJob.setDisplayName(displayName);
 
         return schedulerJob;
     }

@@ -1,6 +1,7 @@
 {
   "agentName" : "agentName",
   "jobName" : "jobName",
+  "displayName" : "displayName",
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "MANUAL",

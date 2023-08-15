@@ -104,6 +104,7 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
         internalEventDrivenJob.setIdentifier(this.agentName+"-"+this.jobName);
         internalEventDrivenJob.setAgentName(this.agentName);
         internalEventDrivenJob.setJobName(this.jobName);
+        internalEventDrivenJob.setDisplayName(this.displayName);
         internalEventDrivenJob.setJobDescription(this.description);
         internalEventDrivenJob.setSuccessfulReturnCodes(this.successfulReturnCodes);
         internalEventDrivenJob.setContextParameters(this.contextParameters);

@@ -1,6 +1,7 @@
 {
   "agentName" : "agentName",
   "jobName" : "jobName",
+  "displayName" : "displayName",
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "AUTOMATIC",
@@ -21,6 +22,6 @@
   "targetResidingContextOnly" : true,
   "participatesInLock" : true,
   "jobRepeatable" : false,
-  "identifier" : "agentName-jobName",
-  "jobDescription" : "description"
+  "jobDescription" : "description",
+  "identifier" : "agentName-jobName"
 }

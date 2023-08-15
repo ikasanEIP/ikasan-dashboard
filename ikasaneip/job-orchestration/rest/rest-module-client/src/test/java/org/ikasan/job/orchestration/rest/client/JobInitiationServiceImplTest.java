@@ -421,6 +421,16 @@ public class JobInitiationServiceImplTest {
             }
 
             @Override
+            public String getDisplayName() {
+                return null;
+            }
+
+            @Override
+            public void setDisplayName(String displayName) {
+
+            }
+
+            @Override
             public String getJobDescription() {
                 return null;
             }

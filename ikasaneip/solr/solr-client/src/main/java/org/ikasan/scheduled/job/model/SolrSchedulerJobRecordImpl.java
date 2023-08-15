@@ -26,6 +26,8 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     @Field(SolrDaoBase.FLOW_NAME)
     private String jobName;
 
+    private String displayName;
+
     @Field(SolrDaoBase.COMPONENT_NAME)
     private String contextName;
 
@@ -71,6 +73,11 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     @Override
     public String getJobName() {
         return jobName;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return displayName;
     }
 
     @Override
