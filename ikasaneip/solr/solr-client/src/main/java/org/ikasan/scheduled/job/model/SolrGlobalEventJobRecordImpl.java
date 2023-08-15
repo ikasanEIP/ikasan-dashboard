@@ -22,6 +22,8 @@ public class SolrGlobalEventJobRecordImpl implements GlobalEventJobRecord {
     @Field(SolrDaoBase.FLOW_NAME)
     private String jobName;
 
+    private String displayName;
+
     @Field(SolrDaoBase.COMPONENT_NAME)
     private String contextName;
 
@@ -67,6 +69,16 @@ public class SolrGlobalEventJobRecordImpl implements GlobalEventJobRecord {
     @Override
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     @Override

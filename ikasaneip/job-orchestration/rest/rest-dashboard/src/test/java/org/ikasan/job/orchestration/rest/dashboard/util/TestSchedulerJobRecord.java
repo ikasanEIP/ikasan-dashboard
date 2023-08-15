@@ -16,6 +16,7 @@ public class TestSchedulerJobRecord implements SchedulerJobRecord {
     private String agentName;
 
     private String jobName;
+    private String displayName;
 
     private String contextName;
 
@@ -58,6 +59,11 @@ public class TestSchedulerJobRecord implements SchedulerJobRecord {
     @Override
     public String getJobName() {
         return jobName;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return displayName;
     }
 
     @Override

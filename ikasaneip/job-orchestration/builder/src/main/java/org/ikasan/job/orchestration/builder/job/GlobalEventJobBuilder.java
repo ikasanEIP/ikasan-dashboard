@@ -20,6 +20,7 @@ public class GlobalEventJobBuilder extends SchedulerJobBuilder {
         globalEventJob.setStartupControlType(this.startupControlType);
         globalEventJob.setContextName(this.contextName);
         globalEventJob.setChildContextNames(super.childContextNames);
+        globalEventJob.setDisplayName(super.displayName);
 
         return globalEventJob;
     }

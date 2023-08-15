@@ -1,6 +1,7 @@
 {
   "agentName" : "GLOBAL_EVENT",
   "jobName" : "jobName",
+  "displayName" : "displayName",
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "MANUAL",

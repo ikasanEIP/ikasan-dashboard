@@ -12,6 +12,7 @@ public class FileEventDrivenJobBuilder  {
 
     protected String agentName;
     protected String jobName;
+    protected String displayName;
     protected String contextName;
     protected List<String> childContextNames;
     protected String description;
@@ -253,6 +254,12 @@ public class FileEventDrivenJobBuilder  {
         return this;
     }
 
+    public FileEventDrivenJobBuilder withDisplayName(String displayName) {
+        this.displayName = displayName;
+
+        return this;
+    }
+
     public FileEventDrivenJob build() {
         FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
         fileEventDrivenJob.setFilePath(this.filePath);
@@ -280,6 +287,7 @@ public class FileEventDrivenJobBuilder  {
         fileEventDrivenJob.setLogMatchedFilenames(this.logMatchedFilenames);
         fileEventDrivenJob.setIgnoreFileRenameWhilstScanning(this.ignoreFileRenameWhilstScanning);
         fileEventDrivenJob.setMinFileAgeSeconds(this.minFileAgeSeconds);
+        fileEventDrivenJob.setDisplayName(this.displayName);
 
         return fileEventDrivenJob;
     }

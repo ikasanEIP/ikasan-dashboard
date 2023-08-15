@@ -36,7 +36,8 @@ public class QuartzScheduleDrivenJobBuilderTest extends AbstractTest {
             .addChildContextId("childContextId")
             .withDescription("description")
             .withJobName("jobName")
-            .withStartupControlType("MANUAL");
+            .withStartupControlType("MANUAL")
+            .withDisplayName("displayName");
 
         JSONAssert.assertEquals(super.loadDataFile("/data/quartz-event-driven-job-builder-result.json"),
             service.getQuartzScheduleDrivenJobString(quartzScheduleDrivenJobBuilder.build()), JSONCompareMode.STRICT);

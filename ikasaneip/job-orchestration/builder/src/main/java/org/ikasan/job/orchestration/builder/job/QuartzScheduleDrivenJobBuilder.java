@@ -12,6 +12,7 @@ import java.util.Map;
 public class QuartzScheduleDrivenJobBuilder {
     protected String agentName;
     protected String jobName;
+    protected String displayName;
     protected String contextName;
     protected List<String> childContextNames;
     protected String description;
@@ -168,6 +169,12 @@ public class QuartzScheduleDrivenJobBuilder {
         return this;
     }
 
+    public QuartzScheduleDrivenJobBuilder withDisplayName(String displayName) {
+        this.displayName = displayName;
+
+        return this;
+    }
+
     public QuartzScheduleDrivenJob build() {
         QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
         quartzScheduleDrivenJob.setAgentName(this.agentName);
@@ -188,6 +195,7 @@ public class QuartzScheduleDrivenJobBuilder {
         quartzScheduleDrivenJob.setRecoveryTolerance(this.recoveryTolerance);
         quartzScheduleDrivenJob.setBlackoutWindowCronExpressions(this.blackoutWindowCronExpressions);
         quartzScheduleDrivenJob.setBlackoutWindowDateTimeRanges(this.blackoutWindowDateTimeRanges);
+        quartzScheduleDrivenJob.setDisplayName(this.displayName);
 
         return quartzScheduleDrivenJob;
     }

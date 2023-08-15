@@ -53,6 +53,7 @@ public class FileEventDrivenJobBuilderTest extends AbstractTest {
             .addChildContextId("childContextId")
             .withDescription("description")
             .withJobName("jobName")
+            .withDisplayName("displayName")
             .withStartupControlType("MANUAL");
 
         JSONAssert.assertEquals(super.loadDataFile("/data/file-event-driven-job-builder-result.json"),
