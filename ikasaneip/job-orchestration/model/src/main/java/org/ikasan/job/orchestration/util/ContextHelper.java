@@ -917,7 +917,6 @@ public class ContextHelper {
         _enrichJobs(context, context);
     }
 
-
     private static void enrichJobs(ContextInstance context, Context child) {
         _enrichJobs(context, child);
     }
@@ -934,6 +933,32 @@ public class ContextHelper {
             child.getContexts().forEach(c -> enrichJobs(context, (Context) c));
         }
     }
+
+    public static void enrichJobs(ContextInstance context, Map<String, SchedulerJob> schedulerJobMap) {
+        _enrichJobs(context, context, schedulerJobMap);
+    }
+
+    private static void enrichJobs(ContextInstance context, Context child, Map<String, SchedulerJob> schedulerJobMap) {
+        _enrichJobs(context, child, schedulerJobMap);
+    }
+
+    private static void _enrichJobs(ContextInstance context, Context child, Map<String, SchedulerJob> schedulerJobMap) {
+        if(child.getScheduledJobs() != null) {
+            child.getScheduledJobs().forEach(job -> {
+                ((SchedulerJobInstance)job).setContextName(context.getName());
+                ((SchedulerJobInstance)job).setChildContextName(child.getName());
+                if(schedulerJobMap.containsKey(((SchedulerJobInstance)job).getJobName())) {
+                    ((SchedulerJobInstance) job).setDisplayName
+                        (schedulerJobMap.get((((SchedulerJobInstance) job).getJobName())).getDisplayName());
+                }
+            });
+        }
+
+        if(child.getContexts() != null) {
+            child.getContexts().forEach(c -> enrichJobs(context, (Context) c, schedulerJobMap));
+        }
+    }
+
 
     private static List<String> getContextsWhereJobResides(Context context, String jobName) {
         List<String> results = new ArrayList<>();
@@ -965,6 +990,10 @@ public class ContextHelper {
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
             context.getScheduledJobs().forEach(job -> {
                 if(((SchedulerJob)job).getJobName().toLowerCase().contains(jobNameFilter.toLowerCase())) {
+                    results.add(context.getName());
+                }
+                else if(((SchedulerJob)job).getDisplayName() != null
+                    && ((SchedulerJob)job).getDisplayName().toLowerCase().contains(jobNameFilter.toLowerCase())) {
                     results.add(context.getName());
                 }
             });

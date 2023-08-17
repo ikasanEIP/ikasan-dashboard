@@ -44,6 +44,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
+    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private Button saveButton;
     private Button cancelButton;
@@ -59,6 +60,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
     private EditMode editMode = EditMode.NEW;
     private FormLayout formLayout;
     private boolean enabled = true;
+    private boolean showDisplayName;
     private SystemEventLogger systemEventLogger;
     private SchedulerJobService schedulerJobService;
     private SchedulerJobRecord schedulerJobRecord;
@@ -77,7 +79,8 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
      */
     public GlobalEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
+                                MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
+                                SchedulerJobService schedulerJobService, boolean showDisplayName) {
         super.showResize(false);
         super.title.setText(getTranslation("header.global-job", UI.getCurrent().getLocale()));
 
@@ -88,6 +91,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobService = schedulerJobService;
+        this.showDisplayName = showDisplayName;
 
         this.globalEventJob = new SolrGlobalEventJobImpl();
 
@@ -185,7 +189,21 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(GlobalEventJob::getJobDescription, GlobalEventJob::setJobDescription);
-        formLayout.add(jobDescriptionTa, 2);
+        if(this.showDisplayName) {
+            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
+            this.jobNameAliasTf.setId("jobNameAliasTf");
+            this.jobNameAliasTf.setRequired(false);
+            this.jobNameAliasTf.setEnabled(this.editMode == EditMode.NEW &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            formBinder.forField(this.jobNameAliasTf)
+                .bind(GlobalEventJob::getDisplayName, GlobalEventJob::setDisplayName);
+            formLayout.add(jobNameAliasTf, jobDescriptionTa);
+        }
+        else {
+            formLayout.add(jobDescriptionTa, 2);
+        }
 
 
         return formLayout;

@@ -25,6 +25,7 @@ public class SolrSchedulerJobInstanceSearchFilterImpl implements SchedulerJobIns
     }
 
     private String jobName;
+    private String displayNameFilter = null;
     private String jobType;
     private String contextName;
     private String contextInstanceId;
@@ -47,6 +48,16 @@ public class SolrSchedulerJobInstanceSearchFilterImpl implements SchedulerJobIns
     @Override
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    @Override
+    public String getDisplayNameFilter() {
+        return displayNameFilter;
+    }
+
+    @Override
+    public void setDisplayNameFilter(String displayNameFilter) {
+        this.displayNameFilter = displayNameFilter;
     }
 
     @Override

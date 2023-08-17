@@ -41,6 +41,7 @@ public class SolrGlobalEventJobDaoImpl extends SolrDaoBase<GlobalEventJobRecord>
 
         document.addField(MODULE_NAME, event.getAgentName());
         document.addField(FLOW_NAME, event.getJobName());
+        document.addField(DISPLAY_NAME, event.getGlobalEventJob().getDisplayName());
         document.addField(CREATED_DATE_TIME, event.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, event.getModifiedBy());

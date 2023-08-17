@@ -22,6 +22,7 @@ public class SolrGlobalEventJobRecordImpl implements GlobalEventJobRecord {
     @Field(SolrDaoBase.FLOW_NAME)
     private String jobName;
 
+    @Field(SolrDaoBase.DISPLAY_NAME)
     private String displayName;
 
     @Field(SolrDaoBase.COMPONENT_NAME)

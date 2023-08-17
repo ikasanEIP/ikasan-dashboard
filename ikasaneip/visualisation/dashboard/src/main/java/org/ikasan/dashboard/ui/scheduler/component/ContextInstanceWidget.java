@@ -125,6 +125,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private TextField endTimeTf;
     private TextField timezoneTf;
     private Checkbox isAbleToRunConcurrentlyCb;
+    private Checkbox useDisplayNameCb;
 
     private CollapsableLayout contextInstanceDetailsCollapsableLayout;
 
@@ -370,6 +371,13 @@ public class ContextInstanceWidget extends VerticalLayout
             .bind(ContextInstance::isAbleToRunConcurrently, ContextInstance::setAbleToRunConcurrently);
         this.isAbleToRunConcurrentlyCb.setEnabled(false);
 
+        this.useDisplayNameCb = new Checkbox(getTranslation("label.use-display-name", UI.getCurrent().getLocale()));
+        this.useDisplayNameCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.useDisplayNameCb)
+            .bind(ContextInstance::isUseDisplayName, ContextInstance::setUseDisplayName);
+        this.useDisplayNameCb.setEnabled(false);
+
+
 
         this.timezoneTf = new TextField(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         this.timezoneTf.getElement().getThemeList().add("always-float-label");
@@ -439,13 +447,18 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.formLayout.setWidth("100%");
 
+        VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb, this.useDisplayNameCb);
+        cbLayout.setMargin(false);
+        cbLayout.getElement().getThemeList().remove("padding");
+        cbLayout.getElement().getThemeList().remove("spacing");
+
         this.formLayout.add(this.contextInstanceId, 7);
         this.formLayout.add(this.startWindowCronExpressionTf, 4);
         this.formLayout.add(this.contextTtlDays, 2);
         this.formLayout.add(this.contextTtlHours, 2);
         this.formLayout.add(this.contextTtlMinutes, 2);
         this.formLayout.add(this.timezoneTf, 3);
-        this.formLayout.add(this.isAbleToRunConcurrentlyCb, 2);
+        this.formLayout.add(cbLayout, 2);
         this.formLayout.add(this.descriptionTa, 7);
         this.formLayout.add(this.startTimeTf, 4);
         this.formLayout.add(this.projectedEndTimeTf, 4);
@@ -1065,7 +1078,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 machine.resetContextInstance(hold, initiateSameParams, contextParameterInstances);
                 ContextMachineCache.instance().put(machine);
                 ContextInstance newInstance = ContextMachineCache.instance()
-                    .getFirstByContextName(this.contextInstance.getName()).getContext();
+                    .getByContextInstanceId(machine.getContext().getId()).getContext();
                 String route = RouteConfiguration.forSessionScope()
                     .getUrl(ContextInstanceView.class, newInstance.getId() + "_scheduledContextInstance");
 

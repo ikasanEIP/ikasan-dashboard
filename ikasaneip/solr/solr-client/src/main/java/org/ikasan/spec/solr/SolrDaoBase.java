@@ -71,6 +71,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String ACTOR = "actor";
     public static final String SYSTEM_EVENT_SUBJECT = "systemEventSubject";
     public static final String SYSTEM_EVENT_ACTION ="systemEventAction";
+    public static final String DISPLAY_NAME ="displayName";
 
 
     public static final String AND = " AND ";

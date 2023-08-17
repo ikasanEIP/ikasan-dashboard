@@ -1505,7 +1505,7 @@ public class ContextMachine {
             inboundListenableFuture.addListener(inboundQueueMessageRunner, this.contextExecutor);
         }
         catch (Exception e) {
-            logger.warn("Could not add inbound listener for context machine. This is likely due to the context instance being ended.", e);
+            logger.warn("Could not add inbound listener for context machine. This is likely due to the context instance being ended.");
         }
     }
 

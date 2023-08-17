@@ -89,6 +89,16 @@ public class GlobalEventJobTestSearchResults implements SearchResults<SchedulerJ
         }
 
         @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public void setDisplayName(String displayName) {
+
+        }
+
+        @Override
         public String getContextName() {
             return null;
         }

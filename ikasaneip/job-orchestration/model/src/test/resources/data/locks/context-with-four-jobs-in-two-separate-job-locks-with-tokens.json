@@ -158,6 +158,7 @@
   "contextTtlMilliseconds": 0,
   "treeViewExpandLevel": 1,
   "ableToRunConcurrently": true,
+  "useDisplayName": false,
   "disabled": false,
   "quartzScheduleDrivenJobsDisabledForContext": false
 }

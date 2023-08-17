@@ -117,6 +117,7 @@
   "contextTtlMilliseconds" : 100000,
   "treeViewExpandLevel" : 3,
   "ableToRunConcurrently" : true,
+  "useDisplayName" : false,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

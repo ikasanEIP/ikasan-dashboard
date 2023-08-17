@@ -17,6 +17,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
@@ -218,8 +219,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(QUARTZ));
         descriptor = CronDescriptor.instance(Locale.UK);
 
-        ContextHelper.enrichJobs(this.contextInstance);
-
         setSizeFull();
         this.buildGrid();
 
@@ -251,7 +250,12 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         grid = new ExplorerTreeGrid<>();
 
         Map<String, InternalEventDrivenJob> internalEventDrivenJobInstanceMap
-            = getCommandExecutionJobsForContextInstance(contextInstance.getId());
+            = this.getCommandExecutionJobsForContextInstance(contextInstance.getId());
+
+        Map<String, SchedulerJob> schedulerJobMap
+            = this.getAllSchedulerJobInstancesForContextInstance(contextInstance.getId());
+
+        ContextHelper.enrichJobs(this.contextInstance, schedulerJobMap);
 
         grid.addComponentHierarchyColumn(value -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -310,9 +314,18 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 this.jobImageMap.put(new ComponentKey(schedulerJobInstance instanceof GlobalEventJobInstance ? JobConstants.GLOBAL_EVENT : this.contextInstance.getName()
                     , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName()), image);
 
+
                 Label jobNameLabel =  new Label(((SchedulerJobInstance)value).getJobName());
-                horizontalLayout.add(jobNameLabel);
-                horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
+                if(this.contextInstance.isUseDisplayName() && ((SchedulerJobInstance)value).getDisplayName() != null && !((SchedulerJobInstance)value).getDisplayName().isEmpty()) {
+                    Label jobDisplayNameLabel =  new Label(((SchedulerJobInstance)value).getDisplayName()
+                        + " - " + (((SchedulerJobInstance)value).getJobName()));
+                    horizontalLayout.add(jobDisplayNameLabel);
+                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
+                }
+                else {
+                    horizontalLayout.add(jobNameLabel);
+                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
+                }
 
                 if(internalEventDrivenJobInstanceMap.containsKey(schedulerJobInstance.getIdentifier()+"-"+schedulerJobInstance.getChildContextName()) &&
                     internalEventDrivenJobInstanceMap.get(schedulerJobInstance.getIdentifier()+"-"+schedulerJobInstance.getChildContextName()).isJobRepeatable()) {
@@ -343,13 +356,21 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName()), image);
 
                 Label jobNameLabel =  new Label(schedulerJobInstance.getJobName());
-                horizontalLayout.add(jobNameLabel);
-                horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
+                if(this.contextInstance.isUseDisplayName() && schedulerJobInstance.getDisplayName() != null && !schedulerJobInstance.getDisplayName().isEmpty()) {
+                    Label jobDisplayNameLabel =  new Label((schedulerJobInstance.getDisplayName()
+                        + " - " + schedulerJobInstance.getJobName()));
+                    horizontalLayout.add(jobDisplayNameLabel);
+                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
+                }
+                else {
+                    horizontalLayout.add(jobNameLabel);
+                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
+                }
             }
 
             return horizontalLayout;
         })
-            .setFlexGrow(4)
+            .setFlexGrow(7)
             .setHeader(getTranslation("table-header.context-job-name", UI.getCurrent().getLocale()))
             .setKey("name")
             .setResizable(true);
@@ -1782,7 +1803,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 }
                 else {
                     children.addAll(((ContextInstance) node).getContexts().stream()
-                        .filter(instance -> instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
+                        .filter(instance -> (instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase())))
                         .map(instance -> (Object) instance)
                         .collect(Collectors.toList()));
 
@@ -1799,7 +1820,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 children.addAll(((ContextInstance)node).getScheduledJobs().stream()
                     .filter(instance -> filter != null && filter.isPresent()
                         ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
-                            instance.getChildContextName().toLowerCase().contains(filter.get().getJobName().toLowerCase())
+                            instance.getChildContextName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
+                            (instance.getDisplayName() != null && !instance.getDisplayName().isEmpty() &&
+                                instance.getDisplayName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
                         : true)
                     .sorted(Comparator.comparingInt(SchedulerJob::getOrdinal))
                     .map(instance -> (Object) instance)
@@ -1813,7 +1836,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
                 .stream()
                 .filter(instance -> filter != null && filter.isPresent()
-                    ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase())
+                    ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
+                    (instance.getDisplayName() != null && !instance.getDisplayName().isEmpty() &&
+                        instance.getDisplayName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
                     : true)
                 .map(instance -> (Object) new PrecedingItem(instance))
                 .collect(Collectors.toList()));
@@ -1879,7 +1904,26 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.schedulerJobInstanceService
             .getCommandExecutionJobsForContextInstanceChildContext(contextInstanceId)
             .entrySet()
-            .forEach(entry -> result.put(entry.getKey(), (InternalEventDrivenJob) entry.getValue()));
+            .forEach(entry -> result.put(entry.getKey(), entry.getValue()));
+
+        return result;
+    }
+
+    /**
+     * Helper method to get all command execution jobs associated with an context instance.
+     *
+     * @param contextInstanceId the id of the context instance that we want the jobs for.
+     *
+     * @return Map<String, InternalEventDrivenJobInstance> containing the command execution jobs
+     * keyed on their identifier.
+     */
+    private Map<String, SchedulerJob> getAllSchedulerJobInstancesForContextInstance(String contextInstanceId) {
+        Map<String, SchedulerJob> result = new HashMap<>();
+        this.schedulerJobInstanceService
+            .getSchedulerJobInstancesByContextInstanceId(contextInstanceId, -1, -1, null, null)
+            .getResultList()
+            .forEach(schedulerJobInstanceRecord
+                -> result.put(schedulerJobInstanceRecord.getJobName(), schedulerJobInstanceRecord.getSchedulerJobInstance()));
 
         return result;
     }

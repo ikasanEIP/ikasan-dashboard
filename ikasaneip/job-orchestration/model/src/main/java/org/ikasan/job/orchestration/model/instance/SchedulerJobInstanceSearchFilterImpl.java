@@ -6,6 +6,7 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter
 
 public class SchedulerJobInstanceSearchFilterImpl implements SchedulerJobInstanceSearchFilter {
     private String jobName;
+    private String displayNameFilter = null;
     private String jobType;
     private String contextName;
     private String contextInstanceId;
@@ -28,6 +29,16 @@ public class SchedulerJobInstanceSearchFilterImpl implements SchedulerJobInstanc
     @Override
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    @Override
+    public String getDisplayNameFilter() {
+        return displayNameFilter;
+    }
+
+    @Override
+    public void setDisplayNameFilter(String displayNameFilter) {
+        this.displayNameFilter = displayNameFilter;
     }
 
     @Override
