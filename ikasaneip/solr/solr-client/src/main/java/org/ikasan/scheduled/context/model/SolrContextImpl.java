@@ -26,6 +26,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
     protected int treeViewExpandLevel = 1;
     protected boolean ableToRunConcurrently = true;
+    private boolean useDisplayName = false;
 
     @Override
     public String getName() {
@@ -170,6 +171,16 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @Override
     public void setAbleToRunConcurrently(boolean ableToRunConcurrently) {
         this.ableToRunConcurrently = ableToRunConcurrently;
+    }
+
+    @Override
+    public boolean isUseDisplayName() {
+        return useDisplayName;
+    }
+
+    @Override
+    public void setUseDisplayName(boolean useDisplayName) {
+        this.useDisplayName = useDisplayName;
     }
 
     @Override

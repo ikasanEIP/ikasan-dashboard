@@ -160,6 +160,15 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
                 .append(WILDCARD);
         }
 
+        if(filter.getDisplayNameFilter() != null && !filter.getDisplayNameFilter().isEmpty()) {
+            queryBuffer.append(AND)
+                .append(DISPLAY_NAME)
+                .append(COLON)
+                .append(WILDCARD)
+                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getDisplayNameFilter()))
+                .append(WILDCARD);
+        }
+
         if(filter.getNotJobNameInFilter() != null && !filter.getNotJobNameInFilter().isEmpty()) {
             StringBuffer orString = new StringBuffer();
             filter.getNotJobNameInFilter().forEach(jobName ->

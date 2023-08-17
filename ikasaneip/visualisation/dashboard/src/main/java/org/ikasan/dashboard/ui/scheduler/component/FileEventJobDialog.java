@@ -32,6 +32,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.quartz.CronExpression;
@@ -50,6 +51,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
+    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private TextField filenameTf;
     private TextField archiveDirectoryTf;
@@ -78,6 +80,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private FormLayout formLayout;
 
     private boolean enabled = true;
+    private boolean showDisplayName;
 
     private SystemEventLogger systemEventLogger;
 
@@ -99,7 +102,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
      */
     public FileEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                              MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
+                              MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
+                              SchedulerJobService schedulerJobService, boolean showDisplayName) {
         super.showResize(false);
         super.title.setText(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
 
@@ -110,6 +114,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobService = schedulerJobService;
+        this.showDisplayName = showDisplayName;
 
         this.fileEventDrivenJob = new SolrFileEventDrivenJobImpl();
 
@@ -222,7 +227,22 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobDescription -> !jobDescription.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(FileEventDrivenJob::getJobDescription, FileEventDrivenJob::setJobDescription);
-        formLayout.add(jobDescriptionTa, 2);
+
+        if(this.showDisplayName) {
+            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
+            this.jobNameAliasTf.setId("jobNameAliasTf");
+            this.jobNameAliasTf.setRequired(false);
+            this.jobNameAliasTf.setEnabled(this.editMode == EditMode.NEW &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            formBinder.forField(this.jobNameAliasTf)
+                .bind(FileEventDrivenJob::getDisplayName, FileEventDrivenJob::setDisplayName);
+            formLayout.add(jobNameAliasTf, jobDescriptionTa);
+        }
+        else {
+            formLayout.add(jobDescriptionTa, 2);
+        }
 
         this.filenameTf = new TextField(getTranslation("label.file-path", UI.getCurrent().getLocale()));
         this.filenameTf.setRequired(true);

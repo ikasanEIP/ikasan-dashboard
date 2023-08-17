@@ -36,6 +36,7 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -53,6 +54,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
+    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private TextField cronExpressionTf;
     private TextField timezoneCb;
@@ -254,8 +256,19 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(QuartzScheduleDrivenJobInstance::getJobDescription, QuartzScheduleDrivenJobInstance::setJobDescription);
-        formLayout.add(jobDescriptionTa, 2);
 
+        if(this.contextInstance.isUseDisplayName()) {
+            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
+            this.jobNameAliasTf.setId("jobNameAliasTf");
+            this.jobNameAliasTf.setRequired(false);
+            this.jobNameAliasTf.setEnabled(false);
+            formBinder.forField(this.jobNameAliasTf)
+                .bind(QuartzScheduleDrivenJob::getDisplayName, QuartzScheduleDrivenJob::setDisplayName);
+            formLayout.add(jobNameAliasTf, jobDescriptionTa);
+        }
+        else {
+            formLayout.add(jobDescriptionTa, 2);
+        }
 
         this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
@@ -290,13 +303,12 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
             if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
                 NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
                     , UI.getCurrent().getLocale()));
-                return false;
             }
             else {
                 NotificationHelper.showErrorNotification(getTranslation("error.cannot-locate-job-plan-instance-in-cache-and-is-not-ended"
                     , UI.getCurrent().getLocale()));
-                return false;
             }
+            return false;
         }
 
         return true;

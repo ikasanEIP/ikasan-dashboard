@@ -67,6 +67,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private IntegerField contextTtlDays;
     private IntegerField treeViewExpandLevel;
     private Checkbox isAbleToRunConcurrentlyCb;
+    private Checkbox useDisplayNameCb;
     private DateTimePicker blackoutWindowStartTime;
     private DateTimePicker blackoutWindowEndTime;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
@@ -278,6 +279,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         binder.forField(this.isAbleToRunConcurrentlyCb)
             .bind(ContextTemplate::isAbleToRunConcurrently, ContextTemplate::setAbleToRunConcurrently);
 
+        this.useDisplayNameCb = new Checkbox(getTranslation("label.use-display-name", UI.getCurrent().getLocale()));
+        this.useDisplayNameCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.useDisplayNameCb)
+            .bind(ContextTemplate::isUseDisplayName, ContextTemplate::setUseDisplayName);
+
         binder.readBean(this.contextTemplate);
 
         this.blackoutWindowStartTime = new DateTimePicker(getTranslation("label.blackout-window-start-date-time", UI.getCurrent().getLocale()));
@@ -361,8 +367,14 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             new FormLayout.ResponsiveStep("500px", 40)
         );
         this.formLayout.setWidth("100%");
+
+        VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb, this.useDisplayNameCb);
+        cbLayout.setMargin(false);
+        cbLayout.getElement().getThemeList().remove("padding");
+        cbLayout.getElement().getThemeList().remove("spacing");
+
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
-            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.isAbleToRunConcurrentlyCb, this.descriptionTa, blackoutWindowsGrid, addDateTimePairButton);
+            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, cbLayout, this.descriptionTa, blackoutWindowsGrid, addDateTimePairButton);
 
         this.formLayout.setColspan(this.contextNameTf, 12);
         this.formLayout.setColspan(this.startWindowCronExpressionTf, 6);
@@ -371,7 +383,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.formLayout.setColspan(this.contextTtlMinutes, 3);
         this.formLayout.setColspan(this.timezoneCb, 5);
         this.formLayout.setColspan(this.treeViewExpandLevel, 4);
-        this.formLayout.setColspan(this.isAbleToRunConcurrentlyCb, 3);
+        this.formLayout.setColspan(cbLayout, 3);
         this.formLayout.setColspan(this.descriptionTa, 12);
         this.formLayout.setColspan(blackoutWindowsGrid, 25);
         this.formLayout.setColspan(addDateTimePairButton, 3);

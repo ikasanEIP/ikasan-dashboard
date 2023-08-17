@@ -27,6 +27,7 @@ public class ContextTemplateBuilder {
     protected List<JobLock> jobLocks = new ArrayList<>();
     protected int treeViewExpandLevel = 1;
     protected boolean ableToRunConcurrently = true;
+    private boolean useDisplayName = false;
 
     public ContextTemplateBuilder withName(String name) {
         this.name = name;
@@ -125,6 +126,11 @@ public class ContextTemplateBuilder {
         return this;
     }
 
+    public ContextTemplateBuilder useDisplayName(boolean useDisplayName) {
+        this.useDisplayName = useDisplayName;
+        return this;
+    }
+
     public SchedulerJobBuilder getSchedulerJobBuilder() {
         return new SchedulerJobBuilder();
     }
@@ -194,6 +200,7 @@ public class ContextTemplateBuilder {
         contextTemplate.setBlackoutWindowDateTimeRanges(this.blackoutWindowDateTimeRanges);
         contextTemplate.setTreeViewExpandLevel(this.treeViewExpandLevel);
         contextTemplate.setAbleToRunConcurrently(this.ableToRunConcurrently);
+        contextTemplate.setUseDisplayName(this.useDisplayName);
 
         return contextTemplate;
     }

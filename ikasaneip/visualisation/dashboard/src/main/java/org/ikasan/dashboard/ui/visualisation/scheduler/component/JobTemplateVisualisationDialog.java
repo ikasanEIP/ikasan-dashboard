@@ -345,7 +345,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName());
             fileEventJobDialog.addSchedulerJobSelectedListener(this);
 
             FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
@@ -358,7 +358,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
             QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
+                this.contextTemplate.isUseDisplayName());
             quartzDrivenScheduledJobDialog.addSchedulerJobSelectedListener(this);
 
             QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
@@ -371,7 +372,9 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.global-job", UI.getCurrent().getLocale()), event -> {
             GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(null, this.scheduledProcessManagementService,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
+                this.schedulerJobService, this.contextTemplate.isUseDisplayName());
+
             globalEventJobDialog.addSchedulerJobSelectedListener(this);
 
             GlobalEventJob globalEventJob = new GlobalEventJobImpl();

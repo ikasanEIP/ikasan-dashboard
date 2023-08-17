@@ -144,6 +144,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private Button synchroniseJobsButton;
     private ComboBox<String> searchCb;
     private Checkbox isAbleToRunConcurrentlyCb;
+    private Checkbox useDisplayNameCb;
     private UI ui;
 
     private boolean removeTrailingPlanNameContextAfterUnderscore;
@@ -390,6 +391,12 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             .bind(ContextTemplate::isAbleToRunConcurrently, ContextTemplate::setAbleToRunConcurrently);
         this.isAbleToRunConcurrentlyCb.setEnabled(false);
 
+        this.useDisplayNameCb = new Checkbox(getTranslation("label.use-display-name", UI.getCurrent().getLocale()));
+        this.useDisplayNameCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.useDisplayNameCb)
+            .bind(ContextTemplate::isUseDisplayName, ContextTemplate::setUseDisplayName);
+        this.useDisplayNameCb.setEnabled(false);
+
         this.initialiseBlackoutWindowGrid();
         this.populateBlackoutWindowPairs(contextTemplate);
 
@@ -421,12 +428,18 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         labelLayout.add(contextTemplateManagementLabel);
         headerLayout.add(labelLayout, createButtonLayout());
 
+        VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb, this.useDisplayNameCb);
+        cbLayout.setMargin(false);
+        cbLayout.getElement().getThemeList().remove("padding");
+        cbLayout.getElement().getThemeList().remove("spacing");
+
         this.formLayout = new FormLayout();
         this.formLayout.setResponsiveSteps(
             new FormLayout.ResponsiveStep("500px", 40)
         );
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
-            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.isAbleToRunConcurrentlyCb, this.descriptionTa, this.blackoutWindowsGrid);
+            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, cbLayout
+            , this.descriptionTa, this.blackoutWindowsGrid);
         this.formLayout.setColspan(this.contextNameTf, 12);
         this.formLayout.setColspan(this.startWindowCronExpressionTf, 6);
         this.formLayout.setColspan(this.contextTtlDays, 3);
@@ -434,9 +447,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.formLayout.setColspan(this.contextTtlMinutes, 3);
         this.formLayout.setColspan(this.timezoneCb, 5);
         this.formLayout.setColspan(this.treeViewExpandLevel, 4);
-        this.formLayout.setColspan(this.isAbleToRunConcurrentlyCb, 3);
+        this.formLayout.setColspan(cbLayout, 4);
         this.formLayout.setColspan(this.descriptionTa, 12);
         this.formLayout.setColspan(blackoutWindowsGrid, 25);
+
 
         CollapsableLayout collapsableLayout = new CollapsableLayout();
         add(collapsableLayout);
@@ -987,7 +1001,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
                 FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName());
 
                 FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
                 fileEventDrivenJob.setContextName(contextTemplate.getName());
@@ -1010,7 +1024,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
-                    this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                    this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
+                    this.contextTemplate.isUseDisplayName());
 
                 QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
                 quartzScheduleDrivenJob.setContextName(this.contextTemplate.getName());
@@ -1033,7 +1048,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.global-job", UI.getCurrent().getLocale()), event -> {
                 GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(null, this.scheduledProcessManagementService,
-                    this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                    this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
+                    this.schedulerJobService, this.contextTemplate.isUseDisplayName());
 
                 GlobalEventJob globalEventJob = new GlobalEventJobImpl();
                 globalEventJob.setContextName(JobConstants.GLOBAL_EVENT);

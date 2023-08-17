@@ -25,6 +25,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
@@ -33,6 +34,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -54,6 +56,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
+    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private TextField cronExpressionTf;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
@@ -77,6 +80,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     private FormLayout formLayout;
 
     private boolean enabled = true;
+    private boolean showDisplayName;
 
     private SystemEventLogger systemEventLogger;
 
@@ -100,7 +104,8 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
      */
     public QuartzDrivenScheduledJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                          MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
+                                          MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
+                                          SchedulerJobService schedulerJobService, boolean showDisplayName) {
         super.showResize(false);
         super.title.setText(getTranslation("label.scheduled-job", UI.getCurrent().getLocale()));
 
@@ -111,6 +116,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobService = schedulerJobService;
+        this.showDisplayName = showDisplayName;
 
         this.quartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
 
@@ -247,7 +253,22 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(QuartzScheduleDrivenJob::getJobDescription, QuartzScheduleDrivenJob::setJobDescription);
-        formLayout.add(jobDescriptionTa, 2);
+
+        if(this.showDisplayName) {
+            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
+            this.jobNameAliasTf.setId("jobNameAliasTf");
+            this.jobNameAliasTf.setRequired(false);
+            this.jobNameAliasTf.setEnabled(this.editMode == EditMode.NEW &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            formBinder.forField(this.jobNameAliasTf)
+                .bind(QuartzScheduleDrivenJob::getDisplayName, QuartzScheduleDrivenJob::setDisplayName);
+            formLayout.add(jobNameAliasTf, jobDescriptionTa);
+        }
+        else {
+            formLayout.add(jobDescriptionTa, 2);
+        }
 
 
         Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create()

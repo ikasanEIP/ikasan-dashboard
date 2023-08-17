@@ -403,7 +403,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         }
         else if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName()), this.scheduledProcessManagementService
-                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService
+                , this.contextTemplate.isUseDisplayName());
             fileEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             this.jobSynchronisationRequiredListeners.forEach(listener ->
                 fileEventJobDialog.addJobSynchronisationRequiredListener(listener));
@@ -412,7 +413,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         else if(schedulerJobRecord.getJob() instanceof QuartzScheduleDrivenJob){
             QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
-                , systemEventLogger, this.schedulerJobService);
+                , systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName());
             quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             this.jobSynchronisationRequiredListeners.forEach(listener ->
                 quartzDrivenScheduledJobDialog.addJobSynchronisationRequiredListener(listener));
@@ -421,7 +422,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         else {
             GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
-                , systemEventLogger, this.schedulerJobService);
+                , systemEventLogger, this.schedulerJobService, this.parentContextTemplate.isUseDisplayName());
             globalEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             globalEventJobDialog.open();
         }

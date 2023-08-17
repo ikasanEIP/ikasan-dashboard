@@ -56,6 +56,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
+    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
 
 
@@ -101,6 +102,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
     private String jobContextErrorMessage;
 
+    private boolean showDisplayName;
+
 
     /**
      * Constructor
@@ -115,7 +118,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     public InternalEventDrivenJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                         MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                        Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                        Map<String, String> schedulerJobExecutionEnvironmentLabel, boolean showDisplayName) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job", UI.getCurrent().getLocale()));
 
@@ -128,6 +131,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.schedulerJobService = schedulerJobService;
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+        this.showDisplayName = showDisplayName;
     }
 
     public InternalEventDrivenJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -135,7 +139,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
                                         MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                         ContextTemplate parentContextTemplate, ContextTemplate contextTemplate, Map<String, String> schedulerJobExecutionEnvironmentLabel) {
         this(agent, scheduledProcessManagementService, configurationRestService, moduleControlRestService,
-            metaDataRestService, systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel);
+            metaDataRestService, systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel, contextTemplate.isUseDisplayName());
         this.contextTemplate = contextTemplate;
         this.parentContextTemplate = parentContextTemplate;
     }
@@ -289,7 +293,19 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(InternalEventDrivenJob::getJobDescription, InternalEventDrivenJob::setJobDescription);
-        formLayout.add(jobDescriptionTa, 2);
+
+        if(this.showDisplayName) {
+            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
+            this.jobNameAliasTf.setId("jobNameAliasTf");
+            this.jobNameAliasTf.setRequired(false);
+            this.jobNameAliasTf.setEnabled(this.editMode == EditMode.NEW);
+            formBinder.forField(this.jobNameAliasTf)
+                .bind(InternalEventDrivenJob::getDisplayName, InternalEventDrivenJob::setDisplayName);
+            formLayout.add(jobNameAliasTf, jobDescriptionTa);
+        }
+        else {
+            formLayout.add(jobDescriptionTa, 2);
+        }
 
         ComponentSecurityVisibility.applyEnabledSecurity(this.jobDescriptionTa, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,

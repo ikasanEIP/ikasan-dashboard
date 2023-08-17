@@ -238,6 +238,25 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         schedulerJobFilteringGrid.setHeight("75vh");
         schedulerJobFilteringGrid.setContextName(contextTemplate.getName());
 
+        if(this.contextTemplate.isUseDisplayName()) {
+            schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+                    HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+                    if (schedulerJobRecord.getDisplayName() != null && !schedulerJobRecord.getDisplayName().isEmpty()) {
+                        Label displayNameLabel = new Label(schedulerJobRecord.getDisplayName());
+                        horizontalLayout.add(displayNameLabel);
+                    } else {
+                        Label displayNameLabel = new Label(getTranslation("label.not-defined", UI.getCurrent().getLocale()));
+                        horizontalLayout.add(displayNameLabel);
+                    }
+
+                    return horizontalLayout;
+                })).setHeader(getTranslation("table-header.job-name-alias", UI.getCurrent().getLocale()))
+                .setResizable(true)
+                .setSortable(true)
+                .setKey("alias")
+                .setFlexGrow(6);
+        }
 
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -719,7 +738,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         this.schedulerJobFilteringGrid.addItemDoubleClickListener(event -> {
             if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB)) {
                 FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
+                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                    , schedulerJobService, this.contextTemplate.isUseDisplayName());
                 fileEventJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 fileEventJobDialog.open();
@@ -732,7 +752,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             }
             else if(event.getItem().getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB)) {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
+                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
+                    , this.contextTemplate.isUseDisplayName());
                 quartzDrivenScheduledJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 quartzDrivenScheduledJobDialog.open();
@@ -746,7 +767,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
-                    , schedulerJobExecutionEnvironmentLabel);
+                    , schedulerJobExecutionEnvironmentLabel, this.contextTemplate.isUseDisplayName());
                 internalEventDrivenJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 internalEventDrivenJobDialog.open();
@@ -758,9 +779,27 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 });
 
             }
+            else if(event.getItem().getType().equals(JobConstants.GLOBAL_EVENT_JOB)) {
+                GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
+                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
+                    , this.contextTemplate.isUseDisplayName());
+                globalEventJobDialog.setJob(event.getItem(), EditMode.EDIT);
+
+                globalEventJobDialog.open();
+
+                globalEventJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobFilteringGrid.refresh();
+                    }
+                });
+
+            }
         });
 
         HeaderRow hr = schedulerJobFilteringGrid.appendHeaderRow();
+        if(this.contextTemplate.isUseDisplayName()) {
+            this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setDisplayNameFilter, "alias");
+        }
         this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
         this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
             , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");

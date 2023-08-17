@@ -30,6 +30,9 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Field(SolrDaoBase.MODULE_NAME)
     private String jobName;
 
+    @Field(SolrDaoBase.DISPLAY_NAME)
+    private String displayName;
+
     @Field(SolrDaoBase.FLOW_NAME)
     private String contextName;
 
@@ -87,6 +90,16 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     @Override

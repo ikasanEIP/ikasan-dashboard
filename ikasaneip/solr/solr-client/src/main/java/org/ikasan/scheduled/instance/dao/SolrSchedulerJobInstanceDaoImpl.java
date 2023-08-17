@@ -89,6 +89,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             document.addField(END_TIME, schedulerJobInstance.getScheduledProcessEvent().getCompletionTime());
         }
 
+        document.addField(DISPLAY_NAME, schedulerJobInstance.getDisplayName());
         document.addField(STATUS, schedulerJobInstanceRecord.getStatus());
         document.addField(MODULE_NAME, schedulerJobInstanceRecord.getJobName());
         document.addField(FLOW_NAME, schedulerJobInstanceRecord.getContextName());
@@ -201,6 +202,15 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             .append(CHILD_CONTEXT_NAME)
             .append(COLON)
             .append(filter.getChildContextName() != null && !filter.getChildContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getChildContextName()) : "*");
+
+        if(filter.getDisplayNameFilter() != null && !filter.getDisplayNameFilter().isEmpty()) {
+            queryString.append(AND)
+                .append(DISPLAY_NAME)
+                .append(COLON)
+                .append(WILDCARD)
+                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getDisplayNameFilter()))
+                .append(WILDCARD);
+        }
 
         if(filter.isTargetResidingContextOnly() != null && filter.isTargetResidingContextOnly().booleanValue()) {
             queryString.append(AND)

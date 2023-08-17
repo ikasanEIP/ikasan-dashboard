@@ -90,6 +90,16 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<Sc
         }
 
         @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public void setDisplayName(String displayName) {
+
+        }
+
+        @Override
         public void setJobName(String jobName) {
 
         }

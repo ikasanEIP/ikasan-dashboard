@@ -85,21 +85,22 @@ public class JobContextMenu extends Dialog {
             else if(job instanceof InternalEventDrivenJob) {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog
                     = new InternalEventDrivenJobDialog(null, scheduledProcessManagementService, configurationRestService,
-                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel);
+                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel,
+                    this.currentInstance.isUseDisplayName());
                 internalEventDrivenJobDialog.setJob((InternalEventDrivenJob)job, EditMode.READONLY);
                 internalEventDrivenJobDialog.open();
             }
             else if(job instanceof FileEventDrivenJob) {
                 FileEventJobDialog fileEventJobDialog
                     = new FileEventJobDialog(null, scheduledProcessManagementService, configurationRestService,
-                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
+                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.currentInstance.isUseDisplayName());
                 fileEventJobDialog.setJob((FileEventDrivenJob) job, EditMode.READONLY);
                 fileEventJobDialog.open();
             }
             else if(job instanceof QuartzScheduleDrivenJob) {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog
                     = new QuartzDrivenScheduledJobDialog(null, scheduledProcessManagementService, configurationRestService,
-                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
+                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.currentInstance.isUseDisplayName());
                 quartzDrivenScheduledJobDialog.setJob((QuartzScheduleDrivenJob) job, EditMode.READONLY);
                 quartzDrivenScheduledJobDialog.open();
             }

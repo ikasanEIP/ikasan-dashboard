@@ -47,6 +47,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
+    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
 
     private TextField catalystJobNameTf;
@@ -262,7 +263,19 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(GlobalEventJob::getJobDescription, GlobalEventJob::setJobDescription);
-        formLayout.add(jobDescriptionTa, 2);
+
+        if(this.contextInstance.isUseDisplayName()) {
+            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
+            this.jobNameAliasTf.setId("jobNameAliasTf");
+            this.jobNameAliasTf.setRequired(false);
+            this.jobNameAliasTf.setEnabled(false);
+            formBinder.forField(this.jobNameAliasTf)
+                .bind(GlobalEventJob::getDisplayName, GlobalEventJob::setDisplayName);
+            formLayout.add(jobNameAliasTf, jobDescriptionTa);
+        }
+        else {
+            formLayout.add(jobDescriptionTa, 2);
+        }
 
         H4 catalystJobLabel = new H4(getTranslation("header.catalyst-job", UI.getCurrent().getLocale()));
         formLayout.add(catalystJobLabel, 2);

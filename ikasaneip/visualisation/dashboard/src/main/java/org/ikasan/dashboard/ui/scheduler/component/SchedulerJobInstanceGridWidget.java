@@ -240,6 +240,25 @@ public class SchedulerJobInstanceGridWidget extends Div
         schedulerJobInstanceFilteringGrid.setHeight("75vh");
         schedulerJobInstanceFilteringGrid.setContextInstanceId(contextInstance.getId());
 
+        if(this.contextInstance.isUseDisplayName()) {
+            schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
+                    HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+                    if (schedulerJobInstanceRecord.getDisplayName() != null && !schedulerJobInstanceRecord.getDisplayName().isEmpty()) {
+                        Label displayNameLabel = new Label(schedulerJobInstanceRecord.getDisplayName());
+                        horizontalLayout.add(displayNameLabel);
+                    } else {
+                        Label displayNameLabel = new Label(getTranslation("label.not-defined", UI.getCurrent().getLocale()));
+                        horizontalLayout.add(displayNameLabel);
+                    }
+
+                    return horizontalLayout;
+                })).setHeader(getTranslation("table-header.job-name-alias", UI.getCurrent().getLocale()))
+                .setResizable(true)
+                .setSortable(true)
+                .setKey("alias")
+                .setFlexGrow(8);
+        }
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -723,7 +742,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             .setKey("startTime")
             .setResizable(true)
             .setSortable(true)
-            .setWidth("320px");
+            .setWidth("220px");
 
         this.schedulerJobInstanceFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobInstanceRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
@@ -733,7 +752,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             .setKey("endTime")
             .setResizable(true)
             .setSortable(true)
-            .setWidth("320px");
+            .setWidth("220px");
 
         this.schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -788,6 +807,9 @@ public class SchedulerJobInstanceGridWidget extends Div
             .setFlexGrow(4);
 
         HeaderRow hr = schedulerJobInstanceFilteringGrid.appendHeaderRow();
+        if(this.contextInstance.isUseDisplayName()) {
+            this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setDisplayNameFilter, "alias");
+        }
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "moduleName");
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setChildContextName, "childContextName");
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobType

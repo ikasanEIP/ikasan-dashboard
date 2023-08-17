@@ -34,6 +34,7 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected boolean isQuartzScheduleDrivenJobsDisabledForContext;
     protected int treeViewExpandLevel = 1;
     protected boolean ableToRunConcurrently = true;
+    private boolean useDisplayName = false;
 
     @Override
     public String getName() {
@@ -178,6 +179,16 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setAbleToRunConcurrently(boolean ableToRunConcurrently) {
         this.ableToRunConcurrently = ableToRunConcurrently;
+    }
+
+    @Override
+    public boolean isUseDisplayName() {
+        return useDisplayName;
+    }
+
+    @Override
+    public void setUseDisplayName(boolean useDisplayName) {
+        this.useDisplayName = useDisplayName;
     }
 
     @Override

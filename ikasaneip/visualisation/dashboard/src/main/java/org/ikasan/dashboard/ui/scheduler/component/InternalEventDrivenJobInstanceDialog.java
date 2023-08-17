@@ -82,6 +82,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
+    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
 
 
@@ -552,7 +553,20 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(InternalEventDrivenJobInstance::getJobDescription, InternalEventDrivenJobInstance::setJobDescription);
-        formLayout.add(jobDescriptionTa, 2);
+
+        if(this.contextInstance.isUseDisplayName()) {
+            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
+            this.jobNameAliasTf.setId("jobNameAliasTf");
+            this.jobNameAliasTf.setRequired(false);
+            this.jobNameAliasTf.setEnabled(false);
+            formBinder.forField(this.jobNameAliasTf)
+                .bind(InternalEventDrivenJob::getDisplayName, InternalEventDrivenJob::setDisplayName);
+            formLayout.add(jobNameAliasTf, jobDescriptionTa);
+        }
+        else {
+            formLayout.add(jobDescriptionTa, 2);
+        }
+
 
         this.minExecutionTimeTf = new TextField(getTranslation("label.minimum-execution-time", UI.getCurrent().getLocale()));
         this.minExecutionTimeTf.setEnabled(false);

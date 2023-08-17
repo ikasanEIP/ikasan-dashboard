@@ -40,6 +40,7 @@ import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
+    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private TextField filenameTf;
     private TextField archiveDirectoryTf;
@@ -293,7 +295,22 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
             .bind(FileEventDrivenJobInstance::getJobDescription, FileEventDrivenJobInstance::setJobDescription);
-        formLayout.add(jobDescriptionTa, 2);
+
+        if(this.contextInstance.isUseDisplayName()) {
+            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
+            this.jobNameAliasTf.setId("jobNameAliasTf");
+            this.jobNameAliasTf.setRequired(false);
+            this.jobNameAliasTf.setEnabled(this.editMode == EditMode.NEW &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            formBinder.forField(this.jobNameAliasTf)
+                .bind(FileEventDrivenJob::getDisplayName, FileEventDrivenJob::setDisplayName);
+            formLayout.add(jobNameAliasTf, jobDescriptionTa);
+        }
+        else {
+            formLayout.add(jobDescriptionTa, 2);
+        }
 
         this.filenameTf = new TextField("File path");
         this.filenameTf.setRequired(true);
