@@ -89,7 +89,7 @@ public class ExclusionController
     {
         try
         {
-            logger.info(exclusionsJsonPayload);
+            logger.debug(exclusionsJsonPayload);
             List<ExclusionEvent> exclusionEvents = this.mapper.readValue(exclusionsJsonPayload
                 , mapper.getTypeFactory().constructCollectionType(List.class, ExclusionEventImpl.class));
             this.batchInsert.insert(exclusionEvents);
