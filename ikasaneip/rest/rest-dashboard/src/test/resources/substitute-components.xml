@@ -46,6 +46,8 @@
 
     <bean id="metricsService" class="org.ikasan.rest.dashboard.util.TestMetricsService" />
 
+    <bean id="userService" class="org.ikasan.rest.dashboard.util.TestUserService" />
+
     <bean id="contextParametersInstanceService" class="org.ikasan.rest.dashboard.util.TestContextParametersInstanceService" />
 
 </beans>

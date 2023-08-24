@@ -41,10 +41,7 @@
 package org.ikasan.rest.dashboard;
 
 import org.ikasan.rest.dashboard.model.dto.ErrorDto;
-import org.ikasan.rest.dashboard.model.user.IkasanPrincipal;
-import org.ikasan.rest.dashboard.model.user.Policy;
-import org.ikasan.rest.dashboard.model.user.Role;
-import org.ikasan.rest.dashboard.model.user.UserDto;
+import org.ikasan.rest.dashboard.model.user.*;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
 import org.slf4j.Logger;
@@ -153,6 +150,8 @@ public class UserController
         Role r = new Role();
         r.setName(role.getName());
         r.setDescription(role.getDescription());
+        r.setRoleModules(role.getRoleModules().stream().map(roleModule -> (convert(roleModule, r))).collect(Collectors.toSet()));
+        r.setRoleJobPlans(role.getRoleJobPlans().stream().map(roleJobPlan -> (convert(roleJobPlan, r))).collect(Collectors.toSet()));
         r.setPolicies(role.getPolicies().stream().map(p -> convert(p)).collect(Collectors.toSet()));
         return r;
     }
@@ -162,6 +161,20 @@ public class UserController
         Policy p = new Policy();
         p.setName(policy.getName());
         p.setDescription(policy.getDescription());
+        return p;
+    }
+
+    private RoleModule convert(org.ikasan.security.model.RoleModule roleModule, Role role)
+    {
+        RoleModule p = new RoleModule();
+        p.setModuleName(roleModule.getModuleName());
+        return p;
+    }
+
+    private RoleJobPlan convert(org.ikasan.security.model.RoleJobPlan roleJobPlan, Role role)
+    {
+        RoleJobPlan p = new RoleJobPlan();
+        p.setJobPlanName(roleJobPlan.getJobPlanName());
         return p;
     }
 }
