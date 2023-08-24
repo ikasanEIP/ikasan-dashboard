@@ -56,6 +56,9 @@ public class Role implements Serializable
     private String description = "";
     private Set<Policy> policies;
 
+    private Set<RoleModule> roleModules = new HashSet<>();
+    private Set<RoleJobPlan> roleJobPlans = new HashSet<>();
+
     /** The data time stamp when an instance was first created */
     private Date createdDateTime;
 
@@ -193,6 +196,22 @@ public class Role implements Serializable
     public void setPolicies(Set<Policy> policies)
     {
         this.policies = policies;
+    }
+
+    public Set<RoleModule> getRoleModules() {
+        return roleModules;
+    }
+
+    public void setRoleModules(Set<RoleModule> roleModules) {
+        this.roleModules = roleModules;
+    }
+
+    public Set<RoleJobPlan> getRoleJobPlans() {
+        return roleJobPlans;
+    }
+
+    public void setRoleJobPlans(Set<RoleJobPlan> roleJobPlans) {
+        this.roleJobPlans = roleJobPlans;
     }
 
     @Override
