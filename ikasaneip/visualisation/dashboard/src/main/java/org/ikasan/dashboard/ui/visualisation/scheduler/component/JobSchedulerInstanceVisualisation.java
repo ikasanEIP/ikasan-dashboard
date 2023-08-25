@@ -13,6 +13,7 @@ import org.ikasan.designer.event.CanvasItemSingleClickEvent;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -24,6 +25,7 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -139,16 +141,20 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
                     -> listener.contextSelected(canvasItemDoubleClickEvent.getFigure().getUserData().getContextName()));
             }
         else if(canvasItemDoubleClickEvent.getFigure().getUserData().getItemType().equals(UserData.FILE_EVENT_DRIVEN_JOB)) {
-            this.openFileWatcherJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier());
+            this.openFileWatcherJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier(),
+                canvasItemDoubleClickEvent.getFigure().getUserData().getJobName());
         }
         else if(canvasItemDoubleClickEvent.getFigure().getUserData().getItemType().equals(UserData.INTERNAL_EVENT_DRIVEN_JOB)) {
-            this.openCommandExecutionJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier());
+            this.openCommandExecutionJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier(),
+                canvasItemDoubleClickEvent.getFigure().getUserData().getJobName());
         }
         else if(canvasItemDoubleClickEvent.getFigure().getUserData().getItemType().equals(UserData.QUARTZ_EVENT_DRIVEN_JOB)) {
-            this.openQuartzScheduledJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier());
+            this.openQuartzScheduledJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier(),
+                canvasItemDoubleClickEvent.getFigure().getUserData().getJobName());
         }
         else if(canvasItemDoubleClickEvent.getFigure().getUserData().getItemType().equals(UserData.GLOBAL_EVENT_DRIVEN_JOB)) {
-            this.openGlobalEventJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier());
+            this.openGlobalEventJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier(),
+                canvasItemDoubleClickEvent.getFigure().getUserData().getJobName());
         }
 
         super.doubleClickEvent(canvasItemDoubleClickEvent);
@@ -216,24 +222,24 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
     /**
      * Helper method to load the job.
      *
-     * @param identifier
+     * @param jobName
      * @param jobType
      * @return
      */
-    private SchedulerJobInstanceRecord loadJob(String identifier, String jobType) {
+    private SchedulerJobInstanceRecord loadJob(String identifier, String jobName, String jobType) {
         SchedulerJobInstance schedulerJob = this.contextInstance.getScheduledJobsMap()
             .get(identifier);
         if (schedulerJob == null) {
             logger.warn("Could not retrieve job type [{}], job identifier [{}] from job plan instance [{}] " +
                     "with job plan instance id[{}] and child job plan name[{}]!",
-                jobType, identifier, parentContextInstance.getName(),
+                jobType, jobName, parentContextInstance.getName(),
                 parentContextInstance.getId(), contextInstance.getName());
 
-            NotificationHelper.showErrorNotification(getTranslation("error.could-not-load-file-watcher-job"));
+            NotificationHelper.showErrorNotification(getTranslation("error.could-not-load-job"));
             return null;
         }
-        SchedulerJobInstanceRecord schedulerJobRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName
-            (this.parentContextInstance.getId(), schedulerJob.getJobName(), this.contextInstance.getName());
+        SchedulerJobInstanceRecord schedulerJobRecord = this.schedulerJobInstanceService.findById(jobName +
+            "_" + this.parentContextInstance.getId() + "_" + this.contextInstance.getName() + "_" + jobType);
 
         if (schedulerJobRecord == null) {
             logger.warn("Could not retrieve retrieve job type [{}], job identifoer [{}] from the database, job plan instance [{}] " +
@@ -241,7 +247,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
                 jobType, schedulerJob.getJobName(), parentContextInstance.getName(), parentContextInstance.getId(),
                 contextInstance.getName());
 
-            NotificationHelper.showErrorNotification(getTranslation("error.could-not-load-command-execution-job"));
+            NotificationHelper.showErrorNotification(getTranslation("error.could-not-load-job"));
             return null;
         }
 
@@ -251,10 +257,10 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
     /**
      * Open the file watcher job dialog.
      *
-     * @param identifier of the job
+     * @param jobName of the job
      */
-    private void openFileWatcherJob(String identifier) {
-        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, UserData.FILE_EVENT_DRIVEN_JOB);
+    private void openFileWatcherJob(String identifier, String jobName) {
+        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, jobName, JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
 
         FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog
             (moduleMetaDataService.findById(schedulerJobRecord.getSchedulerJobInstance().getAgentName()),
@@ -269,8 +275,8 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
      *
      * @param identifier of the job
      */
-    private void openCommandExecutionJob(String identifier) {
-        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, UserData.INTERNAL_EVENT_DRIVEN_JOB);
+    private void openCommandExecutionJob(String identifier, String jobName) {
+        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, jobName, JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
 
         InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog
             (moduleMetaDataService.findById(schedulerJobRecord.getSchedulerJobInstance().getAgentName()),
@@ -287,8 +293,8 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
      *
      * @param identifier of the job
      */
-    private void openQuartzScheduledJob(String identifier) {
-        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, UserData.QUARTZ_EVENT_DRIVEN_JOB);
+    private void openQuartzScheduledJob(String identifier, String jobName) {
+        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, jobName, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
 
         QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobInstanceDialog = new QuartzDrivenScheduledJobInstanceDialog
             (moduleMetaDataService.findById(schedulerJobRecord.getSchedulerJobInstance().getAgentName()),
@@ -298,8 +304,8 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
         quartzDrivenScheduledJobInstanceDialog.open();
     }
 
-    private void openGlobalEventJob(String identifier) {
-        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, UserData.GLOBAL_EVENT_DRIVEN_JOB);
+    private void openGlobalEventJob(String identifier, String jobName) {
+        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, jobName, JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
 
         GlobalEventJobInstanceDialog globalEventJobInstanceDialog = new GlobalEventJobInstanceDialog(systemEventLogger, schedulerJobInstanceService, this.globalEventService
             , this.parentContextInstance);
