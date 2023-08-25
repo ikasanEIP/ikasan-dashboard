@@ -846,7 +846,8 @@ public class SchedulerJobInstanceGridWidget extends Div
                 InternalEventDrivenJobInstanceDialog internalEventDrivenJobDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.contextInstance
                     , this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService);
-                internalEventDrivenJobDialog.setJob(event.getItem());
+
+                internalEventDrivenJobDialog.setJob(this.schedulerJobInstanceService.findById(event.getItem().getId()));
 
                 internalEventDrivenJobDialog.open();
             }

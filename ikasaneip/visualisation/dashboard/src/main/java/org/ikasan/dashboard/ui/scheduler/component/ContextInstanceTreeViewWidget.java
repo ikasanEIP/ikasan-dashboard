@@ -317,8 +317,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                 Label jobNameLabel =  new Label(((SchedulerJobInstance)value).getJobName());
                 if(this.contextInstance.isUseDisplayName() && ((SchedulerJobInstance)value).getDisplayName() != null && !((SchedulerJobInstance)value).getDisplayName().isEmpty()) {
-                    Label jobDisplayNameLabel =  new Label(((SchedulerJobInstance)value).getDisplayName()
-                        + " - " + (((SchedulerJobInstance)value).getJobName()));
+                    Label jobDisplayNameLabel =  new Label(((SchedulerJobInstance)value).getDisplayName());
                     horizontalLayout.add(jobDisplayNameLabel);
                     horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
                 }
@@ -1092,8 +1091,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon modal = IconDecorator.decorate(new Icon(VaadinIcon.MODAL), getTranslation("tooltip.open-visualisation"
             , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
         modal.addClickListener(event -> {
-            SchedulerJobInstanceRecord refreshedRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(schedulerJobInstanceRecord.getContextInstanceId(),
-                schedulerJobInstanceRecord.getJobName(), schedulerJobInstanceRecord.getChildContextName());
+            SchedulerJobInstanceRecord refreshedRecord = this.schedulerJobInstanceService.findById(schedulerJobInstanceRecord.getId());
             if(refreshedRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
                 FileEventJobInstanceDialog fileEventJobInstanceDialog
                     = new FileEventJobInstanceDialog(this.moduleMetaDataService.findById(refreshedRecord.getSchedulerJobInstance().getAgentName()),

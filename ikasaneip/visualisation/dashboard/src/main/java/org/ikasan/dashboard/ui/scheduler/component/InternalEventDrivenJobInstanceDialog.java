@@ -1020,8 +1020,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
      */
     public void setJob(SchedulerJobInstanceRecord internalEventDrivenJobRecord) {
         this.schedulerJobInstanceRecord = internalEventDrivenJobRecord;
-        this.setJob((InternalEventDrivenJobInstance) this.schedulerJobInstanceService
-            .findById(internalEventDrivenJobRecord.getId()).getSchedulerJobInstance());
+        this.setJob((InternalEventDrivenJobInstance)this.schedulerJobInstanceRecord.getSchedulerJobInstance());
     }
 
     @Override

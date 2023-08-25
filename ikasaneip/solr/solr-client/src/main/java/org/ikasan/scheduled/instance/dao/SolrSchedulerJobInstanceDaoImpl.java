@@ -111,24 +111,25 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
     @Override
     public SchedulerJobInstanceRecord findById(String id) {
-        StringBuffer typeBuffer = new StringBuffer();
-        typeBuffer.append(OPEN_BRACKET);
-        typeBuffer.append(TYPE + COLON);
-        typeBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
-        typeBuffer.append(OR).append(" ");
-        typeBuffer.append(TYPE + COLON);
-        typeBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
-        typeBuffer.append(OR).append(" ");
-        typeBuffer.append(TYPE + COLON);
-        typeBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE).append("\" ");
-        typeBuffer.append(OR).append(" ");
-        typeBuffer.append(TYPE + COLON);
-        typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE).append("\" ");
-        typeBuffer.append(CLOSE_BRACKET);
+//        StringBuffer typeBuffer = new StringBuffer();
+//        typeBuffer.append(OPEN_BRACKET);
+//        typeBuffer.append(TYPE + COLON);
+//        typeBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
+//        typeBuffer.append(OR).append(" ");
+//        typeBuffer.append(TYPE + COLON);
+//        typeBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
+//        typeBuffer.append(OR).append(" ");
+//        typeBuffer.append(TYPE + COLON);
+//        typeBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE).append("\" ");
+//        typeBuffer.append(OR).append(" ");
+//        typeBuffer.append(TYPE + COLON);
+//        typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE).append("\" ");
+//        typeBuffer.append(CLOSE_BRACKET);
 
         StringBuffer queryString = new StringBuffer();
-        queryString.append(typeBuffer)
-            .append(AND)
+        queryString
+//            .append(typeBuffer)
+//            .append(AND)
             .append(ID).append(COLON)
             .append("\"").append(SolrSpecialCharacterEscapeUtil.escape(id)).append("\"");
 
