@@ -11,6 +11,7 @@ import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -18,7 +19,9 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamManageFunction;
@@ -35,6 +38,7 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.designer.function.SaveFunction;
 import org.ikasan.designer.menu.LabelContextMenu;
 import org.ikasan.designer.menu.LineContextMenu;
 import org.ikasan.designer.menu.ShapeContextMenu;
@@ -65,7 +69,8 @@ import java.util.UUID;
 @UIScope
 @PageTitle("Ikasan - Designer")
 @Component
-public class BusinessStreamDesignerView extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasItemDoubleClickEventListener, BeforeLeaveObserver
+public class BusinessStreamDesignerView extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
+    , CanvasItemDoubleClickEventListener, BeforeLeaveObserver, SaveFunction
 {
     Logger logger = LoggerFactory.getLogger(BusinessStreamDesignerView.class);
 
@@ -103,7 +108,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         this.integratedSystemPalette = this.createIntegratedSystemsPalette();
 
         businessStreamDesigner = new Designer(new BusinessStreamOpenFunction(this.businessStreamMetaDataService, this.moduleMetadataService, this.integratedSystems)
-            ,new BusinessStreamSaveFunction(this.businessStreamMetaDataService), new BusinessStreamSaveAsFunction(this.businessStreamMetaDataService),
+            ,this, new BusinessStreamSaveAsFunction(this.businessStreamMetaDataService),
             new BusinessStreamManageFunction(this.businessStreamMetaDataService, this.moduleMetadataService), this.integratedSystemsImagePath);
 
         businessStreamDesigner.addCanvasItemRightClickEventListener(this);
@@ -436,6 +441,26 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         }, width, height);
 
         return palletIconItem;
+    }
+
+    @Override
+    public void save(String id, String name, String description, String payload) {
+        try {
+            BusinessStreamMetaData businessStreamMetaData = new BusinessStreamMetaDataImpl();
+            businessStreamMetaData.setName(name);
+            businessStreamMetaData.setDescription(description);
+            businessStreamMetaData.setId(id);
+            businessStreamMetaData.setJson(payload);
+
+            this.businessStreamMetaDataService.save(businessStreamMetaData);
+        }
+        catch (Exception e) {
+            logger.error(String.format("An error has occurred saving business stream[%s]",name), e);
+            NotificationHelper.showUserNotification(getTranslation("notification.error-saving-business-stream", UI.getCurrent().getLocale()));
+            return;
+        }
+
+        NotificationHelper.showUserNotification(getTranslation("notification.business-stream-saved", UI.getCurrent().getLocale()));
     }
 
 
