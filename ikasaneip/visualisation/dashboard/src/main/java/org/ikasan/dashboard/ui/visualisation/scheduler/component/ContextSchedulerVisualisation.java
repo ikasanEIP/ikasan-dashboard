@@ -50,7 +50,8 @@ public class ContextSchedulerVisualisation extends SchedulerVisualisation {
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit, ui);
+            this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString()
+                , this.dynamicImagePath, !this.edit, ui, true);
             this.designerCanvas.addCanvasInitialisedListener(this);
 
             this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));

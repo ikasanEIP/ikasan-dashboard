@@ -76,7 +76,7 @@ public class ContextSchedulerInstanceVisualisation extends SchedulerInstanceVisu
             }
 
             this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID(),
-                this.dynamicImagePath, true, UI.getCurrent());
+                this.dynamicImagePath, true, UI.getCurrent(), true);
 
             this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
 

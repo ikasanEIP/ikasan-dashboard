@@ -830,7 +830,7 @@ window.Vaadin.Flow.designerConnector = {
             spinner = null;
         }
 
-        designer.$connector.importJson = async function (jsonDocument) {
+        designer.$connector.importJson = async function (jsonDocument, toBack) {
 
             let opts = {
                 lines: 13, // The number of lines to draw
@@ -874,7 +874,7 @@ window.Vaadin.Flow.designerConnector = {
                     // We want to bring images to the front so that
                     // they can be double clicked!
                     figure.toFront();
-                } else {
+                } else if(toBack){
                     console.log("to back " + figure.NAME + " " + figure.id);
                     figure.toBack();
                 }

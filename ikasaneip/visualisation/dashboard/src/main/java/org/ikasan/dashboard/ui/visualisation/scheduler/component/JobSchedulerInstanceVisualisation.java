@@ -84,7 +84,8 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID(), this.dynamicImagePath, true, UI.getCurrent());
+            this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID(), this.dynamicImagePath
+                , true, UI.getCurrent(), true);
             this.designerCanvas.clear();
 
             if (contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {

@@ -70,7 +70,7 @@ public class BusinessStreamOpenFunction implements OpenFunction {
                 }
 
                 designerCanvas.clear();
-                designerCanvas.importJson();
+                designerCanvas.importJson(false);
             }
         });
     }

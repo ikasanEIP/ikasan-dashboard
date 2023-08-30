@@ -448,7 +448,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             initialised = true;
         }
 
-        this.businessStreamDesigner.importJson();
+        this.businessStreamDesigner.importJson(false);
     }
 
     @Override

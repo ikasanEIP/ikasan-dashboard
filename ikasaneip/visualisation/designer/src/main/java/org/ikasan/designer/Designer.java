@@ -336,7 +336,8 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
     }
 
     protected void initBase() {
-        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, false, UI.getCurrent());
+        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction, "canvas-viewport-"+ UUID.randomUUID()
+            , this.dynamicImagePath, false, UI.getCurrent(), false);
         this.designerCanvas.setSizeFull();
         this.designerCanvas.getElement().getStyle().set("border", "1px solid #E0E0E0");
         this.designerCanvas.getElement().getStyle().set("padding", "0px");
@@ -492,8 +493,8 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         this.designerCanvas.exportJson();
     }
 
-    public void importJson(){
-        this.designerCanvas.importJson();
+    public void importJson(boolean toBack){
+        this.designerCanvas.importJson(toBack);
     }
 
     public void exportPng(){
