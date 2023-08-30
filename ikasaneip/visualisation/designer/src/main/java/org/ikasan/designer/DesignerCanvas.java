@@ -67,6 +67,8 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
     private UI ui;
 
+    private boolean toBack;
+
 
     /**
      * Constructor
@@ -75,11 +77,12 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param dynamicImagePath
      * @param readonly
      */
-    public DesignerCanvas(String name, String dynamicImagePath, boolean readonly, UI ui) {
+    public DesignerCanvas(String name, String dynamicImagePath, boolean readonly, UI ui, boolean toBack) {
         super();
         this.name = name;
         this.dynamicImagePath = dynamicImagePath;
         this.readonly = readonly;
+        this.toBack = toBack;
 
         this.getElement().getThemeList().remove("padding");
         this.getElement().getThemeList().remove("spacing");
@@ -150,8 +153,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param dynamicImagePath
      * @param readonly
      */
-    public DesignerCanvas(SaveFunction saveFunction, SaveAsFunction saveAsFunction, String name, String dynamicImagePath, boolean readonly, UI ui) {
-        this(name, dynamicImagePath, readonly, ui);
+    public DesignerCanvas(SaveFunction saveFunction, SaveAsFunction saveAsFunction, String name
+        , String dynamicImagePath, boolean readonly, UI ui, boolean toBack) {
+        this(name, dynamicImagePath, readonly, ui, toBack);
         this.saveFunction = saveFunction;
         this.saveAsFunction = saveAsFunction;
     }
@@ -178,7 +182,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         initConnector();
 
         if(this.canvasJson != null && ! connectorInitialised) {
-            this.importJson();
+            this.importJson(this.toBack);
         }
 
         if(!connectorInitialised) {
@@ -813,11 +817,11 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         });
     }
 
-    public void importJson(){
+    public void importJson(boolean toBack){
         if(this.canvasJson != null) {
             this.saved = true;
             this.clear();
-            getElement().callJsFunction("$connector.importJson", this.canvasJson);
+            getElement().callJsFunction("$connector.importJson", this.canvasJson, toBack);
         }
     }
 
