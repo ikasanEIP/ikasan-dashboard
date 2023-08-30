@@ -6,6 +6,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -13,10 +14,16 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamSaveFunction;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BusinessStreamSaveAsDialog extends AbstractCloseableResizableDialog {
+
+    Logger logger = LoggerFactory.getLogger(BusinessStreamSaveAsDialog.class);
 
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
 
@@ -71,39 +78,45 @@ public class BusinessStreamSaveAsDialog extends AbstractCloseableResizableDialog
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
-            boolean isValid = true;
-            if(businessStreamNameTextfield.getValue() == null || businessStreamNameTextfield.getValue().isEmpty())
-            {
-                businessStreamNameTextfield.setErrorMessage(getTranslation("error.business-stream-name-empty", UI.getCurrent().getLocale()));
-                businessStreamNameTextfield.setInvalid(true);
-                isValid = false;
+            try {
+                boolean isValid = true;
+                if (businessStreamNameTextfield.getValue() == null || businessStreamNameTextfield.getValue().isEmpty()) {
+                    businessStreamNameTextfield.setErrorMessage(getTranslation("error.business-stream-name-empty", UI.getCurrent().getLocale()));
+                    businessStreamNameTextfield.setInvalid(true);
+                    isValid = false;
+                }
+
+                if (businessStreamDescriptionTextfield.getValue() == null || businessStreamDescriptionTextfield.getValue().isEmpty()) {
+                    businessStreamDescriptionTextfield.setErrorMessage(getTranslation("error.business-stream-description-empty", UI.getCurrent().getLocale()));
+                    businessStreamDescriptionTextfield.setInvalid(true);
+                    isValid = false;
+                }
+
+
+                if (!isValid) {
+                    return;
+                }
+
+
+                this.id = businessStreamNameTextfield.getValue();
+                this.name = businessStreamNameTextfield.getValue();
+                this.description = businessStreamDescriptionTextfield.getValue();
+                BusinessStreamMetaData saveBusinessStreamMetaData = new BusinessStreamMetaDataImpl();
+                saveBusinessStreamMetaData.setId(this.id);
+                saveBusinessStreamMetaData.setName(this.name);
+                saveBusinessStreamMetaData.setDescription(this.description);
+                saveBusinessStreamMetaData.setJson(businessStreamJson);
+
+                this.businessStreamMetaDataService.save(saveBusinessStreamMetaData);
             }
-
-            if(businessStreamDescriptionTextfield.getValue() == null || businessStreamDescriptionTextfield.getValue().isEmpty())
-            {
-                businessStreamDescriptionTextfield.setErrorMessage(getTranslation("error.business-stream-description-empty", UI.getCurrent().getLocale()));
-                businessStreamDescriptionTextfield.setInvalid(true);
-                isValid = false;
-            }
-
-
-            if(!isValid)
-            {
+            catch (Exception e) {
+                logger.error(String.format("An error has occurred saving business stream[%s]",name), e);
+                NotificationHelper.showUserNotification(getTranslation("notification.error-saving-business-stream", UI.getCurrent().getLocale()));
+                this.close();
                 return;
             }
 
-
-            this.id = businessStreamNameTextfield.getValue();
-            this.name = businessStreamNameTextfield.getValue();
-            this.description = businessStreamDescriptionTextfield.getValue();
-            BusinessStreamMetaData saveBusinessStreamMetaData = new BusinessStreamMetaDataImpl();
-            saveBusinessStreamMetaData.setId(this.id);
-            saveBusinessStreamMetaData.setName(this.name);
-            saveBusinessStreamMetaData.setDescription(this.description);
-            saveBusinessStreamMetaData.setJson(businessStreamJson);
-
-            this.businessStreamMetaDataService.save(saveBusinessStreamMetaData);
-
+            NotificationHelper.showUserNotification(getTranslation("notification.business-stream-saved", UI.getCurrent().getLocale()));
             this.close();
         });
 
