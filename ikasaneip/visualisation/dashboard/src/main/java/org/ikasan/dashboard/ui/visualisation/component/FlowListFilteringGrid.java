@@ -142,6 +142,10 @@ public class FlowListFilteringGrid extends Grid<FlowMetaData>
                 .collect(Collectors.toList());
         }
 
+        filteredFlows = filteredFlows.stream()
+            .filter(flowMetaData -> flowMetaData.getName().toLowerCase().contains(filter.getFlowNameFilter().toLowerCase()))
+            .collect(Collectors.toList());
+
         return filteredFlows.subList(offset, limit+offset<filteredFlows.size() ? limit+offset : filteredFlows.size());
     }
 

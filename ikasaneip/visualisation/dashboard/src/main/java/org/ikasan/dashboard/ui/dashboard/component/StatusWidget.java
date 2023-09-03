@@ -83,11 +83,8 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
         div.addClassNames("card-counter");
         div.setHeight("500px");
 
-        TextField textField = new TextField();
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
-
-        textField.setPrefixComponent(icon);
 
         Div layout = new Div();
         layout.getElement().getStyle().set("margin-top", "20px");
@@ -96,11 +93,7 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
         Label flows = new Label(getTranslation("label.flow-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
 
-
-        textField.getElement().getStyle().set("margin-left", "auto");
-        textField.getElement().getStyle().set("float", "right");
-
-        layout.add(flows, textField);
+        layout.add(flows);
 
         this.runningDiv = new Div();
         this.runningDiv.addClassNames("card-counter", "running");
@@ -186,11 +179,13 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
         div.addClassNames("card-counter");
         div.setHeight("500px");
 
-        TextField textField = new TextField();
+        TextField statusTextField = new TextField();
+        statusTextField.setWidth("300px");
+
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
-        textField.setPrefixComponent(icon);
+        statusTextField.setPrefixComponent(icon);
         Div layout = new Div();
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
@@ -206,10 +201,10 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
             this.createStatusView();
         });
 
-        textField.getElement().getStyle().set("margin-left", "auto");
-        textField.getElement().getStyle().set("float", "right");
+        statusTextField.getElement().getStyle().set("margin-left", "auto");
+        statusTextField.getElement().getStyle().set("float", "right");
 
-        layout.add(flows, returnIcon, textField);
+        layout.add(flows, returnIcon, statusTextField);
 
 
         // Create a modulesGrid bound to the list
@@ -240,6 +235,7 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
         div.add(layout, this.flowsGrid);
 
         this.flowsGrid.init();
+        this.flowsGrid.addGridFiltering(statusTextField, this.flowSearchFilter::setFlowNameFilter);
 
         this.add(div);
 
