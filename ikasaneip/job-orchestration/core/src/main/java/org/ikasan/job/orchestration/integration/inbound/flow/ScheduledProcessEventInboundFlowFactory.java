@@ -69,11 +69,15 @@ public class ScheduledProcessEventInboundFlowFactory
     @Resource
     ScheduledProcessEventInboundFlowComponentFactory scheduledProcessEventInboundFlowComponentFactory;
 
+    // Default TTL to one week - 60 * 60 * 24 * 7 * 1000 = 604800000
+    @Value(value = "${scheduler.inbound.flow.error.occurrence.ttl.milliseconds:604800000}")
+    Long errorReportingServiceTimeToLive;
 
     @Bean
     public Flow scheduledProcessEventInboundFlow() throws IOException {
         return builderFactory.getModuleBuilder(moduleName).getFlowBuilder("Scheduled Process Event Inbound Flow")
             .withDescription("Scheduled Process Event Inbound Flow")
+            .withErrorReportingServiceTimeToLive(errorReportingServiceTimeToLive)
             .consumer("Scheduled Consumer", scheduledProcessEventInboundFlowComponentFactory.getInboundBigQueueConsumer())
             .producer("Dashboard Producer", scheduledProcessEventInboundFlowComponentFactory.getScheduledStatusProducer())
             .build();
