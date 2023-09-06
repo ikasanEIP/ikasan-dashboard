@@ -171,7 +171,7 @@
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-job-orchestration-service</artifactId>
-            <version>${ikasan.core.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- spring web -->
