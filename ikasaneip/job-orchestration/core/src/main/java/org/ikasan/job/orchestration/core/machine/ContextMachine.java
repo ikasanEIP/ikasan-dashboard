@@ -90,6 +90,9 @@ public class ContextMachine {
     private int attempts;
     private long maxWait;
     private DryRunParameters dryRunParameters;
+    /**
+     * Key = jobId + childContextName.
+     */
     private Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances;
     private Map<String, GlobalEventJobInstance> globalEventJobInstanceMap;
     private Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap;
@@ -1517,5 +1520,9 @@ public class ContextMachine {
 
     protected Map<String, GlobalEventJobInstance> getGlobalEventJobInstanceMap() {
         return globalEventJobInstanceMap;
+    }
+
+    public Map<String, InternalEventDrivenJobInstance> getInternalEventDrivenJobInstancesMap() {
+        return internalEventDrivenJobInstances;
     }
 }

@@ -7,6 +7,7 @@ import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
+import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatus;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -17,6 +18,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +27,8 @@ import java.util.*;
 
 // todo extensive tests need to be written here
 public class ContextHelperTest {
+
+    private static Logger logger = LoggerFactory.getLogger(ContextHelperTest.class);
 
     ContextService contextService = new ContextService();
 
@@ -200,7 +205,7 @@ public class ContextHelperTest {
 
         ContextHelper.enrichJobs(contextInstance);
 
-        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate));
+        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true));
 
         AggregateContextInstanceStatus aggregateContextInstanceStatus
             = ContextHelper.getAggregateContextInstanceStatus(contextInstance);
@@ -221,7 +226,7 @@ public class ContextHelperTest {
 
         ContextHelper.enrichJobs(contextInstance);
 
-        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate));
+        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true));
 
         AggregateContextInstanceStatus aggregateContextInstanceStatus
             = ContextHelper.getAggregateContextInstanceStatus(contextInstance);
@@ -243,6 +248,43 @@ public class ContextHelperTest {
 
         Assert.assertEquals("185916817", identifiers.get(0).get(0).getJobName());
         Assert.assertEquals("-958075417", identifiers.get(1).get(0).getJobName());
+    }
+
+    @Test
+    public void testStatusHelper() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context-status-plan.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context-status-instance.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsInstancesMap(context, false);
+
+        // Set some jobs as targetResidingContextOnly = true on the template
+        internalEventDrivenJobs.get("agent-name1-JOB_TEST_TRUE-some-test-name1").setTargetResidingContextOnly(true);
+        internalEventDrivenJobs.get("agent-name1-JOB_TEST_TRUE-JOB_TEST_TRUE").setTargetResidingContextOnly(true);
+
+        ContextJobInstanceStatus contextJobInstanceStatus = ContextHelper.getContextJobInstanceStatus(contextInstance, internalEventDrivenJobs);
+        logger.info(contextJobInstanceStatus.toString());
+        System.out.println(contextJobInstanceStatus);
+
+        contextJobInstanceStatus.getJobDetails().forEach(status ->{
+
+            // Check that if targetResidingContextOnly = true then we create a separate record for it
+            if (status.getJobName().equals("JOB_TEST_TRUE")) {
+                if (status.getChildContextName().contains("JOB_TEST_TRUE")) {
+                    Assert.assertTrue(true);
+                } else if ((status.getChildContextName().contains("some-test-name1"))) {
+                    Assert.assertTrue(true);
+                } else {
+                    Assert.fail();
+                }
+            }
+
+            // Check that if targetResidingContextOnly = false then we create 1 record
+            if (status.getJobName().equals("POP_ABCDE_MD")) {
+                Assert.assertEquals(2, status.getChildContextName().size());
+                Assert.assertTrue(status.getChildContextName().contains("ABCDE_POP_HOPE5_DECOMP"));
+                Assert.assertTrue(status.getChildContextName().contains("ABCDE_POP_MD"));
+            }
+        });
     }
 
     @Test
@@ -304,7 +346,7 @@ public class ContextHelperTest {
         ContextTemplate contextTemplate = this.contextService
             .getContextTemplate(loadDataFile("/data/-1793100514.json"));
 
-        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap = createInternalJobsInstancesMap(contextTemplate);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap = createInternalJobsInstancesMap(contextTemplate, true);
 
         List<ContextParameter> contextParameterInstances1 = new ArrayList<>();
         contextParameterInstances1.add(newContextParameterInstance("name1", "value1"));
@@ -381,16 +423,16 @@ public class ContextHelperTest {
         return getClass().getResourceAsStream(fileName);
     }
 
-    public Map<String, InternalEventDrivenJobInstance> createInternalJobsInstancesMap(ContextTemplate contextTemplate) {
+    public Map<String, InternalEventDrivenJobInstance> createInternalJobsInstancesMap(ContextTemplate contextTemplate, boolean targetResidingContextOnly) {
         HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
 
         if(contextTemplate.getScheduledJobs() != null) {
             contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier() + "-" + contextTemplate.getName(),
-                newInternalEventDrivenJobInstance(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
+                newInternalEventDrivenJobInstance(job.getIdentifier(), contextTemplate.getName(), job.getJobName(), targetResidingContextOnly)));
         }
 
         if (contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
-            contextTemplate.getContexts().forEach(template -> addInternalJobInstances(template, internalEventDrivenJobs));
+            contextTemplate.getContexts().forEach(template -> addInternalJobInstances(template, internalEventDrivenJobs, targetResidingContextOnly));
         }
 
         return internalEventDrivenJobs;
@@ -401,7 +443,7 @@ public class ContextHelperTest {
 
         if(contextTemplate.getScheduledJobs() != null) {
             contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier() + "-" + contextTemplate.getName(),
-                newInternalEventDrivenJobInstance(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
+                newInternalEventDrivenJobInstance(job.getIdentifier(), contextTemplate.getName(), job.getJobName(), true)));
         }
 
         if (contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
@@ -411,24 +453,24 @@ public class ContextHelperTest {
         return internalEventDrivenJobs;
     }
 
-    private void addInternalJobInstances(ContextTemplate contextTemplate, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs) {
+    private void addInternalJobInstances(ContextTemplate contextTemplate, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs, boolean targetResidingContextOnly) {
         if (contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
             contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier() + "-" + contextTemplate.getName(),
-                newInternalEventDrivenJobInstance(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
+                newInternalEventDrivenJobInstance(job.getIdentifier(), contextTemplate.getName(), job.getJobName(), targetResidingContextOnly)));
         }
 
         if (contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
-            contextTemplate.getContexts().forEach(template -> addInternalJobInstances(template, internalEventDrivenJobs));
+            contextTemplate.getContexts().forEach(template -> addInternalJobInstances(template, internalEventDrivenJobs, targetResidingContextOnly));
         }
     }
 
-    private InternalEventDrivenJobInstance newInternalEventDrivenJobInstance(String jobIdentifier, String childContextName, String jobName) {
+    private InternalEventDrivenJobInstance newInternalEventDrivenJobInstance(String jobIdentifier, String childContextName, String jobName, boolean targetResidingContextOnly) {
         InternalEventDrivenJobInstance job = new InternalEventDrivenJobInstanceImpl();
         job.setJobName(jobName);
         job.setIdentifier(jobIdentifier);
         job.setChildContextName(childContextName);
         job.setChildContextNames(List.of(childContextName));
-        job.setTargetResidingContextOnly(true);
+        job.setTargetResidingContextOnly(targetResidingContextOnly);
 
         return job;
     }

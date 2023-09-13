@@ -23,10 +23,7 @@ import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ObjectMapperFactory {
 
@@ -70,7 +67,8 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(JobLockInstance.class, JobLockInstanceImpl.class)
             .addAbstractTypeMapping(List.class, ArrayList.class)
             .addAbstractTypeMapping(JobLockHolder.class, JobLockHolderImpl.class)
-            .addAbstractTypeMapping(Map.class, HashMap.class);
+            .addAbstractTypeMapping(Map.class, HashMap.class)
+            .addAbstractTypeMapping(Set.class, HashSet.class);
 
         objectMapper.registerModule(simpleModule);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

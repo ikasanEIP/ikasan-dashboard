@@ -1,10 +1,9 @@
 package org.ikasan.orchestration.service.context.status;
 
-import liquibase.pro.packaged.S;
-import org.assertj.core.api.Assertions;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.RegExUtils;
@@ -14,6 +13,8 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -30,6 +31,9 @@ public class ContextStatusServiceImplTest {
     private String jsonJobStatusContext1799613995;
     private String jsonJobStatusContext744167903;
     private String jsonJobStatusContext1692626050;
+    private String jsonContextCONTEXTNAMEPLAN;
+    private String jsonContextCONTEXTNAMEPLANSTATUS;
+    private String getJsonContextStatusForAllJobResult;
 
     private ContextStatusServiceImpl contextStatusService;
 
@@ -43,7 +47,15 @@ public class ContextStatusServiceImplTest {
         jsonJobStatusContext1799613995 = new String(new ClassPathResource("jobStatus-scheduler-agent-1799613995.json").getInputStream().readAllBytes());
         jsonJobStatusContext744167903 = new String(new ClassPathResource("jobStatus-scheduler-agent-744167903.json").getInputStream().readAllBytes());
         jsonJobStatusContext1692626050 = new String(new ClassPathResource("jobStatus-scheduler-agent--1692626050.json").getInputStream().readAllBytes());
+        jsonContextCONTEXTNAMEPLAN = new String(new ClassPathResource("context-status-plan.json").getInputStream().readAllBytes());
+        jsonContextCONTEXTNAMEPLANSTATUS = new String(new ClassPathResource("context-status-instance.json").getInputStream().readAllBytes());
+        getJsonContextStatusForAllJobResult = new String(new ClassPathResource("getJsonContextStatusForAllJobResult.json").getInputStream().readAllBytes());
         contextStatusService = new ContextStatusServiceImpl();
+    }
+
+    @After
+    public void tidyup() {
+        ContextMachineCache.instance().resetAllCache();
     }
 
     @Test
@@ -302,6 +314,218 @@ public class ContextStatusServiceImplTest {
         jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1589183395", "-1692626050");
         jobStatus = formatContextStatus(jobStatus);
         JSONAssert.assertEquals(jsonJobStatusContext1692626050, jobStatus, JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void getJsonContextMachineStatusEmpty() throws Exception {
+        String jobStatus = contextStatusService.getJsonContextMachineStatus(true);
+        String expected = "{ \"contextMachineStatusList\" : [ ] }";
+        JSONAssert.assertEquals(expected, jobStatus, JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void getJsonContextMachineStatusForAllJob() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(jsonContextCONTEXTNAMEPLAN);
+        ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
+            , null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null);
+
+        ContextTemplate context2 = this.contextService.getContextTemplate(jsonContext);
+        ContextInstance contextInstance2 = this.contextService.getContextInstance(jsonContext);
+        contextInstance2.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
+
+        ContextMachine contextMachine2 = new ContextMachine(context2, contextInstance2, null, null, null
+            , null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null);
+
+        ContextMachineCache.instance().put(contextMachine);
+        ContextMachineCache.instance().put(contextMachine2);
+
+        String jobStatus = contextStatusService.getJsonContextMachineStatus(true);
+        String expected = "{\n" +
+            "  \"contextMachineStatusList\" : [ {\n" +
+            "    \"contextName\" : \"CONTEXT_NAME_PLAN\",\n" +
+            "    \"contextInstanceId\" : \"d9094469-1345-4878-aec6-3b8102b65412\",\n" +
+            "    \"instanceStatus\" : \"ERROR\"\n" +
+            "  }, {\n" +
+            "    \"contextName\" : \"CONTEXT-1436221681\",\n" +
+            "    \"contextInstanceId\" : \"3e774777-8ee0-4354-b390-f2ad0712ca63\",\n" +
+            "    \"instanceStatus\" : \"WAITING\"\n" +
+            "  } ]\n" +
+            "}";
+        JSONAssert.assertEquals(expected, jobStatus, JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void getJsonContextMachineStatusPreparedTrue() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(jsonContextCONTEXTNAMEPLAN);
+        ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
+        contextInstance.setStatus(InstanceStatus.PREPARED);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
+            , null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null);
+
+        ContextTemplate context2 = this.contextService.getContextTemplate(jsonContext);
+        ContextInstance contextInstance2 = this.contextService.getContextInstance(jsonContext);
+        contextInstance2.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
+
+        ContextMachine contextMachine2 = new ContextMachine(context2, contextInstance2, null, null, null
+            , null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null);
+
+        ContextMachineCache.instance().put(contextMachine);
+        ContextMachineCache.instance().put(contextMachine2);
+
+        String jobStatus = contextStatusService.getJsonContextMachineStatus(true);
+        String expected = "{\n" +
+            "  \"contextMachineStatusList\" : [ {\n" +
+            "    \"contextName\" : \"CONTEXT-1436221681\",\n" +
+            "    \"contextInstanceId\" : \"3e774777-8ee0-4354-b390-f2ad0712ca63\",\n" +
+            "    \"instanceStatus\" : \"WAITING\"\n" +
+            "  }, {\n" +
+            "    \"contextName\" : \"CONTEXT_NAME_PLAN\",\n" +
+            "    \"contextInstanceId\" : \"d9094469-1345-4878-aec6-3b8102b65412\",\n" +
+            "    \"instanceStatus\" : \"PREPARED\"\n" +
+            "  } ]\n" +
+            "}";
+        JSONAssert.assertEquals(expected, jobStatus, JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void getJsonContextMachineStatusPreparedFalse() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(jsonContextCONTEXTNAMEPLAN);
+        ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
+        contextInstance.setStatus(InstanceStatus.PREPARED);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
+            , null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null);
+
+        ContextTemplate context2 = this.contextService.getContextTemplate(jsonContext);
+        ContextInstance contextInstance2 = this.contextService.getContextInstance(jsonContext);
+        contextInstance2.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
+
+        ContextMachine contextMachine2 = new ContextMachine(context2, contextInstance2, null, null, null
+            , null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null);
+
+        ContextMachineCache.instance().put(contextMachine);
+        ContextMachineCache.instance().put(contextMachine2);
+
+        String jobStatus = contextStatusService.getJsonContextMachineStatus(false);
+        String expected = "{\n" +
+            "  \"contextMachineStatusList\" : [ {\n" +
+            "    \"contextName\" : \"CONTEXT-1436221681\",\n" +
+            "    \"contextInstanceId\" : \"3e774777-8ee0-4354-b390-f2ad0712ca63\",\n" +
+            "    \"instanceStatus\" : \"WAITING\"\n" +
+            "  } ]\n" +
+            "}";
+        JSONAssert.assertEquals(expected, jobStatus, JSONCompareMode.LENIENT);
+    }
+
+    @Test(expected = ContextStatusServiceException.class)
+    public void getJsonContextStatusEmpty() throws Exception {
+        contextStatusService.getJsonContextJobStatus(null, null);
+    }
+
+    @Test
+    public void getJsonContextStatusForAllJob() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(jsonContextCONTEXTNAMEPLAN);
+        ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
+            , null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null);
+        ContextMachineCache.instance().put(contextMachine);
+
+        String jobStatus = contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("d9094469-1345-4878-aec6-3b8102b65412", contextMachine));
+        JSONAssert.assertEquals(getJsonContextStatusForAllJobResult, jobStatus, JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void getJsonContextStatusForAllJobThatErrored() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(jsonContextCONTEXTNAMEPLAN);
+        ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
+            , null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null);
+        ContextMachineCache.instance().put(contextMachine);
+
+        // NOTE we are not passing the internalEventDrivenJobInstance so target targetResidingContext will always be false + end time will equal start time
+
+        String jobStatus = contextStatusService.getJsonContextJobStatus(InstanceStatus.ERROR, Collections.singletonMap("d9094469-1345-4878-aec6-3b8102b65412", contextMachine));
+        String expected = "{\n" +
+            "  \"jobPlans\" : [ {\n" +
+            "    \"contextName\" : \"CONTEXT_NAME_PLAN\",\n" +
+            "    \"contextInstanceId\" : \"d9094469-1345-4878-aec6-3b8102b65412\",\n" +
+            "    \"instanceStatus\" : \"ERROR\",\n" +
+            "    \"jobDetails\" : [ {\n" +
+            "      \"jobName\" : \"INVOKE_SOME_TEST_OBSERVER_some-test-name-2_2_0-Suffix111\",\n" +
+            "      \"childContextName\" : [ \"TESTING_ASSURED_DEV_OPS\", \"TESTING_PARALLEL_STREAM_DEV_OPS\" ],\n" +
+            "      \"instanceStatus\" : \"ERROR\",\n" +
+            "      \"targetResidingContextOnly\" : false,\n" +
+            "      \"startTime\" : 1694138409993,\n" +
+            "      \"endTime\" : 1694138409993\n" +
+            "    } ]\n" +
+            "  } ]\n" +
+            "}";
+        JSONAssert.assertEquals(expected, jobStatus, JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void getJsonContextStatusForAllJobThatCompleted() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(jsonContextCONTEXTNAMEPLAN);
+        ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
+            , null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null);
+        ContextMachineCache.instance().put(contextMachine);
+
+        // NOTE we are not passing the internalEventDrivenJobInstance so target targetResidingContext will always be false + end time will equal start time
+
+        String jobStatus = contextStatusService.getJsonContextJobStatus(InstanceStatus.COMPLETE, Collections.singletonMap("d9094469-1345-4878-aec6-3b8102b65412", contextMachine));
+        String expected = "{\n" +
+            "  \"jobPlans\" : [ {\n" +
+            "    \"contextName\" : \"CONTEXT_NAME_PLAN\",\n" +
+            "    \"contextInstanceId\" : \"d9094469-1345-4878-aec6-3b8102b65412\",\n" +
+            "    \"instanceStatus\" : \"ERROR\",\n" +
+            "    \"jobDetails\" : [ {\n" +
+            "      \"jobName\" : \"JOB_TEST_TRUE_ScheduledJob_03:00:00\",\n" +
+            "      \"childContextName\" : [ \"JOB_TEST_TRUE\" ],\n" +
+            "      \"instanceStatus\" : \"COMPLETE\",\n" +
+            "      \"targetResidingContextOnly\" : false,\n" +
+            "      \"startTime\" : 1694138400008,\n" +
+            "      \"endTime\" : 1694138400008\n" +
+            "    }, {\n" +
+            "      \"jobName\" : \"JOB_TEST_TRUE\",\n" +
+            "      \"childContextName\" : [ \"some-test-name1\", \"JOB_TEST_TRUE\" ],\n" +
+            "      \"instanceStatus\" : \"COMPLETE\",\n" +
+            "      \"targetResidingContextOnly\" : false,\n" +
+            "      \"startTime\" : 1694138401336,\n" +
+            "      \"endTime\" : 1694138401336\n" +
+            "    }, {\n" +
+            "      \"jobName\" : \"INVOKE_SOME_TEST_OBSERVER_some-test-name-2_1_0-xxxxx\",\n" +
+            "      \"childContextName\" : [ \"TESTING_ASSURED_DEV_OPS\", \"some-test-name1\" ],\n" +
+            "      \"instanceStatus\" : \"COMPLETE\",\n" +
+            "      \"targetResidingContextOnly\" : false,\n" +
+            "      \"startTime\" : 1694138407055,\n" +
+            "      \"endTime\" : 1694138407055\n" +
+            "    }, {\n" +
+            "      \"jobName\" : \"POP_ABCDE_CREATE_CAR_LISTS_FOR_WELCOME_ScheduledJob_05:00:00\",\n" +
+            "      \"childContextName\" : [ \"POP_ABCDE_MOTO\" ],\n" +
+            "      \"instanceStatus\" : \"COMPLETE\",\n" +
+            "      \"targetResidingContextOnly\" : false,\n" +
+            "      \"startTime\" : 1694145600015,\n" +
+            "      \"endTime\" : 1694145600015\n" +
+            "    } ]\n" +
+            "  } ]\n" +
+            "}";
+        JSONAssert.assertEquals(expected, jobStatus, JSONCompareMode.LENIENT);
     }
 
     /** Helper method to replace the dynamic created String in the JSON, i.e. the creation time and the UUID */
