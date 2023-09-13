@@ -53,6 +53,7 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -125,72 +126,83 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
 
     @Override
     public String getContextStatus(String instanceName, String contextName) {
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(instanceName);
-        validateContextMachine(contextMachine, instanceName);
-
-        InstanceStatus instanceStatus = contextMachine.getContextStatus(contextName);
-        validateInstance(instanceStatus, instanceName, contextName, null);
-
-        return instanceStatus.name();
+        Map<String, String> contextInstanceStatusMap = new HashMap<>();
+        List<ContextMachine> contextMachineList = ContextMachineCache.instance().getAllRunningByContextName(instanceName);
+        validateContextMachine(contextMachineList, instanceName);
+        for (ContextMachine contextMachine : contextMachineList) {
+            validateContextMachine(contextMachine, instanceName);
+            InstanceStatus instanceStatus = contextMachine.getContextStatus(contextName);
+            validateInstance(instanceStatus, instanceName, contextName, null);
+            contextInstanceStatusMap.put(contextMachine.getContext().getId(), instanceStatus.name());
+        }
+        return contextInstanceStatusMap.toString();
     }
 
     @Override
     public String getContextStatusForJob(String instanceName, String contextName, String jobIdentifier) {
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(instanceName);
-        validateContextMachine(contextMachine, instanceName);
-
-        InstanceStatus instanceStatus = contextMachine.getJobStatus(contextName, jobIdentifier);
-        validateInstance(instanceStatus, instanceName, contextName, jobIdentifier);
-
-        return instanceStatus.name();
+        Map<String, String> contextInstanceStatusMap = new HashMap<>();
+        List<ContextMachine> contextMachineList = ContextMachineCache.instance().getAllRunningByContextName(instanceName);
+        validateContextMachine(contextMachineList, instanceName);
+        for (ContextMachine contextMachine : contextMachineList) {
+            validateContextMachine(contextMachine, instanceName);
+            InstanceStatus instanceStatus = contextMachine.getJobStatus(contextName, jobIdentifier);
+            validateInstance(instanceStatus, instanceName, contextName, jobIdentifier);
+            contextInstanceStatusMap.put(contextMachine.getContext().getId(), instanceStatus.name());
+        }
+        return contextInstanceStatusMap.toString();
     }
 
     /**
-     * Get the status of an instance context or a child context in JSON format.
+     * Get the status of an instance context or a child context in JSON format. Will not return any Prepared instances
      * @param instanceName Context name assigned to the ContextMachineCache
      * @param contextName Context or Child Context to search on
-     * @return Json representation of the current state of the Context Instance at the time of request
+     * @return Mapped json representation of the current state of the Context Instance at the time of request
      * @throws JsonProcessingException if issue transforming to Json
      */
     @Override
     public String getJsonContextStatus(String instanceName, String contextName) throws JsonProcessingException {
-
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(instanceName);
-        validateContextMachine(contextMachine, instanceName);
+        Map<String, ContextInstance> contextInstanceStatusMap = new HashMap<>();
+        List<ContextMachine> contextMachineList = ContextMachineCache.instance().getAllRunningByContextName(instanceName);
+        validateContextMachine(contextMachineList, instanceName);
+        for (ContextMachine contextMachine : contextMachineList) {
+            validateContextMachine(contextMachine, instanceName);
+            ContextInstance contextInstance = contextMachine.getContext(instanceName);
+            validateContextInstance(contextInstance, instanceName);
+            ContextInstance contextInstanceForStatus = ContextHelper.getChildContextInstance(contextName, contextInstance);
+            validateContextInstance(contextInstanceForStatus, contextName);
+            contextInstanceStatusMap.put(contextMachine.getContext().getId(), contextInstance);
+        }
 
         ContextService contextService = new ContextService();
-        ContextInstance contextInstance = contextMachine.getContext(instanceName);
-        validateContextInstance(contextInstance, instanceName);
-
-        ContextInstance contextInstanceForStatus = ContextHelper.getChildContextInstance(contextName, contextInstance);
-        validateContextInstance(contextInstanceForStatus, contextName);
-
-        String json = contextService.getContextInstanceString(contextInstanceForStatus);
+        String json = contextService.getContextInstanceString(contextInstanceStatusMap);
         // return empty string if json is null
         return (json == null) ? "" : json;
     }
 
     /**
-     * Get the status of a Scheduler Job Instance in JSON format.
+     * Get the status of a Scheduler Job Instance in JSON format. Will not return any Prepared instances
      * @param instanceName Context name assigned to the ContextMachineCache
      * @param contextName Context or Child Context to search on
      * @param jobName the job name to find the state for
-     * @return Json representation of the current state of the Scheduler Job Instance at the time of request
+     * @return Mapped json representation of the current state of the Scheduler Job Instance at the time of request
      * @throws JsonProcessingException if issue transforming to Json
      */
     @Override
     public String getJsonContextStatusForJob(String instanceName, String contextName, String jobName) throws JsonProcessingException {
-
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(instanceName);
-        validateContextMachine(contextMachine, instanceName);
+        Map<String, SchedulerJobInstance> schedulerJobInstanceMap = new HashMap<>();
+        List<ContextMachine> contextMachineList = ContextMachineCache.instance().getAllRunningByContextName(instanceName);
+        validateContextMachine(contextMachineList, instanceName);
+        for (ContextMachine contextMachine : contextMachineList) {
+            validateContextMachine(contextMachine, instanceName);
+            ContextInstance contextInstance = contextMachine.getContext(instanceName);
+            validateContextInstance(contextInstance, instanceName);
+            SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(jobName, contextName, contextInstance);
+            validateSchedulerJobInstance(schedulerJobInstance, instanceName, contextName, jobName);
+            schedulerJobInstanceMap.put(contextMachine.getContext().getId(), schedulerJobInstance);
+        }
 
         ContextService contextService = new ContextService();
-        ContextInstance contextInstance = contextMachine.getContext(instanceName);
-        validateContextInstance(contextInstance, instanceName);
-
-        SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(jobName, contextName, contextInstance);
-        validateSchedulerJobInstance(schedulerJobInstance, instanceName, contextName, jobName);
-        String json = contextService.getSchedulerJobInstance(schedulerJobInstance);
+        String json = contextService.getSchedulerJobInstance(schedulerJobInstanceMap);
         // return empty string if json is null
         return (json == null) ? "" : json;
 
@@ -202,6 +214,12 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
                 ? String.format("Could not find context %s in context machine %s", contextName, instanceName)
                 : String.format("Could not find job identifier %s for context %s in context machine %s", jobIdentifier, contextName, instanceName);
             throw new ContextStatusServiceException(errorMessage);
+        }
+    }
+
+    private void validateContextMachine(List<ContextMachine> contextMachineList, String instanceName) {
+        if (contextMachineList == null || contextMachineList.isEmpty()) {
+            throw new ContextStatusServiceException(String.format("Could not find context machine for instance %s", instanceName));
         }
     }
 

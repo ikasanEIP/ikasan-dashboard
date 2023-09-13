@@ -93,6 +93,18 @@ public class ContextMachineCache
             .collect(Collectors.toList());
     }
 
+    /**
+     * This returns plans that are running and not in a PREPARED state
+     *
+     * @param contextName / planName to find
+     * @return all running instances that are for the given plan
+     */
+    public List<ContextMachine> getAllRunningByContextName(String contextName) {
+        List<ContextMachine> contextMachines = getAllByContextName(contextName);
+        contextMachines.removeIf(contextMachine -> contextMachine.getContext().getStatus().equals(InstanceStatus.PREPARED));
+        return contextMachines;
+    }
+
     public ContextMachine getByContextInstanceId(String contextInstanceId)
     {
         logger.debug(String.format("Attempting to get context using context instance id[%s]"
