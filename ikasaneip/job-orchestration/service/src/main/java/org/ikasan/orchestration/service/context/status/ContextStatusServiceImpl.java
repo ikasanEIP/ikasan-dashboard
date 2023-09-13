@@ -44,6 +44,7 @@ package org.ikasan.orchestration.service.context.status;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.status.*;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
@@ -51,7 +52,76 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 
-public class ContextStatusServiceImpl implements ContextStatusService {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class ContextStatusServiceImpl implements ContextStatusService<ContextMachine> {
+
+    /**
+     * Get that status of all instances from the Context machine
+     * @param includePrepared - true to include prepared and not active context instance
+     * @return ContextMachineStatusWrapper in Json
+     * @throws JsonProcessingException if issue transforming to Json
+     */
+    @Override
+    public String getJsonContextMachineStatus(boolean includePrepared) throws JsonProcessingException {
+        Map<String, ContextMachine> mapAllContextMachine = ContextMachineCache.instance().getContextInstanceByContextInstanceIdCache();
+        ContextMachineStatusWrapper contextMachineStatusWrapper = new ContextMachineStatusWrapper();
+        List<ContextMachineStatus> contextMachineStatusList = new ArrayList<>();
+
+        for (Map.Entry<String, ContextMachine> contextMachineEntry : mapAllContextMachine.entrySet()) {
+            if(!includePrepared && contextMachineEntry.getValue().getContext().getStatus().equals(InstanceStatus.PREPARED)) {
+                continue;
+            }
+            ContextMachineStatus status = new ContextMachineStatus();
+            status.setContextName(contextMachineEntry.getValue().getContext().getName());
+            status.setContextInstanceId(contextMachineEntry.getValue().getContext().getId());
+            status.setInstanceStatus(contextMachineEntry.getValue().getContext().getStatus());
+            contextMachineStatusList.add(status);
+        }
+
+        contextMachineStatusWrapper.setContextMachineStatusList(contextMachineStatusList);
+
+        ContextService contextService = new ContextService();
+        String json = contextService.getContextMachineStatus(contextMachineStatusWrapper);
+        // return empty string if json is null
+        return (json == null) ? "" : json;
+    }
+
+    /**
+     * Get the status of all jobs in the Context Machine
+     * @param instanceStatus - optional value to search for a particular instance status. Set to null to return everything
+     * @param mapAllContextMachine - option map of context machine to found the status on. Set to null or empty to return bring back all active instances
+     * @return ContextJobInstanceStatusWrapper in JSON
+     * @throws JsonProcessingException if issue transforming to Json
+     */
+    @Override
+    public String getJsonContextJobStatus(InstanceStatus instanceStatus, Map<String, ContextMachine> mapAllContextMachine) throws JsonProcessingException {
+        if (mapAllContextMachine == null || mapAllContextMachine.isEmpty()) {
+            throw new ContextStatusServiceException("There is no ContextMachine in cache based on the request");
+        }
+        ContextJobInstanceStatusWrapper contextJobInstanceStatusWrapper = new ContextJobInstanceStatusWrapper();
+        List<ContextJobInstanceStatus> contextJobInstanceStatusList = new ArrayList<>();
+
+        for (Map.Entry<String, ContextMachine> contextMachineEntry : mapAllContextMachine.entrySet()) {
+            if (!contextMachineEntry.getValue().getContext().getStatus().equals(InstanceStatus.PREPARED)) {
+                ContextJobInstanceStatus contextJobInstanceStatus = ContextHelper.getContextJobInstanceStatus(contextMachineEntry.getValue().getContext(), contextMachineEntry.getValue().getInternalEventDrivenJobInstancesMap());
+                // Only keep job status based on instanceStatus
+                if (instanceStatus != null) {
+                    contextJobInstanceStatus.getJobDetails().removeIf(list -> !list.getInstanceStatus().equals(instanceStatus));
+                }
+                contextJobInstanceStatusList.add(contextJobInstanceStatus);
+            }
+        }
+
+        contextJobInstanceStatusWrapper.setJobPlans(contextJobInstanceStatusList);
+
+        ContextService contextService = new ContextService();
+        String json = contextService.getContextJobInstanceStatus(contextJobInstanceStatusWrapper);
+        // return empty string if json is null
+        return (json == null) ? "" : json;
+    }
 
     @Override
     public String getContextStatus(String instanceName, String contextName) {

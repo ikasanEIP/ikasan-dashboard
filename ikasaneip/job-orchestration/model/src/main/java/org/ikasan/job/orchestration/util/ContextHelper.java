@@ -1,7 +1,9 @@
 package org.ikasan.job.orchestration.util;
 
+import org.ikasan.job.orchestration.model.status.ContextJobInstanceDetailsStatus;
 import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatus;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
@@ -331,6 +333,86 @@ public class ContextHelper {
         if(contextInstance.getContexts() != null) {
             contextInstance.getContexts().forEach(child -> {
                 getAggregateContextInstanceStatus(child, aggregateContextInstanceStatus);
+            });
+        }
+    }
+
+    /**
+     * Looks at the context instance and get the status for all the jobs
+     * It will return 1 record per job that sits across multiple context if targetResidingContextOnly = false
+     * If the job has targetResidingContextOnly set to true, it will return a single record for it
+     * @param contextInstance - instance
+     * @param internalEventDrivenJobs - internal jobs
+     * @return List of ContextJobInstanceStatus
+     */
+    public static ContextJobInstanceStatus getContextJobInstanceStatus(ContextInstance contextInstance, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs) {
+        ContextJobInstanceStatus contextJobInstanceStatus = new ContextJobInstanceStatus();
+        contextJobInstanceStatus.setContextName(contextInstance.getName());
+        contextJobInstanceStatus.setContextInstanceId(contextInstance.getId());
+        contextJobInstanceStatus.setInstanceStatus(contextInstance.getStatus());
+        contextJobInstanceStatus.setJobDetails(new ArrayList<>());
+        getContextJobInstanceStatus(contextInstance, contextJobInstanceStatus, internalEventDrivenJobs);
+        return contextJobInstanceStatus;
+    }
+
+    /**
+     * Helper method to get the status
+     * @param contextInstance - instance
+     * @param contextJobInstanceStatus - ContextJobInstanceStatus object to store all the information of the status
+     * @param internalEventDrivenJobs - internal jobs
+     */
+    private static void getContextJobInstanceStatus(ContextInstance contextInstance, ContextJobInstanceStatus contextJobInstanceStatus,
+                                                    Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs) {
+        if (contextInstance.getContexts() == null || contextInstance.getContexts().isEmpty()) {
+            if(contextInstance.getScheduledJobs() != null) {
+                // For each
+                contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> {
+                    ContextJobInstanceDetailsStatus contextJobInstanceDetailsStatus = new ContextJobInstanceDetailsStatus();
+                    contextJobInstanceDetailsStatus.setTargetResidingContextOnly(false);
+
+                    // check if the job is targetResiding. If so create new ContextJobInstanceDetailsStatus, else we check if we already have it in our contextJobInstanceDetailsStatusList
+                    if (internalEventDrivenJobs != null && internalEventDrivenJobs.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {
+                        InternalEventDrivenJobInstance internalEventDrivenJobInstance = internalEventDrivenJobs.get(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName());
+                        if(internalEventDrivenJobInstance.isTargetResidingContextOnly()) {
+                            contextJobInstanceDetailsStatus.setTargetResidingContextOnly(true);
+                        }
+
+                        // If you are in internal job, take the completionTime and set it to the End time
+                        if (schedulerJobInstance.getScheduledProcessEvent() != null) {
+                            contextJobInstanceDetailsStatus.setEndTime(schedulerJobInstance.getScheduledProcessEvent().getCompletionTime());
+                        }
+                    } else {
+                        // If you are anything else, i.e. file, schedule or globalEvent, then sent the Fire Time as the End time - completionTime is not updated when actioned.
+                        if (schedulerJobInstance.getScheduledProcessEvent() != null) {
+                            contextJobInstanceDetailsStatus.setEndTime(schedulerJobInstance.getScheduledProcessEvent().getFireTime());
+                        }
+                    }
+
+                    // if targetResiding is false, check if we have a record in our list and add the childContextName
+                    AtomicBoolean hasUpdated = new AtomicBoolean(false);
+                    contextJobInstanceStatus.getJobDetails().stream()
+                        .filter(record -> record.checkExist(schedulerJobInstance.getJobName()))
+                        .forEach(record -> {
+                            record.getChildContextName().add(schedulerJobInstance.getChildContextName());
+                            hasUpdated.set(true);
+                        });
+
+                    // If we haven't updated or if targetResiding = true then create an entry for the list
+                    if (!hasUpdated.get()) {
+                        contextJobInstanceDetailsStatus.getChildContextName().add(schedulerJobInstance.getChildContextName());
+                        contextJobInstanceDetailsStatus.setJobName(schedulerJobInstance.getJobName());
+                        contextJobInstanceDetailsStatus.setInstanceStatus(schedulerJobInstance.getStatus());
+                        if (schedulerJobInstance.getScheduledProcessEvent() != null) {
+                            contextJobInstanceDetailsStatus.setStartTime(schedulerJobInstance.getScheduledProcessEvent().getFireTime());
+                        }
+                        contextJobInstanceStatus.getJobDetails().add(contextJobInstanceDetailsStatus);
+                    }
+                });
+            }
+        } else {
+            // Recursive call to get status of its nested context
+            contextInstance.getContexts().forEach(contextInstanceChild -> {
+                getContextJobInstanceStatus(contextInstanceChild, contextJobInstanceStatus, internalEventDrivenJobs);
             });
         }
     }
