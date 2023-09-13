@@ -1,10 +1,12 @@
 package org.ikasan.job.orchestration.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
@@ -21,6 +23,7 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ContextService {
@@ -57,7 +60,15 @@ public class ContextService {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
     }
 
+    public String getContextInstanceString(Map<String, ContextInstance> context) throws JsonProcessingException {
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
+    }
+
     public String getSchedulerJobInstance(SchedulerJobInstance schedulerJobInstance) throws JsonProcessingException {
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJobInstance);
+    }
+
+    public String getSchedulerJobInstance(Map<String, SchedulerJobInstance> schedulerJobInstance) throws JsonProcessingException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJobInstance);
     }
 
