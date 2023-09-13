@@ -1,6 +1,5 @@
 package org.ikasan.job.orchestration.service;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
@@ -10,6 +9,8 @@ import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
+import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatusWrapper;
+import org.ikasan.job.orchestration.model.status.ContextMachineStatusWrapper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
@@ -114,6 +115,14 @@ public class ContextService {
 
     public EmailNotificationContext getEmailNotificationContext(String emailNotificationContext) throws JsonProcessingException {
         return objectMapper.readValue(emailNotificationContext, EmailNotificationContextImpl.class);
+    }
+
+    public String getContextJobInstanceStatus(ContextJobInstanceStatusWrapper contextJobInstanceStatusWrapper) throws JsonProcessingException {
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextJobInstanceStatusWrapper);
+    }
+
+    public String getContextMachineStatus(ContextMachineStatusWrapper contextMachineStatusWrapper) throws JsonProcessingException {
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachineStatusWrapper);
     }
 
     public ContextTemplate getParent(ContextTemplate context, ContextTemplate currentContext) {

@@ -41,17 +41,23 @@
 
 package org.ikasan.job.orchestration.rest.dashboard;
 
+import org.apache.commons.lang3.StringUtils;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/rest/context/status")
 @RestController
@@ -132,6 +138,85 @@ public class ContextStatusServiceController {
             instanceName, contextName, jobName));
 
         return new ResponseEntity(contextStatus, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = {"/json/allInstance"}, produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity getJsonContextMachineStatus(@RequestParam(value = "includePrepared", required = false, defaultValue = "false") boolean includePrepared) {
+
+        String allInstance;
+
+        try {
+            allInstance = contextStatusService.getJsonContextMachineStatus(includePrepared);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            String errorMessage = String.format("An error has occurred attempting to get all status found in the context machine, includePrepared = [%s]",
+                includePrepared);
+            return new ResponseEntity(
+                new ErrorDto(errorMessage + " Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+
+        // HTTP 204 - nothing in payload
+        if ("".equals(allInstance) || allInstance == null) {
+            LOG.info(String.format("No running instances found in the context machine, includePrepared = [%s]", includePrepared));
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity(allInstance, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+        path = {"/json/jobStatus", "/json/jobStatus/{contextName}"},
+        produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity getJsonContextJobStatus(@PathVariable(required = false) String contextName,
+                                                  @RequestParam(value = "instanceStatus", required = false) String instanceStatus) {
+
+        // Work out what needs to be put into the context machine map
+        Map<String, ContextMachine> contextMachineMap;
+        if (StringUtils.isBlank(contextName)) {
+            contextMachineMap = ContextMachineCache.instance().getContextInstanceByContextInstanceIdCache();
+        } else {
+            List<ContextMachine> contextMachineList = ContextMachineCache.instance().getAllByContextName(contextName);
+            contextMachineMap = new HashMap<>();
+            contextMachineList.forEach(contextMachine -> {
+                contextMachineMap.put(contextMachine.getContext().getId(), contextMachine);
+            });
+        }
+
+        // Default to null to bring back everything, else use instanceStatus is it has been requested
+        InstanceStatus statusToSearch = null;
+        if (StringUtils.isNotBlank(instanceStatus)) {
+            try {
+                statusToSearch = InstanceStatus.valueOf(instanceStatus);
+            } catch (Exception e) {
+                LOG.error(e.getMessage());
+                String errorMessage = String.format("Instance Status [%s] is not valid, please try again", instanceStatus);
+                return new ResponseEntity(
+                    new ErrorDto(errorMessage + " Error message ["
+                        + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        String jobStatusJson;
+        try {
+            jobStatusJson = contextStatusService.getJsonContextJobStatus(statusToSearch, contextMachineMap);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            String errorMessage = "An error has occurred attempting to get job status from the context machine";
+            return new ResponseEntity(
+                new ErrorDto(errorMessage + " Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+
+        // HTTP 204 - nothing in payload
+        if ("".equals(jobStatusJson) || jobStatusJson == null) {
+            LOG.info(String.format("No job status found from the context machine"));
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity(jobStatusJson, HttpStatus.OK);
     }
 
 }
