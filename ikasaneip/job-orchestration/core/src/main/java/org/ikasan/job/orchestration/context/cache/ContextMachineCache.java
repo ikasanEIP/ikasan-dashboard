@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.context.cache;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +91,18 @@ public class ContextMachineCache
         return this.contextInstanceByContextInstanceIdCache.values().stream()
             .filter(contextMachine -> contextMachine.getContext().getName().equals(contextName))
             .collect(Collectors.toList());
+    }
+
+    /**
+     * This returns plans that are running and not in a PREPARED state
+     *
+     * @param contextName / planName to find
+     * @return all running instances that are for the given plan
+     */
+    public List<ContextMachine> getAllRunningByContextName(String contextName) {
+        List<ContextMachine> contextMachines = getAllByContextName(contextName);
+        contextMachines.removeIf(contextMachine -> contextMachine.getContext().getStatus().equals(InstanceStatus.PREPARED));
+        return contextMachines;
     }
 
     public ContextMachine getByContextInstanceId(String contextInstanceId)
