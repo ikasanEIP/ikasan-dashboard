@@ -1,11 +1,12 @@
 package org.ikasan.job.orchestration.model.status;
 
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.status.model.ContextJobInstanceDetailsStatus;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class ContextJobInstanceDetailsStatus {
+public class ContextJobInstanceDetailsStatusImpl implements ContextJobInstanceDetailsStatus {
 
     private String jobName;
     private Set<String> childContextName = new HashSet<>();
@@ -64,7 +65,7 @@ public class ContextJobInstanceDetailsStatus {
 
     @Override
     public String toString() {
-        return "ContextJobInstanceDetailsStatus{" +
+        return "ContextJobInstanceDetailsStatusImpl{" +
             "jobName='" + jobName + '\'' +
             ", childContextName=" + childContextName +
             ", instanceStatus=" + instanceStatus +
@@ -74,6 +75,7 @@ public class ContextJobInstanceDetailsStatus {
             "}\n";
     }
 
+    @Override
     public boolean checkExist(String jobName) {
         if (this.getJobName().equals(jobName) &&
             !this.isTargetResidingContextOnly()) {
