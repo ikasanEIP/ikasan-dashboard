@@ -1,10 +1,12 @@
 package org.ikasan.job.orchestration.model.status;
 
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.status.model.ContextJobInstanceDetailsStatus;
+import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatus;
 
 import java.util.List;
 
-public class ContextJobInstanceStatus {
+public class ContextJobInstanceStatusImpl implements ContextJobInstanceStatus {
 
     private String contextName;
     private String contextInstanceId;
@@ -45,7 +47,7 @@ public class ContextJobInstanceStatus {
 
     @Override
     public String toString() {
-        return "ContextJobInstanceStatus{" +
+        return "ContextJobInstanceStatusImpl{" +
             "contextName='" + contextName + '\'' +
             ", contextInstanceId='" + contextInstanceId + '\'' +
             ", instanceStatus=" + instanceStatus +

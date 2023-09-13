@@ -1,18 +1,14 @@
 package org.ikasan.job.orchestration.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
-import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatusWrapper;
-import org.ikasan.job.orchestration.model.status.ContextMachineStatusWrapper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
@@ -22,6 +18,8 @@ import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatusWrapper;
+import org.ikasan.spec.scheduled.status.model.ContextMachineStatusWrapper;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;

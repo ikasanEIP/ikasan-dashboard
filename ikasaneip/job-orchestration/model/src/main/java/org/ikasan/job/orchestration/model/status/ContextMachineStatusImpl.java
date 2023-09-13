@@ -1,8 +1,9 @@
 package org.ikasan.job.orchestration.model.status;
 
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.status.model.ContextMachineStatus;
 
-public class ContextMachineStatus {
+public class ContextMachineStatusImpl implements ContextMachineStatus {
 
     private String contextName;
     private String contextInstanceId;
@@ -34,7 +35,7 @@ public class ContextMachineStatus {
 
     @Override
     public String toString() {
-        return "ContextMachineStatus{" +
+        return "ContextMachineStatusImpl{" +
             "contextName='" + contextName + '\'' +
             ", contextInstanceId='" + contextInstanceId + '\'' +
             ", instanceStatus=" + instanceStatus +
