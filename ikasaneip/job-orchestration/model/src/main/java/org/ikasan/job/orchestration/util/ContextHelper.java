@@ -1,14 +1,16 @@
 package org.ikasan.job.orchestration.util;
 
-import org.ikasan.job.orchestration.model.status.ContextJobInstanceDetailsStatus;
+import org.ikasan.job.orchestration.model.status.ContextJobInstanceDetailsStatusImpl;
 import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
-import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatus;
+import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatusImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.status.model.ContextJobInstanceDetailsStatus;
+import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -343,10 +345,10 @@ public class ContextHelper {
      * If the job has targetResidingContextOnly set to true, it will return a single record for it
      * @param contextInstance - instance
      * @param internalEventDrivenJobs - internal jobs
-     * @return List of ContextJobInstanceStatus
+     * @return List of ContextJobInstanceStatusImpl
      */
     public static ContextJobInstanceStatus getContextJobInstanceStatus(ContextInstance contextInstance, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs) {
-        ContextJobInstanceStatus contextJobInstanceStatus = new ContextJobInstanceStatus();
+        ContextJobInstanceStatus contextJobInstanceStatus = new ContextJobInstanceStatusImpl();
         contextJobInstanceStatus.setContextName(contextInstance.getName());
         contextJobInstanceStatus.setContextInstanceId(contextInstance.getId());
         contextJobInstanceStatus.setInstanceStatus(contextInstance.getStatus());
@@ -358,7 +360,7 @@ public class ContextHelper {
     /**
      * Helper method to get the status
      * @param contextInstance - instance
-     * @param contextJobInstanceStatus - ContextJobInstanceStatus object to store all the information of the status
+     * @param contextJobInstanceStatus - ContextJobInstanceStatusImpl object to store all the information of the status
      * @param internalEventDrivenJobs - internal jobs
      */
     private static void getContextJobInstanceStatus(ContextInstance contextInstance, ContextJobInstanceStatus contextJobInstanceStatus,
@@ -367,7 +369,7 @@ public class ContextHelper {
             if(contextInstance.getScheduledJobs() != null) {
                 // For each
                 contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> {
-                    ContextJobInstanceDetailsStatus contextJobInstanceDetailsStatus = new ContextJobInstanceDetailsStatus();
+                    ContextJobInstanceDetailsStatus contextJobInstanceDetailsStatus = new ContextJobInstanceDetailsStatusImpl();
                     contextJobInstanceDetailsStatus.setTargetResidingContextOnly(false);
 
                     // check if the job is targetResiding. If so create new ContextJobInstanceDetailsStatus, else we check if we already have it in our contextJobInstanceDetailsStatusList

@@ -1,8 +1,11 @@
 package org.ikasan.job.orchestration.model.status;
 
+import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatus;
+import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatusWrapper;
+
 import java.util.List;
 
-public class ContextJobInstanceStatusWrapper {
+public class ContextJobInstanceStatusWrapperImpl implements ContextJobInstanceStatusWrapper {
 
     List<ContextJobInstanceStatus> jobPlans;
 
@@ -16,7 +19,7 @@ public class ContextJobInstanceStatusWrapper {
 
     @Override
     public String toString() {
-        return "ContextJobInstanceStatusWrapper{" +
+        return "ContextJobInstanceStatusWrapperImpl{" +
             "jobPlanStatus=" + jobPlans +
             '}';
     }
