@@ -104,7 +104,8 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
     @Override
     public String getJsonContextJobStatus(InstanceStatus instanceStatus, Map<String, ContextMachine> mapAllContextMachine) throws JsonProcessingException {
         if (mapAllContextMachine == null || mapAllContextMachine.isEmpty()) {
-            throw new ContextStatusServiceException("There is no ContextMachine in cache based on the request");
+            // Return Empty
+            return "";
         }
         ContextJobInstanceStatusWrapper contextJobInstanceStatusWrapper = new ContextJobInstanceStatusWrapperImpl();
         List<ContextJobInstanceStatus> contextJobInstanceStatusList = new ArrayList<>();
