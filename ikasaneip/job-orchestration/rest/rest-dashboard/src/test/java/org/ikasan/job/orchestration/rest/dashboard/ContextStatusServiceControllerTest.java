@@ -64,7 +64,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_correctly_context_status() throws Exception {
         when(contextStatusService.getContextStatus("Instance_Name", "Context_Name")).thenReturn("RUNNING");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/Instance_Name/Context_Name")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/Instance_Name/Context_Name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -75,7 +75,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_error_context_status() throws Exception {
         when(contextStatusService.getContextStatus("Instance_Name", "Context_Name")).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/Instance_Name/Context_Name")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/Instance_Name/Context_Name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -88,7 +88,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_correctly_context_status_job() throws Exception {
         when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "job-identifier")).thenReturn("COMPLETE");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/instance-name/context-name/job-identifier")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/instance-name/context-name/job-identifier")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -100,7 +100,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "job-identifier")).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/instance-name/context-name/job-identifier")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/instance-name/context-name/job-identifier")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -113,7 +113,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_correctly_json_context_status() throws Exception {
         when(contextStatusService.getJsonContextStatus("Instance_Name", "Context_Name")).thenReturn("{\"message\":\"good\"}");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/Instance_Name/Context_Name")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/Instance_Name/Context_Name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -124,7 +124,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_error_json_context_status() throws Exception {
         when(contextStatusService.getJsonContextStatus("Instance_Name", "Context_Name")).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/Instance_Name/Context_Name")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/Instance_Name/Context_Name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -137,7 +137,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_empty_json_context_status() throws Exception {
         when(contextStatusService.getJsonContextStatus("Instance_Name", "Context_Name")).thenReturn("");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/Instance_Name/Context_Name")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/Instance_Name/Context_Name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
@@ -147,7 +147,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_correctly_json_context_status_job() throws Exception {
         when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-name")).thenReturn("{\"message\":\"good\"}");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-name")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/instance-name/context-name/job-name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -159,7 +159,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-name")).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-name")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/instance-name/context-name/job-name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -173,7 +173,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-name")).thenReturn("");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-name")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/instance-name/context-name/job-name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
@@ -183,7 +183,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_correctly_json_context_machine_status() throws Exception {
         when(contextStatusService.getJsonContextMachineStatus(false)).thenReturn("{\"message\":\"good\"}");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/allInstance")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/allInstance")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -194,7 +194,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_error_json_context_machine_status() throws Exception {
         when(contextStatusService.getJsonContextMachineStatus(false)).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/allInstance")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/allInstance")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -207,7 +207,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_empty_json_context_machine_status() throws Exception {
         when(contextStatusService.getJsonContextMachineStatus(false)).thenReturn("");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/allInstance")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/allInstance")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
@@ -217,7 +217,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_correctly_json_context_machine_status_prepared() throws Exception {
         when(contextStatusService.getJsonContextMachineStatus(true)).thenReturn("{\"message\":\"good\"}");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/allInstance?includePrepared=true")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/allInstance?includePrepared=true")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -228,7 +228,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_error_json_context_machine_status_prepared() throws Exception {
         when(contextStatusService.getJsonContextMachineStatus(true)).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/allInstance?includePrepared=true")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/allInstance?includePrepared=true")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -241,7 +241,7 @@ public class ContextStatusServiceControllerTest {
     public void should_return_response_entity_empty_json_context_machine_status_prepared() throws Exception {
         when(contextStatusService.getJsonContextMachineStatus(true)).thenReturn("");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/allInstance?includePrepared=true")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/allInstance?includePrepared=true")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
@@ -260,7 +260,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("{\"message\":\"good\"}");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -280,7 +280,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -302,7 +302,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
@@ -321,7 +321,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(InstanceStatus.ERROR, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("{\"message\":\"good\"}");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus?instanceStatus=ERROR")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus?instanceStatus=ERROR")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -341,7 +341,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(InstanceStatus.ERROR, Collections.singletonMap("test-instance-id", contextMachine))).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus?instanceStatus=ERROR")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus?instanceStatus=ERROR")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -353,7 +353,7 @@ public class ContextStatusServiceControllerTest {
     @Test
     public void should_return_response_entity_error_json_context_job_status_search_by_status_2() throws Exception {
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus?instanceStatus=DOESNOTEXIST")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus?instanceStatus=DOESNOTEXIST")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -375,7 +375,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus?instanceStatus=ERROR")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus?instanceStatus=ERROR")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
@@ -396,7 +396,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("{\"message\":\"good\"}");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus/JOB_PLAN")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus/JOB_PLAN")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -416,7 +416,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus/JOB_PLAN")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus/JOB_PLAN")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -438,7 +438,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus/JOB_PLAN")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus/JOB_PLAN")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
@@ -457,7 +457,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(InstanceStatus.ERROR, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("{\"message\":\"good\"}");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus/JOB_PLAN?instanceStatus=ERROR")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus/JOB_PLAN?instanceStatus=ERROR")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -477,7 +477,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(InstanceStatus.ERROR, Collections.singletonMap("test-instance-id", contextMachine))).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus/JOB_PLAN?instanceStatus=ERROR")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus/JOB_PLAN?instanceStatus=ERROR")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -489,7 +489,7 @@ public class ContextStatusServiceControllerTest {
     @Test
     public void should_return_response_entity_error_json_context_name_job_status_search_by_status_2() throws Exception {
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus/JOB_PLAN?instanceStatus=DOESNOTEXIST")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus/JOB_PLAN?instanceStatus=DOESNOTEXIST")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
@@ -511,7 +511,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/jobStatus/JOB_PLAN?instanceStatus=ERROR")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/json/jobStatus/JOB_PLAN?instanceStatus=ERROR")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());

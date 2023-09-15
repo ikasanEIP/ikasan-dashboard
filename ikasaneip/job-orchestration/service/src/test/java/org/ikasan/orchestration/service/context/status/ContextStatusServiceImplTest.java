@@ -708,9 +708,9 @@ public class ContextStatusServiceImplTest {
         JSONAssert.assertEquals(expected, jobStatus, JSONCompareMode.LENIENT);
     }
 
-    @Test(expected = ContextStatusServiceException.class)
+    @Test
     public void getJsonContextStatusEmpty() throws Exception {
-        contextStatusService.getJsonContextJobStatus(null, null);
+        Assert.assertEquals("", contextStatusService.getJsonContextJobStatus(null, null));
     }
 
     @Test

@@ -59,7 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RequestMapping("/rest/context/status")
+@RequestMapping("/rest/contextStatus")
 @RestController
 public class ContextStatusServiceController {
 
