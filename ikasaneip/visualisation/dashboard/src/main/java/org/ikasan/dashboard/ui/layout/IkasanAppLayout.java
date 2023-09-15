@@ -42,6 +42,7 @@ import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.view.BusinessStreamDesignerView;
 import org.ikasan.dashboard.ui.visualisation.view.GraphView;
+import org.ikasan.dashboard.ui.visualisation.view.MapView;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -79,6 +80,8 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
     private LeftNavigationItem searchMenuItem;
     private LeftNavigationItem visualisationMenuItem;
     private LeftNavigationItem schedulerMenuItem;
+
+    private LeftNavigationItem mapMenuItem;
     private LeftNavigationItem systemEventMenuItem;
     private LeftNavigationItem userManagementMenuItem;
     private LeftNavigationItem groupManagementMenuItem;
@@ -153,6 +156,11 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
         this.schedulerMenuItem.setId("schedulerMenuItem");
 
         leftAppMenuBuilder = leftAppMenuBuilder.add(this.schedulerMenuItem);
+
+        this.mapMenuItem = new LeftNavigationItem("Wold View", VaadinIcon.GLOBE.create(), MapView.class);
+        this.mapMenuItem.setId("mapMenuItem");
+
+        leftAppMenuBuilder = leftAppMenuBuilder.add(this.mapMenuItem);
 
         LeftSubMenuBuilder leftSubMenuBuilder = LeftSubMenuBuilder
             .get(getTranslation("menu-item.administration", UI.getCurrent().getLocale(), null), VaadinIcon.TOOLS.create());
