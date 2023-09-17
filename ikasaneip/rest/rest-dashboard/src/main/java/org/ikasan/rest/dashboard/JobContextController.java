@@ -72,62 +72,6 @@ public class JobContextController {
         this.contextParametersInstanceService = contextParametersInstanceService;
     }
 
-// @Mick not sure we need these anymore - thoughts ?
-//
-//    // No longer needed ??
-//    @RequestMapping(method = RequestMethod.GET,
-//                    value = "/jobContext/getAll")
-//    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
-//    private ResponseEntity getAll(Integer xx)
-//    {
-//        Set<String> contextNames = ContextMachineCache.instance().contextNames();
-//
-//        Map<String, ContextInstance> result = new HashMap<>();
-//        // Currently does nothing, maybe this should re-evaluate the spel ?
-//        contextParametersInstanceService.populateContextParameters();
-//
-//        for (String contextName : contextNames) {
-//            ContextInstance instance = ContextMachineCache.instance().getByContextName(contextName).getContext();
-//            instance.setContextParameters(contextParametersInstanceService.getAllContextParameters(contextName));
-//            result.put(contextName, instance);
-//        }
-//
-//        return new ResponseEntity(result, HttpStatus.OK);
-//    }
-//
-//    // No longer needed ??
-//    @RequestMapping(method = RequestMethod.GET,
-//        value = "/jobContext/getByContextName")
-//    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
-//    private ResponseEntity getByContextName(@RequestParam(name = "contextName") String contextName)
-//    {
-//        Map<String, ContextInstance> result = new HashMap<>();
-//
-//        ContextInstance instance = ContextMachineCache.instance().getByContextName(contextName).getContext();
-//        // The line below does nothing
-//        contextParametersInstanceService.populateContextParameters();
-//        // Every time we getContextByName, will we be re-generating the context parameters, maybe not good
-//        // since a contextName can be linked to multiple instance ID's
-//        instance.setContextParameters(contextParametersInstanceService.getAllContextParameters(contextName));
-//        result.put(contextName, instance);
-//
-//        return new ResponseEntity(result, HttpStatus.OK);
-//    }
-//
-//    @RequestMapping(method = RequestMethod.GET,
-//        value = "/jobContext/getByContextInstanceId")
-//    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
-//    public ResponseEntity getByContextInstanceId(@RequestParam(name = "contextInstanceId") String contextInstanceId)
-//    {
-//        Map<String, ContextInstance> result = new HashMap<>();
-//
-//        ContextInstance instance = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId).getContext();
-//        // @TODO talk to Mick, not sure I need to set the params, think they should already be set.
-////                instance.setContextParameters(contextParametersInstanceService.getAllContextParameters(contextId));
-//        result.put(contextInstanceId, instance);
-//
-//        return new ResponseEntity(result, HttpStatus.OK);
-//    }
     @RequestMapping(method = RequestMethod.GET,
         value = "/jobContext/getByAgentName")
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin','WriteBlueConsole','ReadBlueConsole')")
@@ -139,8 +83,6 @@ public class JobContextController {
         for (String contextId : contextIds) {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextId);
             if (contextMachine.servesAgent(agentName)) {
-                // @TODO talk to Mick, not sure I need to set the params, think they should already be set, will know 100% when going SPEL
-//                instance.setContextParameters(contextParametersInstanceService.getAllContextParameters(contextId));
                 result.put(contextId, contextMachine.getContext());
             }
         }

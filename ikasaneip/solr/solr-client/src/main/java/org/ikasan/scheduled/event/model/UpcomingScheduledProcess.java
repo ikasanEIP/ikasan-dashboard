@@ -14,8 +14,6 @@ public class UpcomingScheduledProcess {
     private String timezone;
     private long fireTime;
     private ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData;
-//    private ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData;
-//    private ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData;
 
     public UpcomingScheduledProcess(String agentName, String agentHostname, String jobName, String jobGroup, String jobDescription, long fireTime
         , ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData
@@ -27,8 +25,6 @@ public class UpcomingScheduledProcess {
         this.jobDescription = jobDescription;
         this.fireTime = fireTime;
         this.scheduledConsumerConfigurationMetaData = scheduledConsumerConfigurationMetaData;
-//        this.processExecutionBrokerConfigurationMetaData = processExecutionBrokerConfigurationMetaData;
-//        this.blackoutRouterConfigurationMetaData = blackoutRouterConfigurationMetaData;
         this.timezone = timezone;
     }
 
