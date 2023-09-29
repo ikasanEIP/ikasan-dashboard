@@ -50,4 +50,6 @@
 
     <bean id="emailNotificationDetailsService" class="org.ikasan.job.orchestration.rest.dashboard.util.TestEmailNotificationDetailsService" />
 
+    <bean id="contextParametersInstanceService" class="org.ikasan.job.orchestration.rest.dashboard.util.TestContextParametersInstanceService" />
+
 </beans>

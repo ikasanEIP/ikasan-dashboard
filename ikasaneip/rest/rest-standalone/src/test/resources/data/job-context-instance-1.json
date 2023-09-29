@@ -1,0 +1,36 @@
+{
+  "context-instance-1": {
+    "contexts": [],
+    "scheduledJobs": [],
+    "jobLocks": [],
+    "name": "context-instance-1",
+    "description": null,
+    "timezone": null,
+    "blackoutWindowDateTimeRanges": null,
+    "blackoutWindowCronExpressions": null,
+    "jobDependencies": null,
+    "contextDependencies": [],
+    "contextParameters": [
+      {
+        "name": "BusinessDate",
+        "defaultValue" : "value",
+        "value": "20220530"
+      },
+      {
+        "name": "localFilePath",
+        "defaultValue" : "value",
+        "value": "/opt/data/files"
+      }
+    ],
+    "timeWindowStart": null,
+    "timeWindowEnd": null,
+    "environmentGroup": null,
+    "id": "UUID1",
+    "createdDateTime": 11,
+    "updatedDateTime": 111,
+    "startTime": 0,
+    "endTime": 0,
+    "status": "WAITING",
+    "heldJobs": {}
+  }
+}

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean id="arjunaTransactionManager" class="com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple"/>
+
+    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="transactionManager"  ref="arjunaTransactionManager" />
+        <property name="userTransaction" >
+            <bean class="com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple"/>
+        </property>
+        <property name="autodetectUserTransaction" value="true"/>
+        <property name="defaultTimeout" value="${ikasan.default.transaction.timeout.seconds:600}" />
+    </bean>
+
+    <aop:config>
+        <aop:pointcut id="securityServiceManagementMethods"
+                expression="execution(* org.ikasan.security.service.SecurityService*.*(..))"/>
+        <aop:pointcut id="userServiceMethods"
+                expression="execution(* org.ikasan.security.service.UserService*.*(..))"/>
+        <aop:pointcut id="authenticationServiceMethods"
+                expression="execution(* org.ikasan.security.service.AuthenticationService*.*(..))"/>
+        <aop:pointcut id="ldapServiceMethods"
+                expression="execution(* org.ikasan.security.service.LdapService*.synchronize(..))"/>
+        <aop:pointcut id="customAuthenticationProviderPointcut"
+                      expression="execution(* org.ikasan.security.service.authentication.CustomAuthenticationProvider.authenticate(..))" />
+        <aop:pointcut id="systemEventServiceMethods"
+                expression="execution(* org.ikasan.systemevent.service.*.*(..))"/>
+        <aop:pointcut id="platformConfigurationServiceMethods"
+                      expression="execution(* org.ikasan.spec.configuration.PlatformConfigurationService.*(..))"/>
+
+
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="securityServiceManagementMethods"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="userServiceMethods"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="ldapServiceMethods"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="customAuthenticationProviderPointcut" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="systemEventServiceMethods"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="platformConfigurationServiceMethods"/>
+    </aop:config>
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="*" propagation="REQUIRES_NEW"/>
+        </tx:attributes>
+    </tx:advice>
+
+</beans>

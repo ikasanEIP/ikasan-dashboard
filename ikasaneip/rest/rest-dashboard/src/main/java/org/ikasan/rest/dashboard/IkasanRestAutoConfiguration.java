@@ -40,24 +40,15 @@
  */
 package org.ikasan.rest.dashboard;
 
-import org.ikasan.bigqueue.IBigQueue;
-import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
-import org.ikasan.rest.dashboard.service.bigqueue.BigQueueDashboardServiceImpl;
-import org.ikasan.security.service.UserService;
-import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
-import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 
 import javax.annotation.Resource;
 
@@ -93,8 +84,8 @@ public class IkasanRestAutoConfiguration
     private BatchInsert flowInvocationMetricBatchInsert;
 
 
-    @Resource
-    private ContextParametersInstanceService contextParametersInstanceService;
+//    @Resource
+//    private ContextParametersInstanceService contextParametersInstanceService;
 
     @Resource
     @Qualifier("moduleMetadataService")
@@ -106,71 +97,71 @@ public class IkasanRestAutoConfiguration
     @Resource
     private BigQueueModuleService bigQueueModuleService;
 
-    @Autowired(required = false)
-    private IBigQueue inboundQueue;
+//    @Autowired(required = false)
+//    private IBigQueue inboundQueue;
+//
+//    @Resource
+//    private FlowStateCacheAdapter cacheAdapter;
 
-    @Resource
-    private FlowStateCacheAdapter cacheAdapter;
+//    @Bean
+//    public ReplayController replayApplication()
+//    {
+//        return new ReplayController(this.replayEventBatchInsert);
+//    }
+//
+//    @Bean
+//    public WiretapController wiretapController()
+//    {
+//        return new WiretapController(this.wiretapEventBatchInsert);
+//    }
+//
+//    @Bean
+//    public ErrorController errorApplication()
+//    {
+//        return new ErrorController(this.errorOccurrenceBatchInsert);
+//    }
+//
+//    @Bean
+//    public ExclusionController exclusionApplication()
+//    {
+//        return new ExclusionController(this.exclusionEventBatchInsert);
+//    }
+//
+//    @Bean
+//    public MetaDataController metaDataApplication()
+//    {
+//        return new MetaDataController(this.moduleMetadataBatchInsert,
+//            this.configurationMetadataBatchInsert);
+//    }
+//
+//    @Bean
+//    public SystemEventController systemEventController()
+//    {
+//        return new SystemEventController(this.systemEventBatchInsert);
+//    }
+//
+//    @Bean
+//    public ModulesController modulesController()
+//    {
+//        return new ModulesController(moduleMetadataService);
+//    }
+//
+//    @Bean
+//    public MetricsController metricsApplication() {
+//        return new MetricsController(this.flowInvocationMetricBatchInsert, this.metricsService);
+//    }
+//
+//    @Bean
+//    public UserController userController(UserService userService)
+//    {
+//        return new UserController(userService);
+//    }
 
-    @Bean
-    public ReplayController replayApplication()
-    {
-        return new ReplayController(this.replayEventBatchInsert);
-    }
-
-    @Bean
-    public WiretapController wiretapController()
-    {
-        return new WiretapController(this.wiretapEventBatchInsert);
-    }
-
-    @Bean
-    public ErrorController errorApplication()
-    {
-        return new ErrorController(this.errorOccurrenceBatchInsert);
-    }
-
-    @Bean
-    public ExclusionController exclusionApplication()
-    {
-        return new ExclusionController(this.exclusionEventBatchInsert);
-    }
-
-    @Bean
-    public MetaDataController metaDataApplication()
-    {
-        return new MetaDataController(this.moduleMetadataBatchInsert,
-            this.configurationMetadataBatchInsert);
-    }
-
-    @Bean
-    public SystemEventController systemEventController()
-    {
-        return new SystemEventController(this.systemEventBatchInsert);
-    }
-
-    @Bean
-    public ModulesController modulesController()
-    {
-        return new ModulesController(moduleMetadataService);
-    }
-
-    @Bean
-    public MetricsController metricsApplication() {
-        return new MetricsController(this.flowInvocationMetricBatchInsert, this.metricsService);
-    }
-
-    @Bean
-    public UserController userController(UserService userService)
-    {
-        return new UserController(userService);
-    }
-
-    @Bean
-    public NotifierController notifierControllerApplication()
-    {
-        return new NotifierController(this.cacheAdapter);
-    }
+//    @Bean
+//    public NotifierController notifierControllerApplication()
+//    {
+//        return new NotifierController(this.cacheAdapter);
+//    }
 
     @Bean
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
@@ -178,11 +169,11 @@ public class IkasanRestAutoConfiguration
         return new BigQueueDashboardController();
     }
 
-    @Bean
-    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
-    public BigQueueDirectoryManagementService bigQueueDirectoryManagementService() {
-        return new BigQueueDirectoryManagementServiceImpl(new BigQueueDashboardServiceImpl(inboundQueue), this.queueDir);
-    }
+//    @Bean
+//    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
+//    public BigQueueDirectoryManagementService bigQueueDirectoryManagementService() {
+//        return new BigQueueDirectoryManagementServiceImpl(new BigQueueDashboardServiceImpl(inboundQueue), this.queueDir);
+//    }
 
     @Bean
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
@@ -190,29 +181,29 @@ public class IkasanRestAutoConfiguration
         return new BigQueueModuleController(bigQueueModuleService, moduleMetadataService);
     }
 
-    @Bean
-    public JwtAuthenticationController jwtAuthenticationController(AuthenticationManager authenticationManager,
-                                                                   JwtTokenUtil jwtTokenUtil, UserService userService) {
-        return new JwtAuthenticationController(authenticationManager, jwtTokenUtil, userService);
-    }
+//    @Bean
+//    public JwtAuthenticationController jwtAuthenticationController(AuthenticationManager authenticationManager,
+//                                                                   JwtTokenUtil jwtTokenUtil, UserService userService) {
+//        return new JwtAuthenticationController(authenticationManager, jwtTokenUtil, userService);
+//    }
+//
+//    @Bean("jwtAuthenticationEntryPoint")
+//    public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
+//        return new JwtAuthenticationEntryPoint();
+//    }
+//
+//    @Bean
+//    public JwtRequestFilter jwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil) {
+//        return new JwtRequestFilter(userService, jwtTokenUtil);
+//    }
+//
+//    @Bean
+//    public JwtTokenUtil jwtTokenUtil() {
+//        return new JwtTokenUtil();
+//    }
 
-    @Bean("jwtAuthenticationEntryPoint")
-    public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
-        return new JwtAuthenticationEntryPoint();
-    }
-
-    @Bean
-    public JwtRequestFilter jwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil) {
-        return new JwtRequestFilter(userService, jwtTokenUtil);
-    }
-
-    @Bean
-    public JwtTokenUtil jwtTokenUtil() {
-        return new JwtTokenUtil();
-    }
-
-    @Bean
-    public JobContextController jobContextController() {
-        return new JobContextController(contextParametersInstanceService);
-    }
+//    @Bean
+//    public JobContextController jobContextController() {
+//        return new JobContextController(contextParametersInstanceService);
+//    }
 }
