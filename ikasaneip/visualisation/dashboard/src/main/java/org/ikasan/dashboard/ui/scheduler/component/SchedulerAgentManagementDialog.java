@@ -18,6 +18,7 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.DownloadLogFileService;
@@ -138,9 +139,13 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         List<SchedulerJob> schedulerJobs = new ArrayList<>();
 
         contextTemplateList.forEach(record -> {
+            List<String> jobIdentifiersInJobPlan = ContextHelper.getAllJobs(record.getContext()).stream()
+                .map(job -> job.getIdentifier())
+                .collect(Collectors.toList());
             schedulerJobs.addAll((Collection<? extends SchedulerJob>) schedulerJobService.findByContext(record.getContextName(), -1,-1).getResultList().stream()
                 .filter(jobRecord -> ((SchedulerJobRecord)jobRecord).getAgentName().equals(agent.getName()))
                 .map(jobRecord -> ((SchedulerJobRecord)jobRecord).getJob())
+                    .filter(job -> jobIdentifiersInJobPlan.contains(((SchedulerJob)job).getIdentifier()))
                 .collect(Collectors.toList()));
         });
 

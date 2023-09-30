@@ -356,7 +356,14 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.filenamePairs.setItemLabelGenerator(item -> String.format(getTranslation("label.instance-file-name-item-label")
             ,item.getReplacementToken(), contextInstance.getContextParameters().stream()
                 .filter(param -> param.getName().equals(item.getJobPlanParameterName()))
-                .map(param -> param.getValue())
+                .map(param -> {
+                    if(param.getValue() == null) {
+                        return "";
+                    }
+                    else {
+                        return param.getValue();
+                    }
+                })
                 .findFirst().orElse("Not Available"), item.getJobPlanParameterName()));
         this.filenamePairs.setVisible(this.fileEventDrivenJobInstance.isDynamic());
         this.formBinder.forField(this.filenamePairs)
@@ -377,7 +384,14 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.filepathPairs.setItemLabelGenerator(item ->String.format(getTranslation("label.instance-file-path-item-label")
             ,item.getReplacementToken(), contextInstance.getContextParameters().stream()
                 .filter(param -> param.getName().equals(item.getJobPlanParameterName()))
-                .map(param -> param.getValue())
+                .map(param -> {
+                    if(param.getValue() == null) {
+                        return "";
+                    }
+                    else {
+                        return param.getValue();
+                    }
+                })
                 .findFirst().orElse("Not Available"), item.getJobPlanParameterName()));
         formBinder.forField(this.filepathPairs)
             .bind(FileEventDrivenJob::getFilePathReplacementPairs, FileEventDrivenJob::setFilePathReplacementPairs);

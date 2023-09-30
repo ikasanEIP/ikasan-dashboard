@@ -533,8 +533,13 @@ public abstract class ContextInstanceServiceBase {
     protected void provisionJobs(ContextTemplate contextTemplate) {
         SearchResults<SchedulerJobRecord> jobRecords = this.schedulerJobService.findByContext(contextTemplate.getName(), -1, -1);
 
+        List<String> jobIdentifiersInJobPlan = ContextHelper.getAllJobs(contextTemplate).stream()
+            .map(job -> job.getIdentifier())
+            .collect(Collectors.toList());
+
         List<SchedulerJob> schedulerJobs = jobRecords.getResultList().stream()
             .map(record -> record.getJob())
+            .filter(job -> jobIdentifiersInJobPlan.contains(job.getIdentifier()))
             .collect(Collectors.toList());
 
         this.jobProvisionService.provisionJobs(schedulerJobs, "system");
