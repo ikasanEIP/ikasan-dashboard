@@ -677,6 +677,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
 
+        contextTemplate.setScheduledJobs(contextJobs);
+
         ContextProfileRecord contextProfileRecord1 = new SolrContextProfileRecordImpl();
         ContextProfileRecord contextProfileRecord2 = new SolrContextProfileRecordImpl();
 
@@ -715,7 +717,79 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
 
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
-        verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        ArgumentCaptor<SchedulerJobWrapperImpl> jobWrapperArgumentCaptor = ArgumentCaptor.forClass(SchedulerJobWrapperImpl.class);
+        verify(jobProvisionModuleRestService).provisionJobs(anyString(), jobWrapperArgumentCaptor.capture());
+
+        SchedulerJobWrapperImpl wrapper = jobWrapperArgumentCaptor.getValue();
+
+        assertEquals(2, wrapper.getJobs().size());
+
+        verifyNoMoreInteractions(
+            scheduledContextService, moduleMetadataService, schedulerJobService,
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
+    }
+
+    @Test
+    public void should_upload_provision_jobs_and_create_context_with_context_profiles_and_notification_details_no_jobs_in_context_to_provision() {
+        ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
+        String contextName = "ContextName";
+        contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
+        contextTemplate.setName(contextName);
+
+        List<SchedulerJob> contextJobs = new ArrayList<>();
+        FileEventDrivenJob fileJobRecord = new FileEventDrivenJobImpl();
+        fileJobRecord.setAgentName("agentName1");
+        QuartzScheduleDrivenJob quartzDrivenJob = new QuartzScheduleDrivenJobImpl();
+        quartzDrivenJob.setAgentName("agentName1");
+        contextJobs.add(fileJobRecord);
+        contextJobs.add(quartzDrivenJob);
+
+        ContextProfileRecord contextProfileRecord1 = new SolrContextProfileRecordImpl();
+        ContextProfileRecord contextProfileRecord2 = new SolrContextProfileRecordImpl();
+
+        List<ContextProfileRecord> contextProfileRecords = List.of(contextProfileRecord1, contextProfileRecord2);
+
+        // Email Notification
+        EmailNotificationDetails emailNotificationDetails1 = new SolrEmailNotificationDetails();
+        EmailNotificationDetails emailNotificationDetails2 = new SolrEmailNotificationDetails();
+
+        List<EmailNotificationDetails> emailNotificationDetails = List.of(emailNotificationDetails1, emailNotificationDetails2);
+
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
+        when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
+
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, emailNotificationDetails, null, new ArrayList<>());
+        service.provisionContext(contextBundle);
+
+        verify(schedulerJobService).deleteByContextName(contextName);
+        verify(contextProfileService).deleteByContextName(contextName);
+        verify(emailNotificationDetailsService).deleteByContextName(contextName);
+        verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
+        verify(schedulerJobService).save(contextJobs, "system");
+        verify(contextProfileService).save(contextProfileRecords);
+        verify(emailNotificationDetailsService).saveEmailNotificationDetails(emailNotificationDetails);
+
+        ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
+        verify(scheduledContextService).save(contextCaptor.capture());
+        ScheduledContextRecord actualContextRecord = contextCaptor.getValue();
+        assertEquals(contextName, actualContextRecord.getContextName());
+        assertNull(null, actualContextRecord.getId());
+        assertNotNull(actualContextRecord.getContext());
+        assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
+        ArgumentCaptor<SchedulerJobWrapperImpl> jobWrapperArgumentCaptor = ArgumentCaptor.forClass(SchedulerJobWrapperImpl.class);
+        verify(jobProvisionModuleRestService).provisionJobs(anyString(), jobWrapperArgumentCaptor.capture());
+
+        SchedulerJobWrapperImpl wrapper = jobWrapperArgumentCaptor.getValue();
+
+        assertEquals(0, wrapper.getJobs().size());
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,

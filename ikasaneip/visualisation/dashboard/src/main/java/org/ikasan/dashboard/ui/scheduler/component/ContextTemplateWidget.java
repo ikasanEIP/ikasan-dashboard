@@ -33,6 +33,7 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -73,6 +74,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1116,8 +1118,19 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         List< SchedulerJobRecord> schedulerJobRecordList = this.schedulerJobService
             .findByContext(contextName, -1, -1).getResultList();
 
+        List<String> jobIdentifiers = new ArrayList<>();
+
+        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(contextName);
+
+        if(scheduledContextRecord != null) {
+            List<SchedulerJob> jobsInJobPlan = ContextHelper.getAllJobs(scheduledContextRecord.getContext());
+            jobsInJobPlan.forEach(job -> jobIdentifiers.add(job.getIdentifier()));
+        }
+
+
         return schedulerJobRecordList.stream()
             .map(schedulerJobRecord -> schedulerJobRecord.getJob())
+            .filter(job -> jobIdentifiers.contains(job.getIdentifier()))
             .collect(Collectors.toList());
     }
 

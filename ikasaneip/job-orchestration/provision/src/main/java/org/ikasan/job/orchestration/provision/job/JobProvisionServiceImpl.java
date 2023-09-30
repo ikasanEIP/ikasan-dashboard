@@ -114,7 +114,6 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                 logger.info(String.format("Skipping %s global event jobs for the agent[%s] as global event jobs are not required for the agent.",
                     jobs.size() - agentJobs.size(), agent.getUrl()));
                 this.jobProvisionModuleRestService.provisionJobs(agent.getUrl(), schedulerJobWrapper);
-                persistJobs(jobs, actor); // Make sure the Global Events are persist
                 logger.info(String.format("Successfully provisioned %s jobs on agent[%s]", agentJobs.size(), agent.getUrl()));
             }
             catch (JobProvisionException e) {
@@ -308,54 +307,6 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                 }
             })
             .collect(Collectors.toList());
-    }
-
-    /**
-     * Persists the given list of SchedulerJobs based on their type.
-     *
-     * @param jobs The list of SchedulerJobs to persist
-     * @param actor The actor performing the persistence operation
-     */
-    private void persistJobs(List<SchedulerJob> jobs, String actor) {
-        Set<String> contextNames = jobs.stream().map(SchedulerJob::getContextName).collect(Collectors.toSet());
-        for (String contextName : contextNames) {
-            this.schedulerJobService.deleteByContextName(contextName);
-        }
-
-        List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
-        List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
-        List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
-        List<GlobalEventJob> globalEventJobs = new ArrayList<>();
-        jobs.forEach(job -> {
-            if(job instanceof InternalEventDrivenJob) {
-                internalEventDrivenJobs.add((InternalEventDrivenJob)job);
-            }
-            else if(job instanceof FileEventDrivenJob) {
-                fileEventDrivenJobs.add((FileEventDrivenJob)job);
-            }
-            else if(job instanceof QuartzScheduleDrivenJob) {
-                quartzScheduleDrivenJobs.add((QuartzScheduleDrivenJob)job);
-            }
-            else if(job instanceof GlobalEventJob) {
-                globalEventJobs.add((GlobalEventJob)job);
-            }
-        });
-
-        if(!internalEventDrivenJobs.isEmpty()) {
-            this.schedulerJobService.saveInternalEventDrivenJobs(internalEventDrivenJobs, actor);
-        }
-
-        if(!fileEventDrivenJobs.isEmpty()) {
-            this.schedulerJobService.saveFileEventDrivenJobs(fileEventDrivenJobs, actor);
-        }
-
-        if(!quartzScheduleDrivenJobs.isEmpty()) {
-            this.schedulerJobService.saveQuartzScheduledJobs(quartzScheduleDrivenJobs, actor);
-        }
-
-        if(!globalEventJobs.isEmpty()) {
-            this.schedulerJobService.saveGlobalEventJobs(globalEventJobs, actor);
-        }
     }
 
     /**

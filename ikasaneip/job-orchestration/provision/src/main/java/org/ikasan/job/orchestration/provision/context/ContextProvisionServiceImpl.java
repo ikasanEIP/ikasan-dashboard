@@ -20,10 +20,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
@@ -175,7 +172,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             }
 
             if (this.uploadProvisionJobs && !contextBundle.getContextTemplate().isDelayAgentSynchronisationUntilNextInstance()) {
-                provisionJobs(contextBundle.getSchedulerJobs());
+                provisionJobs(contextBundle.getSchedulerJobs(), contextBundle.getContextTemplate());
             }
 
             if(contextBundle.getContextTemplate().isDelayAgentSynchronisationUntilNextInstance()) {
@@ -242,12 +239,16 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     }
 
 
-    private void provisionJobs(List<SchedulerJob> contextJobs) {
+    private void provisionJobs(List<SchedulerJob> contextJobs, ContextTemplate contextTemplate) {
         long now = System.currentTimeMillis();
         int jobsSize = contextJobs.size();
         Set<String> uniqueAgentNames = contextJobs.stream().map(SchedulerJob::getAgentName).collect(Collectors.toSet());
         ModuleMetadataSearchResults agents = this.moduleMetadataService
             .find(new ArrayList<>(uniqueAgentNames), ModuleType.SCHEDULER_AGENT, -1, -1);
+
+        List<String> jobIdentifiersInJobPlan = ContextHelper.getAllJobs(contextTemplate).stream()
+            .map(job -> job.getIdentifier())
+            .collect(Collectors.toList());
 
         List<Exception> exceptions = new ArrayList<>();
         agents.getResultList().forEach(agent -> {
@@ -256,7 +257,11 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                 schedulerJobWrapper.setJobs(contextJobs.stream()
                     .filter(schedulerJob -> schedulerJob.getAgentName().equals(agent.getName()) &&
                         !(schedulerJob instanceof GlobalEventJob) && // Do not provision Global Events as this is not managed by the agent, but through the ContextMachine
-                        !(schedulerJob.isTemplateJob() != null && schedulerJob.isTemplateJob() == true)) // Do not provision template jobs as they are not managed by the agent, but through the ContextMachine
+                        !(schedulerJob instanceof LocalEventJob) && // Do not provision Local Events as this is not managed by the agent, but through the ContextMachine
+                        !(schedulerJob instanceof ContextStartJob) && // Do not provision ContextStartJobs as they is not managed by the agent, but through the ContextMachine
+                        !(schedulerJob instanceof ContextTerminalJob) && // Do not provision ContextTerminalJobs as they is not managed by the agent, but through the ContextMachine
+                        !(schedulerJob.isTemplateJob() != null && schedulerJob.isTemplateJob() == true) && // Do not provision template jobs as they are not managed by the agent, but through the ContextMachine
+                        jobIdentifiersInJobPlan.contains(schedulerJob.getIdentifier())) // We only provision jobs in the job plan
                     .collect(Collectors.toList()));
 
                 LOG.info(String.format("Attempting to provision %s jobs on agent[%s]", schedulerJobWrapper.getJobs().size(), agent.getUrl()));
