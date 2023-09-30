@@ -64,7 +64,10 @@ public class BigQueueModuleController {
 
         try {
             List<MetadataModuleDto> metadataModuleDtoList = getModules();
-            MetadataModuleDto metadataModuleDto = metadataModuleDtoList.stream().filter(dto -> moduleName.equals(dto.getName())).findAny().orElse(null);
+            MetadataModuleDto metadataModuleDto = metadataModuleDtoList.stream()
+                .filter(dto -> moduleName.equals(dto.getName()))
+                .findAny()
+                .orElse(null);
 
             if (metadataModuleDto != null) {
                 String url = metadataModuleDto.getUrl();
@@ -92,7 +95,10 @@ public class BigQueueModuleController {
 
         try {
             List<MetadataModuleDto> metadataModuleDtoList = getModules();
-            MetadataModuleDto metadataModuleDto = metadataModuleDtoList.stream().filter(dto -> moduleName.equals(dto.getName())).findAny().orElse(null);
+            MetadataModuleDto metadataModuleDto = metadataModuleDtoList.stream()
+                .filter(dto -> moduleName.equals(dto.getName()))
+                .findAny()
+                .orElse(null);
 
             if (metadataModuleDto != null) {
                 String url = metadataModuleDto.getUrl();
@@ -125,7 +131,10 @@ public class BigQueueModuleController {
 
         try {
             List<MetadataModuleDto> metadataModuleDtoList = getModules();
-            MetadataModuleDto metadataModuleDto = metadataModuleDtoList.stream().filter(dto -> moduleName.equals(dto.getName())).findAny().orElse(null);
+            MetadataModuleDto metadataModuleDto = metadataModuleDtoList.stream()
+                .filter(dto -> moduleName.equals(dto.getName()))
+                .findAny()
+                .orElse(null);
 
             if (metadataModuleDto != null) {
                 String url = metadataModuleDto.getUrl();

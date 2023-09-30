@@ -1,9 +1,9 @@
 package org.ikasan.job.orchestration.rest.dashboard.util;
 
-import org.ikasan.rest.dashboard.ErrorController;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.servlet.error.ErrorController;
 
 import java.util.List;
 

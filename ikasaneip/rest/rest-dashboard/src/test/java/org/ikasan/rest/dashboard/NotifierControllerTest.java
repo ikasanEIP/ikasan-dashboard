@@ -1,9 +1,9 @@
-package org.ikasan.rest.standalone;
+package org.ikasan.rest.dashboard;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ikasan.rest.standalone.model.flow.FlowStateImpl;
-import org.ikasan.rest.standalone.util.TestCacheAdapter;
+import org.ikasan.rest.dashboard.model.flow.FlowStateImpl;
+import org.ikasan.rest.dashboard.util.TestCacheAdapter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;

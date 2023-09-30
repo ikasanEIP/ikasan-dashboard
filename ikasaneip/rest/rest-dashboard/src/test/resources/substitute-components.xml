@@ -40,12 +40,6 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
 
-    <bean id="batchInsert" class="org.ikasan.rest.dashboard.util.TestBatchInsert" />
-
     <bean id="cacheAdapter" class="org.ikasan.rest.dashboard.util.TestCacheAdapter" />
-
-    <bean id="metricsService" class="org.ikasan.rest.dashboard.util.TestMetricsService" />
-
-    <bean id="userService" class="org.ikasan.rest.dashboard.util.TestUserService" />
 
 </beans>

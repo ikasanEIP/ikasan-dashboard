@@ -83,19 +83,16 @@ public class SecurityConfiguration
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.csrf().disable() // Disable csrf to enable POST, DELETE, PUT e.t.c
-                .requestMatchers()
-                // Below are the paths to allow HTTP Basic for. Restrict it to URLs allowed to be called outside of the dashboard
-                        .antMatchers("/rest/export/context/**", // ContextExportControl
-                                                 "/rest/module/bigQueue/size/all/**", // BigQueueModuleController
-                                                 "/rest/context/status/**", // ContextStatusServiceController
-                                                 "/actuator/**"// expose spring actuator via basic authentication
-                        )
-                        .and()
                 .authorizeRequests()
+                        .antMatchers("/authenticate").permitAll()
+                        .antMatchers("/swagger-ui.html", "/swagger-ui/**", "/actuator/**").permitAll()
                         .anyRequest()
                         .authenticated()
-                        .and()
-                .httpBasic();
+                        .and().httpBasic()
+                        .and().exceptionHandling()
+                        .defaultAuthenticationEntryPointFor(jwtAuthenticationEntryPoint, new AntPathRequestMatcher("/rest/**"));
+
+            http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         }
     }
 

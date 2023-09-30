@@ -1,4 +1,4 @@
-package org.ikasan.rest.standalone;
+package org.ikasan.rest.dashboard;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,12 +12,12 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig {
     @Bean
-    public Docket standaloneRestApi() {
+    public Docket dashboardRestApi() {
         return new Docket(DocumentationType.SWAGGER_2)
             .select()
-            .apis(RequestHandlerSelectors.basePackage("org.ikasan.rest.standalone"))
+            .apis(RequestHandlerSelectors.basePackage("org.ikasan.rest.dashboard"))
             .paths(PathSelectors.any())
             .build()
-            .groupName("standalone");
+            .groupName("dashboard");
     }
 }

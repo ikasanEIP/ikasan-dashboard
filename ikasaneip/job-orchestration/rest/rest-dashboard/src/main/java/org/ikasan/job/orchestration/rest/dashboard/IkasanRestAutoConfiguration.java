@@ -40,13 +40,7 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import javax.annotation.Resource;
-
-import org.ikasan.rest.dashboard.JwtAuthenticationController;
-import org.ikasan.rest.dashboard.JwtAuthenticationEntryPoint;
-import org.ikasan.rest.dashboard.JwtRequestFilter;
-import org.ikasan.rest.dashboard.JwtTokenUtil;
-import org.ikasan.security.service.UserService;
+import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -62,9 +56,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 
-import org.ikasan.bigqueue.IBigQueue;
+import javax.annotation.Resource;
 
 @Configuration
 public class IkasanRestAutoConfiguration {
@@ -146,24 +139,24 @@ public class IkasanRestAutoConfiguration {
         return new ContextExportControl(scheduledContextService, schedulerJobService, emailNotificationDetailsService, emailNotificationContextService, contextProfileService);
     }
 
-    @Bean
-    public JwtAuthenticationController jwtAuthenticationController(AuthenticationManager authenticationManager,
-                                                                   JwtTokenUtil jwtTokenUtil, UserService userService) {
-        return new JwtAuthenticationController(authenticationManager, jwtTokenUtil, userService);
-    }
-
-    @Bean
-    public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
-        return new JwtAuthenticationEntryPoint();
-    }
-
-    @Bean
-    public JwtRequestFilter jwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil) {
-        return new JwtRequestFilter(userService, jwtTokenUtil);
-    }
-
-    @Bean
-    public JwtTokenUtil jwtTokenUtil() {
-        return new JwtTokenUtil();
-    }
+//    @Bean
+//    public JwtAuthenticationController jwtAuthenticationController(AuthenticationManager authenticationManager,
+//                                                                   JwtTokenUtil jwtTokenUtil, UserService userService) {
+//        return new JwtAuthenticationController(authenticationManager, jwtTokenUtil, userService);
+//    }
+//
+//    @Bean
+//    public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
+//        return new JwtAuthenticationEntryPoint();
+//    }
+//
+//    @Bean
+//    public JwtRequestFilter jwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil) {
+//        return new JwtRequestFilter(userService, jwtTokenUtil);
+//    }
+//
+//    @Bean
+//    public JwtTokenUtil jwtTokenUtil() {
+//        return new JwtTokenUtil();
+//    }
 }

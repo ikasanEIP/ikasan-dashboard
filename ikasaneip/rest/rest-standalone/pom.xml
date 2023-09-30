@@ -53,7 +53,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>ikasan-rest-standalone</artifactId>
-    <name>Ikasan Rest Dashboard</name>
+    <name>Ikasan Rest Standalone</name>
     <description>The rest dashboard library for the Ikasan Enterprise Integration Platform</description>
     <packaging>jar</packaging>
 

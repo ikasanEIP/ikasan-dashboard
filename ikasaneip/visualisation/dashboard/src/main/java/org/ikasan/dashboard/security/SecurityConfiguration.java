@@ -1,10 +1,8 @@
 package org.ikasan.dashboard.security;
 
-import org.ikasan.rest.dashboard.JwtAuthenticationEntryPoint;
-import org.ikasan.rest.dashboard.JwtRequestFilter;
+import org.ikasan.rest.standalone.JwtAuthenticationEntryPoint;
+import org.ikasan.rest.standalone.JwtRequestFilter;
 import org.ikasan.security.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;

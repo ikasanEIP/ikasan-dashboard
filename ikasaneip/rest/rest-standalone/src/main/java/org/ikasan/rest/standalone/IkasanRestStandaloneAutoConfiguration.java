@@ -83,10 +83,6 @@ public class IkasanRestStandaloneAutoConfiguration
     @Resource(name="flowInvocationMetricBatchInsert")
     private BatchInsert flowInvocationMetricBatchInsert;
 
-
-//    @Resource
-//    private ContextParametersInstanceService contextParametersInstanceService;
-
     @Resource
     @Qualifier("moduleMetadataService")
     private ModuleMetaDataService moduleMetadataService;
@@ -94,14 +90,6 @@ public class IkasanRestStandaloneAutoConfiguration
     @Resource
     private MetricsService metricsService;
 
-//    @Resource
-//    private BigQueueModuleService bigQueueModuleService;
-
-//    @Autowired(required = false)
-//    private IBigQueue inboundQueue;
-//
-//    @Resource
-//    private FlowStateCacheAdapter cacheAdapter;
 
     @Bean
     public ReplayController replayApplication()
@@ -157,30 +145,6 @@ public class IkasanRestStandaloneAutoConfiguration
         return new UserController(userService);
     }
 
-//    @Bean
-//    public NotifierController notifierControllerApplication()
-//    {
-//        return new NotifierController(this.cacheAdapter);
-//    }
-
-//    @Bean
-//    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
-//    public BigQueueDashboardController bigQueueManagementController() {
-//        return new BigQueueDashboardController();
-//    }
-
-//    @Bean
-//    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
-//    public BigQueueDirectoryManagementService bigQueueDirectoryManagementService() {
-//        return new BigQueueDirectoryManagementServiceImpl(new BigQueueDashboardServiceImpl(inboundQueue), this.queueDir);
-//    }
-
-//    @Bean
-//    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
-//    public BigQueueModuleController bigQueueModuleController() {
-//        return new BigQueueModuleController(bigQueueModuleService, moduleMetadataService);
-//    }
-
     @Bean
     public JwtAuthenticationController jwtAuthenticationController(AuthenticationManager authenticationManager,
                                                                    JwtTokenUtil jwtTokenUtil, UserService userService) {
@@ -202,8 +166,4 @@ public class IkasanRestStandaloneAutoConfiguration
         return new JwtTokenUtil();
     }
 
-//    @Bean
-//    public JobContextController jobContextController() {
-//        return new JobContextController(contextParametersInstanceService);
-//    }
 }

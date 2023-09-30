@@ -40,15 +40,21 @@
  */
 package org.ikasan.rest.dashboard;
 
+import org.ikasan.bigqueue.IBigQueue;
+import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
+import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
+import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.ikasan.rest.dashboard.service.bigqueue.BigQueueDashboardServiceImpl;
 
 import javax.annotation.Resource;
 
@@ -97,11 +103,11 @@ public class IkasanRestAutoConfiguration
     @Resource
     private BigQueueModuleService bigQueueModuleService;
 
-//    @Autowired(required = false)
-//    private IBigQueue inboundQueue;
-//
-//    @Resource
-//    private FlowStateCacheAdapter cacheAdapter;
+    @Autowired(required = false)
+    private IBigQueue inboundQueue;
+
+    @Resource
+    private FlowStateCacheAdapter cacheAdapter;
 
 //    @Bean
 //    public ReplayController replayApplication()
@@ -157,11 +163,11 @@ public class IkasanRestAutoConfiguration
 //        return new UserController(userService);
 //    }
 
-//    @Bean
-//    public NotifierController notifierControllerApplication()
-//    {
-//        return new NotifierController(this.cacheAdapter);
-//    }
+    @Bean
+    public NotifierController notifierControllerApplication()
+    {
+        return new NotifierController(this.cacheAdapter);
+    }
 
     @Bean
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
@@ -169,11 +175,11 @@ public class IkasanRestAutoConfiguration
         return new BigQueueDashboardController();
     }
 
-//    @Bean
-//    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
-//    public BigQueueDirectoryManagementService bigQueueDirectoryManagementService() {
-//        return new BigQueueDirectoryManagementServiceImpl(new BigQueueDashboardServiceImpl(inboundQueue), this.queueDir);
-//    }
+    @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
+    public BigQueueDirectoryManagementService bigQueueDirectoryManagementService() {
+        return new BigQueueDirectoryManagementServiceImpl(new BigQueueDashboardServiceImpl(inboundQueue), this.queueDir);
+    }
 
     @Bean
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")

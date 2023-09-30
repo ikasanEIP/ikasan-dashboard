@@ -38,12 +38,12 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * ====================================================================
  */
-package org.ikasan.rest.standalone;
+package org.ikasan.rest.dashboard;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ikasan.rest.standalone.model.dto.ErrorDto;
-import org.ikasan.rest.standalone.model.flow.FlowStateImpl;
+import org.ikasan.rest.dashboard.model.dto.ErrorDto;
+import org.ikasan.rest.dashboard.model.flow.FlowStateImpl;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.flow.FlowState;
 import org.slf4j.Logger;
