@@ -46,7 +46,6 @@ public class BigQueueModuleControllerTest {
 
     @MockBean
     private BigQueueModuleService bigQueueModuleService;
-
     @MockBean
     private ModuleMetaDataService moduleMetaDataService;
 

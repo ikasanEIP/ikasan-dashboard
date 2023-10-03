@@ -65,34 +65,6 @@ public class IkasanRestAutoConfiguration
     @Value("${scheduled.job.context.queue.directory:.}")
     private String queueDir;
 
-    @Resource(name="errorOccurrenceBatchInsert")
-    private BatchInsert errorOccurrenceBatchInsert;
-
-    @Resource(name="replayEventBatchInsert")
-    private BatchInsert replayEventBatchInsert;
-
-    @Resource(name="exclusionEventBatchInsert")
-    private BatchInsert exclusionEventBatchInsert;
-
-    @Resource(name="wiretapEventBatchInsert")
-    private BatchInsert wiretapEventBatchInsert;
-
-    @Resource(name="systemEventBatchInsert")
-    private BatchInsert systemEventBatchInsert;
-
-    @Resource(name="moduleMetadataBatchInsert")
-    private BatchInsert moduleMetadataBatchInsert;
-
-    @Resource(name="configurationMetadataBatchInsert")
-    private BatchInsert configurationMetadataBatchInsert;
-
-    @Resource(name="flowInvocationMetricBatchInsert")
-    private BatchInsert flowInvocationMetricBatchInsert;
-
-
-//    @Resource
-//    private ContextParametersInstanceService contextParametersInstanceService;
-
     @Resource
     @Qualifier("moduleMetadataService")
     private ModuleMetaDataService moduleMetadataService;
@@ -108,60 +80,6 @@ public class IkasanRestAutoConfiguration
 
     @Resource
     private FlowStateCacheAdapter cacheAdapter;
-
-//    @Bean
-//    public ReplayController replayApplication()
-//    {
-//        return new ReplayController(this.replayEventBatchInsert);
-//    }
-//
-//    @Bean
-//    public WiretapController wiretapController()
-//    {
-//        return new WiretapController(this.wiretapEventBatchInsert);
-//    }
-//
-//    @Bean
-//    public ErrorController errorApplication()
-//    {
-//        return new ErrorController(this.errorOccurrenceBatchInsert);
-//    }
-//
-//    @Bean
-//    public ExclusionController exclusionApplication()
-//    {
-//        return new ExclusionController(this.exclusionEventBatchInsert);
-//    }
-//
-//    @Bean
-//    public MetaDataController metaDataApplication()
-//    {
-//        return new MetaDataController(this.moduleMetadataBatchInsert,
-//            this.configurationMetadataBatchInsert);
-//    }
-//
-//    @Bean
-//    public SystemEventController systemEventController()
-//    {
-//        return new SystemEventController(this.systemEventBatchInsert);
-//    }
-//
-//    @Bean
-//    public ModulesController modulesController()
-//    {
-//        return new ModulesController(moduleMetadataService);
-//    }
-//
-//    @Bean
-//    public MetricsController metricsApplication() {
-//        return new MetricsController(this.flowInvocationMetricBatchInsert, this.metricsService);
-//    }
-//
-//    @Bean
-//    public UserController userController(UserService userService)
-//    {
-//        return new UserController(userService);
-//    }
 
     @Bean
     public NotifierController notifierControllerApplication()
@@ -187,29 +105,4 @@ public class IkasanRestAutoConfiguration
         return new BigQueueModuleController(bigQueueModuleService, moduleMetadataService);
     }
 
-//    @Bean
-//    public JwtAuthenticationController jwtAuthenticationController(AuthenticationManager authenticationManager,
-//                                                                   JwtTokenUtil jwtTokenUtil, UserService userService) {
-//        return new JwtAuthenticationController(authenticationManager, jwtTokenUtil, userService);
-//    }
-//
-//    @Bean("jwtAuthenticationEntryPoint")
-//    public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
-//        return new JwtAuthenticationEntryPoint();
-//    }
-//
-//    @Bean
-//    public JwtRequestFilter jwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil) {
-//        return new JwtRequestFilter(userService, jwtTokenUtil);
-//    }
-//
-//    @Bean
-//    public JwtTokenUtil jwtTokenUtil() {
-//        return new JwtTokenUtil();
-//    }
-
-//    @Bean
-//    public JobContextController jobContextController() {
-//        return new JobContextController(contextParametersInstanceService);
-//    }
 }

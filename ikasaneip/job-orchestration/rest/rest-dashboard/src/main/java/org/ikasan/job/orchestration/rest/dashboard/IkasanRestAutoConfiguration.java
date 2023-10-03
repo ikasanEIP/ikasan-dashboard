@@ -44,6 +44,7 @@ import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
@@ -98,6 +99,10 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private GlobalEventService globalEventService;
 
+    @Resource
+    private ContextParametersInstanceService contextParametersInstanceService;
+
+
     @Bean
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public ScheduledProcessEventController scheduledProcessEventController() {
@@ -139,24 +144,8 @@ public class IkasanRestAutoConfiguration {
         return new ContextExportControl(scheduledContextService, schedulerJobService, emailNotificationDetailsService, emailNotificationContextService, contextProfileService);
     }
 
-//    @Bean
-//    public JwtAuthenticationController jwtAuthenticationController(AuthenticationManager authenticationManager,
-//                                                                   JwtTokenUtil jwtTokenUtil, UserService userService) {
-//        return new JwtAuthenticationController(authenticationManager, jwtTokenUtil, userService);
-//    }
-//
-//    @Bean
-//    public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
-//        return new JwtAuthenticationEntryPoint();
-//    }
-//
-//    @Bean
-//    public JwtRequestFilter jwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil) {
-//        return new JwtRequestFilter(userService, jwtTokenUtil);
-//    }
-//
-//    @Bean
-//    public JwtTokenUtil jwtTokenUtil() {
-//        return new JwtTokenUtil();
-//    }
+    @Bean
+    public JobContextController jobContextController() {
+        return new JobContextController(contextParametersInstanceService);
+    }
 }
