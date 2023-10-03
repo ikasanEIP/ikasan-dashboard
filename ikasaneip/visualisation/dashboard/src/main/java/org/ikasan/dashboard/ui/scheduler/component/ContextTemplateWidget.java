@@ -553,6 +553,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 try {
                     ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                         SerializationUtils.clone(scheduledContextRecord.getContext()),
+                        scheduledContextRecord.getContextName(),
                         this.zipWorkingDirectory,
                         this.schedulerJobService,
                         this.emailNotificationDetailsService,
@@ -588,6 +589,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     downloadClone.setName(finalDownloadName);
                     ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                         downloadClone,
+                        finalDownloadName,
                         this.zipWorkingDirectory,
                         this.schedulerJobService,
                         this.emailNotificationDetailsService,
