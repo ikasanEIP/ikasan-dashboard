@@ -48,6 +48,7 @@ public final class ContextExportZipUtils {
     }
 
     public static ByteArrayOutputStream createZipFile(ContextTemplate context,
+                                                      String unmodifiedContextName,
                                                       String workingDirectory,
                                                       SchedulerJobService schedulerJobService,
                                                       EmailNotificationDetailsService emailNotificationDetailsService,
@@ -102,7 +103,7 @@ public final class ContextExportZipUtils {
 
             // get all the jobs
             int offset = 0;
-            SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(contextName, searchLimit, offset);
+            SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(unmodifiedContextName, searchLimit, offset);
             addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir
                 , results.getResultList().stream().map(schedulerJobRecord -> schedulerJobRecord.getJob()).collect(Collectors.toList())
                 , addReplacementTokens);
