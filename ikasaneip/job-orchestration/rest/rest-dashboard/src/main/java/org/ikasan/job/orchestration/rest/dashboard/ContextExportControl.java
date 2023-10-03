@@ -85,6 +85,7 @@ public class ContextExportControl {
         try {
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                 scheduledContextService.findByName(contextName).getContext(),
+                contextName,
                 System.currentTimeMillis() + "-", // make sure directory is unique due to same request running at same time
                 schedulerJobService,
                 emailNotificationDetailsService,
@@ -146,6 +147,7 @@ public class ContextExportControl {
         try {
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                 scheduledContextService.findByName(contextName).getContext(),
+                contextName,
                 System.currentTimeMillis() + "-", // make sure directory is unique due to same request running at same time
                 schedulerJobService,
                 emailNotificationDetailsService,
