@@ -1140,6 +1140,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                 clone,
+                this.contextTemplate.getName(),
                 this.zipWorkingDirectory,
                 this.schedulerJobService,
                 this.emailNotificationDetailsService,
