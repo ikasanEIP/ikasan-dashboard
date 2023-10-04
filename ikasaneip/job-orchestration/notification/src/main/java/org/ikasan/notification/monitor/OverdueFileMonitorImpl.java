@@ -5,6 +5,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.notification.exception.StopNotificationRunnerException;
+import org.ikasan.notification.factory.NotificationThreadFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
@@ -17,10 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
 
@@ -29,6 +27,8 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
     private Map<String, ScheduledFuture<?>> mapOfRunningJobs = new HashMap<>();
+
+    private Map<String, ScheduledExecutorService> mapOfRunningExecutors = new HashMap<>();
 
     private Integer fileArrivalToleranceInMinutes;
 
@@ -61,11 +61,15 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
     public void register(ContextInstance contextInstance) {
         if(this.notificationEnabled) {
 
+            // Create the executor
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(new NotificationThreadFactory("OverdueNotification"));
+
             // Create the scheduler to be executed
-            ScheduledFuture<?> notificationScheduler = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new OverdueFileNotificationsRunner(contextInstance)
+            ScheduledFuture<?> notificationScheduler = executorService.scheduleAtFixedRate(new OverdueFileNotificationsRunner(contextInstance)
                 , 1, this.notificationPollingInterval, TimeUnit.MINUTES);
 
             mapOfRunningJobs.put(contextInstance.getId(), notificationScheduler);
+            mapOfRunningExecutors.put(contextInstance.getId(), executorService);
 
             LOG.info("OverdueFileMonitor has started monitoring for context {}, instance {}", contextInstance.getName(), contextInstance.getId());
             LOG.info(mapOfRunningJobs.size() + " number of Contexts are being monitored now!");
@@ -83,8 +87,13 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
                 LOG.info("Context {}, Context Instance Id {} notification has been unregistered", contextInstance.getName(), contextInstance.getId());
                 mapOfRunningJobs.remove(contextInstance.getId());
             }
+            if (mapOfRunningExecutors.containsKey(contextInstance.getId())) {
+                mapOfRunningExecutors.get(contextInstance.getId()).shutdown(); // Stop the related ScheduledExecutorService
+                LOG.debug("Context {}, Context Instance Id {} notification executor has been unregistered", contextInstance.getName(), contextInstance.getId());
+                mapOfRunningExecutors.remove(contextInstance.getId());
+            }
             LOG.info("After unregistering Context {}, InstanceId {} - number of Contexts are being monitored now is {}",
-                contextInstance.getName(), contextInstance.getId(), mapOfRunningJobs.size());
+                contextInstance.getName(), contextInstance.getId(), mapOfRunningExecutors.size());
         } else {
             LOG.info("Notifications are not enabled!");
         }

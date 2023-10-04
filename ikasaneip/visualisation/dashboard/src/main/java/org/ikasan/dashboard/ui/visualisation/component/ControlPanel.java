@@ -20,6 +20,7 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeListener;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
@@ -237,7 +238,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
     protected void performAction(ProgressIndicatorDialog progressIndicatorDialog, String action)
     {
         final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
-        Executor executor = Executors.newSingleThreadExecutor();
+        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ControlPanel"));
         executor.execute(() -> {
             try
             {

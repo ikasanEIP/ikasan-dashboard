@@ -18,6 +18,7 @@ import org.ikasan.dashboard.ui.general.component.SearchResults;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -94,7 +95,7 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                 }
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ResubmitHospitalEvent"));
                 executor.execute(() -> {
                     try {
                         this.success = false;

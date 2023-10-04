@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.util;
 
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.LinkedList;
@@ -10,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class NewSchedulerJobEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor();
+    static Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("NewSchedulerJobEventBroadcaster"));
 
     private static WeakHashMap<NewSchedulerJobEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();

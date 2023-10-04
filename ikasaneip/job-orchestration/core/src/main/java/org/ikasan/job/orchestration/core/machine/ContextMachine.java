@@ -13,6 +13,7 @@ import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
@@ -128,9 +129,9 @@ public class ContextMachine {
         this.queueDir = queueDir;
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
         this.contextInstanceStateChangeEventListeners = new ArrayList<>();
-        this.statusListenerExecutor = Executors.newSingleThreadExecutor();
-        this.contextExecutor = Executors.newSingleThreadExecutor();
-        this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor();
+        this.statusListenerExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-StatusChangeListener"));
+        this.contextExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-ContextExecutor"));
+        this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-EventRaisedListener"));
         this.objectMapper = ObjectMapperFactory.newInstance();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -366,9 +367,12 @@ public class ContextMachine {
             this.inboundListenableFuture = null;
             this.outboundListenableFuture = null;
 
+            this.jobLogicMachine.getExecutor().shutdownNow(); // remove the executor threads on this Job Logic Machine
+            this.jobLogicMachine = null;
+
             BigQueueManagementService bigQueueManagementService =
-            new BigQueueContextMachineManagementServiceImpl(getInboundQueueName(),
-                inboundQueue, getOutboundQueueName(), outboundQueue);
+                new BigQueueContextMachineManagementServiceImpl(getInboundQueueName(),
+                    inboundQueue, getOutboundQueueName(), outboundQueue);
 
             BigQueueDirectoryManagementService bigQueueDirectoryManagementService
                 = new BigQueueDirectoryManagementServiceImpl(bigQueueManagementService, this.queueDir);
@@ -388,7 +392,6 @@ public class ContextMachine {
             this.queueDir = null;
 
             this.contextInstance = null;
-            this.jobLogicMachine = null;
             this.statusConverter = null;
         } catch (Exception e) {
             logger.warn(String.format("Could not tear down context machine: Error [%s]", e.getMessage()));

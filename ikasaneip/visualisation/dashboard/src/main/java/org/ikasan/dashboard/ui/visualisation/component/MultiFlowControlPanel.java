@@ -12,6 +12,7 @@ import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.spec.module.client.ModuleControlService;
 
@@ -74,7 +75,7 @@ public class MultiFlowControlPanel extends ControlPanel {
     {
         final UI current = UI.getCurrent();
         final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
-        Executor executor = Executors.newSingleThreadExecutor();
+        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("MultiFlowControlPanel"));
         executor.execute(() -> {
             try
             {

@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.cache;
 
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
@@ -8,7 +9,7 @@ import java.util.concurrent.Executors;
 
 public class CacheStateBroadcaster
 {
-    static Executor executor = Executors.newSingleThreadExecutor();
+    static Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("CacheStateBroadcaster"));
 
     private static WeakHashMap<CacheStateBroadcastListener, Object> listeners =
         new WeakHashMap<>();

@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.util;
 
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 
@@ -12,7 +13,7 @@ import java.util.function.Consumer;
 
 public class ContextViewUpdateEventBroadcaster
 {
-    static Executor executor = Executors.newSingleThreadExecutor();
+    static Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextViewUpdateEventBroadcaster"));
 
     private static WeakHashMap<ContextViewUpdateEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();
