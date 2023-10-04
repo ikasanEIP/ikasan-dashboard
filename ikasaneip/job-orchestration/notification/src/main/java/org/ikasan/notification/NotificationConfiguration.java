@@ -4,6 +4,7 @@ import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.notification.configuration.EmailNotificationParamsConfiguration;
 import org.ikasan.notification.configuration.EmailNotificationParamsFactory;
+import org.ikasan.notification.factory.NotificationThreadFactory;
 import org.ikasan.notification.monitor.JobRunningTimesMonitorImpl;
 import org.ikasan.notification.monitor.StateChangeMonitorImpl;
 import org.ikasan.notification.monitor.OverdueFileMonitorImpl;
@@ -71,8 +72,10 @@ public class NotificationConfiguration {
     @Value("${notifications.polling.interval.minutes:1}")
     private int notificationPollingInterval;
 
-    /** default executor service is a single thread executor */
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    /**
+     * default executor service is a single thread executor
+     */
+    private ExecutorService executorService = Executors.newSingleThreadExecutor(new NotificationThreadFactory("Notification"));
 
     @Bean
     @DependsOn("emailNotificationParamsConfiguration")

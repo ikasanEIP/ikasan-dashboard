@@ -897,7 +897,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                     getTranslation("progress-dialog.provision-job-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateManagementWidget"));
                 executor.execute(() -> {
                     boolean success = true;
                     try {

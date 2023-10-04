@@ -69,6 +69,7 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.security.model.AuthenticationMethod;
 import org.ikasan.security.service.LdapService;
 import org.ikasan.security.service.SecurityService;
@@ -388,7 +389,7 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
             progressIndicatorDialog.open("Synchronising User Directory", null);
 
             final UI current = UI.getCurrent();
-            Executor executor = Executors.newSingleThreadExecutor();
+            Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("UserDirectoriesView"));
             executor.execute(() -> {
                 try
                 {

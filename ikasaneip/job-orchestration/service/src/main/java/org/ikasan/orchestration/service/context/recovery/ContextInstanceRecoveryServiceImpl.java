@@ -45,8 +45,8 @@ import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerSer
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
-import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
+import org.ikasan.orchestration.service.context.util.JobServiceThreadFactory;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -76,7 +76,7 @@ import java.util.concurrent.Executors;
 public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRecoveryService {
     private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceRecoveryServiceImpl.class);
 
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newCachedThreadPool(new JobServiceThreadFactory("ContextInstanceRecoveryServiceImpl"));
 
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
 

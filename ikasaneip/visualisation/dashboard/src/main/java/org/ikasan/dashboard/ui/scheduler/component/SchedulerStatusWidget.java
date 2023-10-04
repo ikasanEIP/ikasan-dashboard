@@ -20,6 +20,7 @@ import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.component.FlowListFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
@@ -176,7 +177,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
 
         this.add(div);
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        ExecutorService executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("SchedulerStatusWidget"));
         executor.execute(() -> this.recalculate());
     }
 

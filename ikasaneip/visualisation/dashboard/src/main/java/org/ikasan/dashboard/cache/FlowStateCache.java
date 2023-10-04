@@ -2,6 +2,7 @@ package org.ikasan.dashboard.cache;
 
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.rest.client.dto.FlowDto;
@@ -24,7 +25,7 @@ public class FlowStateCache implements Consumer<FlowState>
 
     private static FlowStateCache INSTANCE;
 
-    private ExecutorService executor = Executors.newFixedThreadPool(10);
+    private ExecutorService executor = Executors.newFixedThreadPool(10, new VaadimThreadFactory("FlowStateCache"));
 
     public static FlowStateCache instance()
     {

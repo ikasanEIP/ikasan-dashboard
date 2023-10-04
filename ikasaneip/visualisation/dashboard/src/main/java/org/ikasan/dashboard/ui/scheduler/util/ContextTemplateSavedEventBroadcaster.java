@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.util;
 
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 
 import java.util.WeakHashMap;
@@ -7,7 +8,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ContextTemplateSavedEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor();
+    static Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateSavedEventBroadcaster"));
 
     private static WeakHashMap<ContextTemplateSavedEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();
