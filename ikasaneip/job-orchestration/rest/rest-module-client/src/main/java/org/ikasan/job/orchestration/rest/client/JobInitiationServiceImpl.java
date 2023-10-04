@@ -17,6 +17,7 @@ import org.springframework.web.client.RestClientException;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class JobInitiationServiceImpl extends ModuleRestService implements JobInitiationService {
@@ -54,7 +55,7 @@ public class JobInitiationServiceImpl extends ModuleRestService implements JobIn
     public void raiseFileEventSchedulerJob(String contextUrl, String agentName, SchedulerJob job, String correlationId) {
         this.setJobDryRunMode(contextUrl, job.getAggregateJobName(), true);
         this.triggerJobNow(contextUrl, agentName, job.getAggregateJobName(), correlationId);
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new RestThreadFactory("JobInitiationServiceImpl"));
         scheduler.schedule(() -> {
                 try {
                     this.setJobDryRunMode(contextUrl, job.getAggregateJobName(), false);
@@ -86,15 +87,28 @@ public class JobInitiationServiceImpl extends ModuleRestService implements JobIn
         Map<String, String> parameters = Map.of("moduleName",agentName, "flowName", jobName, "correlationId", correlationId);
         String url = contextUrl+FLOW_SCHEDULE_FIRE_NOW_URL;
         LOG.info("Context URL[{}] Payload[{}] ", url, parameters);
-        try
-        {
+        try {
             restTemplate.exchange(url, HttpMethod.GET, entity, String.class, parameters);
-        }
-        catch(RestClientException e){
+        } catch (RestClientException e) {
             LOG.warn("Issue triggering scheduler flow job [" + url
-                + "] with agent ["+agentName+"] " + "] and job ["+jobName +"] "
-                + " with response [{"+e.getLocalizedMessage()+"}]");
+                + "] with agent [" + agentName + "] " + "] and job [" + jobName + "] "
+                + " with response [{" + e.getLocalizedMessage() + "}]");
             throw e;
+        }
+    }
+
+    static class RestThreadFactory implements ThreadFactory {
+
+        private static long counter = 0;
+        private final String prefix;
+
+        public RestThreadFactory(String prefix) {
+            this.prefix = prefix;
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            return new Thread(r, prefix + "-" + counter++);
         }
     }
 }

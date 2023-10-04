@@ -16,6 +16,7 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
@@ -103,7 +104,7 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
                     getTranslation("progress-dialog.provision-job-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextImportFileDialog"));
                 executor.execute(() -> {
                     try {
                         ContextBundle contextBundle

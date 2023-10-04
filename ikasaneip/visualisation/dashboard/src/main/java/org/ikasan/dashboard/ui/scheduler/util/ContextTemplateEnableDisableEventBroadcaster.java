@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.util;
 
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -12,7 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class ContextTemplateEnableDisableEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor();
+    static Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateEnableDisableEventBroadcaster"));
 
     private static WeakHashMap<ContextTemplateEnableDisableEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();

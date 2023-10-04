@@ -3,6 +3,7 @@ package org.ikasan.notification.monitor;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.notification.exception.StopNotificationRunnerException;
+import org.ikasan.notification.factory.NotificationThreadFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
@@ -13,14 +14,9 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
 
@@ -31,8 +27,8 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
 
     private boolean notificationEnabled;
     private int notificationPollingInterval;
-
     private Map<String, ScheduledFuture<?>> mapOfRunningJobs = new HashMap<>();
+    private Map<String, ScheduledExecutorService> mapOfRunningExecutors = new HashMap<>();
 
     /**
      * Constructor
@@ -60,11 +56,14 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
     public void register(ContextInstance contextInstance) {
         if(this.notificationEnabled) {
 
+            // Create the executor
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(new NotificationThreadFactory("JobRunningNotification"));
+
             // Create the scheduler to be executed
-            ScheduledFuture<?> notificationScheduler = Executors.newSingleThreadScheduledExecutor()
-                .scheduleAtFixedRate(new JobRunningTimesNotificationsRunner(contextInstance), 1, this.notificationPollingInterval, TimeUnit.MINUTES);
+            ScheduledFuture<?> notificationScheduler = executorService.scheduleAtFixedRate(new JobRunningTimesNotificationsRunner(contextInstance), 1, this.notificationPollingInterval, TimeUnit.MINUTES);
 
             mapOfRunningJobs.put(contextInstance.getId(), notificationScheduler);
+            mapOfRunningExecutors.put(contextInstance.getId(), executorService);
 
             LOG.info("JobRunningTimesMonitor has started monitoring for context {}, instance {}", contextInstance.getName(), contextInstance.getId());
             LOG.info(mapOfRunningJobs.size() + " number of Contexts are being monitored now!");
@@ -81,6 +80,11 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
                 mapOfRunningJobs.get(contextInstance.getId()).cancel(true); // Stop the related SingleThreadScheduledExecutor
                 LOG.info("Context {}, Context Instance Id {} notification has been unregistered", contextInstance.getName(), contextInstance.getId());
                 mapOfRunningJobs.remove(contextInstance.getId());
+            }
+            if (mapOfRunningExecutors.containsKey(contextInstance.getId())) {
+                mapOfRunningExecutors.get(contextInstance.getId()).shutdown(); // Stop the related ScheduledExecutorService
+                LOG.debug("Context {}, Context Instance Id {} notification executor has been unregistered", contextInstance.getName(), contextInstance.getId());
+                mapOfRunningExecutors.remove(contextInstance.getId());
             }
             LOG.info("After unregistering Context {}, InstanceId {} - number of Contexts are being monitored now is {}",
                 contextInstance.getName(), contextInstance.getId(), mapOfRunningJobs.size());

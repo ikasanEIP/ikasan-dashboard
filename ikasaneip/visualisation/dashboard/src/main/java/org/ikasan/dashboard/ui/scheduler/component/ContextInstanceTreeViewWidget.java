@@ -946,7 +946,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     getTranslation("progress-dialog.hold-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextInstanceTreeViewWidget"));
                 executor.execute(() -> {
                     boolean error = false;
                     try {
@@ -1028,7 +1028,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
                     final UI current = UI.getCurrent();
-                    Executor executor = Executors.newSingleThreadExecutor();
+                    Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextInstanceTreeViewWidget"));
                     executor.execute(() -> {
                         boolean error = false;
                         try {

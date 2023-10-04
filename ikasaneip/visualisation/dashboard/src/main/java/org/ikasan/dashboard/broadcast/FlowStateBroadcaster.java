@@ -1,12 +1,14 @@
 package org.ikasan.dashboard.broadcast;
 
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
+
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class FlowStateBroadcaster
 {
-    static Executor executor = Executors.newSingleThreadExecutor();
+    static Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("FlowStateBroadcaster"));
 
     private static WeakHashMap<FlowStateBroadcastListener, Object> listeners =
         new WeakHashMap<>();
