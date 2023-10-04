@@ -112,7 +112,7 @@ public final class ContextExportZipUtils {
             long totalNumberOfResults = results.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
-                results = schedulerJobService.findByContext(contextName, searchLimit, offset);
+                results = schedulerJobService.findByContext(unmodifiedContextName, searchLimit, offset);
                 addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir
                     , results.getResultList().stream().map(schedulerJobRecord -> schedulerJobRecord.getJob()).collect(Collectors.toList())
                     , addReplacementTokens);
@@ -120,34 +120,34 @@ public final class ContextExportZipUtils {
 
             // get the overall notifications settings for the context
             offset = 0;
-            SearchResults<EmailNotificationContextRecord> notificationResults = emailNotificationContextService.findByContextName(contextName, searchLimit, offset);
+            SearchResults<EmailNotificationContextRecord> notificationResults = emailNotificationContextService.findByContextName(unmodifiedContextName, searchLimit, offset);
             addNotificationFilesToZip(objectMapper, notificationDir, notificationResults);
 
             retrievedNumber = notificationResults.getResultList().size();
             totalNumberOfResults = notificationResults.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
-                notificationResults = emailNotificationContextService.findByContextName(contextName, searchLimit, offset);
+                notificationResults = emailNotificationContextService.findByContextName(unmodifiedContextName, searchLimit, offset);
                 addNotificationFilesToZip(objectMapper, notificationDir, notificationResults);
             }
 
             // get the notification details for the context - these are the individual notification defined per context, child context and job.
             offset = 0;
-            SearchResults<EmailNotificationDetailsRecord> notificationDetailResults = emailNotificationDetailsService.findByContextName(contextName, searchLimit, offset);
+            SearchResults<EmailNotificationDetailsRecord> notificationDetailResults = emailNotificationDetailsService.findByContextName(unmodifiedContextName, searchLimit, offset);
             addNotificationDetailFilesToZip(objectMapper, notificationDetailDir, notificationDetailResults);
 
             retrievedNumber = notificationDetailResults.getResultList().size();
             totalNumberOfResults = notificationDetailResults.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
-                notificationDetailResults = emailNotificationDetailsService.findByContextName(contextName, searchLimit, offset);
+                notificationDetailResults = emailNotificationDetailsService.findByContextName(unmodifiedContextName, searchLimit, offset);
                 addNotificationDetailFilesToZip(objectMapper, notificationDetailDir, notificationDetailResults);
             }
 
             // get the profiles for the context
             offset = 0;
             ContextProfileSearchFilter profileFilter = new ContextProfileSearchFilterImpl();
-            profileFilter.setContextName(contextName); //search by contextName
+            profileFilter.setContextName(unmodifiedContextName); //search by contextName
 
             SearchResults<ContextProfileRecord> profileResults = contextProfileService.findByFilter(profileFilter, searchLimit, offset, null, null);
             addProfilesFilesToZip(objectMapper, profilesDir, profileResults);
