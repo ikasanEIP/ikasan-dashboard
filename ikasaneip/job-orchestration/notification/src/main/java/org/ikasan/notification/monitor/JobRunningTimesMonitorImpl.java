@@ -107,8 +107,9 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
                 if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.COMPLETE.toString()) ||
                     contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.ENDED.toString())) {
                     unregister(contextInstance);
-                    throw new StopNotificationRunnerException("Context:" + contextInstance.getName() + ", InstanceId: " + contextInstance.getId() +
+                    LOG.info("Context:" + contextInstance.getName() + ", InstanceId: " + contextInstance.getId() +
                         " is " + contextInstance.getStatus().toString() + ", stopping the JobRunningTimesNotificationsRunner");
+                    return;
                 }
 
                 if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RUNNING.toString()) ||
