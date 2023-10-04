@@ -9,6 +9,7 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -64,7 +65,7 @@ public class ReleaseAllCommandExecutionJobsForContextInstanceCommand {
                     this.ikasanI18NProvider.getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ReleaseAllCommand"));
                 executor.execute(() -> {
                     boolean error = false;
                     try {

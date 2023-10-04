@@ -4,6 +4,7 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.MonitorType;
+import org.ikasan.notification.factory.NotificationThreadFactory;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -14,10 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
 
@@ -25,10 +23,13 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
     private final Map<String, Future<?>> mapOfRunningJobs = new HashMap<>();
 
+    private Map<String, ExecutorService> mapOfRunningExecutors = new HashMap<>();
+
     private final boolean notificationEnabled;
 
     /**
      * Constructor
+     *
      * @param executorService
      */
     public StateChangeMonitorImpl(ExecutorService executorService, boolean notificationEnabled) {
@@ -42,10 +43,13 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
         if(this.notificationEnabled) {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId());
 
+            ExecutorService executorService = Executors.newSingleThreadExecutor(new NotificationThreadFactory("StateChangeNotification"));
+
             // Create the scheduler to be executed
-            Future<?> notificationScheduler = Executors.newSingleThreadExecutor().submit(new ErrorNotificationsRunner(contextMachine));
+            Future<?> notificationScheduler = executorService.submit(new ErrorNotificationsRunner(contextMachine));
 
             mapOfRunningJobs.put(contextInstance.getId(), notificationScheduler);
+            mapOfRunningExecutors.put(contextInstance.getId(), executorService);
 
             LOG.info("StateChangeMonitor has started monitoring for context {}, instance {}", contextInstance.getName(), contextInstance.getId());
             LOG.info(mapOfRunningJobs.size() + " number of Contexts are being monitored now!");
@@ -62,6 +66,11 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
                 mapOfRunningJobs.get(contextInstance.getId()).cancel(true); // Stop the related SingleThreadScheduledExecutor
                 LOG.info("Context {}, Context Instance Id {} notification has been unregistered", contextInstance.getName(), contextInstance.getId());
                 mapOfRunningJobs.remove(contextInstance.getId());
+            }
+            if (mapOfRunningExecutors.containsKey(contextInstance.getId())) {
+                mapOfRunningExecutors.get(contextInstance.getId()).shutdown(); // Stop the related ScheduledExecutorService
+                LOG.debug("Context {}, Context Instance Id {} notification executor has been unregistered", contextInstance.getName(), contextInstance.getId());
+                mapOfRunningExecutors.remove(contextInstance.getId());
             }
             LOG.info("After unregistering Context {}, InstanceId {} - number of Contexts are being monitored now is {}",
                 contextInstance.getName(), contextInstance.getId(), mapOfRunningJobs.size());

@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.core.machine;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
@@ -36,7 +37,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         this.agents = agents;
         this.schedulerJobInstanceStateChangeEventListeners = new ArrayList<>();
         // todo make pool size configurable
-        executor = Executors.newFixedThreadPool(5);
+        this.executor = Executors.newFixedThreadPool(5, new JobThreadFactory("JobLogicMachine"));
         this.jobLockCache = jobLockCache;
         this.contextParametersInstanceService = contextParametersInstanceService;
     }
@@ -510,14 +511,23 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
 
         AtomicReference<Boolean> contextId = new AtomicReference<>(false);
-        if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
+        if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
             contextInstance.getContexts().forEach(c -> {
-                if(isAlreadyComplete(c, agentName, jobName, childContextIds)) {
+                if (isAlreadyComplete(c, agentName, jobName, childContextIds)) {
                     contextId.set(true);
                 }
             });
         }
 
         return contextId.get();
+    }
+
+    /**
+     * Use to gain access to the executors for shutdown when tearing down
+     *
+     * @return the executor
+     */
+    ExecutorService getExecutor() {
+        return executor;
     }
 }

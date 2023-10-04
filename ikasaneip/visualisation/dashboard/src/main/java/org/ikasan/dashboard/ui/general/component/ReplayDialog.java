@@ -20,6 +20,7 @@ import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditEventImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.module.client.ReplayService;
@@ -139,7 +140,7 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                     progressIndicatorDialog.open(current.getTranslation("message.replaying-event"
                         , UI.getCurrent().getLocale()), null);
 
-                    Executor executor = Executors.newSingleThreadExecutor();
+                    Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ReplayDialog"));
                     executor.execute(() -> {
                         try
                         {

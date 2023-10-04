@@ -392,7 +392,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         getTranslation("progress-dialog.delete-context-template-body", UI.getCurrent().getLocale()));
 
                     final UI current = UI.getCurrent();
-                    Executor executor = Executors.newSingleThreadExecutor();
+                    Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateWidget"));
                     executor.execute(() -> {
                         try {
                             this.jobProvisionService.removeJobs(scheduledContextRecord.getContextName());
@@ -763,7 +763,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         progressIndicatorDialog.open(getTranslation("progress-dialog.enable-context-template-header", UI.getCurrent().getLocale())
                             , getTranslation("progress-dialog.enable-context-template-text", UI.getCurrent().getLocale()));
 
-                        Executor executor = Executors.newSingleThreadExecutor();
+                        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateWidget"));
                         executor.execute(() -> {
                             try {
                                 ContextTemplate contextTemplate = scheduledContextRecord.getContext();
@@ -816,7 +816,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         progressIndicatorDialog.open(getTranslation("progress-dialog.disable-context-template-header", UI.getCurrent().getLocale())
                             , getTranslation("progress-dialog.disable-context-template-text", UI.getCurrent().getLocale()));
 
-                        Executor executor = Executors.newSingleThreadExecutor();
+                        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateWidget"));
                         executor.execute(() -> {
                             try {
                                 ContextTemplate contextTemplate = scheduledContextRecord.getContext();

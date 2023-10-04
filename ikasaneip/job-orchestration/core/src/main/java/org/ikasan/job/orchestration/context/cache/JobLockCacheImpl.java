@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.context.cache;
 
+import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
@@ -53,7 +54,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
         this.jobLockCacheEventListeners = new LinkedList<>();
         this.addJobLockCacheEventListener(this);
         // todo make pool size configurable
-        this.executor = Executors.newFixedThreadPool(5);
+        this.executor = Executors.newFixedThreadPool(5, new JobThreadFactory("JobLockCacheImpl"));
     }
 
     private JobLockCacheRecord jobLockCacheRecord = null;
