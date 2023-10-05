@@ -68,7 +68,7 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
                 mapOfRunningJobs.remove(contextInstance.getId());
             }
             if (mapOfRunningExecutors.containsKey(contextInstance.getId())) {
-                mapOfRunningExecutors.get(contextInstance.getId()).shutdown(); // Stop the related ScheduledExecutorService
+                super.shutdownExecutor(mapOfRunningExecutors.get(contextInstance.getId())); // Stop the related ScheduledExecutorService
                 LOG.debug("Context {}, Context Instance Id {} notification executor has been unregistered", contextInstance.getName(), contextInstance.getId());
                 mapOfRunningExecutors.remove(contextInstance.getId());
             }

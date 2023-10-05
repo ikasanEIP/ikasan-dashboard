@@ -82,7 +82,7 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
                 mapOfRunningJobs.remove(contextInstance.getId());
             }
             if (mapOfRunningExecutors.containsKey(contextInstance.getId())) {
-                mapOfRunningExecutors.get(contextInstance.getId()).shutdown(); // Stop the related ScheduledExecutorService
+                super.shutdownExecutor(mapOfRunningExecutors.get(contextInstance.getId())); // Stop the related ScheduledExecutorService
                 LOG.debug("Context {}, Context Instance Id {} notification executor has been unregistered", contextInstance.getName(), contextInstance.getId());
                 mapOfRunningExecutors.remove(contextInstance.getId());
             }
@@ -180,7 +180,8 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
 
             } catch (Exception e) {
                 // do something
-                e.printStackTrace();
+                LOG.info("JobRunningTimesMonitorImpl has been Interrupted by an exception, most likely Context Instance has been removed. Context {}, InstanceId: {} - Exception {}",
+                    this.contextInstance.getName(), this.contextInstance.getId(), e.getMessage()+ " - " + e);
             } finally {
 
             }
