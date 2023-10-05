@@ -354,6 +354,7 @@ public abstract class ContextInstanceServiceBase {
         contextMachine.addSchedulerJobStateChangeEventListener(event ->
             schedulerJobStateChangeEventBroadcaster.broadcast(event));
 
+        contextMachine.getContext().setStatus(InstanceStatus.PREPARED);
         ContextMachineCache.instance().put(contextMachine);
     }
 
