@@ -93,10 +93,10 @@ public class ScheduleProcessInboundProducerTest {
 
         verify(contextInstance).getName();
         verify(contextInstance, times(3)).getId();
-        verify(contextMachine, times(8)).getContext();
+        verify(contextMachine, times(9)).getContext();
         verify(contextMachine).registerToNotificationMonitors();
         verify(contextMachine).eventReceived(anyString());
-        verify(contextInstance, times(2)).getStatus();
+        verify(contextInstance, times(3)).getStatus();
 
         verifyNoMoreInteractions(contextInstance
             , contextMachine);
@@ -130,9 +130,8 @@ public class ScheduleProcessInboundProducerTest {
 
         verify(contextInstance, times(2)).getName();
         verify(contextInstance, times(2)).getId();
-        verify(contextMachine, times(8)).getContext();
-        verify(contextMachine).registerToNotificationMonitors();
-        verify(contextInstance, times(3)).getStatus();
+        verify(contextMachine, times(9)).getContext();
+        verify(contextInstance, times(4)).getStatus();
         verify(this.errorReportingService).notify(any(String.class), any(String.class), any());
 
         verifyNoMoreInteractions(contextInstance
@@ -169,8 +168,8 @@ public class ScheduleProcessInboundProducerTest {
 
         verify(contextInstance, times(2)).getName();
         verify(contextInstance, times(5)).getId();
-        verify(contextMachine, times(11)).getContext();
-        verify(contextInstance, times(2)).getStatus();
+        verify(contextMachine, times(12)).getContext();
+        verify(contextInstance, times(3)).getStatus();
         verify(contextMachine).registerToNotificationMonitors();
         verify(contextMachine).eventReceived(anyString());
 
