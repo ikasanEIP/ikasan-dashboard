@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractMonitorBase<T> implements Monitor<T> {
 
@@ -67,7 +68,7 @@ public abstract class AbstractMonitorBase<T> implements Monitor<T> {
         if (executorService != null)
         {
             logger.info("Monitor shutting down executorService");
-            executorService.shutdown();
+            executorService.shutdownNow();
         }
     }
 
@@ -86,6 +87,18 @@ public abstract class AbstractMonitorBase<T> implements Monitor<T> {
     @Override
     public void addNotifier(Notifier notifier) {
         getNotifiers().add(notifier);
+    }
+
+    protected void shutdownExecutor(ExecutorService executor) {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(2000, TimeUnit.MILLISECONDS)) {
+                executor.shutdownNow();
+            }
+        }
+        catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
     }
 
 }
