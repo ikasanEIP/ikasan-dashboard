@@ -51,7 +51,9 @@ public class ContextMachineCache
         // Note, we can now have multiple instances per plan, so the ContextNameCache will contain the latest only.
         this.contextInstanceByContextInstanceIdCache.put(contextMachine.getContext().getId(), contextMachine);
         this.contextNames.add(contextMachine.getContext().getName());
-        contextMachine.registerToNotificationMonitors();
+        if (!InstanceStatus.PREPARED.equals(contextMachine.getContext().getStatus())) {
+            contextMachine.registerToNotificationMonitors();
+        }
     }
 
     /**

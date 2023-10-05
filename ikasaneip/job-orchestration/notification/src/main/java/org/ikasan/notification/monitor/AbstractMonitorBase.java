@@ -90,7 +90,7 @@ public abstract class AbstractMonitorBase<T> implements Monitor<T> {
     }
 
     protected void shutdownExecutor(ExecutorService executor) {
-        executor.shutdown();
+        executor.shutdownNow();
         try {
             if (!executor.awaitTermination(2000, TimeUnit.MILLISECONDS)) {
                 executor.shutdownNow();
@@ -98,6 +98,7 @@ public abstract class AbstractMonitorBase<T> implements Monitor<T> {
         }
         catch (InterruptedException e) {
             executor.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 
