@@ -6,6 +6,7 @@ import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
@@ -54,6 +55,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private TextField filenameTf;
+    private TextField filePathTf;
     private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
     private TextField slaCronExpressionTf;
@@ -121,7 +123,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.formBinder
             = new Binder<>(FileEventDrivenJob.class);
 
-        this.setHeight("700px");
+        this.setHeight("800px");
         this.setWidth("95vw");
 
         saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
@@ -171,13 +173,26 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         buttonLayout.setMargin(true);
         buttonLayout.setSpacing(true);
         buttonLayout.add(saveButton, cancelButton);
-        buttonLayout.getStyle().set("padding-bottom", "20px");
+        buttonLayout.getStyle().set("padding-bottom", "40px");
+
+        Icon helpIcon = new Icon(VaadinIcon.QUESTION_CIRCLE);
+        Button helpButton = new Button("Help", helpIcon);
+        helpButton.setId("helpButton");
+        helpButton.setIconAfterText(false);
+
+        helpButton.addClickListener(iconClickEvent -> {
+            FileWatcherHelpDialog helpDialog = new FileWatcherHelpDialog();
+            helpDialog.open();
+
+        });
 
         VerticalLayout layout = new VerticalLayout();
+        layout.add(helpButton);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, helpButton);
         layout.setSizeFull();
         layout.add(this.createConfigurationForm(), buttonLayout);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
-        layout.getStyle().set("padding-bottom", "20px");
+        layout.getStyle().set("padding-bottom", "40px");
         super.content.add(layout);
     }
 
@@ -244,11 +259,17 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             formLayout.add(jobDescriptionTa, 2);
         }
 
-        this.filenameTf = new TextField(getTranslation("label.file-path", UI.getCurrent().getLocale()));
+        this.filenameTf = new TextField(getTranslation("label.file-name", UI.getCurrent().getLocale()));
         this.filenameTf.setRequired(true);
         this.filenameTf.setId("filePathTf");
-        this.filenameTf.setErrorMessage(getTranslation("error.missing-file-path", UI.getCurrent().getLocale()));
+        this.filenameTf.setErrorMessage(getTranslation("error.missing-file-name", UI.getCurrent().getLocale()));
         formLayout.add(filenameTf, 2);
+
+        this.filePathTf = new TextField(getTranslation("label.file-path", UI.getCurrent().getLocale()));
+        this.filePathTf.setId("filePathTf");
+        formBinder.forField(this.filePathTf)
+            .bind(FileEventDrivenJob::getFilePath, FileEventDrivenJob::setFilePath);
+        formLayout.add(filePathTf, 2);
 
         archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
         this.archiveDirectoryTf.setId("archiveDirectoryTf");
@@ -273,7 +294,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-        this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
+        this.cronExpressionTf = new TextField(getTranslation("label.file-polling-cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
         this.cronExpressionTf.setSuffixComponent(builderIconCronExpression);
         this.cronExpressionTf.setId("cronExpressionTf");
@@ -426,6 +447,10 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         this.filenameTf.setEnabled(enabled &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+        this.filePathTf.setEnabled(enabled &&
             ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
