@@ -60,6 +60,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
     private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private TextField filenameTf;
+    private TextField filePathTf;
     private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
     private TextField slaCronExpressionTf;
@@ -146,6 +147,17 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.statusDiv.setWidth("100%");
 
         formLayout.add(this.statusDiv, 2);
+
+        Icon helpIcon = new Icon(VaadinIcon.QUESTION_CIRCLE);
+        Button helpButton = new Button("Help", helpIcon);
+        helpButton.setId("helpButton");
+        helpButton.setIconAfterText(false);
+
+        helpButton.addClickListener(iconClickEvent -> {
+            FileWatcherHelpDialog helpDialog = new FileWatcherHelpDialog();
+            helpDialog.open();
+
+        });
 
         Button submitButton = new Button(getTranslation("button.submit"
             , UI.getCurrent().getLocale()), new Icon(VaadinIcon.PAPERPLANE));
@@ -257,7 +269,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(submitButton, resetButton, this.viewProcessEventButton, exportWrapper);
+        actionsLayout.add(submitButton, resetButton, this.viewProcessEventButton, exportWrapper, helpButton);
         actionsLayout.setMargin(false);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, submitButton);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, exportWrapper);
@@ -312,14 +324,22 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             formLayout.add(jobDescriptionTa, 2);
         }
 
-        this.filenameTf = new TextField("File path");
+        this.filenameTf = new TextField(getTranslation("label.file-name", UI.getCurrent().getLocale()));
         this.filenameTf.setRequired(true);
         this.filenameTf.setId("filePathTf");
         filenameTf.setValue(this.fileEventDrivenJobInstance.getFilenames().get(0));
         formLayout.add(filenameTf, 2);
 
+        this.filePathTf = new TextField(getTranslation("label.file-path", UI.getCurrent().getLocale()));
+        this.filePathTf.setId("filePathTf");
+        this.filePathTf.addThemeName("always-float-label");
+        formBinder.forField(this.filePathTf)
+            .bind(FileEventDrivenJob::getFilePath, FileEventDrivenJob::setFilePath);
+        formLayout.add(filePathTf, 2);
+
         archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
         this.archiveDirectoryTf.setId("archiveDirectoryTf");
+        this.archiveDirectoryTf.addThemeName("always-float-label");
         formBinder.forField(this.archiveDirectoryTf)
             .bind(FileEventDrivenJobInstance::getMoveDirectory, FileEventDrivenJobInstance::setMoveDirectory);
         formLayout.add(this.archiveDirectoryTf, 2);
@@ -353,6 +373,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.timezoneTf.setClearButtonVisible(true);
         this.timezoneTf.setPlaceholder(getTranslation("label.choose-a-timezone", UI.getCurrent().getLocale()));
         this.timezoneTf.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
+        this.timezoneTf.addThemeName("always-float-label");
         formLayout.add(timezoneTf);
 
         return formLayout;
@@ -385,6 +406,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
      */
     public void setEnabled() {
         this.filenameTf.setEnabled(false);
+        this.filePathTf.setEnabled(false);
         this.archiveDirectoryTf.setEnabled(false);
         this.jobNameTf.setEnabled(false);
         this.jobDescriptionTa.setEnabled(false);
