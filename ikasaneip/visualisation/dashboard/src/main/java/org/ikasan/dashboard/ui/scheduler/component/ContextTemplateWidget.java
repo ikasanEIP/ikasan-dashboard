@@ -582,11 +582,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             if(this.removeTrailingPlanNameContextAfterUnderscore && downloadName.contains("_")) {
                 downloadName = downloadName.substring(0, downloadName.lastIndexOf("_"));
             }
-                String finalDownloadName = downloadName;
-                StreamResource streamResourceWithTokens = new StreamResource(ContextExportZipUtils.getExportZipFileName(downloadName), () -> {
-                try {
+
+            StreamResource streamResourceWithTokens = new StreamResource(ContextExportZipUtils.getExportZipFileName(downloadName), () -> {
+            try {
                     ContextTemplate downloadClone = SerializationUtils.clone(scheduledContextRecord.getContext());
-                    downloadClone.setName(finalDownloadName);
                     ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                         downloadClone,
                         scheduledContextRecord.getContextName(),
