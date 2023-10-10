@@ -1134,9 +1134,15 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         try {
             ContextTemplate clone = SerializationUtils.clone(this.contextTemplate);
 
+            String downloadName = clone.getName();
+
+            if(this.removeTrailingPlanNameContextAfterUnderscore && clone.getName().contains("_") && withTokens) {
+                downloadName = clone.getName().substring(0, clone.getName().lastIndexOf("_"));
+            }
+
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                 clone,
-                this.contextTemplate.getName(),
+                downloadName,
                 this.zipWorkingDirectory,
                 this.schedulerJobService,
                 this.emailNotificationDetailsService,
