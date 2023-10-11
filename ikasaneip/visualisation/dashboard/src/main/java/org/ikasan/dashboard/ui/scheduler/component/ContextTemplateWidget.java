@@ -64,6 +64,8 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestClientException;
 import org.vaadin.olli.FileDownloadWrapper;
@@ -81,6 +83,8 @@ import java.util.stream.Collectors;
 
 public class ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
     , ContextTemplateEnableDisableEventBroadcastListener, ContextTemplateSavedEventBroadcastListener {
+
+    private Logger logger = LoggerFactory.getLogger(ContextTemplateWidget.class);
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
@@ -785,11 +789,19 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                logger.error(String.format("An error has occurred enabling job plans [%s]", scheduledContextRecord.getContextName()), e);
                                 if (ui != null && ui.isAttached()) {
                                     ui.access(() -> {
-                                        progressIndicatorDialog.close();
                                         NotificationHelper.showErrorNotification(getTranslation("error.enabling-context", UI.getCurrent().getLocale()));
+                                    });
+                                }
+                            }
+                            finally {
+                                if (ui != null && ui.isAttached()) {
+                                    ui.access(() -> {
+                                        if(progressIndicatorDialog.isOpened()) {
+                                            progressIndicatorDialog.close();
+                                        }
                                     });
                                 }
                             }
@@ -845,11 +857,19 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                logger.error(String.format("An error has occurred disabling job plans [%s]", scheduledContextRecord.getContextName()), e);
                                 if(ui != null && ui.isAttached()) {
                                     ui.access(() -> {
-                                        progressIndicatorDialog.close();
                                         NotificationHelper.showErrorNotification(getTranslation("error.disabling-context", UI.getCurrent().getLocale()));
+                                    });
+                                }
+                            }
+                            finally {
+                                if(ui != null && ui.isAttached()) {
+                                    ui.access(() -> {
+                                        if(progressIndicatorDialog.isOpened()) {
+                                            progressIndicatorDialog.close();
+                                        }
                                     });
                                 }
                             }
