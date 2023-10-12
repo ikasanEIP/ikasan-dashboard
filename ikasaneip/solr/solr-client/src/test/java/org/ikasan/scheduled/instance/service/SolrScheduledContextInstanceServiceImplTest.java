@@ -672,6 +672,138 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         Assert.assertEquals(1000003L, searchResults.getResultList().get(0).getTimestamp());
     }
 
+    @Test
+    public void test_find_by_filter() {
+        SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000001L);
+        scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000002L);
+        scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000003L);
+        scheduledContextRecord.setStatus(InstanceStatus.RUNNING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000004L);
+        scheduledContextRecord.setStatus(InstanceStatus.ON_HOLD.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000005L);
+        scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000006L);
+        scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000007L);
+        scheduledContextRecord.setStatus(InstanceStatus.RELEASED.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000008L);
+        scheduledContextRecord.setStatus(InstanceStatus.ERROR.name());
+        service.save(scheduledContextRecord);
+
+        ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStartTime(0);
+        filter.setEndTime(1200001L);
+        filter.setContextSearchFilter("contextName1");
+        Assert.assertEquals(4, service.getScheduledContextInstancesByFilter(filter, -1, -1,null, null).getResultList().size());
+
+        filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStartTime(0);
+        filter.setEndTime(1200001L);
+        filter.setContextSearchFilter("contextName2");
+        Assert.assertEquals(4, service.getScheduledContextInstancesByFilter(filter, -1, -1,null, null).getResultList().size());
+
+        filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStartTime(0);
+        filter.setEndTime(1200001L);
+        filter.setContextInstanceNames(List.of("contextName1", "contextName2"));
+        Assert.assertEquals(8, service.getScheduledContextInstancesByFilter(filter, -1, -1,null, null).getResultList().size());
+
+        SearchResults<ScheduledContextInstanceRecord> searchResults = service.getScheduledContextInstancesByContextName
+            ("contextName1", 0, 1200001L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "DESCENDING");
+
+        Assert.assertEquals(4, searchResults.getResultList().size());
+        Assert.assertEquals(1000004L, searchResults.getResultList().get(0).getTimestamp());
+
+        filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStartTime(0);
+        filter.setEndTime(1200001L);
+        filter.setContextSearchFilter("contextName1");
+
+        searchResults = service.getScheduledContextInstancesByFilter
+            (filter,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "ASCENDING");
+
+        Assert.assertEquals(4, searchResults.getResultList().size());
+        Assert.assertEquals(1000001L, searchResults.getResultList().get(0).getTimestamp());
+
+        filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStartTime(0);
+        filter.setEndTime(1000003L);
+        filter.setContextSearchFilter("contextName1");
+
+        searchResults = service.getScheduledContextInstancesByFilter
+            (filter,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "ASCENDING");
+
+        Assert.assertEquals(4, searchResults.getResultList().size());
+        Assert.assertEquals(1000001L, searchResults.getResultList().get(0).getTimestamp());
+
+        filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStartTime(1000001L);
+        filter.setEndTime(1000003L);
+        filter.setContextSearchFilter("contextName1");
+
+        searchResults = service.getScheduledContextInstancesByFilter
+            (filter,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "DESCENDING");
+
+        Assert.assertEquals(4, searchResults.getResultList().size());
+        Assert.assertEquals(1000004L, searchResults.getResultList().get(0).getTimestamp());
+    }
+
     private ScheduledContextInstanceAuditAggregateRecord createAuditRecord() {
         ScheduledContextInstanceAuditAggregate audit = new SolrScheduledContextInstanceAuditAggregateImpl();
 

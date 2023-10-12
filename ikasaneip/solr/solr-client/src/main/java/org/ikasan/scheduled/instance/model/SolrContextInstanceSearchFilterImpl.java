@@ -4,13 +4,20 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 
+import java.util.List;
+
 public class SolrContextInstanceSearchFilterImpl implements ContextInstanceSearchFilter {
     private String contextSearchFilter = null;
+    private List<String> contextInstanceNames;
     private String contextInstanceId = null;
     private long createdTimestamp;
     private long modifiedTimestamp;
     private long startTime;
     private long endTime;
+    private long startTimeStart;
+    private long endTimeStart;
+    private long startTimeEnd;
+    private long endTimeEnd;
     private String status;
 
     public String getContextSearchFilter()
@@ -21,6 +28,14 @@ public class SolrContextInstanceSearchFilterImpl implements ContextInstanceSearc
     public void setContextSearchFilter(String contextSearchFilter)
     {
         this.contextSearchFilter = contextSearchFilter;
+    }
+
+    public List<String> getContextInstanceNames() {
+        return contextInstanceNames;
+    }
+
+    public void setContextInstanceNames(List<String> contextInstanceNames) {
+        this.contextInstanceNames = contextInstanceNames;
     }
 
     public String getContextInstanceId() {
@@ -65,6 +80,46 @@ public class SolrContextInstanceSearchFilterImpl implements ContextInstanceSearc
     @Override
     public void setEndTime(long endTime) {
         this.endTime = endTime;
+    }
+
+    @Override
+    public long getStartTimeStart() {
+        return startTimeStart;
+    }
+
+    @Override
+    public void setStartTimeStart(long startTimeStart) {
+        this.startTimeStart = startTimeStart;
+    }
+
+    @Override
+    public long getEndTimeStart() {
+        return endTimeStart;
+    }
+
+    @Override
+    public void setEndTimeStart(long endTimeStart) {
+        this.endTimeStart = endTimeStart;
+    }
+
+    @Override
+    public long getStartTimeEnd() {
+        return startTimeEnd;
+    }
+
+    @Override
+    public void setStartTimeEnd(long startTimeEnd) {
+        this.startTimeEnd = startTimeEnd;
+    }
+
+    @Override
+    public long getEndTimeEnd() {
+        return endTimeEnd;
+    }
+
+    @Override
+    public void setEndTimeEnd(long endTimeEnd) {
+        this.endTimeEnd = endTimeEnd;
     }
 
     public String getStatus() {
