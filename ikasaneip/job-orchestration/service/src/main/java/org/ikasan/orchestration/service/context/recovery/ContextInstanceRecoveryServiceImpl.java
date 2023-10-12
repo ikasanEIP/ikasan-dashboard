@@ -219,7 +219,9 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                 LOG.info("Removing context instance[{}], with name[{}] as the projected end time has been passed and the context is not marked to run until manually ended.",
                                     scheduledContextInstanceRecord.getContextInstanceId(), scheduledContextInstanceRecord.getContextName());
                                 removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
-                                saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
+                                ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
+                                contextInstance.setEndTime(System.currentTimeMillis());
+                                saveContextInstance(contextInstance, InstanceStatus.ENDED);
                             }
                             else if (QuartzTimeWindowChecker.withinOperatingWindowOnRecovery(scheduledContextInstanceRecord.getContextInstance().getStartTime(), scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime(), System.currentTimeMillis())
                                 || (scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded())) {
@@ -238,6 +240,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                         } else {
                                             LOG.info(String.format("Not Recovering. Job Plan [%s] instance ID [%s] falls within a blackout time window and will not be registered!", contextInstance.getName(), contextInstance.getId()));
                                             removeAgentInstances(contextInstance);
+                                            contextInstance.setEndTime(System.currentTimeMillis());
                                             saveContextInstance(contextInstance, InstanceStatus.ENDED);
                                         }
 
@@ -245,13 +248,17 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                         // todo probably want to send a notification here.
                                         LOG.error(String.format("Removing Job Plan [%s] instance ID [%s] due to an issue that makes it unrecoverable: ", scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
                                         removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
-                                        saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
+                                        ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
+                                        contextInstance.setEndTime(System.currentTimeMillis());
+                                        saveContextInstance(contextInstance, InstanceStatus.ENDED);
                                     }
                                 }
                             } else {
                                 Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because we are now outside it time window. Ending it");
                                 removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
-                                saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
+                                ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
+                                contextInstance.setEndTime(System.currentTimeMillis());
+                                saveContextInstance(contextInstance, InstanceStatus.ENDED);
                             }
                         } catch (Exception e) {
                             // todo probably want to send a notification here.
@@ -260,7 +267,9 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                 LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due an issue with the definition of the cron expression for the time windows. Ending it"
                                     , scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
                                 removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
-                                saveContextInstance(scheduledContextInstanceRecord.getContextInstance(), InstanceStatus.ENDED);
+                                ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
+                                contextInstance.setEndTime(System.currentTimeMillis());
+                                saveContextInstance(contextInstance, InstanceStatus.ENDED);
                             }
                         }
                     }

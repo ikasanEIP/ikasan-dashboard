@@ -154,6 +154,7 @@ public abstract class ContextInstanceServiceBase {
         scheduledContextInstanceRecord.setContextInstance(contextInstance);
         scheduledContextInstanceRecord.setTimestamp(contextInstance.getCreatedDateTime());
         scheduledContextInstanceRecord.setStartTime(contextInstance.getStartTime());
+        scheduledContextInstanceRecord.setEndTime(contextInstance.getEndTime());
         scheduledContextInstanceRecord.setStatus(contextInstance.getStatus().name());
 
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
