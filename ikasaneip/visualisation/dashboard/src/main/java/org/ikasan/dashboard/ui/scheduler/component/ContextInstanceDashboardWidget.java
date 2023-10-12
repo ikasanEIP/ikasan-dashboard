@@ -5,7 +5,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -23,13 +22,10 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.data.provider.SortOrder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.security.SecurityUtils;
-import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
@@ -39,8 +35,6 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -55,7 +49,6 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
@@ -69,7 +62,6 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
-import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Duration;
@@ -77,8 +69,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -88,6 +78,7 @@ public class ContextInstanceDashboardWidget extends Div
     implements SchedulerJobStateChangeEventBroadcastListener, ContextInstanceStateChangeEventBroadcastListener, ContextInstanceSavedEventBroadcastListener {
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
     private Grid<ScheduledContextInstanceRecord> preparedFutureContextInstanceGrid;
+    private Grid<ScheduledContextInstanceRecord> completedContextInstanceGrid;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
@@ -111,16 +102,22 @@ public class ContextInstanceDashboardWidget extends Div
 
     private TextField preparedContextNameTf = new TextField();
     private TextField preparedContextInstanceIdTf = new TextField();
+
+    private TextField completeContextNameTf = new TextField();
+    private TextField completeContextInstanceIdTf = new TextField();
     private StatusFilter statusFilter = new StatusFilter();
     private ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
+    private ContextInstanceSearchFilter completeContextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
     private IkasanAuthentication ikasanAuthentication;
     private UI ui;
 
     private Tabs tabs;
     private Tab activeJobPlanInstancesTab;
     private Tab preparedFutureJobPlanInstancesTab;
+    private Tab completedJobPlanInstancesTab;
     private VerticalLayout activeInstancesDiv;
     private VerticalLayout preparedFutureInstancesDiv;
+    private VerticalLayout completedInstancesDiv;
 
     private DateFormatter dateFormatter = DateFormatter.instance();
 
@@ -220,10 +217,12 @@ public class ContextInstanceDashboardWidget extends Div
 
         this.createContextInstanceGrid();
         this.createPreparedFutureContextInstanceGrid();
+        this.createCompleteContextInstanceGrid();
         this.createActiveInstancesTab(fullscreen);
         this.createPreparedFutureInstancesTab(fullscreen);
+        this.createCompleteInstancesTab(fullscreen);
         this.initialiseTabs();
-        this.add(this.tabs, this.activeInstancesDiv, this.preparedFutureInstancesDiv);
+        this.add(this.tabs, this.activeInstancesDiv, this.preparedFutureInstancesDiv, this.completedInstancesDiv);
         this.addClassNames("card-counter");
         if(fullscreen) {
             this.setHeight("90vh");
@@ -238,14 +237,17 @@ public class ContextInstanceDashboardWidget extends Div
     private void initialiseTabs() {
         this.activeJobPlanInstancesTab = new Tab(getTranslation("header.active-context-instances", UI.getCurrent().getLocale()));
         this.activeJobPlanInstancesTab.setId("activeJobPlanInstancesTab");
-        this.preparedFutureJobPlanInstancesTab = new Tab("Prepared Future Job Plan Instances");
+        this.preparedFutureJobPlanInstancesTab = new Tab(getTranslation("header.future-prepared-context-instances", UI.getCurrent().getLocale()));
         this.preparedFutureJobPlanInstancesTab.setId("contextTemplateTab");
+        this.completedJobPlanInstancesTab = new Tab(getTranslation("header.completed-context-instances", UI.getCurrent().getLocale()));
+        this.completedJobPlanInstancesTab.setId("completedJobPlanInstances");
 
-        this.tabs = new Tabs(this.activeJobPlanInstancesTab, this.preparedFutureJobPlanInstancesTab);
+        this.tabs = new Tabs(this.activeJobPlanInstancesTab, this.preparedFutureJobPlanInstancesTab, this.completedJobPlanInstancesTab);
 
         Map<Tab, Component> tabsToPages = new HashMap<>();
         tabsToPages.put(this.activeJobPlanInstancesTab, this.activeInstancesDiv);
         tabsToPages.put(this.preparedFutureJobPlanInstancesTab, this.preparedFutureInstancesDiv);
+        tabsToPages.put(this.completedJobPlanInstancesTab, this.completedInstancesDiv);
 
         tabs.addSelectedChangeListener(event -> {
             tabsToPages.values().forEach(page -> page.setVisible(false));
@@ -340,6 +342,42 @@ public class ContextInstanceDashboardWidget extends Div
 
         preparedFutureInstancesDiv.add(layout);
         preparedFutureInstancesDiv.add(this.preparedFutureContextInstanceGrid);
+    }
+
+    private void createCompleteInstancesTab(boolean fullscreen) {
+        this.completedInstancesDiv = new VerticalLayout();
+        this.completedInstancesDiv.setSizeFull();
+
+        Button breakOut = new Button();
+        breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
+        breakOut.setVisible(!fullscreen);
+        breakOut.setWidth("50px");
+        breakOut.setHeight("50px");
+        breakOut.addClickListener(event -> {
+            String route = RouteConfiguration.forSessionScope()
+                .getUrl(ContextInstanceMonitoringView.class);
+
+            getUI().ifPresent(ui -> ui.getPage().open(route));
+        });
+
+        Button refresh = new Button("Refresh", VaadinIcon.REFRESH.create());
+        refresh.setIconAfterText(true);
+        refresh.addClickListener(event -> {
+            this.completedContextInstanceGrid.getDataProvider().refreshAll();
+        });
+
+        HorizontalLayout rightSideButtons = new HorizontalLayout();
+        rightSideButtons.add(refresh, breakOut);
+
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.add(rightSideButtons);
+        layout.setWidth("100%");
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, rightSideButtons);
+
+        rightSideButtons.getElement().getStyle().set("margin-left", "auto");
+
+        completedInstancesDiv.add(layout);
+        completedInstancesDiv.add(this.completedContextInstanceGrid);
     }
 
     private void createContextInstanceGrid() {
@@ -655,7 +693,8 @@ public class ContextInstanceDashboardWidget extends Div
         HeaderRow hr = this.preparedFutureContextInstanceGrid.appendHeaderRow();
         this.addPreparedContextInstanceGridFiltering(hr, "name", this.preparedContextNameTf, this.contextInstanceSearchFilter::setContextSearchFilter);
         this.addPreparedContextInstanceGridFiltering(hr, "id", this.preparedContextInstanceIdTf, this.contextInstanceSearchFilter::setContextInstanceId);
-        this.addDateTimeGridFiltering(hr, contextInstanceSearchFilter::setStartTime, contextInstanceSearchFilter::setEndTime, "startTime");
+        this.addDateTimeGridFiltering(hr, contextInstanceSearchFilter::setStartTime, contextInstanceSearchFilter::setEndTime, null, null,
+            "startTime", this.preparedFutureContextInstanceGrid);
         DataProvider<ScheduledContextInstanceRecord, ContextInstanceSearchFilter> dataProvider =
             DataProvider.fromFilteringCallbacks(
                 // First callback fetches items based on a query
@@ -680,6 +719,96 @@ public class ContextInstanceDashboardWidget extends Div
         dataProvider.withConfigurableFilter().setFilter(this.contextInstanceSearchFilter);
         this.preparedFutureContextInstanceGrid.setDataProvider(dataProvider);
         this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+    }
+
+    private void createCompleteContextInstanceGrid() {
+        // Create a modulesGrid bound to the list
+        this.completedContextInstanceGrid = new Grid<>();
+        this.completedContextInstanceGrid.setId("completedContextInstanceGrid");
+        this.completedContextInstanceGrid.removeAllColumns();
+        this.completedContextInstanceGrid.setVisible(true);
+        this.completedContextInstanceGrid.setWidthFull();
+
+        this.completedContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextName)
+            .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
+            .setFlexGrow(2)
+            .setResizable(true)
+            .setSortable(true);
+        this.completedContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextInstanceId)
+            .setHeader(getTranslation("table-header.context-instance-id", UI.getCurrent().getLocale())).setKey("id")
+            .setFlexGrow(3)
+            .setResizable(true)
+            .setSortable(true);
+        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of("<div style='white-space:normal'>[[item.startTime]]</div>")
+                .withProperty("startTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getStartTime())))
+            .setHeader(getTranslation("table-header.start-date-time", UI.getCurrent().getLocale()))
+            .setKey("startTime")
+            .setFlexGrow(3)
+            .setSortable(true);
+        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of("<div style='white-space:normal'>[[item.startTime]]</div>")
+                .withProperty("startTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getEndTime())))
+            .setHeader(getTranslation("table-header.end-date-time", UI.getCurrent().getLocale()))
+            .setKey("endTime")
+            .setFlexGrow(3)
+            .setSortable(true);
+        this.completedContextInstanceGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
+                VerticalLayout layout = new VerticalLayout();
+                layout.setMargin(false);
+                layout.setSizeFull();
+
+                Icon breakOut = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("tooltip.open-in-new-window", UI.getCurrent().getLocale()
+                    , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(scheduledContextInstanceRecord.getContextInstanceId() +"_scheduledContextInstance"));
+
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+
+                HorizontalLayout buttonLayout = new HorizontalLayout();
+                buttonLayout.setMargin(false);
+                buttonLayout.add(breakOut);
+
+                layout.add(buttonLayout);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
+
+                return layout;
+            }))
+            .setFlexGrow(1);
+
+        this.completeContextNameTf = new TextField();
+        this.completeContextInstanceIdTf = new TextField();
+        HeaderRow hr = this.completedContextInstanceGrid.appendHeaderRow();
+        this.addCompletedContextInstanceGridFiltering(hr, "name", this.completeContextNameTf, this.completeContextInstanceSearchFilter::setContextSearchFilter);
+        this.addCompletedContextInstanceGridFiltering(hr, "id", this.completeContextInstanceIdTf, this.completeContextInstanceSearchFilter::setContextInstanceId);
+        this.addDateTimeGridFiltering(hr, completeContextInstanceSearchFilter::setStartTime, completeContextInstanceSearchFilter::setEndTime,
+            completeContextInstanceSearchFilter::setStartTimeStart, completeContextInstanceSearchFilter::setStartTimeEnd,"startTime", this.completedContextInstanceGrid);
+        this.addDateTimeGridFiltering(hr, completeContextInstanceSearchFilter::setStartTime, completeContextInstanceSearchFilter::setEndTime,
+            completeContextInstanceSearchFilter::setEndTimeStart, completeContextInstanceSearchFilter::setEndTimeEnd,"endTime", this.completedContextInstanceGrid);
+        DataProvider<ScheduledContextInstanceRecord, ContextInstanceSearchFilter> dataProvider =
+            DataProvider.fromFilteringCallbacks(
+                // First callback fetches items based on a query
+                query -> {
+                    // The index of the first item to load
+                    int offset = query.getOffset();
+
+                    // The number of items to load
+                    int limit = query.getLimit();
+
+                    if(query.getSortOrders().size() > 0) {
+                        return this.filterCompleteContextInstances(this.completeContextInstanceSearchFilter, offset, limit
+                            , query.getSortOrders().get(0).getSorted(), query.getSortOrders().get(0).getDirection().name()).stream();
+                    }
+
+                    return this.filterCompleteContextInstances(this.completeContextInstanceSearchFilter, offset, limit, null, null).stream();
+                },
+                // Second callback fetches the total number of items currently in the Grid.
+                // The grid can then use it to properly adjust the scrollbars.
+                query -> this.filterCompleteContextInstances(this.completeContextInstanceSearchFilter, -1, -1, null, null).size());
+
+        dataProvider.withConfigurableFilter().setFilter(this.completeContextInstanceSearchFilter);
+        this.completedContextInstanceGrid.setDataProvider(dataProvider);
+        this.completedContextInstanceGrid.getDataProvider().refreshAll();
     }
 
     private Button buildStatusCountButton(String label, String backgroundColour, String fontColour, int count) {
@@ -774,6 +903,20 @@ public class ContextInstanceDashboardWidget extends Div
         hr.getCell(this.preparedFutureContextInstanceGrid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
+    private void addCompletedContextInstanceGridFiltering(HeaderRow hr, String columnKey, TextField textField, Consumer<String> setFilter) {
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("12pt");
+        textField.setSuffixComponent(filterIcon);
+        textField.setWidthFull();
+
+        textField.addValueChangeListener(ev-> {
+            setFilter.accept(textField.getValue());
+            this.completedContextInstanceGrid.getDataProvider().refreshAll();
+        });
+
+        hr.getCell(this.completedContextInstanceGrid.getColumnByKey(columnKey)).setComponent(textField);
+    }
+
     /**
      * Add filtering to a column.
      *
@@ -781,7 +924,8 @@ public class ContextInstanceDashboardWidget extends Div
      * @param setStartTime
      * @param columnKey
      */
-    public void addDateTimeGridFiltering(HeaderRow hr, Consumer<Long> setStartTime, Consumer<Long> setEndTime, String columnKey) {
+    public void addDateTimeGridFiltering(HeaderRow hr, Consumer<Long> setStartTime, Consumer<Long> setEndTime
+        , Consumer<Long> setTimeStart, Consumer<Long> setTimeEnd, String columnKey, Grid grid) {
         DatePicker startDatePicker = new DatePicker(getTranslation("label.start-date", UI.getCurrent().getLocale()));
         startDatePicker.setLocale(Locale.UK);
         startDatePicker.getElement().getThemeList().add("always-float-label");
@@ -822,12 +966,16 @@ public class ContextInstanceDashboardWidget extends Div
                 long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
 
                 setStartTime.accept(startOfDayMilli + startMilli);
+                if(setTimeStart!=null)setTimeStart.accept(startOfDayMilli + startMilli);
                 setEndTime.accept(endOfDayMilli + endMilli);
+                if(setTimeEnd!=null)setTimeEnd.accept(endOfDayMilli + endMilli);
                 dateTimeDialog.close();
             }
             else {
                 setStartTime.accept(-1L);
                 setEndTime.accept(-1L);
+                if(setTimeStart!=null)setTimeStart.accept(-1L);
+                if(setTimeEnd!=null)setTimeEnd.accept(-1L);
             }
 
             if(startDatePicker.getValue() != null && startTimePicker.getValue() != null
@@ -838,7 +986,7 @@ public class ContextInstanceDashboardWidget extends Div
                 clearFilter.setVisible(true);
             }
 
-            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+            grid.getDataProvider().refreshAll();
         });
 
         startTimePicker.addValueChangeListener(event->{
@@ -854,12 +1002,16 @@ public class ContextInstanceDashboardWidget extends Div
                 long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
 
                 setStartTime.accept(startOfDayMilli + startMilli);
+                if(setTimeStart!=null)setTimeStart.accept(startOfDayMilli + startMilli);
                 setEndTime.accept(endOfDayMilli + endMilli);
+                if(setTimeEnd!=null)setTimeEnd.accept(endOfDayMilli + endMilli);
                 dateTimeDialog.close();
             }
             else {
                 setStartTime.accept(-1L);
                 setEndTime.accept(-1L);
+                if(setTimeStart!=null)setTimeStart.accept(-1L);
+                if(setTimeEnd!=null)setTimeEnd.accept(-1L);
             }
 
             if(startDatePicker.getValue() != null && startTimePicker.getValue() != null
@@ -870,7 +1022,7 @@ public class ContextInstanceDashboardWidget extends Div
                 clearFilter.setVisible(true);
             }
 
-            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+            grid.getDataProvider().refreshAll();
         });
 
         endDatePicker.addValueChangeListener(event -> {
@@ -886,12 +1038,16 @@ public class ContextInstanceDashboardWidget extends Div
                 long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
 
                 setStartTime.accept(startOfDayMilli + startMilli);
+                if(setTimeStart!=null)setTimeStart.accept(startOfDayMilli + startMilli);
                 setEndTime.accept(endOfDayMilli + endMilli);
+                if(setTimeEnd!=null)setTimeEnd.accept(endOfDayMilli + endMilli);
                 dateTimeDialog.close();
             }
             else {
                 setStartTime.accept(-1L);
                 setEndTime.accept(-1L);
+                if(setTimeStart!=null)setTimeStart.accept(-1L);
+                if(setTimeEnd!=null)setTimeEnd.accept(-1L);
             }
 
             if(startDatePicker.getValue() != null && startTimePicker.getValue() != null
@@ -902,7 +1058,7 @@ public class ContextInstanceDashboardWidget extends Div
                 clearFilter.setVisible(true);
             }
 
-            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+            grid.getDataProvider().refreshAll();
         });
 
         endTimePicker.addValueChangeListener(event->{
@@ -918,12 +1074,16 @@ public class ContextInstanceDashboardWidget extends Div
                 long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
 
                 setStartTime.accept(startOfDayMilli + startMilli);
+                if(setTimeStart!=null)setTimeStart.accept(startOfDayMilli + startMilli);
                 setEndTime.accept(endOfDayMilli + endMilli);
+                if(setTimeEnd!=null)setTimeEnd.accept(endOfDayMilli + endMilli);
                 dateTimeDialog.close();
             }
             else {
                 setStartTime.accept(-1L);
                 setEndTime.accept(-1L);
+                if(setTimeStart!=null)setTimeStart.accept(-1L);
+                if(setTimeEnd!=null)setTimeEnd.accept(-1L);
             }
 
             if(startDatePicker.getValue() != null && startTimePicker.getValue() != null
@@ -934,7 +1094,7 @@ public class ContextInstanceDashboardWidget extends Div
                 clearFilter.setVisible(true);
             }
 
-            this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+            grid.getDataProvider().refreshAll();
         });
 
         HorizontalLayout layout = new HorizontalLayout(startDatePicker, startTimePicker, endDatePicker, endTimePicker);
@@ -977,7 +1137,7 @@ public class ContextInstanceDashboardWidget extends Div
         filterLayout.setWidth("450px");
         filterLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, clearFilter);
 
-        hr.getCell(this.preparedFutureContextInstanceGrid.getColumnByKey(columnKey)).setComponent(filterLayout);
+        hr.getCell(grid.getColumnByKey(columnKey)).setComponent(filterLayout);
     }
 
     private List<ContextInstanceAggregateJobStatus> filterContextInstanceAggregateJobStatus(StatusFilter statusFilter, int offset, int limit) {
@@ -1098,6 +1258,24 @@ public class ContextInstanceDashboardWidget extends Div
         return jobStatuses;
     }
 
+    private List<ScheduledContextInstanceRecord> filterCompleteContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
+                                                                                String sortField, String sortOrder) {
+        contextInstanceSearchFilter.setStatus(InstanceStatus.ENDED.name());
+
+        boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
+        Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
+
+        if(!canAccessAllJobPlans) {
+            contextInstanceSearchFilter.setContextInstanceNames(accessibleJobPlans.stream().collect(Collectors.toList()));
+        }
+
+        List<ScheduledContextInstanceRecord> completedContextInstances = this.scheduledContextInstanceService
+            .getScheduledContextInstancesByFilter(contextInstanceSearchFilter, limit, offset, sortField, sortOrder).getResultList();
+
+
+        return completedContextInstances;
+    }
+
     private class StatusFilter {
         private String contextName;
         private String contextInstanceId;
@@ -1125,6 +1303,7 @@ public class ContextInstanceDashboardWidget extends Div
             this.ui.access(() -> {
                 this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
                 this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+                this.completedContextInstanceGrid.getDataProvider().refreshAll();
             });
         }
     }
@@ -1135,6 +1314,7 @@ public class ContextInstanceDashboardWidget extends Div
             this.ui.access(() -> {
                 this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
                 this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+                this.completedContextInstanceGrid.getDataProvider().refreshAll();
             });
         }
     }
