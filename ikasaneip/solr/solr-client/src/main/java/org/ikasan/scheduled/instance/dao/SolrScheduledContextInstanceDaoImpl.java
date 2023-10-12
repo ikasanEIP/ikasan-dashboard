@@ -18,6 +18,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -143,10 +144,22 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
     @Override
     public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByFilter(ContextInstanceSearchFilter filter, int limit, int offset, String sortField, String sortDirection) {
         StringBuffer queryString = new StringBuffer();
-        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE)
-            .append(AND)
-            .append(MODULE_NAME).append(COLON)
-            .append(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextSearchFilter()) : "*");
+        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE);
+
+        if(filter.getContextInstanceNames() != null && !filter.getContextInstanceNames().isEmpty()) {
+            queryString.append(AND).append(OPEN_BRACKET);
+            List<String> predicates = new ArrayList<>();
+            filter.getContextInstanceNames().forEach(name -> predicates.add(new StringBuffer().append(MODULE_NAME)
+                .append(COLON).append("\"").append(name).append("\"").toString()));
+            queryString.append(predicates.stream().collect(Collectors.joining(OR)));
+            queryString.append(CLOSE_BRACKET);
+        }
+
+        if(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
+            queryString.append(AND)
+                .append(MODULE_NAME).append(COLON)
+                .append(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty() ? WILDCARD+SolrSpecialCharacterEscapeUtil.escape(filter.getContextSearchFilter())+WILDCARD : "*");
+        }
 
         if(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
             queryString.append(AND)
@@ -167,14 +180,24 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
                 .append(TO).append(this.atEndOfDay(new Date(filter.getModifiedTimestamp()))).append("]");
         }
 
-        if(filter.getStartTime() > 0) {
-            queryString.append(AND).append(START_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getStartTime())))
-                .append(TO).append(this.atEndOfDay(new Date(filter.getStartTime()))).append("]");
+//        if(filter.getStartTime() > 0) {
+//            queryString.append(AND).append(START_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getStartTime())))
+//                .append(TO).append(this.atEndOfDay(new Date(filter.getStartTime()))).append("]");
+//        }
+//
+//        if(filter.getEndTime() > 0) {
+//            queryString.append(AND).append(END_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getEndTime())))
+//                .append(TO).append(this.atEndOfDay(new Date(filter.getEndTime()))).append("]");
+//        }
+
+        if(filter.getStartTimeStart() > 0 && filter.getStartTimeEnd() > 0) {
+            queryString.append(AND).append(START_TIME).append(COLON).append("[").append(filter.getStartTimeStart())
+                .append(TO).append(filter.getStartTimeEnd()).append("]");
         }
 
-        if(filter.getEndTime() > 0) {
-            queryString.append(AND).append(END_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getEndTime())))
-                .append(TO).append(this.atEndOfDay(new Date(filter.getEndTime()))).append("]");
+        if(filter.getEndTimeStart() > 0 && filter.getEndTimeEnd() > 0) {
+            queryString.append(AND).append(END_TIME).append(COLON).append("[").append(filter.getEndTimeStart())
+                .append(TO).append(filter.getEndTimeEnd()).append("]");
         }
 
         if(filter.getStatus() != null && !filter.getStatus().isEmpty()) {
