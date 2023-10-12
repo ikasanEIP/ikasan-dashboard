@@ -745,8 +745,8 @@ public class ContextInstanceDashboardWidget extends Div
             .setKey("startTime")
             .setFlexGrow(3)
             .setSortable(true);
-        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of("<div style='white-space:normal'>[[item.startTime]]</div>")
-                .withProperty("startTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getEndTime())))
+        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of("<div style='white-space:normal'>[[item.endTime]]</div>")
+                .withProperty("endTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getEndTime())))
             .setHeader(getTranslation("table-header.end-date-time", UI.getCurrent().getLocale()))
             .setKey("endTime")
             .setFlexGrow(3)
