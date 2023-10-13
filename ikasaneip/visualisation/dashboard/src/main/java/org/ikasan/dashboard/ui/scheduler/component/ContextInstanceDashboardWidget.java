@@ -1303,7 +1303,6 @@ public class ContextInstanceDashboardWidget extends Div
             this.ui.access(() -> {
                 this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
                 this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
-                this.completedContextInstanceGrid.getDataProvider().refreshAll();
             });
         }
     }
@@ -1314,7 +1313,6 @@ public class ContextInstanceDashboardWidget extends Div
             this.ui.access(() -> {
                 this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
                 this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
-                this.completedContextInstanceGrid.getDataProvider().refreshAll();
             });
         }
     }
