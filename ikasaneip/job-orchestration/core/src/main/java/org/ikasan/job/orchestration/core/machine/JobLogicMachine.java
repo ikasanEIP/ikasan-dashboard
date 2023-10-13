@@ -375,7 +375,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                     });
 
                     if(instance.get() != null) {
-                        return this.replaceParamIfSet(parentContextInstance.getName(), instance.get());
+                        return this.replaceParamIfNotSet(parentContextInstance.getName(), instance.get());
                     }
                     else {
                         ContextParameterInstance defaultInstance = new ContextParameterInstanceImpl();
@@ -458,10 +458,12 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         return schedulerJobInitiationEvent;
     }
 
-    private ContextParameterInstance replaceParamIfSet(String contextName, ContextParameterInstance instance) {
-        String replacementForContextParamName = contextParametersInstanceService.getContextParameterValue(contextName, instance.getName());
-        if (replacementForContextParamName != null) {
-            instance.setValue(replacementForContextParamName);
+    private ContextParameterInstance replaceParamIfNotSet(String contextName, ContextParameterInstance instance) {
+        if(instance.getValue() == null || instance.getValue().isEmpty()) {
+            String replacementForContextParamName = contextParametersInstanceService.getContextParameterValue(contextName, instance.getName());
+            if (replacementForContextParamName != null) {
+                instance.setValue(replacementForContextParamName);
+            }
         }
         return instance;
     }
