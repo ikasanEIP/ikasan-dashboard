@@ -1967,10 +1967,10 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals(2, events.get(0).getContextParameters().size());
         ContextParameterInstanceImpl param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(0);
         Assert.assertEquals("BusinessDate", param.getName());
-        Assert.assertEquals("20220428", param.getValue());
+        Assert.assertEquals("test1", param.getValue());
         param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(1);
         Assert.assertEquals("ErrorSearch", param.getName());
-        Assert.assertEquals("blah", param.getValue());
+        Assert.assertEquals("test2", param.getValue());
 
         eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
@@ -2001,7 +2001,7 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals(3, events.get(0).getContextParameters().size());
         param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(0);
         Assert.assertEquals("UseBusinessDate", param.getName());
-        Assert.assertEquals("1", param.getValue());
+        Assert.assertEquals("test3", param.getValue());
         param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(1);
         Assert.assertEquals("test4", param.getName());
         Assert.assertEquals("test4", param.getValue());
