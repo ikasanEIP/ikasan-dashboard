@@ -115,9 +115,9 @@ public class ContextInstanceDashboardWidget extends Div
     private Tab activeJobPlanInstancesTab;
     private Tab preparedFutureJobPlanInstancesTab;
     private Tab completedJobPlanInstancesTab;
-    private VerticalLayout activeInstancesDiv;
-    private VerticalLayout preparedFutureInstancesDiv;
-    private VerticalLayout completedInstancesDiv;
+    private VerticalLayout activeInstancesLayout;
+    private VerticalLayout preparedFutureInstancesLayout;
+    private VerticalLayout completedInstancesLayout;
 
     private DateFormatter dateFormatter = DateFormatter.instance();
 
@@ -222,15 +222,19 @@ public class ContextInstanceDashboardWidget extends Div
         this.createPreparedFutureInstancesTab(fullscreen);
         this.createCompleteInstancesTab(fullscreen);
         this.initialiseTabs();
-        this.add(this.tabs, this.activeInstancesDiv, this.preparedFutureInstancesDiv, this.completedInstancesDiv);
+        this.add(this.tabs, this.activeInstancesLayout, this.preparedFutureInstancesLayout, this.completedInstancesLayout);
         this.addClassNames("card-counter");
         if(fullscreen) {
             this.setHeight("90vh");
-            contextInstanceAggregateJobStatusGrid.setHeight("90%");
+            this.contextInstanceAggregateJobStatusGrid.setHeight("90%");
+            this.preparedFutureInstancesLayout.setHeight("90%");
+            this.completedContextInstanceGrid.setHeight("70%");
         }
         else {
             this.setHeight("800px");
-            contextInstanceAggregateJobStatusGrid.setHeight("80%");
+            this.contextInstanceAggregateJobStatusGrid.setHeight("60%");
+            this.preparedFutureContextInstanceGrid.setHeight("60%");
+            this.completedContextInstanceGrid.setHeight("60%");
         }
     }
 
@@ -245,9 +249,9 @@ public class ContextInstanceDashboardWidget extends Div
         this.tabs = new Tabs(this.activeJobPlanInstancesTab, this.preparedFutureJobPlanInstancesTab, this.completedJobPlanInstancesTab);
 
         Map<Tab, Component> tabsToPages = new HashMap<>();
-        tabsToPages.put(this.activeJobPlanInstancesTab, this.activeInstancesDiv);
-        tabsToPages.put(this.preparedFutureJobPlanInstancesTab, this.preparedFutureInstancesDiv);
-        tabsToPages.put(this.completedJobPlanInstancesTab, this.completedInstancesDiv);
+        tabsToPages.put(this.activeJobPlanInstancesTab, this.activeInstancesLayout);
+        tabsToPages.put(this.preparedFutureJobPlanInstancesTab, this.preparedFutureInstancesLayout);
+        tabsToPages.put(this.completedJobPlanInstancesTab, this.completedInstancesLayout);
 
         tabs.addSelectedChangeListener(event -> {
             tabsToPages.values().forEach(page -> page.setVisible(false));
@@ -257,8 +261,9 @@ public class ContextInstanceDashboardWidget extends Div
     }
 
     private void createActiveInstancesTab(boolean fullscreen) {
-        this.activeInstancesDiv = new VerticalLayout();
-        this.activeInstancesDiv.setSizeFull();
+        this.activeInstancesLayout = new VerticalLayout();
+        this.activeInstancesLayout.setWidthFull();
+        this.activeInstancesLayout.setHeight("95%");
 
         Button breakOut = new Button();
         breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
@@ -296,13 +301,14 @@ public class ContextInstanceDashboardWidget extends Div
 
         rightSideButtons.getElement().getStyle().set("margin-left", "auto");
 
-        activeInstancesDiv.add(layout);
-        activeInstancesDiv.add(this.contextInstanceAggregateJobStatusGrid);
+        activeInstancesLayout.add(layout);
+        activeInstancesLayout.add(this.contextInstanceAggregateJobStatusGrid);
     }
 
     private void createPreparedFutureInstancesTab(boolean fullscreen) {
-        this.preparedFutureInstancesDiv = new VerticalLayout();
-        this.preparedFutureInstancesDiv.setSizeFull();
+        this.preparedFutureInstancesLayout = new VerticalLayout();
+        this.preparedFutureInstancesLayout.setWidthFull();
+        this.preparedFutureInstancesLayout.setHeight("95%");
 
         Button breakOut = new Button();
         breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
@@ -340,13 +346,14 @@ public class ContextInstanceDashboardWidget extends Div
 
         rightSideButtons.getElement().getStyle().set("margin-left", "auto");
 
-        preparedFutureInstancesDiv.add(layout);
-        preparedFutureInstancesDiv.add(this.preparedFutureContextInstanceGrid);
+        preparedFutureInstancesLayout.add(layout);
+        preparedFutureInstancesLayout.add(this.preparedFutureContextInstanceGrid);
     }
 
     private void createCompleteInstancesTab(boolean fullscreen) {
-        this.completedInstancesDiv = new VerticalLayout();
-        this.completedInstancesDiv.setSizeFull();
+        this.completedInstancesLayout = new VerticalLayout();
+        this.completedInstancesLayout.setWidthFull();
+        this.completedInstancesLayout.setHeight("95%");
 
         Button breakOut = new Button();
         breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
@@ -376,8 +383,8 @@ public class ContextInstanceDashboardWidget extends Div
 
         rightSideButtons.getElement().getStyle().set("margin-left", "auto");
 
-        completedInstancesDiv.add(layout);
-        completedInstancesDiv.add(this.completedContextInstanceGrid);
+        completedInstancesLayout.add(layout);
+        completedInstancesLayout.add(this.completedContextInstanceGrid);
     }
 
     private void createContextInstanceGrid() {
@@ -728,6 +735,7 @@ public class ContextInstanceDashboardWidget extends Div
         this.completedContextInstanceGrid.removeAllColumns();
         this.completedContextInstanceGrid.setVisible(true);
         this.completedContextInstanceGrid.setWidthFull();
+
 
         this.completedContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextName)
             .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
