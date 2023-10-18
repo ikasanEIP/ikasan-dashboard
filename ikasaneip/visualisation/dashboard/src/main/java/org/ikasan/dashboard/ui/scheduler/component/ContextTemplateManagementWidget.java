@@ -844,8 +844,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         this.createJobUploadMenuBar(actions);
         this.createNewJobMenuBar(actions);
-        Anchor download = new Anchor(new StreamResource(this.contextTemplate.getName() + ".zip", () -> this.getContextBundleStreamResource(false))
-            , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+        Anchor download = new Anchor(new StreamResource(this.contextTemplate.getName() + ".zip", ()
+            -> this.getContextBundleStreamResource(false, this.contextTemplate.getName()))
+                , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
         download.getElement().setAttribute("download", true);
         actions.addItem(download);
 
@@ -854,7 +855,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             downloadFileName = downloadFileName.substring(0, downloadFileName.lastIndexOf("_"));
         }
 
-        Anchor downloadWithTokens = new Anchor(new StreamResource(downloadFileName + ".zip", () -> this.getContextBundleStreamResource(true))
+        String finalDownloadFileName = downloadFileName;
+        Anchor downloadWithTokens = new Anchor(new StreamResource(downloadFileName + ".zip", () -> this.getContextBundleStreamResource(true, finalDownloadFileName))
             , getTranslation("button.download-context-template-with-tokens", UI.getCurrent().getLocale()));
         downloadWithTokens.getElement().setAttribute("download", true);
         actions.addItem(downloadWithTokens);
@@ -1130,19 +1132,14 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         return item;
     }
 
-    private InputStream getContextBundleStreamResource(boolean withTokens) {
+    private InputStream getContextBundleStreamResource(boolean withTokens, String downloadFileName) {
         try {
             ContextTemplate clone = SerializationUtils.clone(this.contextTemplate);
 
-            String downloadName = clone.getName();
-
-            if(this.removeTrailingPlanNameContextAfterUnderscore && clone.getName().contains("_") && withTokens) {
-                downloadName = clone.getName().substring(0, clone.getName().lastIndexOf("_"));
-            }
-
+            clone.setName(downloadFileName);
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                 clone,
-                downloadName,
+                this.contextTemplate.getName(),
                 this.zipWorkingDirectory,
                 this.schedulerJobService,
                 this.emailNotificationDetailsService,
