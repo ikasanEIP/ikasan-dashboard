@@ -587,9 +587,12 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 downloadName = downloadName.substring(0, downloadName.lastIndexOf("_"));
             }
 
+            ContextTemplate downloadClone = SerializationUtils.clone(scheduledContextRecord.getContext());
+            downloadClone.setName(downloadName);
+
             StreamResource streamResourceWithTokens = new StreamResource(ContextExportZipUtils.getExportZipFileName(downloadName), () -> {
             try {
-                    ContextTemplate downloadClone = SerializationUtils.clone(scheduledContextRecord.getContext());
+
                     ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                         downloadClone,
                         scheduledContextRecord.getContextName(),
