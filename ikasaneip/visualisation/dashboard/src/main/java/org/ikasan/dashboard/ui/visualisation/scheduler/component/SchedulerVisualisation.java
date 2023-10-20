@@ -555,7 +555,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             this.contextTemplate.getScheduledJobs().forEach(job -> {
                 SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(), job.getJobName());
                 SchedulerJob schedulerJob = schedulerJobRecord.getJob();
-                schedulerJob.getChildContextNames().remove(this.contextTemplate.getName());
+                schedulerJob.getChildContextNames().removeAll(Collections.singleton(this.contextTemplate.getName()));
 
                 jobsToSave.put(job.getIdentifier(), schedulerJob);
             });
