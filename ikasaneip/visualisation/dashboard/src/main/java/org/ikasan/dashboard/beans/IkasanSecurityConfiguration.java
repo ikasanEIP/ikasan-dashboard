@@ -70,7 +70,7 @@ public class IkasanSecurityConfiguration
     @Bean
     public UserService userService()
     {
-        return new UserServiceImpl(userDao(), securityService(), passwordEncoder());
+        return new UserServiceImpl(userDao(), securityService(), passwordEncoder(), false);
     }
 
     @Bean
