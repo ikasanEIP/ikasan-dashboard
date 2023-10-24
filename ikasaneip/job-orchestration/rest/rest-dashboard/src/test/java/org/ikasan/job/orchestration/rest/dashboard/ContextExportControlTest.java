@@ -54,7 +54,7 @@ import static org.mockito.Mockito.doReturn;
 @SpringBootTest(classes = ContextExportControl.class)
 @WebAppConfiguration
 @EnableWebMvc
-public class ContextExportControlTest extends AbstractRestMvcTest{
+public class ContextExportControlTest extends AbstractRestMvcTest {
 
     protected MockMvc mvc;
 
