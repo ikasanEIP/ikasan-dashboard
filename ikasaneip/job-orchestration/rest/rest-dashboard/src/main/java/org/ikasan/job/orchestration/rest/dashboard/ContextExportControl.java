@@ -9,6 +9,7 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,11 +38,14 @@ public class ContextExportControl {
     private EmailNotificationContextService emailNotificationContextService;
     private ContextProfileService contextProfileService;
 
+    private boolean removeTrailingPlanNameContextAfterUnderscore;
+
     public ContextExportControl(ScheduledContextService scheduledContextService,
                                 SchedulerJobService schedulerJobService,
                                 EmailNotificationDetailsService emailNotificationDetailsService,
                                 EmailNotificationContextService emailNotificationContextService,
-                                ContextProfileService contextProfileService) {
+                                ContextProfileService contextProfileService,
+                                boolean removeTrailingPlanNameContextAfterUnderscore) {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
@@ -66,6 +70,8 @@ public class ContextExportControl {
         if(this.contextProfileService == null) {
             throw new IllegalArgumentException("contextProfileService cannot be null!");
         }
+
+        this.removeTrailingPlanNameContextAfterUnderscore = removeTrailingPlanNameContextAfterUnderscore;
     }
 
     /**
@@ -85,6 +91,7 @@ public class ContextExportControl {
         try {
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                 scheduledContextService.findByName(contextName).getContext(),
+                contextName,
                 contextName,
                 System.currentTimeMillis() + "-", // make sure directory is unique due to same request running at same time
                 schedulerJobService,
@@ -145,9 +152,14 @@ public class ContextExportControl {
 
         LOG.info("Start creating export for Context {}", contextName);
         try {
+            String downloadName = contextName;
+            if(this.removeTrailingPlanNameContextAfterUnderscore && downloadName.contains("_")) {
+                downloadName = downloadName.substring(0, downloadName.lastIndexOf("_"));
+            }
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                 scheduledContextService.findByName(contextName).getContext(),
                 contextName,
+                downloadName,
                 System.currentTimeMillis() + "-", // make sure directory is unique due to same request running at same time
                 schedulerJobService,
                 emailNotificationDetailsService,
