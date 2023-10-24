@@ -38,14 +38,17 @@ public class ContextExportControl {
     private EmailNotificationContextService emailNotificationContextService;
     private ContextProfileService contextProfileService;
 
+    @Value("${ikasan.dashboard.zip.working.directory:.}")
+    private String zipWorkingDirectory;
+
+    @Value("${job.plan.export.remove.trailing.plan.name.context.after.underscore:true}")
     private boolean removeTrailingPlanNameContextAfterUnderscore;
 
     public ContextExportControl(ScheduledContextService scheduledContextService,
                                 SchedulerJobService schedulerJobService,
                                 EmailNotificationDetailsService emailNotificationDetailsService,
                                 EmailNotificationContextService emailNotificationContextService,
-                                ContextProfileService contextProfileService,
-                                boolean removeTrailingPlanNameContextAfterUnderscore) {
+                                ContextProfileService contextProfileService) {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
@@ -74,6 +77,7 @@ public class ContextExportControl {
         this.removeTrailingPlanNameContextAfterUnderscore = removeTrailingPlanNameContextAfterUnderscore;
     }
 
+
     /**
      * To use on command line in unix via curl:
      * curl -u username:password http://{dashboardUrl}/rest/export/context/{contextName} > {Filename.zip}
@@ -93,7 +97,7 @@ public class ContextExportControl {
                 scheduledContextService.findByName(contextName).getContext(),
                 contextName,
                 contextName,
-                System.currentTimeMillis() + "-", // make sure directory is unique due to same request running at same time
+                this.zipWorkingDirectory,
                 schedulerJobService,
                 emailNotificationDetailsService,
                 emailNotificationContextService,
@@ -160,7 +164,7 @@ public class ContextExportControl {
                 scheduledContextService.findByName(contextName).getContext(),
                 contextName,
                 downloadName,
-                System.currentTimeMillis() + "-", // make sure directory is unique due to same request running at same time
+                this.zipWorkingDirectory,
                 schedulerJobService,
                 emailNotificationDetailsService,
                 emailNotificationContextService,
@@ -180,7 +184,7 @@ public class ContextExportControl {
 
             return ResponseEntity
                 .ok()
-                .header("Content-Disposition", "attachment;filename=" + contextFileName + ".zip")
+                .header("Content-Disposition", "attachment;filename=" + downloadName + ".zip")
                 .contentType(MediaType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE))
                 .body(outputStream -> {
                     outputStream.write(byteArrayOutputStream.toByteArray());

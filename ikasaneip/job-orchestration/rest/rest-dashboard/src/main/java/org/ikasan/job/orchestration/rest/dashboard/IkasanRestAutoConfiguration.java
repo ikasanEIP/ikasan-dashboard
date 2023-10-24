@@ -106,9 +106,6 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private GlobalEventService globalEventService;
 
-    @Value("${job.plan.export.remove.trailing.plan.name.context.after.underscore:true}")
-    private boolean removeTrailingPlanNameContextAfterUnderscore;
-
     @Bean
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public ScheduledProcessEventController scheduledProcessEventController() {
@@ -148,7 +145,7 @@ public class IkasanRestAutoConfiguration {
     @Bean
     public ContextExportControl contextBundleDownloadControl() {
         return new ContextExportControl(scheduledContextService, schedulerJobService, emailNotificationDetailsService
-            , emailNotificationContextService, contextProfileService, removeTrailingPlanNameContextAfterUnderscore);
+            , emailNotificationContextService, contextProfileService);
     }
 
     @Bean
