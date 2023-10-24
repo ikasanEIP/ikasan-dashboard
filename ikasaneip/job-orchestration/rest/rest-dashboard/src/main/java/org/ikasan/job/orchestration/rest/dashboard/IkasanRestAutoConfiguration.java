@@ -59,6 +59,7 @@ import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.scheduled.reset.ContextResetService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -105,6 +106,9 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private GlobalEventService globalEventService;
 
+    @Value("${job.plan.export.remove.trailing.plan.name.context.after.underscore:true}")
+    private boolean removeTrailingPlanNameContextAfterUnderscore;
+
     @Bean
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public ScheduledProcessEventController scheduledProcessEventController() {
@@ -143,7 +147,8 @@ public class IkasanRestAutoConfiguration {
 
     @Bean
     public ContextExportControl contextBundleDownloadControl() {
-        return new ContextExportControl(scheduledContextService, schedulerJobService, emailNotificationDetailsService, emailNotificationContextService, contextProfileService);
+        return new ContextExportControl(scheduledContextService, schedulerJobService, emailNotificationDetailsService
+            , emailNotificationContextService, contextProfileService, removeTrailingPlanNameContextAfterUnderscore);
     }
 
     @Bean

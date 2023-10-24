@@ -32,6 +32,8 @@ public class ContextHelper {
     
     private static boolean USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION = true;
 
+    private static String GLOBAL_EVENT = "GLOBAL_EVENT";
+
     /**
      * Helper method to add replacement tokens to a scheduler job.
      *
@@ -98,7 +100,10 @@ public class ContextHelper {
      * @return
      */
     private static String getContextName(String contextName) {
-        if(!USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION) {
+        if(contextName.equals(GLOBAL_EVENT)) {
+            return contextName;
+        }
+        else if(!USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION) {
             return CONTEXT_NAME_REPLACEMENT;
         }
         else if(!contextName.contains("_")) {

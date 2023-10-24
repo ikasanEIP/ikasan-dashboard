@@ -49,6 +49,7 @@ public final class ContextExportZipUtils {
 
     public static ByteArrayOutputStream createZipFile(ContextTemplate context,
                                                       String unmodifiedContextName,
+                                                      String downloadName,
                                                       String workingDirectory,
                                                       SchedulerJobService schedulerJobService,
                                                       EmailNotificationDetailsService emailNotificationDetailsService,
@@ -60,8 +61,6 @@ public final class ContextExportZipUtils {
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
 
-            String contextName = context.getName();
-
             if(addReplacementTokens) {
                 ContextHelper.addContextTemplateReplacementTokens(context);
             }
@@ -70,7 +69,7 @@ public final class ContextExportZipUtils {
 
 
             // sanitise the contextName as this will be used for the filename and that windows do not allow for certain characters
-            String contextFileName = StringUtils.replaceEach(contextName, UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
+            String contextFileName = StringUtils.replaceEach(downloadName, UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
 
             // clean up the working directory if it exists
             deleteWorkingDirectory(getWorkingDirectory(workingDirectory) + contextFileName);

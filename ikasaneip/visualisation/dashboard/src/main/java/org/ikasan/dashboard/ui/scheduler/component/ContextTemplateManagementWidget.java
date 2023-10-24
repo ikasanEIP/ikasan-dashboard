@@ -1135,11 +1135,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private InputStream getContextBundleStreamResource(boolean withTokens, String downloadFileName) {
         try {
             ContextTemplate clone = SerializationUtils.clone(this.contextTemplate);
-
-            clone.setName(downloadFileName);
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                 clone,
                 this.contextTemplate.getName(),
+                downloadFileName,
                 this.zipWorkingDirectory,
                 this.schedulerJobService,
                 this.emailNotificationDetailsService,
