@@ -40,7 +40,9 @@ public class ContextHelper {
      * @param schedulerJob
      */
     public static void addSchedulerJobReplacementTokens(SchedulerJob schedulerJob) {
-        schedulerJob.setAgentName(AGENT_NAME_REPLACEMENT);
+        if(!schedulerJob.getAgentName().equals(GLOBAL_EVENT)) {
+            schedulerJob.setAgentName(AGENT_NAME_REPLACEMENT);
+        }
         schedulerJob.setContextName(getContextName(schedulerJob.getContextName()));
         if(!(schedulerJob instanceof GlobalEventJob)) {
             schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
@@ -69,8 +71,11 @@ public class ContextHelper {
                     replaceJobIdentifierJobDependency(schedulerJob, jobDependency);
                 });
 
-                schedulerJob.setAgentName(AGENT_NAME_REPLACEMENT);
-                schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+                if(!schedulerJob.getAgentName().equals(GLOBAL_EVENT)) {
+                    schedulerJob.setAgentName(AGENT_NAME_REPLACEMENT);
+                    schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+                }
+
             });
         }
 
@@ -81,8 +86,10 @@ public class ContextHelper {
                         if(job.getContextName() != null) {
                             job.setContextName(getContextName(job.getContextName()));
                         }
-                        job.setAgentName(AGENT_NAME_REPLACEMENT);
-                        job.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + job.getJobName());
+                        if(!job.getAgentName().equals(GLOBAL_EVENT)) {
+                            job.setAgentName(AGENT_NAME_REPLACEMENT);
+                            job.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + job.getJobName());
+                        }
                     });
                 });
             });
@@ -122,7 +129,9 @@ public class ContextHelper {
      */
     private static void replaceJobIdentifierJobDependency(SchedulerJob schedulerJob, JobDependency jobDependency) {
         if(jobDependency.getJobIdentifier().equals(schedulerJob.getIdentifier())) {
-            jobDependency.setJobIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+            if(!schedulerJob.getIdentifier().startsWith(GLOBAL_EVENT)) {
+                jobDependency.setJobIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
+            }
         }
 
         if(jobDependency.getLogicalGrouping() != null) {
@@ -139,27 +148,33 @@ public class ContextHelper {
     private static void replaceJobIdentifierLogicalGrouping(SchedulerJob schedulerJob, LogicalGrouping logicalGrouping) {
         if(logicalGrouping.getAnd() != null) {
             logicalGrouping.getAnd().forEach(and -> {
-                replaceJobIdentifierAnd(schedulerJob, and);
-                if(and.getLogicalGrouping() != null) {
-                    replaceJobIdentifierLogicalGrouping(schedulerJob, and.getLogicalGrouping());
+                if(schedulerJob.getIdentifier().equals(and.getIdentifier())) {
+                    replaceJobIdentifierAnd(schedulerJob, and);
+                    if (and.getLogicalGrouping() != null) {
+                        replaceJobIdentifierLogicalGrouping(schedulerJob, and.getLogicalGrouping());
+                    }
                 }
             });
         }
 
         if(logicalGrouping.getOr() != null) {
             logicalGrouping.getOr().forEach(or -> {
-                replaceJobIdentifierOr(schedulerJob, or);
-                if(or.getLogicalGrouping() != null) {
-                    replaceJobIdentifierLogicalGrouping(schedulerJob, or.getLogicalGrouping());
+                if(schedulerJob.getIdentifier().equals(or.getIdentifier())) {
+                    replaceJobIdentifierOr(schedulerJob, or);
+                    if (or.getLogicalGrouping() != null) {
+                        replaceJobIdentifierLogicalGrouping(schedulerJob, or.getLogicalGrouping());
+                    }
                 }
             });
         }
 
         if(logicalGrouping.getNot() != null) {
             logicalGrouping.getNot().forEach(not -> {
-                replaceJobIdentifierNot(schedulerJob, not);
-                if(not.getLogicalGrouping() != null) {
-                    replaceJobIdentifierLogicalGrouping(schedulerJob, not.getLogicalGrouping());
+                if(schedulerJob.getIdentifier().equals(not.getIdentifier())) {
+                    replaceJobIdentifierNot(schedulerJob, not);
+                    if (not.getLogicalGrouping() != null) {
+                        replaceJobIdentifierLogicalGrouping(schedulerJob, not.getLogicalGrouping());
+                    }
                 }
             });
         }
@@ -176,6 +191,7 @@ public class ContextHelper {
      * @param and
      */
     private static void replaceJobIdentifierAnd(SchedulerJob schedulerJob, And and) {
+        if(and.getIdentifier().startsWith(GLOBAL_EVENT)) return;
         and.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
     }
 
@@ -186,6 +202,7 @@ public class ContextHelper {
      * @param or
      */
     private static void replaceJobIdentifierOr(SchedulerJob schedulerJob, Or or) {
+        if(or.getIdentifier().startsWith(GLOBAL_EVENT)) return;
         or.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
     }
 
@@ -196,6 +213,7 @@ public class ContextHelper {
      * @param not
      */
     private static void replaceJobIdentifierNot(SchedulerJob schedulerJob, Not not) {
+        if(not.getIdentifier().startsWith(GLOBAL_EVENT)) return;
         not.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
     }
 

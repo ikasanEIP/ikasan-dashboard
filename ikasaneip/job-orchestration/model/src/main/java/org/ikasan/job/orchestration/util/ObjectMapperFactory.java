@@ -60,6 +60,7 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(InternalEventDrivenJobInstance.class, InternalEventDrivenJobInstanceImpl.class)
             .addAbstractTypeMapping(QuartzScheduleDrivenJob.class, QuartzScheduleDrivenJobImpl.class)
             .addAbstractTypeMapping(FileEventDrivenJob.class, FileEventDrivenJobImpl.class)
+            .addAbstractTypeMapping(GlobalEventJob.class, GlobalEventJobImpl.class)
             .addAbstractTypeMapping(ContextProfileRecord.class, ContextProfileRecordImpl.class)
             .addAbstractTypeMapping(ContextProfile.class, ContextProfileImpl.class)
             .addAbstractTypeMapping(ContextBundle.class, ContextBundleImpl.class)
