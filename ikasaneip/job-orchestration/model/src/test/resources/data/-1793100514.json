@@ -6,6 +6,15 @@
           "contexts": [],
           "scheduledJobs": [
             {
+              "agentName": "GLOBAL_EVENT",
+              "jobName": "1799613995-global-event",
+              "startupControlType": "AUTOMATIC",
+              "skip": false,
+              "skippedContexts": {},
+              "heldContexts": {},
+              "identifier": "GLOBAL_EVENT-1799613995-global-event"
+            },
+            {
               "agentName": "scheduler-agent",
               "jobName": "1799613995",
               "startupControlType": "AUTOMATIC",
@@ -45,6 +54,16 @@
           "jobLocks": [],
           "name": "CONTEXT-1616645609",
           "jobDependencies": [
+            {
+              "jobIdentifier": "GLOBAL_EVENT-1799613995-global-event",
+              "logicalGrouping": {
+                "and": [
+                  {
+                    "identifier": "scheduler-agent-1799613995"
+                  }
+                ]
+              }
+            },
             {
               "jobIdentifier": "scheduler-agent-1799613995",
               "logicalGrouping": {
