@@ -66,7 +66,7 @@ public class GlobalEventServiceImpl implements GlobalEventService {
 
         ConcurrentHashMap<String, ContextMachine> contextMachineMap = ContextMachineCache.instance().getContextInstanceByContextInstanceIdCache();
         if(contextMachineMap == null || contextMachineMap.size() == 0) {
-            LOG.warn("There are no running context instances running to send the Global Event [{}]. This will be ignored", globalJobName);
+            LOG.warn("There are no context instances running to send the Global Event [{}]. This will be ignored", globalJobName);
             return;
         }
 
