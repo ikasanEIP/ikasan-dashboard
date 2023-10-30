@@ -1,7 +1,5 @@
 package org.ikasan.orchestration.service.context.global;
 
-import liquibase.pro.packaged.G;
-import liquibase.pro.packaged.S;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -11,12 +9,15 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GlobalEventServiceImpl implements GlobalEventService {
+    private static final Logger LOG = LoggerFactory.getLogger(GlobalEventServiceImpl.class);
 
     public static final String GLOBAL_EVENT_MANUALLY_RAISED = "GLOBAL_EVENT_MANUALLY_RAISED";
     @Override
@@ -65,7 +66,8 @@ public class GlobalEventServiceImpl implements GlobalEventService {
 
         ConcurrentHashMap<String, ContextMachine> contextMachineMap = ContextMachineCache.instance().getContextInstanceByContextInstanceIdCache();
         if(contextMachineMap == null || contextMachineMap.size() == 0) {
-            throw new GlobalEventServiceException(String.format("Could not resolve context instance from the context instance cache"));
+            LOG.warn("There are no running context instances running to send the Global Event [{}]. This will be ignored", globalJobName);
+            return;
         }
 
         // As we are going to send it to all Context Machine regardless of environment group, find any Context Machine
