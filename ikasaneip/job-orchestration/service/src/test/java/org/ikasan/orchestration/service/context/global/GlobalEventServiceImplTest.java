@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
@@ -126,7 +127,7 @@ public class GlobalEventServiceImplTest {
 
     }
 
-    @Test(expected = GlobalEventServiceException.class)
+    @Test()
     public void test_broadcast_no_context_exist_success() throws IOException {
 
         // Remove all context machine from cache
@@ -137,6 +138,11 @@ public class GlobalEventServiceImplTest {
         ContextMachineCache.instance().remove(contextMachine5);
 
         globalEventService.raiseGlobalEventJob("some_event");
+        verify(contextMachine1, never()).broadcastGlobalEvents(any(), eq(true), eq(true));
+        verify(contextMachine2, never()).broadcastGlobalEvents(any(), eq(true), eq(true));
+        verify(contextMachine3, never()).broadcastGlobalEvents(any(), eq(true), eq(true));
+        verify(contextMachine4, never()).broadcastGlobalEvents(any(), eq(true), eq(true));
+        verify(contextMachine5, never()).broadcastGlobalEvents(any(), eq(true), eq(true));
     }
 
     @Test(expected = GlobalEventServiceException.class)
