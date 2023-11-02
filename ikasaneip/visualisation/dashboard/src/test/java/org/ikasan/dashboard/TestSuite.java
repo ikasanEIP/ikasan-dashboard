@@ -14,7 +14,8 @@ import org.ikasan.dashboard.ui.general.component.HospitalViewTest;
 import org.ikasan.dashboard.ui.general.component.SearchResultTest;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayoutTest;
 import org.ikasan.dashboard.ui.org.ikasan.dashboard.broadcast.FlowStateBroadcasterTest;
-import org.ikasan.dashboard.ui.scheduler.component.ScheduledJobDialogTest;
+import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceDashboardWidgetTest;
+import org.ikasan.dashboard.ui.scheduler.service.CanvasJsonToContextTemplateAdapterTest;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerViewTest;
 import org.ikasan.dashboard.ui.search.component.SearchFormTest;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGridTest;
@@ -26,8 +27,12 @@ import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGridTest;
 import org.ikasan.dashboard.ui.visualisation.dao.ModuleMetaDataDaoImplTest;
 import org.ikasan.dashboard.ui.visualisation.layout.IkasanFlowLayoutManagerTest;
 import org.ikasan.dashboard.ui.visualisation.layout.IkasanModuleLayoutManagerTest;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.AceEditorLogConsumerTest;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobContextMenuTest;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialogTest;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2DAdapterTest;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceStateChangeEventBroadcasterImplTest;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.SchedulerJobStateChangeEventBroadcasterImplTest;
 import org.ikasan.dashboard.ui.visualisation.view.BusinessStreamViewTest;
 import org.ikasan.dashboard.ui.visualisation.view.ModuleVisualisationViewTest;
 import org.junit.runner.RunWith;
@@ -75,9 +80,14 @@ import org.junit.runners.Suite;
     IkasanAppLayoutTest.class,
     SchedulerViewTest.class,
     ConfigurationChangedSystemEventFormatterTest.class,
-    ScheduledJobDialogTest.class,
     JobContextMenuTest.class,
-    SchedulerJobLogFileViewerDialogTest.class
+    SchedulerJobLogFileViewerDialogTest.class,
+    AceEditorLogConsumerTest.class,
+    SchedulerJobStateChangeEventBroadcasterImplTest.class,
+    ContextInstanceStateChangeEventBroadcasterImplTest.class,
+    CanvasJsonToContextTemplateAdapterTest.class,
+    ContextInstanceDashboardWidgetTest.class,
+    ContextDraw2DAdapterTest.class,
 })
 public class TestSuite {
 }

@@ -115,6 +115,7 @@ public class ScheduleProcessInboundProducerTest {
         BigQueueMessageImpl<String> bigQueueMessage = new BigQueueMessageImpl();
         ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
         contextualisedScheduledProcessEvent.setContextInstanceId("contextInstanceId");
+        contextualisedScheduledProcessEvent.setContextName("contextName");
 
         bigQueueMessage.setMessage(ObjectMapperFactory.newInstance().writeValueAsString(contextualisedScheduledProcessEvent));
 
@@ -128,9 +129,9 @@ public class ScheduleProcessInboundProducerTest {
         scheduleProcessInboundProducer.invoke(ObjectMapperFactory.newInstance().writeValueAsString(bigQueueMessage));
         scheduleProcessInboundProducer.commit(xid, true);
 
-        verify(contextInstance, times(2)).getName();
-        verify(contextInstance, times(2)).getId();
-        verify(contextMachine, times(9)).getContext();
+        verify(contextInstance, times(1)).getName();
+        verify(contextInstance, times(1)).getId();
+        verify(contextMachine, times(7)).getContext();
         verify(contextInstance, times(4)).getStatus();
         verify(this.errorReportingService).notify(any(String.class), any(String.class), any());
 

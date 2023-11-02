@@ -4,6 +4,10 @@ import org.ikasan.dashboard.AbstractTest;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 import java.io.IOException;
 
@@ -12,16 +16,14 @@ public class ContextDraw2DAdapterTest extends AbstractTest {
     private ContextService contextService = new ContextService();
 
     @Test
-    public void test_context_machine() throws IOException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
+    public void test_adapt_success() throws IOException {
+        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/contexts/-1793100514.json"));
 
         ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();
         String json = adapter.adaptContext(context);
 
-        // todo sort out assertion
-//        JSONAssert.assertEquals(loadDataFile("/data/contexts/results/CONTEXT-1436221681-results.json"), json
-//            , new CustomComparator(JSONCompareMode.LENIENT
-//                , new Customization("./id", (o1, o2) -> true)
-//                , new Customization("./ports.id", (o1, o2) -> true)));
+        JSONAssert.assertEquals(loadDataFile("/data/contexts/results/-1793100514-results.json"), json
+            , new CustomComparator(JSONCompareMode.LENIENT
+                , new Customization("***", (o1, o2) -> true)));
     }
 }

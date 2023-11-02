@@ -1,0 +1,102 @@
+{
+  "contexts": [],
+  "scheduledJobs": [
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "1685894164",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-1685894164"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "1685894165",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-1685894165"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "1724676333_ScheduledJob_17:00:00",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-1724676333_ScheduledJob_17:00:00"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "1164721449",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-1164721449"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "993571221",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-993571221"
+    }
+  ],
+  "jobLocks": [],
+  "name": "CONTEXT-1892741766",
+  "jobDependencies": [
+    {
+      "jobIdentifier": "scheduler-agent-1164721449",
+      "logicalGrouping": {
+        "and": [
+          {
+            "logicalGrouping": {
+              "or": [
+                {
+                  "identifier": "scheduler-agent-1685894164"
+                },
+                {
+                  "identifier": "scheduler-agent-1685894165"
+                }
+              ]
+            }
+          },
+          {
+            "identifier": "scheduler-agent-1724676333_ScheduledJob_17:00:00"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-1724676333_ScheduledJob_17:00:00",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-993571221"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-1685894164",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-993571221"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-1685894165",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-993571221"
+          }
+        ]
+      }
+    }
+  ],
+  "contextTtlMilliseconds": 0,
+  "treeViewExpandLevel": 1,
+  "ableToRunConcurrently": true,
+  "useDisplayName": false,
+  "disabled": false,
+  "quartzScheduleDrivenJobsDisabledForContext": false
+}

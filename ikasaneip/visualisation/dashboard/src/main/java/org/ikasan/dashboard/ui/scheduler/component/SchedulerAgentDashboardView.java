@@ -31,8 +31,6 @@ import javax.annotation.Resource;
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 public class SchedulerAgentDashboardView extends HorizontalLayout implements BeforeEnterObserver
 {
-    private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
-
     private ModuleMetaDataService moduleMetadataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
