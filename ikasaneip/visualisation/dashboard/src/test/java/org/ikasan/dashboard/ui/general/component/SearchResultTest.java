@@ -143,7 +143,7 @@ public class SearchResultTest extends UITest {
         Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
-        Assert.assertEquals("HorizontalLayout[#frontend/images/wiretap-service.png, width:100% justify-content:center]", formatted);
+        Assert.assertEquals("HorizontalLayout[#frontend/images/wiretap-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
     }
 
     @Test
@@ -205,7 +205,7 @@ public class SearchResultTest extends UITest {
         Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
-        Assert.assertEquals("HorizontalLayout[#frontend/images/error-service.png, width:100% justify-content:center]", formatted);
+        Assert.assertEquals("HorizontalLayout[#frontend/images/error-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
     }
 
     @Test
@@ -273,7 +273,7 @@ public class SearchResultTest extends UITest {
         Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
-        Assert.assertEquals("HorizontalLayout[#frontend/images/hospital-service.png, width:100% justify-content:center]", formatted);
+        Assert.assertEquals("HorizontalLayout[#frontend/images/hospital-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
     }
 
     @Test
@@ -340,7 +340,7 @@ public class SearchResultTest extends UITest {
         Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
         String formatted = GridKt._getFormatted(column, row);
 
-        Assert.assertEquals("HorizontalLayout[#frontend/images/replay-service.png, width:100% justify-content:center]", formatted);
+        Assert.assertEquals("HorizontalLayout[#frontend/images/replay-service.png, @style='width:100%;justify-content:center', @theme='spacing']", formatted);
     }
 
     @Test

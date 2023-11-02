@@ -145,11 +145,11 @@ public class ModuleFilteringGridTest extends UITest {
 
         Assert.assertEquals(1, GridKt._size(moduleFilteringGrid));
 
-        ModuleMetaData moduleMetaData = GridKt._get(moduleFilteringGrid, 0);
-        Assert.assertEquals("moduleName0", moduleMetaData.getName());
-        Assert.assertEquals("url0", moduleMetaData.getUrl());
-        Assert.assertEquals("description0", moduleMetaData.getDescription());
-        Assert.assertEquals("version0", moduleMetaData.getVersion());
+        List<ModuleMetaData> moduleMetaData = GridKt._findAll(moduleFilteringGrid);
+        Assert.assertEquals("moduleName0", moduleMetaData.get(0).getName());
+        Assert.assertEquals("url0", moduleMetaData.get(0).getUrl());
+        Assert.assertEquals("description0", moduleMetaData.get(0).getDescription());
+        Assert.assertEquals("version0", moduleMetaData.get(0).getVersion());
     }
 
     @Test

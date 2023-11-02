@@ -62,6 +62,8 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Duration;
@@ -76,6 +78,7 @@ import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoI
 
 public class ContextInstanceDashboardWidget extends Div
     implements SchedulerJobStateChangeEventBroadcastListener, ContextInstanceStateChangeEventBroadcastListener, ContextInstanceSavedEventBroadcastListener {
+    private Logger logger = LoggerFactory.getLogger(ContextInstanceDashboardWidget.class);
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
     private Grid<ScheduledContextInstanceRecord> preparedFutureContextInstanceGrid;
     private Grid<ScheduledContextInstanceRecord> completedContextInstanceGrid;
@@ -242,11 +245,12 @@ public class ContextInstanceDashboardWidget extends Div
         this.activeJobPlanInstancesTab = new Tab(getTranslation("header.active-context-instances", UI.getCurrent().getLocale()));
         this.activeJobPlanInstancesTab.setId("activeJobPlanInstancesTab");
         this.preparedFutureJobPlanInstancesTab = new Tab(getTranslation("header.future-prepared-context-instances", UI.getCurrent().getLocale()));
-        this.preparedFutureJobPlanInstancesTab.setId("contextTemplateTab");
+        this.preparedFutureJobPlanInstancesTab.setId("preparedFutureJobPlanInstancesTab");
         this.completedJobPlanInstancesTab = new Tab(getTranslation("header.completed-context-instances", UI.getCurrent().getLocale()));
         this.completedJobPlanInstancesTab.setId("completedJobPlanInstances");
 
         this.tabs = new Tabs(this.activeJobPlanInstancesTab, this.preparedFutureJobPlanInstancesTab, this.completedJobPlanInstancesTab);
+        this.tabs.setId("contextInstancesTab");
 
         Map<Tab, Component> tabsToPages = new HashMap<>();
         tabsToPages.put(this.activeJobPlanInstancesTab, this.activeInstancesLayout);
@@ -409,6 +413,7 @@ public class ContextInstanceDashboardWidget extends Div
             Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)
                 + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_WAITING, IkasanColours.BLACK,
                 contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING));
+            statusButton.setId("waitingStatusButton");
             statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)>0);
             statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
                 , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.WAITING));
@@ -427,13 +432,14 @@ public class ContextInstanceDashboardWidget extends Div
             return horizontalLayout;
         }))
             .setHeader(getTranslation("table-header.job-status-counts", UI.getCurrent().getLocale()))
-            .setKey("statusCounts");
+            .setKey("waitingStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)
                 + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE,
                 contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE));
+            statusButton.setId("completeStatusButton");
             statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)>0);
             statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
                 , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.COMPLETE));
@@ -450,13 +456,14 @@ public class ContextInstanceDashboardWidget extends Div
 
             horizontalLayout.add(statusButton, breakOut);
             return horizontalLayout;
-        }));
+        })).setKey("completeStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)
                 + " " + getTranslation(InstanceStatus.RUNNING.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_RUNNING, IkasanColours.WHITE,
                 contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING));
+            statusButton.setId("runningStatusButton");
             statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)>0);
             statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
                 , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.RUNNING));
@@ -474,13 +481,14 @@ public class ContextInstanceDashboardWidget extends Div
             horizontalLayout.add(statusButton, breakOut);
 
             return horizontalLayout;
-        }));
+        })).setKey("runningStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)
                 + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_LOCK_QUEUED, IkasanColours.WHITE,
                 contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED));
+            statusButton.setId("queuedStatusButton");
             statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)>0);
             statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
                 , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.LOCK_QUEUED));
@@ -498,13 +506,14 @@ public class ContextInstanceDashboardWidget extends Div
             horizontalLayout.add(statusButton, breakOut);
 
             return horizontalLayout;
-        }));
+        })).setKey("queuedStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)
                 + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ON_HOLD, IkasanColours.WHITE,
                 contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD));
+            statusButton.setId("onHoldStatusButton");
             statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)>0);
             statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
                 , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ON_HOLD));
@@ -521,13 +530,14 @@ public class ContextInstanceDashboardWidget extends Div
 
             horizontalLayout.add(statusButton, breakOut);
             return horizontalLayout;
-        }));
+        })).setKey("onHoldStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)
                 + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_SKIPPED, IkasanColours.WHITE,
                 contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED));
+            statusButton.setId("skippedStatusButton");
             statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)>0);
             statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
                 , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.SKIPPED));
@@ -545,13 +555,14 @@ public class ContextInstanceDashboardWidget extends Div
             horizontalLayout.add(statusButton, breakOut);
 
             return horizontalLayout;
-        }));
+        })).setKey("skippedStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)
                 + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
                 , contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR));
+            statusButton.setId("errorStatusButton");
             statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)>0);
             statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
                 , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ERROR));
@@ -568,7 +579,7 @@ public class ContextInstanceDashboardWidget extends Div
 
             horizontalLayout.add(statusButton, breakOut);
             return horizontalLayout;
-        }));
+        })).setKey("errorStatusCounts");
 
         this.contextNameTf = new TextField();
         this.contextInstanceIdTf = new TextField();
@@ -696,7 +707,9 @@ public class ContextInstanceDashboardWidget extends Div
             .setFlexGrow(2);
 
         this.preparedContextNameTf = new TextField();
+        this.preparedContextNameTf.setId("preparedContextNameTf");
         this.preparedContextInstanceIdTf = new TextField();
+        this.preparedContextInstanceIdTf.setId("preparedContextInstanceIdTf");
         HeaderRow hr = this.preparedFutureContextInstanceGrid.appendHeaderRow();
         this.addPreparedContextInstanceGridFiltering(hr, "name", this.preparedContextNameTf, this.contextInstanceSearchFilter::setContextSearchFilter);
         this.addPreparedContextInstanceGridFiltering(hr, "id", this.preparedContextInstanceIdTf, this.contextInstanceSearchFilter::setContextInstanceId);
@@ -721,7 +734,20 @@ public class ContextInstanceDashboardWidget extends Div
                 },
                 // Second callback fetches the total number of items currently in the Grid.
                 // The grid can then use it to properly adjust the scrollbars.
-                query -> this.filterPreparedContextInstances(this.contextInstanceSearchFilter, -1, -1, null, null).size());
+                query -> {
+                    // The index of the first item to load
+                    int offset = query.getOffset();
+
+                    // The number of items to load
+                    int limit = query.getLimit();
+
+                    if(query.getSortOrders().size() > 0) {
+                        return this.filterPreparedContextInstances(this.contextInstanceSearchFilter, offset, limit
+                            , query.getSortOrders().get(0).getSorted(), query.getSortOrders().get(0).getDirection().name()).size();
+                    }
+
+                    return this.filterPreparedContextInstances(this.contextInstanceSearchFilter, offset, limit, null, null).size();
+                });
 
         dataProvider.withConfigurableFilter().setFilter(this.contextInstanceSearchFilter);
         this.preparedFutureContextInstanceGrid.setDataProvider(dataProvider);
@@ -785,7 +811,9 @@ public class ContextInstanceDashboardWidget extends Div
             .setFlexGrow(1);
 
         this.completeContextNameTf = new TextField();
+        this.completeContextNameTf.setId("completeContextNameTf");
         this.completeContextInstanceIdTf = new TextField();
+        this.completeContextInstanceIdTf.setId("completeContextInstanceIdTf");
         HeaderRow hr = this.completedContextInstanceGrid.appendHeaderRow();
         this.addCompletedContextInstanceGridFiltering(hr, "name", this.completeContextNameTf, this.completeContextInstanceSearchFilter::setContextSearchFilter);
         this.addCompletedContextInstanceGridFiltering(hr, "id", this.completeContextInstanceIdTf, this.completeContextInstanceSearchFilter::setContextInstanceId);
@@ -1196,13 +1224,13 @@ public class ContextInstanceDashboardWidget extends Div
         ContextInstanceSearchFilter preparedSearchFilter = new SolrContextInstanceSearchFilterImpl();
         preparedSearchFilter.setStatus(InstanceStatus.PREPARED.name());
 
-        List<ScheduledContextInstanceRecord> jobStatuses = this.scheduledContextInstanceService
+        List<ScheduledContextInstanceRecord> contextInstanceRecords = this.scheduledContextInstanceService
             .getScheduledContextInstancesByFilter(preparedSearchFilter, -1, -1, null, null).getResultList();
 
         boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
         Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
 
-        jobStatuses = jobStatuses.stream().filter(item -> {
+        contextInstanceRecords = contextInstanceRecords.stream().filter(item -> {
                 boolean filter = true;
 
                 if(!canAccessAllJobPlans) {
@@ -1226,15 +1254,9 @@ public class ContextInstanceDashboardWidget extends Div
             })
             .collect(Collectors.toList());
 
-        if(offset >= 0 && limit > 0 && offset + limit >= jobStatuses.size()) {
-            jobStatuses = jobStatuses.subList(offset, jobStatuses.size());
-        }
-        else if(offset >= 0 && limit > 0 && offset + limit < jobStatuses.size()) {
-            jobStatuses = jobStatuses.subList(offset, offset + limit);
-        }
-
         if(sortField != null) {
-            jobStatuses.sort((o1, o2) -> {
+            contextInstanceRecords.sort((o1, o2) -> {
+                logger.info("Sorting collection");
                 if(sortField.equals("name")) {
                     if(sortOrder.equals(SortDirection.ASCENDING.name())) {
                         return o1.getContextName().compareTo(o2.getContextName());
@@ -1263,7 +1285,14 @@ public class ContextInstanceDashboardWidget extends Div
             });
         }
 
-        return jobStatuses;
+        if(offset >= 0 && limit > 0 && offset + limit >= contextInstanceRecords.size()) {
+            contextInstanceRecords = contextInstanceRecords.subList(offset, contextInstanceRecords.size());
+        }
+        else if(offset >= 0 && limit > 0 && offset + limit < contextInstanceRecords.size()) {
+            contextInstanceRecords = contextInstanceRecords.subList(offset, offset + limit);
+        }
+
+        return contextInstanceRecords;
     }
 
     private List<ScheduledContextInstanceRecord> filterCompleteContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
@@ -1279,7 +1308,6 @@ public class ContextInstanceDashboardWidget extends Div
 
         List<ScheduledContextInstanceRecord> completedContextInstances = this.scheduledContextInstanceService
             .getScheduledContextInstancesByFilter(contextInstanceSearchFilter, limit, offset, sortField, sortOrder).getResultList();
-
 
         return completedContextInstances;
     }

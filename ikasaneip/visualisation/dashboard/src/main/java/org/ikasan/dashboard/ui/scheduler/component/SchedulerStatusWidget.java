@@ -108,9 +108,11 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         layout.add(flows);
 
         this.runningDiv = new Div();
+        this.runningDiv.setId("runningDiv");
         this.runningDiv.addClassNames("card-counter", "running");
         this.runningDiv.setHeight("45px");
         this.runningIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
+        this.runningIcon.setId("runningIcon");
         this.runningIcon.getElement().getStyle().set("margin-left", "5px");
         this.runningIcon.getElement().getStyle().set( "cursor", "pointer");
         this.runningIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -119,9 +121,11 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         this.runningDiv.add(runningIcon);
 
         this.stoppedDiv = new Div();
+        this.stoppedDiv.setId("stoppedDiv");
         this.stoppedDiv.addClassNames("card-counter", "stopped");
         this.stoppedDiv.setHeight("45px");
         this.stoppedIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
+        this.stoppedIcon.setId("stoppedIcon");
         this.stoppedIcon.getElement().getStyle().set("margin-left", "5px");
         this.stoppedIcon.getElement().getStyle().set( "cursor", "pointer");
         this.stoppedIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -130,9 +134,11 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         this.stoppedDiv.add(stoppedIcon);
 
         this.errorDiv = new Div();
+        this.errorDiv.setId("errorDiv");
         this.errorDiv.addClassNames("card-counter", "stoppedInError");
         this.errorDiv.setHeight("45px");
         this.errorIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
+        this.errorIcon.setId("errorIcon");
         this.errorIcon.getElement().getStyle().set("margin-left", "5px");
         this.errorIcon.getElement().getStyle().set( "cursor", "pointer");
         this.errorIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -141,9 +147,11 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         this.errorDiv.add(errorIcon);
 
         this.recoveringDiv = new Div();
+        this.recoveringDiv.setId("recoveringDiv");
         this.recoveringDiv.addClassNames("card-counter", "recovering");
         this.recoveringDiv.setHeight("45px");
         this.recoveringIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
+        this.recoveringIcon.setId("recoveringIcon");
         this.recoveringIcon.getElement().getStyle().set("margin-left", "5px");
         this.recoveringIcon.getElement().getStyle().set( "cursor", "pointer");
         this.recoveringIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -152,9 +160,11 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         this.recoveringDiv.add(recoveringIcon);
 
         this.pausedDiv = new Div();
+        this.pausedDiv.setId("pausedDiv");
         this.pausedDiv.addClassNames("card-counter", "paused");
         this.pausedDiv.setHeight("45px");
         this.pausedDivIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
+        this.pausedDivIcon.setId("pausedDivIcon");
         this.pausedDivIcon.getElement().getStyle().set("margin-left", "5px");
         this.pausedDivIcon.getElement().getStyle().set( "cursor", "pointer");
         this.pausedDivIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -163,6 +173,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         this.pausedDiv.add(pausedDivIcon);
 
         this.unknownDiv = new Div();
+        this.unknownDiv.setId("unknownDiv");
         this.unknownDiv.addClassNames("card-counter", "unknown");
         this.unknownDiv.setHeight("45px");
         this.unknownDivIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
@@ -207,6 +218,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
 
 
         Icon returnIcon = VaadinIcon.ARROW_CIRCLE_LEFT_O.create();
+        returnIcon.setId("returnIcon");
         returnIcon.getElement().getStyle().set("margin-left", "5px");
         returnIcon.getElement().getStyle().set( "cursor", "pointer");
         returnIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -222,6 +234,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         // Create a modulesGrid bound to the list
         this.flowSearchFilter = new FlowSearchFilter();
         this.flowsGrid = new FlowListFilteringGrid(flowsList, flowSearchFilter);
+        this.flowsGrid.setId("flowsGrid");
         this.flowsGrid.removeAllColumns();
         this.flowsGrid.setVisible(true);
         this.flowsGrid.setWidthFull();

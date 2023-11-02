@@ -176,6 +176,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         modulesGrid.setVisible(true);
         modulesGrid.setHeight("80vh");
         modulesGrid.setWidth("100%");
+        modulesGrid.setId("modulesGrid");
 
         modulesGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
