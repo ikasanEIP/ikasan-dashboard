@@ -1,0 +1,143 @@
+{
+  "contexts": [],
+  "scheduledJobs": [
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "1842999978",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-1842999978"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "-209082265",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent--209082265"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "1848727981_ScheduledJob_07:00:00",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-1848727981_ScheduledJob_07:00:00"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "1164721449",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-1164721449"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "-209082266",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent--209082266"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "-1876357614",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent--1876357614"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "331630175",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-331630175"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "331630174",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-331630174"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "1842999977",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-1842999977"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "-1876357615",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent--1876357615"
+    }
+  ],
+  "jobLocks": [],
+  "name": "CONTEXT--1209755884",
+  "jobDependencies": [
+    {
+      "jobIdentifier": "scheduler-agent-1164721449",
+      "logicalGrouping": {
+        "and": [
+          {
+            "logicalGrouping": {
+              "or": [
+                {
+                  "identifier": "scheduler-agent--209082265"
+                },
+                {
+                  "identifier": "scheduler-agent--209082266"
+                }
+              ]
+            }
+          },
+          {
+            "logicalGrouping": {
+              "or": [
+                {
+                  "identifier": "scheduler-agent--1876357614"
+                },
+                {
+                  "identifier": "scheduler-agent--1876357615"
+                }
+              ]
+            }
+          },
+          {
+            "logicalGrouping": {
+              "or": [
+                {
+                  "identifier": "scheduler-agent-331630175"
+                },
+                {
+                  "identifier": "scheduler-agent-331630174"
+                }
+              ]
+            }
+          },
+          {
+            "logicalGrouping": {
+              "or": [
+                {
+                  "identifier": "scheduler-agent-1842999978"
+                },
+                {
+                  "identifier": "scheduler-agent-1842999977"
+                }
+              ]
+            }
+          },
+          {
+            "identifier": "scheduler-agent-1848727981_ScheduledJob_07:00:00"
+          }
+        ]
+      }
+    }
+  ],
+  "contextTtlMilliseconds": 0,
+  "treeViewExpandLevel": 1,
+  "ableToRunConcurrently": true,
+  "useDisplayName": false,
+  "disabled": false,
+  "quartzScheduleDrivenJobsDisabledForContext": false
+}

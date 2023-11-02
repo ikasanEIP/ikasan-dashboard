@@ -38,15 +38,18 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         FormLayout formLayout = new FormLayout();
 
         TextField agentName = new TextField(getTranslation("label.agent", UI.getCurrent().getLocale()));
+        agentName.setId("agentName");
         agentName.setValue(agent.getName());
         agentName.setEnabled(false);
         formLayout.add(agentName);
 
         Anchor link = new Anchor(agent.getUrl(), agent.getUrl());
+        link.setId("link");
         link.setTarget("_blank");
         link.getStyle().set("color", "blue");
 
         TextField agentUrlLf = new TextField(getTranslation("label.agent-url", UI.getCurrent().getLocale()));
+        agentUrlLf.setId("agentUrlLf");
         agentUrlLf.setPrefixComponent(link);
         agentUrlLf.setValue(" ");
         formLayout.add(agentUrlLf);

@@ -110,10 +110,9 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                             (scheduledContextInstanceRecord.getContextInstance().getStatus().equals(InstanceStatus.ENDED))
                             || (scheduledContextInstanceRecord.getContextInstance().getStatus().equals(InstanceStatus.COMPLETE))) {
 
-                            String errorMessage = String.format("Context name[%s] and context instance id [%s] has the status of [%s], therefore this event will be discarded. No further action is required. " +
-                                "Active ContextMachineCache Contents - %s", contextualisedScheduledProcessEvent.getContextName(),
-                                contextualisedScheduledProcessEvent.getContextInstanceId(), scheduledContextInstanceRecord.getContextInstance().getStatus(),
-                                ContextMachineCache.instance().toString());
+                            String errorMessage = String.format("Context name[%s] and context instance id [%s] has the status of [%s], therefore this event will be discarded. No further action is required. "
+                                , contextualisedScheduledProcessEvent.getContextName(), contextualisedScheduledProcessEvent.getContextInstanceId()
+                                , scheduledContextInstanceRecord.getContextInstance().getStatus());
 
                             this.removeAgentInstances(scheduledContextInstanceRecord.getContextInstance());
                             logger.warn(errorMessage);
@@ -145,10 +144,9 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
 
             if(contextMachine.getContext() != null && contextMachine.getContext().getStatus() != null
                 && contextMachine.getContext().getStatus().equals(InstanceStatus.PREPARED)) {
-                String errorMessage = String.format("Context name[%s] and context instance id [%s] has the status of [%s], therefore this event will be discarded. No further action is required. " +
-                        "Active ContextMachineCache Contents - %s", contextualisedScheduledProcessEvent.getContextName(),
-                    contextualisedScheduledProcessEvent.getContextInstanceId(), contextMachine.getContext().getStatus(),
-                    ContextMachineCache.instance().toString());
+                String errorMessage = String.format("Context name[%s] and context instance id [%s] has the status of [%s], therefore this event will be discarded. No further action is required. "
+                    , contextualisedScheduledProcessEvent.getContextName(), contextualisedScheduledProcessEvent.getContextInstanceId()
+                    , contextMachine.getContext().getStatus());
 
                 logger.warn(errorMessage);
                 if(this.errorReportingService != null) {

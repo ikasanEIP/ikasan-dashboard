@@ -1,204 +1,166 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.data.provider.Query;
 import org.apache.commons.io.IOUtils;
-import org.ikasan.dashboard.ui.UITest;
-import org.ikasan.dashboard.ui.scheduler.component.RunningAndRecentlyCompletedJobExecutionFilteringGrid;
+import org.ikasan.dashboard.ui.scheduler.AbstractSchedulerViewTest;
 import org.ikasan.dashboard.ui.scheduler.component.ScheduledAgentsFilteringGrid;
-import org.ikasan.dashboard.ui.scheduler.component.UpcomingJobExecutionFilteringGrid;
-import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
 import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
-import org.ikasan.scheduled.event.model.SolrScheduledProcessEvent;
-import org.ikasan.scheduled.event.model.UpcomingScheduledProcess;
-import org.ikasan.scheduled.event.service.SolrScheduledProcessServiceImpl;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.module.ModuleType;
-import org.ikasan.spec.module.client.ConfigurationService;
-import org.ikasan.spec.module.client.MetaDataService;
-import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.when;
 
-@Ignore
-// todo reinstate tests
-public class SchedulerViewTest extends UITest {
-
-    @MockBean
-    private SolrScheduledProcessServiceImpl scheduledProcessEventBatchInsert;
-
-    @MockBean
-    private ConfigurationService configurationRestService;
-
-    @MockBean
-    private ModuleControlService moduleControlRestService;
-
-    @MockBean
-    private MetaDataService metaDataApplicationRestService;
-
-    @Autowired
-    private ModuleMetaDataService moduleMetadataService;
+/**
+ * This test class provides a high level set of tests of the scheduler view. There are
+ * more detailed tests for each of the components that the view is comprised of.
+ */
+public class SchedulerViewTest extends AbstractSchedulerViewTest {
 
     @Override
     public void setup_expectations() throws IOException {
-        Mockito.when(this.scheduledProcessEventBatchInsert.getScheduledProcessEvents(Mockito.isNull(), Mockito.anyLong(),
-            Mockito.anyLong(), Mockito.isNull(), Mockito.anyBoolean(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString()))
-            .thenReturn(this.getScheduledEventsResults(50));
+        when(this.scheduledContextService.findByFilter(any(), anyInt(), anyInt(), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(new ArrayList<>(), 0, 1));
 
-        Mockito.when(this.scheduledProcessEventBatchInsert.getUpComingScheduledProcesses(Mockito.isNull(), Mockito.isNull(), Mockito.anyLong(),
-            Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt()))
-            .thenReturn(this.getUpcomingScheduledEventsResults(25));
+        when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
+                Mockito.anyInt(), Mockito.anyInt(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(new SearchResultsImpl<>(this.getScheduledContextInstanceRecords(5), 5, 0));
 
-        Mockito.when(this.scheduledProcessEventBatchInsert.getScheduleProcessAggregateConfigurations(Mockito.anyString(), Mockito.isNull()))
-            .thenReturn(new ScheduledProcessEventSearchResults<>(List.of(), 0, 0));
+        when(this.schedulerJobInstanceService.getJobStatusCountForContextInstances(Mockito.any()))
+            .thenReturn(new ArrayList<>(this.getAggregateContextInstanceStatuses()));
 
-        Mockito.when(this.moduleMetadataService.find(Mockito.any(ArrayList.class), Mockito.any(ModuleType.class),
+        when(super.moduleMetadataService.find(Mockito.any(ArrayList.class), Mockito.any(ModuleType.class),
             Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(this.getAgents(1));
 
     }
 
     @Test
-    public void test_scheduler_view_scheduler_dashboard_tab() throws IOException
+    public void test_scheduler_view_scheduler_agent_instances_card() throws IOException
     {
         UI.getCurrent().navigate("scheduler");
 
         SchedulerView schedulerView = _get(SchedulerView.class);
         Assertions.assertNotNull(schedulerView);
 
-        Tabs tabs = _get(Tabs.class);
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab schedulerDashboardTab = _get(Tab.class, spec -> spec.withId("schedulerDashboardTab"));
+        Assertions.assertNotNull(schedulerDashboardTab);
 
-        Assertions.assertNotNull(tabs);
+        schedulerDashboardTabs.setSelectedTab(schedulerDashboardTab);
+        Assertions.assertEquals(schedulerDashboardTab, schedulerDashboardTabs.getSelectedTab());
+
+        Assertions.assertNotNull(schedulerDashboardTabs);
 
         ScheduledAgentsFilteringGrid agentsFilteringGrid = _get(ScheduledAgentsFilteringGrid.class);
 
         Assertions.assertNotNull(agentsFilteringGrid);
 
         Assertions.assertEquals(1, agentsFilteringGrid.getDataProvider().size(new Query<>()));
-
-        _get(Tabs.class).setSelectedTab(_get(Tab.class, spec -> spec.withId("scheduledJobsTab")));
-
-        UpcomingJobExecutionFilteringGrid upcomingJobExecutionFilteringGrid = _get(UpcomingJobExecutionFilteringGrid.class);
-        Assertions.assertNotNull(upcomingJobExecutionFilteringGrid);
-
-        Assertions.assertEquals(25, upcomingJobExecutionFilteringGrid.getDataProvider().size(new Query<>()));
-
-        RunningAndRecentlyCompletedJobExecutionFilteringGrid runningAndRecentlyCompletedGrid
-            = _get(RunningAndRecentlyCompletedJobExecutionFilteringGrid.class);
-
-        Assertions.assertNotNull(runningAndRecentlyCompletedGrid);
-        Assertions.assertEquals(50, runningAndRecentlyCompletedGrid.getDataProvider().size(new Query<>()));
     }
 
     @Test
-    public void test_scheduler_view_scheduled_jobs_tab() throws IOException
+    public void test_scheduler_view_context_instances_card_active_job_plan_instances_tab() throws IOException
     {
         UI.getCurrent().navigate("scheduler");
 
         SchedulerView schedulerView = _get(SchedulerView.class);
         Assertions.assertNotNull(schedulerView);
 
-        Tabs tabs = _get(Tabs.class);
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab schedulerDashboardTab = _get(Tab.class, spec -> spec.withId("schedulerDashboardTab"));
+        Assertions.assertNotNull(schedulerDashboardTab);
 
-        Assertions.assertNotNull(tabs);
+        schedulerDashboardTabs.setSelectedTab(schedulerDashboardTab);
+        Assertions.assertEquals(schedulerDashboardTab, schedulerDashboardTabs.getSelectedTab());
 
-        _get(Tabs.class).setSelectedTab(_get(Tab.class, spec -> spec.withId("scheduledJobsTab")));
+        Assertions.assertNotNull(schedulerDashboardTabs);
 
-        UpcomingJobExecutionFilteringGrid upcomingJobExecutionFilteringGrid = _get(UpcomingJobExecutionFilteringGrid.class);
-        Assertions.assertNotNull(upcomingJobExecutionFilteringGrid);
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Assert.assertNotNull(contextInstanceTabs);
 
-        Assertions.assertEquals(25, upcomingJobExecutionFilteringGrid.getDataProvider().size(new Query<>()));
+        Tab activeJobPlanInstancesTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        Assertions.assertNotNull(contextInstanceTabs);
 
-        RunningAndRecentlyCompletedJobExecutionFilteringGrid runningAndRecentlyCompletedGrid
-            = _get(RunningAndRecentlyCompletedJobExecutionFilteringGrid.class);
+        contextInstanceTabs.setSelectedTab(activeJobPlanInstancesTab);
+        Assertions.assertEquals(activeJobPlanInstancesTab, contextInstanceTabs.getSelectedTab());
 
-        Assertions.assertNotNull(runningAndRecentlyCompletedGrid);
-        Assertions.assertEquals(50, runningAndRecentlyCompletedGrid.getDataProvider().size(new Query<>()));
+        Grid contextInstanceAggregateJobStatusGrid = _get(Grid.class, spec -> spec.withId("contextInstanceAggregateJobStatusGrid"));
+        Assertions.assertNotNull(contextInstanceAggregateJobStatusGrid);
     }
 
-
-    protected ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledEventsResults(int size) {
-
-        ArrayList<ScheduledProcessEvent> ikasanSolrDocuments = new ArrayList<>();
-
-        IntStream.range(0, size).forEach(i -> {
-            ScheduledProcessEvent document = new SolrScheduledProcessEvent();
-            document.setAgentName("agentName");
-            document.setJobName("jobName");
-            document.setJobDescription("job description");
-            document.setCommandLine("command line");
-            document.setUser("user");
-            document.setCompletionTime(System.currentTimeMillis()+i);
-            document.setNextFireTime(System.currentTimeMillis()+(i*1000));
-
-            ikasanSolrDocuments.add(document);
-        });
-
-        return new ScheduledProcessEventSearchResults(ikasanSolrDocuments
-            , ikasanSolrDocuments.size(), 1);
-    }
-
-    protected ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpcomingScheduledEventsResults(int size) {
-
-        ArrayList<UpcomingScheduledProcess> ikasanSolrDocuments = new ArrayList<>();
-
-        IntStream.range(0, size).forEach(i -> {
-            UpcomingScheduledProcess document = new UpcomingScheduledProcess("agentName", "hostname", "jobName",
-                "job group", "job description", System.currentTimeMillis(), null
-                ,  "UTC");
-
-
-            ikasanSolrDocuments.add(document);
-        });
-
-        return new ScheduledProcessEventSearchResults(ikasanSolrDocuments
-            , ikasanSolrDocuments.size(), 1);
-    }
-
-    private ModuleMetadataSearchResults getAgents(int size) {
-        ArrayList<ModuleMetaData> ikasanSolrDocuments = new ArrayList<>();
-
-        IntStream.range(0, size).forEach(i -> {
-            ModuleMetaData document = new SolrModuleMetaDataImpl();
-            document.setName("scheduler-agent");
-            document.setConfiguredResourceId("id");
-            document.setDescription("description");
-            document.setUrl("http://localhost:8080/agent");
-
-            ikasanSolrDocuments.add(document);
-        });
-
-        return new ModuleMetadataSearchResults(ikasanSolrDocuments
-            , ikasanSolrDocuments.size(), 1);
-    }
-
-
-    protected String loadDataFile(String fileName) throws IOException
+    @Test
+    public void test_scheduler_view_context_instances_card_prepared_future_job_plan_instances_tab() throws IOException
     {
-        String contentToSend = IOUtils.toString(loadDataFileStream(fileName));
+        UI.getCurrent().navigate("scheduler");
 
-        return contentToSend;
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab schedulerDashboardTab = _get(Tab.class, spec -> spec.withId("schedulerDashboardTab"));
+        Assertions.assertNotNull(schedulerDashboardTab);
+
+        schedulerDashboardTabs.setSelectedTab(schedulerDashboardTab);
+        Assertions.assertEquals(schedulerDashboardTab, schedulerDashboardTabs.getSelectedTab());
+
+        Assertions.assertNotNull(schedulerDashboardTabs);
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Assert.assertNotNull(contextInstanceTabs);
+
+        Tab preparedFutureContextInstancesTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        Assertions.assertNotNull(contextInstanceTabs);
+
+        contextInstanceTabs.setSelectedTab(preparedFutureContextInstancesTab);
+        Assertions.assertEquals(preparedFutureContextInstancesTab, contextInstanceTabs.getSelectedTab());
+
+        Grid preparedFutureContextInstanceGrid = _get(Grid.class, spec -> spec.withId("preparedFutureContextInstanceGrid"));
+        Assertions.assertNotNull(preparedFutureContextInstanceGrid);
     }
 
-    protected InputStream loadDataFileStream(String fileName) throws IOException
+    @Test
+    public void test_scheduler_view_context_instances_card_completed_job_plan_instances_tab() throws IOException
     {
-        return getClass().getResourceAsStream(fileName);
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab schedulerDashboardTab = _get(Tab.class, spec -> spec.withId("schedulerDashboardTab"));
+        Assertions.assertNotNull(schedulerDashboardTab);
+
+        schedulerDashboardTabs.setSelectedTab(schedulerDashboardTab);
+        Assertions.assertEquals(schedulerDashboardTab, schedulerDashboardTabs.getSelectedTab());
+
+        Assertions.assertNotNull(schedulerDashboardTabs);
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Assert.assertNotNull(contextInstanceTabs);
+
+        Tab completedContextInstancesTab = _get(Tab.class, spec -> spec.withId("completedJobPlanInstances"));
+        Assertions.assertNotNull(contextInstanceTabs);
+
+        contextInstanceTabs.setSelectedTab(completedContextInstancesTab);
+        Assertions.assertEquals(completedContextInstancesTab, contextInstanceTabs.getSelectedTab());
+
+        Grid completedContextInstanceGrid = _get(Grid.class, spec -> spec.withId("completedContextInstanceGrid"));
+        Assertions.assertNotNull(completedContextInstanceGrid);
     }
 }

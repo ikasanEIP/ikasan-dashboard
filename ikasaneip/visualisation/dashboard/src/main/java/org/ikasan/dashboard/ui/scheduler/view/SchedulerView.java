@@ -213,6 +213,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextTemplateTab.setId("contextTemplateTab");
 
         this.tabs = new Tabs(schedulerDashboardTab, this.contextTemplateTab);
+        this.tabs.setId("schedulerViewTabs");
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
         tabsToPages.put(this.schedulerDashboardTab, this.schedulerAgentDashboardView);

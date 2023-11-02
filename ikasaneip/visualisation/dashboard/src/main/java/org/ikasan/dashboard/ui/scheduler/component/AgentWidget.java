@@ -30,13 +30,14 @@ public class AgentWidget extends Div {
     private ScheduledAgentsFilteringGrid scheduledAgentsFilteringGrid;
     private ModuleMetaDataService moduleMetadataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
-    private TextField textField;
+    private TextField filterTextField;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
     private SchedulerService schedulerService;
     private SchedulerJobService schedulerJobService;
+
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private DownloadLogFileService downloadLogFileService;
     /**
@@ -63,7 +64,7 @@ public class AgentWidget extends Div {
         this.schedulerService = schedulerService;
         this.schedulerJobService = schedulerJobService;
         this.downloadLogFileService = downloadLogFileService;
-        this.textField = new TextField();
+        this.filterTextField = new TextField();
         this.createGrid();
 
         Div div = new Div();
@@ -74,14 +75,15 @@ public class AgentWidget extends Div {
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
-        textField.setPrefixComponent(icon);
+        filterTextField.setPrefixComponent(icon);
+        filterTextField.setId("filterTextField");
         HorizontalLayout layout = new HorizontalLayout();
         H4 modules = new H4(getTranslation("header.scheduler-agents", UI.getCurrent().getLocale()));
-        layout.add(modules, textField);
+        layout.add(modules, filterTextField);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, filterTextField);
 
-        textField.getElement().getStyle().set("margin-left", "auto");
+        filterTextField.getElement().getStyle().set("margin-left", "auto");
 
         div.add(layout);
         div.add(this.scheduledAgentsFilteringGrid);
@@ -94,11 +96,12 @@ public class AgentWidget extends Div {
     private void createGrid() {
         // Create a modulesGrid bound to the list
         ModuleSearchFilter moduleSearchFilter = new ModuleSearchFilter();
-        scheduledAgentsFilteringGrid = new ScheduledAgentsFilteringGrid(this.moduleMetadataService, moduleSearchFilter);
-        scheduledAgentsFilteringGrid.removeAllColumns();
-        scheduledAgentsFilteringGrid.setVisible(true);
-        scheduledAgentsFilteringGrid.setWidthFull();
-        scheduledAgentsFilteringGrid.setHeight("80%");
+        this.scheduledAgentsFilteringGrid = new ScheduledAgentsFilteringGrid(this.moduleMetadataService, moduleSearchFilter);
+        this.scheduledAgentsFilteringGrid.setId("scheduledAgentsFilteringGrid");
+        this.scheduledAgentsFilteringGrid.removeAllColumns();
+        this.scheduledAgentsFilteringGrid.setVisible(true);
+        this.scheduledAgentsFilteringGrid.setWidthFull();
+        this.scheduledAgentsFilteringGrid.setHeight("80%");
 
         scheduledAgentsFilteringGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
@@ -109,8 +112,7 @@ public class AgentWidget extends Div {
             .setKey("description")
             .setFlexGrow(32);;
 
-        this.scheduledAgentsFilteringGrid.addGridFiltering(textField, moduleSearchFilter::setModuleNameFilter);
-
+        this.scheduledAgentsFilteringGrid.addGridFiltering(filterTextField, moduleSearchFilter::setModuleNameFilter);
         this.scheduledAgentsFilteringGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<ModuleMetaData>>) moduleMetaDataItemDoubleClickEvent -> {
             SchedulerAgentManagementDialog schedulerAgentManagementDialog
                 = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem(), downloadLogFileService);
