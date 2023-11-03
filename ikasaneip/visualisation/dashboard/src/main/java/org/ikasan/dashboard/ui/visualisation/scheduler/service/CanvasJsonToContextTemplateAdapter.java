@@ -33,7 +33,7 @@ public class CanvasJsonToContextTemplateAdapter {
             for (LinkedHashMap value : values) {
                 if (value.get("type").equals("draw2d.shape.basic.Image")) {
                     Image image = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Image.class);
-                    positionedItems.add(image);
+                    if(!image.getPath().contains("repeating.png")) positionedItems.add(image);
                 } else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("AND")) {
                     Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
                     positionedItems.add(rectangle);
@@ -92,7 +92,7 @@ public class CanvasJsonToContextTemplateAdapter {
             for (LinkedHashMap value : values) {
                 if (value.get("type").equals("draw2d.shape.basic.Image")) {
                     Image image = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Image.class);
-                    schedulerJobs.put(image.getId(), image);
+                    if(!image.getPath().contains("repeating.png"))schedulerJobs.put(image.getId(), image);
                 }
                 else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("AND")) {
                     Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);

@@ -1,0 +1,76 @@
+{
+  "contexts": [],
+  "scheduledJobs": [
+    {
+      "agentName": "GLOBAL_EVENT",
+      "jobName": "demo-global",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "GLOBAL_EVENT-demo-global"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "demo-command-1",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-demo-command-1"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "demo-fw-1",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-demo-fw-1"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "7am-demo-job",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-7am-demo-job"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "demo-command-2",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-demo-command-2"
+    }
+  ],
+  "jobLocks": [],
+  "name": "CONTEXT-1892741766",
+  "jobDependencies": [
+    {
+      "jobIdentifier": "GLOBAL_EVENT-demo-global",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-7am-demo-job"
+          },
+          {
+            "identifier": "scheduler-agent-demo-command-2"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-demo-command-2",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-demo-command-1"
+          },
+          {
+            "identifier": "scheduler-agent-demo-fw-1"
+          }
+        ]
+      }
+    }
+  ],
+  "contextTtlMilliseconds": 0,
+  "treeViewExpandLevel": 1,
+  "ableToRunConcurrently": true,
+  "useDisplayName": false,
+  "disabled": false,
+  "quartzScheduleDrivenJobsDisabledForContext": false
+}

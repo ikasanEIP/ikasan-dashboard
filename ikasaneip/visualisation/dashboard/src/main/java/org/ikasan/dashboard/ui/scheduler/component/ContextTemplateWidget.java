@@ -350,6 +350,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             return horizontalLayout;
         })).setHeader(getTranslation("table-header.context-description", UI.getCurrent().getLocale()))
             .setResizable(true)
+            .setKey("description")
             .setFlexGrow(8);
 
 
@@ -681,6 +682,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         }))
             .setResizable(true)
             .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
+            .setKey("actions")
             .setFlexGrow(4);
 
         this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextRecord>of(
@@ -721,7 +723,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         }))
         .setResizable(true)
         .setHeader(getTranslation("table-header.scheduled-jobs-disabled", UI.getCurrent().getLocale()))
-        .setSortable(false)
+        .setSortable(false).setKey("scheduledJobsDisabled")
         .setWidth("150px");
 
         this.contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
@@ -734,7 +736,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         }))
         .setResizable(true)
         .setHeader(getTranslation("table-header.modified-by", UI.getCurrent().getLocale()))
-        .setSortable(true)
+        .setSortable(true).setKey("modifiedBy")
         .setFlexGrow(1);
 
         this.contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
