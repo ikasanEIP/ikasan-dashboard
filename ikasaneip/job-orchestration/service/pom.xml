@@ -94,7 +94,7 @@
     <parent>
         <groupId>org.ikasan</groupId>
         <artifactId>ikasan-job-orchestration-parent</artifactId>
-        <version>3.3.3</version>
+        <version>3.3.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>ikasan-job-orchestration-service</artifactId>
