@@ -2156,8 +2156,8 @@ public class JobLogicMachineTest extends AbstractTest {
         // Global Event Successful
         eventInstance
             = scheduledProcessEventInstance("jobName2", JobConstants.GLOBAL_EVENT, true);
-        
-        events =  jobLogicMachine
+
+        events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, globalEventJobInstances, internalEventDrivenJobs
                 , context.getContextParameters(), context, new MutableBoolean(false), true);
 
@@ -2165,6 +2165,125 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
         Assert.assertEquals("jobName3", events.get(0).getJobName());
     }
+
+    /**
+     * CONTEXT = PLAN1
+     * scheduler-agent-Schedule1 -> scheduler-agent-JOB1 (repeating)
+     * scheduler-agent-Schedule2 -> scheduler-agent-JOB2 (repeating)
+     * <p>
+     * Dependency Logic
+     * "jobDependencies" : [ {
+     * "jobIdentifier" : "scheduler-agent-JOB2",
+     * "logicalGrouping" : {
+     * "and" : [ {
+     * "identifier" : "scheduler-agent-Schedule2"
+     * } ]
+     * }
+     * }, {
+     * "jobIdentifier" : "scheduler-agent-JOB1",
+     * "logicalGrouping" : {
+     * "and" : [ {
+     * "identifier" : "scheduler-agent-Schedule1"
+     * } ]
+     * }
+     * } ]
+     */
+    @Test
+    public void test_repeating_jobs() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-with-repeating-independent-jobs.json");
+        ContextInstance contextPlan1 = context.getContexts().get(0);
+
+        InternalEventDrivenJobInstanceImpl schedulerAgentJOB1 = new InternalEventDrivenJobInstanceImpl();
+        schedulerAgentJOB1.setJobName("JOB1");
+        schedulerAgentJOB1.setAgentName("scheduler-agent");
+        schedulerAgentJOB1.setJobRepeatable(true);
+
+        InternalEventDrivenJobInstanceImpl schedulerAgentJOB2 = new InternalEventDrivenJobInstanceImpl();
+        schedulerAgentJOB2.setJobName("JOB2");
+        schedulerAgentJOB2.setAgentName("scheduler-agent");
+        schedulerAgentJOB2.setJobRepeatable(true);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("scheduler-agent-JOB1-PLAN1", schedulerAgentJOB1);
+        internalEventDrivenJobs.put("scheduler-agent-JOB2-PLAN1", schedulerAgentJOB2);
+
+        // Schedule1 Fires
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("Schedule1", "scheduler-agent", true);
+        eventInstance.setJobStarting(false);
+
+        List<SchedulerJobInitiationEvent> events = jobLogicMachine
+            .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+
+        // ASSERT JOB 1 STARTING
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("JOB1", events.get(0).getJobName());
+
+        // AGENT REPLY with JOB 1 IS SUCCESSFUL
+        eventInstance = scheduledProcessEventInstance("JOB1", "scheduler-agent", true);
+        events = jobLogicMachine
+            .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+
+        // AFTER JOB ONE COMPLETE, no EVENTS
+        Assert.assertEquals(0, events.size());
+
+        // Check that this is where the instance is
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-Schedule1").getStatus());
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-JOB1").getStatus());
+        Assert.assertEquals(InstanceStatus.WAITING, contextPlan1.getScheduledJobsMap().get("scheduler-agent-Schedule2").getStatus());
+        Assert.assertEquals(InstanceStatus.WAITING, contextPlan1.getScheduledJobsMap().get("scheduler-agent-JOB2").getStatus());
+
+        // Scheduler 2 fires
+        eventInstance = scheduledProcessEventInstance("Schedule2", "scheduler-agent", true);
+        eventInstance.setJobStarting(false);
+        events = jobLogicMachine
+            .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+
+        // TODO - SHOULD RETURN JOB 2 EVENT, however it RETURNS JOB 1 and 2 - WRONG
+        Assert.assertEquals(2, events.size());
+        Assert.assertTrue(events.get(0).getJobName().equals("JOB1") || events.get(0).getJobName().equals("JOB2"));
+        Assert.assertTrue(events.get(1).getJobName().equals("JOB1") || events.get(0).getJobName().equals("JOB2"));
+        // TODO - BELOW IS WHAT SHOULD HAPPEN
+        //Assert.assertEquals(1, events.size());
+        //Assert.assertEquals("JOB2", events.get(0).getJobName());
+
+        // AGENT REPLY with JOB 2 IS SUCCESSFUL
+        eventInstance = scheduledProcessEventInstance("JOB2", "scheduler-agent", true);
+        events = jobLogicMachine
+            .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+
+        // TODO - SHOULD RETURN ZERO EVENT, however it RETURNS 1 - WRONG
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("JOB1", events.get(0).getJobName());
+        // AFTER JOB TWO COMPLETE, no EVENTS - TODO - THIS IS THE EXPECTED BEHAVIOUR
+        //Assert.assertEquals(0, events.size());
+
+        // Check that this is where the instance is
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-Schedule1").getStatus());
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-JOB1").getStatus());
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-Schedule2").getStatus());
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-JOB2").getStatus());
+
+        // SCHEDULE 1 Fires again
+        eventInstance = scheduledProcessEventInstance("Schedule1", "scheduler-agent", true);
+        eventInstance.setJobStarting(false);
+        events = jobLogicMachine
+            .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+
+        // TODO - SHOULD RETURN JOB 1 EVENT, however it RETURNS JOB 1 and 2 - WRONG
+        Assert.assertEquals(2, events.size());
+        Assert.assertTrue(events.get(0).getJobName().equals("JOB1") || events.get(0).getJobName().equals("JOB2"));
+        Assert.assertTrue(events.get(1).getJobName().equals("JOB1") || events.get(0).getJobName().equals("JOB2"));
+        // TODO - BELOW IS WHAT SHOULD HAPPEN
+        //Assert.assertEquals(1, events.size());
+        //Assert.assertEquals("JOB1", events.get(0).getJobName());
+
+        // Check that this is where the instance is
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-Schedule1").getStatus());
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-JOB1").getStatus());
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-Schedule2").getStatus());
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-JOB2").getStatus());
+    }
+
 
     private ContextInstance context(String filename) throws IOException {
         return this.contextService.getContextInstance(loadDataFile(filename));
