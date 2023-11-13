@@ -169,7 +169,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         if(contextInstance.getJobDependencies() != null) {
             for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
-                if (this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) {
+                if (this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) { // TODO - FIX SHOULD BE HERE - We should check if the scheduledProcessEvent.getJobName() is contained within this JobDependency.getJobIdentifier or its LogicalOperator.getIdentifier - If Ture then execute the IF Block
                     SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
                     if(jobInstance == null) {
                         logger.info("Encountered job dependency[{}] but no scheduled job in job map!", jobDependency.getJobIdentifier());
