@@ -169,7 +169,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         if(contextInstance.getJobDependencies() != null) {
             for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
-                if (this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) { // TODO - FIX SHOULD BE HERE - We should check if the scheduledProcessEvent.getJobName() is contained within this JobDependency.getJobIdentifier or its LogicalOperator.getIdentifier - If Ture then execute the IF Block
+                String jobIdentifier = scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName();
+                if (this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap(), jobIdentifier)
+                    && jobIdentifierIsInLogicalGrouping(jobDependency.getLogicalGrouping(), jobIdentifier)) {
                     SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
                     if(jobInstance == null) {
                         logger.info("Encountered job dependency[{}] but no scheduled job in job map!", jobDependency.getJobIdentifier());
@@ -477,7 +479,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @param schedulerJobInstancesMap
      * @return
      */
-    private boolean shouldRaiseEvent(LogicalGrouping logicalGrouping, Map<String, SchedulerJobInstance> schedulerJobInstancesMap) {
+    private boolean shouldRaiseEvent(LogicalGrouping logicalGrouping, Map<String, SchedulerJobInstance> schedulerJobInstancesMap
+        , String jobIdentifier) {
         boolean result = true;
 
         if(logicalGrouping == null) {
@@ -486,7 +489,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         if(logicalGrouping.getLogicalGrouping() != null) {
             // recursively work our way through nested logic
-            result = this.shouldRaiseEvent(logicalGrouping.getLogicalGrouping(), schedulerJobInstancesMap);
+            result = this.shouldRaiseEvent(logicalGrouping.getLogicalGrouping(), schedulerJobInstancesMap, jobIdentifier);
         }
 
         return result && this.assessBaseLogic(logicalGrouping, schedulerJobInstancesMap);

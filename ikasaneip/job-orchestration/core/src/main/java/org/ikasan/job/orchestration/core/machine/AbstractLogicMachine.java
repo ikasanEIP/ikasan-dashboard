@@ -34,7 +34,8 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                             operator.getIdentifier(), logicalGrouping));
                     }
 
-                    if (!statefulEntity.getStatus().equals(InstanceStatus.COMPLETE) && !statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
+                    if (!statefulEntity.getStatus().equals(InstanceStatus.COMPLETE) &&
+                        !statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
                         and.set(false);
                     }
                 }
@@ -67,7 +68,8 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                             operator.getIdentifier(), logicalGrouping));
                     }
 
-                    if (statefulEntity.getStatus().equals(InstanceStatus.COMPLETE) || statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
+                    if (statefulEntity.getStatus().equals(InstanceStatus.COMPLETE)
+                        || statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
                         or.set(true);
                     }
                 }
@@ -100,7 +102,8 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                             operator.getIdentifier(), logicalGrouping));
                     }
 
-                    if (statefulEntity.getStatus().equals(InstanceStatus.COMPLETE) || statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
+                    if (statefulEntity.getStatus().equals(InstanceStatus.COMPLETE) ||
+                        statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
                         not.set(true);
                     }
                 }
@@ -126,5 +129,47 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
         // Now apply a very simple logical statement to feed back to either the
         // originator or the recursive level above.
         return ((andAssessment || orAssessment) && !notAssessment);
+    }
+
+    protected boolean jobIdentifierIsInLogicalGrouping(LogicalGrouping logicalGrouping, String jobIdentifier) {
+        AtomicBoolean result = new AtomicBoolean(false);
+        if(logicalGrouping.getAnd() != null && !logicalGrouping.getAnd().isEmpty()) {
+            logicalGrouping.getAnd().forEach(and -> {
+                if(and.getIdentifier() != null && and.getIdentifier().equals(jobIdentifier)) {
+                    result.set(true);
+                }
+                else if(and.getLogicalGrouping() != null) {
+                    if(jobIdentifierIsInLogicalGrouping(and.getLogicalGrouping(), jobIdentifier)) result.set(true);
+                }
+            });
+        }
+
+        if(logicalGrouping.getOr() != null && !logicalGrouping.getOr().isEmpty()) {
+            logicalGrouping.getOr().forEach(or -> {
+                if(or.getIdentifier() != null && or.getIdentifier().equals(jobIdentifier)) {
+                    result.set(true);
+                }
+                else if(or.getLogicalGrouping() != null) {
+                    if(jobIdentifierIsInLogicalGrouping(or.getLogicalGrouping(), jobIdentifier)) result.set(true);
+                }
+            });
+        }
+
+        if(logicalGrouping.getNot() != null && !logicalGrouping.getNot().isEmpty()) {
+            logicalGrouping.getNot().forEach(not -> {
+                if(not.getIdentifier() != null && not.getIdentifier().equals(jobIdentifier)) {
+                    result.set(true);
+                }
+                else if(not.getLogicalGrouping() != null) {
+                    if(jobIdentifierIsInLogicalGrouping(not.getLogicalGrouping(), jobIdentifier)) result.set(true);
+                }
+            });
+        }
+
+        if(logicalGrouping.getLogicalGrouping() != null) {
+            if(jobIdentifierIsInLogicalGrouping(logicalGrouping.getLogicalGrouping(), jobIdentifier)) result.set(true);
+        }
+
+        return result.get();
     }
 }
