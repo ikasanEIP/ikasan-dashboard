@@ -79,8 +79,8 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
 
             // Warn on the dashboard but do not create an exclude event as we cannot resubmit a null context id.
             if(contextualisedScheduledProcessEvent.getContextInstanceId() == null) {
-                String errorMessage = String.format("Received scheduler event with null context instance id [%s]." +
-                    " Cache Contents - %s", contextualisedScheduledProcessEvent, ContextMachineCache.instance().toString());
+                String errorMessage = String.format("Received scheduler event with null context instance id [%s]."
+                    , contextualisedScheduledProcessEvent);
                 logger.warn(errorMessage);
                 errorReportingService.notify(FLOW_NAME, payload, new InvalidContextInstanceIdException(errorMessage));
                 this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, null);
@@ -126,8 +126,8 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                     }
                 }
 
-                throw new InvalidContextInstanceIdException(String.format("Could not resolve context machine with context name[%s] and context instance id [%s]. Does not exist in the system! " +
-                    " Cache Contents - %s", contextualisedScheduledProcessEvent.getContextName(), contextualisedScheduledProcessEvent.getContextInstanceId(), ContextMachineCache.instance().toString()));
+                throw new InvalidContextInstanceIdException(String.format("Could not resolve context machine with context name[%s] and context instance id [%s]. Does not exist in the system! "
+                    , contextualisedScheduledProcessEvent.getContextName(), contextualisedScheduledProcessEvent.getContextInstanceId()));
             }
 
             if(this.configuration.isLogDetails()) {
@@ -160,7 +160,6 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
             this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, contextMachine);
         }
         catch (InvalidContextInstanceIdException | ConfigurationException e) {
-            e.printStackTrace();
             if(this.configuration.isIgnoreErrors()) {
                 logger.info("Ignoring error [{}] for payload [{}]", e.getMessage(), payload);
             }
@@ -169,7 +168,6 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
             if(this.configuration.isIgnoreErrors()) {
                 logger.info("Ignoring error [{}] for payload [{}]", e.getMessage(), payload);
             }

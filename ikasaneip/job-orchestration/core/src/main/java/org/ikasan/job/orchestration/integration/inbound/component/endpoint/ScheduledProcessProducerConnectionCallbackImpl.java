@@ -29,7 +29,7 @@ public class ScheduledProcessProducerConnectionCallbackImpl implements Scheduled
             }
         }
         else {
-            logger.info(String.format("Context machine not available in cache. Ignoring payload!. Payload[%s]", payload));
+            logger.debug(String.format("Context machine not available in cache. Ignoring payload!. Payload[%s]", payload));
         }
     }
 
