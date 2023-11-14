@@ -2238,24 +2238,15 @@ public class JobLogicMachineTest extends AbstractTest {
         events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
 
-        // TODO - SHOULD RETURN JOB 2 EVENT, however it RETURNS JOB 1 and 2 - WRONG
-        Assert.assertEquals(2, events.size());
-        Assert.assertTrue(events.get(0).getJobName().equals("JOB1") || events.get(0).getJobName().equals("JOB2"));
-        Assert.assertTrue(events.get(1).getJobName().equals("JOB1") || events.get(0).getJobName().equals("JOB2"));
-        // TODO - BELOW IS WHAT SHOULD HAPPEN
-        //Assert.assertEquals(1, events.size());
-        //Assert.assertEquals("JOB2", events.get(0).getJobName());
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("JOB2", events.get(0).getJobName());
 
         // AGENT REPLY with JOB 2 IS SUCCESSFUL
         eventInstance = scheduledProcessEventInstance("JOB2", "scheduler-agent", true);
         events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
 
-        // TODO - SHOULD RETURN ZERO EVENT, however it RETURNS 1 - WRONG
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals("JOB1", events.get(0).getJobName());
-        // AFTER JOB TWO COMPLETE, no EVENTS - TODO - THIS IS THE EXPECTED BEHAVIOUR
-        //Assert.assertEquals(0, events.size());
+        Assert.assertEquals(0, events.size());
 
         // Check that this is where the instance is
         Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-Schedule1").getStatus());
@@ -2269,13 +2260,8 @@ public class JobLogicMachineTest extends AbstractTest {
         events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs, context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
 
-        // TODO - SHOULD RETURN JOB 1 EVENT, however it RETURNS JOB 1 and 2 - WRONG
-        Assert.assertEquals(2, events.size());
-        Assert.assertTrue(events.get(0).getJobName().equals("JOB1") || events.get(0).getJobName().equals("JOB2"));
-        Assert.assertTrue(events.get(1).getJobName().equals("JOB1") || events.get(0).getJobName().equals("JOB2"));
-        // TODO - BELOW IS WHAT SHOULD HAPPEN
-        //Assert.assertEquals(1, events.size());
-        //Assert.assertEquals("JOB1", events.get(0).getJobName());
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("JOB1", events.get(0).getJobName());
 
         // Check that this is where the instance is
         Assert.assertEquals(InstanceStatus.COMPLETE, contextPlan1.getScheduledJobsMap().get("scheduler-agent-Schedule1").getStatus());
