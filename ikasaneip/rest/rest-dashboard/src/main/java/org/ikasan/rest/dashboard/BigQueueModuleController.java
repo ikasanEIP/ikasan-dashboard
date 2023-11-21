@@ -179,7 +179,7 @@ public class BigQueueModuleController {
         for (MetadataModuleDto module : metadataModuleDtoList) {
             if (moduleType.equals("ALL") || module.getModuleType() == moduleEnum) {
                 try {
-                    LOG.info("Getting all queue sizes for the module [{}]", module.getName());
+                    LOG.debug("Getting all queue sizes for the module [{}]", module.getName());
                     Map<String, Long> queueMap = bigQueueModuleService.size(module.getUrl(), includeZeros);
                     if (queueMap.size() > 0) {
                         bigQueueModuleDtoList.add(new BigQueueModuleDto(module.getName(), module.getUrl(), queueMap, true));
