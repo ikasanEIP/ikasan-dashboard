@@ -39,6 +39,7 @@ import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -506,7 +507,7 @@ public abstract class ContextInstanceServiceBase {
     protected List<ContextInstance> findPrepared(String contextName) {
         ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
         filter.setStatus(InstanceStatus.PREPARED.name());
-        filter.setContextSearchFilter(contextName);
+        filter.setContextInstanceNames(Collections.singletonList(contextName));
 
         SearchResults<ScheduledContextInstanceRecord> results = this.scheduledContextInstanceService
             .getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
@@ -520,7 +521,7 @@ public abstract class ContextInstanceServiceBase {
     protected void removeAllPrepared(String contextName) {
         ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
         filter.setStatus(InstanceStatus.PREPARED.name());
-        filter.setContextSearchFilter(contextName);
+        filter.setContextInstanceNames(Collections.singletonList(contextName));
 
         SearchResults<ScheduledContextInstanceRecord> results = this.scheduledContextInstanceService
             .getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
