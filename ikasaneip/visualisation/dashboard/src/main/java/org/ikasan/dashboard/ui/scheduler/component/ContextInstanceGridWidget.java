@@ -41,6 +41,7 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class ContextInstanceGridWidget extends Div {
@@ -158,7 +159,7 @@ public class ContextInstanceGridWidget extends Div {
                             LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService) {
         // Create a modulesGrid bound to the list
         ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
-        contextInstanceSearchFilter.setContextSearchFilter(contextTemplate.getName());
+        contextInstanceSearchFilter.setContextInstanceNames(Collections.singletonList(contextTemplate.getName()));
         contextInstanceFilteringGrid = new ContextInstanceFilteringGrid(this.scheduledContextInstanceService, contextInstanceSearchFilter);
         contextInstanceFilteringGrid.getElement().getStyle().set("margin-top", "40px");
         contextInstanceFilteringGrid.removeAllColumns();
