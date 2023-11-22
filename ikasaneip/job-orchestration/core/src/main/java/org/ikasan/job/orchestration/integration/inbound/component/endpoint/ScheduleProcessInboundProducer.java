@@ -41,6 +41,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -98,7 +99,7 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
 
                     // Create a search query to find out the instance id from solr.
                     ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
-                    filter.setContextSearchFilter(contextualisedScheduledProcessEvent.getContextName());
+                    filter.setContextInstanceNames(Collections.singletonList(contextualisedScheduledProcessEvent.getContextName()));
                     filter.setContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
                     SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords =
                         scheduledContextInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
