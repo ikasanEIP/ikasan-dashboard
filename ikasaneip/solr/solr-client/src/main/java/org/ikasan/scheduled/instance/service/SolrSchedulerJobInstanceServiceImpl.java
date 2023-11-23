@@ -182,6 +182,14 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                         }
                     }
 
+                    if(schedulerJobRecord.isSkipped()) {
+                        internalEventDrivenJobInstance.setSkip(true);
+                        internalEventDrivenJobInstance.setStatus(InstanceStatus.SKIPPED);
+                    }
+                    else {
+                        internalEventDrivenJobInstance.setSkip(false);
+                    }
+
                     schedulerJobInstances.add(internalEventDrivenJobInstance);
                 }
                 else if(schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
@@ -189,8 +197,16 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                         , SolrQuartzScheduleDrivenJobInstanceImpl.class));
                 }
                 else if(schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
-                    schedulerJobInstances.add(objectMapper.readValue
-                        (objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class));
+                    GlobalEventJobInstance globalEventJobInstance = objectMapper.readValue
+                        (objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class);
+                    if(schedulerJobRecord.isSkipped()) {
+                        globalEventJobInstance.setSkip(true);
+                        globalEventJobInstance.setStatus(InstanceStatus.SKIPPED);
+                    }
+                    else {
+                        globalEventJobInstance.setSkip(false);
+                    }
+                    schedulerJobInstances.add(globalEventJobInstance);
                 }
             }
 
