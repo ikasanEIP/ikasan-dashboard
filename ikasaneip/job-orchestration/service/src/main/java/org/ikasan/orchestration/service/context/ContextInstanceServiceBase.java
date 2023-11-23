@@ -450,6 +450,11 @@ public abstract class ContextInstanceServiceBase {
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
             .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
+        internalEventDrivenJobMap.entrySet().forEach(entry -> {
+            if(entry.getValue().getStatus().equals(InstanceStatus.SKIPPED)) {
+                entry.getValue().setSkip(true);
+            }
+        });
         return internalEventDrivenJobMap;
     }
 

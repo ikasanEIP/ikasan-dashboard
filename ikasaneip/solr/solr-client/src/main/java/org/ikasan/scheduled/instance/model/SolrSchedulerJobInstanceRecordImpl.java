@@ -135,21 +135,31 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public SchedulerJobInstance getSchedulerJobInstance() {
         try {
+            SchedulerJobInstance instance;
             if(this.type != null && this.type.equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) {
-                return objectMapper.readValue(this.schedulerJobInstance, SolrFileEventDrivenJobInstanceImpl.class);
+                instance=  objectMapper.readValue(this.schedulerJobInstance, SolrFileEventDrivenJobInstanceImpl.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
-                return objectMapper.readValue(this.schedulerJobInstance, SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                instance = objectMapper.readValue(this.schedulerJobInstance, SolrQuartzScheduleDrivenJobInstanceImpl.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
-                return objectMapper.readValue(this.schedulerJobInstance, SolrInternalEventDrivenJobInstanceImpl.class);
+                instance =  objectMapper.readValue(this.schedulerJobInstance, SolrInternalEventDrivenJobInstanceImpl.class);
             }
             else if(this.type != null && this.type.equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)) {
-                return objectMapper.readValue(this.schedulerJobInstance, SolrGlobalEventJobInstanceImpl.class);
+                instance =  objectMapper.readValue(this.schedulerJobInstance, SolrGlobalEventJobInstanceImpl.class);
             }
             else {
-                return objectMapper.readValue(this.schedulerJobInstance, SolrSchedulerJobInstanceImpl.class);
+                instance = objectMapper.readValue(this.schedulerJobInstance, SolrSchedulerJobInstanceImpl.class);
             }
+
+            if(instance.equals(InstanceStatus.SKIPPED)) {
+                instance.setSkip(true);
+            }
+            else {
+                instance.setSkip(false);
+            }
+
+            return instance;
         }
         catch (JsonProcessingException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.schedulerJobInstance, e);
