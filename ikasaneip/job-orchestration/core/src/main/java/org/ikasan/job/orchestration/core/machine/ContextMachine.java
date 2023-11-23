@@ -633,17 +633,19 @@ public class ContextMachine {
             SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(this.contextInstance.getId(),
                 schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName());
             SchedulerJobInstance dbInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
-            dbInstance.setSkip(true);
+            dbInstance.setSkip(skipFlag);
 
             InstanceStatus previousState = schedulerJobInstance.getStatus();
             schedulerJobInstance.setSkip(skipFlag);
             if(skipFlag) {
                 schedulerJobInstance.setStatus(InstanceStatus.SKIPPED);
                 dbInstance.setStatus(InstanceStatus.SKIPPED);
+                schedulerJobInstanceRecord.setStatus(InstanceStatus.SKIPPED.name());
             }
             else {
                 schedulerJobInstance.setStatus(InstanceStatus.WAITING);
                 dbInstance.setStatus(InstanceStatus.WAITING);
+                schedulerJobInstanceRecord.setStatus(InstanceStatus.WAITING.name());
             }
 
             schedulerJobInstanceRecord.setSchedulerJobInstance(dbInstance);
@@ -655,6 +657,12 @@ public class ContextMachine {
 
             jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
                 , previousState, schedulerJobInstance.getStatus()));
+
+            if(this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier()
+                + "-" + schedulerJobInstance.getChildContextName())) {
+                this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier()
+                    + "-" + schedulerJobInstance.getChildContextName()).setSkip(skipFlag);
+            }
         });
     }
 
