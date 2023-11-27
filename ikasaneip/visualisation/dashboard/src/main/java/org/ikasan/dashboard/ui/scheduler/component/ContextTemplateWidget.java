@@ -400,7 +400,14 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateWidget"));
                     executor.execute(() -> {
                         try {
-                            this.jobProvisionService.removeJobs(scheduledContextRecord.getContextName());
+                            try {
+                                this.jobProvisionService.removeJobs(scheduledContextRecord.getContextName());
+                            }
+                            catch (Exception e) {
+                                current.access(() ->
+                                NotificationHelper.showUserNotification(getTranslation("notification.agent-not-available-when-deleting-job-plan"
+                                    , current.getLocale())));
+                            }
                             this.schedulerJobService.deleteByContextName(scheduledContextRecord.getContextName());
                             this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
                             this.contextInstanceRegistrationService.deRegisterByName(scheduledContextRecord.getContextName());
