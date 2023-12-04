@@ -434,6 +434,13 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -602,6 +609,13 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -794,6 +808,13 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -1001,6 +1022,13 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         context.setAbleToRunConcurrently(false);
+
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -2492,6 +2520,13 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -2579,6 +2614,13 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -2803,6 +2845,13 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -3043,5 +3092,111 @@ public class ContextInstanceRegistrationServiceImplTest {
         );
 
         Assert.assertEquals(0, ContextMachineCache.instance().contextInstanceIdentifiers().size());
+    }
+
+    @Test
+    public void register_with_params_with_agents_outside_datetime_window_with_timezone_so_should_registeraaa() throws Exception {
+        // set up
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        String jsonContext = new String(new ClassPathResource("context-with-datetime-blackout-window-outside-ttl.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        String timezone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timezone));
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        context.setContextTtlMilliseconds(600000);
+        context.setTimezone(timezone);
+
+        // minus 20 minutes
+        String cronExpression = CronUtils.buildCronFromOriginalAllDays(System.currentTimeMillis() - 1200000, timezone);
+
+        System.out.println(cronExpression);
+        System.out.println(context.getTimeWindowStart());
+        System.out.println(context.getContextTtlMilliseconds());
+
+        context.setTimeWindowStart(cronExpression);
+
+        // Pretend we are in Singapore
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+
+        // The time in the windows is saved in UTC i.e. seconds from epoch
+        context.setBlackoutWindowDateTimeRanges(
+            Map.of(zdtNowInLondon.minus(Duration.ofMinutes(200)).toInstant().toEpochMilli(),
+                zdtNowInLondon.minus(Duration.ofMinutes(100)).toInstant().toEpochMilli()));
+
+        record.setContext(context);
+        record.setContextName(contextName);
+        when(scheduledContextService.findById(contextName)).thenReturn(record);
+
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        List<ContextParameterInstance> params = TestUtils.createParams();
+
+        ContextInstanceImpl contextInstance = this.objectMapper
+            .readValue(this.objectMapper.writeValueAsBytes(record.getContext()), ContextInstanceImpl.class);
+        contextInstance.setContextParameters(params);
+
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+
+        // execute
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
+
+        // verify
+        verify(scheduledContextService).findById(contextName);
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000
+            && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            jobLockCacheService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
+        );
+
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        assertNotNull(contextMachine);
+
+        SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+            = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+        assertNotNull(schedulerJobInitiationEventRaisedListener);
+
+        List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+            = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+        assertNotNull(contextInstanceStateChangeEventListeners);
+        assertEquals(1, contextInstanceStateChangeEventListeners.size());
+
+        JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+        assertNotNull(jobLogicMachine);
+        List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+            = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+        assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+        assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
     }
 }
