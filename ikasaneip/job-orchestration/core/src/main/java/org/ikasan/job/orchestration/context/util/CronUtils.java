@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.cronutils.model.field.expression.FieldExpression.always;
 import static com.cronutils.model.field.expression.FieldExpressionFactory.on;
 import static com.cronutils.model.field.expression.FieldExpressionFactory.questionMark;
 
@@ -73,6 +74,30 @@ public class CronUtils {
             .withDoM(on(zonedDateTime.get(ChronoField.DAY_OF_MONTH)))
             .withMonth(on(zonedDateTime.get(ChronoField.MONTH_OF_YEAR)))
             .withYear(on(zonedDateTime.get(ChronoField.YEAR)))
+            .instance();
+
+        return cron.asString();
+    }
+
+    /**
+     * Helper method to take a start time in millis from epoch create cron expression that also runs on all days, months and years
+     *
+     * @param startTime
+     * @param zoneId
+     * @return
+     */
+    public static String buildCronFromOriginalAllDays(long startTime, String zoneId) {
+        Instant instant = Instant.ofEpochMilli(startTime);
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId != null && !zoneId.isEmpty() ? ZoneId.of(zoneId) : ZoneId.systemDefault());
+
+        Cron cron = CronBuilder.cron(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ))
+            .withSecond(on(zonedDateTime.get(ChronoField.SECOND_OF_MINUTE)))
+            .withMinute(on(zonedDateTime.get(ChronoField.MINUTE_OF_HOUR)))
+            .withHour(on(zonedDateTime.get(ChronoField.HOUR_OF_DAY)))
+            .withDoW(questionMark())
+            .withDoM(always())
+            .withMonth(always())
+            .withYear(always())
             .instance();
 
         return cron.asString();

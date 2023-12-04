@@ -332,12 +332,11 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
     /**
      * Create a new instance of the plan and register it.
-     * This will be invoked when a plan start trigger fires.
+     * This will be invoked when a plan is cloned or manually created by the end user using the UI
      * It will fire even if the plan is disabled, but will not create a new context.
      *
-     * @param contextName i.e. plan to create instance for
+     * @param contextName               i.e. plan to create instance for
      * @param contextParameterInstances the param instances for the context
-     *
      * @return the context instance ID if a new context instance was created, null otherwise.
      */
     @Override
@@ -375,13 +374,47 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             ContextTemplate context = objectMapper.readValue(scheduledContextRecordContext, ContextTemplateImpl.class);
             ContextInstanceImpl contextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
 
-
             Date now = timeService.getDateNow();
             // @todo check with mick where the cron expressions are entered
             if(!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                 && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
                 initialiseContextMachine(context, contextInstance, true, true, contextParameterInstances);
-                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+
+                // TODO REMOVE println
+                System.out.println(new Date(contextInstance.getStartTime()));
+                System.out.println(new Date(contextInstance.getProjectedEndTime()));
+
+                String cronProjectedEndTime = CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone());
+
+                // If the projectedEndTime is in the past, we have to work out the projected end time based on the TTL and the next due Start Time.
+                if (now.getTime() > contextInstance.getProjectedEndTime()) {
+
+                    // Get the long representation of the next start time, minus 1 minute. This time will be the latest possible time that can be used to end the job instance.
+                    long nextStartTimeMinusOneMinute = CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(contextInstance.getTimeWindowStart()
+                        , contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getBlackoutWindowDateTimeRanges()
+                        , contextInstance.getTimezone()) - (60 * 1000);
+
+                    //Check to make sure the end time does not bleed into the next job instance start time
+                    if (now.getTime() > nextStartTimeMinusOneMinute) {
+                        throw new RuntimeException("This job instance will not be started due to the projected end time being too close to the next start time.");
+                    }
+
+                    // Get the proposed end time based on the current time + ttl
+                    long newProposedTime = now.getTime() + contextInstance.getContextTtlMilliseconds();
+
+                    if (newProposedTime < nextStartTimeMinusOneMinute) {
+                        cronProjectedEndTime = CronUtils.buildCronFromOriginal(newProposedTime, contextInstance.getTimezone());
+                        contextInstance.setProjectedEndTime(newProposedTime);
+                    } else {
+                        cronProjectedEndTime = CronUtils.buildCronFromOriginal(nextStartTimeMinusOneMinute, contextInstance.getTimezone());
+                        contextInstance.setProjectedEndTime(nextStartTimeMinusOneMinute);
+                    }
+                }
+
+                // TODO REMOVE println
+                System.out.println(new Date(contextInstance.getProjectedEndTime()));
+
+                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), cronProjectedEndTime
                     , contextInstance.getTimezone(), contextInstance.getId());
                 LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
                 this.contextInstanceSavedEventBroadcaster.broadcast(contextInstance);
