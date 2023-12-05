@@ -380,47 +380,14 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
                 initialiseContextMachine(context, contextInstance, true, true, contextParameterInstances);
 
-                // TODO REMOVE println
-                System.out.println(new Date(contextInstance.getStartTime()));
-                System.out.println(new Date(contextInstance.getProjectedEndTime()));
-
-                String cronProjectedEndTime = CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone());
-
-                // If the projectedEndTime is in the past, we have to work out the projected end time based on the TTL and the next due Start Time.
-                if (now.getTime() > contextInstance.getProjectedEndTime()) {
-
-                    // Get the long representation of the next start time, minus 1 minute. This time will be the latest possible time that can be used to end the job instance.
-                    long nextStartTimeMinusOneMinute = CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(contextInstance.getTimeWindowStart()
-                        , contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getBlackoutWindowDateTimeRanges()
-                        , contextInstance.getTimezone()) - (60 * 1000);
-
-                    //Check to make sure the end time does not bleed into the next job instance start time
-                    if (now.getTime() > nextStartTimeMinusOneMinute) {
-                        throw new RuntimeException("This job instance will not be started due to the projected end time being too close to the next start time.");
-                    }
-
-                    // Get the proposed end time based on the current time + ttl
-                    long newProposedTime = now.getTime() + contextInstance.getContextTtlMilliseconds();
-
-                    if (newProposedTime < nextStartTimeMinusOneMinute) {
-                        cronProjectedEndTime = CronUtils.buildCronFromOriginal(newProposedTime, contextInstance.getTimezone());
-                        contextInstance.setProjectedEndTime(newProposedTime);
-                    } else {
-                        cronProjectedEndTime = CronUtils.buildCronFromOriginal(nextStartTimeMinusOneMinute, contextInstance.getTimezone());
-                        contextInstance.setProjectedEndTime(nextStartTimeMinusOneMinute);
-                    }
-                }
-
-                // TODO REMOVE println
-                System.out.println(new Date(contextInstance.getProjectedEndTime()));
+                String cronProjectedEndTime = workOutCronProjectedEndTimeWhenManuallyCreated(contextName, now, contextInstance);
 
                 contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), cronProjectedEndTime
                     , contextInstance.getTimezone(), contextInstance.getId());
                 LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
                 this.contextInstanceSavedEventBroadcaster.broadcast(contextInstance);
                 return contextInstance.getId();
-            }
-            else {
+            } else {
                 LOG.info(String.format("Context name [%s] falls withing a blackout time window and will not be registered!", contextName));
             }
 
@@ -429,5 +396,52 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    /**
+     * Used when instances are started manually. This will factor in:
+     * 1. the proposed cron worked out based on the previous start time window
+     * 2. If the proposed cron is in the past and never executed
+     * 3. If the context is able to run concurrently
+     * 4. If the next start time is too close to the newly worked out proposed end time
+     * 5. If we should use a proposed end time that is from the time the context instance was started + ttl or if
+     * the proposed end time should use a time near the start of the next automatic instance creation.
+     *
+     * @return cron expression of the projected end time.
+     */
+    private String workOutCronProjectedEndTimeWhenManuallyCreated(String contextName, Date now, ContextInstanceImpl contextInstance) {
+        String cronProjectedEndTime = CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone());
+
+        // If the projectedEndTime is in the past, we have to work out the projected end time based on the TTL and the next due start time.
+        if (now.getTime() > contextInstance.getProjectedEndTime()) {
+
+            // Get the long representation of the next start time, minus 1 minute. This time will be the latest possible time that can be used to end the job instance.
+            long nextStartTimeMinusOneMinute = CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(contextInstance.getTimeWindowStart()
+                , contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getBlackoutWindowDateTimeRanges()
+                , contextInstance.getTimezone()) - (60 * 1000);
+
+            // Check to make sure the end time does not bleed into the next job instance start time if it is not able to run concurrently
+            if (now.getTime() > nextStartTimeMinusOneMinute && !contextInstance.isAbleToRunConcurrently()) {
+                throw new RuntimeException("[" + contextName + "] This job instance will not be started due to the projected end time being too close to the next start time.");
+            }
+
+            // Get the proposed end time based on the current time + ttl
+            long newProposedTime = now.getTime() + contextInstance.getContextTtlMilliseconds();
+
+            // If the context is allowed to run concurrently, then used the current time + ttl
+            if (contextInstance.isAbleToRunConcurrently()) {
+                cronProjectedEndTime = CronUtils.buildCronFromOriginal(newProposedTime, contextInstance.getTimezone());
+                contextInstance.setProjectedEndTime(newProposedTime);
+            }
+            // else used current time + ttl if it is less than the next start time minus 1 minute
+            else if (newProposedTime < nextStartTimeMinusOneMinute) {
+                cronProjectedEndTime = CronUtils.buildCronFromOriginal(newProposedTime, contextInstance.getTimezone());
+                contextInstance.setProjectedEndTime(newProposedTime);
+            } else {
+                cronProjectedEndTime = CronUtils.buildCronFromOriginal(nextStartTimeMinusOneMinute, contextInstance.getTimezone());
+                contextInstance.setProjectedEndTime(nextStartTimeMinusOneMinute);
+            }
+        }
+        return cronProjectedEndTime;
     }
 }

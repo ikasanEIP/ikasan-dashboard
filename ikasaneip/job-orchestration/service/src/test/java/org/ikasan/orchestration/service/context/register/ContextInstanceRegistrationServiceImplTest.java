@@ -38,10 +38,7 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationServi
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventService;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -3094,29 +3091,35 @@ public class ContextInstanceRegistrationServiceImplTest {
         Assert.assertEquals(0, ContextMachineCache.instance().contextInstanceIdentifiers().size());
     }
 
+    /**
+     * This test is to modify the Time Window Start to 20 minutes in the past of current time, having a TTL of 30 minutes
+     * This is the normal behaviour.
+     * <p>
+     * Expected that this instance will end in 10 minutes time.
+     *
+     * @throws Exception
+     */
     @Test
-    public void register_with_params_with_agents_outside_datetime_window_with_timezone_so_should_registeraaa() throws Exception {
+    public void register_with_params_with_agents_outside_datetime_window_end_time_in_future_should_register() throws Exception {
         // set up
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String jsonContext = new String(new ClassPathResource("context-with-datetime-blackout-window-outside-ttl.json").getInputStream().readAllBytes());
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
+        long testExecutionStartTime = System.currentTimeMillis();
+
         String timezone = "Europe/London";
         ZonedDateTime zdtNowInLondon = now(ZoneId.of(timezone));
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
-        context.setContextTtlMilliseconds(600000);
+        context.setContextTtlMilliseconds(1800000);
         context.setTimezone(timezone);
+        context.setAbleToRunConcurrently(false);
 
-        // minus 20 minutes
+        // minus 20 minutes and use this as the timeWindowStart for the context
         String cronExpression = CronUtils.buildCronFromOriginalAllDays(System.currentTimeMillis() - 1200000, timezone);
-
-        System.out.println(cronExpression);
-        System.out.println(context.getTimeWindowStart());
-        System.out.println(context.getContextTtlMilliseconds());
-
         context.setTimeWindowStart(cronExpression);
 
-        // Pretend we are in Singapore
+        // Pretend we are in London
         when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
 
         // The time in the windows is saved in UTC i.e. seconds from epoch
@@ -3147,6 +3150,8 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         // execute
         String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
+
+        long testExecutionFinishTime = System.currentTimeMillis();
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -3198,5 +3203,427 @@ public class ContextInstanceRegistrationServiceImplTest {
             = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
         assertNotNull(schedulerJobInstanceStateChangeEventListeners);
         assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+
+        // Validate the start time is NOW, and the Proposed end time is 10 minutes in the future
+        assert (contextMachine.getContext().getStartTime() >= testExecutionStartTime && contextMachine.getContext().getStartTime() <= testExecutionFinishTime);
+        assert (contextMachine.getContext().getProjectedEndTime() >= (testExecutionStartTime + 599000) && contextMachine.getContext().getProjectedEndTime() <= testExecutionFinishTime + 600000);
+    }
+
+    /**
+     * This test is to modify the Time Window Start to 20 minutes in the past of current time, having a TTL of 10 minutes
+     * As this context will be started at current time, the proposed end time will have to be modified because the TTL
+     * by default will be used from the time window start, which will put it back to an end time 10 minutes in the past.
+     * Expectation is that the proposed end time is now 10 minutes forward.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void register_with_params_with_agents_outside_datetime_window_end_time_in_past_but_able_to_end_so_should_register() throws Exception {
+        // set up
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        String jsonContext = new String(new ClassPathResource("context-with-datetime-blackout-window-outside-ttl.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        long testExecutionStartTime = System.currentTimeMillis();
+
+        String timezone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timezone));
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        context.setContextTtlMilliseconds(600000);
+        context.setTimezone(timezone);
+        context.setAbleToRunConcurrently(false);
+
+        // minus 20 minutes and use this as the timeWindowStart for the context
+        String cronExpression = CronUtils.buildCronFromOriginalAllDays(System.currentTimeMillis() - 1200000, timezone);
+        context.setTimeWindowStart(cronExpression);
+
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+
+        // The time in the windows is saved in UTC i.e. seconds from epoch
+        context.setBlackoutWindowDateTimeRanges(
+            Map.of(zdtNowInLondon.minus(Duration.ofMinutes(200)).toInstant().toEpochMilli(),
+                zdtNowInLondon.minus(Duration.ofMinutes(100)).toInstant().toEpochMilli()));
+
+        record.setContext(context);
+        record.setContextName(contextName);
+        when(scheduledContextService.findById(contextName)).thenReturn(record);
+
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        List<ContextParameterInstance> params = TestUtils.createParams();
+
+        ContextInstanceImpl contextInstance = this.objectMapper
+            .readValue(this.objectMapper.writeValueAsBytes(record.getContext()), ContextInstanceImpl.class);
+        contextInstance.setContextParameters(params);
+
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+
+        // execute
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
+
+        long testExecutionFinishTime = System.currentTimeMillis();
+
+        // verify
+        verify(scheduledContextService).findById(contextName);
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000
+            && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            jobLockCacheService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
+        );
+
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        assertNotNull(contextMachine);
+
+        SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+            = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+        assertNotNull(schedulerJobInitiationEventRaisedListener);
+
+        List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+            = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+        assertNotNull(contextInstanceStateChangeEventListeners);
+        assertEquals(1, contextInstanceStateChangeEventListeners.size());
+
+        JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+        assertNotNull(jobLogicMachine);
+        List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+            = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+        assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+        assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+
+        // Validate the start time is NOW, and the Proposed end time is 10 minutes in the future
+        assert (contextMachine.getContext().getStartTime() >= testExecutionStartTime && contextMachine.getContext().getStartTime() <= testExecutionFinishTime);
+        assert (contextMachine.getContext().getProjectedEndTime() >= (testExecutionStartTime + 600000) && contextMachine.getContext().getProjectedEndTime() <= testExecutionFinishTime + 600000);
+    }
+
+    /**
+     * This test is to modify the Time Window Start to 5 minutes in the future of current time, having a TTL of 15 minutes
+     * As this context will be started at current time, the proposed end time will have to be modified because the TTL
+     * by default will be used from the time window start, which will put it 23 hours and 50 minutes in the past.
+     * <p>
+     * Expectation is that the proposed end time is now 59/60 seconds (rounding due to cron not handing milliseconds) before the next start time.
+     * This is because concurrency is off
+     *
+     * @throws Exception
+     */
+    @Test
+    public void register_with_params_with_agents_outside_datetime_window_end_time_in_past_but_able_to_end_before_next_instance_start_so_should_register() throws Exception {
+        // set up
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        String jsonContext = new String(new ClassPathResource("context-with-datetime-blackout-window-outside-ttl.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        long testExecutionStartTime = System.currentTimeMillis();
+
+        String timezone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timezone));
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        context.setContextTtlMilliseconds(900000);
+        context.setTimezone(timezone);
+        context.setAbleToRunConcurrently(false);
+
+        // add 5 minutes and use this as the timeWindowStart for the context
+        String cronExpression = CronUtils.buildCronFromOriginalAllDays(System.currentTimeMillis() + 300000, timezone);
+        context.setTimeWindowStart(cronExpression);
+
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+
+        // The time in the windows is saved in UTC i.e. seconds from epoch
+        context.setBlackoutWindowDateTimeRanges(
+            Map.of(zdtNowInLondon.minus(Duration.ofMinutes(200)).toInstant().toEpochMilli(),
+                zdtNowInLondon.minus(Duration.ofMinutes(100)).toInstant().toEpochMilli()));
+
+        record.setContext(context);
+        record.setContextName(contextName);
+        when(scheduledContextService.findById(contextName)).thenReturn(record);
+
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        List<ContextParameterInstance> params = TestUtils.createParams();
+
+        ContextInstanceImpl contextInstance = this.objectMapper
+            .readValue(this.objectMapper.writeValueAsBytes(record.getContext()), ContextInstanceImpl.class);
+        contextInstance.setContextParameters(params);
+
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+
+        // execute
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
+
+        long testExecutionFinishTime = System.currentTimeMillis();
+
+        // verify
+        verify(scheduledContextService).findById(contextName);
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000
+            && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            jobLockCacheService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
+        );
+
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        assertNotNull(contextMachine);
+
+        SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+            = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+        assertNotNull(schedulerJobInitiationEventRaisedListener);
+
+        List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+            = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+        assertNotNull(contextInstanceStateChangeEventListeners);
+        assertEquals(1, contextInstanceStateChangeEventListeners.size());
+
+        JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+        assertNotNull(jobLogicMachine);
+        List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+            = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+        assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+        assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+
+        // Validate the start time is NOW, and the Proposed end time is 5 minutes in the future
+        assert (contextMachine.getContext().getStartTime() > testExecutionStartTime && contextMachine.getContext().getStartTime() < testExecutionFinishTime);
+        assert (contextMachine.getContext().getProjectedEndTime() >= (testExecutionStartTime + 239000) && contextMachine.getContext().getProjectedEndTime() <= testExecutionFinishTime + 240000);
+    }
+
+    /**
+     * This test is to modify the Time Window Start to 5 minutes in the future of current time, having a TTL of 15 minutes
+     * As this context will be started at current time, the proposed end time will have to be modified because the TTL
+     * by default will be used from the time window start, which will put it 23 hours and 50 minutes in the past.
+     * <p>
+     * Expectation is that the proposed end time is now 15 minutes in the future.
+     * This is because concurrency is on
+     *
+     * @throws Exception
+     */
+    @Test
+    public void register_with_params_with_agents_outside_datetime_window_end_time_in_past_but_able_to_end_before_next_instance_start_so_should_register_with_concurrency() throws Exception {
+        // set up
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        String jsonContext = new String(new ClassPathResource("context-with-datetime-blackout-window-outside-ttl.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        long testExecutionStartTime = System.currentTimeMillis();
+
+        String timezone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timezone));
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        context.setContextTtlMilliseconds(900000);
+        context.setTimezone(timezone);
+        context.setAbleToRunConcurrently(true);
+
+        // add 5 minutes and use this as the timeWindowStart for the context
+        String cronExpression = CronUtils.buildCronFromOriginalAllDays(System.currentTimeMillis() + 300000, timezone);
+        context.setTimeWindowStart(cronExpression);
+
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+
+        // The time in the windows is saved in UTC i.e. seconds from epoch
+        context.setBlackoutWindowDateTimeRanges(
+            Map.of(zdtNowInLondon.minus(Duration.ofMinutes(200)).toInstant().toEpochMilli(),
+                zdtNowInLondon.minus(Duration.ofMinutes(100)).toInstant().toEpochMilli()));
+
+        record.setContext(context);
+        record.setContextName(contextName);
+        when(scheduledContextService.findById(contextName)).thenReturn(record);
+
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        List<ContextParameterInstance> params = TestUtils.createParams();
+
+        ContextInstanceImpl contextInstance = this.objectMapper
+            .readValue(this.objectMapper.writeValueAsBytes(record.getContext()), ContextInstanceImpl.class);
+        contextInstance.setContextParameters(params);
+
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+
+        // execute
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName, null);
+
+        long testExecutionFinishTime = System.currentTimeMillis();
+
+        // verify
+        verify(scheduledContextService).findById(contextName);
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000
+            && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            jobLockCacheService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
+        );
+
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        assertNotNull(contextMachine);
+
+        SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+            = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+        assertNotNull(schedulerJobInitiationEventRaisedListener);
+
+        List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+            = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+        assertNotNull(contextInstanceStateChangeEventListeners);
+        assertEquals(1, contextInstanceStateChangeEventListeners.size());
+
+        JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+        assertNotNull(jobLogicMachine);
+        List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+            = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+        assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+        assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+
+        // Validate the start time is NOW, and the Proposed end time is 15 minutes in the future
+        assert (contextMachine.getContext().getStartTime() > testExecutionStartTime && contextMachine.getContext().getStartTime() < testExecutionFinishTime);
+        assert (contextMachine.getContext().getProjectedEndTime() >= (testExecutionStartTime + 900000) && contextMachine.getContext().getProjectedEndTime() <= testExecutionFinishTime + 900000);
+    }
+
+    /**
+     * This test is to modify the Time Window Start to 30 seconds in the future of current time, having a TTL of 15 minutes
+     * As this context will be started at current time, the proposed end time will have to be modified. However, we put in a rule
+     * that says that we cannot start an instance if the context is marked as not concurrent and if the next start time is within a minute
+     * <p>
+     * Expectation is that this will throw a runtime exception.
+     *
+     * @throws Exception
+     */
+    @Test(expected = RuntimeException.class)
+    public void register_with_params_with_agents_outside_datetime_window_end_time_to_close_to_next_start_time() throws Exception {
+        // set up
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        String jsonContext = new String(new ClassPathResource("context-with-datetime-blackout-window-outside-ttl.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        String timezone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timezone));
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        context.setContextTtlMilliseconds(900000);
+        context.setTimezone(timezone);
+        context.setAbleToRunConcurrently(false);
+
+        // add 30 seconds and use this as the timeWindowStart for the context
+        String cronExpression = CronUtils.buildCronFromOriginalAllDays(System.currentTimeMillis() + 30000, timezone);
+        context.setTimeWindowStart(cronExpression);
+
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+
+        // The time in the windows is saved in UTC i.e. seconds from epoch
+        context.setBlackoutWindowDateTimeRanges(
+            Map.of(zdtNowInLondon.minus(Duration.ofMinutes(200)).toInstant().toEpochMilli(),
+                zdtNowInLondon.minus(Duration.ofMinutes(100)).toInstant().toEpochMilli()));
+
+        record.setContext(context);
+        record.setContextName(contextName);
+        when(scheduledContextService.findById(contextName)).thenReturn(record);
+
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        List<ContextParameterInstance> params = TestUtils.createParams();
+
+        ContextInstanceImpl contextInstance = this.objectMapper
+            .readValue(this.objectMapper.writeValueAsBytes(record.getContext()), ContextInstanceImpl.class);
+        contextInstance.setContextParameters(params);
+
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+
+        // execute
+        contextInstanceRegistrationService.register(contextName, null);
     }
 }
