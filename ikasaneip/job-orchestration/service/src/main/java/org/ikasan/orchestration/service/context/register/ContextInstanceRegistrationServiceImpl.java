@@ -384,6 +384,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), cronProjectedEndTime
                     , contextInstance.getTimezone(), contextInstance.getId());
                 LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
+                // save instance to take in any modification to the projected end time.
+                ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId()).saveContext();
                 this.contextInstanceSavedEventBroadcaster.broadcast(contextInstance);
                 return contextInstance.getId();
             } else {

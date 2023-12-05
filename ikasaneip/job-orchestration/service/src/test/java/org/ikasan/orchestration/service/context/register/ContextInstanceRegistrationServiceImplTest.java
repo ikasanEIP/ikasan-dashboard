@@ -459,7 +459,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -646,7 +646,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -852,7 +852,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -1070,7 +1070,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -1411,7 +1411,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -1622,7 +1622,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -1836,7 +1836,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -2554,7 +2554,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -2638,7 +2638,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -2887,7 +2887,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -3163,7 +3163,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -3281,7 +3281,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -3401,7 +3401,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -3521,7 +3521,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
