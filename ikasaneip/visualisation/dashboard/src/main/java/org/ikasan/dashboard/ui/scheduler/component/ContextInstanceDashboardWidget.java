@@ -35,6 +35,7 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -100,6 +101,7 @@ public class ContextInstanceDashboardWidget extends Div
     private ScheduledContextService scheduledContextService;
     private GlobalEventService globalEventService;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
     private TextField contextNameTf = new TextField();
     private TextField contextInstanceIdTf = new TextField();
 
@@ -141,7 +143,7 @@ public class ContextInstanceDashboardWidget extends Div
                                           ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                           JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen, GlobalEventService globalEventService,
-                                          ContextInstanceRegistrationService contextInstanceRegistrationService) {
+                                          ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
 
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         if(this.scheduledProcessManagementService ==  null) {
@@ -214,6 +216,10 @@ public class ContextInstanceDashboardWidget extends Div
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         if (this.contextInstanceRegistrationService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if (this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
 
         this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -877,7 +883,7 @@ public class ContextInstanceDashboardWidget extends Div
         ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService, contextInstance, contextTemplate,
             this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, contextInstanceWidgetTab, status.name(), this.globalEventService,
-            this.contextInstanceRegistrationService);
+            this.contextInstanceRegistrationService, this.contextInstanceSchedulerService);
 
         contextInstanceDialog.open();
     }

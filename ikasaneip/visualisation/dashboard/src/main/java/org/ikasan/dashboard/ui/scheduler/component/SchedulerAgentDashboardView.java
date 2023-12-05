@@ -7,6 +7,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
@@ -50,6 +51,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private ScheduledContextService scheduledContextService;
     private GlobalEventService globalEventService;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
     private DownloadLogFileService downloadLogFileService;
 
     private Board board;
@@ -75,7 +77,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                                        JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                        JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
                                        GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                       DownloadLogFileService downloadLogFileService) {
+                                       DownloadLogFileService downloadLogFileService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -96,6 +98,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.globalEventService = globalEventService;
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         this.downloadLogFileService = downloadLogFileService;
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
 
         board = new Board();
         board.addClassName("styled");
@@ -115,7 +118,8 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
                 , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
                 this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
-                this.jobUtilsService, this.scheduledContextService, false, this.globalEventService, this.contextInstanceRegistrationService));
+                this.jobUtilsService, this.scheduledContextService, false, this.globalEventService, this.contextInstanceRegistrationService,
+                this.contextInstanceSchedulerService));
 
             initialised = true;
         }

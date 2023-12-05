@@ -28,7 +28,6 @@ import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
@@ -39,9 +38,10 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceState
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
+import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -72,8 +72,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
@@ -113,6 +111,8 @@ public class ContextInstanceWidget extends VerticalLayout
     private SchedulerJobService schedulerJobService;
     private GlobalEventService globalEventService;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
     private TextField contextInstanceId;
     private TextField contextNameTf;
     private TextArea descriptionTa;
@@ -190,11 +190,13 @@ public class ContextInstanceWidget extends VerticalLayout
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                 String selectedTab, String jobStatus, String jobName, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
+                                 String selectedTab, String jobStatus, String jobName, GlobalEventService globalEventService,
+                                 ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
         this(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService,
             logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService,
-            contextProfileService, jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService);
+            contextProfileService, jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService,
+            contextInstanceSchedulerService);
         this.selectedTab = selectedTab;
         this.jobStatus = jobStatus;
         this.jobName = jobName;
@@ -227,7 +229,7 @@ public class ContextInstanceWidget extends VerticalLayout
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                 GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
+                                 GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -300,6 +302,10 @@ public class ContextInstanceWidget extends VerticalLayout
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         if (this.contextInstanceRegistrationService == null) {
             throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
+        }
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if (this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -1079,6 +1085,10 @@ public class ContextInstanceWidget extends VerticalLayout
                 ContextMachineCache.instance().put(machine);
                 ContextInstance newInstance = ContextMachineCache.instance()
                     .getByContextInstanceId(machine.getContext().getId()).getContext();
+
+                this.contextInstanceSchedulerService.registerEndJobAndTrigger(newInstance.getName(), CronUtils.buildCronFromOriginal(newInstance.getProjectedEndTime(), newInstance.getTimezone())
+                    , newInstance.getTimezone(), newInstance.getId());
+
                 String route = RouteConfiguration.forSessionScope()
                     .getUrl(ContextInstanceView.class, newInstance.getId() + "_scheduledContextInstance");
 

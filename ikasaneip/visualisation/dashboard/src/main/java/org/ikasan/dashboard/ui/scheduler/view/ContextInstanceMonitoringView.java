@@ -8,6 +8,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceDashboardWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -110,6 +111,8 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
 
     @Resource
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+    @Resource
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
     private ContextInstanceDashboardWidget contextInstanceDashboardWidget;
 
@@ -134,7 +137,7 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
             this.moduleMetaDataService, this.logStreamingService,
             this.jobInitiationService, this.contextProfileService,
             this.jobUtilsService, this.scheduledContextService, true, this.globalEventService,
-            this.contextInstanceRegistrationService);
+            this.contextInstanceRegistrationService, contextInstanceSchedulerService);
 
         this.getElement().getStyle().set("padding-top", "0px");
         board = new Board();
