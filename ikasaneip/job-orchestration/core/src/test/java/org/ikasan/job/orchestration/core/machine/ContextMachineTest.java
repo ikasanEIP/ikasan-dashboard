@@ -634,11 +634,6 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_full_nested_context_skip_and_enable_jobs_that_are_already_complete_in_child_context() throws IOException, InvalidContextTemplateException {
-        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
-            .thenReturn(this.schedulerJobInstanceRecord);
-        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
-            .thenReturn(new InternalEventDrivenJobInstanceImpl());
-
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
@@ -791,11 +786,6 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_full_nested_context_skip_and_enable_that_are_already_complete_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
-        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
-            .thenReturn(this.schedulerJobInstanceRecord);
-        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
-            .thenReturn(new InternalEventDrivenJobInstanceImpl());
-
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
@@ -859,10 +849,6 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_full_nested_context_skip_and_enable_that_are_already_running_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
-        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
-            .thenReturn(this.schedulerJobInstanceRecord);
-        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
-            .thenReturn(new InternalEventDrivenJobInstanceImpl());
 
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
@@ -927,10 +913,6 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_full_nested_context_skip_and_enable_that_are_already_error_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
-        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
-            .thenReturn(this.schedulerJobInstanceRecord);
-        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
-            .thenReturn(new InternalEventDrivenJobInstanceImpl());
 
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
@@ -995,11 +977,6 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_full_nested_context_skip_and_enable_that_are_already_held_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
-        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
-            .thenReturn(this.schedulerJobInstanceRecord);
-        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
-            .thenReturn(new InternalEventDrivenJobInstanceImpl());
-
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
