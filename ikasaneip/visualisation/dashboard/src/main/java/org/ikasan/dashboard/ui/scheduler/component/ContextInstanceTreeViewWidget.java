@@ -1072,6 +1072,114 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         horizontalLayout.add(release);
+
+        Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-all-nested-jobs", UI.getCurrent().getLocale()
+            , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+        skip.addClickListener(event -> {
+            if(!this.canPerformAction(true)) {
+                return;
+            }
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.skip-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.skip-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                dialog.setWidth("600px");
+                dialog.setHeight("250px");
+                dialog.open(getTranslation("progress-dialog.skip-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                    getTranslation("progress-dialog.skip-all-jobs-jobs-body", UI.getCurrent().getLocale()));
+
+                final UI current = UI.getCurrent();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextInstanceTreeViewWidget"));
+                executor.execute(() -> {
+                    boolean error = false;
+                    try {
+                        ContextMachine contextMachine = ContextMachineCache
+                            .instance().getByContextInstanceId(this.contextInstance.getId());
+
+                        contextMachine.skipJobs(contextInstance.getName(), true);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    } finally {
+                        boolean finalError = error;
+                        current.access(() -> {
+                            dialog.close();
+                            if (finalError) {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-skip-error"
+                                    , UI.getCurrent().getLocale()));
+                            } else {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-skipped"
+                                    , UI.getCurrent().getLocale()));
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        ComponentSecurityVisibility.applySecurity(skip, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        horizontalLayout.add(skip);
+
+        Icon enable = IconDecorator.decorate(new Icon(VaadinIcon.PLAY), getTranslation("tooltip.enable-all-nested-jobs", UI.getCurrent().getLocale()
+            , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+        enable.addClickListener(event -> {
+            if(!this.canPerformAction(true)) {
+                return;
+            }
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.enable-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.enable-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                dialog.setWidth("600px");
+                dialog.setHeight("250px");
+                dialog.open(getTranslation("progress-dialog.enable-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                    getTranslation("progress-dialog.enable-all-jobs-jobs-body", UI.getCurrent().getLocale()));
+
+                final UI current = UI.getCurrent();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextInstanceTreeViewWidget"));
+                executor.execute(() -> {
+                    boolean error = false;
+                    try {
+                        ContextMachine contextMachine = ContextMachineCache
+                            .instance().getByContextInstanceId(this.contextInstance.getId());
+
+                        contextMachine.skipJobs(contextInstance.getName(), false);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    } finally {
+                        boolean finalError = error;
+                        current.access(() -> {
+                            dialog.close();
+                            if (finalError) {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-enable-error"
+                                    , UI.getCurrent().getLocale()));
+                            } else {
+                                NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-enabled"
+                                    , UI.getCurrent().getLocale()));
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        ComponentSecurityVisibility.applySecurity(enable, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        horizontalLayout.add(enable);
     }
 
     /**

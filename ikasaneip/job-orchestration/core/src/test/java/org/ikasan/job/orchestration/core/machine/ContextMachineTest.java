@@ -23,6 +23,7 @@ import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
@@ -560,6 +561,504 @@ public class ContextMachineTest extends AbstractTest {
 
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RELEASED);
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_jobs_in_child_context() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context3", true);
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+        });
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_and_enable_jobs_in_child_context() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context3", true);
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context3", false);
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_and_enable_jobs_that_are_already_complete_in_child_context() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.COMPLETE);
+        });
+
+        contextMachine.skipJobs("Context3", true);
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.COMPLETE, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context3", false);
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.COMPLETE, job.getStatus());
+        });
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_jobs_in_child_context_tat_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        ContextInstance context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        ContextInstance context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context2", true);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+        });
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_and_enable_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        ContextInstance context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        ContextInstance context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context2", true);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context2", false);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_and_enable_that_are_already_complete_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.COMPLETE);
+        });
+
+        ContextInstance context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.COMPLETE);
+        });
+
+        ContextInstance context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.COMPLETE);
+        });
+
+        contextMachine.skipJobs("Context2", true);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.COMPLETE, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.COMPLETE, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.COMPLETE, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context2", false);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.COMPLETE, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.COMPLETE, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.COMPLETE, job.getStatus());
+        });
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_and_enable_that_are_already_running_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.RUNNING);
+        });
+
+        ContextInstance context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.RUNNING);
+        });
+
+        ContextInstance context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.RUNNING);
+        });
+
+        contextMachine.skipJobs("Context2", true);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.RUNNING, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.RUNNING, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.RUNNING, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context2", false);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.RUNNING, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.RUNNING, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.RUNNING, job.getStatus());
+        });
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_and_enable_that_are_already_error_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.ERROR);
+        });
+
+        ContextInstance context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.ERROR);
+        });
+
+        ContextInstance context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.ERROR);
+        });
+
+        contextMachine.skipJobs("Context2", true);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ERROR, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ERROR, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ERROR, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context2", false);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ERROR, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ERROR, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ERROR, job.getStatus());
+        });
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_and_enable_that_are_already_held_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.ON_HOLD);
+        });
+
+        ContextInstance context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.ON_HOLD);
+        });
+
+        ContextInstance context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.ON_HOLD);
+        });
+
+        contextMachine.skipJobs("Context2", true);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ON_HOLD, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ON_HOLD, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ON_HOLD, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context2", false);
+
+        context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ON_HOLD, job.getStatus());
+        });
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ON_HOLD, job.getStatus());
+        });
+
+        context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.ON_HOLD, job.getStatus());
+        });
     }
 
     @Test(expected = ContextMachineException.class)

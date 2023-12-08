@@ -17,6 +17,7 @@ import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
+import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
@@ -47,6 +48,7 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
@@ -602,10 +604,10 @@ public class ContextMachine {
             if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + childContextName) &&
                 this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-" + childContextName).isTargetResidingContextOnly()) {
                 // if a job is targeting a specific context, we only hold it for that context!
-                this._skipJob(List.of(schedulerJobInstance), skipFlag);
+                this._skipJob(List.of(schedulerJobInstance), skipFlag, false);
             } else {
                 List<SchedulerJobInstance> jobInstances = this.getSchedulerJobs(this.contextInstance, jobIdentifier);
-                this._skipJob(jobInstances, skipFlag);
+                this._skipJob(jobInstances, skipFlag, false);
             }
         }
         else {
@@ -616,19 +618,55 @@ public class ContextMachine {
     }
 
     /**
+     * Method to set a job as skipped for all jobs under a context.
+     *
+     * @param childContextName
+     * @param skipFlag
+     */
+    public void skipJobs(String childContextName,  boolean skipFlag) {
+        Map<String, SchedulerJobInstance> schedulerJobInstanceMap
+            = ContextHelper.getAllJobs(ContextHelper.getChildContextInstance(childContextName,contextInstance));
+
+        schedulerJobInstanceMap.values().forEach(schedulerJobInstance -> {
+            Map<String, InternalEventDrivenJob> jobs = new HashMap<>();
+            this.internalEventDrivenJobInstances.entrySet().forEach(entry -> {
+                jobs.put(entry.getKey(), entry.getValue());
+            });
+            List<ContextTransition> contextTransitions = ContextHelper.determineIfJobsTransitionFromOtherContexts(this.contextInstance, schedulerJobInstance.getJobName(),
+                schedulerJobInstance.getChildContextName(), jobs);
+            if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-"
+                + schedulerJobInstance.getChildContextName()) && contextTransitions.isEmpty()) {
+                if (this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-"
+                    + schedulerJobInstance.getChildContextName()).isTargetResidingContextOnly()) {
+                    // if a job is targeting a specific context, we only hold it for that context!
+                    this._skipJob(List.of(schedulerJobInstance), skipFlag, true);
+                } else {
+                    List<SchedulerJobInstance> jobInstances = this.getSchedulerJobs(this.contextInstance, schedulerJobInstance.getIdentifier());
+                    this._skipJob(jobInstances, skipFlag, true);
+                }
+            }
+        });
+    }
+
+    /**
      * Helper method to do the heavy lifting of skipping jobs.
      *
      * @param jobs
      * @param skipFlag
      */
-    private void _skipJob(List<SchedulerJobInstance> jobs,  boolean skipFlag) {
+    private void _skipJob(List<SchedulerJobInstance> jobs,  boolean skipFlag, boolean ignoreException) {
         jobs.forEach(schedulerJobInstance -> {
             if(((!schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING) && (!schedulerJobInstance.getStatus().equals(InstanceStatus.RELEASED))) && skipFlag)
                 || (!schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED) && !skipFlag)) {
-                throw new ContextMachineException(String.format("Attempting to set skip flag to [%s] on job[%s], " +
-                        "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot have the skip flag set."
-                    , skipFlag, schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId()
-                    , schedulerJobInstance.getStatus()));
+                if(!ignoreException) {
+                    throw new ContextMachineException(String.format("Attempting to set skip flag to [%s] on job[%s], " +
+                            "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot have the skip flag set."
+                        , skipFlag, schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId()
+                        , schedulerJobInstance.getStatus()));
+                }
+                else {
+                    return;
+                }
             }
             SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(this.contextInstance.getId(),
                 schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName());
@@ -652,8 +690,8 @@ public class ContextMachine {
             this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
             this.saveContext();
-            logger.info(String.format("Successfully set skip flag to [%s] on job[%s]. Context[%s], Context Instance[%s]."
-                , skipFlag, schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId()));
+            logger.info(String.format("Successfully set skip flag to [%s] on job[%s]. Context[%s], Child Context[%s], Context Instance[%s]."
+                , skipFlag, schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName(), this.contextInstance.getId()));
 
             jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
                 , previousState, schedulerJobInstance.getStatus()));

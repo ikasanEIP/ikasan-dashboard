@@ -994,7 +994,7 @@ public class ContextHelper {
         }
 
         if(context.getContexts() != null) {
-            context.getContexts().forEach(c -> _holdAllJobs((ContextInstance) c, internalEventDrivenJobInstanceMap));
+            context.getContexts().forEach(c -> _holdAllJobs(c, internalEventDrivenJobInstanceMap));
         }
     }
 
