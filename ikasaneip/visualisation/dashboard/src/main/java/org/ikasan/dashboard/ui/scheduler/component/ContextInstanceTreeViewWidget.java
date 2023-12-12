@@ -17,7 +17,6 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
@@ -33,6 +32,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceState
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -69,6 +69,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -2228,13 +2229,17 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     }
 
     private void manageContextStatusIndicators(UI ui) {
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobMap
+            = this.getCommandExecutionJobsForContextInstance(this.contextInstance.getId());
+
         this.statusIconDivMap.keySet().forEach(componentKey -> {
             if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()) != null) {
                 ContextInstance instance = (ContextInstance) ContextHelper.getChildContext(componentKey.getChildContextName()
                     , ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
 
                 if (instance != null) {
-                    AggregateContextInstanceStatus aggregateContextInstanceStatus = ContextHelper.getAggregateContextInstanceStatus(instance);
+                    AggregateContextInstanceStatus aggregateContextInstanceStatus
+                        = ContextHelper.getAggregateContextInstanceStatus(this.contextInstance, instance, internalEventDrivenJobMap);
 
                     if (componentKey.getJobName().equals(InstanceStatus.ON_HOLD.name())) {
                         if (aggregateContextInstanceStatus.isHeldJobs()) {

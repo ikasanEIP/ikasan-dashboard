@@ -362,6 +362,40 @@ public class ContextHelper {
         }
     }
 
+    public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance parent, ContextInstance contextInstance, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+        AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
+        getAggregateContextInstanceStatus(parent, contextInstance, aggregateContextInstanceStatus, internalEventDrivenJobMap);
+
+        return aggregateContextInstanceStatus;
+    }
+
+    private static void getAggregateContextInstanceStatus(ContextInstance parent, ContextInstance contextInstance
+        , AggregateContextInstanceStatus aggregateContextInstanceStatus, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+        if(contextInstance.getScheduledJobs() != null) {
+            contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> {
+                if(!ContextHelper.determineIfJobsTransitionFromOtherContexts(parent,
+                    schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
+                    , internalEventDrivenJobMap).isEmpty()) {
+                    return;
+                }
+                if(schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
+                    aggregateContextInstanceStatus.setDisabledJobs();
+                }
+                else if(schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
+                    aggregateContextInstanceStatus.setHeldJobs();
+                }
+                else if(schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) {
+                    aggregateContextInstanceStatus.setSkippedJobs();
+                }
+            });
+        }
+
+        if(contextInstance.getContexts() != null) {
+            contextInstance.getContexts().forEach(child -> {
+                getAggregateContextInstanceStatus(parent, child, aggregateContextInstanceStatus, internalEventDrivenJobMap);
+            });
+        }
+    }
     /**
      * Looks at the context instance and get the status for all the jobs
      * It will return 1 record per job that sits across multiple context if targetResidingContextOnly = false
@@ -995,6 +1029,24 @@ public class ContextHelper {
 
         if(context.getContexts() != null) {
             context.getContexts().forEach(c -> _holdAllJobs(c, internalEventDrivenJobInstanceMap));
+        }
+    }
+
+    public static void setJobStatusAll(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap, InstanceStatus instanceStatus) {
+        _setJobStatusAll(context, internalEventDrivenJobInstanceMap, instanceStatus);
+    }
+
+    private static void _setJobStatusAll(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap, InstanceStatus instanceStatus) {
+        if(context.getScheduledJobs() != null) {
+            context.getScheduledJobs().forEach(job -> {
+                if(internalEventDrivenJobInstanceMap.containsKey(job.getIdentifier() + "-" + job.getChildContextName())) {
+                    job.setStatus(instanceStatus);
+                }
+            });
+        }
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> _setJobStatusAll(c, internalEventDrivenJobInstanceMap, instanceStatus));
         }
     }
 

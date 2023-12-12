@@ -216,6 +216,50 @@ public class ContextHelperTest {
     }
 
     @Test
+    public void test_get_aggregate_context_status() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
+        ContextInstance contextInstance = this.contextService
+            .getContextInstance(loadDataFile("/data/-1793100514.json"));
+
+        ContextHelper.enrichJobs(contextInstance);
+
+        AggregateContextInstanceStatus aggregateContextInstanceStatus
+            = ContextHelper.getAggregateContextInstanceStatus(contextInstance, contextInstance, createInternalJobsMap(contextTemplate));
+
+        Assert.assertFalse(aggregateContextInstanceStatus.isDisabledJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isSkippedJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isHeldJobs());
+
+        ContextHelper.setJobStatusAll(contextInstance, this.createInternalJobsInstancesMap(contextTemplate, false), InstanceStatus.SKIPPED);
+
+        aggregateContextInstanceStatus
+            = ContextHelper.getAggregateContextInstanceStatus(contextInstance, contextInstance, createInternalJobsMap(contextTemplate));
+
+        Assert.assertFalse(aggregateContextInstanceStatus.isDisabledJobs());
+        Assert.assertTrue(aggregateContextInstanceStatus.isSkippedJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isHeldJobs());
+
+        ContextHelper.setJobStatusAll(contextInstance, this.createInternalJobsInstancesMap(contextTemplate, false), InstanceStatus.DISABLED);
+
+        aggregateContextInstanceStatus
+            = ContextHelper.getAggregateContextInstanceStatus(contextInstance, contextInstance, createInternalJobsMap(contextTemplate));
+
+        Assert.assertTrue(aggregateContextInstanceStatus.isDisabledJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isSkippedJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isHeldJobs());
+
+        ContextHelper.setJobStatusAll(contextInstance, this.createInternalJobsInstancesMap(contextTemplate, false), InstanceStatus.ON_HOLD);
+
+        aggregateContextInstanceStatus
+            = ContextHelper.getAggregateContextInstanceStatus(contextInstance, contextInstance, createInternalJobsMap(contextTemplate));
+
+        Assert.assertFalse(aggregateContextInstanceStatus.isDisabledJobs());
+        Assert.assertFalse(aggregateContextInstanceStatus.isSkippedJobs());
+        Assert.assertTrue(aggregateContextInstanceStatus.isHeldJobs());
+    }
+
+    @Test
     public void test_hold_all_jobs_for_context_instance_when_job_in_error() throws IOException {
         ContextTemplate contextTemplate = this.contextService
             .getContextTemplate(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
@@ -251,7 +295,7 @@ public class ContextHelperTest {
     }
 
     @Test
-    public void testStatusHelper() throws IOException {
+    public void test_status_helper() throws IOException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context-status-plan.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context-status-instance.json"));
 
