@@ -581,7 +581,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     }
 
                     AggregateContextInstanceStatus aggregateContextInstanceStatus
-                        = ContextHelper.getAggregateContextInstanceStatus(instance);
+                        = ContextHelper.getAggregateContextInstanceStatus(instance, internalEventDrivenJobInstanceMap, this.contextInstance);
 
                     SchedulerStatusIconDiv disabledStatusDiv = new SchedulerStatusIconDiv();
                     disabledStatusDiv.getElement().getStyle().set("font-size", "8pt");
@@ -622,7 +622,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                     horizontalLayout.add(onHoldStatusDiv);
 
-                    if(aggregateContextInstanceStatus.isDisabledJobs() || this.contextInstance.isQuartzScheduleDrivenJobsDisabledForContext()) {
+                    if(aggregateContextInstanceStatus.isDisabledJobs() ||
+                        this.contextInstance.isQuartzScheduleDrivenJobsDisabledForContext()) {
                         disabledStatusDiv.setVisible(true);
                     }
 
@@ -2239,7 +2240,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                 if (instance != null) {
                     AggregateContextInstanceStatus aggregateContextInstanceStatus
-                        = ContextHelper.getAggregateContextInstanceStatus(instance);
+                        = ContextHelper.getAggregateContextInstanceStatus(instance, internalEventDrivenJobMap, this.contextInstance);
 
                     if (componentKey.getJobName().equals(InstanceStatus.ON_HOLD.name())) {
                         if (aggregateContextInstanceStatus.isHeldJobs()) {

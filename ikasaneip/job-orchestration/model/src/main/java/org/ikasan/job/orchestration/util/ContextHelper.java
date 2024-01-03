@@ -336,14 +336,35 @@ public class ContextHelper {
 
     public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance contextInstance) {
         AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
-        getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus);
+        getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus, null, null);
 
         return aggregateContextInstanceStatus;
     }
 
-    private static void getAggregateContextInstanceStatus(ContextInstance contextInstance, AggregateContextInstanceStatus aggregateContextInstanceStatus) {
+    public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance contextInstance, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap,
+                                                                                   ContextInstance parent) {
+        AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
+        getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus, internalEventDrivenJobMap, parent);
+
+        return aggregateContextInstanceStatus;
+    }
+
+    private static void getAggregateContextInstanceStatus(ContextInstance contextInstance, AggregateContextInstanceStatus aggregateContextInstanceStatus
+        , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap, ContextInstance parent) {
         if(contextInstance.getScheduledJobs() != null) {
             contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> {
+                int externalJobs = 0;
+
+                if(internalEventDrivenJobMap != null && parent != null) {
+                    externalJobs = ContextHelper.getPrecedingJobsFromOutsideContext(parent, schedulerJobInstance.getJobName()
+                        , schedulerJobInstance.getChildContextName(), internalEventDrivenJobMap).size();
+                }
+
+                // we don't consider jobs that come from a preceding context
+                if(externalJobs > 0) {
+                    return;
+                }
+
                 if(schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
                     aggregateContextInstanceStatus.setDisabledJobs();
                 }
@@ -360,7 +381,7 @@ public class ContextHelper {
 
         if(contextInstance.getContexts() != null) {
             contextInstance.getContexts().forEach(child -> {
-                getAggregateContextInstanceStatus(child, aggregateContextInstanceStatus);
+                getAggregateContextInstanceStatus(child, aggregateContextInstanceStatus, internalEventDrivenJobMap, parent);
             });
         }
     }
