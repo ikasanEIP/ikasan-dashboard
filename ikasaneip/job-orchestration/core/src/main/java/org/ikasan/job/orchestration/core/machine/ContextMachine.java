@@ -628,15 +628,21 @@ public class ContextMachine {
             = ContextHelper.getAllJobs(ContextHelper.getChildContextInstance(childContextName,contextInstance));
 
         schedulerJobInstanceMap.values().forEach(schedulerJobInstance -> {
-            Map<String, InternalEventDrivenJob> jobs = new HashMap<>();
+            Map<String, SchedulerJob> jobs = new HashMap<>();
             this.internalEventDrivenJobInstances.entrySet().forEach(entry -> {
                 jobs.put(entry.getKey(), entry.getValue());
             });
-            List<ContextTransition> contextTransitions = ContextHelper.determineIfJobsTransitionFromOtherContexts(this.contextInstance, schedulerJobInstance.getJobName(),
+            this.globalEventJobInstanceMap.entrySet().forEach(entry -> {
+                jobs.put(entry.getKey(), entry.getValue());
+            });
+            List<ContextTransition> contextTransitions = ContextHelper.determineIfSchedulerJobsTransitionFromOtherContexts(this.contextInstance, schedulerJobInstance.getJobName(),
                 schedulerJobInstance.getChildContextName(), jobs);
-            if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-"
-                + schedulerJobInstance.getChildContextName()) && contextTransitions.isEmpty()) {
-                if (this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-"
+            if ((this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-"
+                + schedulerJobInstance.getChildContextName()) ||
+                this.globalEventJobInstanceMap.containsKey(ContextHelper.GLOBAL_EVENT + "-" + schedulerJobInstance.getJobName() + "-"
+                    + schedulerJobInstance.getChildContextName())) && contextTransitions.isEmpty()) {
+                if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-"
+                    + schedulerJobInstance.getChildContextName()) && this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-"
                     + schedulerJobInstance.getChildContextName()).isTargetResidingContextOnly()) {
                     // if a job is targeting a specific context, we only hold it for that context!
                     this._skipJob(List.of(schedulerJobInstance), skipFlag, true);

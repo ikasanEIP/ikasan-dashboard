@@ -2239,7 +2239,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                 if (instance != null) {
                     AggregateContextInstanceStatus aggregateContextInstanceStatus
-                        = ContextHelper.getAggregateContextInstanceStatus(this.contextInstance, instance, internalEventDrivenJobMap);
+                        = ContextHelper.getAggregateContextInstanceStatus(instance);
 
                     if (componentKey.getJobName().equals(InstanceStatus.ON_HOLD.name())) {
                         if (aggregateContextInstanceStatus.isHeldJobs()) {
@@ -2247,7 +2247,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         } else {
                             ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
                         }
-                    } else if (componentKey.getJobName().equals(InstanceStatus.SKIPPED.name())) {
+                    } else if (componentKey.getJobName().equals(InstanceStatus.SKIPPED.name())
+                        || componentKey.getJobName().equals(InstanceStatus.SKIPPED_COMPLETE.name())
+                        || componentKey.getJobName().equals(InstanceStatus.SKIPPED_RUNNING.name())) {
                         if (aggregateContextInstanceStatus.isSkippedJobs()) {
                             ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
                         } else {

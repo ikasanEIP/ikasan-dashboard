@@ -6,6 +6,7 @@ import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatusImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.job.model.ExternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -32,7 +33,7 @@ public class ContextHelper {
     
     private static boolean USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION = true;
 
-    private static String GLOBAL_EVENT = "GLOBAL_EVENT";
+    public static final String GLOBAL_EVENT = "GLOBAL_EVENT";
 
     /**
      * Helper method to add replacement tokens to a scheduler job.
@@ -349,7 +350,9 @@ public class ContextHelper {
                 else if(schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
                     aggregateContextInstanceStatus.setHeldJobs();
                 }
-                else if(schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) {
+                else if(schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED)
+                    || schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)
+                    || schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING)) {
                     aggregateContextInstanceStatus.setSkippedJobs();
                 }
             });
@@ -644,6 +647,15 @@ public class ContextHelper {
         return finalResults.stream().map(job -> (SchedulerJobInstance)job).collect(Collectors.toList());
     }
 
+    public static List<ContextTransition> determineIfJobsTransitionFromOtherContexts(Context context
+        , String jobName, String childContextName, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+        Map<String, SchedulerJob> jobs = new HashMap<>();
+        internalEventDrivenJobMap.entrySet().forEach(entry -> {
+            jobs.put(entry.getKey(), entry.getValue());
+        });
+        return determineIfSchedulerJobsTransitionFromOtherContexts(context, jobName, childContextName, jobs);
+    }
+
     /**
      * Similar to the method above, a helper method to determine if any jobs transition from outside
      * the given context for the given job. A list of ContextTransition objects are returned which
@@ -655,8 +667,8 @@ public class ContextHelper {
      * @param internalEventDrivenJobMap
      * @return
      */
-    public static List<ContextTransition> determineIfJobsTransitionFromOtherContexts(Context context
-        , String jobName, String childContextName, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+    public static List<ContextTransition> determineIfSchedulerJobsTransitionFromOtherContexts(Context context
+        , String jobName, String childContextName, Map<String, SchedulerJob> internalEventDrivenJobMap) {
         List<String> residingContexts = getContextsWhereJobResides(context, jobName);
 
         Map<String, ContextTransition> finalResults = new HashMap<>();
@@ -672,8 +684,9 @@ public class ContextHelper {
 
             if (schedulerJob.isEmpty()) continue;
 
-            if(internalEventDrivenJobMap.containsKey(schedulerJob.get().getIdentifier())) {
-                InternalEventDrivenJob instance = internalEventDrivenJobMap.get(schedulerJob.get().getIdentifier());
+            if(internalEventDrivenJobMap.containsKey(schedulerJob.get().getIdentifier())
+                && internalEventDrivenJobMap.get(schedulerJob.get().getIdentifier()) instanceof InternalEventDrivenJob) {
+                InternalEventDrivenJob instance = (InternalEventDrivenJob) internalEventDrivenJobMap.get(schedulerJob.get().getIdentifier());
 
                 if (instance.isTargetResidingContextOnly()) continue;
             }
