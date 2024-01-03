@@ -622,7 +622,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                     horizontalLayout.add(onHoldStatusDiv);
 
-                    if(aggregateContextInstanceStatus.isDisabledJobs()) {
+                    if(aggregateContextInstanceStatus.isDisabledJobs() || this.contextInstance.isQuartzScheduleDrivenJobsDisabledForContext()) {
                         disabledStatusDiv.setVisible(true);
                     }
 
