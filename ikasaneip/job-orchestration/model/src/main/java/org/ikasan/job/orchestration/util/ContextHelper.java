@@ -336,21 +336,21 @@ public class ContextHelper {
 
     public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance contextInstance) {
         AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
-        getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus, null, null);
+        getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus, null, null, null);
 
         return aggregateContextInstanceStatus;
     }
 
     public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance contextInstance, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap,
-                                                                                   ContextInstance parent) {
+                                                                                   Map<String, QuartzScheduleDrivenJobInstance> quartzSchedulerJobMap, ContextInstance parent) {
         AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
-        getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus, internalEventDrivenJobMap, parent);
+        getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus, internalEventDrivenJobMap, quartzSchedulerJobMap, parent);
 
         return aggregateContextInstanceStatus;
     }
 
     private static void getAggregateContextInstanceStatus(ContextInstance contextInstance, AggregateContextInstanceStatus aggregateContextInstanceStatus
-        , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap, ContextInstance parent) {
+        , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap, Map<String, QuartzScheduleDrivenJobInstance> quartzSchedulerJobMap, ContextInstance parent) {
         if(contextInstance.getScheduledJobs() != null) {
             contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> {
                 int externalJobs = 0;
@@ -365,7 +365,10 @@ public class ContextHelper {
                     return;
                 }
 
-                if(schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
+                if(schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED) ||
+                    (quartzSchedulerJobMap != null
+                        && quartzSchedulerJobMap.containsKey(schedulerJobInstance.getJobName())
+                        && parent.isQuartzScheduleDrivenJobsDisabledForContext())) {
                     aggregateContextInstanceStatus.setDisabledJobs();
                 }
                 else if(schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
@@ -381,7 +384,8 @@ public class ContextHelper {
 
         if(contextInstance.getContexts() != null) {
             contextInstance.getContexts().forEach(child -> {
-                getAggregateContextInstanceStatus(child, aggregateContextInstanceStatus, internalEventDrivenJobMap, parent);
+                getAggregateContextInstanceStatus(child, aggregateContextInstanceStatus
+                    , internalEventDrivenJobMap, quartzSchedulerJobMap, parent);
             });
         }
     }

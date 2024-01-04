@@ -256,6 +256,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Map<String, SchedulerJob> schedulerJobMap
             = this.getAllSchedulerJobInstancesForContextInstance(contextInstance.getId());
 
+        Map<String, QuartzScheduleDrivenJobInstance> quartzSchedulerJobMap
+            = this.getQuartzSchedulerJobInstancesForContextInstance(contextInstance.getId());
+
         ContextHelper.enrichJobs(this.contextInstance, schedulerJobMap);
 
         grid.addComponentHierarchyColumn(value -> {
@@ -581,7 +584,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     }
 
                     AggregateContextInstanceStatus aggregateContextInstanceStatus
-                        = ContextHelper.getAggregateContextInstanceStatus(instance, internalEventDrivenJobInstanceMap, this.contextInstance);
+                        = ContextHelper.getAggregateContextInstanceStatus(instance, internalEventDrivenJobInstanceMap
+                            , quartzSchedulerJobMap, this.contextInstance);
 
                     SchedulerStatusIconDiv disabledStatusDiv = new SchedulerStatusIconDiv();
                     disabledStatusDiv.getElement().getStyle().set("font-size", "8pt");
@@ -622,8 +626,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                     horizontalLayout.add(onHoldStatusDiv);
 
-                    if(aggregateContextInstanceStatus.isDisabledJobs() ||
-                        this.contextInstance.isQuartzScheduleDrivenJobsDisabledForContext()) {
+                    if(aggregateContextInstanceStatus.isDisabledJobs()) {
                         disabledStatusDiv.setVisible(true);
                     }
 
@@ -2036,6 +2039,26 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         return result;
     }
 
+    /**
+     * Helper method to get all command execution jobs associated with an context instance.
+     *
+     * @param contextInstanceId the id of the context instance that we want the jobs for.
+     *
+     * @return Map<String, InternalEventDrivenJobInstance> containing the command execution jobs
+     * keyed on their identifier.
+     */
+    private Map<String, QuartzScheduleDrivenJobInstance> getQuartzSchedulerJobInstancesForContextInstance(String contextInstanceId) {
+        Map<String, QuartzScheduleDrivenJobInstance> result = new HashMap<>();
+        this.schedulerJobInstanceService
+            .getSchedulerJobInstancesByContextInstanceId(contextInstanceId, -1, -1, null, null)
+            .getResultList()
+            .stream().filter(schedulerJobInstanceRecord -> schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance)
+            .forEach(schedulerJobInstanceRecord
+                -> result.put(schedulerJobInstanceRecord.getJobName(), (QuartzScheduleDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()));
+
+        return result;
+    }
+
     private void enableDisableScheduledJobs(ContextInstance contextInstance, UI ui) {
         SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
         filter.setJobType(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
@@ -2233,6 +2256,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Map<String, InternalEventDrivenJob> internalEventDrivenJobMap
             = this.getCommandExecutionJobsForContextInstance(this.contextInstance.getId());
 
+        Map<String, QuartzScheduleDrivenJobInstance> quartzSchedulerJobMap
+            = this.getQuartzSchedulerJobInstancesForContextInstance(contextInstance.getId());
+
         this.statusIconDivMap.keySet().forEach(componentKey -> {
             if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()) != null) {
                 ContextInstance instance = (ContextInstance) ContextHelper.getChildContext(componentKey.getChildContextName()
@@ -2240,7 +2266,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                 if (instance != null) {
                     AggregateContextInstanceStatus aggregateContextInstanceStatus
-                        = ContextHelper.getAggregateContextInstanceStatus(instance, internalEventDrivenJobMap, this.contextInstance);
+                        = ContextHelper.getAggregateContextInstanceStatus(instance
+                            , internalEventDrivenJobMap, quartzSchedulerJobMap, this.contextInstance);
 
                     if (componentKey.getJobName().equals(InstanceStatus.ON_HOLD.name())) {
                         if (aggregateContextInstanceStatus.isHeldJobs()) {
