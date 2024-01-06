@@ -372,7 +372,7 @@
         <version.iron-icons>2.0.1</version.iron-icons>
         <version.font-awesome-iron-iconset>2.2.0</version.font-awesome-iron-iconset>
         <version.ace.editor>2.3.1</version.ace.editor>
-        <version.big.queue>1.0.1-SNAPSHOT</version.big.queue>
+        <version.big.queue>1.0.0</version.big.queue>
         <version.logback>1.2.3</version.logback>
         <ikasan.core.version>3.3.3</ikasan.core.version>
         <version.spring.webflux>5.3.10</version.spring.webflux>
