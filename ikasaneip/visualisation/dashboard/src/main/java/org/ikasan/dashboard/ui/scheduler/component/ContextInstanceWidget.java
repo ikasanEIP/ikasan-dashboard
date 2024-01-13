@@ -705,9 +705,11 @@ public class ContextInstanceWidget extends VerticalLayout
      */
     private VerticalLayout createButtonLayout() {
         Dialog actionPopup = new Dialog();
+        actionPopup.setId("actionPopup");
 
         jobLockDashboard = new Button(getTranslation("button.jobs-locks", UI.getCurrent().getLocale())
             , VaadinIcon.LOCK.create());
+        jobLockDashboard.setId("jobLockDashboard");
         jobLockDashboard.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         jobLockDashboard.setIconAfterText(true);
         jobLockDashboard.addClickListener(event -> {
@@ -726,6 +728,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.holdContextButton = new Button(getTranslation("button.hold-context"
             , UI.getCurrent().getLocale()), VaadinIcon.HAND.create());
+        this.holdContextButton.setId("holdContextButton");
         this.holdContextButton.setIconAfterText(true);
         this.holdContextButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.holdContextButton.addClickListener(event -> {
@@ -742,6 +745,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.releaseContextButton = new Button(getTranslation("button.release-all-held-jobs"
             , UI.getCurrent().getLocale()), VaadinIcon.HANDS_UP.create());
+        this.releaseContextButton.setId("releaseContextButton");
         this.releaseContextButton.setIconAfterText(true);
         this.releaseContextButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
 
@@ -759,12 +763,14 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.enableQuartzScheduledJobsButton = new Button(getTranslation("button.enable-quartz-scheduled-jobs"
             , UI.getCurrent().getLocale()), VaadinIcon.PLAY.create());
+        this.enableQuartzScheduledJobsButton.setId("enableQuartzScheduledJobsButton");
         this.enableQuartzScheduledJobsButton.setIconAfterText(true);
         this.enableQuartzScheduledJobsButton.setVisible(false);
         this.enableQuartzScheduledJobsButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
 
         this.disableQuartzScheduledJobsButton = new Button(getTranslation("button.disable-quartz-scheduled-jobs"
             , UI.getCurrent().getLocale()), VaadinIcon.BAN.create());
+        this.disableQuartzScheduledJobsButton.setId("disableQuartzScheduledJobsButton");
         this.disableQuartzScheduledJobsButton.setIconAfterText(true);
         this.disableQuartzScheduledJobsButton.setVisible(false);
         this.disableQuartzScheduledJobsButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
@@ -867,9 +873,10 @@ public class ContextInstanceWidget extends VerticalLayout
         });
 
         this.contextInstanceEndButton = new Button(getTranslation("label.manually-end-job-plan", UI.getCurrent().getLocale()), VaadinIcon.STOP.create());
+        this.contextInstanceEndButton.setId("contextInstanceEndButton");
         this.contextInstanceEndButton.setIconAfterText(true);
         this.contextInstanceEndButton.setVisible(this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
-            SecurityConstants.SCHEDULER_ADMIN));
+            SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE));
         this.contextInstanceEndButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.contextInstanceEndButton.addClickListener(event -> {
             actionPopup.close();
@@ -897,9 +904,10 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.ignoreContextInstanceEndButton = new Button(getTranslation("label.ignore-job-plan-duration"
             , UI.getCurrent().getLocale()), VaadinIcon.CONTROLLER.create());
+        this.ignoreContextInstanceEndButton.setId("ignoreContextInstanceEndButton");
         this.ignoreContextInstanceEndButton.setIconAfterText(true);
         this.ignoreContextInstanceEndButton.setVisible(!this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
-            SecurityConstants.SCHEDULER_ADMIN));
+            SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE));
         this.ignoreContextInstanceEndButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.ignoreContextInstanceEndButton.addClickListener(event -> {
             actionPopup.close();
@@ -932,7 +940,8 @@ public class ContextInstanceWidget extends VerticalLayout
             });
         });
 
-        this.resetContextButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
+        this.resetContextButton = new Button(getTranslation("button.reset-context"
+            , UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
         this.resetContextButton.setIconAfterText(true);
         this.resetContextButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.resetContextButton.addClickListener(event -> {
@@ -1003,6 +1012,7 @@ public class ContextInstanceWidget extends VerticalLayout
             SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         Button actionsButton = new Button(getTranslation("button.actions", UI.getCurrent().getLocale()), VaadinIcon.MENU.create());
+        actionsButton.setId("actionsButton");
         actionsButton.addClickListener(buttonClickEvent -> {
             actionPopup.open();
             actionPopup
