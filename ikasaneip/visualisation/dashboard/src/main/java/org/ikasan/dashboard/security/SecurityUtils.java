@@ -125,7 +125,7 @@ public final class SecurityUtils {
 
     public static boolean canAccessAllJobPlans(IkasanAuthentication authentication) {
         return authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) ||
-            authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_ADMIN) ||
             authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_READ) ||
             authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_WRITE);
 

@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler;
 
 import org.ikasan.dashboard.ui.UITest;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
@@ -48,13 +49,19 @@ public abstract class AbstractSchedulerViewTest extends UITest {
             scheduledContextInstanceRecord.setStatus("PREPARED");
             scheduledContextInstanceRecord.setStartTime(100000000L);
 
-            ContextInstance contextInstance =  new ContextInstanceImpl();
-            contextInstance.setStatus(InstanceStatus.PREPARED);
-            contextInstance.setStartTime(100000000L);
-            contextInstance.setDescription("Description"+i);
-            contextInstance.setName("contextName"+i);
-            contextInstance.setId("contextInstanceId"+i);
-            scheduledContextInstanceRecord.setContextInstance(contextInstance);
+            if(ContextMachineCache.instance().containsInstanceIdentifier(scheduledContextInstanceRecord.getContextInstanceId())) {
+                scheduledContextInstanceRecord.setContextInstance(ContextMachineCache.instance()
+                    .getByContextInstanceId(scheduledContextInstanceRecord.getContextInstanceId()).getContext());
+            }
+            else {
+                ContextInstance contextInstance =  new ContextInstanceImpl();
+                contextInstance.setStatus(InstanceStatus.PREPARED);
+                contextInstance.setStartTime(100000000L);
+                contextInstance.setDescription("Description"+i);
+                contextInstance.setName("contextName"+i);
+                contextInstance.setId("contextInstanceId"+i);
+                scheduledContextInstanceRecord.setContextInstance(contextInstance);
+            }
 
             scheduledContextInstanceRecords.add(scheduledContextInstanceRecord);
         }
@@ -93,13 +100,19 @@ public abstract class AbstractSchedulerViewTest extends UITest {
         scheduledContextInstanceRecord.setStatus("PREPARED");
         scheduledContextInstanceRecord.setStartTime(100000000L);
 
-        ContextInstance contextInstance =  new ContextInstanceImpl();
-        contextInstance.setStatus(InstanceStatus.PREPARED);
-        contextInstance.setStartTime(100000000L);
-        contextInstance.setDescription("Description"+id);
-        contextInstance.setName("contextName"+id);
-        contextInstance.setId("contextInstanceId"+id);
-        scheduledContextInstanceRecord.setContextInstance(contextInstance);
+        if(ContextMachineCache.instance().containsInstanceIdentifier(scheduledContextInstanceRecord.getContextInstanceId())) {
+            scheduledContextInstanceRecord.setContextInstance(ContextMachineCache.instance()
+                .getByContextInstanceId(scheduledContextInstanceRecord.getContextInstanceId()).getContext());
+        }
+        else {
+            ContextInstance contextInstance = new ContextInstanceImpl();
+            contextInstance.setStatus(InstanceStatus.PREPARED);
+            contextInstance.setStartTime(100000000L);
+            contextInstance.setDescription("Description" + id);
+            contextInstance.setName("contextName" + id);
+            contextInstance.setId("contextInstanceId" + id);
+            scheduledContextInstanceRecord.setContextInstance(contextInstance);
+        }
 
         scheduledContextInstanceRecords.add(scheduledContextInstanceRecord);
 
