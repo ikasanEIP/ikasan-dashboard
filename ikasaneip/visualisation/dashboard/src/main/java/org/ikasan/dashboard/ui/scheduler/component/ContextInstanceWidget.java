@@ -942,6 +942,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.resetContextButton = new Button(getTranslation("button.reset-context"
             , UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
+        this.resetContextButton.setId("resetContextButton");
         this.resetContextButton.setIconAfterText(true);
         this.resetContextButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.resetContextButton.addClickListener(event -> {
@@ -1009,7 +1010,8 @@ public class ContextInstanceWidget extends VerticalLayout
         });
 
         ComponentSecurityVisibility.applySecurity(resetContextButton, SecurityConstants.ALL_AUTHORITY,
-            SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+            SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         Button actionsButton = new Button(getTranslation("button.actions", UI.getCurrent().getLocale()), VaadinIcon.MENU.create());
         actionsButton.setId("actionsButton");
