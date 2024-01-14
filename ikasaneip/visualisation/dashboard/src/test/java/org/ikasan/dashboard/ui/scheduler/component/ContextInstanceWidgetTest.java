@@ -410,6 +410,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
 
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
+
     }
 
     @Test
@@ -442,6 +447,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
 
         Assert.assertTrue(contextInstanceEndButton.isVisible());
+
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
     }
 
 
@@ -480,6 +490,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
+
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
     }
 
     @Test
@@ -520,6 +535,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
 
         Assert.assertTrue(contextInstanceEndButton.isVisible());
+
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
     }
 
     @Test
@@ -557,6 +577,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
+
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
     }
 
     @Test
@@ -597,6 +622,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
 
         Assert.assertTrue(contextInstanceEndButton.isVisible());
+
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
     }
 
     @Test
@@ -634,6 +664,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
+
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
     }
 
     @Test
@@ -674,6 +709,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
 
         Assert.assertTrue(contextInstanceEndButton.isVisible());
+
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
     }
 
     @Test
@@ -711,6 +751,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
+
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
     }
 
     @Test
@@ -751,6 +796,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
 
         Assert.assertTrue(contextInstanceEndButton.isVisible());
+
+        Button resetContextButton = _get(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
+
+        Assert.assertTrue(resetContextButton.isVisible());
     }
 
     @Test
@@ -780,6 +830,9 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
+
+        _assertNone(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
     }
 
     @Test
@@ -809,6 +862,9 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
+
+        _assertNone(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
     }
 
     @Test
@@ -838,6 +894,9 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
+
+        _assertNone(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
     }
 
     @Test
@@ -867,5 +926,8 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("contextInstanceEndButton"));
+
+        _assertNone(actionPopup
+            , Button.class, spec -> spec.withId("resetContextButton"));
     }
 }
