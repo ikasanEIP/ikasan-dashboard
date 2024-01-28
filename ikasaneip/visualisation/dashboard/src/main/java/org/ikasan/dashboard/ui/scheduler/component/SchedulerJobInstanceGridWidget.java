@@ -697,6 +697,21 @@ public class SchedulerJobInstanceGridWidget extends Div
                         SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                         SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
 
+            Icon logFileHistory = IconDecorator.decorate(new Icon(VaadinIcon.CLIPBOARD_HEART), getTranslation("tooltip.view-job-execution-history"
+                , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            logFileHistory.addClickListener(event -> {
+                LogFileHistoryDialog logFileHistoryDialog = new LogFileHistoryDialog(scheduledContextInstanceService
+                    , this.contextInstance, schedulerJobInstanceRecord.getSchedulerJobInstance()
+                    , this.moduleMetaDataService, this.logStreamingService);
+                logFileHistoryDialog.open();
+            });
+
+            layout.add(logFileHistory);
+            logFileHistory.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+
             Icon event = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR_CLOCK), getTranslation("tooltip.view-scheduled-process-event"
                 , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             event.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -845,7 +860,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
                 InternalEventDrivenJobInstanceDialog internalEventDrivenJobDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.contextInstance
-                    , this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService);
+                    , this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService, this.scheduledContextInstanceService);
 
                 internalEventDrivenJobDialog.setJob(this.schedulerJobInstanceService.findById(event.getItem().getId()));
 

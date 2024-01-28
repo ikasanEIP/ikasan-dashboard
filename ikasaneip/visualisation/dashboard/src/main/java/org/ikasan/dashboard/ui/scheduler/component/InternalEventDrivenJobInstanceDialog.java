@@ -28,10 +28,7 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -56,6 +53,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -140,10 +138,12 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     private Button viewErrorLogButton;
     private Button viewOutputLogButton;
+    private Button executionHistoryButton;
     private Button viewProcessEventButton;
     private Button viewExecutionDetailsButton;
     private ScheduledProcessEvent scheduledProcessEvent;
     private LogStreamingService logStreamingService;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
     private UI ui;
 
     /**
@@ -166,7 +166,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                                 SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance,
                                                 JobInitiationService jobInitiationService, ModuleMetaDataService moduleMetaDataService,
-                                                LogStreamingService logStreamingService, JobUtilsService jobUtilsService) {
+                                                LogStreamingService logStreamingService, JobUtilsService jobUtilsService,
+                                                ScheduledContextInstanceService scheduledContextInstanceService) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job-instance", UI.getCurrent().getLocale()));
 
@@ -217,6 +218,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.jobUtilsService = jobUtilsService;
         if(this.jobUtilsService ==  null) {
             throw new IllegalArgumentException("jobUtilsService cannot be null!");
+        }
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
+        if(this.scheduledContextInstanceService ==  null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
         }
 
         this.internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
@@ -670,6 +675,15 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.streamLog(true);
         });
 
+        this.executionHistoryButton = new Button(getTranslation("label.log-file-history"
+            , UI.getCurrent().getLocale()), VaadinIcon.CLIPBOARD_HEART.create());
+        this.executionHistoryButton.addClickListener(event -> {
+            LogFileHistoryDialog logFileHistoryDialog = new LogFileHistoryDialog(this.scheduledContextInstanceService
+                , this.contextInstance, schedulerJobInstanceRecord.getSchedulerJobInstance()
+                , this.moduleMetaDataService, this.logStreamingService);
+            logFileHistoryDialog.open();
+        });
+
         this.viewProcessEventButton = new Button(getTranslation("button.view-event", UI.getCurrent().getLocale()), VaadinIcon.CALENDAR_CLOCK.create());
         this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null &&
             ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
@@ -717,7 +731,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         HorizontalLayout jobActionsButtonLayout = new HorizontalLayout();
         jobActionsButtonLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton
-            , this.viewOutputLogButton, this.viewErrorLogButton, this.viewProcessEventButton, viewExecutionDetailsButton);
+            , this.viewOutputLogButton, this.viewErrorLogButton, this.executionHistoryButton, this.viewProcessEventButton, viewExecutionDetailsButton);
         jobActionsButtonLayout.setMargin(false);
         VerticalLayout wrapperLayout = new VerticalLayout();
         wrapperLayout.setWidth("100%");
@@ -1052,6 +1066,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
                     this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null &&
+                        ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+                    this.executionHistoryButton.setVisible(this.scheduledProcessEvent != null &&
                         ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));

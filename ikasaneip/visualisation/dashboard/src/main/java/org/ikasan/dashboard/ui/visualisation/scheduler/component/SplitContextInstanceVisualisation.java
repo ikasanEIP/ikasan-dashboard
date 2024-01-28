@@ -204,7 +204,8 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
 
                 this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService, scheduledProcessManagementService,
                     configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
-                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.globalEventService);
+                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService
+                    , this.globalEventService, this.scheduledContextInstanceService);
                 this.jobVisualisation.addContextOpenListener(this);
                 this.jobVisualisation.addContextSelectedListener(this);
                 this.jobVisualisation.setWidthFull();

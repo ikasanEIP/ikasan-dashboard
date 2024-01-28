@@ -23,6 +23,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -45,6 +46,8 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
 
     private List<ContextSelectedListener> contextSelectedListeners;
 
+    private ScheduledContextInstanceService scheduledContextInstanceService;
+
     /**
      * Constructor
      *
@@ -64,10 +67,11 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
     public JobSchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService
         , ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger
         , LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, JobUtilsService jobUtilsService
-        , ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
+        , ScheduledContextService scheduledContextService, GlobalEventService globalEventService, ScheduledContextInstanceService scheduledContextInstanceService) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService
             , systemEventLogger, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService, scheduledContextService, globalEventService);
 
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.contextSelectedListeners = new ArrayList<>();
     }
 
@@ -283,7 +287,8 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
             (moduleMetaDataService.findById(schedulerJobRecord.getSchedulerJobInstance().getAgentName()),
                 scheduledProcessManagementService, configurationRestService, moduleControlRestService,
                 metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.parentContextInstance,
-                this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService);
+                this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService,
+                this.scheduledContextInstanceService);
 
         internalEventDrivenJobInstanceDialog.setJob(schedulerJobRecord);
         internalEventDrivenJobInstanceDialog.open();

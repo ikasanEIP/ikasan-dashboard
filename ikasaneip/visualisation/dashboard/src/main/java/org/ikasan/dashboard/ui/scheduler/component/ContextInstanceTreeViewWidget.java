@@ -32,7 +32,6 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceState
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -69,7 +68,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,6 +85,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private static final String SUBMIT_ICON = "SUBMIT_ICON";
     private static final String LOG_ICON = "LOG_ICON";
     private static final String ERROR_LOG_ICON = "ERROR_LOG_ICON";
+    private static final String LOG_FILE_HISTORY = "LOG_FILE_HISTORY";
     private static final String EVENT_ICON = "EVENT_ICON";
     private static final String EXECUTION_ENVIRONMENT_ICON = "EXECUTION_ENVIRONMENT_ICON";
     private static final String RESET_JOB_ICON = "RESET_JOB_ICON";
@@ -1224,7 +1223,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     = new InternalEventDrivenJobInstanceDialog(this.moduleMetaDataService.findById(refreshedRecord.getSchedulerJobInstance().getAgentName())
                     , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
                     , this.systemEventLogger, this.schedulerJobInstanceService, this.contextInstance, this.jobInitiationService, this.moduleMetaDataService
-                    , this.logStreamingService, this.jobUtilsService);
+                    , this.logStreamingService, this.jobUtilsService, this.scheduledContextInstanceService);
                 internalEventDrivenJobDialog.setJob(refreshedRecord);
                 internalEventDrivenJobDialog.open();
             }
@@ -1527,6 +1526,26 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         layout.add(errorLogFile);
 
+        Icon logFileHistory;
+
+        if(!iconMap.containsKey(LOG_FILE_HISTORY)) {
+            logFileHistory = IconDecorator.decorate(new Icon(VaadinIcon.CLIPBOARD_HEART), getTranslation("tooltip.view-job-execution-history"
+                , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            logFileHistory.addClickListener(event -> {
+                LogFileHistoryDialog logFileHistoryDialog = new LogFileHistoryDialog(scheduledContextInstanceService
+                    , this.contextInstance, schedulerJobInstanceRecord.getSchedulerJobInstance()
+                    , this.moduleMetaDataService, this.logStreamingService);
+                logFileHistoryDialog.open();
+            });
+
+            iconMap.put(LOG_FILE_HISTORY, logFileHistory);
+        }
+        else {
+            logFileHistory = iconMap.get(LOG_FILE_HISTORY);
+        }
+
+        layout.add(logFileHistory);
+
         Icon event;
 
         if(!iconMap.containsKey(EVENT_ICON)) {
@@ -1743,6 +1762,12 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)) &&
+            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+
+        Icon logFileHistory = iconMap.get(LOG_FILE_HISTORY);
+        logFileHistory.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
             ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
