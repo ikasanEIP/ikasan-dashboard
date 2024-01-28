@@ -273,6 +273,11 @@ public class LogFileHistoryDialog extends AbstractCloseableResizableDialog imple
         this.scheduledContextInstanceService.findAllAuditRecordsByFilter
             (filter, -1, -1, null, null).getResultList().forEach(scheduledContextInstanceAuditAggregateRecord
             -> {
+                if(!scheduledContextInstanceAuditAggregateRecord.getScheduledContextInstanceAuditAggregate()
+                    .getProcessEvent().getJobName().equals(this.schedulerJobInstance.getJobName())) {
+                    return;
+                }
+
                 if(!results.containsKey(scheduledContextInstanceAuditAggregateRecord
                     .getScheduledContextInstanceAuditAggregate().getProcessEvent().getFireTime())) {
                     if(scheduledContextInstanceAuditAggregateRecord
