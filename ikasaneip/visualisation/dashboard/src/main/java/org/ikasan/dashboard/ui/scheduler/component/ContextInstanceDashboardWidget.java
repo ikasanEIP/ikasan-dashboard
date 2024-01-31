@@ -1343,7 +1343,9 @@ public class ContextInstanceDashboardWidget extends Div
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
+                this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
                 this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+                this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
                 this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
             });
         }
@@ -1353,7 +1355,9 @@ public class ContextInstanceDashboardWidget extends Div
     public void receiveBroadcast(ContextInstance event) {
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
+                this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
                 this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+                this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
                 this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
             });
         }
