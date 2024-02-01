@@ -1147,6 +1147,7 @@ public class SchedulerJobInstanceGridWidget extends Div
     }
 
     public void refresh() {
+        this.schedulerJobInstanceFilteringGrid.getDataCommunicator().reset();
         this.schedulerJobInstanceFilteringGrid.getDataProvider().refreshAll();
     }
 }

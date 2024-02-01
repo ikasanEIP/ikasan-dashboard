@@ -1859,6 +1859,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             ContextHelper.enrichJobs(contextInstance);
             this.enableDisableScheduledJobs(this.contextInstance, this.ui);
             manageContextStatusIndicators(this.ui);
+            this.grid.getDataCommunicator().reset();
             this.createTreeGridDataProvider().refreshAll();
         }
     }
