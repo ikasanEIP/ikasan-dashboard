@@ -22,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.ArgumentMatchers.*;
@@ -34,6 +35,11 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
     public void setup_expectations() throws IOException {
         when(this.scheduledContextService.findByFilter(any(), anyInt(), anyInt(), isNull(), isNull()))
             .thenReturn(new SearchResultsImpl<>(new ArrayList<>(), 0, 1));
+
+        Mockito.when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
+                eq(0),eq(0), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 5, 0));
+
 
         Mockito.when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
                 eq(-1),eq(-1), Mockito.isNull(), Mockito.isNull()))
