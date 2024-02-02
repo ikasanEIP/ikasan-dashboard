@@ -7,7 +7,7 @@ public class ContextInstanceSavedEventBroadcasterImpl implements org.ikasan.spec
 
     @Override
     public synchronized void register(ContextInstanceSavedEventBroadcastListener listener) {
-        ContextInstanceSavedEventBroadcaster.register(listener);
+        // should not register listeners via this interface
     }
 
     @Override

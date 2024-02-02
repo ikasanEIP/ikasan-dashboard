@@ -8,7 +8,9 @@ public class SchedulerJobStateChangeEventBroadcasterImpl implements SchedulerJob
 
     @Override
     public synchronized void register(SchedulerJobStateChangeEventBroadcastListener listener) {
-        org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster.register(listener);
+        // should not register listeners via this interface
+        throw new UnsupportedOperationException("SchedulerJobStateChangeEventBroadcastListener listeners should not" +
+            " be registered via this method");
     }
 
     @Override

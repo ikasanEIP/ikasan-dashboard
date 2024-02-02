@@ -81,7 +81,7 @@ public class ContextInstanceDashboardWidget extends Div
     implements SchedulerJobStateChangeEventBroadcastListener, ContextInstanceStateChangeEventBroadcastListener, ContextInstanceSavedEventBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(ContextInstanceDashboardWidget.class);
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
-    private Grid<ScheduledContextInstanceRecord> preparedFutureContextInstanceGrid;
+    private Grid<PreparedFutureJobPlanInstance> preparedFutureContextInstanceGrid;
     private Grid<ScheduledContextInstanceRecord> completedContextInstanceGrid;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
@@ -622,54 +622,56 @@ public class ContextInstanceDashboardWidget extends Div
         this.preparedFutureContextInstanceGrid.setVisible(true);
         this.preparedFutureContextInstanceGrid.setWidthFull();
 
-        this.preparedFutureContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextName)
+        this.preparedFutureContextInstanceGrid.addColumn(PreparedFutureJobPlanInstance::getJobPlanName)
             .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(2)
             .setResizable(true)
             .setSortable(true);
-        this.preparedFutureContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextInstanceId)
+        this.preparedFutureContextInstanceGrid.addColumn(PreparedFutureJobPlanInstance::getContextInstanceId)
             .setHeader(getTranslation("table-header.context-instance-id", UI.getCurrent().getLocale())).setKey("id")
             .setFlexGrow(2)
             .setResizable(true)
             .setSortable(true);
-        this.preparedFutureContextInstanceGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of("<div style='white-space:normal'>[[item.startTime]]</div>")
-                .withProperty("startTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getStartTime())))
+        this.preparedFutureContextInstanceGrid.addColumn(TemplateRenderer.<PreparedFutureJobPlanInstance>of("<div style='white-space:normal'>[[item.startTime]]</div>")
+                .withProperty("startTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getContextInstanceStartTime())))
             .setHeader(getTranslation("table-header.context-instance-start-date-time", UI.getCurrent().getLocale()))
             .setKey("startTime")
             .setFlexGrow(4)
             .setSortable(true);
-        this.preparedFutureContextInstanceGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
+        this.preparedFutureContextInstanceGrid.addColumn(new ComponentRenderer<>(preparedFutureJobPlanInstance -> {
                 VerticalLayout layout = new VerticalLayout();
                 layout.setSpacing(false);
                 layout.setMargin(false);
                 layout.setPadding(false);
                 layout.setSizeFull();
 
-                ContextInstance instance = scheduledContextInstanceRecord.getContextInstance();
+                ContextInstance instance = null;
 
-                if(ContextMachineCache.instance().containsInstanceIdentifier(scheduledContextInstanceRecord.getContextInstance().getId())) {
-                    instance = ContextMachineCache.instance().getByContextInstanceId(scheduledContextInstanceRecord.getContextInstance().getId()).getContext();
+                if(ContextMachineCache.instance().containsInstanceIdentifier(preparedFutureJobPlanInstance.getContextInstanceId())) {
+                    instance = ContextMachineCache.instance().getByContextInstanceId(preparedFutureJobPlanInstance.getContextInstanceId()).getContext();
                 }
 
-                AggregateContextInstanceStatus aggregateContextInstanceStatus =
-                    ContextHelper.getAggregateContextInstanceStatus(instance);
+                if(instance != null) {
+                    AggregateContextInstanceStatus aggregateContextInstanceStatus =
+                        ContextHelper.getAggregateContextInstanceStatus(instance);
 
-                HorizontalLayout statusLayout = new HorizontalLayout();
-                statusLayout.setWidthFull();
+                    HorizontalLayout statusLayout = new HorizontalLayout();
+                    statusLayout.setWidthFull();
 
-                if(aggregateContextInstanceStatus.isHeldJobs()) {
-                    SchedulerStatusIconDiv onHoldStatusDiv = new SchedulerStatusIconDiv();
-                    onHoldStatusDiv.setStatus(InstanceStatus.ON_HOLD, getTranslation("label.prepared-job-plan-contains-held-jobs", UI.getCurrent().getLocale()));
-                    statusLayout.add(onHoldStatusDiv);
+                    if (aggregateContextInstanceStatus.isHeldJobs()) {
+                        SchedulerStatusIconDiv onHoldStatusDiv = new SchedulerStatusIconDiv();
+                        onHoldStatusDiv.setStatus(InstanceStatus.ON_HOLD, getTranslation("label.prepared-job-plan-contains-held-jobs", UI.getCurrent().getLocale()));
+                        statusLayout.add(onHoldStatusDiv);
+                    }
+
+                    layout.add(statusLayout);
+                    layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, statusLayout);
                 }
-
-                layout.add(statusLayout);
-                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, statusLayout);
 
                 return layout;
             }))
             .setFlexGrow(1);
-        this.preparedFutureContextInstanceGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
+        this.preparedFutureContextInstanceGrid.addColumn(new ComponentRenderer<>(preparedFutureJobPlanInstance -> {
                 VerticalLayout layout = new VerticalLayout();
                 layout.setMargin(false);
                 layout.setSizeFull();
@@ -678,7 +680,7 @@ public class ContextInstanceDashboardWidget extends Div
                     , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
                 breakOut.addClickListener(event -> {
                     String route = RouteConfiguration.forSessionScope()
-                        .getUrl(ContextInstanceView.class, List.of(scheduledContextInstanceRecord.getContextInstanceId() +"_scheduledContextInstance"));
+                        .getUrl(ContextInstanceView.class, List.of(preparedFutureJobPlanInstance.getContextInstanceId() +"_scheduledContextInstance"));
 
                     getUI().ifPresent(ui -> ui.getPage().open(route));
                 });
@@ -686,8 +688,9 @@ public class ContextInstanceDashboardWidget extends Div
                 Icon holdButton = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-all-command-execution-jobs-in-instance", UI.getCurrent().getLocale()
                     , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
                 holdButton.addClickListener(event -> {
+                    ContextInstance instance = ContextMachineCache.instance().getByContextInstanceId(preparedFutureJobPlanInstance.getContextInstanceId()).getContext();
                     HoldAllCommandExecutionJobsForContextInstanceCommand holdAllCommandExecutionJobsForContextInstanceCommand
-                        = new HoldAllCommandExecutionJobsForContextInstanceCommand(scheduledContextInstanceRecord.getContextInstance(), this.schedulerJobInstanceService,
+                        = new HoldAllCommandExecutionJobsForContextInstanceCommand(instance, this.schedulerJobInstanceService,
                             this.systemEventLogger, this.ikasanAuthentication);
                     holdAllCommandExecutionJobsForContextInstanceCommand.execute();
                 });
@@ -695,8 +698,9 @@ public class ContextInstanceDashboardWidget extends Div
                 Icon releaseButton = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-all-command-execution-jobs-in-instance", UI.getCurrent().getLocale()
                     , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
                 releaseButton.addClickListener(event -> {
+                    ContextInstance instance = ContextMachineCache.instance().getByContextInstanceId(preparedFutureJobPlanInstance.getContextInstanceId()).getContext();
                     ReleaseAllCommandExecutionJobsForContextInstanceCommand releaseAllCommandExecutionJobsForContextInstanceCommand
-                        = new ReleaseAllCommandExecutionJobsForContextInstanceCommand(scheduledContextInstanceRecord.getContextInstance(), this.schedulerJobInstanceService,
+                        = new ReleaseAllCommandExecutionJobsForContextInstanceCommand(instance, this.schedulerJobInstanceService,
                             this.systemEventLogger, this.ikasanAuthentication);
                     releaseAllCommandExecutionJobsForContextInstanceCommand.execute();
                 });
@@ -721,7 +725,7 @@ public class ContextInstanceDashboardWidget extends Div
         this.addPreparedContextInstanceGridFiltering(hr, "id", this.preparedContextInstanceIdTf, this.contextInstanceSearchFilter::setContextInstanceId);
         this.addDateTimeGridFiltering(hr, contextInstanceSearchFilter::setStartTime, contextInstanceSearchFilter::setEndTime, null, null,
             "startTime", this.preparedFutureContextInstanceGrid);
-        DataProvider<ScheduledContextInstanceRecord, ContextInstanceSearchFilter> dataProvider =
+        DataProvider<PreparedFutureJobPlanInstance, ContextInstanceSearchFilter> dataProvider =
             DataProvider.fromFilteringCallbacks(
                 // First callback fetches items based on a query
                 query -> {
@@ -1225,7 +1229,7 @@ public class ContextInstanceDashboardWidget extends Div
         return jobStatuses;
     }
 
-    private List<ScheduledContextInstanceRecord> filterPreparedContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
+    private List<PreparedFutureJobPlanInstance> filterPreparedContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
                                                                                 String sortField, String sortOrder) {
         ContextInstanceSearchFilter preparedSearchFilter = new SolrContextInstanceSearchFilterImpl();
         preparedSearchFilter.setStatus(InstanceStatus.PREPARED.name());
@@ -1298,7 +1302,10 @@ public class ContextInstanceDashboardWidget extends Div
             contextInstanceRecords = contextInstanceRecords.subList(offset, offset + limit);
         }
 
-        return contextInstanceRecords;
+        return contextInstanceRecords.stream().map(scheduledContextInstanceRecord -> {
+            ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
+            return new PreparedFutureJobPlanInstance(contextInstance.getName(), contextInstance.getId(), contextInstance.getStartTime());
+        }).collect(Collectors.toList());
     }
 
     private List<ScheduledContextInstanceRecord> filterCompleteContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
@@ -1339,12 +1346,40 @@ public class ContextInstanceDashboardWidget extends Div
         }
     }
 
+    private class PreparedFutureJobPlanInstance {
+        private String jobPlanName;
+        private String contextInstanceId;
+        private long contextInstanceStartTime;
+
+        public PreparedFutureJobPlanInstance(String jobPlanName, String contextInstanceId, long contextInstanceStartTime) {
+            this.jobPlanName = jobPlanName;
+            this.contextInstanceId = contextInstanceId;
+            this.contextInstanceStartTime = contextInstanceStartTime;
+        }
+
+        public String getJobPlanName() {
+            return jobPlanName;
+        }
+
+        public String getContextInstanceId() {
+            return contextInstanceId;
+        }
+
+        public long getContextInstanceStartTime() {
+            return contextInstanceStartTime;
+        }
+    }
+
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
-                this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
-                this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+                if(event.getContextInstance().getStatus().equals(InstanceStatus.PREPARED) ||
+                    event.getContextInstance().getStatus().equals(InstanceStatus.WAITING) ||
+                    event.getContextInstance().getStatus().equals(InstanceStatus.ENDED)) {
+                    this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
+                    this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+                }
                 this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
                 this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
             });
@@ -1355,8 +1390,12 @@ public class ContextInstanceDashboardWidget extends Div
     public void receiveBroadcast(ContextInstance event) {
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
-                this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
-                this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+                if(event.getStatus().equals(InstanceStatus.PREPARED) ||
+                    event.getStatus().equals(InstanceStatus.WAITING) ||
+                    event.getStatus().equals(InstanceStatus.ENDED)) {
+                    this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
+                    this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
+                }
                 this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
                 this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
             });
