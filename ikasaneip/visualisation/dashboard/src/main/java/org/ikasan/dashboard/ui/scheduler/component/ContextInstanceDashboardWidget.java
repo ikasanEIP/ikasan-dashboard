@@ -850,7 +850,7 @@ public class ContextInstanceDashboardWidget extends Div
                 },
                 // Second callback fetches the total number of items currently in the Grid.
                 // The grid can then use it to properly adjust the scrollbars.
-                query -> this.filterCompleteContextInstances(this.completeContextInstanceSearchFilter, -1, -1, null, null).size());
+                query -> (int)this.filterCompleteContextInstancesSize(this.completeContextInstanceSearchFilter));
 
         dataProvider.withConfigurableFilter().setFilter(this.completeContextInstanceSearchFilter);
         this.completedContextInstanceGrid.setDataProvider(dataProvider);
@@ -1327,6 +1327,20 @@ public class ContextInstanceDashboardWidget extends Div
             return new CompletedJobPlanInstance(contextInstance.getName(), contextInstance.getId(),
                 contextInstance.getStartTime(), contextInstance.getEndTime());
         }).collect(Collectors.toList());
+    }
+
+    private long filterCompleteContextInstancesSize(ContextInstanceSearchFilter contextInstanceSearchFilter) {
+        contextInstanceSearchFilter.setStatus(InstanceStatus.ENDED.name());
+
+        boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
+        Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
+
+        if(!canAccessAllJobPlans) {
+            contextInstanceSearchFilter.setContextInstanceNames(accessibleJobPlans.stream().collect(Collectors.toList()));
+        }
+
+        return this.scheduledContextInstanceService
+            .getScheduledContextInstancesByFilter(contextInstanceSearchFilter, 0, 0, null, null).getTotalNumberOfResults();
     }
 
     private class StatusFilter {
