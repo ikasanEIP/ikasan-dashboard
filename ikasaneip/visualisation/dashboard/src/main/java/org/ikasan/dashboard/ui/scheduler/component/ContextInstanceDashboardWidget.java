@@ -82,7 +82,7 @@ public class ContextInstanceDashboardWidget extends Div
     private Logger logger = LoggerFactory.getLogger(ContextInstanceDashboardWidget.class);
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
     private Grid<PreparedFutureJobPlanInstance> preparedFutureContextInstanceGrid;
-    private Grid<ScheduledContextInstanceRecord> completedContextInstanceGrid;
+    private Grid<CompletedJobPlanInstance> completedContextInstanceGrid;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
@@ -773,29 +773,29 @@ public class ContextInstanceDashboardWidget extends Div
         this.completedContextInstanceGrid.setWidthFull();
 
 
-        this.completedContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextName)
+        this.completedContextInstanceGrid.addColumn(CompletedJobPlanInstance::getJobPlanName)
             .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(2)
             .setResizable(true)
             .setSortable(true);
-        this.completedContextInstanceGrid.addColumn(ScheduledContextInstanceRecord::getContextInstanceId)
+        this.completedContextInstanceGrid.addColumn(CompletedJobPlanInstance::getContextInstanceId)
             .setHeader(getTranslation("table-header.context-instance-id", UI.getCurrent().getLocale())).setKey("id")
             .setFlexGrow(3)
             .setResizable(true)
             .setSortable(true);
-        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of("<div style='white-space:normal'>[[item.startTime]]</div>")
-                .withProperty("startTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getStartTime())))
+        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<CompletedJobPlanInstance>of("<div style='white-space:normal'>[[item.startTime]]</div>")
+                .withProperty("startTime", completedJobPlanInstance -> this.dateFormatter.getFormattedDate(completedJobPlanInstance.getContextInstanceStartTime())))
             .setHeader(getTranslation("table-header.start-date-time", UI.getCurrent().getLocale()))
             .setKey("startTime")
             .setFlexGrow(3)
             .setSortable(true);
-        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of("<div style='white-space:normal'>[[item.endTime]]</div>")
-                .withProperty("endTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getEndTime())))
+        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<CompletedJobPlanInstance>of("<div style='white-space:normal'>[[item.endTime]]</div>")
+                .withProperty("endTime", completedJobPlanInstance -> this.dateFormatter.getFormattedDate(completedJobPlanInstance.getContextInstanceEndTime())))
             .setHeader(getTranslation("table-header.end-date-time", UI.getCurrent().getLocale()))
             .setKey("endTime")
             .setFlexGrow(3)
             .setSortable(true);
-        this.completedContextInstanceGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
+        this.completedContextInstanceGrid.addColumn(new ComponentRenderer<>(completedJobPlanInstance -> {
                 VerticalLayout layout = new VerticalLayout();
                 layout.setMargin(false);
                 layout.setSizeFull();
@@ -804,7 +804,7 @@ public class ContextInstanceDashboardWidget extends Div
                     , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
                 breakOut.addClickListener(event -> {
                     String route = RouteConfiguration.forSessionScope()
-                        .getUrl(ContextInstanceView.class, List.of(scheduledContextInstanceRecord.getContextInstanceId() +"_scheduledContextInstance"));
+                        .getUrl(ContextInstanceView.class, List.of(completedJobPlanInstance.getContextInstanceId() +"_scheduledContextInstance"));
 
                     getUI().ifPresent(ui -> ui.getPage().open(route));
                 });
@@ -831,7 +831,7 @@ public class ContextInstanceDashboardWidget extends Div
             completeContextInstanceSearchFilter::setStartTimeStart, completeContextInstanceSearchFilter::setStartTimeEnd,"startTime", this.completedContextInstanceGrid);
         this.addDateTimeGridFiltering(hr, completeContextInstanceSearchFilter::setStartTime, completeContextInstanceSearchFilter::setEndTime,
             completeContextInstanceSearchFilter::setEndTimeStart, completeContextInstanceSearchFilter::setEndTimeEnd,"endTime", this.completedContextInstanceGrid);
-        DataProvider<ScheduledContextInstanceRecord, ContextInstanceSearchFilter> dataProvider =
+        DataProvider<CompletedJobPlanInstance, ContextInstanceSearchFilter> dataProvider =
             DataProvider.fromFilteringCallbacks(
                 // First callback fetches items based on a query
                 query -> {
@@ -1308,7 +1308,7 @@ public class ContextInstanceDashboardWidget extends Div
         }).collect(Collectors.toList());
     }
 
-    private List<ScheduledContextInstanceRecord> filterCompleteContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
+    private List<CompletedJobPlanInstance> filterCompleteContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
                                                                                 String sortField, String sortOrder) {
         contextInstanceSearchFilter.setStatus(InstanceStatus.ENDED.name());
 
@@ -1322,7 +1322,11 @@ public class ContextInstanceDashboardWidget extends Div
         List<ScheduledContextInstanceRecord> completedContextInstances = this.scheduledContextInstanceService
             .getScheduledContextInstancesByFilter(contextInstanceSearchFilter, limit, offset, sortField, sortOrder).getResultList();
 
-        return completedContextInstances;
+        return completedContextInstances.stream().map(scheduledContextInstanceRecord -> {
+            ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
+            return new CompletedJobPlanInstance(contextInstance.getName(), contextInstance.getId(),
+                contextInstance.getStartTime(), contextInstance.getEndTime());
+        }).collect(Collectors.toList());
     }
 
     private class StatusFilter {
@@ -1367,6 +1371,36 @@ public class ContextInstanceDashboardWidget extends Div
 
         public long getContextInstanceStartTime() {
             return contextInstanceStartTime;
+        }
+    }
+
+    private class CompletedJobPlanInstance {
+        private String jobPlanName;
+        private String contextInstanceId;
+        private long contextInstanceStartTime;
+        private long contextInstanceEndTime;
+        public CompletedJobPlanInstance(String jobPlanName, String contextInstanceId
+            , long contextInstanceStartTime, long contextInstanceEndTime) {
+            this.jobPlanName = jobPlanName;
+            this.contextInstanceId = contextInstanceId;
+            this.contextInstanceStartTime = contextInstanceStartTime;
+            this.contextInstanceEndTime = contextInstanceEndTime;
+        }
+
+        public String getJobPlanName() {
+            return jobPlanName;
+        }
+
+        public String getContextInstanceId() {
+            return contextInstanceId;
+        }
+
+        public long getContextInstanceStartTime() {
+            return contextInstanceStartTime;
+        }
+
+        public long getContextInstanceEndTime() {
+            return contextInstanceEndTime;
         }
     }
 
