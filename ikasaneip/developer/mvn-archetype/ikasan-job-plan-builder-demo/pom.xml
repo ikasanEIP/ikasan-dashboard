@@ -46,11 +46,11 @@
     <parent>
         <groupId>org.ikasan</groupId>
         <artifactId>ikasan-dashboard-mvn-archetype</artifactId>
-        <version>3.3.5-SNAPSHOT</version>
+        <version>3.3.5</version>
     </parent>
 
     <artifactId>ikasan-job-plan-builder-demo-maven-plugin</artifactId>
-    <version>3.3.5-SNAPSHOT</version>
+    <version>3.3.5</version>
     <packaging>maven-plugin</packaging>
     <name>Ikasan Enterprise Scheduler Job Plan Builder Demo</name>
 
