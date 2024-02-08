@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * Module Rest Client configuration required by ikasan dashboard in order to communicate with modules.
@@ -31,7 +31,6 @@ public class ModuleRestClientAutoConfiguration
             = new HttpComponentsClientHttpRequestFactory();
 
         // all of the properties can be overwritten using spring properties.
-        httpComponentsClientHttpRequestFactory.setReadTimeout(5000);
         httpComponentsClientHttpRequestFactory.setConnectTimeout(5000);
         httpComponentsClientHttpRequestFactory.setConnectionRequestTimeout(5000);
 

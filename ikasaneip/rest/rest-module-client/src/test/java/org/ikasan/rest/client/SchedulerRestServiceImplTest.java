@@ -4,6 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.util.Timeout;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -181,11 +185,17 @@ public class SchedulerRestServiceImplTest
     @Test
     public void testTimeout() throws JsonProcessingException {
         Environment environment = new StandardEnvironment();
+
         HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory
-            = new HttpComponentsClientHttpRequestFactory();
+            = new HttpComponentsClientHttpRequestFactory(
+            HttpClientBuilder.create().setConnectionManager(
+                    PoolingHttpClientConnectionManagerBuilder.create().setDefaultSocketConfig(
+                            SocketConfig.custom().setSoTimeout(Timeout.ofMilliseconds(1000)).build()
+                        )
+                        .build())
+                .build());
 
         httpComponentsClientHttpRequestFactory.setConnectTimeout(1000);
-        httpComponentsClientHttpRequestFactory.setReadTimeout(1000);
         httpComponentsClientHttpRequestFactory.setConnectionRequestTimeout(1000);
 
         uut = new SchedulerRestServiceImpl(environment, httpComponentsClientHttpRequestFactory);

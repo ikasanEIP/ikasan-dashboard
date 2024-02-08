@@ -217,13 +217,18 @@
         <dependency>
             <groupId>org.jmock</groupId>
             <artifactId>jmock-imposters</artifactId>
-            <version>${version.jmock.imposters}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
             <scope>test</scope>
         </dependency>
 
 <!--        <dependency>-->
-<!--            <groupId>net.bytebuddy</groupId>-->
-<!--            <artifactId>byte-buddy</artifactId>-->
+<!--            <groupId>org.jmock</groupId>-->
+<!--            <artifactId>jmock-legacy</artifactId>-->
 <!--            <scope>test</scope>-->
 <!--        </dependency>-->
 

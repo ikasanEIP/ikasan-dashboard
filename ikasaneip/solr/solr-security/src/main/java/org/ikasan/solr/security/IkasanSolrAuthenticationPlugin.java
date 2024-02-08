@@ -7,8 +7,7 @@ import org.ikasan.security.service.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Map;
@@ -25,9 +24,8 @@ public class IkasanSolrAuthenticationPlugin extends AuthenticationPlugin
     {
 
     }
-
     @Override
-    public boolean doAuthenticate(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws Exception
+    public boolean doAuthenticate(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain) throws Exception
     {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         String auth = request.getHeader("Authorization");
