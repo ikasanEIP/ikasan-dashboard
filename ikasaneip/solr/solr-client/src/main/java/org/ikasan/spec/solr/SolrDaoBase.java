@@ -5,6 +5,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
@@ -100,7 +101,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
      */
     public void initCloud(List<String> solrCloudUrls, int daysToKeep)
     {
-        solrClient = new CloudSolrClient.Builder().withSolrUrl(solrCloudUrls).build();
+        solrClient = new CloudSolrClient.Builder(solrCloudUrls).build();
         ((CloudSolrClient)solrClient).setDefaultCollection("ikasan");
 
         this.daysToKeep = daysToKeep;
@@ -110,10 +111,8 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public void initStandalone(String solrCloudUrl, int daysToKeep,
                                int socketTimeoutMilli, int connectionTimeoutMilli)
     {
-        solrClient = new HttpSolrClient.Builder()
-            .withBaseSolrUrl(solrCloudUrl)
-            .withSocketTimeout(socketTimeoutMilli)
-            .withConnectionTimeout(connectionTimeoutMilli)
+        solrClient = new Http2SolrClient.Builder(solrCloudUrl)
+            .withConnectionTimeout(connectionTimeoutMilli, TimeUnit.MILLISECONDS)
             .build();
 
         this.daysToKeep = daysToKeep;

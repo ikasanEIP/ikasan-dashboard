@@ -260,27 +260,29 @@
         <version.kryo>4.0.2</version.kryo>
         <version.kryo.cli>5.0.3</version.kryo.cli>  <!-- currently only using latest version for CLI/shell -->
         <version.ow2.asm>7.1</version.ow2.asm>
-        <version.org.hibernate>5.4.24.Final</version.org.hibernate>
-        <version.org.hibernate-validator>6.0.20.Final</version.org.hibernate-validator>
-        <version.org.springframework>5.3.18</version.org.springframework>
-        <version.org.springframework.security>5.3.13.RELEASE</version.org.springframework.security>
-        <version.org.springframework.ldap>2.3.2.RELEASE</version.org.springframework.ldap>
-        <version.org.springframework.webflow>2.4.0.RELEASE</version.org.springframework.webflow>
-        <version.spring.cloud.config.client>3.0.6</version.spring.cloud.config.client>
-        <version.org.springboot>2.5.12</version.org.springboot>
+<!--        <version.org.hibernate>5.4.24.Final</version.org.hibernate>-->
+<!--        <version.org.hibernate-validator>6.0.20.Final</version.org.hibernate-validator>-->
+        <version.org.springframework>6.1.3</version.org.springframework>
+        <version.org.springframework.security>6.2.1</version.org.springframework.security>
+        <version.org.springframework.ldap>3.2.1</version.org.springframework.ldap>
+        <version.org.springframework.webflow>3.0.0</version.org.springframework.webflow>
+        <version.spring.cloud.config.client>4.1.0</version.spring.cloud.config.client>
+        <version.org.springframework.webflow-spring-js>2.4.8.RELEASE</version.org.springframework.webflow-spring-js>
+        <version.org.springboot>3.2.1</version.org.springboot>
         <version.org.springframework.shell>2.0.1.RELEASE</version.org.springframework.shell>
         <version.io.springfox.swagger>2.9.2</version.io.springfox.swagger>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
+        <version.net.bytebuddy.byte-buddy>1.10.6</version.net.bytebuddy.byte-buddy>
         <version.jmock.imposters>2.12.0</version.jmock.imposters>
         <version.org.slf4j>1.7.36</version.org.slf4j>
         <version.junit>4.12</version.junit>
         <version.org.awaitility>4.0.2</version.org.awaitility>
         <version.org.jmock>2.12.0</version.org.jmock>
-        <version.org.jmock.jmock-legacy>2.12.0</version.org.jmock.jmock-legacy>
         <version.org.assertj>3.13.2</version.org.assertj>
         <version.javax.transaction.jta>1.1</version.javax.transaction.jta>
         <version.javax.annotation>1.3.1</version.javax.annotation>
-        <version.javax.xml.bind>2.3.1</version.javax.xml.bind>
+<!--        <version.javax.xml.bind>2.3.1</version.javax.xml.bind>-->
+        <version.jakarta.xml.bind>4.0.1</version.jakarta.xml.bind>
         <version.org.hamcrest.hamcrest-core>2.2</version.org.hamcrest.hamcrest-core>
         <version.org.hamcrest.hamcrest-library>2.2</version.org.hamcrest.hamcrest-library>
         <version.cglib.cglib-nodep>3.2.6</version.cglib.cglib-nodep>
@@ -315,20 +317,21 @@
         <version.org.liquibase>3.8.9</version.org.liquibase>
         <version.org.yaml.snakeyaml>1.26</version.org.yaml.snakeyaml>
         <version.org.subethamail>1.2</version.org.subethamail>
-        <version.org.eclipse.jetty>9.4.41.v20210516</version.org.eclipse.jetty>
+        <version.org.eclipse.jetty>11.0.18</version.org.eclipse.jetty>
         <version.net.sf.saxon>9.6.0-3</version.net.sf.saxon>
         <version.org.mongodb.mongo-java-driver>3.0.2</version.org.mongodb.mongo-java-driver>
         <version.de.flapdoodle.embed>1.47.3</version.de.flapdoodle.embed>
         <version.org.aspectj>1.9.5</version.org.aspectj>
         <version.org.aspectjrt>1.9.5</version.org.aspectjrt>
+        <version.jakarta.servlet>6.1.0-M1</version.jakarta.servlet>
         <version.javax.servlet>4.0.1</version.javax.servlet>
         <version.javax.servlet.jstl>1.2</version.javax.servlet.jstl>
         <version.activemq>5.15.11</version.activemq>
         <version.geronimo.spec>1.4-rc3</version.geronimo.spec>
         <version.geronimo.jms.spec>1.1.1</version.geronimo.jms.spec>
         <version.javax.jms-api>2.0.1</version.javax.jms-api>
-        <version.org.jboss.narayana.jta>5.9.8.Final</version.org.jboss.narayana.jta>
-        <version.me.snowdrop.narayana>2.2.0</version.me.snowdrop.narayana>
+        <version.org.jboss.narayana.jta>7.0.0.Final</version.org.jboss.narayana.jta>
+        <version.me.snowdrop.narayana>3.0.0.redhat-00042</version.me.snowdrop.narayana>
         <version.commons.net>3.3</version.commons.net>
         <version.com.thoughtworks.xstream>1.4.18</version.com.thoughtworks.xstream>
         <version.xalan.xalan>2.7.2</version.xalan.xalan>
@@ -338,8 +341,8 @@
         <version.com.jcraft.jsch>0.1.55</version.com.jcraft.jsch>
         <version.org.mockftpserver>2.6</version.org.mockftpserver>
         <version.org.apache.sshd>2.1.0</version.org.apache.sshd>
-        <version.com.fasterxml.jackson.core>2.13.2</version.com.fasterxml.jackson.core>
-        <version.com.fasterxml.jackson.core.databind>2.13.2.2</version.com.fasterxml.jackson.core.databind>
+        <version.com.fasterxml.jackson.core>2.16.0</version.com.fasterxml.jackson.core>
+        <version.com.fasterxml.jackson.core.databind>2.16.0</version.com.fasterxml.jackson.core.databind>
         <version.vaadin>14.11.3</version.vaadin>
         <version.org.vaadin.tabs>1.2.0</version.org.vaadin.tabs>
         <version.com.vaadin.componentfactory>1.2.2</version.com.vaadin.componentfactory>
@@ -350,9 +353,10 @@
         <version.finbugs>1.3.9</version.finbugs>
         <version.com.google.guava>23.0</version.com.google.guava>
         <version.tomcat>9.0.41</version.tomcat>
-        <version.wiremock>2.8.0</version.wiremock>
-        <version.org.apache.solr>8.11.1</version.org.apache.solr>
+        <version.wiremock>3.0.3</version.wiremock>
+        <version.org.apache.solr>9.4.1</version.org.apache.solr>
         <version.org.apache.httpcomponents>4.5.13</version.org.apache.httpcomponents>
+        <version.org.apache.httpcomponents5>5.3</version.org.apache.httpcomponents5>
         <version.vtd.xml>2.13.4</version.vtd.xml>
         <version.json.assert>1.5.0</version.json.assert>
         <version.org.junit.jupiter>5.7.0</version.org.junit.jupiter>
@@ -374,13 +378,14 @@
         <version.ace.editor>2.3.1</version.ace.editor>
         <version.big.queue>1.0.0</version.big.queue>
         <version.logback>1.2.3</version.logback>
-        <ikasan.core.version>3.3.3</ikasan.core.version>
+        <ikasan.core.version>4.0.0-SNAPSHOT</ikasan.core.version>
         <version.spring.webflux>5.3.10</version.spring.webflux>
         <version.reactor.test>3.4.10</version.reactor.test>
         <version.reactor.netty.http>1.0.11</version.reactor.netty.http>
         <version.okhttp3>3.7.0</version.okhttp3>
         <version.cron.utils>9.1.6</version.cron.utils>
         <version.tech.huffman.re-retrying>3.0.0</version.tech.huffman.re-retrying>
+        <version.jmock.imposters>2.12.0</version.jmock.imposters>
         <version.net.bytebuddy.byte-buddy>1.12.19</version.net.bytebuddy.byte-buddy>
     </properties>
 
@@ -439,10 +444,10 @@
                     <version>3.1</version>
                     <configuration>
                         <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                        <source>11</source>
-                        <target>11</target>
-                        <testSource>11</testSource>
-                        <testTarget>11</testTarget>
+                        <source>17</source>
+                        <target>17</target>
+                        <testSource>17</testSource>
+                        <testTarget>17</testTarget>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -976,6 +981,7 @@
                 <artifactId>ikasan-jms-spring</artifactId>
                 <version>${ikasan.core.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-jms-spring-arjuna</artifactId>
@@ -1429,30 +1435,30 @@
                 <version>${version.vtd.xml}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
+<!--            <dependency>-->
+<!--                <groupId>org.hibernate</groupId>-->
+<!--                <artifactId>hibernate-core</artifactId>-->
+<!--                <version>${version.org.hibernate}</version>-->
+<!--                <exclusions>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>xml-apis</groupId>-->
+<!--                        <artifactId>xml-apis</artifactId>-->
+<!--                    </exclusion>-->
+<!--                </exclusions>-->
 
-            </dependency>
+<!--            </dependency>-->
 
-            <dependency>
-                <groupId>org.hibernate.validator</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>${version.org.hibernate-validator}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.hibernate.validator</groupId>-->
+<!--                <artifactId>hibernate-validator</artifactId>-->
+<!--                <version>${version.org.hibernate-validator}</version>-->
+<!--                <exclusions>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.jboss.logging</groupId>-->
+<!--                        <artifactId>jboss-logging</artifactId>-->
+<!--                    </exclusion>-->
+<!--                </exclusions>-->
+<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -1514,16 +1520,22 @@
                 <version>${version.javax.annotation}</version>
             </dependency>
 
-            <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>${version.javax.xml.bind}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>javax.xml.bind</groupId>-->
+<!--                <artifactId>jaxb-api</artifactId>-->
+<!--                <version>${version.javax.xml.bind}</version>-->
+<!--            </dependency>-->
+
+<!--            <dependency>-->
+<!--                <groupId>com.sun.xml.bind</groupId>-->
+<!--                <artifactId>jaxb-impl</artifactId>-->
+<!--                <version>${version.javax.xml.bind}</version>-->
+<!--            </dependency>-->
 
             <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
-                <version>${version.javax.xml.bind}</version>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${version.jakarta.xml.bind}</version>
             </dependency>
 
 
@@ -1576,21 +1588,25 @@
                 <version>${version.org.springboot}</version>
             </dependency>
 
-            <dependency>
-                <groupId>me.snowdrop</groupId>
-                <artifactId>narayana-spring-boot-starter</artifactId>
-                <version>${version.me.snowdrop.narayana}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>me.snowdrop</groupId>-->
+<!--                <artifactId>narayana-spring-boot-starter</artifactId>-->
+<!--                <version>${version.me.snowdrop.narayana}</version>-->
+<!--                <exclusions>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.springframework.boot</groupId>-->
+<!--                        <artifactId>spring-boot-starter</artifactId>-->
+<!--                    </exclusion>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.jboss.narayana.jta</groupId>-->
+<!--                        <artifactId>narayana-jta</artifactId>-->
+<!--                    </exclusion>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.apache.commons</groupId>-->
+<!--                        <artifactId>commons-pool2</artifactId>-->
+<!--                    </exclusion>-->
+<!--                </exclusions>-->
+<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -1758,16 +1774,28 @@
                 <scope>test</scope>
             </dependency>
 
+<!--            <dependency>-->
+<!--                <groupId>org.jmock</groupId>-->
+<!--                <artifactId>jmock-legacy</artifactId>-->
+<!--                <version>${version.org.jmock.jmock-legacy}</version>-->
+<!--                <exclusions>-->
+<!--                    <exclusion>-->
+<!--                        <groupId>org.ow2.asm</groupId>-->
+<!--                        <artifactId>asm</artifactId>-->
+<!--                    </exclusion>-->
+<!--                </exclusions>-->
+<!--            </dependency>-->
+
             <dependency>
                 <groupId>org.jmock</groupId>
-                <artifactId>jmock-legacy</artifactId>
-                <version>${version.org.jmock.jmock-legacy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                </exclusions>
+                <artifactId>jmock-imposters</artifactId>
+                <version>${version.jmock.imposters}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${version.net.bytebuddy.byte-buddy}</version>
             </dependency>
 
             <dependency>
@@ -1966,18 +1994,6 @@
                 <groupId>com.fasterxml</groupId>
                 <artifactId>classmate</artifactId>
                 <version>${version.com.fasterxml.classmate}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>net.bytebuddy</groupId>
-                <artifactId>byte-buddy</artifactId>
-                <version>${version.net.bytebuddy.byte-buddy}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jmock</groupId>
-                <artifactId>jmock-imposters</artifactId>
-                <version>${version.jmock.imposters}</version>
             </dependency>
 
             <!-- Jersey -->
@@ -2246,11 +2262,11 @@
                 <version>${version.org.quartz-scheduler}</version>
             </dependency>
 
-            <dependency>
-                <groupId>javax.transaction</groupId>
-                <artifactId>jta</artifactId>
-                <version>${version.javax.transaction.jta}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>javax.transaction</groupId>-->
+<!--                <artifactId>jta</artifactId>-->
+<!--                <version>${version.javax.transaction.jta}</version>-->
+<!--            </dependency>-->
 
             <dependency>
                 <groupId>com.h2database</groupId>
@@ -2335,6 +2351,13 @@
             </dependency>
 
             <dependency>
+                <groupId>org.eclipse.jetty.http2</groupId>
+                <artifactId>http2-server</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>net.sf.saxon</groupId>
                 <artifactId>Saxon-HE</artifactId>
                 <version>${version.net.sf.saxon}</version>
@@ -2375,6 +2398,12 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${version.javax.servlet}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${version.jakarta.servlet}</version>
             </dependency>
 
             <dependency>
@@ -2422,7 +2451,7 @@
             <dependency>
                 <groupId>org.springframework.webflow</groupId>
                 <artifactId>spring-js</artifactId>
-                <version>${version.org.springframework.webflow}</version>
+                <version>${version.org.springframework.webflow-spring-js}</version>
             </dependency>
 
             <dependency>
@@ -2442,16 +2471,19 @@
                 <artifactId>activemq-all</artifactId>
                 <version>${version.activemq}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-kahadb-store</artifactId>
                 <version>${version.activemq}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-client</artifactId>
                 <version>${version.activemq}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-broker</artifactId>
@@ -2490,6 +2522,7 @@
                 <version>${version.powermock}</version>
                 <scope>test</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.powermock</groupId>
                 <artifactId>powermock-api-mockito</artifactId>
@@ -2512,18 +2545,18 @@
                 <scope>test</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.jboss.narayana.jta</groupId>
-                <artifactId>jta</artifactId>
-                <version>${version.org.jboss.narayana.jta}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.jboss.narayana.jta</groupId>-->
+<!--                <artifactId>jta</artifactId>-->
+<!--                <version>${version.org.jboss.narayana.jta}</version>-->
+<!--            </dependency>-->
 
-            <!-- Jboss -->
-            <dependency>
-                <groupId>org.jboss.transaction</groupId>
-                <artifactId>jboss-jta</artifactId>
-                <version>${version.org.jboss.transaction.jboss-jta}</version>
-            </dependency>
+<!--            &lt;!&ndash; Jboss &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>org.jboss.transaction</groupId>-->
+<!--                <artifactId>jboss-jta</artifactId>-->
+<!--                <version>${version.org.jboss.transaction.jboss-jta}</version>-->
+<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.jboss.logging</groupId>
@@ -2581,11 +2614,13 @@
                 <artifactId>sshd-core</artifactId>
                 <version>${version.org.apache.sshd}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.sshd</groupId>
                 <artifactId>sshd-sftp</artifactId>
                 <version>${version.org.apache.sshd}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.sshd</groupId>
                 <artifactId>sshd-scp</artifactId>
@@ -2599,7 +2634,13 @@
             </dependency>
 
             <dependency>
-                <groupId>com.github.tomakehurst</groupId>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>${version.org.apache.httpcomponents5}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wiremock</groupId>
                 <artifactId>wiremock</artifactId>
                 <version>${version.wiremock}</version>
                 <exclusions>
@@ -2624,56 +2665,12 @@
                         <artifactId>httpcore</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>com.jayway.jsonpath</groupId>
-                        <artifactId>json-path</artifactId>
+                        <groupId>org.eclipse.jetty.http2</groupId>
+                        <artifactId>http2-server</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-server</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-deploy</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-http</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-io</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-jmx</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-rewrite</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-security</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-servlet</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-servlets</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-util</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-webapp</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-xml</artifactId>
+                        <artifactId>jetty-proxy</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2786,7 +2783,25 @@
                         <groupId>org.ow2.asm</groupId>
                         <artifactId>asm</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4-runtime</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>stax2-api</artifactId>
+                    </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>stax2-api</artifactId>
+                <version>4.2.2</version>
             </dependency>
 
             <dependency>
@@ -2861,6 +2876,18 @@
                     <exclusion>
                         <groupId>org.ow2.asm</groupId>
                         <artifactId>asm</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4-runtime</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.http2</groupId>
+                        <artifactId>http2-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.http2</groupId>
+                        <artifactId>http2-common</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
