@@ -1,17 +1,13 @@
 package org.ikasan.job.orchestration.integration;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
-import org.ikasan.spec.dashboard.DashboardRestService;
 import org.ikasan.spec.flow.Flow;
 import org.ikasan.spec.module.Module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.transaction.jta.JtaTransactionManager;
-
-import javax.transaction.*;
 
 public class StartupCompleteApplicationListener implements ApplicationListener<ApplicationStartedEvent> {
 

@@ -13,7 +13,7 @@ import org.ikasan.metrics.dao.SolrMetricsDao;
 import org.ikasan.metrics.model.FlowInvocationMetricImpl;
 import org.ikasan.spec.history.FlowInvocationMetric;
 import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
+import org.jmock.imposters.ByteBuddyClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class SolrMetricsServiceTest extends SolrTestCaseJ4
     private Mockery mockery = new Mockery()
     {
         {
-            setImposteriser(ClassImposteriser.INSTANCE);
+            setImposteriser(ByteBuddyClassImposteriser.INSTANCE);
         }
     };
 

@@ -44,7 +44,7 @@
     <parent>
         <groupId>org.ikasan</groupId>
         <artifactId>ikasan-dashboard-developer</artifactId>
-        <version>3.3.6-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>ikasan-dashboard-mvn-archetype</artifactId>
@@ -112,7 +112,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <version.com.h2database>1.4.200</version.com.h2database>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.ikasan>3.3.0-SNAPSHOT</version.ikasan>
+    <version.ikasan>4.0.0-SNAPSHOT</version.ikasan>
     <version.activemq>5.16.3</version.activemq>
   </properties>
 

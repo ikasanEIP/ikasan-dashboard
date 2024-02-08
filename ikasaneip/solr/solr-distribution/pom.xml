@@ -49,7 +49,7 @@
     <parent>
         <groupId>org.ikasan</groupId>
         <artifactId>ikasan-solr</artifactId>
-        <version>3.3.6-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>ikasan-solr-distribution</artifactId>
@@ -81,7 +81,7 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://archive.apache.org/dist/lucene/solr/${version.org.apache.solr}/solr-${version.org.apache.solr}.zip</url>
+                            <url>https://dlcdn.apache.org/solr/solr/${version.org.apache.solr}/solr-${version.org.apache.solr}.tgz</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                         </configuration>
