@@ -1186,7 +1186,7 @@ public class ContextHelper {
     private static void getContextsWhereJobFilterMatchResides(List<String> results, Context context, String jobNameFilter) {
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
             context.getScheduledJobs().forEach(job -> {
-                if(((SchedulerJob)job).getJobName().toLowerCase().contains(jobNameFilter.toLowerCase())) {
+                if(((SchedulerJob)job).getJobName() != null && ((SchedulerJob)job).getJobName().toLowerCase().contains(jobNameFilter.toLowerCase())) {
                     results.add(context.getName());
                 }
                 else if(((SchedulerJob)job).getDisplayName() != null

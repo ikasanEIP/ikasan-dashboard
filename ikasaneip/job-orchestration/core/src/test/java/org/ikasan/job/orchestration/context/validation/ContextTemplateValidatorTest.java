@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 
 @Ignore
 public class ContextTemplateValidatorTest extends AbstractTest {
@@ -34,6 +35,27 @@ public class ContextTemplateValidatorTest extends AbstractTest {
             .getContextTemplate(loadDataFile("/data/context.json"));
         ContextTemplateValidator validator = new ContextTemplateValidator();
         validator.validate(contextTemplate);
+    }
+
+    @Test(expected = InvalidContextTemplateException.class)
+    public void test_simple_context_validation_fail_null_job_names() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContextTemplate(loadDataFile("/data/context_null_job_names.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+
+        try {
+            validator.validateJobs(contextTemplate, List.of());
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.assertEquals(16, e.getContextErrors().size());
+            Assert.assertEquals("Job[{\"agentName\":\"agentName1\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName1-jobName1\"}] " +
+                "sourced from the job plan template is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(0).getErrorMessage());
+            Assert.assertEquals("Job[{\"agentName\":\"agentName2\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName2-jobName2\"}] " +
+                "sourced from the job plan template is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(1).getErrorMessage());
+            throw e;
+        }
     }
 
     @Test(expected = InvalidContextTemplateException.class)

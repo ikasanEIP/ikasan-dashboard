@@ -227,6 +227,9 @@ public class JobPlanEditorWidget extends VerticalLayout {
 
             this.aceEditor.setCursorPosition(position.getRow(), position.getColumn());
         }
+        catch (Exception e) {
+            NotificationHelper.showUserNotification(getTranslation("error.job-plan-validation-failure", UI.getCurrent().getLocale()));
+        }
 
 
         try {
@@ -235,6 +238,9 @@ public class JobPlanEditorWidget extends VerticalLayout {
         }
         catch (InvalidContextTemplateException e) {
             jsonValidationWarnings.addAll(e.getContextErrors());
+        }
+        catch (Exception e) {
+            NotificationHelper.showUserNotification(getTranslation("error.job-plan-validation-failure", UI.getCurrent().getLocale()));
         }
 
         if(!contextTemplate.getName().equals(this.contextTemplate.getName())) {
@@ -267,6 +273,10 @@ public class JobPlanEditorWidget extends VerticalLayout {
 
                 NotificationHelper.showUserNotification(getTranslation("notification.job-plan-json-contains-warnings", UI.getCurrent().getLocale()));
             }
+        }
+
+        if(jsonValidationErrors.isEmpty() && jsonValidationWarnings.isEmpty()) {
+            NotificationHelper.showUserNotification(getTranslation("notification.job-plan-is-valid", UI.getCurrent().getLocale()));
         }
 
         if(!jsonValidationErrors.isEmpty()) {

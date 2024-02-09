@@ -1,6 +1,9 @@
 package org.ikasan.job.orchestration.context.validation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -15,7 +18,8 @@ public class ContextTemplateValidator {
     private StringBuffer errorReport = new StringBuffer("The context template is invalid!\n");
     private List<ContextError> errors = new ArrayList<>();
     private boolean inError = false;
-    List<String> childContextName = new ArrayList<>();
+    private  List<String> childContextName = new ArrayList<>();
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     /**
      * Method to validate a context template.
@@ -50,8 +54,38 @@ public class ContextTemplateValidator {
 
         List<SchedulerJob> schedulerJobs = ContextHelper.getAllJobs(contextTemplate);
 
-        Set<String> jobTemplatesSet = jobTemplates.stream().map(job -> job.getJobName()).collect(Collectors.toSet());
-        Set<String> contextTemplatesJobSet = schedulerJobs.stream().map(job -> job.getJobName()).collect(Collectors.toSet());
+        Set<String> jobTemplatesSet = jobTemplates.stream().map(job -> {
+            if(job.getJobName() == null || job.getJobName().isEmpty()) {
+                try {
+                    this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the database job definition" +
+                        " is missing a job name. This is a mandatory field!\n", this.objectMapper.writeValueAsString(job)), "");
+                }
+                catch (JsonProcessingException e) {
+                    this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the database job definition" +
+                        " is missing a job name. This is a mandatory field!\n", job.getIdentifier()), "");
+                }
+                return "";
+            }
+            else {
+                return job.getJobName();
+            }
+        }).filter(jobName -> !jobName.isEmpty()).collect(Collectors.toSet());
+        Set<String> contextTemplatesJobSet = schedulerJobs.stream().map(job -> {
+            if(job.getJobName() == null || job.getJobName().isEmpty()) {
+                try {
+                    this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job plan template" +
+                        " is missing a job name. This is a mandatory field!\n", this.objectMapper.writeValueAsString(job)), "");
+                }
+                catch (JsonProcessingException e) {
+                    this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job plan template" +
+                        " is missing a job name. This is a mandatory field!\n", job.getIdentifier()), "");
+                }
+                return "";
+            }
+            else {
+                return job.getJobName();
+            }
+        }).filter(jobName -> !jobName.isEmpty()).collect(Collectors.toSet());
 
         contextTemplatesJobSet.removeAll(jobTemplatesSet);
 
@@ -60,16 +94,21 @@ public class ContextTemplateValidator {
                 List<String> contexts = ContextHelper.getContextsWhereJobFilterMatchResides(contextTemplate, jobName);
 
                 contexts.forEach(contextName -> {
-                    this.errorReport.append(String.format("Job[%s] appears in job " +
-                        "plan but there is no job template defined for it in the database!\n", jobName));
-                    ContextError contextError = new ContextError(contextName, String.format("Job[%s] appears in job " +
-                        "plan but there is no job template defined for it in the database!", jobName), jobName);
-                    this.errors.add(contextError);
+                    this.reportError(contextTemplate.getName(), String.format("Job[%s] appears in job " +
+                        "plan but there is no job template defined for it in the database!\n", jobName), "");
                 });
             });
+        }
 
+        if(!this.errorReport.toString().isEmpty() && !this.errors.isEmpty()) {
             throw new InvalidContextTemplateException(errorReport.toString(), this.errors);
         }
+    }
+
+    private void reportError(String contextName, String error, String jobName) {
+        this.errorReport.append(error);
+        ContextError contextError = new ContextError(contextName, error, jobName);
+        this.errors.add(contextError);
     }
 
     /**
