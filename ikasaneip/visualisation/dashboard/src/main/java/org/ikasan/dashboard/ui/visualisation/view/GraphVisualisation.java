@@ -3,10 +3,11 @@ package org.ikasan.dashboard.ui.visualisation.view;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.componentfactory.Tooltip;
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Div;
@@ -15,13 +16,11 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.shared.Registration;
-import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.SearchResults;
 import org.ikasan.dashboard.ui.general.component.TableButton;
@@ -54,10 +53,6 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vaadin.erik.SlideMode;
-import org.vaadin.erik.SlideTab;
-import org.vaadin.erik.SlideTabBuilder;
-import org.vaadin.erik.SlideTabPosition;
 import org.vaadin.olli.FileDownloadWrapper;
 import org.vaadin.tabs.PagedTabs;
 
@@ -101,8 +96,8 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
 
     private boolean initialised = false;
 
-    private SlideTab toolSlider;
-    private SlideTab searchSlider;
+//    private SlideTab toolSlider;
+//    private SlideTab searchSlider;
     private Button uploadBusinssStreamButton;
     private Tooltip uploadBusinssStreamButtonTooltip;
 
@@ -181,7 +176,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         modulesGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(16);
-        modulesGrid.addColumn(TemplateRenderer.<ModuleMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
+        modulesGrid.addColumn(LitRenderer.<ModuleMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", ModuleMetaData::getDescription))
             .setHeader(getTranslation("table-header.module-description", UI.getCurrent().getLocale()))
             .setKey("description")
@@ -239,10 +234,10 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             {
                 createModuleVisualisation(doubleClickEvent.getItem());
 
-                if(this.toolSlider.isExpanded())
-                {
-                    this.toolSlider.collapse();
-                }
+//                if(this.toolSlider.isExpanded())
+//                {
+//                    this.toolSlider.collapse();
+//                }
 
                 this.businessStreamVisualisation = null;
             });
@@ -262,12 +257,12 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         businessStreamGrid.setHeight("80vh");
         businessStreamGrid.setWidth("100%");
 
-        businessStreamGrid.addColumn(TemplateRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.name]]</div>")
+        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.name]]</div>")
             .withProperty("name", BusinessStreamMetaData::getName))
             .setHeader(getTranslation("table-header.business-stream-name", UI.getCurrent().getLocale()))
             .setKey("name")
             .setFlexGrow(16);
-        businessStreamGrid.addColumn(TemplateRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
+        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", BusinessStreamMetaData::getDescription)).setHeader(getTranslation("table-header.business-stream-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(32);
@@ -279,8 +274,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                 BusinessStreamUploadDialog uploadDialog = new  BusinessStreamUploadDialog(businessStreamMetaData, this.businessStreamMetaDataService);
                 uploadDialog.open();
 
-                uploadDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
-                    dialogOpenedChangeEvent -> populateBusinessStreamGrid());
+                uploadDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> populateBusinessStreamGrid());
             });
 
             ComponentSecurityVisibility.applySecurity(editButton, SecurityConstants.PLATFORM_CONFIGURATION_ADMIN,
@@ -340,10 +334,10 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                 NotificationHelper.showErrorNotification(getTranslation("error.could-not-open-business-stream", UI.getCurrent().getLocale()));
             }
 
-            if(this.toolSlider.isExpanded())
-            {
-                this.toolSlider.collapse();
-            }
+//            if(this.toolSlider.isExpanded())
+//            {
+//                this.toolSlider.collapse();
+//            }
         });
 
         HeaderRow hr = this.businessStreamGrid.appendHeaderRow();
@@ -506,8 +500,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             BusinessStreamUploadDialog uploadDialog = new  BusinessStreamUploadDialog(this.businessStreamMetaDataService);
             uploadDialog.open();
 
-            uploadDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
-                dialogOpenedChangeEvent -> populateBusinessStreamGrid());
+            uploadDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> populateBusinessStreamGrid());
         });
 
         uploadBusinssStreamButtonTooltip = TooltipHelper.getTooltipForComponentBottom(uploadBusinssStreamButton
@@ -542,18 +535,18 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         card.add(transparent, tabs);
 
 
-
-        toolSlider = new SlideTabBuilder(card)
-            .expanded(true)
-            .mode(SlideMode.RIGHT)
-            .caption("Tools")
-            .tabPosition(SlideTabPosition.MIDDLE)
-            .fixedContentSize(697)
-            .zIndex(1)
-            .flowInContent(true)
-            .build();
-
-        super.add(toolSlider);
+        // todo make use vaadin split screen
+//        toolSlider = new SlideTabBuilder(card)
+//            .expanded(true)
+//            .mode(SlideMode.RIGHT)
+//            .caption("Tools")
+//            .tabPosition(SlideTabPosition.MIDDLE)
+//            .fixedContentSize(697)
+//            .zIndex(1)
+//            .flowInContent(true)
+//            .build();
+//
+//        super.add(toolSlider);
     }
 
     /**
@@ -574,16 +567,17 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
 
         wrapperDiv.add(searchForm, this.searchResults);
 
-        searchSlider = new SlideTabBuilder(wrapperDiv)
-            .expanded(false)
-            .mode(SlideMode.BOTTOM)
-            .caption("Search")
-            .tabPosition(SlideTabPosition.MIDDLE)
-            .zIndex(1)
-            .flowInContent(true)
-            .build();
-
-        super.add(searchSlider);
+        // todo make use vaadin split screen
+//        searchSlider = new SlideTabBuilder(wrapperDiv)
+//            .expanded(false)
+//            .mode(SlideMode.BOTTOM)
+//            .caption("Search")
+//            .tabPosition(SlideTabPosition.MIDDLE)
+//            .zIndex(1)
+//            .flowInContent(true)
+//            .build();
+//
+//        super.add(searchSlider);
     }
 
     @Override

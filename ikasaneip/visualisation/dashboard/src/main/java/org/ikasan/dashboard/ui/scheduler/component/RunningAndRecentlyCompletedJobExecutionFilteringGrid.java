@@ -11,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
@@ -90,27 +90,27 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         Checkbox errorCb = new Checkbox("Errors");
         addGridFiltering(errorCb, super.searchFilter::setErrorsOnly);
 
-        super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.agentHostname]]</div>")
+        super.addColumn(LitRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.agentHostname]]</div>")
             .withProperty("agentHostname", ScheduledProcessEvent::getAgentHostname))
             .setHeader(getTranslation("table-header.scheduled-agent-host-name", UI.getCurrent().getLocale()))
             .setKey("agentHostname")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
+        super.addColumn(LitRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
             .withProperty("schedulerName", ScheduledProcessEvent::getAgentName))
             .setHeader(getTranslation("table-header.scheduled-agent-name", UI.getCurrent().getLocale()))
             .setKey("schedulerName")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.jobName]]</div>")
+        super.addColumn(LitRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.jobName]]</div>")
             .withProperty("jobName", ScheduledProcessEvent::getJobName))
             .setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setKey("jobName")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
+        super.addColumn(LitRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
             .withProperty("jobGroup", ScheduledProcessEvent::getJobGroup))
             .setHeader(getTranslation("table-header.job-group", UI.getCurrent().getLocale()))
             .setKey("jobGroup")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.description]]</div>")
+        super.addColumn(LitRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", ScheduledProcessEvent::getJobDescription))
             .setHeader(getTranslation("table-header.job-description", UI.getCurrent().getLocale()))
             .setKey("description")
@@ -140,7 +140,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             .setHeader(getTranslation("table-header.related-business-streams", UI.getCurrent().getLocale()))
             .setKey("businessStreams")
             .setFlexGrow(5);
-        super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.executionTime]]</div>")
+        super.addColumn(LitRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.executionTime]]</div>")
             .withProperty("executionTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getFireTime())))
             .setHeader("Execution Time")
             .setKey("executionTime")

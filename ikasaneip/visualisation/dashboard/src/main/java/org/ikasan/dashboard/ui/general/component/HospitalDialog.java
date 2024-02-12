@@ -3,8 +3,6 @@ package org.ikasan.dashboard.ui.general.component;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
@@ -176,7 +174,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             HospitalCommentsDialog commentsDialog = new HospitalCommentsDialog(exclusionEventAction, ExclusionEventAction.RESUBMIT);
             commentsDialog.open();
 
-            commentsDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
+            commentsDialog.addOpenedChangeListener(dialogOpenedChangeEvent ->
             {
                 if (!dialogOpenedChangeEvent.isOpened() && commentsDialog.isActioned())
                 {
@@ -230,7 +228,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             HospitalCommentsDialog commentsDialog = new HospitalCommentsDialog(exclusionEventAction, ExclusionEventAction.IGNORED);
             commentsDialog.open();
 
-            commentsDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
+            commentsDialog.addOpenedChangeListener(dialogOpenedChangeEvent ->
             {
                 if (!dialogOpenedChangeEvent.isOpened() && commentsDialog.isActioned())
                 {

@@ -1,33 +1,33 @@
 package org.ikasan.dashboard.ui.layout;
 
 
-import com.github.appreciated.app.layout.component.appbar.AppBarBuilder;
-import com.github.appreciated.app.layout.component.appbar.IconButton;
-import com.github.appreciated.app.layout.component.applayout.LeftLayouts;
-import com.github.appreciated.app.layout.component.builder.AppLayoutBuilder;
-import com.github.appreciated.app.layout.component.menu.left.LeftMenuComponentWrapper;
-import com.github.appreciated.app.layout.component.menu.left.LeftSubmenu;
-import com.github.appreciated.app.layout.component.menu.left.builder.LeftAppMenuBuilder;
-import com.github.appreciated.app.layout.component.menu.left.builder.LeftSubMenuBuilder;
-import com.github.appreciated.app.layout.component.menu.left.items.LeftNavigationItem;
-import com.github.appreciated.app.layout.component.router.AppLayoutRouterLayout;
+//import com.github.appreciated.app.layout.component.appbar.AppBarBuilder;
+//import com.github.appreciated.app.layout.component.appbar.IconButton;
+//import com.github.appreciated.app.layout.component.applayout.LeftLayouts;
+//import com.github.appreciated.app.layout.component.builder.AppLayoutBuilder;
+//import com.github.appreciated.app.layout.component.menu.left.LeftMenuComponentWrapper;
+//import com.github.appreciated.app.layout.component.menu.left.LeftSubmenu;
+//import com.github.appreciated.app.layout.component.menu.left.builder.LeftAppMenuBuilder;
+//import com.github.appreciated.app.layout.component.menu.left.builder.LeftSubMenuBuilder;
+//import com.github.appreciated.app.layout.component.menu.left.items.LeftNavigationItem;
+//import com.github.appreciated.app.layout.component.router.AppLayoutRouterLayout;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.server.InitialPageSettings;
+import com.vaadin.flow.component.sidenav.SideNav;
+import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
@@ -47,7 +47,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 
 
 @Push
@@ -55,11 +54,10 @@ import java.util.HashMap;
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-@Theme(Material.class)
+@Theme(themeClass = Material.class)
 @PWA(name = "Ikasan Visualisation Dashboard",
-    shortName = "Ikasan",
-    enableInstallPrompt = false)
-public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybridSmall> implements PageConfigurator
+    shortName = "Ikasan")
+public class IkasanAppLayout extends AppLayout //implements PageConfigurator
 {
     @Resource
     private SystemEventLogger systemEventLogger;
@@ -75,18 +73,18 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
 
     private LeftMenuComponentWrapper leftAppMenu;
     private LeftSubmenu leftSubmenu;
-    private LeftNavigationItem dashboardMenuItem;
-    private LeftNavigationItem searchMenuItem;
-    private LeftNavigationItem visualisationMenuItem;
-    private LeftNavigationItem schedulerMenuItem;
-    private LeftNavigationItem systemEventMenuItem;
-    private LeftNavigationItem userManagementMenuItem;
-    private LeftNavigationItem groupManagementMenuItem;
-    private LeftNavigationItem roleManagementMenuItem;
-    private LeftNavigationItem policyManagementMenuItem;
-    private LeftNavigationItem userDirectoryManagementMenuItem;
-    private LeftNavigationItem businessStreamDesignerMenuItem;
-    private LeftNavigationItem quartzSchedulerMenuItem;
+    private SideNavItem dashboardMenuItem;
+    private SideNavItem searchMenuItem;
+    private SideNavItem visualisationMenuItem;
+    private SideNavItem schedulerMenuItem;
+    private SideNavItem systemEventMenuItem;
+    private SideNavItem userManagementMenuItem;
+    private SideNavItem groupManagementMenuItem;
+    private SideNavItem roleManagementMenuItem;
+    private SideNavItem policyManagementMenuItem;
+    private SideNavItem userDirectoryManagementMenuItem;
+    private SideNavItem businessStreamDesignerMenuItem;
+    private SideNavItem quartzSchedulerMenuItem;
 
     private IconButton swaggerUI;
 
@@ -132,27 +130,27 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
                 .add(logout)
                 .build());
 
-        LeftAppMenuBuilder leftAppMenuBuilder = LeftAppMenuBuilder.get();
+//        LeftAppMenuBuilder leftAppMenuBuilder = LeftAppMenuBuilder.get();
 
-        this.dashboardMenuItem = new LeftNavigationItem("Dashboard", VaadinIcon.DASHBOARD.create(), DashboardView.class);
-        this.dashboardMenuItem.setId("dashboardMenuItem");
-        this.dashboardMenuItem.getElement().getStyle().remove("padding");
-        leftAppMenuBuilder = leftAppMenuBuilder.add(dashboardMenuItem);
+//        this.dashboardMenuItem = new SideNavItem("Dashboard", DashboardView.class,  VaadinIcon.DASHBOARD.create());
+//        this.dashboardMenuItem.setId("dashboardMenuItem");
+//        this.dashboardMenuItem.getElement().getStyle().remove("padding");
+//        leftAppMenuBuilder = leftAppMenuBuilder.add(dashboardMenuItem);
 
-        this.searchMenuItem = new LeftNavigationItem(getTranslation("menu-item.search", UI.getCurrent().getLocale(), null), VaadinIcon.SEARCH.create(), SearchView.class);
-        this.searchMenuItem.setId("searchMenuItem");
-        leftAppMenuBuilder = leftAppMenuBuilder.add(searchMenuItem);
-
-
-        this.visualisationMenuItem = new LeftNavigationItem(getTranslation("menu-item.visualisation", UI.getCurrent().getLocale(), null), VaadinIcon.CLUSTER.create(), GraphView.class);
-        this.visualisationMenuItem.setId("visualisationMenuItem");
-
-        leftAppMenuBuilder = leftAppMenuBuilder.add(this.visualisationMenuItem);
-
-        this.schedulerMenuItem = new LeftNavigationItem("Scheduler", VaadinIcon.CLOCK.create(), SchedulerView.class);
-        this.schedulerMenuItem.setId("schedulerMenuItem");
-
-        leftAppMenuBuilder = leftAppMenuBuilder.add(this.schedulerMenuItem);
+//        this.searchMenuItem = new LeftNavigationItem(getTranslation("menu-item.search", UI.getCurrent().getLocale(), null), VaadinIcon.SEARCH.create(), SearchView.class);
+//        this.searchMenuItem.setId("searchMenuItem");
+//        leftAppMenuBuilder = leftAppMenuBuilder.add(searchMenuItem);
+//
+//
+//        this.visualisationMenuItem = new LeftNavigationItem(getTranslation("menu-item.visualisation", UI.getCurrent().getLocale(), null), VaadinIcon.CLUSTER.create(), GraphView.class);
+//        this.visualisationMenuItem.setId("visualisationMenuItem");
+//
+//        leftAppMenuBuilder = leftAppMenuBuilder.add(this.visualisationMenuItem);
+//
+//        this.schedulerMenuItem = new LeftNavigationItem("Scheduler", VaadinIcon.CLOCK.create(), SchedulerView.class);
+//        this.schedulerMenuItem.setId("schedulerMenuItem");
+//
+//        leftAppMenuBuilder = leftAppMenuBuilder.add(this.schedulerMenuItem);
 
         LeftSubMenuBuilder leftSubMenuBuilder = LeftSubMenuBuilder
             .get(getTranslation("menu-item.administration", UI.getCurrent().getLocale(), null), VaadinIcon.TOOLS.create());
@@ -191,7 +189,7 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
         this.quartzSchedulerMenuItem.setId("quartzSchedulerViewMenuItem");
         leftSubMenuBuilder = leftSubMenuBuilder.add(this.quartzSchedulerMenuItem);
 
-        this.businessStreamDesignerMenuItem = new LeftNavigationItem("Designer", VaadinIcon.PALETE.create(), BusinessStreamDesignerView.class);
+        this.businessStreamDesignerMenuItem = new LeftNavigationItem("Designer", VaadinIcon.PALETTE.create(), BusinessStreamDesignerView.class);
         this.businessStreamDesignerMenuItem.setId("businessStreamDesignerMenuItem");
         this.businessStreamDesignerMenuItem.getElement().getThemeList().remove("spacing-s");
         leftSubMenuBuilder = leftSubMenuBuilder.add(this.businessStreamDesignerMenuItem);
@@ -209,6 +207,38 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
         init((LeftLayouts.LeftHybridSmall)appLayoutBuilder.withAppMenu(leftAppMenu).build());
     }
 
+    private SideNav getSideName() {
+        SideNav sideNav = new SideNav();
+
+        this.dashboardMenuItem = new SideNavItem("Dashboard", DashboardView.class,  VaadinIcon.DASHBOARD.create());
+        this.dashboardMenuItem.setId("dashboardMenuItem");
+        this.dashboardMenuItem.getElement().getStyle().remove("padding");
+
+        sideNav.addItem(this.dashboardMenuItem);
+
+        this.searchMenuItem = new SideNavItem(getTranslation("menu-item.search", UI.getCurrent().getLocale(), null), SearchView.class, VaadinIcon.SEARCH.create());
+        this.searchMenuItem.setId("searchMenuItem");
+
+        sideNav.addItem(this.searchMenuItem);
+
+
+        this.visualisationMenuItem = new SideNavItem(getTranslation("menu-item.visualisation", UI.getCurrent().getLocale(), null), GraphView.class, VaadinIcon.CLUSTER.create());
+        this.visualisationMenuItem.setId("visualisationMenuItem");
+
+        sideNav.addItem(this.visualisationMenuItem);
+
+        this.schedulerMenuItem = new SideNavItem("Scheduler", SchedulerView.class, VaadinIcon.CLOCK.create());
+        this.schedulerMenuItem.setId("schedulerMenuItem");
+
+        sideNav.addItem(this.visualisationMenuItem);
+
+        return sideNav;
+    }
+
+    private SideNav buildAdminSideName() {
+
+    }
+
     @Override
     public void onAttach(AttachEvent attachEvent)
     {
@@ -221,7 +251,7 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
             bannerLayout.getElement().getStyle().set("position", "absolute");
             bannerLayout.getElement().getStyle().set("left", "50%");
             bannerLayout.getElement().getStyle().set("transform", "translate(-50%)");
-            super.getAppLayout().setTitleComponent(bannerLayout);
+//            super.getAppLayout().setTitleComponent(bannerLayout);
         }
 
         super.onAttach(attachEvent);
@@ -269,11 +299,11 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
             , SecurityConstants.BUSINESS_STREAM_ADMIN));
     }
 
-    @Override
-    public void configurePage(InitialPageSettings settings) {
-        HashMap<String, String> attributes = new HashMap<>();
-        attributes.put("rel", "shortcut icon");
-        attributes.put("type", "image/png");
-        settings.addLink("icons/icon.png", attributes);
-    }
+//    @Override
+//    public void configurePage(InitialPageSettings settings) {
+//        HashMap<String, String> attributes = new HashMap<>();
+//        attributes.put("rel", "shortcut icon");
+//        attributes.put("type", "image/png");
+//        settings.addLink("icons/icon.png", attributes);
+//    }
 }

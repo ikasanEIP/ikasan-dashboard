@@ -16,7 +16,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
@@ -420,7 +420,7 @@ public class SearchResults extends Div {
             .setResizable(true);
 
         // Add the component name column to the grid
-        this.searchResultsGrid.addColumn(TemplateRenderer.<IkasanSolrDocument>of(
+        this.searchResultsGrid.addColumn(LitRenderer.<IkasanSolrDocument>of(
             "<div>[[item.componentName]]</div>")
             .withProperty("componentName",
                 ikasanSolrDocument -> Optional.ofNullable(ikasanSolrDocument.getComponentName()).orElse(getTranslation("label.not-applicable", UI.getCurrent().getLocale()))))
@@ -470,7 +470,7 @@ public class SearchResults extends Div {
             .setResizable(true);
 
         // Add the timestamp column to the grid
-        this.searchResultsGrid.addColumn(TemplateRenderer.<IkasanSolrDocument>of(
+        this.searchResultsGrid.addColumn(LitRenderer.<IkasanSolrDocument>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
                 ikasanSolrDocument -> this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimeStamp()))).setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))

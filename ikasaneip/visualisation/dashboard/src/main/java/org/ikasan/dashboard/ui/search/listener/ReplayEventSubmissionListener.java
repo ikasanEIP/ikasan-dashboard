@@ -5,8 +5,6 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
@@ -18,7 +16,6 @@ import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditEventImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
 import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
-import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -82,7 +79,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
         ReplayCommentsDialog commentsDialog = new ReplayCommentsDialog(replayDialogDto);
         commentsDialog.open();
 
-        commentsDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
+        commentsDialog.addOpenedChangeListener(dialogOpenedChangeEvent ->
         {
             if(!dialogOpenedChangeEvent.isOpened() && commentsDialog.isSaved())
             {

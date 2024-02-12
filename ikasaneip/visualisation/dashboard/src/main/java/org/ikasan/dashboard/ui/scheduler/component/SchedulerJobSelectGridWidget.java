@@ -12,7 +12,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -124,7 +124,7 @@ public class SchedulerJobSelectGridWidget extends Div {
             .setKey("type")
             .setFlexGrow(2);
 
-        this.schedulerJobFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobRecord>of(
+        this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
@@ -134,7 +134,7 @@ public class SchedulerJobSelectGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(2);
 
-        this.schedulerJobFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobRecord>of(
+        this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
             "<div>[[item.modified]]</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))

@@ -4,8 +4,6 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H2;
@@ -21,10 +19,10 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.administration.component.NewRoleDialog;
 import org.ikasan.dashboard.ui.administration.component.RoleManagementDialog;
 import org.ikasan.dashboard.ui.administration.filter.RoleFilter;
-import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.security.model.Role;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -93,7 +91,7 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
             NewRoleDialog newRoleDialog = new NewRoleDialog(this.securityService, this.systemEventLogger);
             newRoleDialog.open();
 
-            newRoleDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
+            newRoleDialog.addOpenedChangeListener(dialogOpenedChangeEvent ->
             {
                 if(dialogOpenedChangeEvent.isOpened() == false)
                 {

@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.util;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.icon.Icon;
 
 public class IconDecorator {
@@ -14,12 +13,12 @@ public class IconDecorator {
         return icon;
     }
 
-    public static IronIcons.Icon decorate(IronIcons.Icon icon, String tooltip, String size, String colour) {
-        icon.getStyle().set("cursor", "pointer");
-        icon.setSize(size);
-        icon.getStyle().set("color", colour);
-        if(tooltip != null) icon.getElement().setAttribute("title", tooltip);
-
-        return icon;
-    }
+//    public static IronIcons.Icon decorate(IronIcons.Icon icon, String tooltip, String size, String colour) {
+//        icon.getStyle().set("cursor", "pointer");
+//        icon.setSize(size);
+//        icon.getStyle().set("color", colour);
+//        if(tooltip != null) icon.getElement().setAttribute("title", tooltip);
+//
+//        return icon;
+//    }
 }

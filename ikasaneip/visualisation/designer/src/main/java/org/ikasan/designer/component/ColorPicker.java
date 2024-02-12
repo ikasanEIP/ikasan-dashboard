@@ -1,8 +1,10 @@
 package org.ikasan.designer.component;
 
-import com.flowingcode.vaadin.addons.ironicons.EditorIcons;
+import com.flowingcode.vaadin.addons.fontawesome.FontAwesome;
+import com.helger.commons.math.FactorialHelper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
@@ -25,7 +27,7 @@ public class ColorPicker extends TextField {
         this.identifier = UUID.randomUUID().toString();
         this.setId("color-picker");
 
-        EditorIcons.Icon icon = EditorIcons.FORMAT_COLOR_FILL.create();
+        Icon icon = FontAwesome.Solid.EYE_DROPPER.create();
         icon.setSize("18px");
         icon.setColor("rgba(241, 90, 35, 1.0)");
         icon.getElement().getStyle().set("margin-right", "5px");

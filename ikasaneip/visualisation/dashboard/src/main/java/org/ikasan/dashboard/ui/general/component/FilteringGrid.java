@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -62,8 +63,9 @@ public class FilteringGrid<T> extends Grid<T>
         hr.getCell(getColumnByKey(columnKey)).setComponent(textField);
     }
 
+
     @Override
-    public void setItems(Collection<T> items)
+    public GridListDataView<T> setItems(Collection<T> items)
     {
         this.filter.setItems(items);
 
@@ -137,6 +139,7 @@ public class FilteringGrid<T> extends Grid<T>
         filteredDataProvider.setFilter(filter);
 
         this.setDataProvider(filteredDataProvider);
+        return null;
     }
 
     public Collection<T> getItems() {

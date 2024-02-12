@@ -15,7 +15,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
@@ -749,7 +749,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
             .setWidth("230px");
 
-        this.schedulerJobInstanceFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobInstanceRecord>of(
+        this.schedulerJobInstanceFilteringGrid.addColumn(LitRenderer.<SchedulerJobInstanceRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.date]]</div>")
             .withProperty("date",
                 jobInstanceRecord -> DateFormatter.instance().getFormattedDate(jobInstanceRecord.getStartTime())))
@@ -759,7 +759,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             .setSortable(true)
             .setWidth("220px");
 
-        this.schedulerJobInstanceFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobInstanceRecord>of(
+        this.schedulerJobInstanceFilteringGrid.addColumn(LitRenderer.<SchedulerJobInstanceRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
             .withProperty("modified",
                 jobInstanceRecord -> DateFormatter.instance().getFormattedDate(jobInstanceRecord.getEndTime())))
