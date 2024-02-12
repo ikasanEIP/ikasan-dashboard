@@ -10,7 +10,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
@@ -265,7 +265,7 @@ public class ContextInstanceGridWidget extends Div {
             .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
             .setFlexGrow(2);
 
-        this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+        this.contextInstanceFilteringGrid.addColumn(LitRenderer.<ScheduledContextInstanceRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.start-date-time]]</div>")
             .withProperty("start-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getStartTime())))
@@ -275,7 +275,7 @@ public class ContextInstanceGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(3);
 
-        this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+        this.contextInstanceFilteringGrid.addColumn(LitRenderer.<ScheduledContextInstanceRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.end-date-time]]</div>")
             .withProperty("end-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getEndTime())))
@@ -285,7 +285,7 @@ public class ContextInstanceGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(3);
 
-        this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+        this.contextInstanceFilteringGrid.addColumn(LitRenderer.<ScheduledContextInstanceRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.created-date-time]]</div>")
             .withProperty("created-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
@@ -295,7 +295,7 @@ public class ContextInstanceGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(3);
 
-        this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+        this.contextInstanceFilteringGrid.addColumn(LitRenderer.<ScheduledContextInstanceRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified-date-time]]</div>")
             .withProperty("modified-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))

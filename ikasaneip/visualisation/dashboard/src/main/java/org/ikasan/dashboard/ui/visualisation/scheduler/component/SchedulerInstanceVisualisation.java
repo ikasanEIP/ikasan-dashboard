@@ -1,16 +1,16 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.scheduler.listener.ContextOpenedListener;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
@@ -191,13 +191,13 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         actions.setWidthFull();
 
         // Zoom in
-        IronIcons.Icon zoomIn = IconDecorator.decorate(IronIcons.ZOOM_IN.create(), getTranslation("tooltip.zoom-in"
+        Icon zoomIn = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("tooltip.zoom-in"
             , UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
         zoomIn.addClickListener(event -> this.designerCanvas.zoomIn());
         actions.add(zoomIn);
 
         // Zoom out
-        IronIcons.Icon zoomOut = IconDecorator.decorate(IronIcons.ZOOM_OUT.create(), getTranslation("tooltip.zoom-out"
+        Icon zoomOut = IconDecorator.decorate(VaadinIcon.MINUS.create(), getTranslation("tooltip.zoom-out"
             , UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
         zoomOut.addClickListener(event -> this.designerCanvas.zoomOut());
         actions.add(zoomOut);

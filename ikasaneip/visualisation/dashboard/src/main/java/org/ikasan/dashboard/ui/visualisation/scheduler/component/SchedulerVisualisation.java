@@ -2,13 +2,15 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
+import com.flowingcode.vaadin.addons.fontawesome.FontAwesome;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -45,7 +47,6 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -225,23 +226,23 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         actions.setId("canvas-actions");
 
         // Zoom in
-        IronIcons.Icon zoomIn = IconDecorator.decorate(IronIcons.ZOOM_IN.create(), getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        Icon zoomIn = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
         zoomIn.addClickListener(event -> this.designerCanvas.zoomIn());
         actions.add(zoomIn);
 
         // Zoom out
-        IronIcons.Icon zoomOut = IconDecorator.decorate(IronIcons.ZOOM_OUT.create(), getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        Icon zoomOut = IconDecorator.decorate(VaadinIcon.MINUS.create(), getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
         zoomOut.addClickListener(event -> this.designerCanvas.zoomOut());
         actions.add(zoomOut);
 
         // Bring selected items to front
-        IronIcons.Icon toFront = IconDecorator.decorate(IronIcons.FLIP_TO_FRONT.create(), getTranslation("tooltip.bring-to-front", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        Icon toFront = IconDecorator.decorate(FontAwesome.Solid.CLONE.create(), getTranslation("tooltip.bring-to-front", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
         toFront.addClickListener(buttonClickEvent -> this.designerCanvas.bringToFront());
         actions.add(toFront);
 
 
         // Send selected items to back
-        IronIcons.Icon toBack = IconDecorator.decorate(IronIcons.FLIP_TO_BACK.create(), getTranslation("tooltip.send-to-back", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        Icon toBack = IconDecorator.decorate(FontAwesome.Solid.WINDOW_RESTORE.create(), getTranslation("tooltip.send-to-back", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
         toBack.addClickListener(buttonClickEvent -> {
             this.designerCanvas.sendToBack();
         });

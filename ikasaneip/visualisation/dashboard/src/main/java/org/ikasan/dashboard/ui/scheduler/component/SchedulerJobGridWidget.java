@@ -18,7 +18,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import liquibase.pro.packaged.L;
@@ -662,7 +662,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
         .setFlexGrow(2);
 
-        this.schedulerJobFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobRecord>of(
+        this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.date]]</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
@@ -672,7 +672,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             .setSortable(true)
             .setFlexGrow(2);
 
-        this.schedulerJobFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobRecord>of(
+        this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))

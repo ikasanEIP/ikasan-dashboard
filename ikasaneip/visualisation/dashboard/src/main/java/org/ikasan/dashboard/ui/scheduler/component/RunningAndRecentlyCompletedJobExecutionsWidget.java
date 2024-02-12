@@ -113,7 +113,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
 
         Button newWindowButton = new Button();
         newWindowButton.addClickListener(buttonClickEvent -> {
-            RouterLink link = new RouterLink(null, RunningAndRecentlyCompletedJobExecutionDeepLinkView.class);
+            RouterLink link = new RouterLink(RunningAndRecentlyCompletedJobExecutionDeepLinkView.class);
             getUI().ifPresent(ui -> ui.getPage().open(link.getHref()));
         });
         newWindowButton.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());

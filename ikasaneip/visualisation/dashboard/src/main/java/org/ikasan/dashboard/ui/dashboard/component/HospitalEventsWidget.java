@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.dashboard.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -8,6 +7,7 @@ import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.events.PointClickEvent;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
@@ -15,7 +15,10 @@ import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.solr.SolrGeneralService;
 
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -118,7 +121,7 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
         refreshButton.addClickListener(buttonClickEvent -> {
             this.refresh();
         });
-        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+        refreshButton.getElement().appendChild(VaadinIcon.RECYCLE.create().getElement());
 
         div.add(refreshButton, chart);
 

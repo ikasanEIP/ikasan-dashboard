@@ -47,7 +47,7 @@ public class ShapeContextMenu extends Dialog {
             selectImageComponentValueChangeEvent -> designer.setLineType(selectImageComponentValueChangeEvent.getValue().getAlt().get()));
 
         NumberField numberField = new NumberField(getTranslation("label.corner-radius", UI.getCurrent().getLocale()));
-        numberField.setHasControls(true);
+//        numberField.setHasControls(true);
 
         Number size = figure.getAttributeNumberValue("radius");
         numberField.setValue(size.doubleValue());
@@ -56,7 +56,7 @@ public class ShapeContextMenu extends Dialog {
             numberFieldDoubleComponentValueChangeEvent -> designer.setRadius(numberFieldDoubleComponentValueChangeEvent.getValue()));
 
         NumberField strokeField = new NumberField(getTranslation("label.line-width", UI.getCurrent().getLocale()));
-        strokeField.setHasControls(true);
+//        strokeField.setHasControls(true);
         strokeField.setValue(0d);
 
         Number stroke = figure.getAttributeNumberValue("stroke");

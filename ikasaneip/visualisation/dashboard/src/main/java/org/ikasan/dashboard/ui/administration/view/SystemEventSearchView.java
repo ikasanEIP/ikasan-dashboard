@@ -12,7 +12,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
 import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
 import org.ikasan.dashboard.ui.administration.component.SystemEventFilteringGrid;
@@ -168,7 +168,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             .setHeader(getTranslation("header.system-event", UI.getCurrent().getLocale()))
             .setKey("action")
             .setResizable(true);
-        this.searchResultsGrid.addColumn(TemplateRenderer.<SystemEvent>of(
+        this.searchResultsGrid.addColumn(LitRenderer.<SystemEvent>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
                 ikasanSolrDocument -> this.dateFormatter.getFormattedDate(((SolrSystemEvent)ikasanSolrDocument).getTimestampLong())))
