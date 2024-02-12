@@ -1,8 +1,12 @@
 package org.ikasan.job.orchestration.context.validation;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -11,8 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Ignore
 public class ContextTemplateValidatorTest extends AbstractTest {
 
     Logger logger = LoggerFactory.getLogger(ContextTemplateValidatorTest.class);
@@ -46,14 +50,41 @@ public class ContextTemplateValidatorTest extends AbstractTest {
         ContextTemplateValidator validator = new ContextTemplateValidator();
 
         try {
-            validator.validateJobs(contextTemplate, List.of());
+            validator.validateJobs(contextTemplate, this.createJobs(contextTemplate, false, false));
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.assertEquals(4, e.getContextErrors().size());
+            Assert.assertEquals("Job[{\"agentName\":\"agentName1\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName1-jobName1\"}] " +
+                "sourced from the database job definition is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(0).getErrorMessage());
+            Assert.assertEquals("Job[{\"agentName\":\"agentName2\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName2-jobName2\"}] " +
+                "sourced from the database job definition is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(1).getErrorMessage());
+            Assert.assertEquals("Job[{\"agentName\":\"agentName1\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName1-jobName1\"}] " +
+                "sourced from the job plan template is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(2).getErrorMessage());
+            Assert.assertEquals("Job[{\"agentName\":\"agentName2\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName2-jobName2\"}] " +
+                "sourced from the job plan template is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(3).getErrorMessage());
+
+            throw e;
+        }
+    }
+
+    @Test(expected = InvalidContextTemplateException.class)
+    public void test_simple_context_validation_fail_with_bad_identifiers() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContextTemplate(loadDataFile("/data/context.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+
+        try {
+            validator.validateJobs(contextTemplate, this.createJobs(contextTemplate, false, true));
         }
         catch (InvalidContextTemplateException e) {
             Assert.assertEquals(16, e.getContextErrors().size());
-            Assert.assertEquals("Job[{\"agentName\":\"agentName1\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName1-jobName1\"}] " +
-                "sourced from the job plan template is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(0).getErrorMessage());
-            Assert.assertEquals("Job[{\"agentName\":\"agentName2\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName2-jobName2\"}] " +
-                "sourced from the job plan template is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(1).getErrorMessage());
+            Assert.assertEquals("Job[jobName5] defined in the job plan template with identifier[agentName5-jobName5] does not have a job defined in the database with the same identifier! " +
+                "Please check the job definition artefact and confirm that the identifier is correct.\n", e.getContextErrors().get(0).getErrorMessage());
+            Assert.assertEquals("Job[jobName1] defined in the job plan template with identifier[agentName1-jobName1] does not have a job defined in the database with the same identifier! " +
+                "Please check the job definition artefact and confirm that the identifier is correct.\n", e.getContextErrors().get(1).getErrorMessage());
+
             throw e;
         }
     }
@@ -236,5 +267,27 @@ public class ContextTemplateValidatorTest extends AbstractTest {
                 , e.getMessage());
             throw e;
         }
+    }
+
+    private List<SchedulerJob> createJobs(ContextTemplate contextTemplate, boolean withEmptyJobName, boolean withBadIdentifier) {
+        List<SchedulerJob> schedulerJobs = ContextHelper.getAllJobs(contextTemplate);
+
+        if(withEmptyJobName) {
+            schedulerJobs = schedulerJobs.stream().map(job -> {
+                SchedulerJob schedulerJob = (SchedulerJob) SerializationUtils.clone(job);
+                schedulerJob.setJobName("");
+                return schedulerJob;
+            }).collect(Collectors.toList());
+        }
+
+        if(withBadIdentifier) {
+            schedulerJobs = schedulerJobs.stream().map(job -> {
+                SchedulerJob schedulerJob = (SchedulerJob) SerializationUtils.clone(job);
+                schedulerJob.setIdentifier("bad identifier");
+                return schedulerJob;
+            }).collect(Collectors.toList());
+        }
+
+        return schedulerJobs;
     }
 }

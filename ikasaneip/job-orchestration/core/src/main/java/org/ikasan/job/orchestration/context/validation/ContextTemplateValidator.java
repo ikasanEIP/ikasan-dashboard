@@ -9,6 +9,7 @@ import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -52,7 +53,9 @@ public class ContextTemplateValidator {
         this.errors = new ArrayList<>();
         this.errorReport = new StringBuffer("The context template is invalid!\n");
 
-        List<SchedulerJob> schedulerJobs = ContextHelper.getAllJobs(contextTemplate);
+        List<SchedulerJob> schedulerJobsFromJobPlan = ContextHelper.getAllJobs(contextTemplate);
+
+        this.assertAllJobIdentifiersInJobPlanMapToJobs(contextTemplate, schedulerJobsFromJobPlan, jobTemplates);
 
         Set<String> jobTemplatesSet = jobTemplates.stream().map(job -> {
             if(job.getJobName() == null || job.getJobName().isEmpty()) {
@@ -70,7 +73,7 @@ public class ContextTemplateValidator {
                 return job.getJobName();
             }
         }).filter(jobName -> !jobName.isEmpty()).collect(Collectors.toSet());
-        Set<String> contextTemplatesJobSet = schedulerJobs.stream().map(job -> {
+        Set<String> contextTemplatesJobSet = schedulerJobsFromJobPlan.stream().map(job -> {
             if(job.getJobName() == null || job.getJobName().isEmpty()) {
                 try {
                     this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job plan template" +
@@ -103,6 +106,20 @@ public class ContextTemplateValidator {
         if(!this.errorReport.toString().isEmpty() && !this.errors.isEmpty()) {
             throw new InvalidContextTemplateException(errorReport.toString(), this.errors);
         }
+    }
+
+    private void assertAllJobIdentifiersInJobPlanMapToJobs(ContextTemplate contextTemplate, List<SchedulerJob> jobsFromJobPlan, List<SchedulerJob> jobTemplates) {
+        Map<String, SchedulerJob> schedulerJobMap = jobTemplates.stream()
+            .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (first, second) -> first));
+
+        jobsFromJobPlan.forEach(schedulerJob -> {
+            if(!schedulerJobMap.containsKey(schedulerJob.getIdentifier())) {
+                this.reportError(contextTemplate.getName(), String.format("Job[%s] defined in the job plan template with identifier[%s] " +
+                    "does not have a job defined in the database with the same identifier! Please check the job definition artefact " +
+                        "and confirm that the identifier is correct.\n"
+                        , schedulerJob.getJobName(), schedulerJob.getIdentifier()), schedulerJob.getJobName());
+            }
+        });
     }
 
     private void reportError(String contextName, String error, String jobName) {
