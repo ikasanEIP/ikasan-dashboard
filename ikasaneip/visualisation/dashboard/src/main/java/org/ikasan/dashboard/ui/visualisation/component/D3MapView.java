@@ -24,7 +24,7 @@ public class D3MapView extends Component implements HasSize
             .orElseThrow(() -> new IllegalStateException(
                 "Connector can only be initialized for an attached NetworkDiagram"))
             .getPage()
-            .executeJavaScript("window.Vaadin.Flow.mapConnector.initLazy($0)",
+            .executeJs("window.Vaadin.Flow.mapConnector.initLazy($0)",
                 getElement());
     }
 

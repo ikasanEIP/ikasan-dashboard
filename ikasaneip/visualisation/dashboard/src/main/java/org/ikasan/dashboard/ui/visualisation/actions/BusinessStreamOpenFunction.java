@@ -1,8 +1,5 @@
 package org.ikasan.dashboard.ui.visualisation.actions;
 
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.html.Image;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamOpenDialog;
 import org.ikasan.designer.DesignerCanvas;
@@ -55,7 +52,7 @@ public class BusinessStreamOpenFunction implements OpenFunction {
             = new BusinessStreamOpenDialog(this.businessStreamMetaDataService, moduleMetaDataService);
         businessStreamOpenDialog.open();
 
-        businessStreamOpenDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent -> {
+        businessStreamOpenDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
             if(!businessStreamOpenDialog.isOpened() && businessStreamOpenDialog.getBusinessStreamMetaData() != null) {
                 this.businessStreamMetaData = businessStreamOpenDialog.getBusinessStreamMetaData();
 

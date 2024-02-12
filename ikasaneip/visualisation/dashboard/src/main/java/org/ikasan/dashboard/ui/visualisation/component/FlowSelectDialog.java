@@ -10,7 +10,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.model.designer.business.stream.Flow;
@@ -84,7 +84,7 @@ public class FlowSelectDialog extends AbstractCloseableResizableDialog {
             .setHeader(moduleType == ModuleType.SCHEDULER_AGENT ?
                 getTranslation("table-header.agent", UI.getCurrent().getLocale()) : getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(16);
-        flowsGrid.addColumn(TemplateRenderer.<Flow>of("<div style='white-space:normal'>[[item.description]]</div>")
+        flowsGrid.addColumn(LitRenderer.<Flow>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", Flow::getFlowName))
             .setHeader(moduleType == ModuleType.SCHEDULER_AGENT ?
                 getTranslation("table-header.job-name", UI.getCurrent().getLocale()) : getTranslation("table-header.flow-name", UI.getCurrent().getLocale()))

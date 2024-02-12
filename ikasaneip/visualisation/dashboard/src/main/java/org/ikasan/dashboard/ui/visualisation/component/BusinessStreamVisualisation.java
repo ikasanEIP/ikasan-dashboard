@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.visualisation.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
@@ -8,11 +7,11 @@ import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
@@ -44,7 +43,6 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
-import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -213,7 +211,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
         // Zoom in
         Button zoomInButton = new Button();
-        zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
+        zoomInButton.getElement().appendChild(VaadinIcon.PLUS.create().getElement());
         zoomInButton.setId("canvas_zoom_in");
         Tooltip zoomInButtonTooltip = getTooltip(zoomInButton, getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
@@ -221,7 +219,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
         // Zoom out
         Button zoomOutButton = new Button();
-        zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
+        zoomOutButton.getElement().appendChild(VaadinIcon.MINUS.create().getElement());
         zoomOutButton.setId("canvas_zoom_out");
         Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton, getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
@@ -229,7 +227,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
         // Export as selected format
         Button download = new Button();
-        download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
+        download.getElement().appendChild(VaadinIcon.DOWNLOAD.create().getElement());
         Tooltip downloadTooltip = getTooltip(download, getTranslation("tooltip.export-png", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         actions.add(download, downloadTooltip);

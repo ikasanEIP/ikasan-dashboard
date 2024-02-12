@@ -9,7 +9,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.visualisation.component.filter.BusinessStreamSearchFilter;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
@@ -63,12 +63,12 @@ public class BusinessStreamOpenDialog extends AbstractCloseableResizableDialog {
         businessStreamGrid.setVisible(true);
         businessStreamGrid.setWidthFull();
         businessStreamGrid.setHeight("80%");
-        businessStreamGrid.addColumn(TemplateRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.name]]</div>")
+        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.name]]</div>")
             .withProperty("name", BusinessStreamMetaData::getName))
             .setHeader(getTranslation("table-header.business-stream-name", UI.getCurrent().getLocale()))
             .setKey("name")
             .setFlexGrow(16);
-        businessStreamGrid.addColumn(TemplateRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
+        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", BusinessStreamMetaData::getDescription)).setHeader(getTranslation("table-header.business-stream-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(32);

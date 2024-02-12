@@ -3,31 +3,27 @@ package org.ikasan.dashboard.ui.visualisation.view;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
-import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamManageFunction;
 import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamOpenFunction;
 import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamSaveAsFunction;
-import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamSaveFunction;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamIntegratedSystemUploadDialog;
 import org.ikasan.dashboard.ui.visualisation.component.FlowSelectDialog;
 import org.ikasan.dashboard.ui.visualisation.component.MessageChannelNameDialog;
@@ -128,7 +124,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
 
             dialog.open();
 
-            dialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent -> {
+            dialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
                 if(!dialogOpenedChangeEvent.isOpened() && dialog.getFlow() != null) {
                     designerPalletItem.setIdentifier(new DesignerItemIdentifier(BusinessStreamItemTypes.FLOW.name(),
                         dialog.getFlow().getModuleName() + "." + dialog.getFlow().getFlowName(), UUID.randomUUID().toString()));
@@ -158,7 +154,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
 
             dialog.open();
 
-            dialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent -> {
+            dialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
                 if(!dialogOpenedChangeEvent.isOpened() && dialog.getFlow() != null) {
                     designerPalletItem.setIdentifier(new DesignerItemIdentifier(BusinessStreamItemTypes.FLOW.name(),
                         dialog.getFlow().getModuleName() + "." + dialog.getFlow().getFlowName(), UUID.randomUUID().toString()));
@@ -186,7 +182,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             MessageChannelNameDialog messageChannelNameDialog =  new MessageChannelNameDialog();
             messageChannelNameDialog.open();
 
-            messageChannelNameDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent -> {
+            messageChannelNameDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
                 if(!dialogOpenedChangeEvent.isOpened() && messageChannelNameDialog.isOkPressed()) {
                     designerPalletItem.setIdentifier(new DesignerItemIdentifier(BusinessStreamItemTypes.MESSAGE_CHANNEL.name(),
                         messageChannelNameDialog.getMessageChannelName(), UUID.randomUUID().toString()));
@@ -277,8 +273,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
                 = new BusinessStreamIntegratedSystemUploadDialog(this.integratedSystemsImagePath);
             uploadDialog.open();
 
-            uploadDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
-                dialogOpenedChangeEvent -> {
+            uploadDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
                 if(!dialogOpenedChangeEvent.isOpened()) {
                     if(uploadDialog.isUploaded()) {
                         this.addItemToLayout(this.getImageItem(uploadDialog.getFilePath(), BusinessStreamItemTypes.INTEGRATED_SYSTEM.name())

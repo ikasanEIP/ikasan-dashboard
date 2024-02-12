@@ -3,8 +3,6 @@ package org.ikasan.dashboard.ui.general.component;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
@@ -21,7 +19,6 @@ import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
-import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.persistence.BatchInsert;
@@ -131,7 +128,7 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
             replayCommentsDialog.open();
 
-            replayCommentsDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
+            replayCommentsDialog.addOpenedChangeListener(dialogOpenedChangeEvent ->
             {
                 if(!dialogOpenedChangeEvent.isOpened() && replayCommentsDialog.isSaved())
                 {

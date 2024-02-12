@@ -11,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
@@ -97,27 +97,27 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
      * Create the upcoming jobs grid
      */
     private void initGrid() {
-        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.agentHostname]]</div>")
+        super.addColumn(LitRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.agentHostname]]</div>")
             .withProperty("agentHostname", UpcomingScheduledProcess::getAgentHostname))
             .setHeader(getTranslation("table-header.scheduled-agent-host-name", UI.getCurrent().getLocale()))
             .setKey("agentHostname")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
+        super.addColumn(LitRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
             .withProperty("schedulerName", UpcomingScheduledProcess::getAgentName))
             .setHeader(getTranslation("table-header.scheduled-agent-name", UI.getCurrent().getLocale()))
             .setKey("schedulerName")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.jobName]]</div>")
+        super.addColumn(LitRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.jobName]]</div>")
             .withProperty("jobName", UpcomingScheduledProcess::getJobName))
             .setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setKey("jobName")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
+        super.addColumn(LitRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
             .withProperty("jobGroup", UpcomingScheduledProcess::getJobGroup))
             .setHeader(getTranslation("table-header.job-group", UI.getCurrent().getLocale()))
             .setKey("jobGroup")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.description]]</div>")
+        super.addColumn(LitRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", UpcomingScheduledProcess::getJobDescription))
             .setHeader(getTranslation("table-header.job-description", UI.getCurrent().getLocale()))
             .setKey("description")
@@ -147,7 +147,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             .setHeader(getTranslation("table-header.related-business-streams", UI.getCurrent().getLocale()))
             .setKey("businessStreams")
             .setFlexGrow(5);
-        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.nextExecutionTime]]</div>")
+        super.addColumn(LitRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.nextExecutionTime]]</div>")
             .withProperty("nextExecutionTime", upcomingScheduledProcess -> this.dateFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime())) )
             .setHeader(getTranslation("table-header.next-job-execution-time", UI.getCurrent().getLocale()))
             .setKey("nextExecutionTime")

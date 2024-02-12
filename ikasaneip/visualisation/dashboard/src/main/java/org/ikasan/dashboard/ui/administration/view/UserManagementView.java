@@ -6,8 +6,6 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H2;
@@ -16,7 +14,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -24,9 +22,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.administration.component.NewUserDialog;
 import org.ikasan.dashboard.ui.administration.component.UserManagementDialog;
-import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.dashboard.ui.administration.filter.UserFilter;
+import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -34,8 +34,6 @@ import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.ikasan.dashboard.ui.general.component.FilteringGrid;
-import org.ikasan.dashboard.ui.administration.filter.UserFilter;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -101,7 +99,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
         this.addNewUserButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             NewUserDialog newUserDialog = new NewUserDialog(this.userService,  this.systemEventLogger, this.securityService);
             newUserDialog.open();
-            newUserDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
+            newUserDialog.addOpenedChangeListener(dialogOpenedChangeEvent ->
             {
                 if(dialogOpenedChangeEvent.isOpened() == false)
                 {
@@ -156,7 +154,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
             .setKey("department").setHeader(getTranslation("table-header.department", UI.getCurrent().getLocale(), null))
             .setSortable(true)
             .setFlexGrow(1);
-        this.userGrid.addColumn(TemplateRenderer.<User>of(
+        this.userGrid.addColumn(LitRenderer.<User>of(
             "<div style='white-space:normal'>[[item.date]]</div>")
             .withProperty("date",
                 user -> this.dateFormatter.getFormattedDate(user.getPreviousAccessTimestamp())))

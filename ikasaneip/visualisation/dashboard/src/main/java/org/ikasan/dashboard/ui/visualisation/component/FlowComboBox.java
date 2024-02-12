@@ -57,8 +57,8 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
 
                 if (this.currentModule != null) {
                     Flow flow = this.getValue();
-                    removeAll();
                     setItems(currentModule.getFlows());
+                    this.getDataProvider().refreshAll();
                     this.setValue(flow);
                 }
             });
@@ -74,8 +74,8 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
 
                 if (this.currentModule != null) {
                     Flow flow = this.getValue();
-                    removeAll();
                     setItems(currentModule.getFlows());
+                    this.getDataProvider().refreshAll();
                     this.setValue(flow);
                 }
             });

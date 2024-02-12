@@ -12,7 +12,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -232,7 +232,7 @@ public class ContextInstanceAuditWidget extends Div {
             .setFlexGrow(1)
             .setResizable(true);
 
-        this.contextInstanceAuditFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceAuditAggregateRecord>of(
+        this.contextInstanceAuditFilteringGrid.addColumn(LitRenderer.<ScheduledContextInstanceAuditAggregateRecord>of(
             "<div>[[item.timestamp]]</div>")
             .withProperty("timestamp",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))

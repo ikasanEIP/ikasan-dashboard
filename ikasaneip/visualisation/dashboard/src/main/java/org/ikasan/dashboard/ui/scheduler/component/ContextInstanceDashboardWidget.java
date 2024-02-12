@@ -23,7 +23,7 @@ import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
@@ -632,7 +632,7 @@ public class ContextInstanceDashboardWidget extends Div
             .setFlexGrow(2)
             .setResizable(true)
             .setSortable(true);
-        this.preparedFutureContextInstanceGrid.addColumn(TemplateRenderer.<PreparedFutureJobPlanInstance>of("<div style='white-space:normal'>[[item.startTime]]</div>")
+        this.preparedFutureContextInstanceGrid.addColumn(LitRenderer.<PreparedFutureJobPlanInstance>of("<div style='white-space:normal'>[[item.startTime]]</div>")
                 .withProperty("startTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getContextInstanceStartTime())))
             .setHeader(getTranslation("table-header.context-instance-start-date-time", UI.getCurrent().getLocale()))
             .setKey("startTime")
@@ -783,13 +783,13 @@ public class ContextInstanceDashboardWidget extends Div
             .setFlexGrow(3)
             .setResizable(true)
             .setSortable(true);
-        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<CompletedJobPlanInstance>of("<div style='white-space:normal'>[[item.startTime]]</div>")
+        this.completedContextInstanceGrid.addColumn(LitRenderer.<CompletedJobPlanInstance>of("<div style='white-space:normal'>[[item.startTime]]</div>")
                 .withProperty("startTime", completedJobPlanInstance -> this.dateFormatter.getFormattedDate(completedJobPlanInstance.getContextInstanceStartTime())))
             .setHeader(getTranslation("table-header.start-date-time", UI.getCurrent().getLocale()))
             .setKey("startTime")
             .setFlexGrow(3)
             .setSortable(true);
-        this.completedContextInstanceGrid.addColumn(TemplateRenderer.<CompletedJobPlanInstance>of("<div style='white-space:normal'>[[item.endTime]]</div>")
+        this.completedContextInstanceGrid.addColumn(LitRenderer.<CompletedJobPlanInstance>of("<div style='white-space:normal'>[[item.endTime]]</div>")
                 .withProperty("endTime", completedJobPlanInstance -> this.dateFormatter.getFormattedDate(completedJobPlanInstance.getContextInstanceEndTime())))
             .setHeader(getTranslation("table-header.end-date-time", UI.getCurrent().getLocale()))
             .setKey("endTime")

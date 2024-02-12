@@ -37,7 +37,7 @@ public class LabelContextMenu extends Dialog {
             selectStringComponentValueChangeEvent -> designer.setFont(selectStringComponentValueChangeEvent.getValue()));
 
         NumberField fontSize = new NumberField(getTranslation("label.font-size", UI.getCurrent().getLocale()));
-        fontSize.setHasControls(true);
+//        fontSize.setHasControls(true);
         fontSize.setWidth("90%");
 
         String size = figure.getAttributeStringValue("fontSize");

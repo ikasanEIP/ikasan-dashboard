@@ -4,9 +4,6 @@ package org.ikasan.dashboard.ui.general.component;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
@@ -25,7 +22,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.material.Material;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
@@ -48,10 +44,10 @@ import org.vaadin.olli.FileDownloadWrapper;
 import java.io.ByteArrayInputStream;
 import java.util.Optional;
 
-@HtmlImport("frontend://styles/shared-styles.html")
-@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
+//@HtmlImport("frontend://styles/shared-styles.html")
+//@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-@Theme(Material.class)
+@Theme(themeClass = Material.class)
 @PreserveOnRefresh
 @Route(value = "exclusion")
 @UIScope
@@ -188,7 +184,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
             HospitalCommentsDialog commentsDialog = new HospitalCommentsDialog(exclusionEventAction, ExclusionEventAction.RESUBMIT);
             commentsDialog.open();
 
-            commentsDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
+            commentsDialog.addOpenedChangeListener(dialogOpenedChangeEvent ->
             {
                 if (!dialogOpenedChangeEvent.isOpened() && commentsDialog.isActioned())
                 {
@@ -236,7 +232,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
             HospitalCommentsDialog commentsDialog = new HospitalCommentsDialog(exclusionEventAction, ExclusionEventAction.IGNORED);
             commentsDialog.open();
 
-            commentsDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
+            commentsDialog.addOpenedChangeListener(dialogOpenedChangeEvent ->
             {
                 if (!dialogOpenedChangeEvent.isOpened() && commentsDialog.isActioned())
                 {
