@@ -79,7 +79,7 @@ public class ContextTemplateValidatorTest extends AbstractTest {
             validator.validateJobs(contextTemplate, this.createJobs(contextTemplate, false, true));
         }
         catch (InvalidContextTemplateException e) {
-            Assert.assertEquals(16, e.getContextErrors().size());
+            Assert.assertEquals(32, e.getContextErrors().size());
             Assert.assertEquals("Job[jobName5] defined in the job plan template with identifier[agentName5-jobName5] " +
                 "does not have a job defined in the database with the same identifier! This job resides within the following " +
                 "child contexts within the job plan[Context3]. Please check the job definition artefact and confirm that the " +
