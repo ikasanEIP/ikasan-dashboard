@@ -796,7 +796,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.errorsButton.getStyle().set("color", "white");
         this.errorsButton.getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
         this.errorsButton.addClickListener(event -> {
-            JobPlanErrorsDialog jobPlanErrorsDialog = new JobPlanErrorsDialog(this.contextWarnings);
+            JobPlanErrorsDialog jobPlanErrorsDialog = new JobPlanErrorsDialog(this.contextErrors);
             jobPlanErrorsDialog.open();
         });
         this.warningsButton = new Button(getTranslation("button.warnings", UI.getCurrent().getLocale()), VaadinIcon.EXCLAMATION.create());
