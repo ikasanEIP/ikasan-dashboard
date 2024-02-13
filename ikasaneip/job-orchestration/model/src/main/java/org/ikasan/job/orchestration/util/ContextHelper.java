@@ -1342,6 +1342,74 @@ public class ContextHelper {
             });
         }
     }
+    public static List<String> getAllJobDependencyIdentifiers(Context context) {
+        List<String> results = new ArrayList<>();
+        _getAllJobDependencyIdentifiers(context, results);
+        return results.stream().distinct().collect(Collectors.toList());
+    }
+
+    private static void  _getAllJobDependencyIdentifiers(Context context, List<String> results) {
+        if(context.getJobDependencies() != null && !context.getJobDependencies().isEmpty()) {
+            context.getJobDependencies().forEach(jobDependency -> {
+                getAllJobsInJobDependencies((JobDependency) jobDependency, results);
+            });
+        }
+
+
+        if(context.getContexts() != null) {
+             context.getContexts().forEach(child -> _getAllJobDependencyIdentifiers((Context)child, results));
+        }
+    }
+    /**
+     * Replace tokens in job dependencies.
+     *
+     * @param jobDependency
+     */
+    private static void getAllJobsInJobDependencies(JobDependency jobDependency, List<String> results) {
+        results.add(jobDependency.getJobIdentifier());
+
+        if(jobDependency.getLogicalGrouping() != null) {
+            getAllJobsInJobDependencies(jobDependency.getLogicalGrouping(), results);
+        }
+    }
+
+    /**
+     * Replace tokens in logical groupings.
+     *
+     * @param logicalGrouping
+     */
+    private static void getAllJobsInJobDependencies(LogicalGrouping logicalGrouping, List<String> results) {
+        if(logicalGrouping.getAnd() != null) {
+            logicalGrouping.getAnd().forEach(and -> {
+                results.add(and.getIdentifier());
+                if (and.getLogicalGrouping() != null) {
+                    getAllJobsInJobDependencies(and.getLogicalGrouping(), results);
+                }
+            });
+        }
+
+        if(logicalGrouping.getOr() != null) {
+            logicalGrouping.getOr().forEach(or -> {
+                results.add(or.getIdentifier());
+                if (or.getLogicalGrouping() != null) {
+                    getAllJobsInJobDependencies(or.getLogicalGrouping(), results);
+                }
+            });
+        }
+
+        if(logicalGrouping.getNot() != null) {
+            logicalGrouping.getNot().forEach(not -> {
+                results.add(not.getIdentifier());
+                if (not.getLogicalGrouping() != null) {
+                    getAllJobsInJobDependencies(not.getLogicalGrouping(), results);
+                }
+            });
+        }
+
+        if(logicalGrouping.getLogicalGrouping() != null) {
+            getAllJobsInJobDependencies(logicalGrouping.getLogicalGrouping(), results);
+        }
+    }
 
     public void setAgentNameReplacement(String agentNameReplacement) {
         AGENT_NAME_REPLACEMENT = agentNameReplacement;

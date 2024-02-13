@@ -54,8 +54,10 @@ public class ContextTemplateValidator {
         this.errorReport = new StringBuffer("The context template is invalid!\n");
 
         List<SchedulerJob> schedulerJobsFromJobPlan = ContextHelper.getAllJobs(contextTemplate);
+        List<String> jobDependencyIdentifiers = ContextHelper.getAllJobDependencyIdentifiers(contextTemplate);
 
         this.assertAllJobIdentifiersInJobPlanMapToJobs(contextTemplate, schedulerJobsFromJobPlan, jobTemplates);
+        this.assertAllJobDependencyIdentifiersInJobPlanMapToJobs(contextTemplate, jobDependencyIdentifiers, jobTemplates);
 
         Set<String> jobTemplatesSet = jobTemplates.stream().map(job -> {
             if(job.getJobName() == null || job.getJobName().isEmpty()) {
@@ -132,6 +134,19 @@ public class ContextTemplateValidator {
                     "does not have a job defined in the database with the same identifier! This job resides within the following child contexts" +
                     " within the job plan[%s]. Please check the job definition artefact and confirm that the identifier in the artefact is correct.\n"
                     , schedulerJob.getJobName(), schedulerJob.getIdentifier(), residingContexts), schedulerJob.getJobName());
+            }
+        });
+    }
+
+    private void assertAllJobDependencyIdentifiersInJobPlanMapToJobs(ContextTemplate contextTemplate, List<String> jobsIdentifiersFromJobDependencies, List<SchedulerJob> jobTemplates) {
+        Map<String, SchedulerJob> schedulerJobMap = jobTemplates.stream()
+            .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (first, second) -> first));
+
+        jobsIdentifiersFromJobDependencies.forEach(identifier -> {
+            if(!schedulerJobMap.containsKey(identifier)) {
+                this.reportError(contextTemplate.getName(), String.format("Job Dependency Identifier [%s] defined in the job plan template " +
+                        "does not have a job defined in the database with the same identifier!\n"
+                    , identifier), identifier);
             }
         });
     }

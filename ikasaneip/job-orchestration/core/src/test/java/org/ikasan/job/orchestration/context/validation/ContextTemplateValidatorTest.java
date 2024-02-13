@@ -94,6 +94,27 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     @Test(expected = InvalidContextTemplateException.class)
+    public void test_simple_context_validation_fail_with_bad_job_dependency_identifiers() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContextTemplate(loadDataFile("/data/context-bad-job-dependency-identifier.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+
+        try {
+            validator.validateJobs(contextTemplate, this.createJobs(contextTemplate, false, false));
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.assertEquals(1, e.getContextErrors().size());
+            Assert.assertEquals("Job Dependency Identifier [bad-identifier] defined in the job plan template " +
+                "does not have a job defined in the database with the same identifier!\n"
+                , e.getContextErrors().get(0).getErrorMessage());
+
+            throw e;
+        }
+    }
+
+    @Test(expected = InvalidContextTemplateException.class)
     public void test_job_missing_from_scheduler_jobs_collection() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
 
