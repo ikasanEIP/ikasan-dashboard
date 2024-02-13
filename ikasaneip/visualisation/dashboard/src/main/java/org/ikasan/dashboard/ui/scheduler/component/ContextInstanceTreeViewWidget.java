@@ -657,6 +657,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, statusDiv);
 
                     if(this.contextInstance.isQuartzScheduleDrivenJobsDisabledForContext() &&
+                        schedulerJobInstanceRecord != null &&
                         schedulerJobInstanceRecord.getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
                         statusDiv.setStatus(InstanceStatus.DISABLED);
                     }
