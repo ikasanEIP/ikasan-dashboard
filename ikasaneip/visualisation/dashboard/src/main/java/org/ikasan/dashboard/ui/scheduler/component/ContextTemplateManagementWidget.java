@@ -38,6 +38,9 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedule
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
+import org.ikasan.job.orchestration.context.validation.ContextError;
+import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
+import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
@@ -149,6 +152,12 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
     private boolean removeTrailingPlanNameContextAfterUnderscore;
     private int jobPlanIntervalMultiple;
+
+    private List<ContextError> contextErrors;
+    private List<ContextError> contextWarnings;
+
+    private Button errorsButton;
+    private Button warningsButton;
 
     /**
      * Constructor
@@ -781,6 +790,31 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         MenuBar actionsMenuBar = new MenuBar();
         actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
+        this.errorsButton = new Button(getTranslation("button.errors", UI.getCurrent().getLocale()), VaadinIcon.BAN.create());
+        this.errorsButton.getElement().setAttribute("title", getTranslation("tooltip.job-plan-errors", UI.getCurrent().getLocale()));
+        this.errorsButton.setIconAfterText(true);
+        this.errorsButton.getStyle().set("color", "white");
+        this.errorsButton.getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+        this.errorsButton.addClickListener(event -> {
+            JobPlanErrorsDialog jobPlanErrorsDialog = new JobPlanErrorsDialog(this.contextWarnings);
+            jobPlanErrorsDialog.open();
+        });
+        this.warningsButton = new Button(getTranslation("button.warnings", UI.getCurrent().getLocale()), VaadinIcon.EXCLAMATION.create());
+        this.warningsButton.getElement().setAttribute("title", getTranslation("tooltip.job-plan-warnings", UI.getCurrent().getLocale()));
+        this.warningsButton.setIconAfterText(true);
+        this.warningsButton.getStyle().set("color", "white");
+        this.warningsButton.getStyle().set("background-color", IkasanColours.IKASAN_ORANGE);
+        this.warningsButton.addClickListener(event -> {
+            JobPlanWarningsDialog jobPlanWarningsDialog = new JobPlanWarningsDialog(this.contextWarnings);
+            jobPlanWarningsDialog.open();
+        });
+
+        buttonLayout.add(this.errorsButton, this.warningsButton);
+        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, this.errorsButton, this.warningsButton);
+
+        this.validate();
+
+
         MenuItem actionsMenuItem = this.createIconItem(actionsMenuBar, VaadinIcon.MENU, "Actions");
         SubMenu actions = actionsMenuItem.getSubMenu();
 
@@ -1155,6 +1189,39 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         }
     }
 
+    private void validate() {
+        SearchResults<SchedulerJobRecord> schedulerJobRecords = (SearchResults<SchedulerJobRecord>)this.schedulerJobService
+            .findByContext(this.contextTemplate.getName(), -1, -1);
+
+        List<SchedulerJob> jobs = schedulerJobRecords.getResultList().stream()
+            .map(schedulerJobRecord -> schedulerJobRecord.getJob())
+            .collect(Collectors.toList());
+
+        this.contextErrors = new ArrayList<>();
+        this.contextWarnings = new ArrayList<>();
+
+        ContextTemplateValidator contextTemplateValidator = new ContextTemplateValidator();
+        try {
+            contextTemplateValidator.validateJobs(contextTemplate, jobs);
+        } catch (InvalidContextTemplateException e) {
+            this.contextErrors.addAll(e.getContextErrors());
+        }
+
+        try {
+            contextTemplateValidator.validate(contextTemplate);
+        } catch (InvalidContextTemplateException e) {
+            this.contextWarnings.addAll(e.getContextErrors());
+        }
+
+        if(this.contextErrors.isEmpty()) {
+            this.errorsButton.setVisible(false);
+        }
+
+        if(this.contextWarnings.isEmpty()) {
+            this.warningsButton.setVisible(false);
+        }
+    }
+
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
@@ -1173,6 +1240,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             this.contextTemplate = contextTemplate;
             if (this.ui.isAttached()) {
                 this.ui.access(() -> {
+                    this.validate();
                     this.binder.readBean(contextTemplate);
 
                     this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));

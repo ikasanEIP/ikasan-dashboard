@@ -113,11 +113,17 @@ public class ContextTemplateValidator {
             .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (first, second) -> first));
 
         jobsFromJobPlan.forEach(schedulerJob -> {
-            List<String> residingContextList = ContextHelper.getContextsWhereJobFilterMatchResides
-                (contextTemplate, schedulerJob.getJobName());
+            List<String> residingContextList;
+            if(schedulerJob.getJobName() == null) {
+                residingContextList = schedulerJob.getChildContextNames();
+            }
+            else {
+                residingContextList = ContextHelper.getContextsWhereJobFilterMatchResides
+                    (contextTemplate, schedulerJob.getJobName());
+            }
             String residingContexts = "";
 
-            if(!residingContextList.isEmpty()) {
+            if(residingContextList != null && !residingContextList.isEmpty()) {
                 residingContexts = String.join(", ", residingContextList);
             }
 
