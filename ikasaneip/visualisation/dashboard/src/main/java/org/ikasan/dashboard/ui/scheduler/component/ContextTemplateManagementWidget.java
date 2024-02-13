@@ -1216,9 +1216,15 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         if(this.contextErrors.isEmpty()) {
             this.errorsButton.setVisible(false);
         }
+        else {
+            this.errorsButton.setVisible(true);
+        }
 
         if(this.contextWarnings.isEmpty()) {
             this.warningsButton.setVisible(false);
+        }
+        else {
+            this.warningsButton.setVisible(true);
         }
     }
 

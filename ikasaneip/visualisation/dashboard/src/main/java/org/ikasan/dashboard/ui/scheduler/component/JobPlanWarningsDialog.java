@@ -1,8 +1,10 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.job.orchestration.context.validation.ContextError;
 
@@ -16,26 +18,23 @@ public class JobPlanWarningsDialog extends AbstractCloseableResizableDialog {
         this.contextWarnings = contextWarnings;
         this.setWidth("70vw");
         this.setHeight("70vh");
-        this.setResizable(false);
-        this.add(this.initialiseErrorWidget());
+        super.content.add(this.initialiseErrorWidget());
         super.title.setText(getTranslation("dialog-title.job-plan-warnings", UI.getCurrent().getLocale()));
     }
 
-    private VerticalLayout initialiseErrorWidget() {
-        VerticalLayout errorWidget = new VerticalLayout();
-        errorWidget.setSizeFull();
-        errorWidget.setMargin(true);
-        errorWidget.setPadding(false);
+    private Component initialiseErrorWidget() {
 
         Grid<ContextError> errorGrid = new Grid<>();
-        errorGrid.addColumn(ContextError::getErrorMessage)
+        errorGrid.addColumn(TemplateRenderer.<ContextError>of(
+                "<div style=\"word-wrap:normal; white-space:normal\">[[item.error]]</div>")
+            .withProperty("error", contextError -> contextError.getErrorMessage()))
             .setHeader(getTranslation("label.warning-message", UI.getCurrent().getLocale()))
-            .setKey("warningMessage")
-            .setFlexGrow(20);
+            .setKey("warningMessage");
+
+        errorGrid.setWidth("100%");
 
         errorGrid.setItems(this.contextWarnings);
-        errorWidget.add(errorGrid);
 
-        return errorWidget;
+        return errorGrid;
     }
 }
