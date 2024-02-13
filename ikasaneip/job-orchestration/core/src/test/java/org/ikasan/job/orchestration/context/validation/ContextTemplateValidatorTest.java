@@ -80,10 +80,14 @@ public class ContextTemplateValidatorTest extends AbstractTest {
         }
         catch (InvalidContextTemplateException e) {
             Assert.assertEquals(16, e.getContextErrors().size());
-            Assert.assertEquals("Job[jobName5] defined in the job plan template with identifier[agentName5-jobName5] does not have a job defined in the database with the same identifier! " +
-                "Please check the job definition artefact and confirm that the identifier is correct.\n", e.getContextErrors().get(0).getErrorMessage());
-            Assert.assertEquals("Job[jobName1] defined in the job plan template with identifier[agentName1-jobName1] does not have a job defined in the database with the same identifier! " +
-                "Please check the job definition artefact and confirm that the identifier is correct.\n", e.getContextErrors().get(1).getErrorMessage());
+            Assert.assertEquals("Job[jobName5] defined in the job plan template with identifier[agentName5-jobName5] " +
+                "does not have a job defined in the database with the same identifier! This job resides within the following " +
+                "child contexts within the job plan[Context3]. Please check the job definition artefact and confirm that the " +
+                "identifier in the artefact is correct.\n", e.getContextErrors().get(0).getErrorMessage());
+            Assert.assertEquals("Job[jobName1] defined in the job plan template with identifier[agentName1-jobName1] does " +
+                "not have a job defined in the database with the same identifier! This job resides within the following child contexts " +
+                "within the job plan[Context3, Context4, Context5]. Please check the job definition artefact and confirm that the identifier " +
+                "in the artefact is correct.\n", e.getContextErrors().get(1).getErrorMessage());
 
             throw e;
         }

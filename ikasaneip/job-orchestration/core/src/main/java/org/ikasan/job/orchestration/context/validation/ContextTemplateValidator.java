@@ -113,11 +113,19 @@ public class ContextTemplateValidator {
             .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (first, second) -> first));
 
         jobsFromJobPlan.forEach(schedulerJob -> {
+            List<String> residingContextList = ContextHelper.getContextsWhereJobFilterMatchResides
+                (contextTemplate, schedulerJob.getJobName());
+            String residingContexts = "";
+
+            if(!residingContextList.isEmpty()) {
+                residingContexts = String.join(", ", residingContextList);
+            }
+
             if(!schedulerJobMap.containsKey(schedulerJob.getIdentifier())) {
                 this.reportError(contextTemplate.getName(), String.format("Job[%s] defined in the job plan template with identifier[%s] " +
-                    "does not have a job defined in the database with the same identifier! Please check the job definition artefact " +
-                        "and confirm that the identifier is correct.\n"
-                        , schedulerJob.getJobName(), schedulerJob.getIdentifier()), schedulerJob.getJobName());
+                    "does not have a job defined in the database with the same identifier! This job resides within the following child contexts" +
+                    " within the job plan[%s]. Please check the job definition artefact and confirm that the identifier in the artefact is correct.\n"
+                    , schedulerJob.getJobName(), schedulerJob.getIdentifier(), residingContexts), schedulerJob.getJobName());
             }
         });
     }
