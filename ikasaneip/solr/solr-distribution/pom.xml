@@ -49,7 +49,7 @@
     <parent>
         <groupId>org.ikasan</groupId>
         <artifactId>ikasan-solr</artifactId>
-        <version>3.3.6-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>ikasan-solr-distribution</artifactId>
@@ -112,7 +112,7 @@
 
                                 <copy file="${basedir}/src/main/resources/security.json" tofile="${project.build.directory}/solr-${version.org.apache.solr}/server/solr/security.json" />
 
-                                <zip destfile="${project.build.directory}/ikasan-solr-distribution-${version}.zip">
+                                <zip destfile="${project.build.directory}/ikasan-solr-distribution-${project.version}.zip">
                                     <zipfileset filemode="755" dir="${project.build.directory}/solr-${version.org.apache.solr}/" />
                                 </zip>
 

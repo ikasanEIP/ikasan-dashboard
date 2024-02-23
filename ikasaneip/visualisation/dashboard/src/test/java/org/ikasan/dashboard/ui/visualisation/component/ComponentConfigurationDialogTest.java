@@ -12,11 +12,9 @@ import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.view.GraphView;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisation;
-import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationMetaDataProvider;
 import org.ikasan.spec.metadata.ConfigurationMetaDataService;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
@@ -25,8 +23,8 @@ import org.ikasan.vaadin.visjs.network.Node;
 import org.ikasan.vaadin.visjs.network.event.DoubleClickEvent;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jmock.imposters.ByteBuddyClassImposteriser;
 import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -50,7 +48,7 @@ public class ComponentConfigurationDialogTest extends UITest {
 
     private Mockery mockery = new Mockery()
     {{
-        setImposteriser(ClassImposteriser.INSTANCE);
+        setImposteriser(ByteBuddyClassImposteriser.INSTANCE);
         setThreadingPolicy(new Synchroniser());
     }};
 

@@ -5,7 +5,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.replay.model.SolrReplayEvent;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
+import org.jmock.imposters.ByteBuddyClassImposteriser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ public class SolrReplayDaoTest
     private Mockery mockery = new Mockery()
     {
         {
-            setImposteriser(ClassImposteriser.INSTANCE);
+            setImposteriser(ByteBuddyClassImposteriser.INSTANCE);
         }
     };
 

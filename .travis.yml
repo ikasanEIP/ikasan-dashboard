@@ -1,7 +1,7 @@
 sudo: false
 language: java
 jdk:
-  - openjdk11
+  - openjdk17
 node_js:
   - 10.17.0
 cache:
@@ -25,18 +25,24 @@ install:
 
 deploy:
   - skip_cleanup: true
-  # deploy develop 3.1.x to oss
+  # deploy develop 3.2.x to oss
   - provider: script
     skip_cleanup: true
     script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V --settings .settings.xml
     on:
       branch: 3.2.x
-  # deploy develop 3.2.x to oss
+  # deploy develop 3.3.x to oss
   - provider: script
     skip_cleanup: true
     script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V -q --settings .settings.xml
     on:
       branch: 3.3.x
+  # deploy develop 4.0.x to oss
+  - provider: script
+    skip_cleanup: true
+    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V -q --settings .settings.xml
+    on:
+      branch: 4.0.x
   # Push release to oss
   - provider: script
     skip_cleanup: true

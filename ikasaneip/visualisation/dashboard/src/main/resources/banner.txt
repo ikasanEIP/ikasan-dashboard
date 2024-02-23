@@ -5,4 +5,4 @@
  _| |_  | |\ \  |  ___  |  __\ \ |  ___  | | |\ ' |
 |_____| |_| \_\ |_|   |_| /____/ |_|   |_| |_| \__|
 ===================================================
-IkasanEIP Dashboard (v${pom.version})
+IkasanEIP Dashboard (v${application.version})

@@ -12,7 +12,7 @@ import org.ikasan.spec.wiretap.WiretapEvent;
 import org.ikasan.wiretap.dao.SolrWiretapDao;
 import org.ikasan.wiretap.model.SolrWiretapEvent;
 import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
+import org.jmock.imposters.ByteBuddyClassImposteriser;
 import org.junit.Test;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -33,7 +33,7 @@ public class SolrWiretapServiceTest extends SolrTestCaseJ4
     private Mockery mockery = new Mockery()
     {
         {
-            setImposteriser(ClassImposteriser.INSTANCE);
+            setImposteriser(ByteBuddyClassImposteriser.INSTANCE);
         }
     };
 

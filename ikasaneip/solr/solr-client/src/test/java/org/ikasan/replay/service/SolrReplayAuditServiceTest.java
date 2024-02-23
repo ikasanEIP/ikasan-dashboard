@@ -11,7 +11,7 @@ import org.ikasan.replay.model.SolrReplayAudit;
 import org.ikasan.replay.model.SolrReplayAuditEvent;
 import org.ikasan.spec.replay.ReplayAudit;
 import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
+import org.jmock.imposters.ByteBuddyClassImposteriser;
 import org.junit.Test;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -32,7 +32,7 @@ public class SolrReplayAuditServiceTest extends SolrTestCaseJ4
     private Mockery mockery = new Mockery()
     {
         {
-            setImposteriser(ClassImposteriser.INSTANCE);
+            setImposteriser(ByteBuddyClassImposteriser.INSTANCE);
         }
     };
 
