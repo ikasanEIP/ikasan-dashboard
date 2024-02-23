@@ -55,9 +55,9 @@ public class ContextTemplateValidatorTest extends AbstractTest {
         catch (InvalidContextTemplateException e) {
             Assert.assertEquals(4, e.getContextErrors().size());
             Assert.assertEquals("Job[{\"agentName\":\"agentName1\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName1-jobName1\"}] " +
-                "sourced from the database job definition is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(0).getErrorMessage());
+                "sourced from the job definition artefact is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(0).getErrorMessage());
             Assert.assertEquals("Job[{\"agentName\":\"agentName2\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName2-jobName2\"}] " +
-                "sourced from the database job definition is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(1).getErrorMessage());
+                "sourced from the job definition artefact is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(1).getErrorMessage());
             Assert.assertEquals("Job[{\"agentName\":\"agentName1\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName1-jobName1\"}] " +
                 "sourced from the job plan template is missing a job name. This is a mandatory field!\n", e.getContextErrors().get(2).getErrorMessage());
             Assert.assertEquals("Job[{\"agentName\":\"agentName2\",\"startupControlType\":\"AUTOMATIC\",\"ordinal\":-1,\"identifier\":\"agentName2-jobName2\"}] " +
@@ -81,13 +81,13 @@ public class ContextTemplateValidatorTest extends AbstractTest {
         catch (InvalidContextTemplateException e) {
             Assert.assertEquals(32, e.getContextErrors().size());
             Assert.assertEquals("Job[jobName5] defined in the job plan template with identifier[agentName5-jobName5] " +
-                "does not have a job defined in the database with the same identifier! This job resides within the following " +
-                "child contexts within the job plan[Context3]. Please check the job definition artefact and confirm that the " +
-                "identifier in the artefact is correct.\n", e.getContextErrors().get(0).getErrorMessage());
-            Assert.assertEquals("Job[jobName1] defined in the job plan template with identifier[agentName1-jobName1] does " +
-                "not have a job defined in the database with the same identifier! This job resides within the following child contexts " +
-                "within the job plan[Context3, Context4, Context5]. Please check the job definition artefact and confirm that the identifier " +
-                "in the artefact is correct.\n", e.getContextErrors().get(1).getErrorMessage());
+                "does not have a job defined with the same identifier! This job resides within the following child contexts " +
+                "within the job plan[Context3]. Please check the job definition artefact and confirm that the identifier in " +
+                "the artefact is correct.\n", e.getContextErrors().get(0).getErrorMessage());
+            Assert.assertEquals("Job[jobName1] defined in the job plan template with identifier[agentName1-jobName1] " +
+                "does not have a job defined with the same identifier! This job resides within the following child contexts " +
+                "within the job plan[Context3, Context4, Context5]. Please check the job definition artefact and " +
+                "confirm that the identifier in the artefact is correct.\n", e.getContextErrors().get(1).getErrorMessage());
 
             throw e;
         }
@@ -106,8 +106,8 @@ public class ContextTemplateValidatorTest extends AbstractTest {
         }
         catch (InvalidContextTemplateException e) {
             Assert.assertEquals(1, e.getContextErrors().size());
-            Assert.assertEquals("Job Dependency Identifier [bad-identifier] defined in the job plan template " +
-                "does not have a job defined in the database with the same identifier!\n"
+            Assert.assertEquals("Job Dependency Identifier [bad-identifier] defined in the job plan " +
+                    "template does not have a job artefact defined with the same identifier!\n"
                 , e.getContextErrors().get(0).getErrorMessage());
 
             throw e;

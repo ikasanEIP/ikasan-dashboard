@@ -62,11 +62,11 @@ public class ContextTemplateValidator {
         Set<String> jobTemplatesSet = jobTemplates.stream().map(job -> {
             if(job.getJobName() == null || job.getJobName().isEmpty()) {
                 try {
-                    this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the database job definition" +
+                    this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job definition artefact" +
                         " is missing a job name. This is a mandatory field!\n", this.objectMapper.writeValueAsString(job)), "");
                 }
                 catch (JsonProcessingException e) {
-                    this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the database job definition" +
+                    this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job definition artefact" +
                         " is missing a job name. This is a mandatory field!\n", job.getIdentifier()), "");
                 }
                 return "";
@@ -100,7 +100,7 @@ public class ContextTemplateValidator {
 
                 contexts.forEach(contextName -> {
                     this.reportError(contextTemplate.getName(), String.format("Job[%s] appears in job " +
-                        "plan but there is no job template defined for it in the database!\n", jobName), "");
+                        "plan but there is no job template defined for it!\n", jobName), "");
                 });
             });
         }
@@ -131,7 +131,7 @@ public class ContextTemplateValidator {
 
             if(!schedulerJobMap.containsKey(schedulerJob.getIdentifier())) {
                 this.reportError(contextTemplate.getName(), String.format("Job[%s] defined in the job plan template with identifier[%s] " +
-                    "does not have a job defined in the database with the same identifier! This job resides within the following child contexts" +
+                    "does not have a job defined with the same identifier! This job resides within the following child contexts" +
                     " within the job plan[%s]. Please check the job definition artefact and confirm that the identifier in the artefact is correct.\n"
                     , schedulerJob.getJobName(), schedulerJob.getIdentifier(), residingContexts), schedulerJob.getJobName());
             }
@@ -145,7 +145,7 @@ public class ContextTemplateValidator {
         jobsIdentifiersFromJobDependencies.forEach(identifier -> {
             if(!schedulerJobMap.containsKey(identifier)) {
                 this.reportError(contextTemplate.getName(), String.format("Job Dependency Identifier [%s] defined in the job plan template " +
-                        "does not have a job defined in the database with the same identifier!\n"
+                        "does not have a job artefact defined with the same identifier!\n"
                     , identifier), identifier);
             }
         });
@@ -225,12 +225,6 @@ public class ContextTemplateValidator {
             this.errorReport.append("Context[").append(contextTemplate.getName())
                 .append("] must contain a time window start cron expression.\n");
         }
-
-//        if(contextTemplate.getTimeWindowEnd() == null || contextTemplate.getTimeWindowEnd().isEmpty()) {
-//            this.inError = true;
-//            this.errorReport.append("Context[").append(contextTemplate.getName())
-//                .append("] must contain a time window end cron expression.\n");
-//        }
     }
 
     /**
@@ -245,12 +239,6 @@ public class ContextTemplateValidator {
             this.errorReport.append("Context[").append(contextTemplate.getName())
                 .append("] must not contain a time window start cron expression. This field can only be present in the root context.\n");
         }
-
-//        if(contextTemplate.getTimeWindowEnd() != null && !contextTemplate.getTimeWindowEnd().isEmpty()) {
-//            this.inError = true;
-//            this.errorReport.append("Context[").append(contextTemplate.getName())
-//                .append("] must not contain a time window end cron expression. This field can only be present in the root context.\n");
-//        }
     }
 
     /**
