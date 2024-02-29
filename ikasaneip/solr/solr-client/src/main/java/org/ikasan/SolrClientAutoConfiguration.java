@@ -366,7 +366,7 @@ public class SolrClientAutoConfiguration {
         return dao;
     }
 
-    @Bean
+    @Bean(name = "solrSearchService")
     public SolrGeneralServiceImpl solrSearchService()
     {
         SolrGeneralDaoImpl dao = new SolrGeneralDaoImpl();
@@ -492,7 +492,7 @@ public class SolrClientAutoConfiguration {
         return this.createSolrModuleMetadataServiceImpl();
     }
 
-    @Bean
+    @Bean("moduleMetadataService")
     public SolrModuleMetadataServiceImpl moduleMetadataService()
     {
         return this.createSolrModuleMetadataServiceImpl();

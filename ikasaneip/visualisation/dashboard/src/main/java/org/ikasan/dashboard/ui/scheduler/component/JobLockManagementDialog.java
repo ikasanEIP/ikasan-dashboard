@@ -209,7 +209,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
 
                     IntegerField lockCountTf = new IntegerField(getTranslation("label.lock-count", UI.getCurrent().getLocale()));
                     lockCountTf.getElement().getThemeList().add("always-float-label");
-                    lockCountTf.setHasControls(true);
+                    lockCountTf.setStepButtonsVisible(true);
                     lockCountTf.setMin(1);
                     lockCountTf.setMax(Integer.MAX_VALUE);
                     lockCountTf.setWidth("100%");
@@ -344,7 +344,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
 
         this.lockCountTf = new IntegerField(getTranslation("label.lock-count", UI.getCurrent().getLocale()));
         this.lockCountTf.getElement().getThemeList().add("always-float-label");
-        this.lockCountTf.setHasControls(true);
+        this.lockCountTf.setStepButtonsVisible(true);
         this.lockCountTf.setMin(1);
         this.lockCountTf.setMax(Integer.MAX_VALUE);
         this.lockCountTf.setEnabled(false);

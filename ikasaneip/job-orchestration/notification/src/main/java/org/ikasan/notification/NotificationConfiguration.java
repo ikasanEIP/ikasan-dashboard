@@ -17,6 +17,7 @@ import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -85,14 +86,14 @@ public class NotificationConfiguration {
         return emailNotifier;
     }
 
-    @Bean
+    @Bean(name = "stateChangeMonitor")
     public Monitor stateChangeMonitor(List<Notifier> stateChangeNotifiers) {
         Monitor monitor = new StateChangeMonitorImpl(executorService, this.notificationEnabled);
         monitor.setNotifiers(stateChangeNotifiers);
         return monitor;
     }
 
-    @Bean
+    @Bean(name = "overdueFileMonitor")
     public Monitor overdueFileMonitor(List<Notifier> overdueFileNotifiers) {
         Monitor monitor = new OverdueFileMonitorImpl(fileArrivalToleranceInMinutes, executorService, schedulerJobInstanceService
             , this.notificationEnabled, this.notificationPollingInterval);
@@ -100,7 +101,7 @@ public class NotificationConfiguration {
         return monitor;
     }
 
-    @Bean
+    @Bean(name = "jobRunningTimesMonitor")
     public Monitor jobRunningTimesMonitor(List<Notifier> jobRunningTimesNotifiers) {
         Monitor monitor = new JobRunningTimesMonitorImpl(executorService, schedulerJobInstanceService, internalEventDrivenJobService
             , this.notificationEnabled, this.notificationPollingInterval);
@@ -124,7 +125,8 @@ public class NotificationConfiguration {
     }
 
     @Bean
-    public MonitorManagement monitorManagement(Monitor stateChangeMonitor, Monitor overdueFileMonitor, Monitor jobRunningTimesMonitor) {
+    public MonitorManagement monitorManagement(@Qualifier("stateChangeMonitor") Monitor stateChangeMonitor
+        , @Qualifier("overdueFileMonitor") Monitor overdueFileMonitor, @Qualifier("jobRunningTimesMonitor") Monitor jobRunningTimesMonitor) {
         MonitorManagement monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(stateChangeMonitor);
         monitorManagement.registerMonitor(overdueFileMonitor);

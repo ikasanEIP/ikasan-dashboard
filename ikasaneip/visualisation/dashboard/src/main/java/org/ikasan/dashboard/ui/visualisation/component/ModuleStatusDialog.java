@@ -135,7 +135,7 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog impleme
 
                 flowControlManagementDialog.open();
 
-                flowControlManagementDialog.addOpenedChangeListener((ComponentEventListener<OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent -> {
+                flowControlManagementDialog.addOpenedChangeListener((ComponentEventListener<OpenedChangeEvent>) dialogOpenedChangeEvent -> {
                     if (!dialogOpenedChangeEvent.isOpened()) {
                         if (!this.flowGrid.getSelectedItems().isEmpty()) {
                             this.flowGrid.getSelectedItems().forEach(flow -> this.flowGrid.getDataProvider().refreshItem(flow));

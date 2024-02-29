@@ -1,20 +1,16 @@
 package org.ikasan.orchestration.service.utils;
 
-import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults.CONTEXT_NAME;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import liquibase.pro.packaged.I;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults.CONTEXT_NAME;
 
 public class InternalEventDrivenJobTestSearchResults implements SearchResults<SchedulerJobInstanceRecord> {
     public static final String AGENT_NAME = "AgentName";

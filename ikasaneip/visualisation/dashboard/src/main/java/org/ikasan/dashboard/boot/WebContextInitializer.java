@@ -19,14 +19,14 @@ public class WebContextInitializer implements VaadinServiceInitListener
 
     private Logger logger = LoggerFactory.getLogger(WebContextInitializer.class);
 
-    @Resource
-    private PersistenceService persistenceService;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private ContextInstanceRecoveryManager contextInstanceRecoveryManager;
+//    @Resource
+//    private PersistenceService persistenceService;
+//
+//    @Resource
+//    private UserService userService;
+//
+//    @Resource
+//    private ContextInstanceRecoveryManager contextInstanceRecoveryManager;
 
     @Override
     public void serviceInit(ServiceInitEvent serviceInitEvent)
@@ -45,27 +45,27 @@ public class WebContextInitializer implements VaadinServiceInitListener
 
     protected void createFull() throws PersistenceServiceException
     {
-        if(persistenceService.baselinePersistenceChangesRequired())
-        {
-            persistenceService.createBaselinePersistence();
-
-            userService.changeUsersPassword("admin", "admin", "admin");
-        }
+//        if(persistenceService.baselinePersistenceChangesRequired())
+//        {
+//            persistenceService.createBaselinePersistence();
+//
+//            userService.changeUsersPassword("admin", "admin", "admin");
+//        }
     }
 
     protected void upgrade() throws PersistenceServiceException
     {
-        if(persistenceService.postBaselinePersistenceChangesRequired())
-        {
-            persistenceService.createPostBaselinePersistence();
-        }
+//        if(persistenceService.postBaselinePersistenceChangesRequired())
+//        {
+//            persistenceService.createPostBaselinePersistence();
+//        }
     }
 
     protected void installFileTransfer() throws PersistenceServiceException
     {
-        if(persistenceService.fileTransferPersistenceChangesRequired())
-        {
-            persistenceService.createFileTransferPersistence();
-        }
+//        if(persistenceService.fileTransferPersistenceChangesRequired())
+//        {
+//            persistenceService.createFileTransferPersistence();
+//        }
     }
 }

@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
@@ -21,8 +22,6 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.vaadin.miki.shared.dates.DatePatterns;
-import org.vaadin.miki.superfields.dates.SuperDatePicker;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -39,7 +38,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
     private DateFormatter dateFormatter;
     private TextField textField = new TextField(getTranslation("label.search", UI.getCurrent().getLocale()));
 
-    private SuperDatePicker date;
+    private DatePicker date;
     private TimePicker startTime;
     private TimePicker endTime;
 
@@ -91,8 +90,8 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         HorizontalLayout layout = new HorizontalLayout();
         H4 modules = new H4(getTranslation("header.running-and-recently-completed-job-executions", UI.getCurrent().getLocale()));
 
-        this.date = new SuperDatePicker(getTranslation("label.execution-date", UI.getCurrent().getLocale()));
-        this.date.setDatePattern(DatePatterns.D_MMMM_YYYY);
+        this.date = new DatePicker(getTranslation("label.execution-date", UI.getCurrent().getLocale()));
+//        this.date.setDatePattern(DatePatterns.D_MMMM_YYYY);
         this.date.setValue(LocalDate.now());
 
         this.startTime = new TimePicker(getTranslation("label.from", UI.getCurrent().getLocale()));

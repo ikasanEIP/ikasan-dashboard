@@ -7,6 +7,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
@@ -43,8 +44,6 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.miki.shared.dates.DatePatterns;
-import org.vaadin.miki.superfields.dates.SuperDatePicker;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -900,10 +899,10 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      */
     private void addDateTimeRange(long startMilli, long endMilli) {
         DateTimeRange dateTimeRange = new DateTimeRange();
-        dateTimeRange.startDate = new SuperDatePicker(getTranslation("label.start-date", UI.getCurrent().getLocale()));
+        dateTimeRange.startDate = new DatePicker(getTranslation("label.start-date", UI.getCurrent().getLocale()));
         dateTimeRange.startDate.setId("dateTimeRange.startDate"+this.dateTimeRanges.size());
         dateTimeRange.startDate.setEnabled(this.enabled);
-        dateTimeRange.startDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
+//        dateTimeRange.startDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
         dateTimeRange.startDate.setErrorMessage(getTranslation("error.missing-start-date", UI.getCurrent().getLocale()));
         dateTimeRange.startDate.setLocale(UI.getCurrent().getLocale());
         if(startMilli > 0) {
@@ -920,10 +919,10 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         HorizontalLayout startLayout = new HorizontalLayout();
         startLayout.add(dateTimeRange.startDate, dateTimeRange.startTime);
 
-        dateTimeRange.endDate = new SuperDatePicker(getTranslation("label.end-date", UI.getCurrent().getLocale()));
+        dateTimeRange.endDate = new DatePicker(getTranslation("label.end-date", UI.getCurrent().getLocale()));
         dateTimeRange.endDate.setId("dateTimeRange.endDate"+this.dateTimeRanges.size());
         dateTimeRange.endDate.setEnabled(this.enabled);
-        dateTimeRange.endDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
+//        dateTimeRange.endDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
         dateTimeRange.endDate.setErrorMessage(getTranslation("error.missing-end-date", UI.getCurrent().getLocale()));
         dateTimeRange.endDate.setLocale(UI.getCurrent().getLocale());
         if(endMilli > 0) {
@@ -1057,9 +1056,9 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     }
 
     private class DateTimeRange {
-        public SuperDatePicker startDate;
+        public DatePicker startDate;
         public TimePicker startTime;
-        public SuperDatePicker endDate;
+        public DatePicker endDate;
         public TimePicker endTime;
     }
 }

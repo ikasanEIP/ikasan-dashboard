@@ -5,18 +5,21 @@ import org.ikasan.rest.dashboard.JwtRequestFilter;
 import org.ikasan.security.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.annotation.Resource;
 
@@ -34,6 +37,8 @@ import javax.annotation.Resource;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity (prePostEnabled = true)
+@EnableWebMvc
+@EnableMethodSecurity
 public class SecurityConfiguration
 {
     private static final String LOGIN_PROCESSING_URL = "/login";
@@ -59,11 +64,19 @@ public class SecurityConfiguration
     @Resource
     private AuthenticationProvider ikasanAuthenticationProvider;
 
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
     /**
      * Configured HttpBasic which allows curl commands to run on specific url patterns.
      */
     @Configuration
     @Order(1)
+    @EnableWebSecurity
+    @EnableWebMvc
+    @EnableMethodSecurity
     public class HttpBasicSecurityConfigurationAdapter {
 
 //        @Override
@@ -78,34 +91,30 @@ public class SecurityConfiguration
 //            return super.authenticationManagerBean();
 //        }
 
-        @Bean
-        public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-            return authenticationConfiguration.getAuthenticationManager();
-        }
-
         /**
          * Requires basic authentication for rest api calls, usually used for programs such as curl.
          */
-        @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-            http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()) // Disable csrf to enable POST, DELETE, PUT e.t.c
-                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry
-                    -> authorizationManagerRequestMatcherRegistry
-                    .requestMatchers("/rest/export/context/**", // ContextExportControl
-                        "/rest/module/bigQueue/size/all/**", // BigQueueModuleController
-                        "/rest/context/status/**", // ContextStatusServiceController
-                        "/actuator/**"// expose spring actuator via basic authentication
-                    )
-                )
-                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry
-                    -> authorizationManagerRequestMatcherRegistry
-                    .anyRequest()
-                    .authenticated()
-                )
-                .httpBasic(httpSecurityHttpBasicConfigurer -> httpSecurityHttpBasicConfigurer.configure(http));
-
-            return http.build();
-        }
+//        @Bean
+//        @DependsOn("authenticationManager")
+//        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//            http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()) // Disable csrf to enable POST, DELETE, PUT e.t.c
+//                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry
+//                    -> authorizationManagerRequestMatcherRegistry
+//                    .requestMatchers("/rest/export/context/**", // ContextExportControl
+//                        "/rest/module/bigQueue/size/all/**", // BigQueueModuleController
+//                        "/rest/context/status/**", // ContextStatusServiceController
+//                        "/actuator/**"// expose spring actuator via basic authentication
+//                    )
+//                )
+//                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry
+//                    -> authorizationManagerRequestMatcherRegistry
+//                    .anyRequest()
+//                    .authenticated()
+//                )
+//                .httpBasic(httpSecurityHttpBasicConfigurer -> httpSecurityHttpBasicConfigurer.configure(http));
+//
+//            return http.build();
+//        }
     }
 
     @Configuration

@@ -22,6 +22,7 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.systemevent.SystemEventService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -49,7 +50,7 @@ public class ContextServiceAutoConfiguration {
     public ContextInstanceRecoveryService contextInstanceRecoveryService(
         ScheduledContextInstanceService scheduledContextInstanceService,
         JobInitiationService jobInitiationService,
-        ModuleMetaDataService moduleMetadataService,
+        @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
         InternalEventDrivenJobService internalEventDrivenJobService,
         ContextParametersInstanceService contextParametersInstanceService,
         ContextInstancePublicationService contextInstancePublicationService,
@@ -87,7 +88,7 @@ public class ContextServiceAutoConfiguration {
     public ContextInstanceRegistrationService contextInstanceRegistrationService(
         ScheduledContextInstanceService scheduledContextInstanceService,
         JobInitiationService jobInitiationService,
-        ModuleMetaDataService moduleMetadataService,
+        @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
         InternalEventDrivenJobService internalEventDrivenJobService,
         ContextParametersInstanceService contextParametersInstanceService,
         ContextInstancePublicationService contextInstancePublicationService,

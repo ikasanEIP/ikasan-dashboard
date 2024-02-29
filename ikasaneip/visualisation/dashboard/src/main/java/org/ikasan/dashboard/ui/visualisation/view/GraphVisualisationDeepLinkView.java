@@ -24,14 +24,15 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Push
+//@Push
 //@HtmlImport("frontend://styles/shared-styles.html")
 //@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
-@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-@Theme(themeClass = Material.class)
+//@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+//@Theme(themeClass = Material.class)
 @Route(value = "visualisationTab")
 @UIScope
 @Component
@@ -70,11 +71,11 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
     private DateFormatter dateFormatter;
 
     public GraphVisualisationDeepLinkView(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService, ModuleControlService moduleControlRestService,
-                                          ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService, ConfigurationMetaDataService configurationMetadataService,
+                                          @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService, ConfigurationMetaDataService configurationMetadataService,
                                           BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
                                           SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService, HospitalAuditService hospitalAuditService,
                                           ResubmissionRestServiceImpl resubmissionRestService, ReplayRestServiceImpl replayRestService, BatchInsert replayAuditService, MetaDataService metaDataApplicationRestService,
-                                          BatchInsert<ModuleMetaData> moduleMetadataBatchInsert, TriggerService triggerRestService, DateFormatter dateFormatter)
+                                          @Qualifier("moduleMetadataBatchInsert") BatchInsert<ModuleMetaData> moduleMetadataBatchInsert, TriggerService triggerRestService, DateFormatter dateFormatter)
     {
         this.solrSearchService = solrSearchService;
         this.moduleControlRestService = moduleControlRestService;

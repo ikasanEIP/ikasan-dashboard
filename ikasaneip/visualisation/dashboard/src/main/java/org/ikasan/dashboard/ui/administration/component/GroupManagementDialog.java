@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.ui.administration.component;
 
-import com.github.appreciated.css.grid.sizes.Flex;
-import com.github.appreciated.layout.FluentGridLayout;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -21,9 +19,9 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.ui.administration.filter.RoleFilter;
 import org.ikasan.dashboard.ui.administration.filter.UserFilter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.TableButton;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -90,14 +88,16 @@ public class GroupManagementDialog extends AbstractCloseableResizableDialog
 
         accordion.close();
 
-        FluentGridLayout layout = new FluentGridLayout()
-            .withTemplateRows(new Flex(1.5), new Flex(2.5))
-            .withTemplateColumns(new Flex(1))
-            .withRowAndColumn(initGroupForm(), 1, 1, 1, 1)
-            .withRowAndColumn(accordion, 2, 1, 2, 1)
-            .withPadding(true)
-            .withSpacing(true)
-            .withOverflow(FluentGridLayout.Overflow.AUTO);
+//        FluentGridLayout layout = new FluentGridLayout()
+//            .withTemplateRows(new Flex(1.5), new Flex(2.5))
+//            .withTemplateColumns(new Flex(1))
+//            .withRowAndColumn(initGroupForm(), 1, 1, 1, 1)
+//            .withRowAndColumn(accordion, 2, 1, 2, 1)
+//            .withPadding(true)
+//            .withSpacing(true)
+//            .withOverflow(FluentGridLayout.Overflow.AUTO);
+        VerticalLayout layout = new VerticalLayout(initGroupForm(), accordion);
+
         layout.setSizeFull();
         this.setWidth("1400px");
         this.setHeight("100%");

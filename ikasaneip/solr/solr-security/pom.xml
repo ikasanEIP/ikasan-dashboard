@@ -67,6 +67,16 @@
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-security-db</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.activation</groupId>
+                    <artifactId>jakarta.activation-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.transaction</groupId>
+                    <artifactId>jakarta.transaction-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

@@ -1,13 +1,10 @@
 package org.ikasan.dashboard.ui.administration.component;
 
-import com.github.appreciated.css.grid.sizes.Flex;
-import com.github.appreciated.layout.FluentGridLayout;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
@@ -22,9 +19,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.ui.administration.filter.*;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.TableButton;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -127,14 +124,16 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
 
         accordion.close();
 
-        FluentGridLayout layout = new FluentGridLayout()
-            .withTemplateRows(new Flex(1), new Flex(2))
-            .withTemplateColumns(new Flex(1))
-            .withRowAndColumn(initRoleForm(), 1, 1, 1, 1)
-            .withRowAndColumn(accordion, 2, 1, 2, 1)
-            .withPadding(true)
-            .withSpacing(true)
-            .withOverflow(FluentGridLayout.Overflow.AUTO);
+//        FluentGridLayout layout = new FluentGridLayout()
+//            .withTemplateRows(new Flex(1), new Flex(2))
+//            .withTemplateColumns(new Flex(1))
+//            .withRowAndColumn(initRoleForm(), 1, 1, 1, 1)
+//            .withRowAndColumn(accordion, 2, 1, 2, 1)
+//            .withPadding(true)
+//            .withSpacing(true)
+//            .withOverflow(FluentGridLayout.Overflow.AUTO);
+
+        VerticalLayout layout = new VerticalLayout(initRoleForm(), accordion);
         layout.setSizeFull();
         this.setWidth("90vw");
         this.setHeight("90vh");
@@ -371,7 +370,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         {
             SelectGroupForRoleDialog dialog = new SelectGroupForRoleDialog(this.role, getAssociatedGroups()
                 , this.securityService, this.systemEventLogger, this.groupGrid);
-            dialog.addOpenedChangeListener((ComponentEventListener<OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
+            dialog.addOpenedChangeListener((ComponentEventListener<OpenedChangeEvent>) dialogOpenedChangeEvent ->
             {
                 if(dialogOpenedChangeEvent.isOpened() == false)
                 {

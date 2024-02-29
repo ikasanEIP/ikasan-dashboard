@@ -11,6 +11,7 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +26,7 @@ public class JobOrchestrationProvisionAutoConfiguration {
     private int jobPlanIntervalMultiple;
 
     @Bean
-    public JobProvisionServiceImpl jobProvisionService(SchedulerJobService schedulerJobService, ModuleMetaDataService moduleMetadataService,
+    public JobProvisionServiceImpl jobProvisionService(SchedulerJobService schedulerJobService, @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
                                                        JobProvisionModuleService jobProvisionModuleService) {
         return new JobProvisionServiceImpl(schedulerJobService, moduleMetadataService,
             jobProvisionModuleService);
@@ -34,7 +35,7 @@ public class JobOrchestrationProvisionAutoConfiguration {
     @Bean
     public ContextProvisionServiceImpl contextUploadInitialisationService(
         ScheduledContextService scheduledContextService,
-        ModuleMetaDataService moduleMetadataService,
+        @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
         SchedulerJobService schedulerJobService,
         JobProvisionModuleService jobProvisionModuleRestService,
         ContextInstanceRegistrationService contextInstanceRegistrationService,
