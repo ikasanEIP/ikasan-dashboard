@@ -8,7 +8,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import liquibase.pro.packaged.V;
 import org.ikasan.dashboard.ui.scheduler.AbstractSchedulerViewTest;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.scheduled.general.SearchResultsImpl;

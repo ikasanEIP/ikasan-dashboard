@@ -13,8 +13,8 @@ import com.vaadin.flow.theme.material.Material;
 
 //@HtmlImport("frontend://styles/shared-styles.html")
 //@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
-@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-@Theme(themeClass = Material.class)
+//@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+//@Theme(themeClass = Material.class)
 @PreserveOnRefresh
 @Route(value = "pageNotFound")
 @UIScope

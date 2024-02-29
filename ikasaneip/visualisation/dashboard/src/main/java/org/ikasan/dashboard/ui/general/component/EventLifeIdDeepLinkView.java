@@ -21,6 +21,7 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +30,8 @@ import java.util.List;
 
 //@HtmlImport("frontend://styles/shared-styles.html")
 //@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
-@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-@Theme(themeClass = Material.class)
+//@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+//@Theme(themeClass = Material.class)
 @PreserveOnRefresh
 @Route(value = "eventLifeId")
 @UIScope
@@ -44,10 +45,10 @@ public class EventLifeIdDeepLinkView extends VerticalLayout implements HasUrlPar
 
     private SearchResults searchResults;
 
-    public EventLifeIdDeepLinkView(ModuleMetaDataService moduleMetadataService,
+    public EventLifeIdDeepLinkView(@Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
                                    SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
                                    HospitalAuditService hospitalAuditService, ResubmissionRestServiceImpl resubmissionRestService,
-                                   ReplayRestServiceImpl replayRestService, BatchInsert replayAuditService, DateFormatter dateFormatter)
+                                   ReplayRestServiceImpl replayRestService, @Qualifier("replayAuditService") BatchInsert replayAuditService, DateFormatter dateFormatter)
     {
         this.searchResults = new SearchResults(solrGeneralService, hospitalAuditService, resubmissionRestService
             , replayRestService, moduleMetadataService, replayAuditService, dateFormatter, this.maxDownloadBytes);

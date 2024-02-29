@@ -2,26 +2,16 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class NewJobLockDialog extends AbstractCloseableResizableDialog {
 
@@ -45,7 +35,7 @@ public class NewJobLockDialog extends AbstractCloseableResizableDialog {
 
         IntegerField lockCountTf = new IntegerField(getTranslation("label.lock-count", UI.getCurrent().getLocale()));
         lockCountTf.getElement().getThemeList().add("always-float-label");
-        lockCountTf.setHasControls(true);
+        lockCountTf.setStepButtonsVisible(true);
         lockCountTf.setMin(1);
         lockCountTf.setMax(Integer.MAX_VALUE);
 

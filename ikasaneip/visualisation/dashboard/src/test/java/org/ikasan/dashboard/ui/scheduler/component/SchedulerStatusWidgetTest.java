@@ -4,7 +4,6 @@ import com.github.mvysny.kaributesting.v10.GridKt;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
-import liquibase.pro.packaged.A;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.FlowStateCache;
@@ -20,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
@@ -30,7 +28,6 @@ import java.util.List;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._click;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 public class SchedulerStatusWidgetTest extends AbstractSchedulerViewTest {

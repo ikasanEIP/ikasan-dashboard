@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.notification.scheduler.service;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -18,6 +16,7 @@ import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -39,8 +38,8 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
     @Before
     public void setup()
     {
-        Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        rootLogger.setLevel(Level.WARN);
+        Logger rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+//        rootLogger.setLevel(Level.WARN);
 
         config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();

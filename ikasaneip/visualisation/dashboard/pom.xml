@@ -69,6 +69,7 @@
             </exclusions>
         </dependency>
 
+
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin</artifactId>
@@ -105,6 +106,10 @@
             </exclusions>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>com.vaadin</groupId>-->
+<!--            <artifactId>flow-polymer-template</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.vaadin.olli</groupId>
@@ -119,7 +124,7 @@
         <dependency>
             <groupId>com.vaadin.componentfactory</groupId>
             <artifactId>explorer-tree-grid-flow</artifactId>
-            <version>1.1.0</version>
+            <version>24.0.0</version>
         </dependency>
 
         <dependency>
@@ -210,10 +215,10 @@
             <artifactId>thymeleaf-spring5</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.vaadin.miki</groupId>
-            <artifactId>superfields</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>pl.unforgiven</groupId>-->
+<!--            <artifactId>superfields</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.vaadin.addons.componentfactory</groupId>
@@ -277,14 +282,19 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.appreciated</groupId>
-            <artifactId>app-layout-addon</artifactId>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.github.appreciated</groupId>
-            <artifactId>vaadin-css-grid</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.appreciated</groupId>-->
+<!--            <artifactId>app-layout-addon</artifactId>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>com.github.appreciated</groupId>-->
+<!--            <artifactId>vaadin-css-grid</artifactId>-->
+<!--        </dependency>-->
 
 
         <dependency>
@@ -315,6 +325,16 @@
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-topology</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.transaction</groupId>
+                    <artifactId>jakarta.transaction-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.activation</groupId>
+                    <artifactId>jakarta.activation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -347,23 +367,23 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.github.classgraph</groupId>
-                    <artifactId>classgraph</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.springfox</groupId>-->
+<!--            <artifactId>springfox-swagger2</artifactId>-->
+<!--            <version>2.9.2</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>io.github.classgraph</groupId>-->
+<!--                    <artifactId>classgraph</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.9.2</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.springfox</groupId>-->
+<!--            <artifactId>springfox-swagger-ui</artifactId>-->
+<!--            <version>2.9.2</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.ikasan</groupId>
@@ -412,6 +432,10 @@
                 <exclusion>
                     <groupId>jakarta.validation</groupId>
                     <artifactId>jakarta.validation-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.transaction</groupId>
+                    <artifactId>jakarta.transaction-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -463,6 +487,17 @@
         </dependency>
 
         <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+        </dependency>
+
+        <!-- Need to keep old JAXB on classpath -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.ximpleware</groupId>
             <artifactId>vtd-xml</artifactId>
         </dependency>
@@ -487,10 +522,10 @@
             <artifactId>h2</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>mysql</groupId>-->
+<!--            <artifactId>mysql-connector-java</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework</groupId>
@@ -567,7 +602,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-slf4j-impl</artifactId>
+                    <artifactId>log4j-slf4j2-impl</artifactId>
                 </exclusion>
             </exclusions>
             <scope>test</scope>
@@ -602,6 +637,26 @@
             <artifactId>jmock-imposters</artifactId>
             <version>${version.jmock.imposters}</version>
             <scope>test</scope>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.slf4j</groupId>-->
+<!--            <artifactId>slf4j-api</artifactId>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>org.slf4j</groupId>-->
+<!--            <artifactId>slf4j-log4j12</artifactId>-->
+<!--        </dependency>-->
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
         </dependency>
 
     </dependencies>

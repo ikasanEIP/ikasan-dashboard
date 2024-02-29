@@ -5,6 +5,7 @@ import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.housekeeping.HousekeepService;
 import org.ikasan.spec.housekeeping.HousekeepingJob;
 import org.ikasan.spec.housekeeping.HousekeepingSchedulerService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -20,7 +21,7 @@ public class DashboardHousekeepingAutoConfiguration
 {
 
     @Bean
-    public HousekeepingSchedulerService housekeepingSchedulerService(HousekeepingJob solrHousekeepingJob)
+    public HousekeepingSchedulerService housekeepingSchedulerService(@Qualifier("solrHousekeepingJob") HousekeepingJob solrHousekeepingJob)
     {
         HousekeepingSchedulerService housekeepingSchedulerService =  new HousekeepingSchedulerServiceImpl(SchedulerFactory.getInstance().getScheduler(),
             CachingScheduledJobFactory.getInstance(), Arrays.asList(solrHousekeepingJob));
@@ -29,8 +30,8 @@ public class DashboardHousekeepingAutoConfiguration
         return housekeepingSchedulerService;
 
     }
-    @Bean
-    public HousekeepingJob solrHousekeepingJob(HousekeepService solrSearchService, Environment environment)
+    @Bean(name = "solrHousekeepingJob")
+    public HousekeepingJob solrHousekeepingJob(@Qualifier("solrSearchService") HousekeepService solrSearchService, Environment environment)
     {
         return new HousekeepingJobImpl("solrHousekeepingJob", solrSearchService, environment);
     }

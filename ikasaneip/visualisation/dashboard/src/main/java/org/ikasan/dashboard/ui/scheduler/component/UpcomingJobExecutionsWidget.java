@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
@@ -30,8 +31,6 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.miki.shared.dates.DatePatterns;
-import org.vaadin.miki.superfields.dates.SuperDatePicker;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -53,7 +52,7 @@ public class UpcomingJobExecutionsWidget extends Div {
     private DateFormatter dateFormatter;
     private Select<String> agentSelect = new Select();
     private Select<FlowMetaData> jobSelect = new Select();
-    private SuperDatePicker date;
+    private DatePicker date;
     private TimePicker startTime;
     private TimePicker endTime;
     private ConfigurationService configurationRestService;
@@ -112,8 +111,8 @@ public class UpcomingJobExecutionsWidget extends Div {
         HorizontalLayout layout = new HorizontalLayout();
         H4 modules = new H4(getTranslation("header.upcoming-job-executions", UI.getCurrent().getLocale()));
 
-        this.date = new SuperDatePicker(getTranslation("label.execution-date", UI.getCurrent().getLocale()));
-        this.date.setDatePattern(DatePatterns.D_MMMM_YYYY);
+        this.date = new DatePicker(getTranslation("label.execution-date", UI.getCurrent().getLocale()));
+//        this.date.setDatePattern(DatePatterns.D_MMMM_YYYY);
         this.date.setValue(LocalDate.now());
 
         this.startTime = new TimePicker(getTranslation("label.from", UI.getCurrent().getLocale()));
@@ -133,7 +132,7 @@ public class UpcomingJobExecutionsWidget extends Div {
         Button newWindowButton = new Button();
         newWindowButton.addClickListener(buttonClickEvent -> {
             RouteParameters routeParameters = new RouteParameters(new RouteParam("agent", this.selectedAgent), new RouteParam("job", this.selectedFlowMetaData.getName()));
-            RouterLink link = new RouterLink(null, UpcomingJobExecutionDeepLinkView.class, routeParameters);
+            RouterLink link = new RouterLink(UpcomingJobExecutionDeepLinkView.class, routeParameters);
             getUI().ifPresent(ui -> ui.getPage().open(link.getHref()));
         });
         newWindowButton.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());

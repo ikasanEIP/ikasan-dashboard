@@ -22,11 +22,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-@Push
+//@Push
 //@HtmlImport("frontend://styles/shared-styles.html")
 //@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
-@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-@Theme(themeClass = Material.class)
+//@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+//@Theme(themeClass = Material.class)
 @Route(value = "upcomingJobsDeepLink/:agent?/:job?")
 @UIScope
 @Component

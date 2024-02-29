@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.vaadin.flow.component.UI;
-import liquibase.pro.packaged.U;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
@@ -13,14 +12,12 @@ import org.ikasan.designer.event.CanvasItemSingleClickEvent;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;

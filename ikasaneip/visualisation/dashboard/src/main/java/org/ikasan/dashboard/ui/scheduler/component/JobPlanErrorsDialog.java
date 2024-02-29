@@ -2,18 +2,10 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
-import liquibase.pro.packaged.L;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.scheduler.model.JsonValidationError;
-import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.job.orchestration.context.validation.ContextError;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 
 import java.util.List;
 
@@ -31,7 +23,7 @@ public class JobPlanErrorsDialog extends AbstractCloseableResizableDialog {
 
     private Component initialiseErrorWidget() {
         Grid<ContextError> errorGrid = new Grid<>();
-        errorGrid.addColumn(TemplateRenderer.<ContextError>of(
+        errorGrid.addColumn(LitRenderer.<ContextError>of(
                 "<div style=\"word-wrap:normal; white-space:normal\">[[item.error]]</div>")
             .withProperty("error", contextError -> contextError.getErrorMessage()))
             .setHeader(getTranslation("label.error-message", UI.getCurrent().getLocale()))

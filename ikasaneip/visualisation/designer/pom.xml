@@ -109,16 +109,21 @@
             <artifactId>font-awesome-iron-iconset</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
+
 <!--        <dependency>-->
 <!--            <groupId>nc.unc.vaadin.flow.polymer</groupId>-->
 <!--            <artifactId>iron-icons</artifactId>-->
 <!--            <version>1.0.0</version>-->
 <!--        </dependency>-->
 
-        <dependency>
-            <groupId>com.github.appreciated</groupId>
-            <artifactId>vaadin-css-grid</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.appreciated</groupId>-->
+<!--            <artifactId>vaadin-css-grid</artifactId>-->
+<!--        </dependency>-->
 
 		<dependency>
 			<groupId>org.slf4j</groupId>

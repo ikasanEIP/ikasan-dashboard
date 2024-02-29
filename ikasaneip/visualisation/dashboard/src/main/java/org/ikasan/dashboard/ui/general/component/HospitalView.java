@@ -38,6 +38,7 @@ import org.ikasan.spec.module.client.ResubmissionService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
@@ -46,8 +47,8 @@ import java.util.Optional;
 
 //@HtmlImport("frontend://styles/shared-styles.html")
 //@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
-@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-@Theme(themeClass = Material.class)
+//@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+//@Theme(themeClass = Material.class)
 @PreserveOnRefresh
 @Route(value = "exclusion")
 @UIScope
@@ -88,7 +89,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
     private DateFormatter dateFormatter;
 
     public HospitalView(HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
-        , ModuleMetaDataService moduleMetadataService, SolrGeneralService solrGeneralService, DateFormatter dateFormatter)
+        , @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, SolrGeneralService solrGeneralService, DateFormatter dateFormatter)
     {
         this.hospitalAuditService = hospitalAuditService;
         if(this.hospitalAuditService == null)
