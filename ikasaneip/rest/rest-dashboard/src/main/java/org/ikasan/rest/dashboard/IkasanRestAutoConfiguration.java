@@ -57,7 +57,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.web.context.SecurityContextRepository;
 
 import javax.annotation.Resource;
 
@@ -202,8 +204,9 @@ public class IkasanRestAutoConfiguration
     }
 
     @Bean
-    public JwtRequestFilter jwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil) {
-        return new JwtRequestFilter(userService, jwtTokenUtil);
+    public JwtRequestFilter jwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil
+        , @Lazy SecurityContextRepository securityContextRepository) {
+        return new JwtRequestFilter(userService, jwtTokenUtil, securityContextRepository);
     }
 
     @Bean

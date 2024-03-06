@@ -17,7 +17,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
@@ -46,7 +45,6 @@ import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroad
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -750,7 +748,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             .setWidth("230px");
 
         this.schedulerJobInstanceFilteringGrid.addColumn(LitRenderer.<SchedulerJobInstanceRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.date]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.date}</div>")
             .withProperty("date",
                 jobInstanceRecord -> DateFormatter.instance().getFormattedDate(jobInstanceRecord.getStartTime())))
             .setHeader(getTranslation("label.start-time", UI.getCurrent().getLocale()))
@@ -760,7 +758,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             .setWidth("220px");
 
         this.schedulerJobInstanceFilteringGrid.addColumn(LitRenderer.<SchedulerJobInstanceRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.modified}</div>")
             .withProperty("modified",
                 jobInstanceRecord -> DateFormatter.instance().getFormattedDate(jobInstanceRecord.getEndTime())))
             .setHeader(getTranslation("label.end-time", UI.getCurrent().getLocale()))

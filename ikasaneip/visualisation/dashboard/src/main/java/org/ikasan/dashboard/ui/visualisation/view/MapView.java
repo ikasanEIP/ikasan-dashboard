@@ -6,8 +6,11 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.visualisation.component.D3MapView;
 
+import javax.annotation.security.PermitAll;
+
 @Route(value = "map", layout = IkasanAppLayout.class)
 @UIScope
+@PermitAll
 public class MapView extends HorizontalLayout
 {
     D3MapView mapView;

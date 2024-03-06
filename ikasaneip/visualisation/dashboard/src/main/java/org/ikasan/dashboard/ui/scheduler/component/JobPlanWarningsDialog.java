@@ -25,7 +25,7 @@ public class JobPlanWarningsDialog extends AbstractCloseableResizableDialog {
 
         Grid<ContextError> errorGrid = new Grid<>();
         errorGrid.addColumn(LitRenderer.<ContextError>of(
-                "<div style=\"word-wrap:normal; white-space:normal\">[[item.error]]</div>")
+                "<div style=\"word-wrap:normal; white-space:normal\">${item.error}</div>")
             .withProperty("error", contextError -> contextError.getErrorMessage()))
             .setHeader(getTranslation("label.warning-message", UI.getCurrent().getLocale()))
             .setKey("warningMessage");

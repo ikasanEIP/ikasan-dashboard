@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import jakarta.servlet.FilterChain;
@@ -44,9 +45,12 @@ public class JwtRequestFilterTest
     @Mock
     User userDetails;
 
+    @Mock
+    SecurityContextRepository securityContextRepository;
+
     @Before
     public void setup(){
-        uut = new JwtRequestFilter(userService,jwtTokenUtil);
+        uut = new JwtRequestFilter(userService,jwtTokenUtil, securityContextRepository);
     }
 
     @After

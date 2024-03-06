@@ -6,10 +6,7 @@ import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.administration.component.GroupManagementDialog;
 import org.ikasan.dashboard.ui.administration.filter.GroupFilter;
@@ -24,16 +21,17 @@ import org.ikasan.security.service.SecurityService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Route(value = "groupManagement", layout = IkasanAppLayout.class)
 @UIScope
-@Component
 @PageTitle("Ikasan - Group Management")
+@PermitAll
+@PreserveOnRefresh
 public class GroupManagementView extends VerticalLayout implements BeforeEnterObserver
 {
     private Logger logger = LoggerFactory.getLogger(GroupManagementView.class);

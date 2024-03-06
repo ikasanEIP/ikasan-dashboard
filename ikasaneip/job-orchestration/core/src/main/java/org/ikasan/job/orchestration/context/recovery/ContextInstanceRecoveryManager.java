@@ -5,6 +5,7 @@ import javax.annotation.PostConstruct;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 
 public class ContextInstanceRecoveryManager {
     private static Logger logger = LoggerFactory.getLogger(ContextInstanceRecoveryManager.class);
@@ -27,7 +28,7 @@ public class ContextInstanceRecoveryManager {
         this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
     }
 
-    @PostConstruct
+//    @PostConstruct
     public void recoverContextInstances() {
         // NOTE: This executes before ContextInstanceSchedulerService
         logger.info("Recovering context instances!");

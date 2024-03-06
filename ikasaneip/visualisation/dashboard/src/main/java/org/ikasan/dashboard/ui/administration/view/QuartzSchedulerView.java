@@ -6,7 +6,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -16,40 +15,33 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.solr.service.SolrGeneralServiceImpl;
-import org.ikasan.spec.scheduled.context.model.JobLockHolder;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
-import org.ikasan.spec.search.SearchResults;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.Trigger;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import org.vaadin.tabs.PagedTabs;
 
 import javax.annotation.Resource;
-import java.util.*;
+import javax.annotation.security.PermitAll;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Route(value = "quartzSchedulerView", layout = IkasanAppLayout.class)
 @UIScope
-@Component
 @PageTitle("Ikasan - Administration Quartz Scheduler")
+@PermitAll
+@PreserveOnRefresh
 public class QuartzSchedulerView extends VerticalLayout implements BeforeEnterObserver
 {
     private Logger logger = LoggerFactory.getLogger(QuartzSchedulerView.class);

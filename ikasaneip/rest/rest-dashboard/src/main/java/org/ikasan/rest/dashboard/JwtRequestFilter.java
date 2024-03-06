@@ -3,9 +3,11 @@ package org.ikasan.rest.dashboard;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.ikasan.security.service.UserService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -20,10 +22,13 @@ public class JwtRequestFilter extends OncePerRequestFilter
 
     private JwtTokenUtil jwtTokenUtil;
 
-    public JwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil)
+    private SecurityContextRepository securityContextRepository;
+
+    public JwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil, SecurityContextRepository securityContextRepository)
     {
         this.userService = userService;
         this.jwtTokenUtil = jwtTokenUtil;
+        this.securityContextRepository =securityContextRepository;
     }
 
     @Override
@@ -58,7 +63,11 @@ public class JwtRequestFilter extends OncePerRequestFilter
                             // After setting the Authentication in the context, we specify
                             // that the current user is authenticated. So it passes the
                             // Spring Security Configurations successfully.
-                            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+                            securityContext.setAuthentication(usernamePasswordAuthenticationToken);
+                            SecurityContextHolder.setContext(securityContext);
+
+                            securityContextRepository.saveContext(securityContext, request, response);
                         }
                     }
                 }

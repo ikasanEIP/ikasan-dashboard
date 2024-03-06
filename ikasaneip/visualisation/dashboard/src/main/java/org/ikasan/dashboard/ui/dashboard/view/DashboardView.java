@@ -6,6 +6,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.dashboard.component.*;
@@ -26,16 +27,17 @@ import org.ikasan.spec.module.client.DownloadLogFileService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 
 @Route(value = "", layout = IkasanAppLayout.class)
 @UIScope
-@Component
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
+@PermitAll
+@PreserveOnRefresh
 public class DashboardView extends HorizontalLayout implements BeforeEnterObserver
 {
     @Resource

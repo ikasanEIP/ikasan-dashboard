@@ -13,16 +13,16 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
-import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
 import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
 import org.ikasan.dashboard.ui.administration.component.SystemEventFilteringGrid;
 import org.ikasan.dashboard.ui.administration.component.SystemEventSearchForm;
-import org.ikasan.dashboard.ui.administration.util.SystemEventFormatter;
 import org.ikasan.dashboard.ui.general.component.LazyDownloadButton;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
-import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.solr.model.IkasanSolrDocument;
+import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.IkasanSystemEventDocumentToCsvConverter;
+import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
@@ -169,7 +169,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             .setKey("action")
             .setResizable(true);
         this.searchResultsGrid.addColumn(LitRenderer.<SystemEvent>of(
-            "<div>[[item.date]]</div>")
+            "<div>${item.date}</div>")
             .withProperty("date",
                 ikasanSolrDocument -> this.dateFormatter.getFormattedDate(((SolrSystemEvent)ikasanSolrDocument).getTimestampLong())))
             .setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))

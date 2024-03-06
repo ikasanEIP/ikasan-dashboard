@@ -11,12 +11,10 @@ import org.ikasan.security.service.authentication.CustomAuthenticationProvider;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.ikasan.systemevent.SystemEventAutoConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.*;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.security.access.method.P;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -31,90 +29,19 @@ import java.util.Properties;
 @Import({SecurityAutoConfiguration.class, SystemEventAutoConfiguration.class})
 public class IkasanSecurityConfiguration
 {
-//    @Autowired
-//    @Qualifier("ikasan.ds")
-//    private DataSource ikasands;
-//
-//    @Resource
-//    private Map platformHibernateProperties;
-//
-//    @Bean public PasswordEncoder passwordEncoder()
-//    {
-//        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-//    }
-//
-//    @Bean
-//    public SecurityDao securityDao(){
-//        HibernateSecurityDao securityDao = new HibernateSecurityDao();
-////        securityDao.setSessionFactory(securitySessionFactory().getObject());
-//        return securityDao;
-//    }
-//
-//    @Bean
-//    public UserDao userDao(){
-//        HibernateUserDao userDao = new HibernateUserDao();
-////        userDao.setSessionFactory(securitySessionFactory().getObject());
-//        return userDao;
-//    }
-//
-//    @Bean
-//    public SecurityService securityService()
-//    {
-//        return new SecurityServiceImpl(securityDao());
-//    }
-//
-//    @Bean
-//    public UserService userService()
-//    {
-//        return new UserServiceImpl(userDao(), securityService(), passwordEncoder(), false);
-//    }
-//
+    @Bean
+    @Primary
+    public UserService userService(UserDao userDao, SecurityService securityService, PasswordEncoder passwordEncoder)
+    {
+        return new UserServiceImpl(userDao, securityService, passwordEncoder, false);
+    }
+
     @Bean
     public SystemEventLogger systemEventLogger(SystemEventService systemEventService)
     {
         return new SystemEventLogger(systemEventService);
     }
-//
-//    @Bean
-//    public SystemEventService systemEventService()
-//    {
-//        return new SystemEventServiceImpl(systemEventDao(), 10800L);
-//    }
-//
-//    private SystemEventDao systemEventDao(){
-//        HibernateSystemEventDao systemEventDao = new HibernateSystemEventDao();
-////        systemEventDao.setSessionFactory(securitySessionFactory().getObject());
-//        return systemEventDao;
-//    }
-//
-//    @Bean
-//    public LocalSessionFactoryBean securitySessionFactory(
-//    )
-//    {
-//        LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
-//        sessionFactoryBean.setDataSource(ikasands);
-//        sessionFactoryBean.setMappingResources(
-//            "/org/ikasan/security/model/Principal.hbm.xml",
-//            "/org/ikasan/security/model/PrincipalLite.hbm.xml",
-//            "/org/ikasan/security/model/Role.hbm.xml",
-//            "/org/ikasan/security/model/RoleModule.hbm.xml",
-//            "/org/ikasan/security/model/Policy.hbm.xml",
-//            "/org/ikasan/security/model/User.hbm.xml",
-//            "/org/ikasan/security/model/UserLite.hbm.xml",
-//            "/org/ikasan/security/model/Authority.hbm.xml",
-//            "/org/ikasan/security/model/AuthenticationMethod.hbm.xml",
-//            "/org/ikasan/security/model/PolicyLink.hbm.xml",
-//            "/org/ikasan/security/model/PolicyLinkType.hbm.xml",
-//            "/org/ikasan/security/model/UserPrincipal.hbm.xml",
-//            "/org/ikasan/systemevent/model/SystemEvent.hbm.xml",
-//            "/org/ikasan/security/model/RoleJobPlan.hbm.xml");
-//
-//        Properties properties = new Properties();
-//        properties.putAll(platformHibernateProperties);
-//        sessionFactoryBean.setHibernateProperties(properties);
-//
-//        return sessionFactoryBean;
-//    }
+
 
     @Bean(name = "entityManagerFactory") // todo work out why we need a been named entity manager factory in the context
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("ikasan.ds")DataSource dataSource

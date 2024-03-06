@@ -27,6 +27,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 public class ContextServiceAutoConfiguration {
@@ -47,6 +49,7 @@ public class ContextServiceAutoConfiguration {
     }
 
     @Bean
+    @DependsOn({"stateChangeMonitor","overdueFileMonitor","monitorManagement"})
     public ContextInstanceRecoveryService contextInstanceRecoveryService(
         ScheduledContextInstanceService scheduledContextInstanceService,
         JobInitiationService jobInitiationService,
@@ -98,7 +101,7 @@ public class ContextServiceAutoConfiguration {
         ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
         SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
         JobLockCacheInitialisationService jobLockCacheInitialisationService,
-        ContextInstanceSchedulerService contextInstanceSchedulerService,
+        @Lazy ContextInstanceSchedulerService contextInstanceSchedulerService,
         TimeService timeService,
         ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
         SystemEventService systemEventService) {

@@ -4,6 +4,7 @@ import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.spring.annotation.RouteScope;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceDashboardWidget;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 
 @Route(value = "contextInstanceMonitoring", layout = IkasanAppLayout.class)
 @UIScope
@@ -42,6 +44,8 @@ import javax.annotation.Resource;
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/tree-view.css", themeFor = "vaadin-grid")
+@PermitAll
+@PreserveOnRefresh
 public class ContextInstanceMonitoringView extends VerticalLayout implements BeforeEnterObserver
 {
     Logger logger = LoggerFactory.getLogger(ContextInstanceMonitoringView.class);

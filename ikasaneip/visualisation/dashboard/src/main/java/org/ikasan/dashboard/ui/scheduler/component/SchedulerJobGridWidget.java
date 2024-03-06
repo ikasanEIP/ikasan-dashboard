@@ -658,7 +658,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         .setFlexGrow(2);
 
         this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.date]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.date}</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
@@ -668,7 +668,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             .setFlexGrow(2);
 
         this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">{item.modified}</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))

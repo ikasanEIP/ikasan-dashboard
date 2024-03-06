@@ -421,7 +421,7 @@ public class SearchResults extends Div {
 
         // Add the component name column to the grid
         this.searchResultsGrid.addColumn(LitRenderer.<IkasanSolrDocument>of(
-            "<div>[[item.componentName]]</div>")
+            "<div>${item.componentName}</div>")
             .withProperty("componentName",
                 ikasanSolrDocument -> Optional.ofNullable(ikasanSolrDocument.getComponentName()).orElse(getTranslation("label.not-applicable", UI.getCurrent().getLocale()))))
             .setKey("componentName")
@@ -471,7 +471,7 @@ public class SearchResults extends Div {
 
         // Add the timestamp column to the grid
         this.searchResultsGrid.addColumn(LitRenderer.<IkasanSolrDocument>of(
-            "<div>[[item.date]]</div>")
+            "<div>${item.date}</div>")
             .withProperty("date",
                 ikasanSolrDocument -> this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimeStamp()))).setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
             .setSortable(true)

@@ -69,12 +69,12 @@ public class BusinessStreamWidget extends Div {
         businessStreamGrid.setVisible(true);
         businessStreamGrid.setWidthFull();
         businessStreamGrid.setHeight("80%");
-        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.name]]</div>")
+        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>${item.name}</div>")
             .withProperty("name", BusinessStreamMetaData::getName))
             .setHeader(getTranslation("table-header.business-stream-name", UI.getCurrent().getLocale()))
             .setKey("name")
             .setFlexGrow(16);
-        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
+        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>${item.description}</div>")
             .withProperty("description", BusinessStreamMetaData::getDescription)).setHeader(getTranslation("table-header.business-stream-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(32);

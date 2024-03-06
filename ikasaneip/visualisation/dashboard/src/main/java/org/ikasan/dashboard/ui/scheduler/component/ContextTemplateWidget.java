@@ -693,7 +693,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             .setFlexGrow(4);
 
         this.contextTemplateFilteringGrid.addColumn(LitRenderer.<ScheduledContextRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.date]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.date}</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
@@ -703,7 +703,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             .setFlexGrow(2);
 
         this.contextTemplateFilteringGrid.addColumn(LitRenderer.<ScheduledContextRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.modified}</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))

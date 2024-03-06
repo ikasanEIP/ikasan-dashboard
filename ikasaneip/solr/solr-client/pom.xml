@@ -178,6 +178,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.codehaus.woodstox</groupId>
             <artifactId>stax2-api</artifactId>
         </dependency>
@@ -293,6 +298,14 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+            <scope>test</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>org.skyscreamer</groupId>

@@ -6,9 +6,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 
 @Configuration
-@ImportResource( {
-//    "classpath:providers-conf.xml"
-} )
 @Import(ConfigurationServiceAutoConfiguration.class)
 public class PersistenceComponentFactory
 {
