@@ -125,7 +125,7 @@ public class SchedulerJobSelectGridWidget extends Div {
             .setFlexGrow(2);
 
         this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
-            "<div>[[item.date]]</div>")
+            "<div>${item.date}</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
@@ -135,7 +135,7 @@ public class SchedulerJobSelectGridWidget extends Div {
             .setFlexGrow(2);
 
         this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
-            "<div>[[item.modified]]</div>")
+            "<div>${item.modified]]</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))

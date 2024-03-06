@@ -2,22 +2,19 @@ package org.ikasan.dashboard.security;
 
 import org.ikasan.rest.dashboard.JwtAuthenticationEntryPoint;
 import org.ikasan.rest.dashboard.JwtRequestFilter;
-import org.ikasan.security.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
@@ -55,150 +52,115 @@ public class SecurityConfiguration
     @Resource
     private JwtRequestFilter jwtRequestFilter;
 
-    @Resource
-    private PasswordEncoder passwordEncoder;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private AuthenticationProvider ikasanAuthenticationProvider;
-
-    @Bean
+    @Bean(name = "authenticationManager")
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    /**
-     * Configured HttpBasic which allows curl commands to run on specific url patterns.
-     */
-    @Configuration
-    @Order(1)
-    @EnableWebSecurity
-    @EnableWebMvc
-    @EnableMethodSecurity
-    public class HttpBasicSecurityConfigurationAdapter {
-
-//        @Override
-//        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//            auth.authenticationProvider(ikasanAuthenticationProvider).userDetailsService(userService)
-//                .passwordEncoder(passwordEncoder);
-//        }
-//
-//        @Bean
-//        @Override
-//        public AuthenticationManager authenticationManagerBean() throws Exception {
-//            return super.authenticationManagerBean();
-//        }
-
-        /**
-         * Requires basic authentication for rest api calls, usually used for programs such as curl.
-         */
-//        @Bean
-//        @DependsOn("authenticationManager")
-//        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//            http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable()) // Disable csrf to enable POST, DELETE, PUT e.t.c
-//                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry
-//                    -> authorizationManagerRequestMatcherRegistry
-//                    .requestMatchers("/rest/export/context/**", // ContextExportControl
-//                        "/rest/module/bigQueue/size/all/**", // BigQueueModuleController
-//                        "/rest/context/status/**", // ContextStatusServiceController
-//                        "/actuator/**"// expose spring actuator via basic authentication
-//                    )
-//                )
-//                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry
-//                    -> authorizationManagerRequestMatcherRegistry
-//                    .anyRequest()
-//                    .authenticated()
-//                )
-//                .httpBasic(httpSecurityHttpBasicConfigurer -> httpSecurityHttpBasicConfigurer.configure(http));
-//
-//            return http.build();
-//        }
+    @Bean(name = "securityContextRepository")
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
     }
 
+
     @Configuration
-    public class IkasanSecurityConfigurationAdapter {
+    @DependsOn({"authenticationManager", "securityContextRepository"})
+    public class IkasanSecurityConfigurationAdapter
+    {
 
-//        @Override
-//        protected void configure(AuthenticationManagerBuilder auth) throws Exception
-//        {
-//            auth.authenticationProvider(ikasanAuthenticationProvider).userDetailsService(userService)
-//                .passwordEncoder(passwordEncoder);
-//        }
-//
-//        @Bean
-//        @Override
-//        public AuthenticationManager authenticationManagerBean() throws Exception
-//        {
-//            return super.authenticationManagerBean();
-//        }
+        @Resource
+        AuthenticationManager authenticationManager;
 
-//        @Bean
-//        public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-//            return authenticationConfiguration.getAuthenticationManager();
-//        }
-//
-//        /**
-//         * Require login to access internal pages and configure login form.
-//         */
-//        @Bean
-//        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//            //formatter:off
-//            // Not using Spring CSRF here to be able to use plain HTML for the login page
-//            http.csrf().disable()
-//                // Register our CustomRequestCache, that saves unauthorized access attempts, so
-//                // the user is redirected after login.
-//                .requestCache().requestCache(new CustomRequestCache())
-//                // Restrict access to our application.
-//                .and().authorizeRequests()
-//                // Allow all flow internal requests.
-//                .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll().antMatchers("/", "/VAADIN/**",
-//                                                                                                    // the standard favicon URI
-//                                                                                                    "/favicon.ico",
-//                                                                                                    // the robots exclusion standard
-//                                                                                                    "/robots.txt",
-//                                                                                                    // web application manifest
-//                                                                                                    "/manifest.webmanifest",
-//                                                                                                    "/sw.js",
-//                                                                                                    "/offline-page.html",
-//                                                                                                    // icons and images
-//                                                                                                    "/icons/**",
-//                                                                                                    "/images/**",
-//                                                                                                    // (development mode) static resources
-//                                                                                                    "/frontend/**",
-//                                                                                                    // (development mode) webjars
-//                                                                                                    "/webjars/**",
-//                                                                                                    // (development mode) H2 debugging console
-//                                                                                                    "/h2-console/**",
-//                                                                                                    "/swagger-ui/**",
-//                                                                                                    // (production mode) static resources
-//                                                                                                    "/frontend-es5/**",
-//                                                                                                    "/frontend-es6/**",
-//                                                                                                    "/actuator/**")
-//                .permitAll().antMatchers("/authenticate").permitAll()
-//                .antMatchers("/swagger-ui.html", "/swagger-ui/**", "/actuator/**").permitAll()
-//                // Allow all requests by logged in users.
-//                .anyRequest().authenticated()
-//                // Configure the login page.
-//                .and().formLogin().loginPage(LOGIN_URL).permitAll().loginProcessingUrl(LOGIN_PROCESSING_URL)
-//                .failureUrl(LOGIN_FAILURE_URL)
-//
-//                // Configure logout
-//                .and().logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL).and().exceptionHandling()
-//                .defaultAuthenticationEntryPointFor(jwtAuthenticationEntryPoint, new AntPathRequestMatcher("/rest/**"));
-//            /**
-//             * Session Management should be set to stateless for JWT token, but due to VAADIN utilising
-//             * cookies we cannot do that
-//             */
-//            //            .and()
-//            //            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-//            // Add a filter to validate the tokens with every request
-//            http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-//            http.exceptionHandling().defaultAuthenticationEntryPointFor(new IkasanAuthenticationEntryPoint()
-//                , new AntPathRequestMatcher("/**"));
-//            //formatter:on
-//        }
+        /**
+         * Require login to access internal pages and configure login form.
+         */
+        @DependsOn({"authenticationManager", "securityContextRepository"})
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+            http.setSharedObject(AuthenticationManager.class, this.authenticationManager);
+
+            // Not using Spring CSRF here to be able to use plain HTML for the login page
+            http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable())
+                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry
+                    -> authorizationManagerRequestMatcherRegistry
+                    .requestMatchers("/rest/export/context/**", // ContextExportControl
+                        "/rest/module/bigQueue/size/all/**", // BigQueueModuleController
+                        "/rest/context/status/**", // ContextStatusServiceController
+                        "/actuator/**"// expose spring actuator via basic authentication
+                    )
+                )
+                .httpBasic(httpSecurityHttpBasicConfigurer -> httpSecurityHttpBasicConfigurer.configure(http))
+
+                // Register our CustomRequestCache, that saves unauthorized access attempts, so
+                // the user is redirected after login.
+                .requestCache(c -> c.requestCache(new CustomRequestCache()))
+
+                // Restrict access to our application.
+                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry
+                    -> authorizationManagerRequestMatcherRegistry
+                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest)
+                    .permitAll()
+                    .requestMatchers("/", "/VAADIN/**",
+                        // the standard favicon URI
+                        "/favicon.ico",
+                        // the robots exclusion standard
+                        "/robots.txt",
+                        // web application manifest
+                        "/manifest.webmanifest",
+                        "/sw.js",
+                        "/offline-page.html",
+                        // icons and images
+                        "/icons/**",
+                        "/images/**",
+                        // (development mode) static resources
+                        "/frontend/**",
+                        // (development mode) webjars
+                        "/webjars/**",
+                        // (development mode) H2 debugging console
+                        "/h2-console/**",
+                        "/swagger-ui/**",
+                        // (production mode) static resources
+                        "/frontend-es5/**",
+                        "/frontend-es6/**",
+                        "/actuator/**")
+                    .permitAll()
+                    .requestMatchers("/authenticate").permitAll()
+                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/actuator/**").permitAll()
+                    // Allow all requests by logged in users.
+                    .anyRequest().authenticated()
+                )
+                // Allow all flow internal requests.
+                // Configure the login page.
+                .formLogin(httpSecurityFormLoginConfigurer -> {
+                    httpSecurityFormLoginConfigurer.loginPage(LOGIN_URL)
+                        .permitAll()
+                        .loginProcessingUrl(LOGIN_PROCESSING_URL)
+                        .failureUrl(LOGIN_FAILURE_URL);
+                })
+
+                // Configure logout
+                .logout(httpSecurityLogoutConfigurer -> {
+                    httpSecurityLogoutConfigurer.logoutSuccessUrl(LOGOUT_SUCCESS_URL);
+                })
+                .exceptionHandling(e -> e.defaultAuthenticationEntryPointFor(jwtAuthenticationEntryPoint, new AntPathRequestMatcher("/rest/**")))
+                /**
+                 * Session Management should be set to stateless for JWT token, but due to VAADIN utilising
+                 * cookies we cannot do that
+                 */
+                // Add a filter to validate the tokens with every request
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(httpSecurityExceptionHandlingConfigurer
+                    -> httpSecurityExceptionHandlingConfigurer.defaultAuthenticationEntryPointFor(new IkasanAuthenticationEntryPoint()
+                        , new AntPathRequestMatcher("/**")))
+
+                .securityContext((securityContext) -> {
+                        securityContext.requireExplicitSave(true);
+                        securityContext.securityContextRepository(securityContextRepository());
+                    }
+                );
+
+            return http.build();
+        }
     }
 
 }

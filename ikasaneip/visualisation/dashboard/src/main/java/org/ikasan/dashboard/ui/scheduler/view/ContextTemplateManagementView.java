@@ -4,6 +4,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.spring.annotation.RouteScope;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
@@ -36,6 +37,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,6 +49,8 @@ import java.util.Set;
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/tree-view.css", themeFor = "vaadin-grid")
 @CssImport(value = "./styles/grid-header.css", themeFor = "vaadin-grid")
+@PermitAll
+@PreserveOnRefresh
 public class ContextTemplateManagementView extends VerticalLayout implements BeforeEnterObserver, HasUrlParameter<String>
 {
     Logger logger = LoggerFactory.getLogger(ContextTemplateManagementView.class);

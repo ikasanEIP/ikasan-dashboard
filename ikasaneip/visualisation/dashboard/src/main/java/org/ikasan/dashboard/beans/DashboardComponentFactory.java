@@ -12,10 +12,10 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.service.JobLockCacheEvent
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.SchedulerJobStateChangeEventBroadcasterImpl;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.metadata.ModuleMetaDataProvider;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
@@ -24,6 +24,7 @@ import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroad
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -137,7 +138,7 @@ public class DashboardComponentFactory
     }
 
     @Bean
-    public FlowStateCache flowStateCache(SolrModuleMetadataServiceImpl moduleMetadataService)
+    public FlowStateCache flowStateCache(@Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService)
     {
         FlowStateCache flowStateCache = FlowStateCache.instance();
         flowStateCache.setModuleControlRestService(this.moduleControlRestService);

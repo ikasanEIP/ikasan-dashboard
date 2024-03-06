@@ -84,7 +84,7 @@ public class FlowSelectDialog extends AbstractCloseableResizableDialog {
             .setHeader(moduleType == ModuleType.SCHEDULER_AGENT ?
                 getTranslation("table-header.agent", UI.getCurrent().getLocale()) : getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(16);
-        flowsGrid.addColumn(LitRenderer.<Flow>of("<div style='white-space:normal'>[[item.description]]</div>")
+        flowsGrid.addColumn(LitRenderer.<Flow>of("<div style='white-space:normal'>${item.description}</div>")
             .withProperty("description", Flow::getFlowName))
             .setHeader(moduleType == ModuleType.SCHEDULER_AGENT ?
                 getTranslation("table-header.job-name", UI.getCurrent().getLocale()) : getTranslation("table-header.flow-name", UI.getCurrent().getLocale()))

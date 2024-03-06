@@ -4,6 +4,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.spring.annotation.RouteScope;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 
 //@Push
 @Route(value = "schedulerJobLogFile")
@@ -24,6 +26,8 @@ import javax.annotation.Resource;
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
+@PermitAll
+@PreserveOnRefresh
 public class SchedulerJobLogFileView extends VerticalLayout implements BeforeEnterObserver, HasUrlParameter<String>
 {
     Logger logger = LoggerFactory.getLogger(SchedulerJobLogFileView.class);

@@ -106,7 +106,7 @@ public class AgentWidget extends Div {
         scheduledAgentsFilteringGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(16);
-        scheduledAgentsFilteringGrid.addColumn(LitRenderer.<ModuleMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
+        scheduledAgentsFilteringGrid.addColumn(LitRenderer.<ModuleMetaData>of("<div style='white-space:normal'>${item.description}</div>")
             .withProperty("description", ModuleMetaData::getDescription))
             .setHeader(getTranslation("table-header.module-description", UI.getCurrent().getLocale()))
             .setKey("description")

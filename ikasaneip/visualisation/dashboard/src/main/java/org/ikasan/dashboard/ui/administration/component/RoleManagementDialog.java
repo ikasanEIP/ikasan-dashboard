@@ -111,6 +111,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     private void init()
     {
         Accordion accordion = new Accordion();
+        accordion.setWidthFull();
         accordion.add(getTranslation("accordian-label.associated-users", UI.getCurrent().getLocale())
             , createAssociatedUserLayout());
         accordion.add(getTranslation("accordian-label.associated-groups", UI.getCurrent().getLocale())

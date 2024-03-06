@@ -15,11 +15,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.LitRenderer;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.spring.annotation.UIScope;
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.spring.annotation.RouteScope;
 import org.ikasan.dashboard.ui.administration.component.NewUserDialog;
 import org.ikasan.dashboard.ui.administration.component.UserManagementDialog;
 import org.ikasan.dashboard.ui.administration.filter.UserFilter;
@@ -33,15 +30,16 @@ import org.ikasan.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import java.util.List;
 
 @Route(value = "userManagement", layout = IkasanAppLayout.class)
-@UIScope
-@Component
+@RouteScope
 @PageTitle("Ikasan - User Management")
+@PermitAll
+@PreserveOnRefresh
 public class UserManagementView extends VerticalLayout implements BeforeEnterObserver
 {
     private Logger logger = LoggerFactory.getLogger(UserManagementView.class);
@@ -155,7 +153,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
             .setSortable(true)
             .setFlexGrow(1);
         this.userGrid.addColumn(LitRenderer.<User>of(
-            "<div style='white-space:normal'>[[item.date]]</div>")
+            "<div style='white-space:normal'>${item.date}</div>")
             .withProperty("date",
                 user -> this.dateFormatter.getFormattedDate(user.getPreviousAccessTimestamp())))
             .setKey("lastaccess").setHeader(getTranslation("table-header.last-access", UI.getCurrent().getLocale(), null))

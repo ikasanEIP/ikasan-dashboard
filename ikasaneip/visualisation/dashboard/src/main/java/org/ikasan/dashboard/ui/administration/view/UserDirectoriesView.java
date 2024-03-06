@@ -54,11 +54,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.spring.annotation.UIScope;
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.spring.annotation.RouteScope;
 import org.ikasan.dashboard.security.schedule.LdapDirectorySynchronisationSchedulerService;
 import org.ikasan.dashboard.ui.administration.component.UserDirectoryDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
@@ -76,9 +73,9 @@ import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -92,9 +89,10 @@ import java.util.concurrent.Executors;
  *
  */
 @Route(value = "userDirectories", layout = IkasanAppLayout.class)
-@UIScope
-@Component
+@RouteScope
 @PageTitle("Ikasan - LDAP Management")
+@PermitAll
+@PreserveOnRefresh
 public class UserDirectoriesView extends VerticalLayout implements BeforeEnterObserver
 {
 	private Logger logger = LoggerFactory.getLogger(UserDirectoriesView.class);

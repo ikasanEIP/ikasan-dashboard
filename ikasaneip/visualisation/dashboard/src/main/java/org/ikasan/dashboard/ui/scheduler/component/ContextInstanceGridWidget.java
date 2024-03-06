@@ -188,6 +188,7 @@ public class ContextInstanceGridWidget extends Div {
             .setKey("componentName")
             .setFlexGrow(2);
 
+
         contextInstanceFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
@@ -266,8 +267,8 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(2);
 
         this.contextInstanceFilteringGrid.addColumn(LitRenderer.<ScheduledContextInstanceRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.start-date-time]]</div>")
-            .withProperty("start-date-time",
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.startDateTime}</div>")
+            .withProperty("startDateTime",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getStartTime())))
             .setHeader(getTranslation("table-header.start-date-time", UI.getCurrent().getLocale()))
             .setKey("startTime")
@@ -276,8 +277,8 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(3);
 
         this.contextInstanceFilteringGrid.addColumn(LitRenderer.<ScheduledContextInstanceRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.end-date-time]]</div>")
-            .withProperty("end-date-time",
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.endDateTime}</div>")
+            .withProperty("endDateTime",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getEndTime())))
             .setHeader(getTranslation("table-header.end-date-time", UI.getCurrent().getLocale()))
             .setKey("endTime")
@@ -286,8 +287,8 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(3);
 
         this.contextInstanceFilteringGrid.addColumn(LitRenderer.<ScheduledContextInstanceRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.created-date-time]]</div>")
-            .withProperty("created-date-time",
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.createdDateTime}</div>")
+            .withProperty("createdDateTime",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
             .setKey("timestamp")
@@ -296,8 +297,8 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(3);
 
         this.contextInstanceFilteringGrid.addColumn(LitRenderer.<ScheduledContextInstanceRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified-date-time]]</div>")
-            .withProperty("modified-date-time",
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.modifiedDateTime}</div>")
+            .withProperty("modifiedDateTime",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
             .setKey("modifiedTimestamp")

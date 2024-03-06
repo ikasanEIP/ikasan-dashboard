@@ -77,7 +77,7 @@ public class ModuleWidget extends Div {
         modulesGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(16);
-        modulesGrid.addColumn(LitRenderer.<ModuleMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
+        modulesGrid.addColumn(LitRenderer.<ModuleMetaData>of("<div style='white-space:normal'>${item.description}</div>")
             .withProperty("description", ModuleMetaData::getDescription))
             .setHeader(getTranslation("table-header.module-description", UI.getCurrent().getLocale()))
             .setKey("description")

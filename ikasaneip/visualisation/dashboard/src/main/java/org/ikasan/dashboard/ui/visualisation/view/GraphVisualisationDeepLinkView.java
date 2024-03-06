@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.security.PermitAll;
+
 //@Push
 //@HtmlImport("frontend://styles/shared-styles.html")
 //@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
@@ -36,6 +38,8 @@ import org.springframework.stereotype.Component;
 @Route(value = "visualisationTab")
 @UIScope
 @Component
+@PermitAll
+@PreserveOnRefresh
 public class GraphVisualisationDeepLinkView extends VerticalLayout implements HasUrlParameter<String>, BeforeEnterObserver
 {
     Logger logger = LoggerFactory.getLogger(GraphVisualisationDeepLinkView.class);

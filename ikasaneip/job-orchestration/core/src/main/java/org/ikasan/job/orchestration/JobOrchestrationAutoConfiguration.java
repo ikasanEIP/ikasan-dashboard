@@ -25,11 +25,14 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.*;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
@@ -38,7 +41,7 @@ import java.util.Map;
 
 @Configuration
 @Import({InboundModuleFactory.class, JobContextParamsSetupFactory.class})
-public class JobOrchestrationAutoConfiguration {
+public class JobOrchestrationAutoConfiguration implements ApplicationListener<ContextRefreshedEvent> {
     private Logger logger = LoggerFactory.getLogger(JobOrchestrationAutoConfiguration.class);
 
     public JobOrchestrationAutoConfiguration() {
@@ -104,13 +107,22 @@ public class JobOrchestrationAutoConfiguration {
 
     @Bean
     @DependsOn("contextInstanceRecoveryManager")
-    public ContextInstanceSchedulerService contextInstanceSchedulerService(@Lazy ContextInstanceRegistrationService contextInstanceRegistrationService, ScheduledContextService scheduledContextService) {
+    public ContextInstanceSchedulerService contextInstanceSchedulerService(@Lazy ContextInstanceRegistrationService contextInstanceRegistrationService
+        , ScheduledContextService scheduledContextService) {
         return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler(),
             CachingScheduledJobFactory.getInstance(),
             scheduledContextService,
             contextInstanceRegistrationService,
             this.isContextLifeCycleActive,
             this.isIkasanEnterpriseSchedulerInstance);
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        ContextInstanceRecoveryManager contextInstanceRecoveryManager
+            = (ContextInstanceRecoveryManager) event.getApplicationContext().getBean("contextInstanceRecoveryManager");
+
+        contextInstanceRecoveryManager.recoverContextInstances();
     }
 
     @Bean
@@ -120,8 +132,8 @@ public class JobOrchestrationAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
-    public StartupApplicationListener startupApplicationListener(DashboardRestService moduleMetadataDashboardRestService,
-                                                                 DashboardRestService configurationMetadataDashboardRestService,
+    public StartupApplicationListener startupApplicationListener(@Qualifier("moduleMetadataDashboardRestService") DashboardRestService moduleMetadataDashboardRestService,
+                                                                 @Qualifier("configurationMetadataDashboardRestService") DashboardRestService configurationMetadataDashboardRestService,
                                                                  Module<Flow> inboundFlowModule) {
         return new StartupApplicationListener(moduleMetadataDashboardRestService,
             configurationMetadataDashboardRestService, inboundFlowModule);

@@ -176,7 +176,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         modulesGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(16);
-        modulesGrid.addColumn(LitRenderer.<ModuleMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
+        modulesGrid.addColumn(LitRenderer.<ModuleMetaData>of("<div style='white-space:normal'>${item.description}</div>")
             .withProperty("description", ModuleMetaData::getDescription))
             .setHeader(getTranslation("table-header.module-description", UI.getCurrent().getLocale()))
             .setKey("description")
@@ -257,12 +257,12 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         businessStreamGrid.setHeight("80vh");
         businessStreamGrid.setWidth("100%");
 
-        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.name]]</div>")
+        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>${item.name}</div>")
             .withProperty("name", BusinessStreamMetaData::getName))
             .setHeader(getTranslation("table-header.business-stream-name", UI.getCurrent().getLocale()))
             .setKey("name")
             .setFlexGrow(16);
-        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
+        businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>${item.description}</div>")
             .withProperty("description", BusinessStreamMetaData::getDescription)).setHeader(getTranslation("table-header.business-stream-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(32);

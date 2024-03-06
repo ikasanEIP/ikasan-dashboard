@@ -10,10 +10,10 @@ import com.vaadin.flow.component.login.AbstractLogin;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.*;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.security.ContextCache;
 import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
@@ -25,20 +25,24 @@ import org.ikasan.security.service.AuthenticationService;
 import org.ikasan.security.service.AuthenticationServiceException;
 import org.ikasan.security.service.UserService;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 
 @Tag("sa-login-view")
-@Route(value = LoginView.ROUTE)
+@Route(LoginView.ROUTE)
 @PageTitle("Ikasan - Login")
 //@HtmlImport("frontend://styles/shared-styles.html")
 //@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
 @Component
 @UIScope
-public class LoginView extends VerticalLayout //implements PageConfigurator//, HasUrlParameter<String>
+@AnonymousAllowed
+public class LoginView extends VerticalLayout //implements AppShellConfigurator //implements PageConfigurator//, HasUrlParameter<String>
 {
     public static final String ROUTE = "login";
 
@@ -51,6 +55,9 @@ public class LoginView extends VerticalLayout //implements PageConfigurator//, H
     @Resource
     private SystemEventLogger systemEventLogger;
 
+    @Resource
+    private SecurityContextRepository securityContextRepository;
+
 
     private LoginForm login = new LoginForm();
 
@@ -62,7 +69,8 @@ public class LoginView extends VerticalLayout //implements PageConfigurator//, H
 
         login.setForgotPasswordButtonVisible(false);
 
-        Image ikasan = new Image("frontend/images/mr_squid_titling_dashboard.png", "");
+        Image ikasan = new Image(new StreamResource("Mr Squid",
+            () -> LoginView.class.getResourceAsStream("/META-INF/resources/frontend/images/mr_squid_titling_dashboard.png")), "Mr Squid");
         ikasan.setHeight("180px");
 
         Div loginDiv = new Div();
@@ -80,22 +88,26 @@ public class LoginView extends VerticalLayout //implements PageConfigurator//, H
                 Authentication authentication = this.authenticationService.login(loginEvent.getUsername(),
                     loginEvent.getPassword());
 
+                SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+                securityContext.setAuthentication(authentication);
+                SecurityContextHolder.setContext(securityContext);
+                securityContextRepository.saveContext(securityContext, VaadinServletRequest.getCurrent()
+                    , VaadinServletResponse.getCurrent());
+
                 User user = this.userService.loadUserByUsername(authentication.getName());
                 user.setPreviousAccessTimestamp(System.currentTimeMillis());
                 this.userService.updateUser(user);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_LOGIN_CONSTANTS
-                    , SystemEventConstants.DASHBOARD_LOGIN_CONSTANTS, authentication.getName());
-
                 UI.getCurrent().getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
+                    this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_LOGIN_CONSTANTS
+                        , SystemEventConstants.DASHBOARD_LOGIN_CONSTANTS, authentication.getName());
+
                     UI.getCurrent().getSession().setAttribute(SessionAttributeConstants.TIMEZONE_ID,
                         extendedClientDetails.getTimeZoneId());
 
-                    String context = ContextCache.getContext(UI.getCurrent().getSession().getSession().getId());
-                    if(context != null && isRouteValid(context)) {
-                        UI.getCurrent().navigate(context);
+                    String cacheContext = ContextCache.getContext(UI.getCurrent().getSession().getSession().getId());
+                    if(cacheContext != null && isRouteValid(cacheContext)) {
+                        UI.getCurrent().navigate(cacheContext);
                     }
                     else {
                         DashboardContextNavigator.navigateToLandingPage();
@@ -128,6 +140,15 @@ public class LoginView extends VerticalLayout //implements PageConfigurator//, H
             return false;
         });
     }
+
+//    @Override
+//    public void configurePage(AppShellSettings settings) {
+//        HashMap<String, String> attributes = new HashMap<>();
+//        attributes.put("rel", "shortcut icon");
+//        attributes.put("type", "image/png");
+//        settings.addLink("icons/icon.png", attributes);
+//        AppShellConfigurator.super.configurePage(settings);
+//    }
 
 //    @Override
 //    public void configurePage(InitialPageSettings settings) {

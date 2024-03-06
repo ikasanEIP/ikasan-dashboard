@@ -24,7 +24,7 @@ public class JobPlanErrorsDialog extends AbstractCloseableResizableDialog {
     private Component initialiseErrorWidget() {
         Grid<ContextError> errorGrid = new Grid<>();
         errorGrid.addColumn(LitRenderer.<ContextError>of(
-                "<div style=\"word-wrap:normal; white-space:normal\">[[item.error]]</div>")
+                "<div style=\"word-wrap:normal; white-space:normal\">${item.error}</div>")
             .withProperty("error", contextError -> contextError.getErrorMessage()))
             .setHeader(getTranslation("label.error-message", UI.getCurrent().getLocale()))
             .setKey("errorMessage");

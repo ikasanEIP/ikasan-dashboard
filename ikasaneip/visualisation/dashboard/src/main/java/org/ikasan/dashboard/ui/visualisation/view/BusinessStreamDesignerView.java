@@ -49,6 +49,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
@@ -65,6 +66,8 @@ import java.util.UUID;
 @UIScope
 @PageTitle("Ikasan - Designer")
 @Component
+@PermitAll
+@PreserveOnRefresh
 public class BusinessStreamDesignerView extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
     , CanvasItemDoubleClickEventListener, BeforeLeaveObserver, SaveFunction
 {

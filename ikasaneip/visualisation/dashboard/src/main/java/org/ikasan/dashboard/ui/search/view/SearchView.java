@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.search.view;
 
 import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -32,15 +31,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
 import java.util.List;
 
 @Route(value = "Search", layout = IkasanAppLayout.class)
 @UIScope
-@Component
 @PageTitle("Ikasan - Search")
+@PermitAll
 public class SearchView extends VerticalLayout implements BeforeEnterObserver, SearchListener
 {
     Logger logger = LoggerFactory.getLogger(SearchView.class);
