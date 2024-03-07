@@ -59,7 +59,6 @@
 
     <modules>
         <module>solr-client</module>
-        <module>solr-security</module>
         <module>solr-distribution</module>
     </modules>
 
