@@ -91,6 +91,12 @@
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-job-orchestration-rest-module-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
