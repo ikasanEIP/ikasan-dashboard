@@ -16,7 +16,7 @@ before_install:
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --batch --import-ownertrust
   - nvm install 18.0.0
   - npm install --save-dev @babel/core
-  - npm install --save-dev @babel/plugin-proposal-object-rest-spread
+  - npm install --save-dev @babel/plugin-transform-object-rest-spread
   - export M2_HOME=$HOME/apache-maven-3.8.4
   - if [ ! -d $M2_HOME/bin ]; then curl https://archive.apache.org/dist/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz | tar zxf - -C $HOME; fi
   - export PATH=$M2_HOME/bin:$PATH
