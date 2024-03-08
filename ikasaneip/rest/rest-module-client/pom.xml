@@ -60,7 +60,6 @@
 
     <dependencies>
 
-
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-spec-metadata</artifactId>
@@ -134,13 +133,17 @@
         <dependency>
           <groupId>org.springframework</groupId>
           <artifactId>spring-webflux</artifactId>
-            <version>${version.spring.webflux}</version>
         </dependency>
 
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-http</artifactId>
-            <version>${version.reactor.netty.http}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Test Dependencies -->
@@ -149,12 +152,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -193,12 +190,6 @@
             <scope>test</scope>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.jmock</groupId>-->
-<!--            <artifactId>jmock-legacy</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
@@ -216,12 +207,6 @@
             <artifactId>wiremock</artifactId>
             <scope>test</scope>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.apache.httpcomponents</groupId>-->
-<!--            <artifactId>httpclient</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
@@ -286,21 +271,18 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>${version.okhttp3}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>mockwebserver</artifactId>
-            <version>${version.okhttp3}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
-            <version>${version.reactor.test}</version>
             <scope>test</scope>
         </dependency>
 
