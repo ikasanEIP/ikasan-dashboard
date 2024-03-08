@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.notification.business.stream;
 
-//import ch.qos.logback.classic.Level;
-//import ch.qos.logback.classic.Logger;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrServerException;
