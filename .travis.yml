@@ -3,7 +3,7 @@ language: java
 jdk:
   - openjdk17
 node_js:
-  - 10.17.0
+  - 20.10.0
 cache:
   directories:
     - $HOME/.m2
