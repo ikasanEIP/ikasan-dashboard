@@ -12,8 +12,8 @@ cache:
 ## export GPG details
 before_install:
   #  - echo -e "machine github.com\n  login $GITHUB_USER\n  password $GITHUB_PASSWORD" > $HOME/.netrc
-  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
-  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
+  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --batch --import
+  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --batch --import-ownertrust
   - nvm install 18.0.0
   - npm install --save-dev @babel/core
   - npm install --save-dev @babel/plugin-proposal-object-rest-spread
