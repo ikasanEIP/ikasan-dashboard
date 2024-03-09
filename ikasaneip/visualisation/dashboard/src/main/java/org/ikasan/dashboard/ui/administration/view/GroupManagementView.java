@@ -21,6 +21,7 @@ import org.ikasan.security.service.SecurityService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 @PageTitle("Ikasan - Group Management")
 @PermitAll
 @PreserveOnRefresh
+@Component
 public class GroupManagementView extends VerticalLayout implements BeforeEnterObserver
 {
     private Logger logger = LoggerFactory.getLogger(GroupManagementView.class);

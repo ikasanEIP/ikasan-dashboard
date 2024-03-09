@@ -28,9 +28,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.ikasan.dashboard.ui.administration.view.*;
 import org.ikasan.dashboard.ui.dashboard.view.DashboardView;
@@ -50,18 +48,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.annotation.Resource;
 
 
-//@Push
 @JsModule("./styles/shared-styles.js")
 @CssImport("./styles/shared-styles.css")
 @CssImport(value = "./styles/dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
-//@PreserveOnRefresh
-//@UIScope
-//@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-//@Theme(themeClass = Material.class)
-//@PWA(name = "Ikasan Visualisation Dashboard",
-//    shortName = "Ikasan")
-public class IkasanAppLayout extends AppLayout
-{
+public class IkasanAppLayout extends AppLayout {
     @Resource
     private SystemEventLogger systemEventLogger;
 
@@ -90,8 +80,7 @@ public class IkasanAppLayout extends AppLayout
 
     private Button swaggerUI;
 
-    public IkasanAppLayout()
-    {
+    public IkasanAppLayout() {
         Image ikasan = new Image("frontend/images/ikasan-titling-transparent.png", "");
         ikasan.setHeight("30px");
 
@@ -99,7 +88,6 @@ public class IkasanAppLayout extends AppLayout
         logout.getElement().setProperty("title", "Log Out");
         logout.setId("logoutButton");
 
-//        SecurityContextHolder.setContextHolderStrategy(new VaadinAwareSecurityContextHolderStrategy());
         logout.addClickListener((ComponentEventListener<ClickEvent<Button>>) divClickEvent ->
         {
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext()
@@ -134,44 +122,12 @@ public class IkasanAppLayout extends AppLayout
 
         addToNavbar(header);
         addToDrawer(getSideNav());
-//        AppLayoutBuilder appLayoutBuilder = AppLayoutBuilder
-//            .get(LeftLayouts.LeftHybridSmall.class)
-//            .withIconComponent(ikasan)
-//            .withAppBar(AppBarBuilder.get()
-//                .add(aboutButton)
-//                .add(swaggerUI)
-//                .add(logout)
-//                .build());
-
-//        LeftAppMenuBuilder leftAppMenuBuilder = LeftAppMenuBuilder.get();
-
-//        this.dashboardMenuItem = new SideNavItem("Dashboard", DashboardView.class,  VaadinIcon.DASHBOARD.create());
-//        this.dashboardMenuItem.setId("dashboardMenuItem");
-//        this.dashboardMenuItem.getElement().getStyle().remove("padding");
-//        leftAppMenuBuilder = leftAppMenuBuilder.add(dashboardMenuItem);
-
-//        this.searchMenuItem = new LeftNavigationItem(getTranslation("menu-item.search", UI.getCurrent().getLocale(), null), VaadinIcon.SEARCH.create(), SearchView.class);
-//        this.searchMenuItem.setId("searchMenuItem");
-//        leftAppMenuBuilder = leftAppMenuBuilder.add(searchMenuItem);
-//
-//
-//        this.visualisationMenuItem = new LeftNavigationItem(getTranslation("menu-item.visualisation", UI.getCurrent().getLocale(), null), VaadinIcon.CLUSTER.create(), GraphView.class);
-//        this.visualisationMenuItem.setId("visualisationMenuItem");
-//
-//        leftAppMenuBuilder = leftAppMenuBuilder.add(this.visualisationMenuItem);
-//
-//        this.schedulerMenuItem = new LeftNavigationItem("Scheduler", VaadinIcon.CLOCK.create(), SchedulerView.class);
-//        this.schedulerMenuItem.setId("schedulerMenuItem");
-//
-//        leftAppMenuBuilder = leftAppMenuBuilder.add(this.schedulerMenuItem);
-
-
     }
 
     private SideNav getSideNav() {
         SideNav sideNav = new SideNav();
 
-        this.dashboardMenuItem = new SideNavItem("Dashboard", DashboardView.class,  VaadinIcon.DASHBOARD.create());
+        this.dashboardMenuItem = new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create());
         this.dashboardMenuItem.setId("dashboardMenuItem");
         this.dashboardMenuItem.getElement().getStyle().remove("padding");
 
@@ -202,9 +158,6 @@ public class IkasanAppLayout extends AppLayout
         this.adminMenuItem = new SideNavItem(getTranslation("menu-item.administration", getLocale()));
         this.adminMenuItem.setPrefixComponent(VaadinIcon.TOOLS.create());
         this.adminMenuItem.setId("adminMenuItem");
-//        LeftSubMenuBuilder leftSubMenuBuilder = LeftSubMenuBuilder
-//            .get(getTranslation("menu-item.administration", getLocale(), null), VaadinIcon.TOOLS.create());
-//
         this.systemEventMenuItem = new SideNavItem(getTranslation("menu-item.administration-events", getLocale(), null)
             , AdministrationSearchView.class, VaadinIcon.CROSSHAIRS.create());
         this.systemEventMenuItem.setId("systemEventMenuItem");
@@ -216,7 +169,7 @@ public class IkasanAppLayout extends AppLayout
         adminMenuItem.addItem(this.userManagementMenuItem);
 
         this.groupManagementMenuItem = new SideNavItem(getTranslation("menu-item.groups",
-            getLocale(), null),  GroupManagementView.class, VaadinIcon.GROUP.create());
+            getLocale(), null), GroupManagementView.class, VaadinIcon.GROUP.create());
         this.groupManagementMenuItem.setId("groupManagementMenuItem");
         adminMenuItem.addItem(this.groupManagementMenuItem);
 
@@ -244,24 +197,11 @@ public class IkasanAppLayout extends AppLayout
         this.businessStreamDesignerMenuItem.setId("businessStreamDesignerMenuItem");
         this.businessStreamDesignerMenuItem.getElement().getThemeList().remove("spacing-s");
         adminMenuItem.addItem(this.businessStreamDesignerMenuItem);
-//
-//        if(leftSubMenuBuilder != null)
-//        {
-//            this.leftSubmenu = leftSubMenuBuilder.build();
-//            this.leftSubmenu.getSubmenuContainer().getThemeList().remove("spacing-s");
-//            leftAppMenuBuilder.add(this.leftSubmenu);
-//        }
-//
-//        this.leftAppMenu = (LeftMenuComponentWrapper) leftAppMenuBuilder.build();
-//        this.leftAppMenu.getMenu().getThemeList().remove("spacing-s");
-//
-//        init((LeftLayouts.LeftHybridSmall)appLayoutBuilder.withAppMenu(leftAppMenu).build());
     }
 
     @Override
-    public void onAttach(AttachEvent attachEvent)
-    {
-        if(this.bannerTextMessage != null && !this.bannerTextMessage.isEmpty()) {
+    public void onAttach(AttachEvent attachEvent) {
+        if (this.bannerTextMessage != null && !this.bannerTextMessage.isEmpty()) {
             Span bannerText = new Span(bannerTextMessage);
             bannerText.getElement().getStyle().set("font-size", "30pt");
             bannerText.getElement().getStyle().set("color", bannerTextColor);
@@ -270,7 +210,6 @@ public class IkasanAppLayout extends AppLayout
             bannerLayout.getElement().getStyle().set("position", "absolute");
             bannerLayout.getElement().getStyle().set("left", "50%");
             bannerLayout.getElement().getStyle().set("transform", "translate(-50%)");
-//            super.getAppLayout().setTitleComponent(bannerLayout);
         }
 
         super.onAttach(attachEvent);
@@ -286,13 +225,6 @@ public class IkasanAppLayout extends AppLayout
             && isIkasanEnterpriseSchedulerInstance);
 
         this.visualisationMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
-
-//        this.leftSubmenu.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.USER_ADMINISTRATION_ADMIN, SecurityConstants.USER_ADMINISTRATION_WRITE,
-//            SecurityConstants.USER_ADMINISTRATION_READ, SecurityConstants.USER_DIRECTORY_ADMIN, SecurityConstants.USER_DIRECTORY_WRITE, SecurityConstants.USER_DIRECTORY_READ,
-//            SecurityConstants.GROUP_ADMINISTRATION_ADMIN, SecurityConstants.GROUP_ADMINISTRATION_WRITE, SecurityConstants.GROUP_ADMINISTRATION_READ,
-//            SecurityConstants.POLICY_ADMINISTRATION_ADMIN, SecurityConstants.POLICY_ADMINISTRATION_READ, SecurityConstants.POLICY_ADMINISTRATION_WRITE,
-//            SecurityConstants.ROLE_ADMINISTRATION_ADMIN, SecurityConstants.ROLE_ADMINISTRATION_READ, SecurityConstants.ROLE_ADMINISTRATION_WRITE,SecurityConstants.ALL_AUTHORITY,
-//            SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_READ, SecurityConstants.SYSTEM_EVENT_WRITE));
 
         this.systemEventMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_READ,
             SecurityConstants.SYSTEM_EVENT_WRITE));
@@ -317,13 +249,4 @@ public class IkasanAppLayout extends AppLayout
         this.businessStreamDesignerMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY
             , SecurityConstants.BUSINESS_STREAM_ADMIN));
     }
-
-
-//    @Override
-//    public void configurePage(InitialPageSettings settings) {
-//        HashMap<String, String> attributes = new HashMap<>();
-//        attributes.put("rel", "shortcut icon");
-//        attributes.put("type", "image/png");
-//        settings.addLink("icons/icon.png", attributes);
-//    }
 }

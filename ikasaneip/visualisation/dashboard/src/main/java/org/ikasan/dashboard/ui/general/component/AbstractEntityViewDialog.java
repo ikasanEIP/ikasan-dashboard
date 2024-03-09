@@ -3,8 +3,6 @@ package org.ikasan.dashboard.ui.general.component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
@@ -32,7 +30,6 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
     protected Select select;
     protected String rawContent;
 
-    protected VerticalLayout content;
 
     public abstract Component getEntityDetailsLayout();
 
@@ -80,13 +77,7 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
 
     protected void init()
     {
-        content = new VerticalLayout(this.getEntityDetailsLayout(), this.aceEditor);
-        content.setMargin(false);
-        content.setSpacing(false);
-        content.addClassName("dialog-content");
-        content.setAlignItems(FlexComponent.Alignment.STRETCH);
-
-        add(content);
+        content.add(this.getEntityDetailsLayout(), this.aceEditor);
     }
 
     public void open(String event)

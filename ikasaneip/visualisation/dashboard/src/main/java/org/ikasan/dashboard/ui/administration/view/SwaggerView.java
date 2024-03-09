@@ -49,6 +49,7 @@ import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.security.PermitAll;
 
@@ -63,6 +64,7 @@ import javax.annotation.security.PermitAll;
 @PageTitle("Ikasan - Swagger UI")
 @PermitAll
 @PreserveOnRefresh
+@Component
 public class SwaggerView extends VerticalLayout implements BeforeEnterObserver
 {
 	private Logger logger = LoggerFactory.getLogger(SwaggerView.class);

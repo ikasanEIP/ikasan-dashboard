@@ -36,7 +36,6 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
     private StreamResource streamResource;
     private FileDownloadWrapper buttonWrapper;
-    private Tooltip downloadButtonTooltip;
 
     private String errorEvent;
     private String errorDetails;
@@ -99,7 +98,7 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         formLayout.setSizeFull();
 
         Button downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
-        downloadButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(downloadButton
+        downloadButton.getElement().setAttribute("title"
             , getTranslation("tooltip.download-error-event", UI.getCurrent().getLocale()));
 
         this.streamResource = new StreamResource("error.txt"
@@ -148,7 +147,7 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             }
         });
         HorizontalLayout iconLayout = new HorizontalLayout();
-        iconLayout.add(super.select, buttonWrapper, downloadButtonTooltip, newWindowButton);
+        iconLayout.add(super.select, buttonWrapper, newWindowButton);
         iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
         iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
 
@@ -181,11 +180,5 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         this.errorDetails = errorEvent.getErrorDetail();
 
         super.open(errorEvent.getErrorDetail());
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        this.downloadButtonTooltip.attachToComponent(buttonWrapper);
     }
 }

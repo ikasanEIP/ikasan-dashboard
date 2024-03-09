@@ -15,8 +15,6 @@ import com.vaadin.flow.theme.material.Material;
 import java.util.HashMap;
 
 @Push
-//@PreserveOnRefresh
-//@UIScope
 @JsModule("./styles/shared-styles.js")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 @Theme(themeClass = Material.class)

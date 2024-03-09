@@ -2,10 +2,7 @@ package org.ikasan.dashboard.ui.search.view;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.general.component.SearchResults;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
@@ -31,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
@@ -38,8 +36,10 @@ import java.util.List;
 
 @Route(value = "Search", layout = IkasanAppLayout.class)
 @UIScope
+@Component
 @PageTitle("Ikasan - Search")
 @PermitAll
+@PreserveOnRefresh
 public class SearchView extends VerticalLayout implements BeforeEnterObserver, SearchListener
 {
     Logger logger = LoggerFactory.getLogger(SearchView.class);

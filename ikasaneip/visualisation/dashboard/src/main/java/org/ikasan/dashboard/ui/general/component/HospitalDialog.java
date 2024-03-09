@@ -62,7 +62,6 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private IkasanSolrDocument ikasanSolrDocument;
 
     private Button downloadButton;
-    private Tooltip downloadButtonTooltip;
 
     private ResubmissionService resubmissionRestService;
     private ModuleMetaDataService moduleMetadataService;
@@ -157,7 +156,8 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         formLayout.setSizeFull();
 
         downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
-        downloadButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(downloadButton, getTranslation("tooltip.download-hospital-event", UI.getCurrent().getLocale()));
+        downloadButton.getElement().setAttribute("title"
+            , getTranslation("tooltip.download-hospital-event", UI.getCurrent().getLocale()));
 
         this.streamResource = new StreamResource("exclusion.txt"
             , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes()));
@@ -327,7 +327,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             }
         });
         HorizontalLayout iconLayout = new HorizontalLayout();
-        iconLayout.add(super.select, buttonWrapper, downloadButtonTooltip, newWindowButton);
+        iconLayout.add(super.select, buttonWrapper, newWindowButton);
         iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
         iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
 
@@ -400,12 +400,6 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         exclusionEventAction.setEvent(document.getEvent());
 
         return exclusionEventAction;
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        this.downloadButtonTooltip.attachToComponent(downloadButton);
     }
 
     private String getErrorUri(String id){
