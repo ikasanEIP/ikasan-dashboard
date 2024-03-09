@@ -29,6 +29,7 @@ import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.security.PermitAll;
 import java.util.List;
@@ -38,6 +39,7 @@ import java.util.List;
 @PageTitle("Ikasan - Role Management")
 @PermitAll
 @PreserveOnRefresh
+@Component
 public class RoleManagementView extends VerticalLayout implements BeforeEnterObserver
 {
     private Logger logger = LoggerFactory.getLogger(RoleManagementView.class);

@@ -20,6 +20,7 @@ import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.ui.scheduler.component.CronBuilderDialog;
 import org.ikasan.dashboard.ui.search.SearchConstants;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.component.filter.SearchFilter;
@@ -524,6 +525,14 @@ public class SearchResults extends Div {
                 {
                     ErrorDialog errorDialog = new ErrorDialog(this.dateFormatter);
                     errorDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());
+//                    errorDialog.open();
+
+//                    ErrorDialog2 errorDialog = new ErrorDialog2();
+//                    errorDialog.open();
+
+//                    CronBuilderDialog dialog = new CronBuilderDialog();
+//                    dialog.init(null);
+//                    dialog.open();
                 }
                 else if(ikasanSolrDocumentItemDoubleClickEvent.getItem().getType().equalsIgnoreCase(SearchConstants.REPLAY))
                 {

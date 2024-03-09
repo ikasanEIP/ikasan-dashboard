@@ -48,7 +48,6 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private FileDownloadWrapper buttonWrapper;
 
     private Button downloadButton;
-    private Tooltip downloadButtonTooltip;
 
     private ReplayService replayRestService;
     private BatchInsert replayAuditService;
@@ -109,7 +108,8 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         formLayout.setSizeFull();
 
         downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
-        downloadButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(downloadButton, getTranslation("tooltip.download-replay-event", UI.getCurrent().getLocale()));
+        downloadButton.getElement().setAttribute("title"
+            , getTranslation("tooltip.download-replay-event", UI.getCurrent().getLocale()));
 
         this.streamResource = new StreamResource("replay.txt"
             , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes()));
@@ -198,13 +198,13 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             entityContentsViewDialog.populate(this.replayEvent);
         });
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(super.select, buttonWrapper, downloadButtonTooltip, newWindowButton);
+        buttonLayout.add(super.select, buttonWrapper, newWindowButton);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
 
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, formLayout, buttonLayout, replayButton);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout, downloadButtonTooltip);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, replayButton);
 
         return layout;
@@ -222,11 +222,5 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(replayEvent.getTimestamp()));
 
         super.open(replayEvent.getEvent());
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        this.downloadButtonTooltip.attachToComponent(downloadButton);
     }
 }

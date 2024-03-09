@@ -28,6 +28,7 @@ import org.quartz.Trigger;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 @PageTitle("Ikasan - Administration Quartz Scheduler")
 @PermitAll
 @PreserveOnRefresh
+@Component
 public class QuartzSchedulerView extends VerticalLayout implements BeforeEnterObserver
 {
     private Logger logger = LoggerFactory.getLogger(QuartzSchedulerView.class);

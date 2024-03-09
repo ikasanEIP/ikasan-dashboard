@@ -73,6 +73,7 @@ import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
@@ -93,6 +94,7 @@ import java.util.concurrent.Executors;
 @PageTitle("Ikasan - LDAP Management")
 @PermitAll
 @PreserveOnRefresh
+@Component
 public class UserDirectoriesView extends VerticalLayout implements BeforeEnterObserver
 {
 	private Logger logger = LoggerFactory.getLogger(UserDirectoriesView.class);

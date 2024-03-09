@@ -37,7 +37,6 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private  FileDownloadWrapper buttonWrapper;
 
     private Button downloadButton;
-    private Tooltip downloadButtonTooltip;
 
     private DateFormatter dateFormatter;
 
@@ -86,7 +85,8 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         formLayout.setSizeFull();
 
         downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
-        downloadButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(downloadButton, getTranslation("tooltip.download-wiretap-event", UI.getCurrent().getLocale()));
+        downloadButton.getElement().setAttribute("title",
+            getTranslation("tooltip.download-wiretap-event", UI.getCurrent().getLocale()));
 
         this.streamResource = new StreamResource("wiretap.txt"
             , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes()));
@@ -99,8 +99,7 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Wiretap " + wiretapEvent.getEventId());
             entityContentsViewDialog.populate(this.wiretapEvent);
         });
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(super.select, buttonWrapper, downloadButtonTooltip, newWindowButton);
+        HorizontalLayout buttonLayout = new HorizontalLayout(super.select, buttonWrapper, newWindowButton);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
 
@@ -131,11 +130,5 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(wiretapEvent.getTimestamp()));
 
         super.open(wiretapEvent.getEvent());
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        this.downloadButtonTooltip.attachToComponent(downloadButton);
     }
 }
