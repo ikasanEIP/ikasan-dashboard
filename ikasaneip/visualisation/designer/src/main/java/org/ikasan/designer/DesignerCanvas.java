@@ -99,17 +99,17 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.getElement().getStyle().set("width", "100%");
         this.getElement().getStyle().set("background-color", "#FFFFFF");
 
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/jquery.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/jquery-ui.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/draw2d.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/spinner.umd.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/designer-connector-flow.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/mousetrap.min.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/view.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/RotateRectangleFeedbackSelectionPolicy.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/RotateHandle.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/Triangle.js");
-        ui.getPage().addJavaScript("./org/ikasan/draw2d/NoDecorator.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/jquery.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/jquery-ui.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/draw2d.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/spinner.umd.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/designer-connector-flow.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/mousetrap.min.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/view.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/RotateRectangleFeedbackSelectionPolicy.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/RotateHandle.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/Triangle.js");
+        ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/NoDecorator.js");
 
         // Dont transfer empty options.
         mapper.setSerializationInclusion(Include.NON_EMPTY);
