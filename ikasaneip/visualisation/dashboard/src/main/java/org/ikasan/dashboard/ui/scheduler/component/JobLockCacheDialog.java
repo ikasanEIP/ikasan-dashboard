@@ -435,12 +435,14 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
         JobLockCacheEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         this.ui = null;
         JobLockCacheEventBroadcaster.unregister(this);
     }

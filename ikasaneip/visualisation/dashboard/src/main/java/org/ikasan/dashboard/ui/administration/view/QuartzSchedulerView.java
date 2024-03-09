@@ -318,12 +318,6 @@ public class QuartzSchedulerView extends VerticalLayout implements BeforeEnterOb
         }
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-
-    }
-
     private class TriggerFilter {
         private String jobName;
         private String jobType;

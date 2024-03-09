@@ -72,6 +72,8 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         this.setMargin(false);
         this.setSpacing(false);
 
+        this.getElement().getThemeList().remove("padding");
+
         this.setHeight("100%");
         this.setWidth("100%");
 
@@ -103,7 +105,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         toolLayout.getElement().getThemeList().remove("padding");
 
         HorizontalLayout designerLayout = new HorizontalLayout();
-        designerLayout.setSizeUndefined();
+        designerLayout.setSizeFull();
         designerLayout.getElement().getThemeList().remove("padding");
 
 
@@ -341,10 +343,10 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         this.designerCanvas.getElement().getStyle().set("border", "1px solid #E0E0E0");
         this.designerCanvas.getElement().getStyle().set("padding", "0px");
         this.designerCanvas.getElement().getStyle().set("margin", "0px");
-        this.designerCanvas.getElement().getStyle().set("position", "absolute");
-        this.designerCanvas.getElement().getStyle().set("top", "140px");
+        this.designerCanvas.getElement().getStyle().set("position", "relative");
+        this.designerCanvas.getElement().getStyle().set("top", "100px");
         this.designerCanvas.getElement().getStyle().set("right", "15px");
-        this.designerCanvas.getElement().getStyle().set("left", "250px");
+        this.designerCanvas.getElement().getStyle().set("left", "0px");
         this.designerCanvas.getElement().getStyle().set("bottom", "15px");
         this.designerCanvas.getElement().getStyle().set("overflow", "scroll");
         this.designerCanvas.getElement().getStyle().set("height", "calc(100% - 160px)");

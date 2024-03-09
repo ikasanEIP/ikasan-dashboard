@@ -334,13 +334,14 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-
+        super.onAttach(attachEvent);
         FlowStateBroadcaster.register(this);
         CacheStateBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         FlowStateBroadcaster.unregister(this);
         CacheStateBroadcaster.unregister(this);
     }

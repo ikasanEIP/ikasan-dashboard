@@ -415,6 +415,7 @@ public class ContextInstanceDashboardWidget extends Div
             .setResizable(true);
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
+            horizontalLayout.setWidthFull();
 
             Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)
                 + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_WAITING, IkasanColours.BLACK,
@@ -864,7 +865,7 @@ public class ContextInstanceDashboardWidget extends Div
             statusButton.getElement().getStyle().set("color", fontColour);
         }
         statusButton.getElement().getStyle().set("font-size", "8pt");
-        statusButton.setWidth("100%");
+        statusButton.setWidth("120px");
 
         return statusButton;
     }
@@ -874,7 +875,7 @@ public class ContextInstanceDashboardWidget extends Div
         breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
         breakOut.getElement().getStyle().set("background-color", backgroundColour);
         breakOut.getElement().getStyle().set("color", fontColour);
-        breakOut.setWidth("50px");
+        breakOut.setWidth("40px");
 
         return breakOut;
     }
@@ -894,6 +895,7 @@ public class ContextInstanceDashboardWidget extends Div
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
         SchedulerJobStateChangeEventBroadcaster.register(this);
         ContextInstanceStateChangeEventBroadcaster.register(this);
@@ -902,6 +904,7 @@ public class ContextInstanceDashboardWidget extends Div
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         this.ui = null;
         SchedulerJobStateChangeEventBroadcaster.unregister(this);
         ContextInstanceStateChangeEventBroadcaster.unregister(this);

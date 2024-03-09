@@ -1037,6 +1037,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
         ContextInstanceSavedEventBroadcaster.register(this);
@@ -1046,6 +1047,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         this.ui = null;
 
         ContextTemplateEnableDisableEventBroadcaster.unregister(this);

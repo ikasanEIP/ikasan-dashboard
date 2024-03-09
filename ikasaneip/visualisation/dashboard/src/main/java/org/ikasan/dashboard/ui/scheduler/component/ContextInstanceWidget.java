@@ -1219,6 +1219,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
         this.refreshJobStatusWidget();
@@ -1229,6 +1230,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         this.ui = null;
 
         ContextInstanceStateChangeEventBroadcaster.unregister(this);

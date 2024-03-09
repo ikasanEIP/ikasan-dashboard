@@ -1039,12 +1039,14 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
         SchedulerJobStateChangeEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         SchedulerJobStateChangeEventBroadcaster.unregister(this);
     }
 

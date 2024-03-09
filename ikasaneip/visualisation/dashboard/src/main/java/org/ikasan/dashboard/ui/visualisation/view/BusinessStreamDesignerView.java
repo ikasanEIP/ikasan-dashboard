@@ -98,6 +98,8 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         this.setMargin(false);
         this.setSpacing(false);
 
+        this.getElement().getThemeList().remove("padding");
+
         this.setHeight("100%");
         this.setWidth("100%");
     }

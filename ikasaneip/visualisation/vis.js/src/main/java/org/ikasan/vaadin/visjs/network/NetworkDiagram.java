@@ -34,8 +34,8 @@ import java.util.stream.StreamSupport;
  */
 @SuppressWarnings("serial")
 @Tag("div")
-@StyleSheet("./de/wathoserver/vaadin/visjs/vis-network.min.css")
-@StyleSheet("./de/wathoserver/vaadin/visjs/networkDiagram.css")
+@StyleSheet("/frontend/de/wathoserver/vaadin/visjs/vis-network.min.css")
+@StyleSheet("/frontend/de/wathoserver/vaadin/visjs/networkDiagram.css")
 public class NetworkDiagram extends Component implements HasSize {
 
     Logger log = LoggerFactory.getLogger(NetworkDiagram.class);

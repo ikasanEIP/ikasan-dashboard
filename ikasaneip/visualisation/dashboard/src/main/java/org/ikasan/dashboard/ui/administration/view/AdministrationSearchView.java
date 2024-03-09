@@ -83,10 +83,4 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
             init();
         }
     }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-
-    }
 }

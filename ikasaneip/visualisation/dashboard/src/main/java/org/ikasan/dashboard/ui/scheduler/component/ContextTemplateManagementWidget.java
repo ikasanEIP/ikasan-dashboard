@@ -1230,12 +1230,14 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
         ContextTemplateSavedEventBroadcaster.register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         this.ui = null;
         ContextTemplateSavedEventBroadcaster.unregister(this);
     }

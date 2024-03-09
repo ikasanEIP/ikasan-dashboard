@@ -1074,6 +1074,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
         ContextTemplateSavedEventBroadcaster.register(this);
@@ -1082,6 +1083,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         this.ui = null;
 
         ContextTemplateSavedEventBroadcaster.unregister(this);

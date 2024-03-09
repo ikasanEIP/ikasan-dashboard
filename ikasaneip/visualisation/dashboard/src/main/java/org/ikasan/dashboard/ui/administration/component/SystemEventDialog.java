@@ -132,6 +132,7 @@ public class SystemEventDialog extends AbstractEntityViewDialog<SystemEvent>
     @Override
     protected void onAttach(AttachEvent attachEvent)
     {
+        super.onAttach(attachEvent);
         this.downloadButtonTooltip.attachToComponent(downloadButton);
     }
 }
