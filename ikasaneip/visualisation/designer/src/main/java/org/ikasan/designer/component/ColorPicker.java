@@ -10,7 +10,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 
 import java.util.UUID;
 
-@StyleSheet("./org/ikasan/color-picker/spectrum.css")
+@StyleSheet(" /frontend/org/ikasan/color-picker/spectrum.css")
 public class ColorPicker extends TextField {
 
     String identifier;

@@ -177,6 +177,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
         ContextInstanceStateChangeEventBroadcaster.register(this);
@@ -184,6 +185,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         this.ui = null;
 
         ContextInstanceStateChangeEventBroadcaster.unregister(this);

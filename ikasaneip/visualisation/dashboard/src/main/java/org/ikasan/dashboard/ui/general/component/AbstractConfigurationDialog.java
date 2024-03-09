@@ -623,6 +623,7 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
     @Override
     protected void onAttach(AttachEvent attachEvent)
     {
+        super.onAttach(attachEvent);
         if (downloadButton != null)
         {
             this.downloadButtonTooltip.attachToComponent(downloadButton);

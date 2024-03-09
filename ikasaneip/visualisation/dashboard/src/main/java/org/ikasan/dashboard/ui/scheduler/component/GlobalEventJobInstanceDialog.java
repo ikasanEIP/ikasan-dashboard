@@ -589,6 +589,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
         SchedulerJobStateChangeEventBroadcaster.register(this);
     }

@@ -167,6 +167,7 @@ public class SystemEventSearchForm extends VerticalLayout {
     @Override
     protected void onAttach(AttachEvent attachEvent)
     {
+        super.onAttach(attachEvent);
         this.searchButtonTooltip.attachToComponent(this.searchButton);
     }
 

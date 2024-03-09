@@ -202,6 +202,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
     @Override
     protected void onAttach(AttachEvent attachEvent)
     {
+        super.onAttach(attachEvent);
         this.newUserTooltip.attachToComponent(this.addNewUserButton);
     }
 }

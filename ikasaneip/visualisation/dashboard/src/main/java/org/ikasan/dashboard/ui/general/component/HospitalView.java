@@ -376,6 +376,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
     @Override
     protected void onAttach(AttachEvent attachEvent)
     {
+        super.onAttach(attachEvent);
         if(this.downloadButtonTooltip != null) {
             this.downloadButtonTooltip.attachToComponent(downloadButton);
         }

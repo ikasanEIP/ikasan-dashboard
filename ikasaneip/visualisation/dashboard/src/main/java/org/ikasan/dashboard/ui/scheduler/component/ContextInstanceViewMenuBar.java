@@ -157,6 +157,7 @@ public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstan
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
         ContextInstanceStateChangeEventBroadcaster.register(this);
@@ -165,6 +166,7 @@ public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstan
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         this.ui = null;
 
         ContextInstanceStateChangeEventBroadcaster.unregister(this);

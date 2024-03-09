@@ -31,8 +31,8 @@ import java.util.Map;
 
 
 @Tag("div")
-@StyleSheet("./org/ikasan/draw2d/designer.css")
-@StyleSheet("./org/ikasan/draw2d/spinner.css")
+@StyleSheet("/frontend/org/ikasan/draw2d/designer.css")
+@StyleSheet("/frontend/org/ikasan/draw2d/spinner.css")
 public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnterObserver {
 
     Logger logger = LoggerFactory.getLogger(DesignerCanvas.class);
