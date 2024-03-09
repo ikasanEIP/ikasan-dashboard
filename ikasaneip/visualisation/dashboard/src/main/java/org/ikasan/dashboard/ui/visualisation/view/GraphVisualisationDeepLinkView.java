@@ -75,11 +75,18 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
     private DateFormatter dateFormatter;
 
     public GraphVisualisationDeepLinkView(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService, ModuleControlService moduleControlRestService,
-                                          @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService, ConfigurationMetaDataService configurationMetadataService,
+                                          @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService,
+                                          @Qualifier("configurationMetadataService") ConfigurationMetaDataService configurationMetadataService,
                                           BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
-                                          SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService, HospitalAuditService hospitalAuditService,
-                                          ResubmissionRestServiceImpl resubmissionRestService, ReplayRestServiceImpl replayRestService, BatchInsert replayAuditService, MetaDataService metaDataApplicationRestService,
-                                          @Qualifier("moduleMetadataBatchInsert") BatchInsert<ModuleMetaData> moduleMetadataBatchInsert, TriggerService triggerRestService, DateFormatter dateFormatter)
+                                          SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
+                                          HospitalAuditService hospitalAuditService,
+                                          ResubmissionRestServiceImpl resubmissionRestService,
+                                          ReplayRestServiceImpl replayRestService,
+                                          @Qualifier("replayEventBatchInsert") BatchInsert replayAuditService,
+                                          MetaDataService metaDataApplicationRestService,
+                                          @Qualifier("moduleMetadataBatchInsert") BatchInsert<ModuleMetaData> moduleMetadataBatchInsert,
+                                          TriggerService triggerRestService,
+                                          DateFormatter dateFormatter)
     {
         this.solrSearchService = solrSearchService;
         this.moduleControlRestService = moduleControlRestService;

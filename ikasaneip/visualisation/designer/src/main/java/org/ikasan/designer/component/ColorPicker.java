@@ -21,9 +21,9 @@ public class ColorPicker extends TextField {
 
 
     private void init(){
-        UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery.js");
-        UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery-ui.js");
-        UI.getCurrent().getPage().addJavaScript("./org/ikasan/color-picker/spectrum.js");
+        UI.getCurrent().getPage().addJavaScript("/frontend/org/ikasan/draw2d/jquery.js");
+        UI.getCurrent().getPage().addJavaScript("/frontend/org/ikasan/draw2d/jquery-ui.js");
+        UI.getCurrent().getPage().addJavaScript("/frontend/org/ikasan/color-picker/spectrum.js");
         this.identifier = UUID.randomUUID().toString();
         this.setId("color-picker");
 

@@ -55,8 +55,8 @@ public class NetworkDiagram extends Component implements HasSize {
 
     public NetworkDiagram(final Options options) {
         super();
-        UI.getCurrent().getPage().addJavaScript("./de/wathoserver/vaadin/visjs/vis-patched.min.js");
-        UI.getCurrent().getPage().addJavaScript("./de/wathoserver/vaadin/visjs/networkDiagram-connector-flow.js");
+        UI.getCurrent().getPage().addJavaScript("/frontend/de/wathoserver/vaadin/visjs/vis-patched.min.js");
+        UI.getCurrent().getPage().addJavaScript("/frontend/de/wathoserver/vaadin/visjs/networkDiagram-connector-flow.js");
         // Dont transfer empty options.
         mapper.setSerializationInclusion(Include.NON_EMPTY);
         // Dont transfer getter and setter
