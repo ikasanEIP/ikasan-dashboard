@@ -200,6 +200,11 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.vaadin.addons.lipisak</groupId>
+            <artifactId>vaadin-slidetab</artifactId>
+        </dependency>
+
         <!-- Ikasan  dependencies -->
         <dependency>
             <groupId>org.ikasan</groupId>
@@ -439,10 +444,10 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>org.vaadin.erik</groupId>
-            <artifactId>slidetab</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.vaadin.erik</groupId>-->
+<!--            <artifactId>slidetab</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.vaadin.tabs</groupId>

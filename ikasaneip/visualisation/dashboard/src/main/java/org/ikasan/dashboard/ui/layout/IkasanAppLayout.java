@@ -78,6 +78,10 @@ public class IkasanAppLayout extends AppLayout {
     private SideNavItem businessStreamDesignerMenuItem;
     private SideNavItem quartzSchedulerMenuItem;
 
+    private HorizontalLayout bannerLayout = new HorizontalLayout();
+
+    boolean bannerAdded = false;
+
     private Button swaggerUI;
 
     public IkasanAppLayout() {
@@ -87,6 +91,9 @@ public class IkasanAppLayout extends AppLayout {
         Button logout = new Button(VaadinIcon.SIGN_OUT.create());
         logout.getElement().setProperty("title", "Log Out");
         logout.setId("logoutButton");
+
+        logout.getElement().getStyle().set("position", "absolute");
+        logout.getElement().getStyle().set("right", "20px");
 
         logout.addClickListener((ComponentEventListener<ClickEvent<Button>>) divClickEvent ->
         {
@@ -106,13 +113,19 @@ public class IkasanAppLayout extends AppLayout {
         this.swaggerUI.getElement().setProperty("title", "Swagger UI");
         this.swaggerUI.addClickListener(event -> UI.getCurrent().getPage().open("/swagger-ui.html", "_blank"));
 
+        this.swaggerUI.getElement().getStyle().set("position", "absolute");
+        this.swaggerUI.getElement().getStyle().set("right", "70px");
+
         Button aboutButton = new Button(VaadinIcon.QUESTION.create());
         aboutButton.setId("aboutButton");
         aboutButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             AboutIkasanDialog aboutIkasanDialog = new AboutIkasanDialog();
             aboutIkasanDialog.open();
         });
-        var header = new HorizontalLayout(new DrawerToggle(), ikasan, aboutButton, swaggerUI, logout);
+        aboutButton.getElement().getStyle().set("position", "absolute");
+        aboutButton.getElement().getStyle().set("right", "120px");
+
+        var header = new HorizontalLayout(new DrawerToggle(), ikasan, bannerLayout, aboutButton, swaggerUI, logout);
 
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.setWidthFull();
@@ -201,18 +214,21 @@ public class IkasanAppLayout extends AppLayout {
 
     @Override
     public void onAttach(AttachEvent attachEvent) {
-        if (this.bannerTextMessage != null && !this.bannerTextMessage.isEmpty()) {
+        super.onAttach(attachEvent);
+
+        if (this.bannerTextMessage != null && !this.bannerTextMessage.isEmpty() && !bannerAdded) {
             Span bannerText = new Span(bannerTextMessage);
             bannerText.getElement().getStyle().set("font-size", "30pt");
             bannerText.getElement().getStyle().set("color", bannerTextColor);
 
-            HorizontalLayout bannerLayout = new HorizontalLayout(bannerText);
             bannerLayout.getElement().getStyle().set("position", "absolute");
             bannerLayout.getElement().getStyle().set("left", "50%");
             bannerLayout.getElement().getStyle().set("transform", "translate(-50%)");
+            bannerLayout.add(bannerText);
+
+            bannerAdded = true;
         }
 
-        super.onAttach(attachEvent);
         this.dashboardMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.DASHBOARD_READ, SecurityConstants.DASHBOARD_WRITE,
             SecurityConstants.DASHBOARD_ADMIN));
 

@@ -1,10 +1,7 @@
 package org.ikasan.dashboard.ui.search.component;
 
 import com.vaadin.componentfactory.Tooltip;
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -19,9 +16,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,8 +29,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class SearchForm extends VerticalLayout {
-    private Button searchButton;
-    private Tooltip searchButtonTooltip;
+    private Icon searchButton;
     private Image wiretapImage;
     private Tooltip wiretapButtonTooltip;
     private Image hospitalImage;
@@ -117,31 +111,26 @@ public class SearchForm extends VerticalLayout {
         searchTextLayout.setMargin(true);
         searchTextLayout.add(searchText);
 
-        this.searchButton = new Button(getTranslation("button.search", UI.getCurrent().getLocale()), VaadinIcon.SEARCH.create());
-        this.searchButton.setIconAfterText(true);
+        this.searchButton = IconDecorator.decorate(VaadinIcon.SEARCH.create(), getTranslation("tooltip.search-all-event-types"
+            , UI.getCurrent().getLocale()), "28pt", IkasanColours.IKASAN_ORANGE);
+
         this.searchButton.setId("searchFormSearchButton");
 
         addButtonSearchListener(this.searchButton);
 
-        this.searchButtonTooltip = TooltipHelper.getTooltipForComponentBottom(searchButton, getTranslation("tooltip.search-all-event-types"
-            , UI.getCurrent().getLocale()));
-
-        searchTextLayout.add(this.searchButton, this.searchButtonTooltip);
+        searchTextLayout.add(this.searchButton);
         searchTextLayout.setVerticalComponentAlignment(Alignment.CENTER, searchButton);
 
-        Icon helpIcon = new Icon(VaadinIcon.QUESTION_CIRCLE);
+        Icon helpIcon = IconDecorator.decorate(VaadinIcon.QUESTION_CIRCLE.create(), "", "18px", IkasanColours.IKASAN_ORANGE);new Icon(VaadinIcon.QUESTION_CIRCLE);
         helpIcon.setSize("18px");
-        Button helpButton = new Button("Help", helpIcon);
-        helpButton.setId("helpButton");
-        helpButton.setIconAfterText(false);
-        helpButton.setHeight("32px");
+        helpIcon.setId("helpButton");
 
-        helpButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+        helpIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) buttonClickEvent -> {
             IkasanSearchHelpDialog ikasanSearchHelpDialog = new IkasanSearchHelpDialog();
             ikasanSearchHelpDialog.open();
         });
 
-        searchLayout.add(dateTimePickersLayout, searchTextLayout, helpButton);
+        searchLayout.add(dateTimePickersLayout, searchTextLayout, helpIcon);
 
         this.wiretapImage = new Image("frontend/images/wiretap-service.png", "");
         this.wiretapImage.setHeight("40px");
@@ -294,9 +283,9 @@ public class SearchForm extends VerticalLayout {
      *
      * @param button
      */
-    private void addButtonSearchListener(Button button)
+    private void addButtonSearchListener(ClickNotifier button)
     {
-        button.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+        button.addClickListener(buttonClickEvent ->
         {
             Binder<SearchTerm> searchTextBinder = new Binder<>(SearchTerm.class);
             SearchTerm searchTerm = new SearchTerm();
@@ -352,9 +341,8 @@ public class SearchForm extends VerticalLayout {
     }
 
     @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        this.searchButtonTooltip.attachToComponent(this.searchButton);
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.wiretapButtonTooltip.attachToComponent(this.wiretapCheckButton);
         this.errorButtonTooltip.attachToComponent(this.errorCheckButton);
         this.hospitalButtonTooltip.attachToComponent(this.hospitalCheckButton);
