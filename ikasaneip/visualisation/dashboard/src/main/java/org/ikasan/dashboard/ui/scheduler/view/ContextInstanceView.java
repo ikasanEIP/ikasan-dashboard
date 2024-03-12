@@ -46,7 +46,6 @@ import java.util.Set;
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @PermitAll
-@PreserveOnRefresh
 public class ContextInstanceView extends VerticalLayout implements BeforeEnterObserver, HasUrlParameter<String>
 {
     Logger logger = LoggerFactory.getLogger(ContextInstanceView.class);

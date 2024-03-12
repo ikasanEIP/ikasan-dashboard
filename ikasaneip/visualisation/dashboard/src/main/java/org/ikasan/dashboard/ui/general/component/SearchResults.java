@@ -60,12 +60,9 @@ public class SearchResults extends Div {
     private SolrSearchFilteringGrid searchResultsGrid;
     private Label resultsLabel = new Label();
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
-
     private HorizontalLayout buttonLayout = new HorizontalLayout();
-
     private Registration replayEventRegistration;
     private ReplayEventSubmissionListener replayEventSubmissionListener;
-
     private Registration resubmitHospitalEventRegistration;
     private ResubmitHospitalEventSubmissionListener resubmitHospitalEventSubmissionListener;
 

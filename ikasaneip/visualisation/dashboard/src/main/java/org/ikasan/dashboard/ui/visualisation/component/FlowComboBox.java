@@ -36,6 +36,7 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
     @Override
     protected void onAttach(AttachEvent attachEvent)
     {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
         FlowStateBroadcaster.register(this);
         CacheStateBroadcaster.register(this);
@@ -44,6 +45,7 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
     @Override
     protected void onDetach(DetachEvent detachEvent)
     {
+        super.onDetach(detachEvent);
         FlowStateBroadcaster.unregister(this);
         CacheStateBroadcaster.unregister(this);
     }

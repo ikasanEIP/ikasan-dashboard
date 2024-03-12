@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.visualisation.view;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.shared.Registration;
@@ -36,7 +37,6 @@ import javax.annotation.security.PermitAll;
 @PageTitle("Ikasan - Visualisation")
 @Component
 @PermitAll
-@PreserveOnRefresh
 public class GraphView extends VerticalLayout implements BeforeEnterObserver
 {
     Logger logger = LoggerFactory.getLogger(GraphView.class);

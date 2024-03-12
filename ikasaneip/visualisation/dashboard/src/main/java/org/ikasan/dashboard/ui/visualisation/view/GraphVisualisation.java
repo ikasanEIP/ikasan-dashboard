@@ -2,17 +2,19 @@ package org.ikasan.dashboard.ui.visualisation.view;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lipisak.vaadin.slidetab.SlideMode;
+import com.lipisak.vaadin.slidetab.SlideTab;
+import com.lipisak.vaadin.slidetab.SlideTabBuilder;
+import com.lipisak.vaadin.slidetab.SlideTabPosition;
 import com.vaadin.componentfactory.Tooltip;
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -53,11 +55,13 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ReflectionUtils;
 import org.vaadin.olli.FileDownloadWrapper;
 import org.vaadin.tabs.PagedTabs;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -84,10 +88,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
     private MetaDataService metaDataApplicationRestService;
     private BatchInsert<ModuleMetaData> moduleMetadataBatchInsert;
     private String dynamicImagePath;
-
     private SearchResults searchResults;
-
-
     private ModuleFilteringGrid modulesGrid;
     private BusinessStreamFilteringGrid businessStreamGrid;
     private GraphViewBusinessStreamVisualisation businessStreamVisualisation;
@@ -96,8 +97,8 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
 
     private boolean initialised = false;
 
-//    private SlideTab toolSlider;
-//    private SlideTab searchSlider;
+    private SlideTab toolSlider;
+    private SlideTab searchSlider;
     private Button uploadBusinssStreamButton;
     private Tooltip uploadBusinssStreamButtonTooltip;
 
@@ -196,7 +197,8 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                 e.printStackTrace();
             }
 
-            Button downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
+            Icon downloadButton = VaadinIcon.DOWNLOAD.create();
+            downloadButton.setSize("12pt");
             byte[] finalMetaData = metaData;
             StreamResource streamResource = new StreamResource(moduleMetaData.getName().concat(".json")
                 , () -> new ByteArrayInputStream(finalMetaData));
@@ -212,8 +214,9 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         })).setWidth("30px");
         modulesGrid.addColumn(new ComponentRenderer<>(moduleMetaData->
         {
-            Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
-            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+            Icon deleteButton = VaadinIcon.TRASH.create();
+            deleteButton.setSize("12pt");
+            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Icon>>) buttonClickEvent ->
             {
                 this.moduleMetadataService.deleteById(moduleMetaData.getName());
                 this.populateModulesGrid();
@@ -234,10 +237,10 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             {
                 createModuleVisualisation(doubleClickEvent.getItem());
 
-//                if(this.toolSlider.isExpanded())
-//                {
-//                    this.toolSlider.collapse();
-//                }
+                if(this.toolSlider.isExpanded())
+                {
+                    this.toolSlider.collapse();
+                }
 
                 this.businessStreamVisualisation = null;
             });
@@ -268,8 +271,9 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             .setFlexGrow(32);
         businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->
         {
-            Button editButton = new TableButton(VaadinIcon.EDIT.create());
-            editButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+            Icon editButton = VaadinIcon.EDIT.create();
+            editButton.setSize("12pt");
+            editButton.addClickListener((ComponentEventListener<ClickEvent<Icon>>) buttonClickEvent ->
             {
                 BusinessStreamUploadDialog uploadDialog = new  BusinessStreamUploadDialog(businessStreamMetaData, this.businessStreamMetaDataService);
                 uploadDialog.open();
@@ -288,7 +292,8 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         })).setWidth("30px");
         businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->
         {
-            Button downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
+            Icon downloadButton = VaadinIcon.DOWNLOAD.create();
+            downloadButton.setSize("12pt");
             StreamResource streamResource = new StreamResource(businessStreamMetaData.getName().concat(".json")
                 , () -> new ByteArrayInputStream(businessStreamMetaData.getJson().getBytes()));
 
@@ -303,8 +308,9 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         })).setWidth("30px");
         businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->
         {
-            Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
-            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+            Icon deleteButton = VaadinIcon.TRASH.create();
+            deleteButton.setSize("12pt");
+            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Icon>>) buttonClickEvent ->
             {
                 this.businessStreamMetaDataService.delete(businessStreamMetaData.getId());
                 this.populateBusinessStreamGrid();
@@ -334,10 +340,10 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                 NotificationHelper.showErrorNotification(getTranslation("error.could-not-open-business-stream", UI.getCurrent().getLocale()));
             }
 
-//            if(this.toolSlider.isExpanded())
-//            {
-//                this.toolSlider.collapse();
-//            }
+            if(this.toolSlider.isExpanded())
+            {
+                this.toolSlider.collapse();
+            }
         });
 
         HeaderRow hr = this.businessStreamGrid.appendHeaderRow();
@@ -483,6 +489,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         PagedTabs tabs = new PagedTabs();
         tabs.getElement().getThemeList().remove("padding");
         tabs.setSizeFull();
+        tabs.setWidth("680px");
 
         VerticalLayout modulesLayout = new VerticalLayout();
         modulesLayout.getThemeList().remove("padding");
@@ -527,7 +534,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
 
         Div card = new Div();
         card.setSizeFull();
-        card.setWidth("670px");
+        card.setWidth("700px");
         card.setHeight("100%");
         card.getStyle().set("background", "white");
         card.getStyle().set("position" , "absolute");
@@ -535,18 +542,23 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         card.add(transparent, tabs);
 
 
-        // todo make use vaadin split screen
-//        toolSlider = new SlideTabBuilder(card)
-//            .expanded(true)
-//            .mode(SlideMode.RIGHT)
-//            .caption("Tools")
-//            .tabPosition(SlideTabPosition.MIDDLE)
-//            .fixedContentSize(697)
-//            .zIndex(1)
-//            .flowInContent(true)
-//            .build();
-//
-//        super.add(toolSlider);
+        toolSlider = new SlideTabBuilder(card)
+            .expanded(true)
+            .mode(SlideMode.RIGHT)
+            .caption("Tools")
+            .tabPosition(SlideTabPosition.MIDDLE)
+            .fixedContentSize(700)
+            .zIndex(1)
+            .flowInContent(true)
+            .build();
+
+        Field field = ReflectionUtils.findField(toolSlider.getClass(), "tabComponent", Div.class);
+        ReflectionUtils.makeAccessible(field);
+
+        Div tab = (Div)ReflectionUtils.getField(field, toolSlider);
+        tab.getStyle().set("padding-left", "20px");
+        tab.getStyle().set("padding-right", "20px");
+        super.add(toolSlider);
     }
 
     /**
@@ -565,19 +577,28 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         wrapperDiv.setMargin(false);
         wrapperDiv.setSpacing(false);
 
+        this.searchResults.setWidth("98%");
+        this.searchResults.getStyle().set("padding-left", "20px");
+
         wrapperDiv.add(searchForm, this.searchResults);
 
-        // todo make use vaadin split screen
-//        searchSlider = new SlideTabBuilder(wrapperDiv)
-//            .expanded(false)
-//            .mode(SlideMode.BOTTOM)
-//            .caption("Search")
-//            .tabPosition(SlideTabPosition.MIDDLE)
-//            .zIndex(1)
-//            .flowInContent(true)
-//            .build();
-//
-//        super.add(searchSlider);
+        searchSlider = new SlideTabBuilder(wrapperDiv)
+            .expanded(false)
+            .mode(SlideMode.BOTTOM)
+            .caption("  Search  ")
+            .tabPosition(SlideTabPosition.MIDDLE)
+            .zIndex(1)
+            .flowInContent(true)
+            .build();
+
+        Field field = ReflectionUtils.findField(searchSlider.getClass(), "tabComponent", Div.class);
+        ReflectionUtils.makeAccessible(field);
+
+        Div tab = (Div)ReflectionUtils.getField(field, searchSlider);
+        tab.getStyle().set("padding-left", "20px");
+        tab.getStyle().set("padding-right", "20px");
+
+        super.add(searchSlider);
     }
 
     @Override
