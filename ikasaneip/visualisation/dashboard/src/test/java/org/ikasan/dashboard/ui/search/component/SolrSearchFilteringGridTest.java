@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.search.component;
 import com.github.mvysny.kaributesting.v10.GridKt;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
@@ -68,7 +69,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
         Assertions.assertNotNull(solrSearchFilteringGrid);
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertNotNull(ReflectionTestUtils.getField(solrSearchFilteringGrid, "filteredDataProvider"));
     }
@@ -104,8 +105,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
         Assertions.assertNotNull(solrSearchFilteringGrid);
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertNotNull(ReflectionTestUtils.getField(solrSearchFilteringGrid, "filteredDataProvider"));
 
@@ -114,7 +115,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -156,8 +157,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -202,8 +203,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -246,8 +247,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -277,8 +278,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -310,8 +311,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -343,8 +344,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -376,8 +377,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -420,8 +421,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -451,8 +452,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -484,8 +485,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -517,8 +518,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -550,8 +551,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -595,8 +596,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -627,8 +628,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -661,8 +662,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -695,8 +696,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -729,8 +730,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -774,8 +775,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -807,8 +808,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -842,8 +843,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -877,8 +878,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -912,8 +913,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -956,8 +957,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -988,8 +989,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1022,8 +1023,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1056,8 +1057,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1090,8 +1091,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1134,8 +1135,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1166,8 +1167,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1200,8 +1201,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1234,8 +1235,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1268,8 +1269,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1313,8 +1314,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1346,8 +1347,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1381,8 +1382,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1416,8 +1417,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1451,8 +1452,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1496,8 +1497,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1529,8 +1530,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1564,8 +1565,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1599,8 +1600,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1634,8 +1635,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1678,8 +1679,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1710,8 +1711,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1744,8 +1745,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1778,8 +1779,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1812,8 +1813,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1856,8 +1857,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1888,8 +1889,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1922,8 +1923,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1956,8 +1957,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -1990,8 +1991,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2035,8 +2036,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2068,8 +2069,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2103,8 +2104,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2138,8 +2139,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2173,8 +2174,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2218,8 +2219,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2251,8 +2252,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2286,8 +2287,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2321,8 +2322,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2356,8 +2357,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2400,8 +2401,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2432,8 +2433,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2466,8 +2467,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2500,8 +2501,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2534,8 +2535,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2578,8 +2579,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2610,8 +2611,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2644,8 +2645,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2678,8 +2679,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2712,8 +2713,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2757,8 +2758,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2790,8 +2791,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2825,8 +2826,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2860,8 +2861,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2895,8 +2896,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2940,8 +2941,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -2973,8 +2974,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3008,8 +3009,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3043,8 +3044,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3079,8 +3080,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3124,8 +3125,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3157,8 +3158,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3198,8 +3199,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3239,8 +3240,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3280,8 +3281,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3326,8 +3327,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3359,8 +3360,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3400,8 +3401,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3441,8 +3442,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3482,8 +3483,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3528,8 +3529,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3562,8 +3563,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3608,8 +3609,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3642,8 +3643,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
         eventFilter.setValue("test");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3685,8 +3686,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.TRUE);
         ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3715,8 +3716,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.TRUE);
         ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -3745,8 +3746,8 @@ public class SolrSearchFilteringGridTest extends UITest {
         ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
         ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(0, solrSearchFilteringGrid.getResultSize());
     }
@@ -3778,8 +3779,8 @@ public class SolrSearchFilteringGridTest extends UITest {
 
         GridKt.sort(solrSearchFilteringGrid, new QuerySortOrder("moduleName", SortDirection.ASCENDING));
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(10, solrSearchFilteringGrid.getResultSize());
     }
