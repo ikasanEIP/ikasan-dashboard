@@ -5,6 +5,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.UITest;
@@ -107,15 +108,15 @@ public class SearchResultTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(50, solrSearchFilteringGrid.getResultSize());
 
         TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
         eventFilter.setValue("event1");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
     }
@@ -136,8 +137,8 @@ public class SearchResultTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
         Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
@@ -162,8 +163,8 @@ public class SearchResultTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         GridKt._doubleClickItem(solrSearchFilteringGrid, 0);
 
@@ -198,8 +199,8 @@ public class SearchResultTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
         Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
@@ -224,8 +225,8 @@ public class SearchResultTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         GridKt._doubleClickItem(solrSearchFilteringGrid, 0);
 
@@ -266,8 +267,8 @@ public class SearchResultTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
         Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
@@ -295,8 +296,8 @@ public class SearchResultTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         GridKt._doubleClickItem(solrSearchFilteringGrid, 0);
 
@@ -333,8 +334,8 @@ public class SearchResultTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         IkasanSolrDocument row = GridKt._get(solrSearchFilteringGrid, 0);
         Grid.Column<IkasanSolrDocument> column = GridKt._getColumnByKey(solrSearchFilteringGrid, "entityImage");
@@ -359,8 +360,8 @@ public class SearchResultTest extends UITest {
         SolrSearchFilteringGrid solrSearchFilteringGrid = (SolrSearchFilteringGrid) ReflectionTestUtils
             .getField(searchResults, "searchResultsGrid");
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         GridKt._doubleClickItem(solrSearchFilteringGrid, 0);
 
@@ -398,8 +399,8 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Button selectAllButton = _get(Button.class, spec -> spec.withId("selectAllButton"));
 
@@ -435,8 +436,8 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Button selectAllButton = _get(Button.class, spec -> spec.withId("selectAllButton"));
 
@@ -472,8 +473,8 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assertions.assertEquals(2, ((HorizontalLayout)ReflectionTestUtils
             .getField(searchResults, "buttonLayout")).getComponentCount());
@@ -500,8 +501,8 @@ public class SearchResultTest extends UITest {
         SearchResults searchResults = _get(SearchResults.class);
         Assertions.assertNotNull(searchResults);
 
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
-        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Icon.class, spec -> spec.withId("searchFormSearchButton")));
 
         Assertions.assertEquals(2, ((HorizontalLayout)ReflectionTestUtils
             .getField(searchResults, "buttonLayout")).getComponentCount());
