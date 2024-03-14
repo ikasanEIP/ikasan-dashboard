@@ -274,7 +274,7 @@
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.jmock.imposters>2.12.0</version.jmock.imposters>
         <version.org.slf4j>2.0.12</version.org.slf4j>
-        <version.junit>4.12</version.junit>
+        <version.junit>4.13.2</version.junit>
         <version.org.awaitility>4.0.2</version.org.awaitility>
         <version.org.jmock>2.12.0</version.org.jmock>
         <version.org.assertj>3.13.2</version.org.assertj>
@@ -345,7 +345,7 @@
         <version.org.vaadin.tabs>1.2.0</version.org.vaadin.tabs>
         <version.com.vaadin.componentfactory>1.2.2</version.com.vaadin.componentfactory>
         <version.org.vaadin.olli>7.0.0</version.org.vaadin.olli>
-        <version.org.vaadin.erik>4.0.1</version.org.vaadin.erik>
+        <version.org.vaadin.slidetab>1.0.3</version.org.vaadin.slidetab>
         <version.kotlin.stdlib.jdk8>1.7.21</version.kotlin.stdlib.jdk8>
         <version.org.jetbrains.annotations>22.0.0</version.org.jetbrains.annotations>
         <version.finbugs>1.3.9</version.finbugs>
@@ -361,7 +361,7 @@
         <version.ace.editor>2.1.1</version.ace.editor>
         <version.thymeleaf>3.1.2.RELEASE</version.thymeleaf>
         <version.jacoco>0.8.1</version.jacoco>
-        <version.junit.platform.commons>1.7.0</version.junit.platform.commons>
+        <version.junit.platform.commons>1.10.2</version.junit.platform.commons>
         <version.apiguardian.api>1.1.0</version.apiguardian.api>
         <version.opentest4j>1.2.0</version.opentest4j>
         <version.app.layout.addon>4.0.0</version.app.layout.addon>
@@ -2050,16 +2050,11 @@
                 <version>${version.org.jetbrains.annotations}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.vaadin.erik</groupId>
-                <artifactId>slidetab</artifactId>
-                <version>${version.org.vaadin.erik}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.vaadin.addons.lipisak</groupId>
                 <artifactId>vaadin-slidetab</artifactId>
-                <version>1.0.3</version>
+                <version>${version.org.vaadin.slidetab}</version>
             </dependency>
 
             <dependency>
@@ -2117,9 +2112,29 @@
                 <classifier>runtime</classifier>
             </dependency>
 
+<!--            <dependency>-->
+<!--                <groupId>org.junit</groupId>-->
+<!--                <artifactId>junit-bom</artifactId>-->
+<!--                <version>${version.org.junit.jupiter}</version>-->
+<!--                <type>pom</type>-->
+<!--                <scope>import</scope>-->
+<!--            </dependency>-->
+
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
+                <version>${version.org.junit.jupiter}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${version.org.junit.jupiter}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
                 <version>${version.org.junit.jupiter}</version>
             </dependency>
 

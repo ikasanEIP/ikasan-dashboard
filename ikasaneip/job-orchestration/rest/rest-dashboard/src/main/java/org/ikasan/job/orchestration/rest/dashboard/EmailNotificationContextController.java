@@ -67,9 +67,9 @@ public class EmailNotificationContextController {
 
     @RequestMapping(method = RequestMethod.GET, path = {"/emailNotificationContext/get/{contextName}/{limit}/{offset}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getEmailNotificationByContextName(@PathVariable String contextName,
-                                                               @PathVariable int limit,
-                                                               @PathVariable int offset) {
+    public ResponseEntity getEmailNotificationByContextName(@PathVariable(value = "contextName") String contextName,
+                                                               @PathVariable(value = "limit") int limit,
+                                                               @PathVariable(value = "offset") int offset) {
         try {
             SearchResults<EmailNotificationContextRecord> notificationResults = emailNotificationContextService.findByContextName(contextName, limit, offset);
 
@@ -91,7 +91,7 @@ public class EmailNotificationContextController {
     @RequestMapping(method = RequestMethod.DELETE,
         value = "/emailNotificationContext/delete/{contextName}")
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity deleteByContextName(@PathVariable("contextName") String contextName) {
+    public ResponseEntity deleteByContextName(@PathVariable(value = "contextName") String contextName) {
         try {
             emailNotificationContextService.deleteByContextName(contextName);
             return new ResponseEntity(HttpStatus.OK);

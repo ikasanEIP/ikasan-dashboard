@@ -156,9 +156,9 @@ public class EmailNotificationDetailsController
 
     @RequestMapping(method = RequestMethod.GET, path = {"/emailNotificationDetails/get/{contextName}/{limit}/{offset}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getAllEmailNotificationByContextName(@PathVariable String contextName,
-                                                               @PathVariable int limit,
-                                                               @PathVariable int offset) {
+    public ResponseEntity getAllEmailNotificationByContextName(@PathVariable(value = "contextName") String contextName,
+                                                               @PathVariable(value = "limit") int limit,
+                                                               @PathVariable(value = "offset") int offset) {
         SearchResults<EmailNotificationDetailsRecord> notificationResults = emailNotificationDetailsService.findByContextName(contextName, limit, offset);
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -178,9 +178,9 @@ public class EmailNotificationDetailsController
 
     @RequestMapping(method = RequestMethod.GET, path = {"/emailNotificationDetails/getById/{jobName}/{childContextName}/{monitorType}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getEmailNotificationByJobNameAndMonitorType(@PathVariable String jobName,
-                                                                      @PathVariable String childContextName,
-                                                                      @PathVariable String monitorType) {
+    public ResponseEntity getEmailNotificationByJobNameAndMonitorType(@PathVariable(value = "jobName") String jobName,
+                                                                      @PathVariable(value = "childContextName") String childContextName,
+                                                                      @PathVariable(value = "monitorType") String monitorType) {
         EmailNotificationDetailsRecord notificationResults = emailNotificationDetailsService.findByJobNameAndMonitorType(jobName, childContextName, monitorType);
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -201,7 +201,7 @@ public class EmailNotificationDetailsController
     @RequestMapping(method = RequestMethod.DELETE,
         value = "/emailNotificationDetails/deleteByContextName/{contextName}")
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity deleteByContextName(@PathVariable("contextName") String contextName) {
+    public ResponseEntity deleteByContextName(@PathVariable(value = "contextName") String contextName) {
         try {
             emailNotificationDetailsService.deleteByContextName(contextName);
             return new ResponseEntity(HttpStatus.OK);
@@ -216,9 +216,9 @@ public class EmailNotificationDetailsController
     @RequestMapping(method = RequestMethod.DELETE,
         value = "/emailNotificationDetails/deleteById/{jobName}/{childContextName}/{monitorType}")
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity deleteByJobNameAndMonitorType(@PathVariable String jobName,
-                                                        @PathVariable String childContextName,
-                                                        @PathVariable String monitorType) {
+    public ResponseEntity deleteByJobNameAndMonitorType(@PathVariable(value = "jobName") String jobName,
+                                                        @PathVariable(value = "childContextName") String childContextName,
+                                                        @PathVariable(value = "monitorType") String monitorType) {
         try {
             emailNotificationDetailsService.deleteByJobNameAndMonitorType(jobName, childContextName, monitorType);
             return new ResponseEntity(HttpStatus.OK);
