@@ -89,7 +89,7 @@ public class ContextExportControl {
      */
     @RequestMapping(method = RequestMethod.GET, path = {"/{contextName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity<StreamingResponseBody> getContextExport(@PathVariable String contextName) {
+    public ResponseEntity<StreamingResponseBody> getContextExport(@PathVariable(value = "contextName") String contextName) {
 
         LOG.info("Start creating export for Context {}", contextName);
         try {
@@ -152,7 +152,7 @@ public class ContextExportControl {
      */
     @RequestMapping(method = RequestMethod.GET, path = {"/tokens/{contextName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity<StreamingResponseBody> getContextExportWithTokens(@PathVariable String contextName) {
+    public ResponseEntity<StreamingResponseBody> getContextExportWithTokens(@PathVariable(value = "contextName") String contextName) {
 
         LOG.info("Start creating export for Context {}", contextName);
         try {

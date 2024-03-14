@@ -72,7 +72,7 @@ public class ContextResetController {
      */
     @RequestMapping(method = RequestMethod.PUT, path = {"/rest/context/reset/{contextName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity resetContextByName(@PathVariable String contextName) {
+    public ResponseEntity resetContextByName(@PathVariable(value = "contextName") String contextName) {
         try {
             resetService.resetContext(contextName, false);
         } catch (Exception e) {
@@ -93,7 +93,7 @@ public class ContextResetController {
      */
     @RequestMapping(method = RequestMethod.PUT, path = {"/rest/instance/reset/{contextInstanceId}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity resetContextInstance(@PathVariable String contextInstanceId) {
+    public ResponseEntity resetContextInstance(@PathVariable(value = "contextInstanceId") String contextInstanceId) {
         try {
             resetService.resetContext(contextInstanceId, false);
         } catch (Exception e) {

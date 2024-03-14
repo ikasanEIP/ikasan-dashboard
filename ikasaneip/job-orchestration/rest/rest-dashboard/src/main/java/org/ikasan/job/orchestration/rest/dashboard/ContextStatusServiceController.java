@@ -78,9 +78,9 @@ public class ContextStatusServiceController {
 
     @RequestMapping(method = RequestMethod.GET, path = {"/{instanceName}/{contextName}", "/{instanceName}/{contextName}/{jobIdentifier}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getContextStatusForJob(@PathVariable String instanceName,
-                                                 @PathVariable String contextName,
-                                                 @PathVariable(required = false) String jobIdentifier) {
+    public ResponseEntity getContextStatusForJob(@PathVariable(value = "instanceName") String instanceName,
+                                                 @PathVariable(value = "contextName") String contextName,
+                                                 @PathVariable(value = "jobIdentifier", required = false) String jobIdentifier) {
         String contextNameStatus;
 
         try {
@@ -107,9 +107,9 @@ public class ContextStatusServiceController {
 
     @RequestMapping(method = RequestMethod.GET, path = {"/json/{instanceName}/{contextName}", "/json/{instanceName}/{contextName}/{jobName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getJsonContextStatusForJob(@PathVariable String instanceName,
-                                                 @PathVariable String contextName,
-                                                 @PathVariable(required = false) String jobName) {
+    public ResponseEntity getJsonContextStatusForJob(@PathVariable(value = "instanceName") String instanceName,
+                                                 @PathVariable(value = "contextName") String contextName,
+                                                 @PathVariable(value = "jobName", required = false) String jobName) {
         String contextStatus;
 
         try {
@@ -170,7 +170,7 @@ public class ContextStatusServiceController {
         path = {"/json/jobStatus", "/json/jobStatus/{contextName}"},
         produces = {MediaType.APPLICATION_JSON_VALUE})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getJsonContextJobStatus(@PathVariable(required = false) String contextName,
+    public ResponseEntity getJsonContextJobStatus(@PathVariable(value = "contextName", required = false) String contextName,
                                                   @RequestParam(value = "instanceStatus", required = false) String instanceStatus) {
 
         // Work out what needs to be put into the context machine map
