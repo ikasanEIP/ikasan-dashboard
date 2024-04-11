@@ -306,7 +306,7 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         ContextMachine contextMachine = new ContextMachine(new ContextTemplateImpl(), contextInstance
             , this.scheduledContextInstanceService, new HashMap<>(), new HashMap<>(), new HashMap<>()
-            , "this.queueDir", new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService
+            , "this.queueDir", new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , contextInstancePublicationService);
         ContextMachineCache.instance().put(contextMachine);

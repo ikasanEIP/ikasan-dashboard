@@ -178,7 +178,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
                 jobLockCache.addLocks(contextTemplate.getAllNestedJobLocks());
 
                 ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService, globalEventJobMap
-                    , quartzScheduleDrivenJobInstanceMap, internalEventDrivenJobMap, this.queueDir, agents, jobLockCache, this.contextParametersInstanceService, this.scheduledContextService
+                    , quartzScheduleDrivenJobInstanceMap, internalEventDrivenJobMap, this.queueDir, agents, this.moduleMetaDataService, jobLockCache, this.contextParametersInstanceService, this.scheduledContextService
                     , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
                 contextMachine.init();
 

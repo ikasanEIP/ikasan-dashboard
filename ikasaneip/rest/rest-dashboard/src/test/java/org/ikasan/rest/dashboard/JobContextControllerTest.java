@@ -10,6 +10,7 @@ import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.rest.dashboard.model.metadata.module.ModuleMetaDataImpl;
 import org.ikasan.rest.dashboard.util.TestContextParametersInstanceService;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -52,7 +53,7 @@ import static org.junit.Assert.assertEquals;
         "/substitute-components.xml"
     }
 )
-public class JobContextControllerTest extends  AbstractRestMvcTest {
+public class JobContextControllerTest extends AbstractRestMvcTest {
 
     protected MockMvc mvc;
     @Autowired
@@ -61,6 +62,8 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
     TestContextParametersInstanceService contextParametersInstanceService;
     @MockBean
     private ScheduledContextService scheduledContextService;
+    @MockBean
+    private ModuleMetaDataService moduleMetadataService;
     @Mock
     private SchedulerJobInstanceService schedulerJobInstanceService;
     @Mock
@@ -113,10 +116,10 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
 
 
         ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null, null, null
-            ,null,AGENTS_MAP,null, null, this.scheduledContextService, this.schedulerJobInstanceService
+            , null, AGENTS_MAP, moduleMetadataService, null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null, null, null
-            ,null,AGENTS_MAP,null, null, this.scheduledContextService, this.schedulerJobInstanceService
+            , null, AGENTS_MAP, moduleMetadataService, null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
         ContextMachineCache.instance().put(contextMachine1);
