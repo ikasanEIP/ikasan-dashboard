@@ -1,11 +1,13 @@
 package org.ikasan.job.orchestration.core.machine;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
@@ -30,11 +32,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     private List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners;
     private ExecutorService executor;
     private Map<String, ModuleMetaData> agents;
+    private ModuleMetaDataService moduleMetaDataService;
     private JobLockCache jobLockCache;
     private ContextParametersInstanceService contextParametersInstanceService;
 
-    public JobLogicMachine(Map<String, ModuleMetaData> agents, JobLockCache jobLockCache, ContextParametersInstanceService contextParametersInstanceService) {
+    public JobLogicMachine(Map<String, ModuleMetaData> agents, ModuleMetaDataService moduleMetaDataService, JobLockCache jobLockCache, ContextParametersInstanceService contextParametersInstanceService) {
         this.agents = agents;
+        this.moduleMetaDataService = moduleMetaDataService;
         this.schedulerJobInstanceStateChangeEventListeners = new ArrayList<>();
         // todo make pool size configurable
         this.executor = Executors.newFixedThreadPool(5, new JobThreadFactory("JobLogicMachine"));
@@ -417,7 +421,15 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
 
         if(this.agents.containsKey(schedulerJobInstance.getAgentName())) {
-            schedulerJobInitiationEvent.setAgentUrl(this.agents.get(schedulerJobInstance.getAgentName()).getUrl());
+            // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
+            String url;
+            if (moduleMetaDataService.findById(schedulerJobInstance.getAgentName()) == null
+                || StringUtils.isBlank(moduleMetaDataService.findById(schedulerJobInstance.getAgentName()).getUrl())) {
+                url = this.agents.get(schedulerJobInstance.getAgentName()).getUrl();
+            } else {
+                url = moduleMetaDataService.findById(schedulerJobInstance.getAgentName()).getUrl();
+            }
+            schedulerJobInitiationEvent.setAgentUrl(url);
         }
 
         return schedulerJobInitiationEvent;
@@ -454,7 +466,15 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         // Add the URL
         if(this.agents.containsKey(schedulerJobInstance.getAgentName())) {
-            schedulerJobInitiationEvent.setAgentUrl(this.agents.get(schedulerJobInstance.getAgentName()).getUrl());
+            // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
+            String url;
+            if (moduleMetaDataService.findById(schedulerJobInstance.getAgentName()) == null
+                || StringUtils.isBlank(moduleMetaDataService.findById(schedulerJobInstance.getAgentName()).getUrl())) {
+                url = this.agents.get(schedulerJobInstance.getAgentName()).getUrl();
+            } else {
+                url = moduleMetaDataService.findById(schedulerJobInstance.getAgentName()).getUrl();
+            }
+            schedulerJobInitiationEvent.setAgentUrl(url);
         }
         
         return schedulerJobInitiationEvent;

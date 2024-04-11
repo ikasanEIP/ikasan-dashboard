@@ -233,7 +233,7 @@ public abstract class ContextInstanceServiceBase {
         Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, queueDirectory, agents,
-            initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
+            moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         contextMachine.init();
 
@@ -344,7 +344,7 @@ public abstract class ContextInstanceServiceBase {
         Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, queueDirectory, agents,
-            null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
+            moduleMetadataService, null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
         // We add a listener to update scheduler job instances when a state change occurs.
