@@ -35,6 +35,7 @@ import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.bigqueue.service.BigQueueManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -100,6 +101,7 @@ public class ContextMachine {
     private Map<String, GlobalEventJobInstance> globalEventJobInstanceMap;
     private Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap;
     private Map<String, ModuleMetaData> agents;
+    private ModuleMetaDataService moduleMetaDataService;
     private String queueDir;
     private JobLockCache jobLockCache;
 
@@ -113,7 +115,7 @@ public class ContextMachine {
                           Map<String, GlobalEventJobInstance> globalEventJobInstanceMap,
                           Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap,
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
-                          Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
+                          Map<String, ModuleMetaData> agents, ModuleMetaDataService moduleMetaDataService, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService,
                           ScheduledContextService scheduledContextService, SchedulerJobInstanceService schedulerJobInstanceService,
                           JobLockCacheInitialisationService jobLockCacheInitialisationService,
@@ -131,6 +133,7 @@ public class ContextMachine {
             this.quartzScheduleDrivenJobInstanceMap = new HashMap<>(); // Empty Hashmap if the value is null.
         }
         this.agents = agents;
+        this.moduleMetaDataService = moduleMetaDataService;
         this.queueDir = queueDir;
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
         this.contextInstanceStateChangeEventListeners = new ArrayList<>();
@@ -147,7 +150,7 @@ public class ContextMachine {
         this.contextInstancePublicationService = contextInstancePublicationService;
         this.contextParametersInstanceService = contextParametersInstanceService;
         this.jobLockCache = jobLockCache;
-        this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, contextParametersInstanceService);
+        this.jobLogicMachine = new JobLogicMachine(this.agents, this.moduleMetaDataService, this.jobLockCache, contextParametersInstanceService);
         this.contextStateHelper = new ContextStateHelper();
     }
 
@@ -258,28 +261,44 @@ public class ContextMachine {
 
             if(contextParameterInstances != null) {
                 this.contextInstance.setContextParameters(contextParameterInstances);
-            }
-            else if(initiateWithSameParameters) {
+            } else if (initiateWithSameParameters) {
                 this.contextInstance.setContextParameters(previousContextInstance.getContextParameters());
-            }
-            else {
+            } else {
                 contextParametersInstanceService.populateContextParametersOnContextInstance(this.contextInstance
                     , this.internalEventDrivenJobInstances);
             }
 
             // Remove the previous context instance from all agents
-            this.agents.values().forEach(agent
-                -> this.contextInstancePublicationService.remove(agent.getUrl(), previousContextInstance));
+            for (var agent : this.agents.entrySet()) {
+                // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
+                String url;
+                if (moduleMetaDataService.findById(agent.getKey()) == null
+                    || StringUtils.isBlank(moduleMetaDataService.findById(agent.getKey()).getUrl())) {
+                    url = agent.getValue().getUrl();
+                } else {
+                    url = moduleMetaDataService.findById(agent.getKey()).getUrl();
+                }
+                this.contextInstancePublicationService.remove(url, previousContextInstance);
+            }
 
             // Propagate the new context instance to all agents.
-            this.agents.values().forEach(agent
-                -> this.contextInstancePublicationService.publish(agent.getUrl(), this.contextInstance));
+            for (var agent : this.agents.entrySet()) {
+                // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
+                String url;
+                if (moduleMetaDataService.findById(agent.getKey()) == null
+                    || StringUtils.isBlank(moduleMetaDataService.findById(agent.getKey()).getUrl())) {
+                    url = agent.getValue().getUrl();
+                } else {
+                    url = moduleMetaDataService.findById(agent.getKey()).getUrl();
+                }
+                this.contextInstancePublicationService.publish(url, this.contextInstance);
+            }
 
             // Initialise the job lock cache for the new instance
             this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
 
             this.contextInstance.setStartTime(System.currentTimeMillis());
-            this.contextInstance.setProjectedEndTime(CronUtils.getEpochMilliOfPreviousFireTime(this.contextInstance.getTimeWindowStart())+this.contextInstance.getContextTtlMilliseconds());
+            this.contextInstance.setProjectedEndTime(CronUtils.getEpochMilliOfPreviousFireTime(this.contextInstance.getTimeWindowStart()) + this.contextInstance.getContextTtlMilliseconds());
 
             this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl
                 (previousContextInstance.getId(), previousContextInstance, previousContextInstance.getStatus(), InstanceStatus.ENDED));

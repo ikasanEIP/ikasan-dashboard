@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class JobLogicMachineTest extends AbstractTest {
     private ContextService contextService = new ContextService();
-    private JobLogicMachine jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
+    private JobLogicMachine jobLogicMachine = new JobLogicMachine(new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService);
 
     /**
      * This test evaluates a simple dependency:
@@ -1917,7 +1917,7 @@ public class JobLogicMachineTest extends AbstractTest {
         SchedulerContextParametersPropertiesProvider schedulerOverrider = new SchedulerContextParametersPropertiesProvider( jobContextParamsSetupConfiguration, null);
         ContextParametersFactory contextParametersFactory = new ContextParametersFactory(schedulerOverrider);
         ContextParametersInstanceService contextParametersInstanceService = new ContextParametersInstanceServiceImpl(contextParametersFactory);
-        jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
+        jobLogicMachine = new JobLogicMachine(new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService);
 
         String json = loadDataFile("/data/logic/simple-context-chained-jobs-with-context-parameters.json");
         String replace = json.replace("\"name\": \"test1\"", "\"name\" : \"BusinessDate\"")
