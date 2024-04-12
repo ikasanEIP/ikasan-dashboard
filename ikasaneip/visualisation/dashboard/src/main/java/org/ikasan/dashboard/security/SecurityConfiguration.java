@@ -34,7 +34,6 @@ import javax.annotation.Resource;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity (prePostEnabled = true)
-@EnableWebMvc
 @EnableMethodSecurity
 public class SecurityConfiguration
 {

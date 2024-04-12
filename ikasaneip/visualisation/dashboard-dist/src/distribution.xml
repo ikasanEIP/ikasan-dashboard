@@ -50,6 +50,16 @@
             </includes>
             <useProjectArtifact>false</useProjectArtifact>
         </dependencySet>
+        <dependencySet>
+            <!-- Enable access to all projects in the current multimodule build! -->
+            <useProjectArtifact>false</useProjectArtifact>
+            <!-- contains lib\shell,jar and ikasan.sh -->
+            <includes>
+                <include>org.ikasan:ikasan-shell-distribution:zip:${ikasan.core.version}</include>
+            </includes>
+            <unpack>true</unpack>
+            <outputDirectory>.</outputDirectory>
+        </dependencySet>
     </dependencySets>
 
 </assembly>
