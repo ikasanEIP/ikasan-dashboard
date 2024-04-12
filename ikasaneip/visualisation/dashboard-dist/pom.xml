@@ -71,6 +71,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-shell-distribution</artifactId>
+            <version>${ikasan.core.version}</version>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
