@@ -3108,7 +3108,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         long testExecutionStartTime = System.currentTimeMillis();
 
-        String timezone = "Europe/London";
+        String timezone = ZoneId.systemDefault().toString();
         ZonedDateTime zdtNowInLondon = now(ZoneId.of(timezone));
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         context.setContextTtlMilliseconds(1800000);
@@ -3346,7 +3346,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         long testExecutionStartTime = System.currentTimeMillis();
 
-        String timezone = "Europe/London";
+        String timezone = ZoneId.systemDefault().toString();
         ZonedDateTime zdtNowInLondon = now(ZoneId.of(timezone));
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         context.setContextTtlMilliseconds(900000);
@@ -3583,7 +3583,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         String jsonContext = new String(new ClassPathResource("context-with-datetime-blackout-window-outside-ttl.json").getInputStream().readAllBytes());
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
-        String timezone = "Europe/London";
+        String timezone = ZoneId.systemDefault().toString();
         ZonedDateTime zdtNowInLondon = now(ZoneId.of(timezone));
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         context.setContextTtlMilliseconds(900000);
