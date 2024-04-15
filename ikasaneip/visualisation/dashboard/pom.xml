@@ -444,11 +444,6 @@
             </exclusions>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.vaadin.erik</groupId>-->
-<!--            <artifactId>slidetab</artifactId>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.vaadin.tabs</groupId>
             <artifactId>paged-tabs</artifactId>
@@ -526,16 +521,15 @@
             <artifactId>byte-buddy</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
             <scope>test</scope>
         </dependency>
 
