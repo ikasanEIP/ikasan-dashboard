@@ -444,11 +444,6 @@
             </exclusions>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.vaadin.erik</groupId>-->
-<!--            <artifactId>slidetab</artifactId>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.vaadin.tabs</groupId>
             <artifactId>paged-tabs</artifactId>
