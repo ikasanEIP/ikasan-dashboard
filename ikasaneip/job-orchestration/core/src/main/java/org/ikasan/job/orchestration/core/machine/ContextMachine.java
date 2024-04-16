@@ -272,11 +272,11 @@ public class ContextMachine {
             for (var agent : this.agents.entrySet()) {
                 // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
                 String url;
-                if (moduleMetaDataService.findById(agent.getKey()) == null
-                    || StringUtils.isBlank(moduleMetaDataService.findById(agent.getKey()).getUrl())) {
+                ModuleMetaData agentMetaFromSolr = moduleMetaDataService.findById(agent.getKey());
+                if (agentMetaFromSolr == null || StringUtils.isBlank(agentMetaFromSolr.getUrl())) {
                     url = agent.getValue().getUrl();
                 } else {
-                    url = moduleMetaDataService.findById(agent.getKey()).getUrl();
+                    url = agentMetaFromSolr.getUrl();
                 }
                 this.contextInstancePublicationService.remove(url, previousContextInstance);
             }
@@ -285,11 +285,11 @@ public class ContextMachine {
             for (var agent : this.agents.entrySet()) {
                 // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
                 String url;
-                if (moduleMetaDataService.findById(agent.getKey()) == null
-                    || StringUtils.isBlank(moduleMetaDataService.findById(agent.getKey()).getUrl())) {
+                ModuleMetaData agentMetaFromSolr = moduleMetaDataService.findById(agent.getKey());
+                if (agentMetaFromSolr == null || StringUtils.isBlank(agentMetaFromSolr.getUrl())) {
                     url = agent.getValue().getUrl();
                 } else {
-                    url = moduleMetaDataService.findById(agent.getKey()).getUrl();
+                    url = agentMetaFromSolr.getUrl();
                 }
                 this.contextInstancePublicationService.publish(url, this.contextInstance);
             }
