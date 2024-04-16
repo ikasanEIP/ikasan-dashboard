@@ -423,11 +423,11 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         if(this.agents.containsKey(schedulerJobInstance.getAgentName())) {
             // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
             String url;
-            if (moduleMetaDataService.findById(schedulerJobInstance.getAgentName()) == null
-                || StringUtils.isBlank(moduleMetaDataService.findById(schedulerJobInstance.getAgentName()).getUrl())) {
+            ModuleMetaData agentMetaFromSolr = moduleMetaDataService.findById(schedulerJobInstance.getAgentName());
+            if (agentMetaFromSolr == null || StringUtils.isBlank(agentMetaFromSolr.getUrl())) {
                 url = this.agents.get(schedulerJobInstance.getAgentName()).getUrl();
             } else {
-                url = moduleMetaDataService.findById(schedulerJobInstance.getAgentName()).getUrl();
+                url = agentMetaFromSolr.getUrl();
             }
             schedulerJobInitiationEvent.setAgentUrl(url);
         }
@@ -468,11 +468,11 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         if(this.agents.containsKey(schedulerJobInstance.getAgentName())) {
             // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
             String url;
-            if (moduleMetaDataService.findById(schedulerJobInstance.getAgentName()) == null
-                || StringUtils.isBlank(moduleMetaDataService.findById(schedulerJobInstance.getAgentName()).getUrl())) {
+            ModuleMetaData agentMetaFromSolr = moduleMetaDataService.findById(schedulerJobInstance.getAgentName());
+            if (agentMetaFromSolr == null || StringUtils.isBlank(agentMetaFromSolr.getUrl())) {
                 url = this.agents.get(schedulerJobInstance.getAgentName()).getUrl();
             } else {
-                url = moduleMetaDataService.findById(schedulerJobInstance.getAgentName()).getUrl();
+                url = agentMetaFromSolr.getUrl();
             }
             schedulerJobInitiationEvent.setAgentUrl(url);
         }
