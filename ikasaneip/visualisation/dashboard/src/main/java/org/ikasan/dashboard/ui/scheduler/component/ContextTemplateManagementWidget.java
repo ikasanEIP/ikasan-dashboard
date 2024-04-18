@@ -417,7 +417,14 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         ContextTemplateStatusDiv statusDiv = new ContextTemplateStatusDiv();
         statusDiv.setHeight("45px");
         statusDiv.setWidth("100%");
-        statusDiv.setStatus(!this.contextTemplate.isDisabled());
+        ScheduledContextRecord contextRecord = this.scheduledContextService.findById(this.contextTemplate.getName());
+
+        if(contextRecord != null) {
+            statusDiv.setStatus(!contextRecord.isDisabled());
+        }
+        else {
+            statusDiv.setStatus(!this.contextTemplate.isDisabled());
+        }
 
         statusLayout.add(statusDiv);
         statusLayout.setWidth("100%");
