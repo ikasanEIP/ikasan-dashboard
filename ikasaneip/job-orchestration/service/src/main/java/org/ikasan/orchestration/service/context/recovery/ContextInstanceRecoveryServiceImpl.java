@@ -178,7 +178,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             ContextTemplate context = scheduledContextRecord.getContext();
 
             // We do not recover disabled contexts!
-            if(context.isDisabled()) {
+            if(scheduledContextRecord.isDisabled()) {
                 // Remove prepared context instances if they exist.
                 super.removeAllPrepared(context.getName());
                 Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because the context is disabled");
