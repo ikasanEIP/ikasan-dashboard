@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -113,7 +114,7 @@ public class ContextExportControl {
 
             // Sanitise unsafe characters for filename returning.
             String contextFileName = StringUtils.replaceEach(contextName,
-                ContextExportZipUtils.UNSAFE_FILENAME_CHAR, ContextExportZipUtils.REPLACE_UNSAFE_FILENAME_CHAR);
+                ContextImportZipUtils.UNSAFE_FILENAME_CHAR, ContextImportZipUtils.REPLACE_UNSAFE_FILENAME_CHAR);
 
             return ResponseEntity
                 .ok()
@@ -180,7 +181,7 @@ public class ContextExportControl {
 
             // Sanitise unsafe characters for filename returning.
             String contextFileName = StringUtils.replaceEach(contextName,
-                ContextExportZipUtils.UNSAFE_FILENAME_CHAR, ContextExportZipUtils.REPLACE_UNSAFE_FILENAME_CHAR);
+                ContextImportZipUtils.UNSAFE_FILENAME_CHAR, ContextImportZipUtils.REPLACE_UNSAFE_FILENAME_CHAR);
 
             return ResponseEntity
                 .ok()
