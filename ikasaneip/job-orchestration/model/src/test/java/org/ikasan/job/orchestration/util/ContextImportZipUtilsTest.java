@@ -1,5 +1,9 @@
 package org.ikasan.job.orchestration.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
+import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
+import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
@@ -11,12 +15,65 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
 public class ContextImportZipUtilsTest {
+    private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    @Test
+    public void should_unzip_file_context_with_subcontext_in_job_import_mode() throws IOException {
+        String contextName = "HelloContext_[[env.name]]";   // Doesn't really matter if this is a token or not, it will be generated verbatim.
+        String jsonContext = IOUtils.toString(getClass().getResourceAsStream("/data/contextWithNestedSubcontexts.json"), StandardCharsets.UTF_8);
+        ContextTemplateImpl expectedContextTemplte = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        expectedContextTemplte.setName(contextName);
+
+        try {
+            InputStream inputStream = new ClassPathResource("data/zip/downloadName.zip").getInputStream();
+            ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
+
+            ContextTemplate actualContextTemplate = contextBundle.getContextTemplate();
+            List<SchedulerJob> jobs = contextBundle.getSchedulerJobs();
+
+            assertNotNull(actualContextTemplate);
+            assertEquals(contextName, actualContextTemplate.getName());
+            assertEquals(12, jobs.size());
+
+            int fileJobCount = 0;
+            int quartzJobCount = 0;
+            int internalJobCount = 0;
+            int globalJobCount = 0;
+            for (SchedulerJob schedulerJob : jobs) {
+                if (schedulerJob instanceof FileEventDrivenJob) {
+                    fileJobCount++;
+                } else if (schedulerJob instanceof QuartzScheduleDrivenJob) {
+                    quartzJobCount++;
+                } else if (schedulerJob instanceof InternalEventDrivenJob) {
+                    internalJobCount++;
+                } else if (schedulerJob instanceof GlobalEventJobImpl) {
+                    globalJobCount++;
+                }
+            }
+
+            assertEquals(3, internalJobCount);
+            assertEquals(3, fileJobCount);
+            assertEquals(3, quartzJobCount);
+            assertEquals(3, globalJobCount);
+            assertEquals(expectedContextTemplte.getContexts().size(), actualContextTemplate.getContexts().size());
+            Set<String> keyDifferences = expectedContextTemplte.getContextsMap().keySet();
+            keyDifferences.removeAll(actualContextTemplate.getContextsMap().keySet());
+            assertEquals(0, keyDifferences.size());
+
+
+        } catch (Exception e) {
+            fail("Got exception " + e.getMessage());
+        }
+    }
+
 
     @Test
     public void should_unzip_file_context_and_a_truck_load_of_jobs() {
@@ -354,4 +411,6 @@ public class ContextImportZipUtilsTest {
             fail("Got exception " + e.getMessage());
         }
     }
+
+
 }

@@ -1,12 +1,11 @@
 package org.ikasan.job.orchestration.util;
 
-import org.ikasan.job.orchestration.model.status.ContextJobInstanceDetailsStatusImpl;
 import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.job.orchestration.model.status.ContextJobInstanceDetailsStatusImpl;
 import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatusImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.job.model.ExternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -29,7 +28,7 @@ public class ContextHelper {
 
     private static String AGENT_NAME_REPLACEMENT = "[[agent.name]]";
     private static String CONTEXT_NAME_REPLACEMENT = "[[context.name]]";
-    private static String ENV_NAME_REPLACEMENT = "[[env.name]]";
+    public static String ENV_NAME_REPLACEMENT = "[[env.name]]";
     
     private static boolean USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION = true;
 

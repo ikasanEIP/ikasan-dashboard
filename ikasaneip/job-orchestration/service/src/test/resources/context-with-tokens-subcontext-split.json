@@ -1,0 +1,170 @@
+{
+  "contexts" : [ ],
+  "scheduledJobs" : [ {
+    "agentName" : "[[agent.name]]",
+    "jobName" : "-801842677",
+    "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
+    "identifier" : "[[agent.name]]--801842677"
+  }, {
+    "agentName" : "[[agent.name]]",
+    "jobName" : "-1409548854",
+    "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
+    "identifier" : "[[agent.name]]--1409548854"
+  } ],
+  "jobLocks" : [ {
+    "name" : "AC_DEV4.AC_BB_LK",
+    "lockCount" : 1,
+    "jobs" : {
+      "context5" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "1164721449",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-1164721449"
+      } ],
+      "context4" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "1164721449",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-1164721449"
+      } ],
+      "context3" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "1164721449",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-1164721449"
+      } ],
+      "context2" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "1164721449",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-1164721449"
+      } ],
+      "context1" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "1164721449",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-1164721449"
+      } ]
+    },
+    "exclusiveJobLock" : false
+  }, {
+    "name" : "AC_DEV4.AC_PriceConsolidation_LK",
+    "lockCount" : 1,
+    "jobs" : {
+      "context5" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "1651431039",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-1651431039"
+      } ],
+      "context4" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "-213937305",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]--213937305"
+      } ],
+      "context3" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "1226061027",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-1226061027"
+      } ],
+      "context2" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "744167903",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-744167903"
+      } ],
+      "context1" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "-505061472",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]--505061472"
+      } ]
+    },
+    "exclusiveJobLock" : false
+  }, {
+    "name" : "AC_DEV4.AC_CDW_LK",
+    "lockCount" : 1,
+    "jobs" : {
+      "context2" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "-131863702",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]--131863702"
+      } ],
+      "context1" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "-131863702",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]--131863702"
+      } ]
+    },
+    "exclusiveJobLock" : false
+  }, {
+    "name" : "AC_DEV4.AC_ANVIL_LK",
+    "lockCount" : 1,
+    "jobs" : {
+      "context2" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "97656185",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-97656185"
+      } ],
+      "context1" : [ {
+        "agentName" : "[[agent.name]]",
+        "jobName" : "97656185",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "[[agent.name]]-97656185"
+      } ]
+    },
+    "exclusiveJobLock" : false
+  } ],
+  "name" : "HelloContext_[[env.name]]",
+  "description" : "Context Template Description",
+  "jobDependencies" : [ {
+    "jobIdentifier" : "[[agent.name]]--801842677",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "[[agent.name]]--1409548854"
+      } ]
+    }
+  } ],
+  "timeWindowStart" : "* * 6 ? * * *",
+  "contextTtlMilliseconds" : 86400000,
+  "treeViewExpandLevel" : 1,
+  "ableToRunConcurrently" : true,
+  "useDisplayName" : false,
+  "disabled" : false,
+  "quartzScheduleDrivenJobsDisabledForContext" : false
+}
