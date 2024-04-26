@@ -160,5 +160,6 @@
   "ableToRunConcurrently": true,
   "useDisplayName": false,
   "disabled": false,
+  "ordinal": -1,
   "quartzScheduleDrivenJobsDisabledForContext": false
 }

@@ -119,6 +119,7 @@ public final class ContextExportZipUtils {
             Path contextDirPath = mkdir(contextDir);
 
             if (seperateSubcontextsWhenPersisting) {
+                context.setOrdinal(0);
                 writeContextRoots(objectMapper, contextDir, context);
             } else {
                 // create the whole context template as json
@@ -347,7 +348,10 @@ public final class ContextExportZipUtils {
     private static void writeContextRoots(ObjectMapper objectMapper, String currentContextDirectory, ContextTemplate currentContext) throws IOException {
         if (currentContext.getContexts() != null && !currentContext.getContexts().isEmpty()) {
             String newContextDirectory = createContextDirectory(currentContextDirectory, currentContext);
+            int ordinal = 0;
             for (ContextTemplate subContext : currentContext.getContexts()) {
+                subContext.setOrdinal(ordinal);
+                ordinal++;
                 writeContextRoots(objectMapper, newContextDirectory, subContext);
             }
         }
@@ -380,7 +384,6 @@ public final class ContextExportZipUtils {
         Path contextFilePath = Paths.get(containingDirectory + File.separator + sanitiseForUseAsFilename(context.getName()) + ".json");
         Files.write(contextFilePath, template.getBytes());
     }
-
 
     private static void zipDirectory(File fileToZip, String fileName, ZipOutputStream zipOutputStream) throws IOException {
         if (fileToZip.isDirectory()) {

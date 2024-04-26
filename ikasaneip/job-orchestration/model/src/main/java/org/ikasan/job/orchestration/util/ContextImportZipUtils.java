@@ -16,12 +16,14 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -127,7 +129,10 @@ public final class ContextImportZipUtils {
     protected static void rebuildSubContexts(ContextTemplate currentRoot, Map<String, List<ContextTemplate>> dirToTemplates) {
         List<ContextTemplate> dirContexts = dirToTemplates.get(sanitiseForUseAsFilename(currentRoot.getName()));
         if (dirContexts != null) {
-            currentRoot.setContexts(dirContexts);
+            List<ContextTemplate> sortedDirContexts = dirContexts.stream()
+                .sorted(Comparator.comparingInt(ContextTemplate::getOrdinal))
+                .collect(Collectors.toList());
+            currentRoot.setContexts(sortedDirContexts);
             for (ContextTemplate subContext : dirContexts) {
                 rebuildSubContexts(subContext, dirToTemplates);
             }
