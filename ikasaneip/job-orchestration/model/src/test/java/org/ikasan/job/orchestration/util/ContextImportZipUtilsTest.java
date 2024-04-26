@@ -18,8 +18,10 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -27,7 +29,7 @@ public class ContextImportZipUtilsTest {
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
     @Test
     public void should_unzip_file_context_with_subcontext_in_job_import_mode() throws IOException {
-        String contextName = "HelloContext_[[env.name]]";   // Doesn't really matter if this is a token or not, it will be generated verbatim.
+        String contextName = "HelloContext";
         String jsonContext = IOUtils.toString(getClass().getResourceAsStream("/data/contextWithNestedSubcontexts.json"), StandardCharsets.UTF_8);
         ContextTemplateImpl expectedContextTemplte = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         expectedContextTemplte.setName(contextName);
@@ -64,6 +66,18 @@ public class ContextImportZipUtilsTest {
             assertEquals(3, quartzJobCount);
             assertEquals(3, globalJobCount);
             assertEquals(expectedContextTemplte.getContexts().size(), actualContextTemplate.getContexts().size());
+
+            // Verify the ordinal was deserialised and used to order the list
+            List<ContextTemplate> actualSortedContexts = actualContextTemplate.getContexts().stream()
+                .filter(x->x.getOrdinal() >-1 )
+                .sorted(Comparator.comparingInt(ContextTemplate::getOrdinal))
+                .collect(Collectors.toList());
+
+            for (int index = 0; index < actualSortedContexts.size(); index++) {
+                System.out.println("Checking Element " + index + " of " + (actualSortedContexts.size()-1));
+                assertEquals(expectedContextTemplte.getContexts().get(index).toString(), actualSortedContexts.get(index).toString());
+            }
+
             Set<String> keyDifferences = expectedContextTemplte.getContextsMap().keySet();
             keyDifferences.removeAll(actualContextTemplate.getContextsMap().keySet());
             assertEquals(0, keyDifferences.size());
