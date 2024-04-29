@@ -368,6 +368,11 @@
 
         <!-- Other third party dependencies -->
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.vaadin.olli</groupId>
             <artifactId>file-download-wrapper</artifactId>
         </dependency>
@@ -526,16 +531,16 @@
             <artifactId>byte-buddy</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.storedobject.helper</groupId>
+            <artifactId>so-helper</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
             <scope>test</scope>
         </dependency>
 
