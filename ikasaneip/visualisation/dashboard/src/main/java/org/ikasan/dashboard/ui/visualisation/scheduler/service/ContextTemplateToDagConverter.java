@@ -14,11 +14,11 @@ public class ContextTemplateToDagConverter {
         AtomicReference<Context> previous = new AtomicReference<>();
 
         context.getContexts().forEach(child -> {
-            DagNode node = this.convert((Context) child, previous.get(), null);
+            DagNode node = this.convert(child, previous.get(), null);
             if(child.getContexts() != null && !child.getContexts().isEmpty()) {
                 this.addNodes(node, child, child.getContexts());
             }
-            previous.set((Context) child);
+            previous.set(child);
             dagNodes.add(node);
         });
 
