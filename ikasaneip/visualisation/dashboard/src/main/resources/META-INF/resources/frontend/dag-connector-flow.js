@@ -1,0 +1,240 @@
+import NiceDag from '@ebay/nice-dag-core';
+import {LitElement, html, css, render} from 'lit';
+import Fontawesome from 'lit-fontawesome';
+
+export class DagConnector extends LitElement {
+
+    static get properties() {
+        return {
+            dagNodes: { type: Array },
+            ikasanDagNodeStyle: {type: String}
+        };
+    }
+
+    static get styles() {
+        return [ Fontawesome ];
+    }
+
+    niceDag = null;
+
+    constructor() {
+        super();
+        console.log("constructor called!");
+    }
+
+    styleNode(id) {
+        if(this.niceDag) {
+            let element = this.niceDag.getElementByNodeId(id);
+            let status = document.createElement("div");
+            status.setAttribute("style", "width: 100%; height:100%; background: green;");
+            element.appendChild(status);
+        }
+    }
+
+    render() {
+        let container = document.createElement("div");
+        container.id = "my-dag-chart";
+        container.setAttribute("style", "width:40000px; height:40000px; display:flex;");
+
+        if(this.niceDag == null) {
+            let args
+                = {
+                id: "my-dag-chart",
+                container: container,
+                getNodeSize
+            };
+            this.niceDag = NiceDag.init(args, false);
+
+            debugger;
+            console.log("Attempting to render: " + this.dagNodes);
+            this.niceDag = this.niceDag.withNodes(JSON.parse(this.dagNodes));
+
+            this.niceDag.render();
+            // let bounds = container.getBoundingClientRect();
+            this.niceDag.center({width: 500, height:500});
+
+            let nodes = this.niceDag.getAllNodes(true);
+            nodes.forEach((node) => {
+                this.renderNode(node, this.niceDag.getElementByNodeId(node.id));
+            });
+
+            this.niceDag.addNiceDagChangeListener(this);
+        }
+
+        console.log("render method called!");
+        return container;
+    }
+
+    renderNode(node, element) {
+        if(!element) return;
+        console.log("rendering node " + node.id);
+        const newDiv = document.createElement('div');
+        newDiv.setAttribute("style", this.ikasanDagNodeStyle);
+
+        if(node.children?.length > 0 && !node.collapse) {
+            newDiv.appendChild(this.groupControl(node));
+        }
+        else {
+            newDiv.appendChild(this.nodeControl(node));
+        }
+
+        element.appendChild(newDiv);
+    }
+
+    zoom(scale) {
+        this.niceDag.setScale(scale / 100);
+    }
+
+    onChange() {
+        console.log("the dag has changed!");
+        let nodes = this.niceDag.getAllNodes(true);
+        let dagJsonModel = "["
+        nodes.forEach((node) => {
+            if(!node.parentId) {
+                console.log("adding node " + node.id);
+                if(node.children) {
+                    this.setChildCollapseStatus(node.children);
+                }
+                dagJsonModel = dagJsonModel + JSON.stringify(
+                    {
+                        "id": node.id,
+                        "dependencies": node.dependencies,
+                        "data": node.data,
+                        "collapse": node.collapse,
+                        "children": node.children,
+                        "parentId": node.parentId
+                    }) + ",";
+            }
+            else {
+                console.log("skipping node " + node.id + " with collapse " + node.collapse);
+            }
+        })
+        dagJsonModel = dagJsonModel.substring(0, dagJsonModel.length - 1);
+        dagJsonModel = dagJsonModel + "]";
+        debugger;
+        console.log("sending data " + dagJsonModel);
+        this.$server.setDag(dagJsonModel);
+    }
+
+    setChildCollapseStatus(nodes) {
+        nodes.forEach((node) => {
+            let n = this.niceDag.findNodeById(node.id);
+            if(n) {
+                node.collapse = n.collapse;
+            }
+            if(node.children) {
+                this.setChildCollapseStatus(node.children);
+            }
+        });
+    }
+
+    groupControl(node) {
+        const groupControlDiv = document.createElement('div');
+        render(html`<div>
+                <span style="margin-left: 6px; font-size: 8pt; word-break: break-all; width: 95%;">${node.data?.label || node.id}</span>
+                <button style="padding: 0; border: none; background: none; cursor: pointer;" @click="${(e) => this.$server.openDiagram(node.id)}">
+                    <i class="fas fa-object-group" style="position: absolute; right: 26px; top: 6px;" title="Open diagram"></i>
+                </button>
+                <button style="padding: 0; border: none; background: none; cursor: pointer;" @click="${(e) => this.shrinkNode(node.id)}">
+                    <i class="fas fa-minus-square" style="position: absolute; right: 6px; top: 6px;" title="Collapse job plan"></i>
+                </button>
+            </div>`, groupControlDiv);
+
+        return groupControlDiv;
+    }
+
+    shrinkNode(id) {
+        console.log("shrinking node " + id);
+        let node = this.niceDag.findNodeById(id);
+        console.log("shrinking node " + node);
+        if(node != null) {
+            node.shrink();
+            let element = this.niceDag.getElementByNodeId(id);
+            console.log("shrinking node " + element);
+            this.renderNode(node, element);
+        }
+    }
+
+    nodeControl(node) {
+        const nodeControlDiv = document.createElement('div');
+
+        if (node.children?.length > 0) {
+            render(html`
+                <div>
+                    <span style="margin-left: 6px; font-size: 8pt; word-break: break-all; width: 95%;">${node.data?.label || node.id}</span>
+                    <button style="padding: 0; border: none; background: none; cursor: pointer;" @click="${(e) => this.$server.openDiagram(node.id)}">
+                        <i class="fas fa-object-group" style="position: absolute; right: 26px; top: 6px;" title="Open diagram"></i>
+                    </button>
+                    <button style="padding: 0; border: none; background: none; cursor: pointer;" @click="${(e) => this.expandNode(node.id)}">
+                        <i class="fas fa-plus-square" style="position: absolute; right: 6px; top: 6px;" title="Expand job plan"></i>
+                    </button>
+                </div>`, nodeControlDiv);
+        }
+        else {
+            render(html`
+                <div>
+                    <span style="margin-left: 6px;font-size: 8pt; word-break: break-all; width: 95%;">${node.data?.label || node.id}</span>
+                    <button style="padding: 0; border: none; background: none; cursor: pointer;" @click="${(e) => this.$server.openDiagram(node.id)}">
+                        <i class="fas fa-object-group" style="position: absolute; right: 6px; top: 6px;" title="Open diagram"></i>
+                    </button>
+                    
+                </div>`, nodeControlDiv);
+        }
+
+        return nodeControlDiv;
+    }
+
+    expandNode(id) {
+        console.log("expanding node " + id);
+        let parentNode = this.niceDag.findNodeById(id);
+        console.log("expanding node " + parentNode);
+        if(parentNode != null) {
+            let children = this.niceDag.getElementByNodeId(parentNode.id).children;
+            for (let i of children) {
+                i.remove();
+            }
+
+            // if(parentNode.collapse==true)
+            parentNode.expand();
+            let element = this.niceDag.getElementByNodeId(parentNode.id);
+            console.log("expanding node " + element);
+            this.renderNode(parentNode, element);
+            if(parentNode.children)this.setChildCollapseStatus(parentNode.children);
+            parentNode.children.forEach((node) => {
+                this.renderNode(node, this.niceDag.getElementByNodeId(node.id));
+                if(node.collapse == false && node.children) {
+                    this.renderChildren(node.children);
+                }
+            });
+        }
+    }
+
+    renderChildren(children) {
+        children.forEach((node) => {
+            this.renderNode(node, this.niceDag.getElementByNodeId(node.id));
+            if(node.collapse == false && node.children) {
+                this.renderChildren(node.children);
+            }
+        });
+    }
+}
+
+const NODE_WIDTH = 250;
+const NODE_HEIGHT = 120;
+const CIRCLE_W_H = 30;
+
+const getNodeSize = node => {
+    // if (node.id === 'start' || node.id === 'end' || node.joint) {
+    //     return {
+    //         width: CIRCLE_W_H,
+    //         height: CIRCLE_W_H,
+    //     };
+    // }
+    return {
+        width: NODE_WIDTH,
+        height: NODE_HEIGHT,
+    };
+};
+
+
+customElements.define('dag-chart', DagConnector);
