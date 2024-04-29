@@ -3,7 +3,6 @@ package org.ikasan.dashboard.ui.scheduler.view;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -22,7 +21,6 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.dag.component.DagComponent;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
@@ -59,7 +57,6 @@ import java.util.Map;
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
-@Uses(DagComponent.class)
 @PermitAll
 @PreserveOnRefresh
 public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
