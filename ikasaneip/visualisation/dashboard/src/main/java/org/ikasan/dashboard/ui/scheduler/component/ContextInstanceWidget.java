@@ -35,6 +35,9 @@ import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcast
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SplitContextInstanceVisualisation;
+import org.ikasan.dashboard.ui.visualisation.scheduler.dag.component.DagComponent;
+import org.ikasan.dashboard.ui.visualisation.scheduler.dag.component.DagNode;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateToDagConverter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -46,6 +49,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -83,6 +87,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private static Logger logger = LoggerFactory.getLogger(ContextInstanceWidget.class);
     public static final String TREE_TAB = "treeTab";
     public static final String VISUALISATION_TAB = "visualisationTab";
+    public static final String DAG_TAB = "dagTab";
     public static final String RAW_CONTEXT_TAB =  "rawContextTab";
     public static final String JOB_INSTANCE_TAB = "jobsTab";
     public static final String STATISTICS_TAB = "statisticsTab";
@@ -141,6 +146,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private Button jobLockDashboard;
     private Tab treeTab;
     private Tab visualisationTab;
+    private Tab dagTab;
     private Tab rawContextTab;
     private Tab jobsTab;
     private Tab statisticsTab;
@@ -153,6 +159,9 @@ public class ContextInstanceWidget extends VerticalLayout
     private String jobStatus;
     private String jobName;
     private UI ui;
+
+    private DagComponent dagComponent;
+    private Div ikasanMinimapContainer;
 
     private SchedulerStatusFreeTextDiv waitingStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv completeStatus = new SchedulerStatusFreeTextDiv();
@@ -568,6 +577,7 @@ public class ContextInstanceWidget extends VerticalLayout
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
         this.getStyle().set("padding-top", "0px");
+
         this.add(statusLayout, headerLayout, contextInstanceDetailsCollapsableLayout, tabLayout, this.contextInstanceTreeViewWidget, this.aceEditor, this.splitContextInstanceVisualisation
             , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
         this.expand(this.splitContextInstanceVisualisation, this.aceEditor);
@@ -576,6 +586,7 @@ public class ContextInstanceWidget extends VerticalLayout
         // Hack to make the tree widget full height.
         this.tabs.setSelectedTab(this.auditTab);
         this.tabs.setSelectedTab(this.treeTab);
+
 
         if(this.selectedTab != null) {
             if(this.selectedTab.equals(ContextInstanceWidget.JOB_INSTANCE_TAB)) {
@@ -593,6 +604,9 @@ public class ContextInstanceWidget extends VerticalLayout
             else if(this.selectedTab.equals(ContextInstanceWidget.VISUALISATION_TAB)) {
                 this.tabs.setSelectedTab(this.visualisationTab);
             }
+            else if(this.selectedTab.equals(ContextInstanceWidget.DAG_TAB)) {
+                this.tabs.setSelectedTab(this.dagTab);
+            }
             else if(this.selectedTab.equals(ContextInstanceWidget.TREE_TAB)) {
                 this.tabs.setSelectedTab(this.treeTab);
             }
@@ -604,6 +618,7 @@ public class ContextInstanceWidget extends VerticalLayout
      */
     private void initialiseTabs() {
         this.visualisationTab = new Tab(getTranslation("tab.visualisation", UI.getCurrent().getLocale()));
+        this.dagTab = new Tab("DAG");
         this.treeTab = new Tab(getTranslation("tab.tree", UI.getCurrent().getLocale()));
         this.rawContextTab = new Tab(getTranslation("tab.json-raw-format", UI.getCurrent().getLocale()));
         this.jobsTab = new Tab(getTranslation("tab.job-instances", UI.getCurrent().getLocale()));
@@ -611,12 +626,13 @@ public class ContextInstanceWidget extends VerticalLayout
         this.auditTab = new Tab(getTranslation("tab.audit", UI.getCurrent().getLocale()));
 
         this.tabs = new Tabs();
-        this.tabs.add(this.treeTab, this.visualisationTab, this.rawContextTab
+        this.tabs.add(this.treeTab, this.visualisationTab, this.dagTab, this.rawContextTab
             , this.jobsTab/**, todo will introduce statisticsTab in future iteration this.statisticsTab */, this.auditTab);
 
         tabs.addSelectedChangeListener(event -> {
             if(tabs.getSelectedTab().equals(this.statisticsTab)) {
                 this.aceEditor.setVisible(false);
+                if(dagComponent!= null)this.dagComponent.setVisible(false);
                 this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(true);
@@ -625,6 +641,7 @@ public class ContextInstanceWidget extends VerticalLayout
             }
             else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
                 this.updateJson(this.contextInstance);
+                if(dagComponent!= null)this.dagComponent.setVisible(false);
                 this.aceEditor.setVisible(true);
                 this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
@@ -634,6 +651,7 @@ public class ContextInstanceWidget extends VerticalLayout
             }
             else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
                 this.splitContextInstanceVisualisation.initialiseVisualisation();
+                if(dagComponent!= null)this.dagComponent.setVisible(false);
                 this.aceEditor.setVisible(false);
                 this.splitContextInstanceVisualisation.setVisible(true);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
@@ -641,8 +659,36 @@ public class ContextInstanceWidget extends VerticalLayout
                 this.contextInstanceAuditWidget.setVisible(false);
                 this.contextInstanceTreeViewWidget.setVisible(false);
             }
+            else if(tabs.getSelectedTab().equals(this.dagTab)) {
+                if(this.dagComponent == null) {
+                    try {
+                        ContextTemplateToDagConverter contextTemplateToDagConverter = new ContextTemplateToDagConverter();
+                        List<DagNode> dagNodes = contextTemplateToDagConverter.convert(contextInstance);
+                        this.dagComponent = new DagComponent(ObjectMapperFactory.newInstance().writeValueAsString(dagNodes));
+
+//                        this.ikasanMinimapContainer = new Div();
+//                        this.ikasanMinimapContainer.setWidth("400px");
+//                        this.ikasanMinimapContainer.setHeight("200px");
+//                        this.ikasanMinimapContainer.getStyle().set("border", "1px solid black");
+//                        this.ikasanMinimapContainer.setId("ikasanMinimapContainer");
+//
+
+                        this.add(dagComponent);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                this.dagComponent.setVisible(true);
+                this.aceEditor.setVisible(false);
+                this.splitContextInstanceVisualisation.setVisible(false);
+                this.schedulerJobInstanceGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+                this.contextInstanceAuditWidget.setVisible(false);
+                this.contextInstanceTreeViewWidget.setVisible(false);
+            }
             else if(tabs.getSelectedTab().equals(this.jobsTab)) {
                 this.aceEditor.setVisible(false);
+                if(dagComponent!= null)this.dagComponent.setVisible(false);
                 this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(true);
                 this.contextTemplateStatisticsWidget.setVisible(false);
@@ -651,6 +697,7 @@ public class ContextInstanceWidget extends VerticalLayout
             }
             else if(tabs.getSelectedTab().equals(this.auditTab)) {
                 this.aceEditor.setVisible(false);
+                if(dagComponent!= null)this.dagComponent.setVisible(false);
                 this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
@@ -659,6 +706,7 @@ public class ContextInstanceWidget extends VerticalLayout
             }
             else if(tabs.getSelectedTab().equals(this.treeTab)) {
                 this.aceEditor.setVisible(false);
+                if(dagComponent!= null)this.dagComponent.setVisible(false);
                 this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);

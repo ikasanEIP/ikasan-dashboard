@@ -1,0 +1,13 @@
+.ikasan-dag-node {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #8799c1;
+    position: relative;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ikasan-dag-minimap-viewbox {
+    border: 1px solid orange !important
+}
