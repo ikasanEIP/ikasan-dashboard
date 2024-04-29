@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.view;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.RouteScope;
@@ -45,6 +46,8 @@ import java.util.Set;
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
+@JsModule("./styles/shared-styles.js")
+@CssImport("./styles/styles.css")
 @PermitAll
 public class ContextInstanceView extends VerticalLayout implements BeforeEnterObserver, HasUrlParameter<String>
 {

@@ -1,17 +1,5 @@
 package org.ikasan.dashboard.ui.layout;
 
-
-//import com.github.appreciated.app.layout.component.appbar.AppBarBuilder;
-//import com.github.appreciated.app.layout.component.appbar.IconButton;
-//import com.github.appreciated.app.layout.component.applayout.LeftLayouts;
-//import com.github.appreciated.app.layout.component.builder.AppLayoutBuilder;
-//import com.github.appreciated.app.layout.component.menu.left.LeftMenuComponentWrapper;
-//import com.github.appreciated.app.layout.component.menu.left.LeftSubmenu;
-//import com.github.appreciated.app.layout.component.menu.left.builder.LeftAppMenuBuilder;
-//import com.github.appreciated.app.layout.component.menu.left.builder.LeftSubMenuBuilder;
-//import com.github.appreciated.app.layout.component.menu.left.items.LeftNavigationItem;
-//import com.github.appreciated.app.layout.component.router.AppLayoutRouterLayout;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -49,7 +37,7 @@ import javax.annotation.Resource;
 
 
 @JsModule("./styles/shared-styles.js")
-@CssImport("./styles/shared-styles.css")
+@CssImport("./styles/styles.css")
 @CssImport(value = "./styles/dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
 public class IkasanAppLayout extends AppLayout {
     @Resource
