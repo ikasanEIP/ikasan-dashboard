@@ -118,6 +118,7 @@
   "treeViewExpandLevel" : 3,
   "ableToRunConcurrently" : true,
   "useDisplayName" : false,
+  "ordinal" : 1,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }
