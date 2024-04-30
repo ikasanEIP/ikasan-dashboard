@@ -28,6 +28,7 @@ public class ContextTemplateBuilder {
     protected int treeViewExpandLevel = 1;
     protected boolean ableToRunConcurrently = true;
     private boolean useDisplayName = false;
+    private int ordinal = -1;
 
     public ContextTemplateBuilder withName(String name) {
         this.name = name;
@@ -131,6 +132,11 @@ public class ContextTemplateBuilder {
         return this;
     }
 
+    public ContextTemplateBuilder withOrdinal(int ordinal) {
+        this.ordinal = ordinal;
+        return this;
+    }
+
     public SchedulerJobBuilder getSchedulerJobBuilder() {
         return new SchedulerJobBuilder();
     }
@@ -201,7 +207,7 @@ public class ContextTemplateBuilder {
         contextTemplate.setTreeViewExpandLevel(this.treeViewExpandLevel);
         contextTemplate.setAbleToRunConcurrently(this.ableToRunConcurrently);
         contextTemplate.setUseDisplayName(this.useDisplayName);
-
+        contextTemplate.setOrdinal(this.ordinal);
         return contextTemplate;
     }
 }
