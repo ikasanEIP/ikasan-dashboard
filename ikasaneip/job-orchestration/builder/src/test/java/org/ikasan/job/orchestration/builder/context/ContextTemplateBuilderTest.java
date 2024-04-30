@@ -835,4 +835,46 @@ public class ContextTemplateBuilderTest extends AbstractTest {
         JSONAssert.assertEquals(super.loadDataFile("/data/context-builder-nested-context-result.json"),
             contextService.getContextTemplateString(parentContext), false);
     }
+
+    @Test
+    public void test_builder_with_subcontext_sets_ordinal() throws IOException, JSONException {
+        ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
+
+        ContextTemplate contextTemplate1 = contextTemplateBuilder.withName("Context Template 1")
+
+            // add the scheduler jobs that will be orchestrated
+            .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
+                .withJobName("Job1")
+                .withAgentName("AgentName")
+                .withDescription("Job1 Description")
+                .build())
+            .build();
+
+        contextTemplateBuilder = new ContextTemplateBuilder();
+
+        ContextTemplate contextTemplate2 = contextTemplateBuilder.withName("Context Template 2")
+
+            // add the scheduler jobs that will be orchestrated
+            .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
+                .withJobName("Job4")
+                .withAgentName("AgentName")
+                .withDescription("Job4 Description")
+                .build())
+            .build();
+
+        contextTemplateBuilder = new ContextTemplateBuilder();
+
+        ContextTemplate parentContext = contextTemplateBuilder.withName("Parent Context")
+            .withDescription("Context Template Description")
+            .withTimeWindowStartCronExpression("* * 6 ? * * *")
+            .withContextTtlMilliseconds(100000L)
+
+            .addContext(contextTemplate1)
+            .addContext(contextTemplate2)
+            .build();
+
+        Assert.assertEquals(2, parentContext.getContexts().size());
+        Assert.assertEquals(0, parentContext.getContexts().get(0).getOrdinal());
+        Assert.assertEquals(1, parentContext.getContexts().get(1).getOrdinal());
+    }
 }

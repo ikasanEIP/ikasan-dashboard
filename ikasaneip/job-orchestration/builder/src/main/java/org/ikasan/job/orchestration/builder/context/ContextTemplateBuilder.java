@@ -208,6 +208,11 @@ public class ContextTemplateBuilder {
         contextTemplate.setAbleToRunConcurrently(this.ableToRunConcurrently);
         contextTemplate.setUseDisplayName(this.useDisplayName);
         contextTemplate.setOrdinal(this.ordinal);
+        if (this.contexts != null && this.contexts.size() > 1) {
+            for(int index=0; index<this.contexts.size(); index++) {
+                contexts.get(index).setOrdinal(index);
+            }
+        }
         return contextTemplate;
     }
 }
