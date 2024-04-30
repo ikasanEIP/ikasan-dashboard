@@ -54,6 +54,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .withDescription("Context Template Description")
             .withTimeWindowStartCronExpression("* * 6 ? * * *")
             .withContextTtlMilliseconds(100000L)
+            .withOrdinal(1)
 
             // add some context parameters
             .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
