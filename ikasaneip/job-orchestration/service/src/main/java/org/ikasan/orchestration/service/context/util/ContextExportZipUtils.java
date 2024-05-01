@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.ikasan.job.orchestration.builder.util.ContextTemplateUtils;
 import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -348,10 +349,7 @@ public final class ContextExportZipUtils {
     private static void writeContextRoots(ObjectMapper objectMapper, String currentContextDirectory, ContextTemplate currentContext) throws IOException {
         if (currentContext.getContexts() != null && !currentContext.getContexts().isEmpty()) {
             String newContextDirectory = createContextDirectory(currentContextDirectory, currentContext);
-            int ordinal = 0;
-            for (ContextTemplate subContext : currentContext.getContexts()) {
-                subContext.setOrdinal(ordinal);
-                ordinal++;
+            for (ContextTemplate subContext : ContextTemplateUtils.setOrdinalsInContextTemplates(currentContext.getContexts())) {
                 writeContextRoots(objectMapper, newContextDirectory, subContext);
             }
         }
