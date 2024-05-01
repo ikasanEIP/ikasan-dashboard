@@ -2,14 +2,12 @@ package org.ikasan.job.orchestration.builder.context;
 
 import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
 import org.ikasan.job.orchestration.builder.job.SchedulerJobLockParticipantBuilder;
+import org.ikasan.job.orchestration.builder.util.ContextTemplateUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ContextTemplateBuilder {
     protected String name;
@@ -197,7 +195,7 @@ public class ContextTemplateBuilder {
         contextTemplate.setTimeWindowStart(this.timeWindowStartCronExpression);
         contextTemplate.setContextTtlMilliseconds(this.contextTtlMilliseconds);
         contextTemplate.setContextDependencies(this.contextDependencies);
-        contextTemplate.setContexts(this.contexts);
+        contextTemplate.setContexts(ContextTemplateUtils.setOrdinalsInContextTemplates(this.contexts));
         contextTemplate.setContextParameters(this.contextParameters);
         contextTemplate.setJobDependencies(this.jobDependencies);
         contextTemplate.setScheduledJobs(this.scheduledJobs);
@@ -208,12 +206,8 @@ public class ContextTemplateBuilder {
         contextTemplate.setAbleToRunConcurrently(this.ableToRunConcurrently);
         contextTemplate.setUseDisplayName(this.useDisplayName);
         contextTemplate.setOrdinal(this.ordinal);
-        if (this.contexts != null && this.contexts.size() > 1) {
-            for(int index=0; index<this.contexts.size(); index++) {
-                contexts.get(index).setOrdinal(index);
-            }
-        }
         return contextTemplate;
     }
+
 }
 
