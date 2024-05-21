@@ -20,6 +20,7 @@ import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.junit.After;
@@ -164,6 +165,9 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         assertEquals(1, allAuditRecords.getResultList().size());
 
         ScheduledContextInstanceAuditAggregateRecord savedRecord = allAuditRecords.getResultList().get(0);
+        Assert.assertEquals(true, savedRecord.isRepeatingJob());
+        Assert.assertEquals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE, savedRecord.getJobType());
+        Assert.assertEquals(InstanceStatus.ERROR.name(), savedRecord.getStatus());
 
         ContextualisedScheduledProcessEvent<String, DryRunParameters> processEvent = record.getScheduledContextInstanceAuditAggregate().getProcessEvent();
         List<SchedulerJobInitiationEvent> jobInitiationEvents = record.getScheduledContextInstanceAuditAggregate().getSchedulerJobInitiationEvents();
@@ -255,12 +259,14 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
     public void test_save_and_find_success() {
 
         SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setContainsRepeatingJobs(true);
         contextInstance.setName("contextInstance");
         SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
         scheduledContextRecord.setContextName("contextName");
         scheduledContextRecord.setContextInstance(contextInstance);
         scheduledContextRecord.setTimestamp(1000000L);
         scheduledContextRecord.setStatus("RUNNING");
+        scheduledContextRecord.setContainsRepeatingJobs(true);
         service.save(scheduledContextRecord);
 
         ScheduledContextInstanceRecord found = service.findById(contextInstance.getId() + "_scheduledContextInstance");
@@ -270,6 +276,7 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         Assert.assertEquals("contextInstance", found.getContextInstance().getName());
         Assert.assertEquals("RUNNING", found.getStatus());
         Assert.assertEquals(1000000L, found.getTimestamp());
+        Assert.assertEquals(true, found.isContainsRepeatingJobs());
 
         Assert.assertNull(service.findById("bad_id"));
     }
@@ -820,6 +827,9 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         record.setContextName("contextName");
         record.setContextInstanceId("contextInstanceId");
         record.setScheduledProcessEventName("eventName");
+        record.setStatus(InstanceStatus.ERROR.name());
+        record.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+        record.setRepeatingJob(true);
         record.setScheduledContextInstanceAuditAggregate(audit);
         return record;
     }

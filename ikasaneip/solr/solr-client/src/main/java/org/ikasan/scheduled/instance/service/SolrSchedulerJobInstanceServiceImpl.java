@@ -5,6 +5,7 @@ import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditAggregateDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
@@ -14,6 +15,7 @@ import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
@@ -38,21 +40,33 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
     private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     private SolrSchedulerJobInstanceDaoImpl solrSchedulerJobInstanceDao;
+    private SolrScheduledContextInstanceAuditAggregateDaoImpl solrScheduledContextInstanceAuditAggregateDao;
     private SolrSchedulerJobDaoImpl solrSchedulerJobDao;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private boolean useLegacyJobStatusCount;
 
     public SolrSchedulerJobInstanceServiceImpl(SolrSchedulerJobInstanceDaoImpl solrSchedulerJobInstanceDao,
+                                               SolrScheduledContextInstanceAuditAggregateDaoImpl solrScheduledContextInstanceAuditAggregateDao,
                                                SolrSchedulerJobDaoImpl solrSchedulerJobDao,
+                                               ScheduledContextInstanceService scheduledContextInstanceService,
                                                Map<String, String> schedulerJobExecutionEnvironmentLabel,
                                                boolean useLegacyJobStatusCount) {
         this.solrSchedulerJobInstanceDao = solrSchedulerJobInstanceDao;
         if (solrSchedulerJobInstanceDao == null) {
             throw new IllegalArgumentException("solrSchedulerJobInstanceDao cannot be null!");
         }
+        this.solrScheduledContextInstanceAuditAggregateDao = solrScheduledContextInstanceAuditAggregateDao;
+        if (solrScheduledContextInstanceAuditAggregateDao == null) {
+            throw new IllegalArgumentException("solrScheduledContextInstanceAuditAggregateDao cannot be null!");
+        }
         this.solrSchedulerJobDao = solrSchedulerJobDao;
         if (solrSchedulerJobDao == null) {
             throw new IllegalArgumentException("solrSchedulerJobDao cannot be null!");
+        }
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
+        if (scheduledContextInstanceService == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
         }
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.useLegacyJobStatusCount = useLegacyJobStatusCount;
@@ -277,12 +291,33 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
 
     @Override
     public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstances(List<String> contextInstanceIds) {
+        List<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatuses;
         if(this.useLegacyJobStatusCount) {
-            return this.solrSchedulerJobInstanceDao.getJobStatusCountForContextInstances(contextInstanceIds);
+            contextInstanceAggregateJobStatuses = this.solrSchedulerJobInstanceDao
+                .getJobStatusCountForContextInstances(contextInstanceIds);
         }
         else {
-            return this.getJobStatusCountForContextInstancesConsiderNonTargetedDuplication(contextInstanceIds);
+            contextInstanceAggregateJobStatuses =  this.getJobStatusCountForContextInstancesConsiderNonTargetedDuplication
+                (contextInstanceIds);
         }
+
+        Map<String, Map<String, Integer>> repeatingJobStatuses = this.solrScheduledContextInstanceAuditAggregateDao
+            .getRepeatingJobStatusCounts(contextInstanceIds);
+
+        contextInstanceAggregateJobStatuses.forEach(contextInstanceAggregateJobStatus -> {
+            ScheduledContextInstanceRecord scheduledContextInstanceRecord
+                = this.scheduledContextInstanceService.findById(contextInstanceAggregateJobStatus.getContextInstanceId()
+                + "_scheduledContextInstance");
+
+            if(scheduledContextInstanceRecord != null) {
+                contextInstanceAggregateJobStatus.setContainsRepeatableJobs(scheduledContextInstanceRecord.isContainsRepeatingJobs());
+            }
+
+            contextInstanceAggregateJobStatus.setRepeatingJobsStatusCounts
+                (repeatingJobStatuses.get(contextInstanceAggregateJobStatus.getContextInstanceId()));
+        });
+
+        return contextInstanceAggregateJobStatuses;
     }
 
     @Override

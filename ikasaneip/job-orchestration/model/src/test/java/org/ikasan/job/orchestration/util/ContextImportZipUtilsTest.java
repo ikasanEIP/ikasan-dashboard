@@ -74,7 +74,6 @@ public class ContextImportZipUtilsTest {
                 .collect(Collectors.toList());
 
             for (int index = 0; index < actualSortedContexts.size(); index++) {
-                System.out.println("Checking Element " + index + " of " + (actualSortedContexts.size()-1));
                 assertEquals(expectedContextTemplte.getContexts().get(index).toString(), actualSortedContexts.get(index).toString());
             }
 

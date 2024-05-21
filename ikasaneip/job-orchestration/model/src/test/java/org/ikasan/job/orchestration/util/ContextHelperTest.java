@@ -306,8 +306,6 @@ public class ContextHelperTest {
         internalEventDrivenJobs.get("agent-name1-JOB_TEST_TRUE-JOB_TEST_TRUE").setTargetResidingContextOnly(true);
 
         ContextJobInstanceStatus contextJobInstanceStatus = ContextHelper.getContextJobInstanceStatus(contextInstance, internalEventDrivenJobs);
-        logger.info(contextJobInstanceStatus.toString());
-        System.out.println(contextJobInstanceStatus);
 
         contextJobInstanceStatus.getJobDetails().forEach(status ->{
 

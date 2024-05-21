@@ -123,7 +123,9 @@ public abstract class AbstractSchedulerViewTest extends UITest {
     protected List<ContextInstanceAggregateJobStatus> getAggregateContextInstanceStatuses() {
         ContextInstanceAggregateJobStatus aggregateContextInstanceStatus = new SolrContextInstanceAggregateJobStatusImpl("contextInstanceId",
             "contextName", Map.of(InstanceStatus.WAITING.name(), 1, InstanceStatus.RUNNING.name(), 5, InstanceStatus.COMPLETE.name(), 15,
-            InstanceStatus.SKIPPED.name(), 0, InstanceStatus.ERROR.name(), 0, InstanceStatus.ON_HOLD.name(), 1, InstanceStatus.LOCK_QUEUED.name(), 0));
+            InstanceStatus.SKIPPED.name(), 0, InstanceStatus.ERROR.name(), 0, InstanceStatus.ON_HOLD.name(), 1, InstanceStatus.LOCK_QUEUED.name(), 0), true);
+
+        aggregateContextInstanceStatus.setRepeatingJobsStatusCounts(Map.of(InstanceStatus.COMPLETE.name(), 5, InstanceStatus.ERROR.name(), 2));
 
         return List.of(aggregateContextInstanceStatus);
     }

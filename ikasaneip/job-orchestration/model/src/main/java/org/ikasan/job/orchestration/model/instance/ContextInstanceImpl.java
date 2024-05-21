@@ -27,6 +27,8 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     private InstanceStatus status;
     private Map<String, SchedulerJobInitiationEvent> heldJobs;
 
+    private boolean containsRepeatingJobs = false;
+
     public ContextInstanceImpl() {
         this.id = UUID.randomUUID().toString();
         status = InstanceStatus.WAITING;
@@ -133,6 +135,16 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     @Override
     public void setHeldJobs(Map<String, SchedulerJobInitiationEvent> heldJobs) {
         this.heldJobs = heldJobs;
+    }
+
+    @Override
+    public boolean isContainsRepeatingJobs() {
+        return containsRepeatingJobs;
+    }
+
+    @Override
+    public void setContainsRepeatingJobs(boolean containsRepeatingJobs) {
+        this.containsRepeatingJobs = containsRepeatingJobs;
     }
 
     @Override
