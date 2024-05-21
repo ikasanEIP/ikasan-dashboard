@@ -3,8 +3,13 @@ package org.ikasan.scheduled.instance.dao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
+import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceAuditAggregateRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
@@ -12,10 +17,14 @@ import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggre
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBase<ScheduledContextInstanceAuditAggregateRecord> implements ScheduledContextInstanceAuditAggregateDao {
@@ -53,6 +62,9 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
             document.addField(EVENT, eventsBuffer.toString().toLowerCase());
         }
 
+        document.setField(IS_REPEATING_JOB, record.isRepeatingJob());
+        document.setField(STATUS, record.getStatus());
+        document.setField(JOB_TYPE, record.getJobType());
         document.setField(EXPIRY, expiry);
 
         LOG.debug(String.format("Converted ScheduledContextInstanceAuditRecord to SolrDocument[%s]", document));
@@ -87,6 +99,12 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
             .append(filter.getScheduledProcessEventName() != null && !filter.getScheduledProcessEventName().isEmpty()
                 ? "*"+SolrSpecialCharacterEscapeUtil.escape(filter.getScheduledProcessEventName().toLowerCase())+"*" : "*");
 
+        queryString.append(AND)
+            .append(STATUS)
+            .append(COLON)
+            .append(filter.getStatus() != null && !filter.getStatus().isEmpty()
+                ? "*"+SolrSpecialCharacterEscapeUtil.escape(filter.getStatus())+"*" : "*");
+
         if(filter.getRaisedInitiationEventName() != null && !filter.getRaisedInitiationEventName().isEmpty()) {
             queryString.append(AND)
                 .append(EVENT)
@@ -106,5 +124,51 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
         }
 
         return this.findByQuery(solrQuery, SolrScheduledContextInstanceAuditAggregateRecordImpl.class, offset, limit);
+    }
+
+    @Override
+    public Map<String, Map<String, Integer>> getRepeatingJobStatusCounts(List<String> contextInstanceIds) {
+        Map<String, Map<String, Integer>> results = new HashMap<>();
+
+        StringBuffer queryString = new StringBuffer();
+
+        queryString.append(TYPE + COLON).append(SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE);
+
+        queryString.append(AND)
+            .append(FLOW_NAME)
+            .append(COLON)
+            .append("%s");
+
+        queryString.append(AND)
+            .append(IS_REPEATING_JOB)
+            .append(COLON)
+            .append(true);
+
+        contextInstanceIds.forEach(id -> {
+            SolrQuery solrQuery = new SolrQuery();
+            solrQuery.setQuery(String.format(queryString.toString(), id));
+            solrQuery.setFacet(true);
+            solrQuery.addFacetField(SolrDaoBase.STATUS);
+            solrQuery.setRows(0);
+
+            QueryRequest req = new QueryRequest(solrQuery, SolrRequest.METHOD.POST);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+            try {
+                QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+                FacetField field = rsp.getFacetField(SolrDaoBase.STATUS);
+                HashMap<String, Integer> jobStatusCount = new HashMap<>();
+
+                field.getValues().forEach(count -> jobStatusCount.put(count.getName(), (int) count.getCount()));
+
+                results.put(id, jobStatusCount);
+
+            } catch (Exception e) {
+                throw new RuntimeException("Error resolving repeating job status count by query [" + queryString
+                    + "] from the Ikasan solr index!", e);
+            }
+        });
+
+        return results;
     }
 }

@@ -20,6 +20,9 @@ public class ScheduledContextInstanceAuditAggregateRecordImpl implements Schedul
     private long timestamp;
     private String scheduledProcessEventName;
     private String raisedEvents;
+    private String status;
+    private boolean isRepeatingJob;
+    private String jobType;
 
     @Override
     public String getId() {
@@ -82,6 +85,36 @@ public class ScheduledContextInstanceAuditAggregateRecordImpl implements Schedul
     @Override
     public String getRaisedEvents() {
         return this.raisedEvents;
+    }
+
+    @Override
+    public String getStatus() {
+        return status;
+    }
+
+    @Override
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    @Override
+    public boolean isRepeatingJob() {
+        return isRepeatingJob;
+    }
+
+    @Override
+    public void setRepeatingJob(boolean repeatingJob) {
+        isRepeatingJob = repeatingJob;
+    }
+
+    @Override
+    public String getJobType() {
+        return jobType;
+    }
+
+    @Override
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
     }
 
     @Override

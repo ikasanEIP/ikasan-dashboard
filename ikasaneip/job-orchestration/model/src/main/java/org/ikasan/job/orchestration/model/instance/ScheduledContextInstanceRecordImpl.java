@@ -24,6 +24,7 @@ public class ScheduledContextInstanceRecordImpl implements ScheduledContextInsta
     private String modifiedBy;
     private long startTime;
     private long endTime;
+    private boolean containsRepeatingJobs = false;
 
     @Override
     public void setContextName(String contextName) {
@@ -128,6 +129,16 @@ public class ScheduledContextInstanceRecordImpl implements ScheduledContextInsta
     @Override
     public void setEndTime(long endTime) {
         this.endTime = endTime;
+    }
+
+    @Override
+    public boolean isContainsRepeatingJobs() {
+        return containsRepeatingJobs;
+    }
+
+    @Override
+    public void setContainsRepeatingJobs(boolean containsRepeatingJobs) {
+        this.containsRepeatingJobs = containsRepeatingJobs;
     }
 
     @Override

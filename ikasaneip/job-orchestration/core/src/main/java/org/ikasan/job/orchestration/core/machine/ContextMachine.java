@@ -1070,6 +1070,8 @@ public class ContextMachine {
 
         saveInstanceAuditRecord(scheduledProcessEvent, finalEvents, previousContextInstance, this.contextInstance);
 
+        this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(this.contextInstance.getId(),
+            this.contextInstance, this.contextInstance.getStatus(), this.contextInstance.getStatus()));
         return finalEvents;
     }
 
@@ -1086,6 +1088,21 @@ public class ContextMachine {
         auditRecord.setContextInstanceId(this.contextInstance.getId());
         auditRecord.setScheduledProcessEventName(scheduledProcessEvent.getJobName());
         auditRecord.setScheduledContextInstanceAuditAggregate(contextInstanceAudit);
+        if(scheduledProcessEvent.getInternalEventDrivenJob() != null) {
+            if(scheduledProcessEvent.isJobStarting() == false) {
+                if(scheduledProcessEvent.isSuccessful()) {
+                    auditRecord.setStatus(InstanceStatus.COMPLETE.name());
+                }
+                else {
+                    auditRecord.setStatus(InstanceStatus.ERROR.name());
+                }
+            }
+            else {
+                auditRecord.setStatus(InstanceStatus.RUNNING.name());
+            }
+            auditRecord.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+            auditRecord.setRepeatingJob(scheduledProcessEvent.getInternalEventDrivenJob().isJobRepeatable());
+        }
         scheduledContextInstanceService.saveAudit(auditRecord, previousContextInstance, updatedContextInstance);
     }
 

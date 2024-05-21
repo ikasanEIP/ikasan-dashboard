@@ -48,6 +48,9 @@ public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextI
     @Field(SolrDaoBase.END_TIME)
     private long endTime;
 
+    @Field(SolrDaoBase.CONTAINS_REPEATING_JOBS)
+    private boolean containsRepeatingJobs = false;
+
     @Override
     public String getId() {
         return this.id;
@@ -152,6 +155,16 @@ public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextI
     @Override
     public void setEndTime(long endTime) {
         this.endTime = endTime;
+    }
+
+    @Override
+    public boolean isContainsRepeatingJobs() {
+        return containsRepeatingJobs;
+    }
+
+    @Override
+    public void setContainsRepeatingJobs(boolean containsRepeatingJobs) {
+        this.containsRepeatingJobs = containsRepeatingJobs;
     }
 
     @Override

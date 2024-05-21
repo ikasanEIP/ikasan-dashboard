@@ -156,6 +156,7 @@ public abstract class ContextInstanceServiceBase {
         scheduledContextInstanceRecord.setStartTime(contextInstance.getStartTime());
         scheduledContextInstanceRecord.setEndTime(contextInstance.getEndTime());
         scheduledContextInstanceRecord.setStatus(contextInstance.getStatus().name());
+        scheduledContextInstanceRecord.setContainsRepeatingJobs(contextInstance.isContainsRepeatingJobs());
 
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
 
@@ -207,6 +208,9 @@ public abstract class ContextInstanceServiceBase {
                     child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setHeld(job.getValue().isHeld());
                     child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
                 }
+            }
+            if(job.getValue().isJobRepeatable()) {
+                instance.setContainsRepeatingJobs(true);
             }
         });
 
@@ -300,6 +304,9 @@ public abstract class ContextInstanceServiceBase {
                 else {
                     child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
                     child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
+                if(job.getValue().isJobRepeatable()) {
+                    instance.setContainsRepeatingJobs(true);
                 }
             }
             if(job.getValue().isHeld()) {

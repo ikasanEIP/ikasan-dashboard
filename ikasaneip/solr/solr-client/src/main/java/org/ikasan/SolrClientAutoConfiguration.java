@@ -27,6 +27,7 @@ import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditAggreg
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
 import org.ikasan.scheduled.instance.service.SolrScheduledContextInstanceServiceImpl;
 import org.ikasan.scheduled.instance.service.SolrSchedulerJobInstanceServiceImpl;
 import org.ikasan.scheduled.job.dao.*;
@@ -53,6 +54,7 @@ import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobDao;
@@ -195,18 +197,12 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public ScheduledContextInstanceService scheduledContextInstanceService() {
+    public ScheduledContextInstanceService scheduledContextInstanceService(ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao) {
         SolrScheduledContextInstanceDaoImpl scheduledContextInstanceDao = new SolrScheduledContextInstanceDaoImpl();
         scheduledContextInstanceDao.initStandalone(solrUrl, solrSchedulerInstanceRetentionDays, solrSocketTimeoutMilli,
             solrConnectionTimeoutMilli);
         scheduledContextInstanceDao.setSolrUsername(solrUsername);
         scheduledContextInstanceDao.setSolrPassword(solrPassword);
-
-        SolrScheduledContextInstanceAuditAggregateDaoImpl scheduledContextInstanceAuditAggregateDao = new SolrScheduledContextInstanceAuditAggregateDaoImpl();
-        scheduledContextInstanceAuditAggregateDao.initStandalone(solrUrl, solrSchedulerInstanceRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        scheduledContextInstanceAuditAggregateDao.setSolrUsername(solrUsername);
-        scheduledContextInstanceAuditAggregateDao.setSolrPassword(solrPassword);
 
         SolrScheduledContextInstanceAuditDaoImpl scheduledContextInstanceAuditDao = new SolrScheduledContextInstanceAuditDaoImpl();
         scheduledContextInstanceAuditDao.initStandalone(solrUrl, solrSchedulerInstanceRetentionDays, solrSocketTimeoutMilli,
@@ -216,6 +212,17 @@ public class SolrClientAutoConfiguration {
 
         return new SolrScheduledContextInstanceServiceImpl(scheduledContextInstanceDao, scheduledContextInstanceAuditDao, scheduledContextInstanceAuditAggregateDao
             , this.saveContextInstanceAuditRecords, this.saveContextInstanceAuditDeltaRecords);
+    }
+
+    @Bean
+    public ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao() {
+        SolrScheduledContextInstanceAuditAggregateDaoImpl scheduledContextInstanceAuditAggregateDao = new SolrScheduledContextInstanceAuditAggregateDaoImpl();
+        scheduledContextInstanceAuditAggregateDao.initStandalone(solrUrl, solrSchedulerInstanceRetentionDays, solrSocketTimeoutMilli,
+            solrConnectionTimeoutMilli);
+        scheduledContextInstanceAuditAggregateDao.setSolrUsername(solrUsername);
+        scheduledContextInstanceAuditAggregateDao.setSolrPassword(solrPassword);
+
+        return scheduledContextInstanceAuditAggregateDao;
     }
 
     @Bean
@@ -284,15 +291,19 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public SchedulerJobInstanceService schedulerJobInstanceService(SolrSchedulerJobDaoImpl schedulerJobDao) {
+    public SchedulerJobInstanceService schedulerJobInstanceService(SolrSchedulerJobDaoImpl schedulerJobDao,
+                                                                   ScheduledContextInstanceAuditAggregateDao solrScheduledContextInstanceAuditAggregateDao,
+                                                                   ScheduledContextInstanceService scheduledContextInstanceService) {
         SolrSchedulerJobInstanceDaoImpl scheduledContextInstanceDao = new SolrSchedulerJobInstanceDaoImpl();
         scheduledContextInstanceDao.initStandalone(solrUrl, solrSchedulerInstanceRetentionDays, solrSocketTimeoutMilli,
             solrConnectionTimeoutMilli);
         scheduledContextInstanceDao.setSolrUsername(solrUsername);
         scheduledContextInstanceDao.setSolrPassword(solrPassword);
 
-        return new SolrSchedulerJobInstanceServiceImpl(scheduledContextInstanceDao, schedulerJobDao
-            , schedulerJobExecutionEnvironmentLabel, useLegacyJobStatusCount);
+        return new SolrSchedulerJobInstanceServiceImpl(scheduledContextInstanceDao
+            , (SolrScheduledContextInstanceAuditAggregateDaoImpl) solrScheduledContextInstanceAuditAggregateDao
+            , schedulerJobDao, scheduledContextInstanceService, schedulerJobExecutionEnvironmentLabel
+            , useLegacyJobStatusCount);
     }
 
     @Bean
