@@ -73,7 +73,9 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String SYSTEM_EVENT_SUBJECT = "systemEventSubject";
     public static final String SYSTEM_EVENT_ACTION ="systemEventAction";
     public static final String DISPLAY_NAME ="displayName";
-
+    public static final String CONTAINS_REPEATING_JOBS = "containsRepeatingJobs";
+    public static final String IS_REPEATING_JOB = "isRepeatingJob";
+    public static final String JOB_TYPE = "jobType";
 
     public static final String AND = " AND ";
     public static final String OR = " OR ";

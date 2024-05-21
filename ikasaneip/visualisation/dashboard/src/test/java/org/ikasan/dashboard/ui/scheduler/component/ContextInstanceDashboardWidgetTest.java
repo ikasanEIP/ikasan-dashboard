@@ -225,6 +225,19 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
 
         Button errorStatusButton = _get(layout, Button.class, spec -> spec.withId("errorStatusButton"));
         Assert.assertEquals("0 ERROR", errorStatusButton.getElement().getText());
+
+        layout = (HorizontalLayout) GridKt._getCellComponent(contextInstanceAggregateJobStatusGrid, 0, "repeatingJobsSuccess");
+        Assert.assertNotNull(layout);
+
+        Button repeatingJobSuccessesButton = _get(layout, Button.class, spec -> spec.withId("repeatingJobSuccessesButton"));
+        Assert.assertEquals("5 COMPLETE", repeatingJobSuccessesButton.getElement().getText());
+
+        layout = (HorizontalLayout) GridKt._getCellComponent(contextInstanceAggregateJobStatusGrid, 0, "repeatingJobsError");
+        Assert.assertNotNull(layout);
+
+        Button repeatingJobErrorsButton = _get(layout, Button.class, spec -> spec.withId("repeatingJobErrorsButton"));
+        Assert.assertEquals("2 ERROR", repeatingJobErrorsButton.getElement().getText());
+
     }
 
     @Test

@@ -27,6 +27,8 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
     private InstanceStatus status;
     private Map<String, SchedulerJobInitiationEvent> heldJobs;
 
+    private boolean containsRepeatingJobs = false;
+
     public SolrContextInstanceImpl() {
         status = InstanceStatus.WAITING;
         createdDateTime = System.currentTimeMillis();
@@ -132,6 +134,16 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
     @Override
     public void setHeldJobs(Map<String, SchedulerJobInitiationEvent> heldJobs) {
         this.heldJobs = heldJobs;
+    }
+
+    @Override
+    public boolean isContainsRepeatingJobs() {
+        return containsRepeatingJobs;
+    }
+
+    @Override
+    public void setContainsRepeatingJobs(boolean containsRepeatingJobs) {
+        this.containsRepeatingJobs = containsRepeatingJobs;
     }
 
     @Override
