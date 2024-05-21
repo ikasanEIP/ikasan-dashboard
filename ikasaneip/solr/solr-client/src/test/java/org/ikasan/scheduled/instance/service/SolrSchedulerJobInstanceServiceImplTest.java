@@ -14,6 +14,9 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.context.model.SolrContextParameterImpl;
 import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduled.event.model.SolrDryRunParameters;
+import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditAggregateDaoImpl;
+import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditDaoImpl;
+import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.dao.*;
@@ -21,6 +24,7 @@ import org.ikasan.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
@@ -52,6 +56,12 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     private SolrQuartzScheduleDrivenJobDaoImpl solrQuartzScheduleDrivenJobRecordDao;
     private SolrInternalEventDrivenJobDaoImpl solrInternalEventDrivenJobRecordDao;
     private SolrGlobalEventJobDaoImpl solrGlobalEventJobRecordDao;
+
+    private SolrScheduledContextInstanceDaoImpl scheduledContextInstanceDao;
+    private SolrScheduledContextInstanceAuditAggregateDaoImpl scheduledContextInstanceAuditAggregateDao;
+    private SolrScheduledContextInstanceAuditDaoImpl scheduledContextInstanceAuditDao;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
+
     private Path tmpPath;
     private EmbeddedSolrServer server;
 
@@ -88,7 +98,22 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.solrGlobalEventJobRecordDao = new SolrGlobalEventJobDaoImpl();
         this.solrGlobalEventJobRecordDao.setSolrClient(server);
 
-        this.service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, this.solrSchedulerJobDao, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel(), true);
+        this.scheduledContextInstanceDao = new SolrScheduledContextInstanceDaoImpl();
+        this.scheduledContextInstanceDao.setSolrClient(this.server);
+
+        this.scheduledContextInstanceAuditAggregateDao = new SolrScheduledContextInstanceAuditAggregateDaoImpl();
+        this.scheduledContextInstanceAuditAggregateDao.setSolrClient(this.server);
+
+        this.scheduledContextInstanceAuditDao = new SolrScheduledContextInstanceAuditDaoImpl();
+        this.scheduledContextInstanceAuditDao.setSolrClient(this.server);
+
+        this.scheduledContextInstanceService = new SolrScheduledContextInstanceServiceImpl(this.scheduledContextInstanceDao, this.scheduledContextInstanceAuditDao
+            , this.scheduledContextInstanceAuditAggregateDao, true, true);
+
+        this.service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao
+            , this.scheduledContextInstanceAuditAggregateDao, this.solrSchedulerJobDao, this.scheduledContextInstanceService
+            , SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel()
+            , true);
     }
 
     @After
@@ -99,12 +124,26 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfSchedulerJobInstanceDaoIsNull() {
-        service = new SolrSchedulerJobInstanceServiceImpl(null, this.solrSchedulerJobDao, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel(), true);
+        service = new SolrSchedulerJobInstanceServiceImpl(null, this.scheduledContextInstanceAuditAggregateDao, this.solrSchedulerJobDao
+            , this.scheduledContextInstanceService, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel(), true);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionIfScheduledContextInstanceAuditAggregateDaoIsNull() {
+        service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, null, this.solrSchedulerJobDao
+            , this.scheduledContextInstanceService, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel(), true);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfSchedulerJobDaoIsNull() {
-        service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, null, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel(), true);
+        service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, this.scheduledContextInstanceAuditAggregateDao, null
+            , this.scheduledContextInstanceService, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel(), true);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionIfScheduledContextInstanceIsNull() {
+        service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, this.scheduledContextInstanceAuditAggregateDao, this.solrSchedulerJobDao
+            , null, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel(), true);
     }
 
     @Test

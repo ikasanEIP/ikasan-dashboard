@@ -12,6 +12,8 @@ public class SolrContextInstanceAggregateJobStatusImpl implements ContextInstanc
     private String contextInstanceId;
     private String contextInstanceName;
     private Map<String, Integer> statusCounts;
+    private Map<String, Integer> repeatingJobsStatusCounts;
+    private boolean containsRepeatableJobs;
 
     /**
      * Constructor
@@ -21,10 +23,11 @@ public class SolrContextInstanceAggregateJobStatusImpl implements ContextInstanc
      * @param statusCounts
      */
     public SolrContextInstanceAggregateJobStatusImpl(String contextInstanceId, String contextInstanceName
-        , Map<String, Integer> statusCounts) {
+        , Map<String, Integer> statusCounts, boolean containsRepeatableJobs) {
         this.contextInstanceId = contextInstanceId;
         this.contextInstanceName = contextInstanceName;
         this.statusCounts = statusCounts;
+        this.containsRepeatableJobs = containsRepeatableJobs;
     }
 
     @Override
@@ -47,16 +50,41 @@ public class SolrContextInstanceAggregateJobStatusImpl implements ContextInstanc
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(contextInstanceId);
+    }
+
+    @Override
+    public boolean containsRepeatableJobs() {
+        return this.containsRepeatableJobs;
+    }
+
+    @Override
+    public void setContainsRepeatableJobs(boolean containsRepeatableJobs) {
+        this.containsRepeatableJobs = containsRepeatableJobs;
+    }
+
+    @Override
+    public int repeatingJobInstanceStatusCount(InstanceStatus instanceStatus) {
+        if(!this.containsRepeatableJobs) return 0;
+        else if(!repeatingJobsStatusCounts.containsKey(instanceStatus.name())) {
+            return 0;
+        }
+
+        return repeatingJobsStatusCounts.get(instanceStatus.name());
+    }
+
+    @Override
+    public void setRepeatingJobsStatusCounts(Map<String, Integer> repeatingJobsStatusCounts) {
+        this.repeatingJobsStatusCounts = repeatingJobsStatusCounts;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SolrContextInstanceAggregateJobStatusImpl that = (SolrContextInstanceAggregateJobStatusImpl) o;
         return Objects.equals(contextInstanceId, that.contextInstanceId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(contextInstanceId);
     }
 
     @Override

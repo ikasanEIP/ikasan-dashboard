@@ -158,6 +158,9 @@
     <field name="systemEventAction" type="text_general" multiValued="false" stored="true"/>
     <field name="hospitalEventAction" type="text_general" multiValued="false" stored="true"/>
     <field name="displayName" type="text_general" multiValued="false" stored="true"/>
+    <field name="containsRepeatingJobs" type="boolean" indexed="true" stored="true"/>
+    <field name="isRepeatingJob" type="boolean" indexed="true" stored="true"/>
+    <field name="jobType" type="text_general" multiValued="false" stored="true"/>
     <!-- END Ikasan Managed Schema Fields -->
 
     <!-- This can be enabled, in case the client does not know what fields may be searched. It isn't enabled by default

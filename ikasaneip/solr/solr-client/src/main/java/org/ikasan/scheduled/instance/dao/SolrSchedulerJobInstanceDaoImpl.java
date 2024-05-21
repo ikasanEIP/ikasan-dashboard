@@ -9,6 +9,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
+import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
@@ -16,6 +17,7 @@ import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -37,8 +39,6 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
      * Logger for this class
      */
     private static Logger logger = LoggerFactory.getLogger(SolrSchedulerJobInstanceDaoImpl.class);
-
-
 
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         SolrInputDocument document = new SolrInputDocument();
@@ -131,6 +131,25 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         SolrSchedulerJobInstanceSearchFilterImpl filter = new SolrSchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
         return this.getScheduledContextInstancesByFilter(filter, limit, offset, sortField, sortDirection);
+    }
+
+    @Override
+    public boolean doesJobPlanInstanceContainRepeatingJobs(String contextInstanceId) {
+        SolrSchedulerJobInstanceSearchFilterImpl filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        SearchResults<SchedulerJobInstanceRecord> results =  this.getScheduledContextInstancesByFilter(filter
+            , -1, -1, null, null);
+
+        for(SchedulerJobInstanceRecord record: results.getResultList()) {
+            SchedulerJobInstance instance = record.getSchedulerJobInstance();
+            if(instance instanceof SolrInternalEventDrivenJobInstanceImpl) {
+                if(((SolrInternalEventDrivenJobInstanceImpl)instance).isJobRepeatable()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -297,7 +316,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
                 FacetField contextName = rsp.getFacetField(SolrDaoBase.FLOW_NAME);
 
                 results.add(new SolrContextInstanceAggregateJobStatusImpl(id, contextName.getValues().get(0).getName(),
-                    jobStatusCount));
+                    jobStatusCount, false));
 
             } catch (Exception e) {
                 throw new RuntimeException("Error resolving aggregate jobs statuses record data by query [" + queryString
@@ -378,7 +397,8 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
                     }
                 });
 
-                results.add(new SolrContextInstanceAggregateJobStatusImpl(id, contextName.get(), statusCounts));
+                results.add(new SolrContextInstanceAggregateJobStatusImpl(id, contextName.get(), statusCounts,
+                    this.doesJobPlanInstanceContainRepeatingJobs(id)));
 
             } catch (Exception e) {
                 throw new RuntimeException("Error resolving aggregate jobs statuses record data by query [" + queryString

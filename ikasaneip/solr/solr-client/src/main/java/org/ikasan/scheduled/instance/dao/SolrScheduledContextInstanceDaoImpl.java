@@ -56,6 +56,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         document.setField(EXPIRY, expiry);
         document.setField(START_TIME, scheduledContextInstanceRecord.getContextInstance().getStartTime());
         document.setField(END_TIME, scheduledContextInstanceRecord.getContextInstance().getEndTime());
+        document.addField(CONTAINS_REPEATING_JOBS, scheduledContextInstanceRecord.getContextInstance().isContainsRepeatingJobs());
 
         logger.debug(String.format("Converted scheduled context instance to SolrDocument[%s]", document));
         return document;

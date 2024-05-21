@@ -36,6 +36,15 @@ public class SolrScheduledContextInstanceAuditAggregateRecordImpl implements Sch
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
 
+    @Field(SolrDaoBase.STATUS)
+    private String status;
+
+    @Field(SolrDaoBase.IS_REPEATING_JOB)
+    private boolean isRepeatingJob;
+
+    @Field(SolrDaoBase.JOB_TYPE)
+    private String jobType;
+
     @Override
     public String getId() {
         return this.id;
@@ -97,6 +106,35 @@ public class SolrScheduledContextInstanceAuditAggregateRecordImpl implements Sch
     @Override
     public long getTimestamp() {
         return this.timestamp;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    @Override
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    @Override
+    public boolean isRepeatingJob() {
+        return isRepeatingJob;
+    }
+
+    @Override
+    public void setRepeatingJob(boolean repeatingJob) {
+        isRepeatingJob = repeatingJob;
+    }
+
+    @Override
+    public String getJobType() {
+        return jobType;
+    }
+
+    @Override
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
     }
 
     @Override
