@@ -19,6 +19,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.systemevent.SystemEventService;
@@ -100,7 +101,8 @@ public class ContextServiceAutoConfiguration {
         ContextInstanceSchedulerService contextInstanceSchedulerService,
         TimeService timeService,
         ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
-        SystemEventService systemEventService) {
+        SystemEventService systemEventService,
+        JobUtilsService jobUtilsService) {
 
         return new ContextInstanceRegistrationServiceImpl(queueDirectory,
             scheduledContextInstanceService,
@@ -119,6 +121,7 @@ public class ContextServiceAutoConfiguration {
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,
+            jobUtilsService,
             this.isIkasanEnterpriseSchedulerInstance
         );
     }
