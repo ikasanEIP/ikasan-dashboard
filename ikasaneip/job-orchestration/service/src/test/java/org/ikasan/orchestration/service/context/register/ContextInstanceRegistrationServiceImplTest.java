@@ -34,6 +34,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
@@ -98,6 +99,8 @@ public class ContextInstanceRegistrationServiceImplTest {
     private ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster;
     @Mock
     private SystemEventService systemEventService;
+    @Mock
+    private JobUtilsService jobUtilsService;
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
 
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -131,6 +134,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,
+            this.jobUtilsService,
             true);
         ContextMachineCache.instance().resetAllCache();
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
@@ -215,6 +219,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,
+            this.jobUtilsService,
             false);
 
         registrationService.register("contextName");
@@ -253,6 +258,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,
+            this.jobUtilsService,
             false);
 
         registrationService.register("contextName", List.of());
@@ -291,6 +297,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,
+            this.jobUtilsService,
             false);
 
         registrationService.deRegisterById("contextId");
@@ -329,6 +336,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,
+            this.jobUtilsService,
             false);
 
         registrationService.deRegisterByName("contextName");
@@ -367,6 +375,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,
+            this.jobUtilsService,
             false);
 
         registrationService.deregisterManually("contextId");
@@ -405,6 +414,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,
+            this.jobUtilsService,
             false);
 
         registrationService.reSchedule("contextName");
@@ -3024,6 +3034,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,
+            this.jobUtilsService,
             false);
 
 

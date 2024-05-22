@@ -33,6 +33,7 @@ import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
@@ -143,6 +144,7 @@ public abstract class ContextInstanceServiceBase {
         if (this.timeService == null) {
             throw new IllegalArgumentException("timeService cannot be null!");
         }
+
         this.objectMapper = ObjectMapperFactory.newInstance();
     }
 
@@ -172,7 +174,7 @@ public abstract class ContextInstanceServiceBase {
             schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance, parameters);
         }
 
-        Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
+        Map<String, InternalEventDrivenJobInstance> internalJobs = getAllCommandExecutionJobs(instance.getId());
         HashMap<String, ModuleMetaData> agents = getAgents(context);
 
         internalJobs.entrySet().forEach(job -> {
@@ -286,7 +288,7 @@ public abstract class ContextInstanceServiceBase {
         }
 
 
-        Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
+        Map<String, InternalEventDrivenJobInstance> internalJobs = getAllCommandExecutionJobs(instance.getId());
         HashMap<String, ModuleMetaData> agents = getAgents(context);
 
         internalJobs.entrySet().forEach(job -> {
@@ -447,9 +449,25 @@ public abstract class ContextInstanceServiceBase {
         return agents;
     }
 
-    private Map<String, InternalEventDrivenJobInstance> getInternalJobs(String contextInstanceId) {
+    protected Map<String, InternalEventDrivenJobInstance> getAllCommandExecutionJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+
+        return this.getFilteredCommandExecutionJobs(filter);
+    }
+
+    protected List<InternalEventDrivenJobInstance> getRunningCommandExecutionJobs(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setStatus(InstanceStatus.RUNNING.name());
+
+        return this.getFilteredCommandExecutionJobs(filter).values().stream()
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
+    private Map<String, InternalEventDrivenJobInstance> getFilteredCommandExecutionJobs(SchedulerJobInstanceSearchFilter filter) {
         filter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
         SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
             = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
@@ -465,7 +483,7 @@ public abstract class ContextInstanceServiceBase {
         return internalEventDrivenJobMap;
     }
 
-    private Map<String, QuartzScheduleDrivenJobInstance> getQuartzBasedJobs(String contextInstanceId) {
+    protected Map<String, QuartzScheduleDrivenJobInstance> getQuartzBasedJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
         filter.setJobType(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
@@ -479,7 +497,7 @@ public abstract class ContextInstanceServiceBase {
         return quartzScheduleDrivenJobInstanceMap;
     }
 
-    private Map<String, GlobalEventJobInstance> getGlobalEventJobs(String contextInstanceId) {
+    protected Map<String, GlobalEventJobInstance> getGlobalEventJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
         filter.setJobType(JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
