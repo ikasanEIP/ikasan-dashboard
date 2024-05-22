@@ -30,7 +30,7 @@ public class JobUtilsServiceImpl extends ModuleRestService implements JobUtilsSe
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl+KILL_URL;
 
-        Map<String, String> parameters = new HashMap<String, String>()
+        Map<String, String> parameters = new HashMap<>()
         {{put("pid", Long.toString(pid));put("forcibly", Boolean.toString(forcibly));}};
 
         try
