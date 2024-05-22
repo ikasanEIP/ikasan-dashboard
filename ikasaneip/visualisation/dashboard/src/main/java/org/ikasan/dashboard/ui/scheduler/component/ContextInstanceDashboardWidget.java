@@ -493,286 +493,286 @@ public class ContextInstanceDashboardWidget extends Div
             .setFlexGrow(5)
             .setResizable(true);
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)
-                + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_WAITING, IkasanColours.BLACK,
-                contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING));
-            statusButton.setId("waitingStatusButton");
-            statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)>0);
-            statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
-                , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.WAITING));
-            statusButton.getElement().getStyle().set("cursor", "pointer");
+                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)
+                        + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_WAITING, IkasanColours.BLACK,
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING));
+                statusButton.setId("waitingStatusButton");
+                statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)>0);
+                statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.WAITING));
+                statusButton.getElement().getStyle().set("cursor", "pointer");
 
-            Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_WAITING, IkasanColours.BLACK);
-            breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)>0);
-            breakOut.addClickListener(event -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
-                        , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.WAITING.name()));
+                Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_WAITING, IkasanColours.BLACK);
+                breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)>0);
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
+                            , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.WAITING.name()));
 
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            });
-            breakOut.getElement().getStyle().set("cursor", "pointer");
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                breakOut.getElement().getStyle().set("cursor", "pointer");
 
-            statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
-            breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
+                breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
 
-            horizontalLayout.add(statusButton, breakOut);
-            return horizontalLayout;
-        }))
+                horizontalLayout.add(statusButton, breakOut);
+                return horizontalLayout;
+            }))
             .setHeader(getTranslation("table-header.job-status-counts", UI.getCurrent().getLocale()))
             .setFlexGrow(3)
             .setKey("waitingStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)
-                + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE,
-                contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE));
-            statusButton.setId("completeStatusButton");
-            statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)>0);
-            statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
-                , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.COMPLETE));
-            statusButton.getElement().getStyle().set("cursor", "pointer");
+                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)
+                        + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE,
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE));
+                statusButton.setId("completeStatusButton");
+                statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)>0);
+                statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.COMPLETE));
+                statusButton.getElement().getStyle().set("cursor", "pointer");
 
-            Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE);
-            breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)>0);
-            breakOut.addClickListener(event -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
-                        , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.COMPLETE.name()));
+                Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE);
+                breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)>0);
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
+                            , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.COMPLETE.name()));
 
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            });
-            breakOut.getElement().getStyle().set("cursor", "pointer");
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                breakOut.getElement().getStyle().set("cursor", "pointer");
 
-            statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
-            breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
+                breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
 
-            horizontalLayout.add(statusButton, breakOut);
-            return horizontalLayout;
-        }))
+                horizontalLayout.add(statusButton, breakOut);
+                return horizontalLayout;
+            }))
             .setFlexGrow(3)
             .setKey("completeStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)
-                + " " + getTranslation(InstanceStatus.RUNNING.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_RUNNING, IkasanColours.WHITE,
-                contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING));
-            statusButton.setId("runningStatusButton");
-            statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)>0);
-            statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
-                , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.RUNNING));
-            if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
+                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)
+                        + " " + getTranslation(InstanceStatus.RUNNING.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_RUNNING, IkasanColours.WHITE,
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING));
+                statusButton.setId("runningStatusButton");
+                statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)>0);
+                statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.RUNNING));
+                if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
 
-            Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_RUNNING, IkasanColours.WHITE);
-            breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)>0);
-            breakOut.addClickListener(event -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
-                        , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.RUNNING.name()));
+                Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_RUNNING, IkasanColours.WHITE);
+                breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)>0);
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
+                            , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.RUNNING.name()));
 
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            });
-            breakOut.getElement().getStyle().set("cursor", "pointer");
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                breakOut.getElement().getStyle().set("cursor", "pointer");
 
-            statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
-            breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
+                breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
 
-            horizontalLayout.add(statusButton, breakOut);
+                horizontalLayout.add(statusButton, breakOut);
 
-            return horizontalLayout;
-        }))
+                return horizontalLayout;
+            }))
             .setFlexGrow(3)
             .setKey("runningStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)
-                + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_LOCK_QUEUED, IkasanColours.WHITE,
-                contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED));
-            statusButton.setId("queuedStatusButton");
-            statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)>0);
-            statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
-                , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.LOCK_QUEUED));
+                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)
+                        + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_LOCK_QUEUED, IkasanColours.WHITE,
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED));
+                statusButton.setId("queuedStatusButton");
+                statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)>0);
+                statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.LOCK_QUEUED));
                 if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
 
-            Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_LOCK_QUEUED, IkasanColours.WHITE);
-            breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)>0);
-            breakOut.addClickListener(event -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
-                        , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.LOCK_QUEUED.name()));
+                Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_LOCK_QUEUED, IkasanColours.WHITE);
+                breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)>0);
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
+                            , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.LOCK_QUEUED.name()));
 
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            });
-            breakOut.getElement().getStyle().set("cursor", "pointer");
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                breakOut.getElement().getStyle().set("cursor", "pointer");
 
-            statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
-            breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
+                breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
 
-            horizontalLayout.add(statusButton, breakOut);
+                horizontalLayout.add(statusButton, breakOut);
 
-            return horizontalLayout;
-        })) .setFlexGrow(3)
+                return horizontalLayout;
+            })) .setFlexGrow(3)
             .setKey("queuedStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)
-                + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ON_HOLD, IkasanColours.WHITE,
-                contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD));
-            statusButton.setId("onHoldStatusButton");
-            statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)>0);
-            statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
-                , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ON_HOLD));
-            if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
+                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)
+                        + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ON_HOLD, IkasanColours.WHITE,
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD));
+                statusButton.setId("onHoldStatusButton");
+                statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)>0);
+                statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ON_HOLD));
+                if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
 
-            Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_ON_HOLD, IkasanColours.WHITE);
-            breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)>0);
-            breakOut.addClickListener(event -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
-                        , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ON_HOLD.name()));
+                Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_ON_HOLD, IkasanColours.WHITE);
+                breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)>0);
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
+                            , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ON_HOLD.name()));
 
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            });
-            breakOut.getElement().getStyle().set("cursor", "pointer");
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                breakOut.getElement().getStyle().set("cursor", "pointer");
 
-            statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
-            breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
+                breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
 
-            horizontalLayout.add(statusButton, breakOut);
-            return horizontalLayout;
-        }))
+                horizontalLayout.add(statusButton, breakOut);
+                return horizontalLayout;
+            }))
             .setFlexGrow(3)
             .setKey("onHoldStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)
-                + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_SKIPPED, IkasanColours.WHITE,
-                contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED));
-            statusButton.setId("skippedStatusButton");
-            statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)>0);
-            statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
-                , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.SKIPPED));
-            if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
+                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)
+                        + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_SKIPPED, IkasanColours.WHITE,
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED));
+                statusButton.setId("skippedStatusButton");
+                statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)>0);
+                statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.SKIPPED));
+                if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
 
-            Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_SKIPPED, IkasanColours.WHITE);
-            breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)>0);
-            breakOut.addClickListener(event -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
-                        , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.SKIPPED.name()));
+                Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_SKIPPED, IkasanColours.WHITE);
+                breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)>0);
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
+                            , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.SKIPPED.name()));
 
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            });
-            breakOut.getElement().getStyle().set("cursor", "pointer");
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                breakOut.getElement().getStyle().set("cursor", "pointer");
 
-            statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
-            breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
+                breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
 
-            horizontalLayout.add(statusButton, breakOut);
+                horizontalLayout.add(statusButton, breakOut);
 
-            return horizontalLayout;
-        })).setFlexGrow(3)
+                return horizontalLayout;
+            })).setFlexGrow(3)
             .setKey("skippedStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)
-                + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
-                , contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR));
-            statusButton.setId("errorStatusButton");
-            statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)>0);
-            statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
-                , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ERROR));
-            if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
+                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)
+                        + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
+                    , contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR));
+                statusButton.setId("errorStatusButton");
+                statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)>0);
+                statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ERROR));
+                if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)>0) statusButton.getElement().getStyle().set("cursor", "pointer");
 
-            Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE);
-            breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)>0);
-            breakOut.addClickListener(event -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
-                        , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ERROR.name()));
+                Button breakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE);
+                breakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)>0);
+                breakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
+                            , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ERROR.name()));
 
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            });
-            breakOut.getElement().getStyle().set("cursor", "pointer");
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                breakOut.getElement().getStyle().set("cursor", "pointer");
 
-            statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
-            breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
+                breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
 
-            horizontalLayout.add(statusButton, breakOut);
-            return horizontalLayout;
-        })).setFlexGrow(3)
+                horizontalLayout.add(statusButton, breakOut);
+                return horizontalLayout;
+            })).setFlexGrow(3)
             .setKey("errorStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
-            horizontalLayout.setId("repeatingJobSuccessesButtonLayout");
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
+                horizontalLayout.setId("repeatingJobSuccessesButtonLayout");
 
-            if(contextInstanceAggregateJobStatus.containsRepeatableJobs()) {
-                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE)
-                    + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE
-                , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE));
-                statusButton.setEnabled(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE)>0);
-                statusButton.setId("repeatingJobSuccessesButton");
-                statusButton.addClickListener(event -> {
-                    RepeatingSchedulerJobExecutionHistoryDialog dialog = new RepeatingSchedulerJobExecutionHistoryDialog(this.scheduledContextInstanceService,
-                        ContextMachineCache.instance().getByContextInstanceId(contextInstanceAggregateJobStatus.getContextInstanceId()).getContext()
-                        , this.moduleMetaDataService, this.logStreamingService);
-                    dialog.open();
-                });
-                statusButton.getElement().getStyle().set("cursor", "pointer");
-                horizontalLayout.add(statusButton);
+                if(contextInstanceAggregateJobStatus.containsRepeatableJobs()) {
+                    Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE)
+                            + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE
+                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE));
+                    statusButton.setEnabled(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE)>0);
+                    statusButton.setId("repeatingJobSuccessesButton");
+                    statusButton.addClickListener(event -> {
+                        RepeatingSchedulerJobExecutionHistoryDialog dialog = new RepeatingSchedulerJobExecutionHistoryDialog(this.scheduledContextInstanceService,
+                            ContextMachineCache.instance().getByContextInstanceId(contextInstanceAggregateJobStatus.getContextInstanceId()).getContext()
+                            , this.moduleMetaDataService, this.logStreamingService);
+                        dialog.open();
+                    });
+                    statusButton.getElement().getStyle().set("cursor", "pointer");
+                    horizontalLayout.add(statusButton);
 
-                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-execution-dialog", UI.getCurrent().getLocale()));
-            }
-            else {
-                Button statusButton = this.buildStatusCountButton(getTranslation("label.not-applicable", UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
-                    , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR));
-                statusButton.setEnabled(false);
-                statusButton.setId("repeatingJobSuccessesButton");
-                horizontalLayout.add(statusButton);
-            }
-            return horizontalLayout;
-        })).setFlexGrow(2)
+                    statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-execution-dialog", UI.getCurrent().getLocale()));
+                }
+                else {
+                    Button statusButton = this.buildStatusCountButton(getTranslation("label.not-applicable", UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
+                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR));
+                    statusButton.setEnabled(false);
+                    statusButton.setId("repeatingJobSuccessesButton");
+                    horizontalLayout.add(statusButton);
+                }
+                return horizontalLayout;
+            })).setFlexGrow(2)
             .setKey("repeatingJobsSuccess").setHeader("Repeating Jobs");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
-            horizontalLayout.setId("repeatingJobErrorsButtonLayout");
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
+                horizontalLayout.setId("repeatingJobErrorsButtonLayout");
 
-            if(contextInstanceAggregateJobStatus.containsRepeatableJobs()) {
-                Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR)
-                    + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
-                , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR));
-                statusButton.setId("repeatingJobErrorsButton");
-                statusButton.setEnabled(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR)>0);
+                if(contextInstanceAggregateJobStatus.containsRepeatableJobs()) {
+                    Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR)
+                            + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
+                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR));
+                    statusButton.setId("repeatingJobErrorsButton");
+                    statusButton.setEnabled(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR)>0);
 
-                statusButton.addClickListener(event -> {
-                    RepeatingSchedulerJobExecutionHistoryDialog dialog = new RepeatingSchedulerJobExecutionHistoryDialog(this.scheduledContextInstanceService,
-                        ContextMachineCache.instance().getByContextInstanceId(contextInstanceAggregateJobStatus.getContextInstanceId()).getContext()
-                        , this.moduleMetaDataService, this.logStreamingService);
-                    dialog.open();
-                });
-                statusButton.getElement().getStyle().set("cursor", "pointer");
+                    statusButton.addClickListener(event -> {
+                        RepeatingSchedulerJobExecutionHistoryDialog dialog = new RepeatingSchedulerJobExecutionHistoryDialog(this.scheduledContextInstanceService,
+                            ContextMachineCache.instance().getByContextInstanceId(contextInstanceAggregateJobStatus.getContextInstanceId()).getContext()
+                            , this.moduleMetaDataService, this.logStreamingService);
+                        dialog.open();
+                    });
+                    statusButton.getElement().getStyle().set("cursor", "pointer");
 
-                statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-execution-dialog", UI.getCurrent().getLocale()));
+                    statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-execution-dialog", UI.getCurrent().getLocale()));
 
-                horizontalLayout.add(statusButton);
-            }
-            else {
-                Button statusButton = this.buildStatusCountButton(getTranslation("label.not-applicable", UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
-                    , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR));
-                statusButton.setEnabled(false);
-                statusButton.setId("repeatingJobErrorsButton");
-                horizontalLayout.add(statusButton);
-            }
-            return horizontalLayout;
-        })).setFlexGrow(2)
+                    horizontalLayout.add(statusButton);
+                }
+                else {
+                    Button statusButton = this.buildStatusCountButton(getTranslation("label.not-applicable", UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
+                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR));
+                    statusButton.setEnabled(false);
+                    statusButton.setId("repeatingJobErrorsButton");
+                    horizontalLayout.add(statusButton);
+                }
+                return horizontalLayout;
+            })).setFlexGrow(2)
             .setKey("repeatingJobsError");
 
         this.contextNameTf = new TextField();
@@ -887,7 +887,7 @@ public class ContextInstanceDashboardWidget extends Div
                     ContextInstance instance = ContextMachineCache.instance().getByContextInstanceId(preparedFutureJobPlanInstance.getContextInstanceId()).getContext();
                     HoldAllCommandExecutionJobsForContextInstanceCommand holdAllCommandExecutionJobsForContextInstanceCommand
                         = new HoldAllCommandExecutionJobsForContextInstanceCommand(instance, this.schedulerJobInstanceService,
-                            this.systemEventLogger, this.ikasanAuthentication);
+                        this.systemEventLogger, this.ikasanAuthentication);
                     holdAllCommandExecutionJobsForContextInstanceCommand.execute();
                 });
 
@@ -897,7 +897,7 @@ public class ContextInstanceDashboardWidget extends Div
                     ContextInstance instance = ContextMachineCache.instance().getByContextInstanceId(preparedFutureJobPlanInstance.getContextInstanceId()).getContext();
                     ReleaseAllCommandExecutionJobsForContextInstanceCommand releaseAllCommandExecutionJobsForContextInstanceCommand
                         = new ReleaseAllCommandExecutionJobsForContextInstanceCommand(instance, this.schedulerJobInstanceService,
-                            this.systemEventLogger, this.ikasanAuthentication);
+                        this.systemEventLogger, this.ikasanAuthentication);
                     releaseAllCommandExecutionJobsForContextInstanceCommand.execute();
                 });
 
@@ -1103,7 +1103,7 @@ public class ContextInstanceDashboardWidget extends Div
      * @param status                           The instance status.
      */
     private void openContextInstanceDialog(ContextInstanceAggregateJobStatus contextInstanceAggregateJobStatus, String contextInstanceWidgetTab,
-                            InstanceStatus status) {
+                                           InstanceStatus status) {
         ContextInstance contextInstance = this.scheduledContextInstanceService
             .findById(contextInstanceAggregateJobStatus.getContextInstanceId()+ "_" + SCHEDULED_CONTEXT_INSTANCE).getContextInstance();
         ContextTemplate contextTemplate = this.scheduledContextService.findByName(contextInstanceAggregateJobStatus.getContextInstanceName()).getContext();
@@ -1696,7 +1696,7 @@ public class ContextInstanceDashboardWidget extends Div
      * @return The filtered and sorted list of PreparedFutureJobPlanInstances.
      */
     private List<PreparedFutureJobPlanInstance> filterPreparedContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
-                                                                                String sortField, String sortOrder) {
+                                                                               String sortField, String sortOrder) {
         ContextInstanceSearchFilter preparedSearchFilter = new SolrContextInstanceSearchFilterImpl();
         preparedSearchFilter.setStatus(InstanceStatus.PREPARED.name());
 
@@ -1785,7 +1785,7 @@ public class ContextInstanceDashboardWidget extends Div
      * @return The list of completed context instances.
      */
     private List<CompletedJobPlanInstance> filterCompleteContextInstances(ContextInstanceSearchFilter contextInstanceSearchFilter, int offset, int limit,
-                                                                                String sortField, String sortOrder) {
+                                                                          String sortField, String sortOrder) {
         contextInstanceSearchFilter.setStatus(InstanceStatus.ENDED.name());
 
         boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
@@ -1994,9 +1994,8 @@ public class ContextInstanceDashboardWidget extends Div
                     this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
                     this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
                 }
-                this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
-                this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
-                this.updateAggregateJobStatusFilteringCounts();
+
+                this.updateAggregateContextInstanceAggregateStatus(event.getContextInstanceId());
             });
         }
     }
@@ -2011,9 +2010,8 @@ public class ContextInstanceDashboardWidget extends Div
                     this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
                     this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
                 }
-                this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
-                this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
-                this.updateAggregateJobStatusFilteringCounts();
+
+                this.updateAggregateContextInstanceAggregateStatus(event.getId());
             });
         }
     }
@@ -2022,14 +2020,23 @@ public class ContextInstanceDashboardWidget extends Div
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
-                List<ContextInstanceAggregateJobStatus> statuses = this.schedulerJobInstanceService
-                    .getJobStatusCountForContextInstances(List.of(event.getContextInstance().getId()));
-                if(!statuses.isEmpty()) {
-                    statuses.forEach(status -> this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshItem(status));
-                }
-                this.updateAggregateJobStatusFilteringCounts();
+                this.updateAggregateContextInstanceAggregateStatus(event.getContextInstance().getId());
             });
         }
+    }
+
+    /**
+     * Updates the aggregate status of a specific context instance.
+     *
+     * @param contextInstanceId The ID of the context instance to update.
+     */
+    private void updateAggregateContextInstanceAggregateStatus(String contextInstanceId) {
+        List<ContextInstanceAggregateJobStatus> statuses = this.schedulerJobInstanceService
+            .getJobStatusCountForContextInstances(List.of(contextInstanceId));
+        if(!statuses.isEmpty()) {
+            statuses.forEach(status -> this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshItem(status));
+        }
+        this.updateAggregateJobStatusFilteringCounts();
     }
 
     @Override
