@@ -61,6 +61,8 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
     private UI ui;
 
     private TextField jobNameFilterTf = new TextField();
+    private Select<String> select = new Select<>();
+    private InstanceStatus filterStatus = null;
 
 
     public RepeatingSchedulerJobExecutionHistoryDialog(ScheduledContextInstanceService scheduledContextInstanceService
@@ -72,7 +74,6 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
         this.logStreamingService = logStreamingService;
 
         this.init();
-        this.initialiseGrid();
     }
 
     private void init() {
@@ -85,6 +86,7 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
 
     @Override
     public void open() {
+        this.initialiseGrid();
         // Attempt to get the list of log files. Only modules Ikasan 3.3+ is supported
         try {
             processEventHolderMap = this.getAuditRecords();
@@ -144,6 +146,14 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
         }
     }
 
+    /**
+     * Initialises the grid for displaying job statuses and log files.
+     * Adds columns to the grid with corresponding renderers.
+     * Configures header, key, sortable, resizable properties for each column.
+     * Sets size of the grid.
+     * Adds filter fields to the header row for specific columns.
+     * Sets initial value for status filter if specified.
+     */
     private void initialiseGrid() {
         this.logFileGrid.addColumn(new ComponentRenderer<>(logFile -> {
                 VerticalLayout verticalLayout = new VerticalLayout();
@@ -264,7 +274,18 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
             List.of(InstanceStatus.COMPLETE.name(), InstanceStatus.ERROR.name()), "status");
 
         super.content.add(this.logFileGrid);
+
+        if(this.filterStatus != null) {
+            this.select.setValue(this.filterStatus.name());
+        }
     }
+
+    /**
+     * Retrieves the audit records for the current context instance.
+     *
+     * @return a map of audit records, where the key is the fire time of the process event
+     *         and the value is the corresponding process event holder.
+     */
     private Map<Long, ProcessEventHolder> getAuditRecords() {
 
         filter.setContextInstanceId(this.contextInstance.getId());
@@ -327,6 +348,14 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
         }
     }
 
+    /**
+     * Adds grid filtering functionality to a header row cell.
+     *
+     * @param hr the header row
+     * @param columnKey the key of the column to add filtering to
+     * @param textField the text field used for filtering
+     * @param setFilter the consumer function to apply the filter
+     */
     private void addGridFiltering(HeaderRow hr, String columnKey, TextField textField, Consumer<String> setFilter) {
         Icon filterIcon = VaadinIcon.FILTER.create();
         filterIcon.setSize("12pt");
@@ -341,12 +370,19 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
         hr.getCell(this.logFileGrid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
+    /**
+     * Adds grid filtering functionality with a select component to a header row cell.
+     *
+     * @param hr          the header row
+     * @param setFilter   the consumer function to apply the filter
+     * @param options     the options for the select component
+     * @param columnKey   the key of the column to add filtering to
+     */
     public void addSelectGridFiltering(HeaderRow hr, Consumer<String> setFilter, List<String> options, String columnKey) {
-        Select<String> select = new Select<>();
-        select.setItems(options);
-        select.setWidthFull();
-        select.setEmptySelectionAllowed(true);
-        select.setItemLabelGenerator(entry -> {
+        this.select.setItems(options);
+        this.select.setWidthFull();
+        this.select.setEmptySelectionAllowed(true);
+        this.select.setItemLabelGenerator(entry -> {
             if(entry == null) {
                 return "";
             }
@@ -354,7 +390,7 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
             return entry;
         });
 
-        select.addValueChangeListener(ev-> {
+        this.select.addValueChangeListener(ev-> {
 
             setFilter.accept(ev.getValue());
 
@@ -364,12 +400,15 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
         Icon filterIcon = VaadinIcon.FILTER.create();
         filterIcon.setSize("12pt");
 
-        HorizontalLayout layout = new HorizontalLayout(select, filterIcon);
+        HorizontalLayout layout = new HorizontalLayout(this.select, filterIcon);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, filterIcon);
 
         hr.getCell(this.logFileGrid.getColumnByKey(columnKey)).setComponent(layout);
     }
 
+    /**
+     * A class representing a holder for a scheduled process event.
+     */
     private class ProcessEventHolder {
         private ScheduledProcessEvent event;
 
@@ -410,5 +449,14 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
         if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
             ui.access(() -> this.logFileGrid.getDataProvider().refreshAll());
         }
+    }
+
+    /**
+     * Set the filter status for the scheduler job execution history dialog.
+     *
+     * @param filterStatus the filter status to set
+     */
+    public void setFilterStatus(InstanceStatus filterStatus) {
+        this.filterStatus = filterStatus;
     }
 }
