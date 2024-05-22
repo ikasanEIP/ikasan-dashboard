@@ -1995,7 +1995,13 @@ public class ContextInstanceDashboardWidget extends Div
                     this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
                 }
 
-                this.updateAggregateContextInstanceAggregateStatus(event.getContextInstanceId());
+                if(event.getContextInstance().getStatus().equals(InstanceStatus.ENDED)) {
+                    this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
+                    this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+                }
+                else {
+                    this.updateAggregateContextInstanceAggregateStatus(event.getContextInstanceId());
+                }
             });
         }
     }
@@ -2011,7 +2017,13 @@ public class ContextInstanceDashboardWidget extends Div
                     this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
                 }
 
-                this.updateAggregateContextInstanceAggregateStatus(event.getId());
+                if(event.getStatus().equals(InstanceStatus.ENDED)) {
+                    this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
+                    this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+                }
+                else {
+                    this.updateAggregateContextInstanceAggregateStatus(event.getId());
+                }
             });
         }
     }
@@ -2038,6 +2050,8 @@ public class ContextInstanceDashboardWidget extends Div
         }
         this.updateAggregateJobStatusFilteringCounts();
     }
+
+
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
