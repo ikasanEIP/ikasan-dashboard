@@ -51,6 +51,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -63,18 +64,22 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.systemevent.SystemEventService;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
     private ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster;
 
     private SystemEventService systemEventService;
+    private JobUtilsService jobUtilsService;
 
     private boolean isIkasanEnterpriseSchedulerInstance;
 
@@ -95,6 +100,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   TimeService timeService,
                                                   ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
                                                   SystemEventService systemEventService,
+                                                  JobUtilsService jobUtilsService,
                                                   boolean isIkasanEnterpriseSchedulerInstance) {
         super(queueDirectory,
             scheduledContextInstanceService,
@@ -119,6 +125,10 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         this.systemEventService = systemEventService;
         if (this.systemEventService == null) {
             throw new IllegalArgumentException("systemEventService cannot be null!");
+        }
+        this.jobUtilsService = jobUtilsService;
+        if (this.jobUtilsService == null) {
+            throw new IllegalArgumentException("jobUtilsService cannot be null!");
         }
         this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
     }
@@ -163,6 +173,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance de-registration will occur!");
             return;
         }
+
         final ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         if (contextMachine == null) {
             LOG.info(String.format("Could not find context machine for context Instance ID [%s], so therefore nothing to de-register.", contextInstanceId));
@@ -185,6 +196,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
         LOG.info(String.format("De registering context Instance ID [%s], plan name [%s]", contextInstanceId, contextMachine.getContext().getName()));
 
+        this.killRunningJobs(contextInstanceId);
         removeAgentInstances(instance);
         instance.setEndTime(System.currentTimeMillis());
         saveContextInstance(instance, InstanceStatus.ENDED);
@@ -444,5 +456,29 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             }
         }
         return cronProjectedEndTime;
+    }
+
+    private void killRunningJobs(String contextInstanceId) {
+        List<InternalEventDrivenJobInstance> runningJobs
+            = super.getRunningCommandExecutionJobs(contextInstanceId);
+
+        Map<String, ModuleMetaData> agents = new HashMap<>();
+        runningJobs.forEach(job -> {
+            ModuleMetaData agent = null;
+            try {
+                // Let's only query for the agent metadata if necessary.
+                if (!agents.containsKey(job.getAgentName())) {
+                    agents.put(job.getAgentName(), this.moduleMetadataService.findById(job.getAgentName()));
+                }
+
+                agent = agents.get(job.getAgentName());
+                jobUtilsService.killJob(agent.getUrl(), job.getScheduledProcessEvent().getPid(), true);
+            }
+            catch (Exception e) {
+                // We are just going to
+                LOG.warn(String.format("Failed to kill job[%s] with pid[%s] on agent[%s]. Error Message: %s"
+                    , job.getJobName(), job.getScheduledProcessEvent().getPid(), agent.getUrl(), e.getMessage()));
+            }
+        });
     }
 }
