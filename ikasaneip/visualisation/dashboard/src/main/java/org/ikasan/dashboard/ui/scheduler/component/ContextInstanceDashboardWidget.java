@@ -488,7 +488,28 @@ public class ContextInstanceDashboardWidget extends Div
             .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(5)
             .setResizable(true);
-        contextInstanceAggregateJobStatusGrid.addColumn(ContextInstanceAggregateJobStatus::getContextInstanceId)
+        contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+                Button contextBreakoutButton = new Button(contextInstanceAggregateJobStatus.getContextInstanceId()
+                    , VaadinIcon.EXTERNAL_LINK.create());
+                contextBreakoutButton.setId("contextBreakOut");
+                contextBreakoutButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)>0);
+                contextBreakoutButton.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class,
+                            List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"));
+
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                contextBreakoutButton.getElement().getStyle().set("cursor", "pointer");
+
+
+                contextBreakoutButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+
+                horizontalLayout.add(contextBreakoutButton);
+                return horizontalLayout;
+            }))
             .setHeader(getTranslation("table-header.context-instance-id", UI.getCurrent().getLocale())).setKey("id")
             .setFlexGrow(5)
             .setResizable(true);
@@ -724,6 +745,7 @@ public class ContextInstanceDashboardWidget extends Div
                         RepeatingSchedulerJobExecutionHistoryDialog dialog = new RepeatingSchedulerJobExecutionHistoryDialog(this.scheduledContextInstanceService,
                             ContextMachineCache.instance().getByContextInstanceId(contextInstanceAggregateJobStatus.getContextInstanceId()).getContext()
                             , this.moduleMetaDataService, this.logStreamingService);
+                        dialog.setFilterStatus(InstanceStatus.COMPLETE);
                         dialog.open();
                     });
                     statusButton.getElement().getStyle().set("cursor", "pointer");
@@ -756,6 +778,7 @@ public class ContextInstanceDashboardWidget extends Div
                         RepeatingSchedulerJobExecutionHistoryDialog dialog = new RepeatingSchedulerJobExecutionHistoryDialog(this.scheduledContextInstanceService,
                             ContextMachineCache.instance().getByContextInstanceId(contextInstanceAggregateJobStatus.getContextInstanceId()).getContext()
                             , this.moduleMetaDataService, this.logStreamingService);
+                        dialog.setFilterStatus(InstanceStatus.ERROR);
                         dialog.open();
                     });
                     statusButton.getElement().getStyle().set("cursor", "pointer");
