@@ -494,7 +494,6 @@ public class ContextInstanceDashboardWidget extends Div
                 Button contextBreakoutButton = new Button(contextInstanceAggregateJobStatus.getContextInstanceId()
                     , VaadinIcon.EXTERNAL_LINK.create());
                 contextBreakoutButton.setId("contextBreakOut");
-                contextBreakoutButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)>0);
                 contextBreakoutButton.addClickListener(event -> {
                     String route = RouteConfiguration.forSessionScope()
                         .getUrl(ContextInstanceView.class,
