@@ -7,9 +7,11 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -62,6 +64,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
@@ -76,6 +79,7 @@ import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -885,11 +889,31 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         this.createJobUploadMenuBar(actions);
         this.createNewJobMenuBar(actions);
-        Anchor download = new Anchor(new StreamResource(this.contextTemplate.getName() + ".zip", ()
-            -> this.getContextBundleStreamResource(false, this.contextTemplate.getName()))
-                , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
-        download.getElement().setAttribute("download", true);
-        actions.addItem(download);
+
+        actions.addItem(getTranslation("button.download-context-template", UI.getCurrent().getLocale()), menuItemClickEvent -> {
+            Dialog downloadDialog = new Dialog();
+
+            VerticalLayout verticalLayout = new VerticalLayout();
+            verticalLayout.setWidthFull();
+
+            Button downloadNotSplitButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+            FileDownloadWrapper downloadNotSplitWrapper = new FileDownloadWrapper(new StreamResource(this.contextTemplate.getName() + ".zip", ()
+                -> this.getContextBundleStreamResource(false, this.contextTemplate.getName(), false)));
+            downloadNotSplitButton.addClickListener(event -> downloadDialog.close());
+            downloadNotSplitWrapper.wrapComponent(downloadNotSplitButton);
+
+            Button downloadSplitButton = new Button(getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+            FileDownloadWrapper downloadSplitButtonWrapper = new FileDownloadWrapper(new StreamResource(this.contextTemplate.getName() + ".zip", ()
+                -> this.getContextBundleStreamResource(false, this.contextTemplate.getName(), true)));
+            downloadSplitButton.addClickListener(event -> downloadDialog.close());
+            downloadSplitButtonWrapper.wrapComponent(downloadSplitButton);
+
+            verticalLayout.add(downloadNotSplitWrapper, downloadSplitButtonWrapper);
+            verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitWrapper, downloadSplitButtonWrapper);
+            downloadDialog.add(verticalLayout);
+
+            downloadDialog.open();
+        });
 
         String downloadFileName = this.contextTemplate.getName();
         if(this.removeTrailingPlanNameContextAfterUnderscore && downloadFileName.contains("_")) {
@@ -897,10 +921,30 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         }
 
         String finalDownloadFileName = downloadFileName;
-        Anchor downloadWithTokens = new Anchor(new StreamResource(downloadFileName + ".zip", () -> this.getContextBundleStreamResource(true, finalDownloadFileName))
-            , getTranslation("button.download-context-template-with-tokens", UI.getCurrent().getLocale()));
-        downloadWithTokens.getElement().setAttribute("download", true);
-        actions.addItem(downloadWithTokens);
+        actions.addItem(getTranslation("button.download-context-template-with-tokens", UI.getCurrent().getLocale()), menuItemClickEvent -> {
+            Dialog downloadDialog = new Dialog();
+
+            VerticalLayout verticalLayout = new VerticalLayout();
+            verticalLayout.setWidthFull();
+
+            Button downloadNotSplitButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+            FileDownloadWrapper downloadNotSplitWrapper = new FileDownloadWrapper(new StreamResource(finalDownloadFileName + ".zip", ()
+                -> this.getContextBundleStreamResource(true, finalDownloadFileName, false)));
+            downloadNotSplitButton.addClickListener(event -> downloadDialog.close());
+            downloadNotSplitWrapper.wrapComponent(downloadNotSplitButton);
+
+            Button downloadSplitButton = new Button(getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+            FileDownloadWrapper downloadSplitButtonWrapper = new FileDownloadWrapper(new StreamResource(finalDownloadFileName + ".zip", ()
+                -> this.getContextBundleStreamResource(true, finalDownloadFileName, true)));
+            downloadSplitButton.addClickListener(event -> downloadDialog.close());
+            downloadSplitButtonWrapper.wrapComponent(downloadSplitButton);
+
+            verticalLayout.add(downloadNotSplitWrapper, downloadSplitButtonWrapper);
+            verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitWrapper, downloadSplitButtonWrapper);
+            downloadDialog.add(verticalLayout);
+
+            downloadDialog.open();
+        });
 
         buttonLayout.add(actionsMenuBar, this.synchroniseJobsButton);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, this.synchroniseJobsButton);
@@ -1173,7 +1217,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         return item;
     }
 
-    private InputStream getContextBundleStreamResource(boolean withTokens, String downloadFileName) {
+    private InputStream getContextBundleStreamResource(boolean withTokens, String downloadFileName, boolean splitContexts) {
         try {
             ContextTemplate clone = SerializationUtils.clone(this.contextTemplate);
             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
@@ -1186,7 +1230,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 this.emailNotificationContextService,
                 this.contextProfileService,
                 50, // limit to loop searching solr
-                withTokens
+                withTokens,
+                splitContexts
             );
             return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         } catch (Exception e) {
