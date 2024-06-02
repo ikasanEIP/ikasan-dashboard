@@ -1213,6 +1213,16 @@ public class ContextMachine {
             // Now determine if there running or queued jobs or those
             // in a error state.
             contextInstance.getScheduledJobs().forEach(job -> {
+                if(this.internalEventDrivenJobInstances != null) {
+                    List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, job.getJobName(), contextInstance.getName()
+                        , this.internalEventDrivenJobInstances.entrySet()
+                            .stream()
+                            .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+                    if (!precedingJobs.isEmpty()) return;
+                }
+
                 if (job.getStatus().equals(InstanceStatus.RUNNING)
                     || job.getStatus().equals(InstanceStatus.COMPLETE)
                     || job.getStatus().equals(InstanceStatus.LOCK_QUEUED)) {
@@ -1241,7 +1251,7 @@ public class ContextMachine {
             });
         }
 
-        // Armed with the information aquired above, determine the state of
+        // Armed with the information acquired above, determine the state of
         // the current context instance.
         InstanceStatus previousStatus = contextInstance.getStatus();
 
