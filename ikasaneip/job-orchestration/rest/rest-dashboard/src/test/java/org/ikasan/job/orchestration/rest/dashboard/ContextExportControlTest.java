@@ -85,7 +85,7 @@ public class ContextExportControlTest extends AbstractRestMvcTest {
     }
 
     @Test
-    public void testNormal() throws Exception {
+    public void test_without_replacement_tokens_success() throws Exception {
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String contextName = "HelloContext";
         String jsonContext = super.loadDataFile("/data/context.json");
@@ -119,7 +119,41 @@ public class ContextExportControlTest extends AbstractRestMvcTest {
     }
 
     @Test
-    public void test_with_replacement_tokens() throws Exception {
+    public void test_without_replacement_tokens_split_success() throws Exception {
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        String contextName = "HelloContext";
+        String jsonContext = super.loadDataFile("/data/context.json");
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        record.setContext(context);
+        record.setContextName(contextName);
+
+        doReturn(record).when(scheduledContextService).findByName(contextName);
+
+        SearchResultsImpl searchResults = new SearchResultsImpl(createListOfJobRecords(contextName), 0, 100);
+
+        doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 50, 0);
+
+        //Email Notification
+        searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
+        doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
+
+        //Email Notification Context
+        searchResults = new SearchResultsImpl(createListOfEmailNotificationConext(contextName), 0, 100);
+        doReturn(searchResults).when(emailNotificationContextService).findByContextName(contextName, 50, 0);
+
+        //ContextProfile
+        searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
+        doReturn(searchResults).when(contextProfileService).findByFilter(any(ContextProfileSearchFilter.class), eq(50), eq(0), eq(null), eq(null));
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/split/" + contextName)).andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+    }
+
+    @Test
+    public void test_with_replacement_tokens_success() throws Exception {
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String contextName = "HelloContext";
         String jsonContext = super.loadDataFile("/data/context.json");
@@ -152,6 +186,40 @@ public class ContextExportControlTest extends AbstractRestMvcTest {
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
     }
 
+    @Test
+    public void test_with_replacement_tokens_split_success() throws Exception {
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        String contextName = "HelloContext";
+        String jsonContext = super.loadDataFile("/data/context.json");
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        record.setContext(context);
+        record.setContextName(contextName);
+
+        doReturn(record).when(scheduledContextService).findByName(contextName);
+
+        SearchResultsImpl searchResults = new SearchResultsImpl(createListOfJobRecords(contextName), 0, 100);
+
+        doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 50, 0);
+
+        //Email Notification
+        searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
+        doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
+
+        //Email Notification Context
+        searchResults = new SearchResultsImpl(createListOfEmailNotificationConext(contextName), 0, 100);
+        doReturn(searchResults).when(emailNotificationContextService).findByContextName(contextName, 50, 0);
+
+        //ContextProfile
+        searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
+        doReturn(searchResults).when(contextProfileService).findByFilter(any(ContextProfileSearchFilter.class), eq(50), eq(0), eq(null), eq(null));
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/split/tokens/" + contextName)).andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+    }
+
     /**
      * Windows have some unsafe characters to create files, therefore this test is using the name "Context?Name"
      * with a ? which is not allowed to be used in windows
@@ -160,7 +228,7 @@ public class ContextExportControlTest extends AbstractRestMvcTest {
      * @throws Exception - file the file we are loading into the test
      */
     @Test
-    public void testContextWithNotSafeCharacters() throws Exception {
+    public void test_context_with_not_safe_characters() throws Exception {
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String contextName = "Context*Name";
         String jsonContext = super.loadDataFile("/data/context.json");
@@ -200,7 +268,7 @@ public class ContextExportControlTest extends AbstractRestMvcTest {
      * @throws Exception - file the file we are loading into the test
      */
     @Test
-    public void testWhenNoContextExist() throws Exception {
+    public void test_when_no_context_exist() throws Exception {
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String contextName = "HelloContext";
         String jsonContext = super.loadDataFile("/data/context.json");
