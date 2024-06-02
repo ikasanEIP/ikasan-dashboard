@@ -6,6 +6,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
@@ -561,32 +562,73 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("tooltip.export-jobs-and-associated-artifacts", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, export, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
                 , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
-            StreamResource streamResource = new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
-                try {
-                    ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                        SerializationUtils.clone(scheduledContextRecord.getContext()),
-                        scheduledContextRecord.getContextName(),
-                        scheduledContextRecord.getContextName(),
-                        this.zipWorkingDirectory,
-                        this.schedulerJobService,
-                        this.emailNotificationDetailsService,
-                        this.emailNotificationContextService,
-                        this.contextProfileService,
-                        50, // limit to loop searching solr
-                        false
-                    );
-                    return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
-                    return null;
-                }
-            });
 
-            FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
-            exportWrapper.wrapComponent(export);
+            export.addClickListener(clickEvent -> {
+                    Dialog downloadDialog = new Dialog();
 
-            layout.add(exportWrapper);
+                    VerticalLayout verticalLayout = new VerticalLayout();
+                    verticalLayout.setWidthFull();
+
+                    Button downloadNotSplitButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+                    FileDownloadWrapper downloadNotSplitWrapper = new FileDownloadWrapper(new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
+                        try {
+                            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                                SerializationUtils.clone(scheduledContextRecord.getContext()),
+                                scheduledContextRecord.getContextName(),
+                                scheduledContextRecord.getContextName(),
+                                this.zipWorkingDirectory,
+                                this.schedulerJobService,
+                                this.emailNotificationDetailsService,
+                                this.emailNotificationContextService,
+                                this.contextProfileService,
+                                50, // limit to loop searching solr
+                                false,
+                                false
+                            );
+                            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
+                            return null;
+                        }
+                    }));
+                    downloadNotSplitButton.addClickListener(event -> downloadDialog.close());
+                    downloadNotSplitWrapper.wrapComponent(downloadNotSplitButton);
+
+                    Button downloadSplitButton = new Button(getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+                    FileDownloadWrapper downloadSplitButtonWrapper = new FileDownloadWrapper(new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
+                        try {
+                            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                                SerializationUtils.clone(scheduledContextRecord.getContext()),
+                                scheduledContextRecord.getContextName(),
+                                scheduledContextRecord.getContextName(),
+                                this.zipWorkingDirectory,
+                                this.schedulerJobService,
+                                this.emailNotificationDetailsService,
+                                this.emailNotificationContextService,
+                                this.contextProfileService,
+                                50, // limit to loop searching solr
+                                false,
+                                true
+                            );
+                            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
+                            return null;
+                        }
+                    }));
+                    downloadSplitButton.addClickListener(event -> downloadDialog.close());
+                    downloadSplitButtonWrapper.wrapComponent(downloadSplitButton);
+
+                    verticalLayout.add(downloadNotSplitWrapper, downloadSplitButtonWrapper);
+                    verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitWrapper, downloadSplitButtonWrapper);
+                    downloadDialog.add(verticalLayout);
+
+                    downloadDialog.open();
+                });
+
+            layout.add(export);
 
             Icon exportWithTokens = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD), getTranslation("tooltip.export-jobs-and-associated-artifacts-with-tokens", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, export, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
@@ -597,34 +639,73 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             }
 
             String finalDownloadName = downloadName;
-            StreamResource streamResourceWithTokens = new StreamResource(ContextExportZipUtils.getExportZipFileName(downloadName), () -> {
-            try {
-                    ContextTemplate downloadClone = SerializationUtils.clone(scheduledContextRecord.getContext());
 
-                    ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                        downloadClone,
-                        scheduledContextRecord.getContextName(),
-                        finalDownloadName,
-                        this.zipWorkingDirectory,
-                        this.schedulerJobService,
-                        this.emailNotificationDetailsService,
-                        this.emailNotificationContextService,
-                        this.contextProfileService,
-                        50, // limit to loop searching solr
-                        true
-                    );
-                    return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
-                    return null;
-                }
-            });
+            exportWithTokens.addClickListener(clickEvent -> {
+                    Dialog downloadDialog = new Dialog();
 
-            FileDownloadWrapper exportWrapperWithTokens = new FileDownloadWrapper(streamResourceWithTokens);
-            exportWrapperWithTokens.wrapComponent(exportWithTokens);
+                    VerticalLayout verticalLayout = new VerticalLayout();
+                    verticalLayout.setWidthFull();
 
-            layout.add(exportWrapperWithTokens);
+                    Button downloadNotSplitButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+                    FileDownloadWrapper downloadNotSplitWrapper = new FileDownloadWrapper(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
+                        try {
+                            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                                SerializationUtils.clone(scheduledContextRecord.getContext()),
+                                scheduledContextRecord.getContextName(),
+                                finalDownloadName,
+                                this.zipWorkingDirectory,
+                                this.schedulerJobService,
+                                this.emailNotificationDetailsService,
+                                this.emailNotificationContextService,
+                                this.contextProfileService,
+                                50, // limit to loop searching solr
+                                true,
+                                false
+                            );
+                            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
+                            return null;
+                        }
+                    }));
+                    downloadNotSplitButton.addClickListener(event -> downloadDialog.close());
+                    downloadNotSplitWrapper.wrapComponent(downloadNotSplitButton);
+
+                    Button downloadSplitButton = new Button(getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+                    FileDownloadWrapper downloadSplitButtonWrapper = new FileDownloadWrapper(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
+                        try {
+                            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                                SerializationUtils.clone(scheduledContextRecord.getContext()),
+                                scheduledContextRecord.getContextName(),
+                                finalDownloadName,
+                                this.zipWorkingDirectory,
+                                this.schedulerJobService,
+                                this.emailNotificationDetailsService,
+                                this.emailNotificationContextService,
+                                this.contextProfileService,
+                                50, // limit to loop searching solr
+                                true,
+                                true
+                            );
+                            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
+                            return null;
+                        }
+                    }));
+                    downloadSplitButton.addClickListener(event -> downloadDialog.close());
+                    downloadSplitButtonWrapper.wrapComponent(downloadSplitButton);
+
+                    verticalLayout.add(downloadNotSplitWrapper, downloadSplitButtonWrapper);
+                    verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitWrapper, downloadSplitButtonWrapper);
+                    downloadDialog.add(verticalLayout);
+
+                    downloadDialog.open();
+                });
+
+            layout.add(exportWithTokens);
 
             Icon newWindow = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("tooltip.open-in-new-window", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, newWindow, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
