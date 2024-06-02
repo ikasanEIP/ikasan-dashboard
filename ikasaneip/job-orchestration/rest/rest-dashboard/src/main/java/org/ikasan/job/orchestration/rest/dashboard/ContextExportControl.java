@@ -141,6 +141,68 @@ public class ContextExportControl {
     }
 
     /**
+     * To use on command line in unix via curl:
+     * curl -u username:password http://{dashboardUrl}/rest/export/context/split/{contextName} > {Filename.zip}
+     *
+     * Will throw Error 500 if the payload is empty or if there was something wrong in extracting the Context.
+     *
+     * @param contextName Name of the context to be exported
+     * @return Zip file that contains the contents of the exported Context.
+     */
+    @RequestMapping(method = RequestMethod.GET, path = {"/split/{contextName}"})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity<StreamingResponseBody> getSplitContextExport(@PathVariable String contextName) {
+
+        LOG.info("Start creating export for Context {}", contextName);
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                scheduledContextService.findByName(contextName).getContext(),
+                contextName,
+                contextName,
+                this.zipWorkingDirectory,
+                schedulerJobService,
+                emailNotificationDetailsService,
+                emailNotificationContextService,
+                contextProfileService,
+                50,
+                false,
+                true);
+
+            // If nothing found throw null pointer exception.
+            if (byteArrayOutputStream == null) {
+                LOG.error("Zip File extraction return nothing!");
+                throw new NullPointerException("Zip File extraction return nothing!");
+            }
+
+            // Sanitise unsafe characters for filename returning.
+            String contextFileName = StringUtils.replaceEach(contextName,
+                ContextImportZipUtils.UNSAFE_FILENAME_CHAR, ContextImportZipUtils.REPLACE_UNSAFE_FILENAME_CHAR);
+
+            return ResponseEntity
+                .ok()
+                .header("Content-Disposition", "attachment;filename=" + contextFileName + ".zip")
+                .contentType(MediaType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .body(outputStream -> {
+                    outputStream.write(byteArrayOutputStream.toByteArray());
+                    byteArrayOutputStream.close();
+                    outputStream.close();
+                });
+
+        } catch (Exception e) {
+            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName);
+            return ResponseEntity
+                .internalServerError()
+                .header("Content-Disposition", "attachment;filename=error.zip")
+                .contentType(MediaType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .body(outputStream -> {
+                    String errorMsg = "There has been an error generating the file for the context: " + contextName;
+                    outputStream.write(errorMsg.getBytes());
+                    outputStream.close();
+                });
+        }
+    }
+
+    /**
      * The exported bundle will have the replacement tokens in it.
      *
      * To use on command line in unix via curl:
@@ -179,9 +241,69 @@ public class ContextExportControl {
                 throw new NullPointerException("Zip File extraction return nothing!");
             }
 
-            // Sanitise unsafe characters for filename returning.
-            String contextFileName = StringUtils.replaceEach(contextName,
-                ContextImportZipUtils.UNSAFE_FILENAME_CHAR, ContextImportZipUtils.REPLACE_UNSAFE_FILENAME_CHAR);
+            return ResponseEntity
+                .ok()
+                .header("Content-Disposition", "attachment;filename=" + downloadName + ".zip")
+                .contentType(MediaType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .body(outputStream -> {
+                    outputStream.write(byteArrayOutputStream.toByteArray());
+                    byteArrayOutputStream.close();
+                    outputStream.close();
+                });
+
+        } catch (Exception e) {
+            LOG.error("Something has gone wrong when extracting the Context [{}]", contextName);
+            return ResponseEntity
+                .internalServerError()
+                .header("Content-Disposition", "attachment;filename=error.zip")
+                .contentType(MediaType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .body(outputStream -> {
+                    String errorMsg = "There has been an error generating the file for the context: " + contextName;
+                    outputStream.write(errorMsg.getBytes());
+                    outputStream.close();
+                });
+        }
+    }
+
+    /**
+     * The exported bundle will have the replacement tokens in it.
+     *
+     * To use on command line in unix via curl:
+     * curl -u username:password http://{dashboardUrl}/rest/export/context/split/tokens/{contextName} > {Filename.zip}
+     *
+     * Will throw Error 500 if the payload is empty or if there was something wrong in extracting the Context.
+     *
+     * @param contextName Name of the context to be exported
+     * @return Zip file that contains the contents of the exported Context.
+     */
+    @RequestMapping(method = RequestMethod.GET, path = {"/split/tokens/{contextName}"})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity<StreamingResponseBody> getSplitContextExportWithTokens(@PathVariable String contextName) {
+
+        LOG.info("Start creating export for Context {}", contextName);
+        try {
+            String downloadName = contextName;
+            if(this.removeTrailingPlanNameContextAfterUnderscore && downloadName.contains("_")) {
+                downloadName = downloadName.substring(0, downloadName.lastIndexOf("_"));
+            }
+            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                scheduledContextService.findByName(contextName).getContext(),
+                contextName,
+                downloadName,
+                this.zipWorkingDirectory,
+                schedulerJobService,
+                emailNotificationDetailsService,
+                emailNotificationContextService,
+                contextProfileService,
+                50,
+                true,
+                true);
+
+            // If nothing found throw null pointer exception.
+            if (byteArrayOutputStream == null) {
+                LOG.error("Zip File extraction return nothing!");
+                throw new NullPointerException("Zip File extraction return nothing!");
+            }
 
             return ResponseEntity
                 .ok()
