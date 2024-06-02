@@ -8,6 +8,7 @@ import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -569,8 +570,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     VerticalLayout verticalLayout = new VerticalLayout();
                     verticalLayout.setWidthFull();
 
-                    Button downloadNotSplitButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
-                    FileDownloadWrapper downloadNotSplitWrapper = new FileDownloadWrapper(new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
+                    Anchor downloadNotSplitAnchor = new Anchor( new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
                         try {
                             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                                 SerializationUtils.clone(scheduledContextRecord.getContext()),
@@ -591,12 +591,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                             NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
                             return null;
                         }
-                    }));
-                    downloadNotSplitButton.addClickListener(event -> downloadDialog.close());
-                    downloadNotSplitWrapper.wrapComponent(downloadNotSplitButton);
+                    }), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+                    downloadNotSplitAnchor.getElement().setAttribute("download", true);
 
-                    Button downloadSplitButton = new Button(getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
-                    FileDownloadWrapper downloadSplitButtonWrapper = new FileDownloadWrapper(new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
+                    Anchor downloadSplitAnchor = new Anchor(new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
                         try {
                             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                                 SerializationUtils.clone(scheduledContextRecord.getContext()),
@@ -617,12 +615,11 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                             NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
                             return null;
                         }
-                    }));
-                    downloadSplitButton.addClickListener(event -> downloadDialog.close());
-                    downloadSplitButtonWrapper.wrapComponent(downloadSplitButton);
+                    }), getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+                    downloadSplitAnchor.getElement().setAttribute("download", true);
 
-                    verticalLayout.add(downloadNotSplitWrapper, downloadSplitButtonWrapper);
-                    verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitWrapper, downloadSplitButtonWrapper);
+                    verticalLayout.add(downloadNotSplitAnchor, downloadSplitAnchor);
+                    verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitAnchor, downloadSplitAnchor);
                     downloadDialog.add(verticalLayout);
 
                     downloadDialog.open();
@@ -641,69 +638,65 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             String finalDownloadName = downloadName;
 
             exportWithTokens.addClickListener(clickEvent -> {
-                    Dialog downloadDialog = new Dialog();
+                Dialog downloadDialog = new Dialog();
 
-                    VerticalLayout verticalLayout = new VerticalLayout();
-                    verticalLayout.setWidthFull();
+                VerticalLayout verticalLayout = new VerticalLayout();
+                verticalLayout.setWidthFull();
 
-                    Button downloadNotSplitButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
-                    FileDownloadWrapper downloadNotSplitWrapper = new FileDownloadWrapper(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
-                        try {
-                            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                                SerializationUtils.clone(scheduledContextRecord.getContext()),
-                                scheduledContextRecord.getContextName(),
-                                finalDownloadName,
-                                this.zipWorkingDirectory,
-                                this.schedulerJobService,
-                                this.emailNotificationDetailsService,
-                                this.emailNotificationContextService,
-                                this.contextProfileService,
-                                50, // limit to loop searching solr
-                                true,
-                                false
-                            );
-                            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
-                            return null;
-                        }
-                    }));
-                    downloadNotSplitButton.addClickListener(event -> downloadDialog.close());
-                    downloadNotSplitWrapper.wrapComponent(downloadNotSplitButton);
+                Anchor downloadNotSplitAnchor = new Anchor(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
+                    try {
+                        ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                            SerializationUtils.clone(scheduledContextRecord.getContext()),
+                            scheduledContextRecord.getContextName(),
+                            finalDownloadName,
+                            this.zipWorkingDirectory,
+                            this.schedulerJobService,
+                            this.emailNotificationDetailsService,
+                            this.emailNotificationContextService,
+                            this.contextProfileService,
+                            50, // limit to loop searching solr
+                            true,
+                            false
+                        );
+                        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
+                        return null;
+                    }
+                }), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+                downloadNotSplitAnchor.getElement().setAttribute("download", true);
 
-                    Button downloadSplitButton = new Button(getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
-                    FileDownloadWrapper downloadSplitButtonWrapper = new FileDownloadWrapper(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
-                        try {
-                            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                                SerializationUtils.clone(scheduledContextRecord.getContext()),
-                                scheduledContextRecord.getContextName(),
-                                finalDownloadName,
-                                this.zipWorkingDirectory,
-                                this.schedulerJobService,
-                                this.emailNotificationDetailsService,
-                                this.emailNotificationContextService,
-                                this.contextProfileService,
-                                50, // limit to loop searching solr
-                                true,
-                                true
-                            );
-                            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
-                            return null;
-                        }
-                    }));
-                    downloadSplitButton.addClickListener(event -> downloadDialog.close());
-                    downloadSplitButtonWrapper.wrapComponent(downloadSplitButton);
+                Anchor downloadSplitAnchor = new Anchor(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
+                    try {
+                        ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                            SerializationUtils.clone(scheduledContextRecord.getContext()),
+                            scheduledContextRecord.getContextName(),
+                            finalDownloadName,
+                            this.zipWorkingDirectory,
+                            this.schedulerJobService,
+                            this.emailNotificationDetailsService,
+                            this.emailNotificationContextService,
+                            this.contextProfileService,
+                            50, // limit to loop searching solr
+                            true,
+                            true
+                        );
+                        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
+                        return null;
+                    }
+                }), getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+                downloadSplitAnchor.getElement().setAttribute("download", true);
 
-                    verticalLayout.add(downloadNotSplitWrapper, downloadSplitButtonWrapper);
-                    verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitWrapper, downloadSplitButtonWrapper);
-                    downloadDialog.add(verticalLayout);
+                verticalLayout.add(downloadNotSplitAnchor, downloadSplitAnchor);
+                verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitAnchor, downloadSplitAnchor);
+                downloadDialog.add(verticalLayout);
 
-                    downloadDialog.open();
-                });
+                downloadDialog.open();
+            });
 
             layout.add(exportWithTokens);
 

@@ -896,20 +896,18 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             VerticalLayout verticalLayout = new VerticalLayout();
             verticalLayout.setWidthFull();
 
-            Button downloadNotSplitButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
-            FileDownloadWrapper downloadNotSplitWrapper = new FileDownloadWrapper(new StreamResource(this.contextTemplate.getName() + ".zip", ()
-                -> this.getContextBundleStreamResource(false, this.contextTemplate.getName(), false)));
-            downloadNotSplitButton.addClickListener(event -> downloadDialog.close());
-            downloadNotSplitWrapper.wrapComponent(downloadNotSplitButton);
+            Anchor downloadNotSplitAnchor = new Anchor(new StreamResource(this.contextTemplate.getName() + ".zip", ()
+                -> this.getContextBundleStreamResource(false, this.contextTemplate.getName(), false))
+                , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+            downloadNotSplitAnchor.getElement().setAttribute("download", true);
 
-            Button downloadSplitButton = new Button(getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
-            FileDownloadWrapper downloadSplitButtonWrapper = new FileDownloadWrapper(new StreamResource(this.contextTemplate.getName() + ".zip", ()
-                -> this.getContextBundleStreamResource(false, this.contextTemplate.getName(), true)));
-            downloadSplitButton.addClickListener(event -> downloadDialog.close());
-            downloadSplitButtonWrapper.wrapComponent(downloadSplitButton);
+            Anchor downloadSplitAnchor = new Anchor(new StreamResource(this.contextTemplate.getName() + ".zip", ()
+                -> this.getContextBundleStreamResource(false, this.contextTemplate.getName(), true))
+                , getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+            downloadSplitAnchor.getElement().setAttribute("download", true);
 
-            verticalLayout.add(downloadNotSplitWrapper, downloadSplitButtonWrapper);
-            verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitWrapper, downloadSplitButtonWrapper);
+            verticalLayout.add(downloadNotSplitAnchor, downloadSplitAnchor);
+            verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitAnchor, downloadSplitAnchor);
             downloadDialog.add(verticalLayout);
 
             downloadDialog.open();
@@ -927,20 +925,18 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             VerticalLayout verticalLayout = new VerticalLayout();
             verticalLayout.setWidthFull();
 
-            Button downloadNotSplitButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
-            FileDownloadWrapper downloadNotSplitWrapper = new FileDownloadWrapper(new StreamResource(finalDownloadFileName + ".zip", ()
-                -> this.getContextBundleStreamResource(true, finalDownloadFileName, false)));
-            downloadNotSplitButton.addClickListener(event -> downloadDialog.close());
-            downloadNotSplitWrapper.wrapComponent(downloadNotSplitButton);
+            Anchor downloadNotSplitAnchor = new Anchor(new StreamResource(finalDownloadFileName + ".zip", ()
+                -> this.getContextBundleStreamResource(true, finalDownloadFileName, false))
+                , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+            downloadNotSplitAnchor.getElement().setAttribute("download", true);
 
-            Button downloadSplitButton = new Button(getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
-            FileDownloadWrapper downloadSplitButtonWrapper = new FileDownloadWrapper(new StreamResource(finalDownloadFileName + ".zip", ()
-                -> this.getContextBundleStreamResource(true, finalDownloadFileName, true)));
-            downloadSplitButton.addClickListener(event -> downloadDialog.close());
-            downloadSplitButtonWrapper.wrapComponent(downloadSplitButton);
+            Anchor downloadSplitAnchor = new Anchor(new StreamResource(finalDownloadFileName + ".zip", ()
+                -> this.getContextBundleStreamResource(true, finalDownloadFileName, true))
+                , getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+            downloadSplitAnchor.getElement().setAttribute("download", true);
 
-            verticalLayout.add(downloadNotSplitWrapper, downloadSplitButtonWrapper);
-            verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitWrapper, downloadSplitButtonWrapper);
+            verticalLayout.add(downloadNotSplitAnchor, downloadSplitAnchor);
+            verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitAnchor, downloadSplitAnchor);
             downloadDialog.add(verticalLayout);
 
             downloadDialog.open();
