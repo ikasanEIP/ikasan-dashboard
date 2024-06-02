@@ -151,7 +151,7 @@ public class ContextExportControl {
      */
     @RequestMapping(method = RequestMethod.GET, path = {"/split/{contextName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity<StreamingResponseBody> getSplitContextExport(@PathVariable String contextName) {
+    public ResponseEntity<StreamingResponseBody> getSplitContextExport(@PathVariable(value = "contextName") String contextName) {
 
         LOG.info("Start creating export for Context {}", contextName);
         try {
@@ -278,7 +278,7 @@ public class ContextExportControl {
      */
     @RequestMapping(method = RequestMethod.GET, path = {"/split/tokens/{contextName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity<StreamingResponseBody> getSplitContextExportWithTokens(@PathVariable String contextName) {
+    public ResponseEntity<StreamingResponseBody> getSplitContextExportWithTokens(@PathVariable(value = "contextName") String contextName) {
 
         LOG.info("Start creating export for Context {}", contextName);
         try {
