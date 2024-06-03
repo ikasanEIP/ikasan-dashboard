@@ -22,6 +22,7 @@
   "targetResidingContextOnly" : true,
   "participatesInLock" : true,
   "jobRepeatable" : false,
+  "killed" : false,
   "jobDescription" : "description",
   "identifier" : "agentName-jobName"
 }

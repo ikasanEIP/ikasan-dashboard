@@ -808,7 +808,13 @@ public class SchedulerJobInstanceGridWidget extends Div
                 schedulerStatusDiv.setStatus(InstanceStatus.DISABLED);
             }
             else {
-                schedulerStatusDiv.setStatus(schedulerJobInstanceRecord.getStatus());
+                if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
+                    ((InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance()).isKilled()) {
+                    schedulerStatusDiv.setStatus(InstanceStatus.KILLED);
+                }
+                else {
+                    schedulerStatusDiv.setStatus(schedulerJobInstanceRecord.getStatus());
+                }
             }
 
             horizontalLayout.add(schedulerStatusDiv);
