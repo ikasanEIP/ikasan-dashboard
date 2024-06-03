@@ -1225,8 +1225,10 @@ public class ContextMachine {
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
             deepCopy.values().forEach(schedulerJobInstance -> {
                 if(this.internalEventDrivenJobInstances != null) {
+                    Map<String, SchedulerJobInstance> deepCopyAllInternalJobInstance = this.internalEventDrivenJobInstances.entrySet().stream()
+                        .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
                     List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, schedulerJobInstance.getJobName(), contextInstance.getName()
-                        , this.internalEventDrivenJobInstances.entrySet()
+                        , deepCopyAllInternalJobInstance.entrySet()
                             .stream()
                             .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
