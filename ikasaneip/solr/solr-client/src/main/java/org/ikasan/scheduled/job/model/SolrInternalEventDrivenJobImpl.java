@@ -22,6 +22,7 @@ public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl impleme
     boolean participatesInLock;
     private String executionEnvironmentProperties;
     private boolean jobRepeatable;
+    private boolean killed = false;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -131,6 +132,16 @@ public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl impleme
     @Override
     public void setJobRepeatable(boolean jobRepeatable) {
         this.jobRepeatable = jobRepeatable;
+    }
+
+    @Override
+    public boolean isKilled() {
+        return killed;
+    }
+
+    @Override
+    public void setKilled(boolean killed) {
+        this.killed = killed;
     }
 
     @Override
