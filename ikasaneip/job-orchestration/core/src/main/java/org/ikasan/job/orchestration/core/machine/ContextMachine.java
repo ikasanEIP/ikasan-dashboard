@@ -1224,13 +1224,15 @@ public class ContextMachine {
             Map<String, SchedulerJobInstance> deepCopy = contextInstance.getScheduledJobsMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
             deepCopy.values().forEach(schedulerJobInstance -> {
-                List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, schedulerJobInstance.getJobName(), contextInstance.getName()
-                    , this.internalEventDrivenJobInstances.entrySet()
-                        .stream()
-                        .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+                if(this.internalEventDrivenJobInstances != null) {
+                    List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, schedulerJobInstance.getJobName(), contextInstance.getName()
+                        , this.internalEventDrivenJobInstances.entrySet()
+                            .stream()
+                            .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
-                if (!precedingJobs.isEmpty()) schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
+                    if (!precedingJobs.isEmpty()) schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
+                }
             });
             allLogicSatisfied.set(this.contextStateHelper.isAllLogicSatisfied
                 (contextInstance, deepCopy));
