@@ -49,10 +49,7 @@ import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
@@ -280,7 +277,12 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.statusDiv = new SchedulerStatusDiv();
         this.statusDiv.setHeight("45px");
         this.statusDiv.setWidth("100%");
-        this.statusDiv.setStatus(this.schedulerJobInstanceRecord.getStatus());
+        if(this.internalEventDrivenJobInstance.isKilled()) {
+            this.statusDiv.setStatus(InstanceStatus.KILLED);
+        }
+        else {
+            this.statusDiv.setStatus(this.internalEventDrivenJobInstance.getStatus());
+        }
 
         formLayout.add(this.statusDiv, 2);
 
@@ -480,19 +482,35 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             }
 
             try {
+                this.internalEventDrivenJobInstance.setKilled(true);
+                this.updateScheduledJob(this.internalEventDrivenJobInstance, this.authentication);
+                this.internalEventDrivenJobInstance.getChildContextNames().forEach(name -> {
+                    SchedulerJobInstanceRecord record = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(this.internalEventDrivenJobInstance.getContextInstanceId(),
+                        this.internalEventDrivenJobInstance.getJobName(), name);
+
+                    if(record != null) {
+                        SchedulerJobInstance instance = record.getSchedulerJobInstance();
+                        if(instance instanceof InternalEventDrivenJobInstance) {
+                            ((InternalEventDrivenJobInstance) instance).setKilled(true);
+                            record.setSchedulerJobInstance(instance);
+                            updateScheduledJob(record, authentication);
+                        }
+                    }
+                });
                 this.jobUtilsService.killJob(agent.getUrl(), scheduledProcessEvent.getPid(), true);
+
+                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_KILLED, String.format("Agent Name[%s], Scheduled Job Name[%s],Job Plan Name[%s], Job Plan Id[%s]"
+                    , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), internalEventDrivenJobInstance.getContextName()
+                    , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
+
+                NotificationHelper.showUserNotification(getTranslation("notification.job-killed", UI.getCurrent().getLocale()));
             }
             catch (Exception e) {
                 e.printStackTrace();
+                this.internalEventDrivenJobInstance.setKilled(false);
+                this.updateScheduledJob(this.internalEventDrivenJobInstance, this.authentication);
                 NotificationHelper.showErrorNotification(getTranslation("error.kill-job", UI.getCurrent().getLocale()));
-                return;
             }
-
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_KILLED, String.format("Agent Name[%s], Scheduled Job Name[%s],Job Plan Name[%s], Job Plan Id[%s]"
-                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), internalEventDrivenJobInstance.getContextName()
-                , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
-
-            NotificationHelper.showUserNotification(getTranslation("notification.job-killed", UI.getCurrent().getLocale()));
         });
 
 
@@ -960,6 +978,21 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
      }
 
+
+    /**
+     * Update and persist the given scheduler job instance record.
+     *
+     * @param schedulerJobInstanceRecord The scheduler job instance record to update
+     * @param authentication The authentication information of the user performing the update
+     */
+    public void updateScheduledJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord, IkasanAuthentication authentication) {
+
+        schedulerJobInstanceRecord.setModifiedTimestamp(System.currentTimeMillis());
+        schedulerJobInstanceRecord.setModifiedBy(authentication.getName());
+
+        schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+    }
+
     /**
      * Helper method to confirm that actions can be performed on a job plan
      * @return
@@ -1057,7 +1090,12 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             if(this.ui.isAttached()) {
                 this.ui.access(() -> {
                     this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                    this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    if(this.internalEventDrivenJobInstance.isKilled()) {
+                        this.statusDiv.setStatus(InstanceStatus.KILLED);
+                    }
+                    else {
+                        this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    }
 
                     this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
 

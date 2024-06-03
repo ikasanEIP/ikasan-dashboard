@@ -835,6 +835,19 @@ public class ContextMachine {
                 logger.info(String.format("Successfully reset job[%s]. Context[%s], Context Instance[%s]."
                     , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId()));
 
+                if(this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {
+                    SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findById(schedulerJobInstance.getJobName()
+                        + "_" + schedulerJobInstance.getContextInstanceId()
+                        + "_" + schedulerJobInstance.getChildContextName()
+                        + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+                    if(schedulerJobInstanceRecord != null) {
+                        InternalEventDrivenJobInstance instance = (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
+                        instance.setKilled(false);
+                        schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
+                        this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+                    }
+                }
+
                 jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
                     , previousState, schedulerJobInstance.getStatus()));
             } else {

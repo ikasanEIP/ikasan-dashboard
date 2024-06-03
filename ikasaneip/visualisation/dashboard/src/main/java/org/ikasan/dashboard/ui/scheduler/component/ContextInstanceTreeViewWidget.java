@@ -662,7 +662,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         statusDiv.setStatus(InstanceStatus.DISABLED);
                     }
                     else {
-                        statusDiv.setStatus(schedulerJobInstance.getStatus());
+                        if(schedulerJobInstance instanceof InternalEventDrivenJobInstance &&
+                            ((InternalEventDrivenJobInstance) schedulerJobInstance).isKilled()) {
+                            statusDiv.setStatus(InstanceStatus.KILLED);
+                        }
+                        else {
+                            statusDiv.setStatus(schedulerJobInstance.getStatus());
+                        }
                     }
 
                     ComponentKey componentKey = new ComponentKey(schedulerJobInstance instanceof GlobalEventJob ? JobConstants.GLOBAL_EVENT :  schedulerJobInstance.getContextName()
@@ -693,7 +699,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         statusDiv.setStatus(InstanceStatus.DISABLED);
                     }
                     else {
-                        statusDiv.setStatus(schedulerJobInstance.getStatus());
+                        if(schedulerJobInstance instanceof InternalEventDrivenJobInstance &&
+                            ((InternalEventDrivenJobInstance) schedulerJobInstance).isKilled()) {
+                            statusDiv.setStatus(InstanceStatus.KILLED);
+                        }
+                        else {
+                            statusDiv.setStatus(schedulerJobInstance.getStatus());
+                        }
                     }
 
                     ComponentKey componentKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+(schedulerJobInstance instanceof GlobalEventJob ? JobConstants.GLOBAL_EVENT :  schedulerJobInstance.getContextName())
@@ -2200,13 +2212,29 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         if(this.statusDivMap.containsKey(key)) {
             if(ui.isAttached()) {
-                ui.access(() -> this.statusDivMap.get(key).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
+                ui.access(() -> {
+                    if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
+                        ((InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance()).isKilled()) {
+                        this.statusDivMap.get(key).setStatus(InstanceStatus.KILLED);
+                    }
+                    else {
+                        this.statusDivMap.get(key).setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    }
+                });
             }
         }
 
         if(this.statusDivMap.containsKey(precedingJobKey)) {
             if(ui.isAttached()) {
-                ui.access(() -> this.statusDivMap.get(precedingJobKey).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
+                ui.access(() -> {
+                    if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
+                        ((InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance()).isKilled()) {
+                        this.statusDivMap.get(precedingJobKey).setStatus(InstanceStatus.KILLED);
+                    }
+                    else {
+                        this.statusDivMap.get(precedingJobKey).setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    }
+                });
             }
         }
 
