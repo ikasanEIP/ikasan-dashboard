@@ -15,6 +15,7 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -356,11 +357,20 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
 
         confirmDialog.addConfirmListener(confirmEvent -> {
             try {
-                contextMachine.raiseEvent(contextualisedScheduledProcessEvent);
-            } catch (IOException e) {
+                List<String> childContextNames = ContextHelper.getContextsWhereJobFilterMatchResides
+                    (this.contextInstance, contextualisedScheduledProcessEvent.getJobName());
+
+                for(String name: childContextNames) {
+                    contextualisedScheduledProcessEvent.getInternalEventDrivenJob().setChildContextName(name);
+                    contextMachine.raiseEvent(contextualisedScheduledProcessEvent);
+                }
+            }
+            catch (IOException e) {
                 e.printStackTrace();
                 NotificationHelper.showErrorNotification(getTranslation("error.downstream-job-initiation", UI.getCurrent().getLocale()));
             }
+
+            NotificationHelper.showUserNotification(getTranslation("notification.downstream-job-initiation", UI.getCurrent().getLocale()));
         });
     }
 
