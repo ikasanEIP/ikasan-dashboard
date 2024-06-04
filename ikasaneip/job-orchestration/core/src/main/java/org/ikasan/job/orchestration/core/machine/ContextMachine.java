@@ -953,10 +953,34 @@ public class ContextMachine {
      * @return
      */
     public List<SchedulerJobInitiationEvent> getEventsThatCanRun(ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent) {
+        List<InternalEventDrivenJobInstance> instances;
+        if(contextualisedScheduledProcessEvent.getInternalEventDrivenJob().isTargetResidingContextOnly()) {
+            instances = new ArrayList<>();
+            instances.add(contextualisedScheduledProcessEvent.getInternalEventDrivenJob());
+        }
+        else {
+            instances = this.internalEventDrivenJobInstances.values().stream()
+                .filter(internalEventDrivenJobInstance -> internalEventDrivenJobInstance.getIdentifier()
+                    .equals(contextualisedScheduledProcessEvent.getInternalEventDrivenJob().getIdentifier()))
+                .collect(Collectors.toList());
+        }
+
         MutableBoolean lockRaised = new MutableBoolean(false);
 
-        List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance
-            , contextualisedScheduledProcessEvent, lockRaised, false);
+        List<SchedulerJobInitiationEvent> events = new ArrayList<>();
+
+        instances.forEach(internalEventDrivenJobInstance -> {
+            ContextualisedScheduledProcessEvent event = new ContextualisedScheduledProcessEventImpl();
+            event.setJobStarting(false);
+            event.setJobName(contextualisedScheduledProcessEvent.getJobName());
+            event.setAgentName(contextualisedScheduledProcessEvent.getAgentName());
+            event.setContextName(contextualisedScheduledProcessEvent.getContextName());
+            event.setInternalEventDrivenJob(internalEventDrivenJobInstance);
+            event.setRaisedDueToFailureResubmission(true);
+
+            events.addAll(this.getInitiationEvents(this.contextInstance
+                , event, lockRaised, false));
+        });
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
 
@@ -991,7 +1015,7 @@ public class ContextMachine {
             }
         });
 
-        return events;
+        return finalEvents;
     }
 
     /**
