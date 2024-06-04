@@ -648,12 +648,7 @@ public class ContextHelper {
 
             List<SchedulerJob> results = new ArrayList<>();
 
-            if(jobDependency.get().getLogicalGrouping() == null) {
-                results.add(schedulerJobInstance.get());
-            }
-            else {
-                getUpstreamDependencies(jobDependency.get().getLogicalGrouping(), results, child.getScheduledJobsMap());
-            }
+            getUpstreamDependencies(jobDependency.get().getLogicalGrouping(), results, child.getScheduledJobsMap());
 
             // Filter to only return jobs that appear in multiple contexts.
             if(results.size() > 0) {
@@ -891,6 +886,7 @@ public class ContextHelper {
 
     private static void getNextJob(Context child, String jobIdentifier, LogicalGrouping logicalGrouping, SchedulerJob schedulerJobInstance, List<SchedulerJob> jobIdentifiers) {
         if(logicalGrouping == null) {
+            jobIdentifiers.add(((Map<String, SchedulerJob>)child.getScheduledJobsMap()).get(jobIdentifier));
             return;
         }
 
