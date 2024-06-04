@@ -2741,6 +2741,88 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    public void test_query_machine_to_determine_which_jobs_can_run_when_job_starts_job_in_another_child_context() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context-with-job-initiating-event-in-next-child-context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context-with-job-initiating-event-in-next-child-context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", true);
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("Context3", "agentName2-jobName2"));
+
+        eventInstance = scheduledProcessEventInstance("jobName4",
+            "agentName4", true);
+        contextMachine.eventReceived(eventInstance);
+
+        eventInstance = scheduledProcessEventInstance("jobName5",
+            "agentName5", true);
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("Context3", "agentName5-jobName5"));
+        Assert.assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("Context3", "agentName4-jobName4"));
+
+        eventInstance = scheduledProcessEventInstance("jobName6",
+            "agentName6", false);
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        Assert.assertEquals(InstanceStatus.ERROR, contextMachine.getJobStatus("Context3", "agentName6-jobName6"));
+        Assert.assertEquals(InstanceStatus.ERROR, contextMachine.getJobStatus("Context4", "agentName6-jobName6"));
+
+
+        // We resubmit the job events but with raisedDueToFailureResubmission == true
+        eventInstance = scheduledProcessEventInstance("jobName6",
+            "agentName6", false);
+        eventInstance.setRaisedDueToFailureResubmission(true);
+        eventInstance.getInternalEventDrivenJob().setChildContextName("Context3");
+        List<SchedulerJobInitiationEvent> events = contextMachine.getEventsThatCanRun(eventInstance);
+
+        // We get the downstream jobs to execute as expected.
+        Assert.assertNotNull(events);
+        Assert.assertEquals(2, events.size());
+        Assert.assertEquals("jobName7", events.get(0).getJobName());
+        Assert.assertEquals("jobName8", events.get(1).getJobName());
+
+        // Make sure that the contexts remain in the correct states.
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+
+        // Make sure the failing job is still in error!
+        this.assertJobStatus(contextMachine, "Context3", "agentName6-jobName6", InstanceStatus.ERROR);
+    }
+
+    @Test
     public void test_simple_context_chained_jobs_with_context_parameters() throws IOException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/logic/simple-context-chained-jobs-with-context-parameters.json"));
