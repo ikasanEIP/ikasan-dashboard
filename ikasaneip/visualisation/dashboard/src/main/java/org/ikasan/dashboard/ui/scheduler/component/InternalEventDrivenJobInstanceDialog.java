@@ -402,7 +402,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             if(!canPerformAction()) {
                 return;
             }
-            ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(this.contextInstance.getName());
+            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
             ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
             contextualisedScheduledProcessEvent.setJobStarting(false);
             contextualisedScheduledProcessEvent.setJobName(this.internalEventDrivenJobInstance.getJobName());
