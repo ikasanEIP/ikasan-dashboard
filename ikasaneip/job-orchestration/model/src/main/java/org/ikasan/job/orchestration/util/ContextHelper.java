@@ -648,7 +648,12 @@ public class ContextHelper {
 
             List<SchedulerJob> results = new ArrayList<>();
 
-            getUpstreamDependencies(jobDependency.get().getLogicalGrouping(), results, child.getScheduledJobsMap());
+            if(jobDependency.get().getLogicalGrouping() == null) {
+                results.add(schedulerJobInstance.get());
+            }
+            else {
+                getUpstreamDependencies(jobDependency.get().getLogicalGrouping(), results, child.getScheduledJobsMap());
+            }
 
             // Filter to only return jobs that appear in multiple contexts.
             if(results.size() > 0) {
