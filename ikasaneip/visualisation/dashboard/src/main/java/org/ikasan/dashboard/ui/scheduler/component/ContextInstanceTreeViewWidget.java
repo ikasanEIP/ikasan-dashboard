@@ -32,6 +32,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceState
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -303,7 +304,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         , schedulerJobInstance.getJobName(), schedulerJobInstance.getContextName(), schedulerJobInstance.getChildContextName());
                 }
 
-                if (ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance, schedulerJobInstance.getJobName()
+                if (ContextHelper.determineIfJobsTransitionFromOtherContexts(contextInstance, schedulerJobInstance.getJobName()
                     , schedulerJobInstance.getChildContextName(), internalEventDrivenJobInstanceMap).size() > 0) {
                     horizontalLayout.add(VaadinIcon.ARROW_RIGHT.create());
                 }
@@ -1971,6 +1972,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
         if(node instanceof SchedulerJobInstance) {
             SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) node;
+            List<ContextTransition> contextTransitions = ContextHelper.determineIfJobsTransitionFromOtherContexts(contextInstance,
+                schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
+                , getCommandExecutionJobsForContextInstance(contextInstance.getId()));
             children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
                     schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
                     , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
