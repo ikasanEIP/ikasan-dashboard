@@ -35,6 +35,7 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
@@ -437,12 +438,21 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 try {
-                    contextMachine.raiseEvent(contextualisedScheduledProcessEvent);
-                } catch (IOException e) {
+                    List<String> childContextNames = ContextHelper.getContextsWhereJobFilterMatchResides
+                        (this.contextInstance, contextualisedScheduledProcessEvent.getJobName());
+
+                    for(String name: childContextNames) {
+                        contextualisedScheduledProcessEvent.getInternalEventDrivenJob().setChildContextName(name);
+                        contextMachine.raiseEvent(contextualisedScheduledProcessEvent);
+                    }
+                }
+                catch (IOException e) {
                     e.printStackTrace();
                     NotificationHelper.showErrorNotification(getTranslation("error.downstream-job-initiation"
                         , UI.getCurrent().getLocale()));
                 }
+
+                NotificationHelper.showUserNotification(getTranslation("notification.downstream-job-initiation", UI.getCurrent().getLocale()));
             });
         });
 
