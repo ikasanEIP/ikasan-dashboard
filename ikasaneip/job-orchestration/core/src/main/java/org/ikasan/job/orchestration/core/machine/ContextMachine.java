@@ -925,6 +925,7 @@ public class ContextMachine {
             }
             else {
                 if(schedulerJobInstance != null) {
+                    if(schedulerJobInstance.getStatus().equals(InstanceStatus.RUNNING)) return;
                     if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD) && !schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
                         throw new ContextMachineException(String.format("Attempting to release job[%s], " +
                                 "in context[%s], childContext[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be released."
