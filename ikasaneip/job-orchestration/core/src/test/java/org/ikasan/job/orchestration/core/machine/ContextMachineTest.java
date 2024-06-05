@@ -476,7 +476,7 @@ public class ContextMachineTest extends AbstractTest {
         contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
 
-    @Test(expected = ContextMachineException.class)
+    @Test
     public void test_context_machine_full_nested_context_job_release_exception_job_already_running() throws IOException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
@@ -492,6 +492,9 @@ public class ContextMachineTest extends AbstractTest {
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
         contextMachine.init();
         contextMachine.releaseJob("agentName1-jobName1", "Context3");
+
+        Assert.assertEquals(InstanceStatus.RUNNING, contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").getStatus());
     }
 
     @Test(expected = ContextMachineException.class)
