@@ -835,6 +835,19 @@ public class ContextMachine {
                 logger.info(String.format("Successfully reset job[%s]. Context[%s], Context Instance[%s]."
                     , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId()));
 
+                if(this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {
+                    SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findById(schedulerJobInstance.getJobName()
+                        + "_" + schedulerJobInstance.getContextInstanceId()
+                        + "_" + schedulerJobInstance.getChildContextName()
+                        + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+                    if(schedulerJobInstanceRecord != null) {
+                        InternalEventDrivenJobInstance instance = (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
+                        instance.setKilled(false);
+                        schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
+                        this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+                    }
+                }
+
                 jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
                     , previousState, schedulerJobInstance.getStatus()));
             } else {
@@ -953,10 +966,34 @@ public class ContextMachine {
      * @return
      */
     public List<SchedulerJobInitiationEvent> getEventsThatCanRun(ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent) {
+        List<InternalEventDrivenJobInstance> instances;
+        if(contextualisedScheduledProcessEvent.getInternalEventDrivenJob().isTargetResidingContextOnly()) {
+            instances = new ArrayList<>();
+            instances.add(contextualisedScheduledProcessEvent.getInternalEventDrivenJob());
+        }
+        else {
+            instances = this.internalEventDrivenJobInstances.values().stream()
+                .filter(internalEventDrivenJobInstance -> internalEventDrivenJobInstance.getIdentifier()
+                    .equals(contextualisedScheduledProcessEvent.getInternalEventDrivenJob().getIdentifier()))
+                .collect(Collectors.toList());
+        }
+
         MutableBoolean lockRaised = new MutableBoolean(false);
 
-        List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance
-            , contextualisedScheduledProcessEvent, lockRaised, false);
+        List<SchedulerJobInitiationEvent> events = new ArrayList<>();
+
+        instances.forEach(internalEventDrivenJobInstance -> {
+            ContextualisedScheduledProcessEvent event = new ContextualisedScheduledProcessEventImpl();
+            event.setJobStarting(false);
+            event.setJobName(contextualisedScheduledProcessEvent.getJobName());
+            event.setAgentName(contextualisedScheduledProcessEvent.getAgentName());
+            event.setContextName(contextualisedScheduledProcessEvent.getContextName());
+            event.setInternalEventDrivenJob(internalEventDrivenJobInstance);
+            event.setRaisedDueToFailureResubmission(true);
+
+            events.addAll(this.getInitiationEvents(this.contextInstance
+                , event, lockRaised, false));
+        });
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
 
@@ -991,7 +1028,7 @@ public class ContextMachine {
             }
         });
 
-        return events;
+        return finalEvents;
     }
 
     /**
@@ -1206,21 +1243,37 @@ public class ContextMachine {
                 }
             });
 
-            // Confirm that all logical constructs have been satisfied
-            allLogicSatisfied.set(this.contextStateHelper.isAllLogicSatisfied
-                (contextInstance, contextInstance.getScheduledJobsMap()));
-
-            // Now determine if there running or queued jobs or those
-            // in a error state.
-            contextInstance.getScheduledJobs().forEach(job -> {
+            // Confirm that all logical constructs have been satisfied. We do not want to include
+            // jobs whose execution originated from outside the context.
+            Map<String, SchedulerJobInstance> deepCopy = contextInstance.getScheduledJobsMap().entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> SerializationUtils.clone(e.getValue())));
+            deepCopy.values().forEach(schedulerJobInstance -> {
                 if(this.internalEventDrivenJobInstances != null) {
-                    List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, job.getJobName(), contextInstance.getName()
+                    List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, schedulerJobInstance.getJobName(), contextInstance.getName()
                         , this.internalEventDrivenJobInstances.entrySet()
                             .stream()
                             .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
-                    if (!precedingJobs.isEmpty()) return;
+                    if (!precedingJobs.isEmpty()) schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
+                }
+            });
+
+            allLogicSatisfied.set(this.contextStateHelper.isAllLogicSatisfied
+                (contextInstance, deepCopy));
+
+            // Now determine if there running or queued jobs or those
+            // in a error state.
+            contextInstance.getScheduledJobs().forEach(job -> {
+                if(this.internalEventDrivenJobInstances != null) {
+                    // We're not interested in assessing the status of jobs that are initiated outside the context.
+                    List<ContextTransition> contextTransitions = ContextHelper.determineIfJobsTransitionFromOtherContexts(this.contextInstance, job.getJobName(), contextInstance.getName()
+                        , this.internalEventDrivenJobInstances.entrySet()
+                            .stream()
+                            .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+                    if (!contextTransitions.isEmpty()) return;
                 }
 
                 if (job.getStatus().equals(InstanceStatus.RUNNING)
