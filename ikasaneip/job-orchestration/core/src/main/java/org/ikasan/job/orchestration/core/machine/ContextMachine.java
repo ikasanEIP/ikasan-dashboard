@@ -1267,13 +1267,13 @@ public class ContextMachine {
             contextInstance.getScheduledJobs().forEach(job -> {
                 if(this.internalEventDrivenJobInstances != null) {
                     // We're not interested in assessing the status of jobs that are initiated outside the context.
-                    List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, job.getJobName(), contextInstance.getName()
+                    List<ContextTransition> contextTransitions = ContextHelper.determineIfJobsTransitionFromOtherContexts(this.contextInstance, job.getJobName(), contextInstance.getName()
                         , this.internalEventDrivenJobInstances.entrySet()
                             .stream()
                             .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
                             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
-                    if (!precedingJobs.isEmpty()) return;
+                    if (!contextTransitions.isEmpty()) return;
                 }
 
                 if (job.getStatus().equals(InstanceStatus.RUNNING)
