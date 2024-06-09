@@ -835,6 +835,19 @@ public class ContextMachine {
                 logger.info(String.format("Successfully reset job[%s]. Context[%s], Context Instance[%s]."
                     , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId()));
 
+                if(this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {
+                    SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findById(schedulerJobInstance.getJobName()
+                        + "_" + schedulerJobInstance.getContextInstanceId()
+                        + "_" + schedulerJobInstance.getChildContextName()
+                        + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+                    if(schedulerJobInstanceRecord != null) {
+                        InternalEventDrivenJobInstance instance = (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
+                        instance.setKilled(false);
+                        schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
+                        this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+                    }
+                }
+
                 jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
                     , previousState, schedulerJobInstance.getStatus()));
             } else {
@@ -1230,14 +1243,30 @@ public class ContextMachine {
                 }
             });
 
-            // Confirm that all logical constructs have been satisfied
+            // Confirm that all logical constructs have been satisfied. We do not want to include
+            // jobs whose execution originated from outside the context.
+            Map<String, SchedulerJobInstance> deepCopy = contextInstance.getScheduledJobsMap().entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> SerializationUtils.clone(e.getValue())));
+            deepCopy.values().forEach(schedulerJobInstance -> {
+                if(this.internalEventDrivenJobInstances != null) {
+                    List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, schedulerJobInstance.getJobName(), contextInstance.getName()
+                        , this.internalEventDrivenJobInstances.entrySet()
+                            .stream()
+                            .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+                    if (!precedingJobs.isEmpty()) schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
+                }
+            });
+
             allLogicSatisfied.set(this.contextStateHelper.isAllLogicSatisfied
-                (contextInstance, contextInstance.getScheduledJobsMap()));
+                (contextInstance, deepCopy));
 
             // Now determine if there running or queued jobs or those
             // in a error state.
             contextInstance.getScheduledJobs().forEach(job -> {
                 if(this.internalEventDrivenJobInstances != null) {
+                    // We're not interested in assessing the status of jobs that are initiated outside the context.
                     List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, job.getJobName(), contextInstance.getName()
                         , this.internalEventDrivenJobInstances.entrySet()
                             .stream()
