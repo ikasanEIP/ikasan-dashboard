@@ -39,6 +39,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
@@ -109,6 +110,9 @@ public class ContextInstanceRecoveryServiceImplTest {
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
     @Mock
+    JobUtilsService jobUtilsService;
+
+    @Mock
     private TimeService timeService;
 
     @Mock
@@ -145,6 +149,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstanceSchedulerService,
             timeService,
             contextInstanceRegistrationService,
+            this.jobUtilsService,
             true
         );
 

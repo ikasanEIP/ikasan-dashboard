@@ -2722,7 +2722,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
-            null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
+            null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         ContextMachineCache.instance().put(contextMachine);
 
@@ -2771,7 +2771,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
         contextInstance.setRunContextUntilManuallyEnded(true);
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
-            null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
+            null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         ContextMachineCache.instance().put(contextMachine);
 
@@ -2806,7 +2806,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
         contextInstance.setRunContextUntilManuallyEnded(true);
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
-            null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
+            null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         ContextMachineCache.instance().put(contextMachine);
 

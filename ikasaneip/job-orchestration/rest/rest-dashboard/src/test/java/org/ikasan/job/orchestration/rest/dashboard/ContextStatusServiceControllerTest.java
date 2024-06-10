@@ -255,7 +255,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("{\"message\":\"good\"}");
@@ -275,7 +275,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenThrow(new RuntimeException("expected exception"));
@@ -297,7 +297,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("");
@@ -316,7 +316,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(InstanceStatus.ERROR, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("{\"message\":\"good\"}");
@@ -336,7 +336,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(InstanceStatus.ERROR, Collections.singletonMap("test-instance-id", contextMachine))).thenThrow(new RuntimeException("expected exception"));
@@ -370,7 +370,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("");
@@ -391,7 +391,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("{\"message\":\"good\"}");
@@ -411,7 +411,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenThrow(new RuntimeException("expected exception"));
@@ -433,7 +433,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("");
@@ -452,7 +452,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(InstanceStatus.ERROR, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("{\"message\":\"good\"}");
@@ -472,7 +472,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(InstanceStatus.ERROR, Collections.singletonMap("test-instance-id", contextMachine))).thenThrow(new RuntimeException("expected exception"));
@@ -506,7 +506,7 @@ public class ContextStatusServiceControllerTest {
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, JobLockCacheImpl.instance(), null
-            , null, null, null, null);
+            , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         when(contextStatusService.getJsonContextJobStatus(null, Collections.singletonMap("test-instance-id", contextMachine))).thenReturn("");

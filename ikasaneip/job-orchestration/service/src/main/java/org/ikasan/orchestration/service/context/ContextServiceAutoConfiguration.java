@@ -62,7 +62,8 @@ public class ContextServiceAutoConfiguration {
         JobLockCacheInitialisationService jobLockCacheInitialisationService,
         ContextInstanceSchedulerService contextInstanceSchedulerService,
         TimeService timeService,
-        ContextInstanceRegistrationService contextInstanceRegistrationService) {
+        ContextInstanceRegistrationService contextInstanceRegistrationService,
+        JobUtilsService jobUtilsService) {
 
         return new ContextInstanceRecoveryServiceImpl(queueDirectory,
             scheduledContextInstanceService,
@@ -80,6 +81,7 @@ public class ContextServiceAutoConfiguration {
             contextInstanceSchedulerService,
             timeService,
             contextInstanceRegistrationService,
+            jobUtilsService,
             this.isIkasanEnterpriseSchedulerInstance
         );
     }

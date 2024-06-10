@@ -17,6 +17,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
@@ -44,7 +45,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                                   JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                                   ContextInstanceSchedulerService contextInstanceSchedulerService,
-                                                  TimeService timeService) {
+                                                  TimeService timeService,
+                                                  JobUtilsService jobUtilsService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService, moduleMetadataService,
@@ -58,7 +60,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
-            timeService);
+            timeService,
+            jobUtilsService);
 
         this.scheduledContextRecord = scheduledContextRecord;
     }
