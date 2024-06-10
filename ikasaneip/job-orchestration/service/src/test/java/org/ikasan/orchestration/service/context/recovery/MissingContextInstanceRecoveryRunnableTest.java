@@ -29,6 +29,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
@@ -89,6 +90,9 @@ public class MissingContextInstanceRecoveryRunnableTest {
     @Mock
     private TimeService timeService;
 
+    @Mock
+    private JobUtilsService jobUtilsService;
+
     private MissingContextInstanceRecoveryRunnable backFiller;
 
     private String contextName;
@@ -129,7 +133,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
-            timeService
+            timeService,
+            this.jobUtilsService
         );
 
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());

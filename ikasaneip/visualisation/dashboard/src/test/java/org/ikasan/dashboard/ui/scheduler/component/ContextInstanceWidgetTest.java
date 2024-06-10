@@ -32,6 +32,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -78,6 +79,9 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
     @MockBean
     JobLockCacheInitialisationService jobLockCacheInitialisationService;
+
+    @MockBean
+    JobUtilsService jobUtilsService;
 
     @Autowired
     ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
@@ -317,7 +321,7 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
             , this.scheduledContextInstanceService, new HashMap<>(), new HashMap<>(), new HashMap<>()
             , "this.queueDir", new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
-            , contextInstancePublicationService);
+            , this.contextInstancePublicationService, this.jobUtilsService);
         ContextMachineCache.instance().put(contextMachine);
     }
 
