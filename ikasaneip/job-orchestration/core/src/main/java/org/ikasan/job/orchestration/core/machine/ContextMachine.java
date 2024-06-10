@@ -52,6 +52,7 @@ import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstance
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,6 +110,7 @@ public class ContextMachine {
 
     private InboundQueueMessageRunner inboundQueueMessageRunner;
     private ContextStateHelper contextStateHelper;
+    private JobUtilsService jobUtilsService;
     private boolean tornDown = false;
 
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
@@ -119,7 +121,8 @@ public class ContextMachine {
                           ContextParametersInstanceService contextParametersInstanceService,
                           ScheduledContextService scheduledContextService, SchedulerJobInstanceService schedulerJobInstanceService,
                           JobLockCacheInitialisationService jobLockCacheInitialisationService,
-                          ContextInstancePublicationService<ContextInstance> contextInstancePublicationService) {
+                          ContextInstancePublicationService<ContextInstance> contextInstancePublicationService,
+                          JobUtilsService jobUtilsService) {
         this.context = context;
         this.contextInstance = contextInstance;
         ContextHelper.enrichJobs(contextInstance);
@@ -150,6 +153,7 @@ public class ContextMachine {
         this.contextInstancePublicationService = contextInstancePublicationService;
         this.contextParametersInstanceService = contextParametersInstanceService;
         this.jobLockCache = jobLockCache;
+        this.jobUtilsService = jobUtilsService;
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.moduleMetaDataService, this.jobLockCache, contextParametersInstanceService);
         this.contextStateHelper = new ContextStateHelper();
     }
@@ -206,6 +210,7 @@ public class ContextMachine {
                                      List<ContextParameterInstance> contextParameterInstances) throws IOException, SchedulerJobInstanceInitialisationException {
         if(this.context != null) {
             String contextName = this.contextInstance.getName();
+            this.killRunningJobs();
             this.teardownBigQueue();
             ContextService contextService = new ContextService();
             this.context = scheduledContextService.findByName(contextName).getContext();
@@ -941,6 +946,36 @@ public class ContextMachine {
                             "in the context or any of its nested contexts!"
                         , schedulerJobInstance.getChildContextName(), this.contextInstance.getName(), this.contextInstance.getId(), heldJobsString));
                 }
+            }
+        });
+    }
+
+    private void killRunningJobs() {
+        List<InternalEventDrivenJobInstance> runningJobs = this.contextInstance.getAllSchedulerJobInstances().stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance instanceof InternalEventDrivenJob)
+            .map(schedulerJobInstance -> (InternalEventDrivenJobInstance) schedulerJobInstance)
+            .filter(internalEventDrivenJobInstance -> internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.RUNNING))
+            .collect(Collectors.toList());
+
+        Map<String, ModuleMetaData> agents = new HashMap<>();
+        runningJobs.forEach(job -> {
+            ModuleMetaData agent = null;
+            try {
+                // Let's only query for the agent metadata if necessary.
+                if (!agents.containsKey(job.getAgentName())) {
+                    agents.put(job.getAgentName(), this.moduleMetaDataService.findById(job.getAgentName()));
+                }
+
+                agent = agents.get(job.getAgentName());
+                logger.info(String.format("Killing job[%s] with pid[%s] on agent[%s]."
+                    , job.getJobName(), job.getScheduledProcessEvent().getPid(), agent.getUrl()));
+                jobUtilsService.killJob(agent.getUrl(), job.getScheduledProcessEvent().getPid(), true);
+            }
+            catch (Exception e) {
+                // We are just going to put a warn message as the job may have already finished
+                logger.warn(String.format("Failed to kill job[%s] with pid[%s] on agent[%s]. The job may have already ended " +
+                        "when the request to kill the job was issued. Error Message: %s"
+                    , job.getJobName(), job.getScheduledProcessEvent().getPid(), agent.getUrl(), e.getMessage()));
             }
         });
     }

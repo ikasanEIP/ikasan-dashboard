@@ -65,6 +65,7 @@ public abstract class ContextInstanceServiceBase {
     protected final SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
     protected final ContextInstanceSchedulerService contextInstanceSchedulerService;
     protected final TimeService timeService;
+    protected final JobUtilsService jobUtilsService;
 
     protected final ObjectMapper objectMapper;
 
@@ -83,7 +84,8 @@ public abstract class ContextInstanceServiceBase {
                                       SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                       JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                       ContextInstanceSchedulerService contextInstanceSchedulerService,
-                                      TimeService timeService) {
+                                      TimeService timeService,
+                                      JobUtilsService jobUtilsService) {
         this.queueDirectory = queueDirectory;
         if (this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
@@ -143,6 +145,10 @@ public abstract class ContextInstanceServiceBase {
         this.timeService = timeService;
         if (this.timeService == null) {
             throw new IllegalArgumentException("timeService cannot be null!");
+        }
+        this.jobUtilsService = jobUtilsService;
+        if (this.jobUtilsService == null) {
+            throw new IllegalArgumentException("jobUtilsService cannot be null!");
         }
 
         this.objectMapper = ObjectMapperFactory.newInstance();
@@ -240,7 +246,7 @@ public abstract class ContextInstanceServiceBase {
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, queueDirectory, agents,
             moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
-            this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
+            this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine.init();
 
         // We add the listener to write initiation events to the agents.
@@ -354,7 +360,7 @@ public abstract class ContextInstanceServiceBase {
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, queueDirectory, agents,
             moduleMetadataService, null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
-            this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
+            this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         // We add a listener to update scheduler job instances when a state change occurs.
         contextMachine.addSchedulerJobStateChangeEventListener(event ->

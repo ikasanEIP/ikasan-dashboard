@@ -79,7 +79,6 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
     private ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster;
 
     private SystemEventService systemEventService;
-    private JobUtilsService jobUtilsService;
 
     private boolean isIkasanEnterpriseSchedulerInstance;
 
@@ -116,7 +115,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
-            timeService);
+            timeService,
+            jobUtilsService);
 
         this.contextInstanceSavedEventBroadcaster = contextInstanceSavedEventBroadcaster;
         if (this.contextInstanceSavedEventBroadcaster == null) {
@@ -126,10 +126,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         if (this.systemEventService == null) {
             throw new IllegalArgumentException("systemEventService cannot be null!");
         }
-        this.jobUtilsService = jobUtilsService;
-        if (this.jobUtilsService == null) {
-            throw new IllegalArgumentException("jobUtilsService cannot be null!");
-        }
+
         this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
     }
     /**
