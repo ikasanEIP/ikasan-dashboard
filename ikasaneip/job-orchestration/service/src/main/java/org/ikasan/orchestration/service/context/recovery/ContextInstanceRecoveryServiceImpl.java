@@ -64,6 +64,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
@@ -119,6 +120,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                               ContextInstanceSchedulerService contextInstanceSchedulerService,
                                               TimeService timeService,
                                               ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                              JobUtilsService jobUtilsService,
                                               boolean isIkasanEnterpriseSchedulerInstance) {
         super(queueDirectory,
             scheduledContextInstanceService,
@@ -134,7 +136,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
-            timeService);
+            timeService,
+            jobUtilsService);
 
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         if (this.contextInstanceRegistrationService == null) {
@@ -282,7 +285,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                         this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
                         this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
                         scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
-                        this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService, this.timeService
+                        this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService, this.timeService, this.jobUtilsService
                     ));
                 }
             }

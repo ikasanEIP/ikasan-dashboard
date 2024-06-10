@@ -58,7 +58,7 @@ public class ContextResetServiceImplTest {
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null
             , null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService
-            , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
+            , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, null);
         ContextMachineCache.instance().put(contextMachine);
 
         try {
@@ -79,7 +79,7 @@ public class ContextResetServiceImplTest {
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null
             , null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService
-            , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
+            , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, null);
         ContextMachineCache.instance().put(contextMachine);
 
         contextResetService.resetContext("CONTEXT-1436221681", false);
