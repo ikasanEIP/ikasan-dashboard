@@ -193,7 +193,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
         LOG.info(String.format("De registering context Instance ID [%s], plan name [%s]", contextInstanceId, contextMachine.getContext().getName()));
 
-        this.killRunningJobs(contextInstanceId);
+        contextMachine.killRunningJobs();
         removeAgentInstances(instance);
         instance.setEndTime(System.currentTimeMillis());
         saveContextInstance(instance, InstanceStatus.ENDED);
@@ -453,29 +453,5 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             }
         }
         return cronProjectedEndTime;
-    }
-
-    private void killRunningJobs(String contextInstanceId) {
-        List<InternalEventDrivenJobInstance> runningJobs
-            = super.getRunningCommandExecutionJobs(contextInstanceId);
-
-        Map<String, ModuleMetaData> agents = new HashMap<>();
-        runningJobs.forEach(job -> {
-            ModuleMetaData agent = null;
-            try {
-                // Let's only query for the agent metadata if necessary.
-                if (!agents.containsKey(job.getAgentName())) {
-                    agents.put(job.getAgentName(), this.moduleMetadataService.findById(job.getAgentName()));
-                }
-
-                agent = agents.get(job.getAgentName());
-                jobUtilsService.killJob(agent.getUrl(), job.getScheduledProcessEvent().getPid(), true);
-            }
-            catch (Exception e) {
-                // We are just going to
-                LOG.warn(String.format("Failed to kill job[%s] with pid[%s] on agent[%s]. Error Message: %s"
-                    , job.getJobName(), job.getScheduledProcessEvent().getPid(), agent.getUrl(), e.getMessage()));
-            }
-        });
     }
 }
