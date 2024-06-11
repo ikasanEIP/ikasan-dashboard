@@ -964,30 +964,47 @@ public class ContextMachine {
         });
     }
 
-    private void killRunningJobs() {
-        List<InternalEventDrivenJobInstance> runningJobs = this.contextInstance.getAllSchedulerJobInstances().stream()
-            .filter(schedulerJobInstance -> schedulerJobInstance instanceof InternalEventDrivenJob)
-            .map(schedulerJobInstance -> (InternalEventDrivenJobInstance) schedulerJobInstance)
+    public void killRunningJobs() {
+        List<SchedulerJobInstance> runningJobs = this.contextInstance.getAllSchedulerJobInstances().stream()
             .filter(internalEventDrivenJobInstance -> internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.RUNNING))
             .collect(Collectors.toList());
 
         Map<String, ModuleMetaData> agents = new HashMap<>();
+        List<Long> killedPids = new ArrayList<>();
         runningJobs.forEach(job -> {
             ModuleMetaData agent = null;
             try {
-                // Let's only query for the agent metadata if necessary.
-                if (!agents.containsKey(job.getAgentName())) {
-                    agents.put(job.getAgentName(), this.moduleMetaDataService.findById(job.getAgentName()));
-                }
+                if(job.getScheduledProcessEvent() != null &&
+                    job.getScheduledProcessEvent().getPid() > 0 &&
+                    !killedPids.contains(job.getScheduledProcessEvent().getPid())) {
+                    // Let's only query for the agent metadata if necessary.
+                    if (!agents.containsKey(job.getAgentName())) {
+                        agents.put(job.getAgentName(), this.moduleMetaDataService.findById(job.getAgentName()));
+                    }
 
-                agent = agents.get(job.getAgentName());
-                logger.info(String.format("Killing job[%s] with pid[%s] on agent[%s]."
-                    , job.getJobName(), job.getScheduledProcessEvent().getPid(), agent.getUrl()));
-                jobUtilsService.killJob(agent.getUrl(), job.getScheduledProcessEvent().getPid(), true);
+                    agent = agents.get(job.getAgentName());
+                    logger.info(String.format("Killing job[%s] with pid[%s] on agent[%s]."
+                        , job.getJobName(), job.getScheduledProcessEvent().getPid(), agent.getUrl()));
+                    jobUtilsService.killJob(agent.getUrl(), job.getScheduledProcessEvent().getPid(), true);
+
+                    SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(this.contextInstance.getId(),
+                        job.getJobName(), job.getChildContextName());
+                    InternalEventDrivenJobInstance dbInstance = (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
+                    dbInstance.setStatus(InstanceStatus.KILLED);
+                    dbInstance.setKilled(true);
+
+                    schedulerJobInstanceRecord.setSchedulerJobInstance(dbInstance);
+                    this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+                    jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(job, this.contextInstance
+                        , InstanceStatus.RUNNING, InstanceStatus.ERROR));
+
+                    killedPids.add(job.getScheduledProcessEvent().getPid());
+                }
             }
             catch (Exception e) {
                 // We are just going to put a warn message as the job may have already finished
-                logger.warn(String.format("Failed to kill job[%s] with pid[%s] on agent[%s]. The job may have already ended " +
+                logger.info(String.format("Failed to kill job[%s] with pid[%s] on agent[%s]. The job may have already ended " +
                         "when the request to kill the job was issued. Error Message: %s"
                     , job.getJobName(), job.getScheduledProcessEvent().getPid(), agent.getUrl(), e.getMessage()));
             }
