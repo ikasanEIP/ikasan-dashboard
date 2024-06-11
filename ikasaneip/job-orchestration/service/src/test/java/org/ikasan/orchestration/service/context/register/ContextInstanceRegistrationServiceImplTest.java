@@ -13,6 +13,7 @@ import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
+import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -49,6 +50,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static java.time.ZonedDateTime.now;
 import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
@@ -101,6 +103,16 @@ public class ContextInstanceRegistrationServiceImplTest {
     private SystemEventService systemEventService;
     @Mock
     private JobUtilsService jobUtilsService;
+
+    @Mock
+    private SchedulerJobInstanceService mockSchedulerJobInstanceService;
+
+    @Mock
+    private SchedulerJobInstanceRecord schedulerJobInstanceRecord;
+
+    @Mock
+    private InternalEventDrivenJobInstance mockInternalEventDrivenJobInstance;
+
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
 
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -2756,6 +2768,235 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster
+        );
+
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+    }
+
+    @Test
+    public void deregister_should_save_instance_as_ended_kill_running_jobs() throws Exception {
+        // set up
+        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
+
+        AtomicLong pid = new AtomicLong(12345L);
+        contextInstance.getScheduledJobs().forEach(job -> {
+            ContextualisedScheduledProcessEventImpl event = new ContextualisedScheduledProcessEventImpl();
+            event.setPid(pid.getAndIncrement());
+            job.setStatus(InstanceStatus.RUNNING);
+            job.setScheduledProcessEvent(event);
+        });
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
+            null, this.mockSchedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
+
+        ContextMachineCache.instance().put(contextMachine);
+
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1))).thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1")), 0, 0));
+        when(moduleMetadataService.findById(any())).thenReturn(TestUtils.createModuleMetaData("1"));
+
+        when(this.mockSchedulerJobInstanceService.findByContextIdJobNameChildContextName(anyString(),anyString(), anyString()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance()).thenReturn(this.mockInternalEventDrivenJobInstance);
+
+        // execute
+        contextInstanceRegistrationService.deRegisterByName(contextName);
+
+        // verify
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService).findById(anyString());
+        verify(contextInstancePublicationService).remove(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
+
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.ENDED.name(), actualContextInstanceRecord.getStatus());
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verify(mockSchedulerJobInstanceService, times(2)).findByContextIdJobNameChildContextName(anyString(), anyString(), anyString());
+
+        verify(jobUtilsService, times(2)).killJob(anyString(), anyLong(), anyBoolean());
+
+        verify(mockInternalEventDrivenJobInstance, times(2)).setKilled(true);
+        verify(mockInternalEventDrivenJobInstance, times(2)).setStatus(InstanceStatus.KILLED);
+
+
+        verify(mockSchedulerJobInstanceService, times(2)).save(schedulerJobInstanceRecord);
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster,
+            mockInternalEventDrivenJobInstance,
+            jobUtilsService,
+            mockSchedulerJobInstanceService
+        );
+
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+    }
+
+    @Test
+    public void deregister_should_save_instance_as_ended_kill_running_jobs_same_pid_kill_called_once() throws Exception {
+        // set up
+        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
+
+        AtomicLong pid = new AtomicLong(12345L);
+        contextInstance.getScheduledJobs().forEach(job -> {
+            ContextualisedScheduledProcessEventImpl event = new ContextualisedScheduledProcessEventImpl();
+            event.setPid(pid.get());
+            job.setStatus(InstanceStatus.RUNNING);
+            job.setScheduledProcessEvent(event);
+        });
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
+            null, this.mockSchedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
+
+        ContextMachineCache.instance().put(contextMachine);
+
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1))).thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1")), 0, 0));
+        when(moduleMetadataService.findById(any())).thenReturn(TestUtils.createModuleMetaData("1"));
+
+        when(this.mockSchedulerJobInstanceService.findByContextIdJobNameChildContextName(anyString(),anyString(), anyString()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance()).thenReturn(this.mockInternalEventDrivenJobInstance);
+
+        // execute
+        contextInstanceRegistrationService.deRegisterByName(contextName);
+
+        // verify
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService).findById(anyString());
+        verify(contextInstancePublicationService).remove(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
+
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.ENDED.name(), actualContextInstanceRecord.getStatus());
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verify(mockSchedulerJobInstanceService, times(1)).findByContextIdJobNameChildContextName(anyString(), anyString(), anyString());
+
+        verify(jobUtilsService, times(1)).killJob(anyString(), anyLong(), anyBoolean());
+
+        verify(mockInternalEventDrivenJobInstance, times(1)).setKilled(true);
+        verify(mockInternalEventDrivenJobInstance, times(1)).setStatus(InstanceStatus.KILLED);
+
+
+        verify(mockSchedulerJobInstanceService, times(1)).save(schedulerJobInstanceRecord);
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster,
+            mockInternalEventDrivenJobInstance,
+            jobUtilsService,
+            mockSchedulerJobInstanceService
+        );
+
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+    }
+
+    @Test
+    public void deregister_should_save_instance_as_ended_kill_running_jobs_no_process_event_kill_called_once() throws Exception {
+        // set up
+        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
+
+        AtomicLong pid = new AtomicLong(12345L);
+        ContextualisedScheduledProcessEventImpl event = new ContextualisedScheduledProcessEventImpl();
+        event.setPid(pid.get());
+        contextInstance.getScheduledJobs().get(0).setStatus(InstanceStatus.RUNNING);
+        contextInstance.getScheduledJobs().get(0).setScheduledProcessEvent(event);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
+            null, this.mockSchedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
+
+        ContextMachineCache.instance().put(contextMachine);
+
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1))).thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1")), 0, 0));
+        when(moduleMetadataService.findById(any())).thenReturn(TestUtils.createModuleMetaData("1"));
+
+        when(this.mockSchedulerJobInstanceService.findByContextIdJobNameChildContextName(anyString(),anyString(), anyString()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance()).thenReturn(this.mockInternalEventDrivenJobInstance);
+
+        // execute
+        contextInstanceRegistrationService.deRegisterByName(contextName);
+
+        // verify
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService).findById(anyString());
+        verify(contextInstancePublicationService).remove(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
+
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.ENDED.name(), actualContextInstanceRecord.getStatus());
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verify(mockSchedulerJobInstanceService, times(1)).findByContextIdJobNameChildContextName(anyString(), anyString(), anyString());
+
+        verify(jobUtilsService, times(1)).killJob(anyString(), anyLong(), anyBoolean());
+
+        verify(mockInternalEventDrivenJobInstance, times(1)).setKilled(true);
+        verify(mockInternalEventDrivenJobInstance, times(1)).setStatus(InstanceStatus.KILLED);
+
+
+        verify(mockSchedulerJobInstanceService, times(1)).save(schedulerJobInstanceRecord);
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster,
+            mockInternalEventDrivenJobInstance,
+            jobUtilsService,
+            mockSchedulerJobInstanceService
         );
 
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
