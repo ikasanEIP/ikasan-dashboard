@@ -222,33 +222,33 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     protected Component initCanvasActions() {
         HorizontalLayout actions = new HorizontalLayout();
-        actions.setHeight("40px");
+        actions.setHeight("26px");
         actions.setId("canvas-actions");
 
         // Zoom in
-        Icon zoomIn = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        Icon zoomIn = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale()), "18px", IkasanColours.IKASAN_ORANGE);
         zoomIn.addClickListener(event -> this.designerCanvas.zoomIn());
         actions.add(zoomIn);
 
         // Zoom out
-        Icon zoomOut = IconDecorator.decorate(VaadinIcon.MINUS.create(), getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        Icon zoomOut = IconDecorator.decorate(VaadinIcon.MINUS.create(), getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale()), "18px", IkasanColours.IKASAN_ORANGE);
         zoomOut.addClickListener(event -> this.designerCanvas.zoomOut());
         actions.add(zoomOut);
 
         // Bring selected items to front
-        Icon toFront = IconDecorator.decorate(FontAwesome.Solid.CLONE.create(), getTranslation("tooltip.bring-to-front", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        Icon toFront = IconDecorator.decorate(FontAwesome.Solid.CLONE.create(), getTranslation("tooltip.bring-to-front", UI.getCurrent().getLocale()), "18px", IkasanColours.IKASAN_ORANGE);
         toFront.addClickListener(buttonClickEvent -> this.designerCanvas.bringToFront());
         actions.add(toFront);
 
 
         // Send selected items to back
-        Icon toBack = IconDecorator.decorate(FontAwesome.Solid.WINDOW_RESTORE.create(), getTranslation("tooltip.send-to-back", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        Icon toBack = IconDecorator.decorate(FontAwesome.Solid.WINDOW_RESTORE.create(), getTranslation("tooltip.send-to-back", UI.getCurrent().getLocale()), "18px", IkasanColours.IKASAN_ORANGE);
         toBack.addClickListener(buttonClickEvent -> {
             this.designerCanvas.sendToBack();
         });
         actions.add(toBack);
 
-        actions.setVerticalComponentAlignment(Alignment.END, zoomIn, zoomOut, toFront, toBack);
+        actions.setVerticalComponentAlignment(Alignment.CENTER, zoomIn, zoomOut, toFront, toBack);
         return actions;
     }
 

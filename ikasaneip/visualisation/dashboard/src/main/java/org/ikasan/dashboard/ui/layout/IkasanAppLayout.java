@@ -123,6 +123,8 @@ public class IkasanAppLayout extends AppLayout {
 
         addToNavbar(header);
         addToDrawer(getSideNav());
+        super.setDrawerOpened(false);
+        super.getStyle().set("--vaadin-app-layout-drawer-overlay", "true");
     }
 
     private SideNav getSideNav() {

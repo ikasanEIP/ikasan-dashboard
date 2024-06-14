@@ -85,7 +85,8 @@ public class SecurityConfiguration
                     .requestMatchers("/rest/export/context/**", // ContextExportControl
                         "/rest/module/bigQueue/size/all/**", // BigQueueModuleController
                         "/rest/context/status/**", // ContextStatusServiceController
-                        "/actuator/**"// expose spring actuator via basic authentication
+                        "/actuator/**",// expose spring actuator via basic authentication
+                        "/swagger-ui/**"
                     )
                 )
                 .httpBasic(httpSecurityHttpBasicConfigurer -> httpSecurityHttpBasicConfigurer.configure(http))

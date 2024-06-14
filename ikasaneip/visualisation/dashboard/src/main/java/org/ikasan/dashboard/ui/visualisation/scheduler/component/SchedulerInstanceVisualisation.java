@@ -192,17 +192,17 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
 
         // Zoom in
         Icon zoomIn = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("tooltip.zoom-in"
-            , UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+            , UI.getCurrent().getLocale()), "18px", IkasanColours.IKASAN_ORANGE);
         zoomIn.addClickListener(event -> this.designerCanvas.zoomIn());
         actions.add(zoomIn);
 
         // Zoom out
         Icon zoomOut = IconDecorator.decorate(VaadinIcon.MINUS.create(), getTranslation("tooltip.zoom-out"
-            , UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+            , UI.getCurrent().getLocale()), "18px", IkasanColours.IKASAN_ORANGE);
         zoomOut.addClickListener(event -> this.designerCanvas.zoomOut());
         actions.add(zoomOut);
 
-        actions.setVerticalComponentAlignment(Alignment.END, zoomIn, zoomOut);
+        actions.setVerticalComponentAlignment(Alignment.CENTER, zoomIn, zoomOut);
         return actions;
     }
 
