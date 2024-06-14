@@ -129,7 +129,8 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
             Button trash = new TableButton(VaadinIcon.TRASH.create());
             trash.addClickListener(buttonClickEvent ->
             {
-                securityService.deleteRole(role);
+                Role dbRole = this.securityService.getRoleById(role.getId());
+                securityService.deleteRole(dbRole);
 
                 this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_ROLE_DELETED
                     , "New role " + role.getName() + " added.", null);

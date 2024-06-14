@@ -83,19 +83,12 @@ public class GroupManagementDialog extends AbstractCloseableResizableDialog
         this.roleGrid = new FilteringGrid<>(new RoleFilter());
 
         Accordion accordion = new Accordion();
+        accordion.setWidthFull();
         accordion.add(getTranslation("accordian-label.associated-roles", UI.getCurrent().getLocale(), null), createRolesAccessGrid());
         accordion.add(getTranslation("accordian-label.associated-users", UI.getCurrent().getLocale(), null), createAssociatedUserGrid());
 
         accordion.close();
 
-//        FluentGridLayout layout = new FluentGridLayout()
-//            .withTemplateRows(new Flex(1.5), new Flex(2.5))
-//            .withTemplateColumns(new Flex(1))
-//            .withRowAndColumn(initGroupForm(), 1, 1, 1, 1)
-//            .withRowAndColumn(accordion, 2, 1, 2, 1)
-//            .withPadding(true)
-//            .withSpacing(true)
-//            .withOverflow(FluentGridLayout.Overflow.AUTO);
         VerticalLayout layout = new VerticalLayout(initGroupForm(), accordion);
 
         layout.setSizeFull();

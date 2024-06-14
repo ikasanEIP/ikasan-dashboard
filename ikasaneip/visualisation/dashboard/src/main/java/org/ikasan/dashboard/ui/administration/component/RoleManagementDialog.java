@@ -110,6 +110,8 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
      */
     private void init()
     {
+        this.role = this.securityService.getRoleById(role.getId());
+
         Accordion accordion = new Accordion();
         accordion.setWidthFull();
         accordion.add(getTranslation("accordian-label.associated-users", UI.getCurrent().getLocale())
@@ -124,15 +126,6 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
             , createAssociatedJobPlans());
 
         accordion.close();
-
-//        FluentGridLayout layout = new FluentGridLayout()
-//            .withTemplateRows(new Flex(1), new Flex(2))
-//            .withTemplateColumns(new Flex(1))
-//            .withRowAndColumn(initRoleForm(), 1, 1, 1, 1)
-//            .withRowAndColumn(accordion, 2, 1, 2, 1)
-//            .withPadding(true)
-//            .withSpacing(true)
-//            .withOverflow(FluentGridLayout.Overflow.AUTO);
 
         VerticalLayout layout = new VerticalLayout(initRoleForm(), accordion);
         layout.setSizeFull();
@@ -162,6 +155,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
             Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
             deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
             {
+                role = this.securityService.getRoleById(role.getId());
                 role.getPolicies().remove(policy);
                 securityService.saveRole(role);
 
@@ -490,9 +484,9 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
             Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
             deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
             {
+                this.role = this.securityService.getRoleById(role.getId());
                 this.role.getRoleModules().remove(roleModule);
                 this.securityService.saveRole(role);
-                this.securityService.deleteRoleModule(roleModule);
 
                 String action = String.format("Module [%s] removed from role [%s]", roleModule.getModuleName(), role.getName());
 
@@ -553,6 +547,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
             Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
             deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
             {
+                this.role = this.securityService.getRoleById(role.getId());
                 this.role.getRoleJobPlans().remove(roleJobPlan);
                 this.securityService.saveRole(role);
                 this.securityService.deleteRoleJobPlan(roleJobPlan);

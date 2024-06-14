@@ -97,8 +97,10 @@ public class SelectJobPlanForRoleDialog extends AbstractCloseableResizableDialog
             roleModule.setJobPlanName(event.getItem().getName());
             this.securityService.saveRoleJobPlan(roleModule);
 
+            this.role = securityService.getRoleById(role.getId());
             role.addRoleJobPlan(roleModule);
             this.securityService.saveRole(this.role);
+
 
             String action = String.format("Module [%s] added to role [%s].", event.getItem().getName(), role.getName());
 
