@@ -83,6 +83,7 @@ public class IkasanSecurityConfiguration
         return new AuthenticationProviderFactoryImpl(userService, securityService);
     }
 
+    // todo expose these as external configs
     @Bean
     Properties platformJpaProperties() {
         Properties platformJpaProperties = new Properties();
