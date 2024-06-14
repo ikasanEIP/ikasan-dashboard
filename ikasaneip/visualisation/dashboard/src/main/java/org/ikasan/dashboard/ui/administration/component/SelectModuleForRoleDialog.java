@@ -96,6 +96,7 @@ public class SelectModuleForRoleDialog extends AbstractCloseableResizableDialog
             roleModule.setModuleName(moduleItemDoubleClickEvent.getItem().getName());
             this.securityService.saveRoleModule(roleModule);
 
+            this.role = this.securityService.getRoleById(this.role.getId());
             role.addRoleModule(roleModule);
             this.securityService.saveRole(this.role);
 

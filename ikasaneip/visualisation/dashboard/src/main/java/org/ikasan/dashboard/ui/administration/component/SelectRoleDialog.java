@@ -76,8 +76,8 @@ public class SelectRoleDialog extends AbstractCloseableResizableDialog
 
         roleGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<Role>>) roleItemDoubleClickEvent ->
         {
+            this.principal = this.securityService.findPrincipalByName(this.principal.getName());
             principal.getRoles().add(roleItemDoubleClickEvent.getItem());
-
             this.securityService.savePrincipal(principal);
 
             String action;

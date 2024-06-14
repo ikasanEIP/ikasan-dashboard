@@ -76,8 +76,8 @@ public class SelectPolicyForRoleDialog extends AbstractCloseableResizableDialog
 
         policyGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<Policy>>) policyItemDoubleClickEvent ->
         {
+            this.role = this.securityService.getRoleById(role.getId());
             role.addPolicy(policyItemDoubleClickEvent.getItem());
-
             this.securityService.saveRole(role);
 
             String action = String.format("Policy [%s] added to role [%s].", policyItemDoubleClickEvent.getItem().getName(), role.getName());

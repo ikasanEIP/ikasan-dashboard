@@ -90,6 +90,7 @@ public class IkasanSecurityConfiguration
         platformJpaProperties.put("hibernate.hbm2ddl.auto", "none");
         platformJpaProperties.put("hibernate.transaction.jta.platform",
             "org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform");
+        platformJpaProperties.put("hibernate.event.merge.entity_copy_observer", "allow");
 
         return platformJpaProperties;
     }

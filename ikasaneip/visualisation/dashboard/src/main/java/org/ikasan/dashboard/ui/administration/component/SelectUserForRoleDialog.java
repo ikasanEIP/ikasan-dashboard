@@ -108,6 +108,7 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
 
         userGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<UserLite>>) userLiteItemDoubleClickEvent ->
         {
+            this.role = this.securityService.getRoleById(this.role.getId());
             IkasanPrincipal ikasanPrincipal = this.securityService.findPrincipalByName(userLiteItemDoubleClickEvent.getItem().getUsername());
             ikasanPrincipal.addRole(this.role);
 
