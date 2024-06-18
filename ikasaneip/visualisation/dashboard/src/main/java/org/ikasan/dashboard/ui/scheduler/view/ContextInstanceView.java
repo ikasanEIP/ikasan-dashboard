@@ -107,6 +107,15 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     @Resource
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
+    @Value("${job.visualisation.vertical.spacing:120}")
+    protected double jobVisualisationVerticalSpacing;
+    @Value("${job.visualisation.horizontal.spacing:400}")
+    protected double jobVisualisationHorizontalSpacing;
+    @Value("${context.visualisation.level.distance:150}")
+    protected double contextVisualisationLevelDistance;
+    @Value("${context.visualisation.node.distance:75}")
+    protected double contextVisualisationNodeDistance;
+
     private ContextInstanceWidget contextInstanceWidget;
 
     private ContextTemplate contextTemplate;
@@ -146,12 +155,13 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
                     , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                     , this.jobUtilsService, this.scheduledContextService, this.selectedTab, this.jobStatus, this.jobName, this.globalEventService, this.contextInstanceRegistrationService
-                    , this.contextInstanceSchedulerService);
+                    , this.contextInstanceSchedulerService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
             } else {
                 this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
                     , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-                    , this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.contextInstanceSchedulerService);
+                    , this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.contextInstanceSchedulerService
+                    , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
             }
 
             this.getStyle().set("padding-top", "0px");

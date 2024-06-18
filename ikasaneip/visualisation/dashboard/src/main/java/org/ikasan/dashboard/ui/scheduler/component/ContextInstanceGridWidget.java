@@ -86,7 +86,8 @@ public class ContextInstanceGridWidget extends Div {
                                  LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
                                  JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobUtilsService jobUtilsService,
                                  ScheduledContextService scheduledContextService, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                 ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                 ContextInstanceSchedulerService contextInstanceSchedulerService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                 double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -129,7 +130,8 @@ public class ContextInstanceGridWidget extends Div {
 
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService);
+            , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing,
+            contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
@@ -162,7 +164,8 @@ public class ContextInstanceGridWidget extends Div {
     private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                             ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService) {
+                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
+                            double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         // Create a modulesGrid bound to the list
         ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
         contextInstanceSearchFilter.setContextInstanceNames(Collections.singletonList(contextTemplate.getName()));
@@ -203,7 +206,8 @@ public class ContextInstanceGridWidget extends Div {
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextInstanceRecord.getContextInstance(), this.contextTemplate, schedulerJobInstanceService
                     , this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService
-                    , this.contextInstanceRegistrationService, this.contextInstanceSchedulerService);
+                    , this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing,
+                    contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
                 contextInstanceDialog.open();
             });

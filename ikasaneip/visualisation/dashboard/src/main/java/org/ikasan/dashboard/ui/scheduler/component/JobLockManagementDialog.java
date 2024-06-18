@@ -90,6 +90,11 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
 
     private boolean ignoreComboChange = false;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
 
     public JobLockManagementDialog(ContextTemplate contextTemplate, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                    ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -99,7 +104,9 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                                    ContextProfileService contextProfileService, UserService userService, SecurityService securityService,
                                    JobProvisionService jobProvisionService,
                                    ScheduledContextService scheduledContextService,
-                                   Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                   Map<String, String> schedulerJobExecutionEnvironmentLabel,
+                                   double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                   double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.contextTemplate = contextTemplate;
         if(this.contextTemplate == null) {
             throw new IllegalArgumentException("contextTemplate cannot be null!");
@@ -176,6 +183,11 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
+
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
         this.init();
     }
@@ -271,8 +283,9 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                                 try {
                                     JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
                                         configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
-                                        jobInitiationService, contextProfileService, userService, securityService,
-                                        jobProvisionService, scheduledContextService, schedulerJobExecutionEnvironmentLabel);
+                                        jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService,
+                                        schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+                                        this.contextVisualisationNodeDistance);
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
                                     jobTemplateVisualisationDialog.open();
                                 } catch (Exception e) {

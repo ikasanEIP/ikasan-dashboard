@@ -110,6 +110,11 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private boolean removeTrailingPlanNameContextAfterUnderscore;
     private int jobPlanIntervalMultiple;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     /**
      * Constructor
      *
@@ -146,7 +151,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                  Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService,
                                  ContextInstanceSchedulerService contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService,
-                                 boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple) {
+                                 boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                 double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -208,6 +214,11 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.removeTrailingPlanNameContextAfterUnderscore = removeTrailingPlanNameContextAfterUnderscore;
         this.jobPlanIntervalMultiple = jobPlanIntervalMultiple;
+
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -373,6 +384,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                     , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
                     , this.contextInstanceSchedulerService, this.springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple
+                    , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance
                 );
                 contextTemplateManagementDialog.open();
             });

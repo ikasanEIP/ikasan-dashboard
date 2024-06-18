@@ -44,6 +44,10 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
     private List<ContextSelectedListener> contextSelectedListeners;
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
 
     /**
      * Constructor
@@ -64,12 +68,18 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
     public JobSchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService
         , ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger
         , LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, JobUtilsService jobUtilsService
-        , ScheduledContextService scheduledContextService, GlobalEventService globalEventService, ScheduledContextInstanceService scheduledContextInstanceService) {
+        , ScheduledContextService scheduledContextService, GlobalEventService globalEventService, ScheduledContextInstanceService scheduledContextInstanceService, double jobVisualisationVerticalSpacing
+        , double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService
-            , systemEventLogger, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService, scheduledContextService, globalEventService);
+            , systemEventLogger, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService, scheduledContextService, globalEventService, jobVisualisationVerticalSpacing
+            , jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.contextSelectedListeners = new ArrayList<>();
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
     }
 
     /**
@@ -97,7 +107,9 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
                     .map(record -> record.getSchedulerJobInstance())
                     .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (a1, a2) -> a1));
 
-                ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();
+                ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter(jobVisualisationVerticalSpacing,
+                    jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
+
                 this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextInstance, this.contextInstance, schedulerJobs
                     , this.getCommandExecutionJobsForContextInstance(this.parentContextInstance.getId())));
             }

@@ -25,6 +25,32 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
 
     Logger logger = LoggerFactory.getLogger(ContextTemplateDraw2dAdapter.class);
 
+    /**
+     * The ContextTemplateDraw2dAdapter class is used to adapt jobs and contexts to a specific visual representation.
+     * It provides methods for adapting jobs, contexts, and child contexts. It extends the Draw2dAdapterBase class.
+     *
+     * This class does not have any instance variables or methods. Its purpose is to be instantiated and used as an adapter
+     * for adapting jobs and contexts in the SchedulerVisualisation class.
+     *
+     * This class is part of the ikasan-scheduler-dashboard module.
+     */
+    public ContextTemplateDraw2dAdapter() {
+    }
+
+    /**
+     * This method is the constructor for the ContextTemplateDraw2dAdapter class.
+     *
+     * @param jobVisualisationVerticalSpacing    the vertical spacing to be used for job visualisation
+     * @param jobVisualisationHorizontalSpacing  the horizontal spacing to be used for job visualisation
+     * @param contextVisualisationLevelDistance  the distance between levels in the context visualisation
+     * @param contextVisualisationNodeDistance   the distance between nodes in the context visualisation
+     */
+    public ContextTemplateDraw2dAdapter(double jobVisualisationVerticalSpacing
+        , double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+        super(jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing
+            , contextVisualisationLevelDistance, contextVisualisationNodeDistance);
+    }
+
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
         , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
             try {

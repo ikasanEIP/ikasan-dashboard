@@ -55,11 +55,14 @@ public class ContextSchedulerInstanceVisualisation extends SchedulerInstanceVisu
                                                  LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                                  JobInitiationService jobInitiationService, JobUtilsService jobUtilsService,
                                                  ScheduledContextService scheduledContextService, ContextProfileService contextProfileService,
-                                                 GlobalEventService globalEventService) {
+                                                 GlobalEventService globalEventService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                                 double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService,
             systemEventLogger, logStreamingService, schedulerJobInstanceService,
-            jobInitiationService, jobUtilsService, scheduledContextService, globalEventService);
+            jobInitiationService, jobUtilsService, scheduledContextService, globalEventService,
+            jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance,
+            contextVisualisationNodeDistance);
         this.contextProfileService = contextProfileService;
     }
 

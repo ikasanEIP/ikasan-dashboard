@@ -121,6 +121,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private GlobalEventService globalEventService;
     private UI ui;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     /**
      * Constructor
      *
@@ -141,7 +146,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                          SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                         ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService) {
+                                         ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService,
+                                         double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         super(moduleMetaDataService, systemEventLogger, logStreamingService, contextInstance,
              schedulerJobInstanceService);
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -204,6 +210,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         if (this.globalEventService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
+
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
         this.jobImageMap = new HashMap<>();
         this.schedulerJobIconMap = new HashMap<>();
@@ -881,7 +892,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
                 this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
-                this.contextProfileService, this.globalEventService);
+                this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+                this.contextVisualisationNodeDistance);
 
             if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                 this.contextInstance = ContextMachineCache.instance()
