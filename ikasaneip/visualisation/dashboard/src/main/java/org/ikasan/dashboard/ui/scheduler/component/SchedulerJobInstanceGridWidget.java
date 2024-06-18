@@ -92,6 +92,11 @@ public class SchedulerJobInstanceGridWidget extends Div
     private String jobName;
     private UI ui;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     /**
      * Constructor
      *
@@ -117,7 +122,8 @@ public class SchedulerJobInstanceGridWidget extends Div
                                           LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, ConfigurationService configurationService,
                                           MetaDataService metaDataService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String jobStatus, String jobName,
-                                          ContextProfileService contextProfileService, GlobalEventService globalEventService) {
+                                          ContextProfileService contextProfileService, GlobalEventService globalEventService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                          double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if(this.scheduledContextInstanceService ==  null) {
@@ -183,6 +189,12 @@ public class SchedulerJobInstanceGridWidget extends Div
         if(this.globalEventService ==  null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
+
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
+
         this.jobStatus = jobStatus;
         this.jobName = jobName;
 
@@ -643,7 +655,8 @@ public class SchedulerJobInstanceGridWidget extends Div
                 JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                     this.configurationService, this.moduleControlService, this.metaDataService, this.systemEventLogger, this.logStreamingService,
                     this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
-                    this.contextProfileService, this.globalEventService);
+                    this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+                    this.contextVisualisationNodeDistance);
 
                 if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                     this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();

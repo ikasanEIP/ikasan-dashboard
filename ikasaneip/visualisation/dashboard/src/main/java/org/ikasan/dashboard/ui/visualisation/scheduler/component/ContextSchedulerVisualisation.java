@@ -36,11 +36,13 @@ public class ContextSchedulerVisualisation extends SchedulerVisualisation {
         , SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, JobInitiationService jobInitiationService
         , ContextProfileService contextProfileService, UserService userService, SecurityService securityService
         , JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService
-        , Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+        , Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing
+        , double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService
             , moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService
-            , schedulerJobExecutionEnvironmentLabel);
+            , schedulerJobExecutionEnvironmentLabel, jobVisualisationHorizontalSpacing, jobVisualisationHorizontalSpacing
+            , contextVisualisationLevelDistance, contextVisualisationNodeDistance);
     }
 
     protected void init(UI ui) throws IOException {

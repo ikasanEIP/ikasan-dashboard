@@ -32,11 +32,14 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                  JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService,
-                                 ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                 ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                 double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
-            , jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService, contextInstanceSchedulerService);
+            , jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService, contextInstanceSchedulerService
+            , jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
+
         this.init();
     }
 
@@ -46,11 +49,13 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                  JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String selectedTab, String jobStatus, GlobalEventService globalEventService,
-                                 ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                 ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                 double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
-            , jobUtilsService, scheduledContextService, selectedTab, jobStatus, null, globalEventService, contextInstanceRegistrationService, contextInstanceSchedulerService);
+            , jobUtilsService, scheduledContextService, selectedTab, jobStatus, null, globalEventService, contextInstanceRegistrationService, contextInstanceSchedulerService,
+            jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
         this.init();
     }
 

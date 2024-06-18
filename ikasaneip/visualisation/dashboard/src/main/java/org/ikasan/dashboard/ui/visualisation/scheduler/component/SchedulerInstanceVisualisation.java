@@ -61,7 +61,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
 
     protected boolean initialised = false;
 
-    protected ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();
+    protected ContextInstanceDraw2dAdapter adapter;
 
     protected ModuleMetaDataService moduleMetaDataService;
     protected ScheduledProcessManagementService scheduledProcessManagementService;
@@ -87,7 +87,8 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                           LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                          GlobalEventService globalEventService) {
+                                          GlobalEventService globalEventService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                          double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -153,6 +154,9 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         if(this.globalEventService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
+
+        this.adapter = new ContextInstanceDraw2dAdapter(jobVisualisationVerticalSpacing,
+            jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
         this.contextOpenedListeners = new ArrayList<>();
         this.canvasInitialisedListeners = new ArrayList<>();

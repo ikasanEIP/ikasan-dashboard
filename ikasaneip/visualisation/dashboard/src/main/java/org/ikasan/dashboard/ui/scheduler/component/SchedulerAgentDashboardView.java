@@ -54,6 +54,11 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
     private DownloadLogFileService downloadLogFileService;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     private Board board;
 
     private boolean initialised = false;
@@ -77,7 +82,9 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                                        JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                        JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
                                        GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                       DownloadLogFileService downloadLogFileService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                       DownloadLogFileService downloadLogFileService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                       double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
+                                       double contextVisualisationNodeDistance) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -99,6 +106,10 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         this.downloadLogFileService = downloadLogFileService;
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
         board = new Board();
         board.addClassName("styled");
@@ -119,7 +130,8 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                 , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
                 this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
                 this.jobUtilsService, this.scheduledContextService, false, this.globalEventService, this.contextInstanceRegistrationService,
-                this.contextInstanceSchedulerService));
+                this.contextInstanceSchedulerService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+                this.contextVisualisationNodeDistance));
 
             initialised = true;
         }

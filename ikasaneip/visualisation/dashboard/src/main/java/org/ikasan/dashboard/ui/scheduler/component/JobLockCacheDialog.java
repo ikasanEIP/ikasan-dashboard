@@ -72,6 +72,11 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
     TextField filterTf = new TextField();
     private UI ui;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     /**
      * Constructor
      *
@@ -96,7 +101,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                               SchedulerJobInstanceService schedulerJobInstanceService, LogStreamingService logStreamingService,
                               JobInitiationService jobInitiationService, ScheduledContextService scheduledContextService,
                               JobUtilsService jobUtilsService, ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService,
-                              GlobalEventService globalEventService) {
+                              GlobalEventService globalEventService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                              double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.contextInstance = contextInstance;
         if(this.contextInstance == null) {
             throw new IllegalArgumentException("contextInstance cannot be null!");
@@ -171,6 +177,11 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
         if(this.globalEventService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
+
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
         this.init();
     }
@@ -277,7 +288,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                     JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
                                         this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService,
-                                        this.globalEventService);
+                                        this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextInstance, ContextHelper.getChildContextInstance(contextName, contextInstance));
                                     jobTemplateVisualisationDialog.open();
                                 }
@@ -344,8 +355,9 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                     try {
                                         JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                                             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-                                            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService,
-                                            this.globalEventService);
+                                            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
+                                            this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+                                            this.contextVisualisationNodeDistance);
                                         jobTemplateVisualisationDialog.createSchedulerVisualisation(contextInstance, ContextHelper.getChildContextInstance(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
                                             .getInternalEventDrivenJob().getChildContextName(), contextInstance));
                                         jobTemplateVisualisationDialog.open();

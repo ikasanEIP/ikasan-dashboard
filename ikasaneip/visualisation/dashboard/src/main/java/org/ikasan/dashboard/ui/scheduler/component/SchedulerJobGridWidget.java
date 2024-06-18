@@ -97,6 +97,11 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
     private Button disableQuartzScheduledJobsButton;
     private UI ui;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     /**
      * Constructor
      *
@@ -124,8 +129,9 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, ContextTemplate contextTemplate, JobInitiationService jobInitiationService,
                                   JobProvisionService jobProvisionService, ContextProfileService contextProfileService, UserService userService,
-                                  SecurityService securityService, ScheduledContextService scheduledContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel
-    ) {
+                                  SecurityService securityService, ScheduledContextService scheduledContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel,
+                                  double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
+                                  double contextVisualisationNodeDistance) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -193,6 +199,11 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
+
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -314,8 +325,9 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                                 try {
                                     JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
                                         configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
-                                        jobInitiationService, contextProfileService, userService, securityService,
-                                        jobProvisionService, scheduledContextService, schedulerJobExecutionEnvironmentLabel);
+                                        jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService,
+                                        schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
+                                        this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
                                     jobTemplateVisualisationDialog.open();
                                 } catch (Exception e) {
@@ -390,7 +402,9 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             lock.addClickListener(event -> {
                                 JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
                                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
+                                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
+                                    this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+                                    this.contextVisualisationNodeDistance);
                                 jobLockManagementDialog.setJobLock(lockName.get());
                                 jobLockManagementDialog.open();
                                 jobLockManagementDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {

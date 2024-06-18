@@ -158,6 +158,15 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Value("${scheduler.provision.jobs.on.upload:true}")
     private boolean uploadProvisionJobs;
 
+    @Value("${job.visualisation.vertical.spacing:120}")
+    protected double jobVisualisationVerticalSpacing;
+    @Value("${job.visualisation.horizontal.spacing:400}")
+    protected double jobVisualisationHorizontalSpacing;
+    @Value("${context.visualisation.level.distance:150}")
+    protected double contextVisualisationLevelDistance;
+    @Value("${context.visualisation.node.distance:75}")
+    protected double contextVisualisationNodeDistance;
+
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private ContextTemplateWidget contextTemplateWidget;
@@ -186,7 +195,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
             , this.systemEventLogger, this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
             "", this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService,
-            this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.downloadLogFileService, this.contextInstanceSchedulerService);
+            this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.downloadLogFileService, this.contextInstanceSchedulerService,
+            this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationNodeDistance);
 
         this.schedulerAgentDashboardView.addClassName("styled");
         this.schedulerAgentDashboardView.setSizeFull();
@@ -203,7 +213,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
             this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
-            this.contextInstanceSchedulerService, this.contextParametersInstanceService, removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple);
+            this.contextInstanceSchedulerService, this.contextParametersInstanceService, removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing,
+            this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationLevelDistance);
         this.contextTemplateWidget.setVisible(false);
 
 

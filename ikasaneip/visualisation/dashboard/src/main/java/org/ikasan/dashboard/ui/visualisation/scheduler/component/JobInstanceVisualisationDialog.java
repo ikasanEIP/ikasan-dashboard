@@ -61,11 +61,17 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     private SchedulerStatusDiv statusDiv;
     private UI ui;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     public JobInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                           SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                          ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService) {
+                                          ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService,
+                                          double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.setHeight("98vh");
         this.setWidth("98vw");
 
@@ -139,6 +145,11 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
+
         layout = new VerticalLayout();
         this.layout.getStyle().set("padding-top", "0px");
         layout.setSizeFull();
@@ -165,7 +176,8 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
 
         this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(this.scheduledContextInstanceService, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService, rootContextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService);
+            this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
+            this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
         this.splitContextInstanceVisualisation.initialiseVisualisation();
         this.splitContextInstanceVisualisation.setVisible(true);
         this.splitContextInstanceVisualisation.contextOpened(contextInstance);
