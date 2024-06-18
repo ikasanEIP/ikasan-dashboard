@@ -32,17 +32,45 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public abstract class Draw2dAdapterBase {
-
-    Logger logger = LoggerFactory.getLogger(ContextInstanceDraw2dAdapter.class);
+    Logger logger = LoggerFactory.getLogger(Draw2dAdapterBase.class);
 
     protected ObjectMapper mapper = new ObjectMapper();
     protected DiagramBuilder diagramBuilder = new DiagramBuilder();
     protected double jobMaxXExtent = 0;
     protected double jobMaxYExtent = 0;
 
+    protected double jobVisualisationVerticalSpacing = 120;
+    protected double jobVisualisationHorizontalSpacing = 500;
+
+   protected double contextVisualisationLevelDistance = 200;
+   protected double contextVisualisationNodeDistance = 75;
+
+    /**
+     * Constructs a new Draw2dAdapterBase object.
+     * This class is a base class for Draw2D adapters and provides utility methods for drawing objects.
+     */
     public Draw2dAdapterBase() {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
+    /**
+     * This method is the constructor for the Draw2dAdapterBase class.
+     *
+     * @param jobVisualisationVerticalSpacing    the vertical spacing to be used for job visualisation
+     * @param jobVisualisationHorizontalSpacing  the horizontal spacing to be used for job visualisation
+     * @param contextVisualisationLevelDistance  the distance between levels in the context visualisation
+     * @param contextVisualisationNodeDistance   the distance between nodes in the context visualisation
+     */
+    public Draw2dAdapterBase(double jobVisualisationVerticalSpacing,
+                             double jobVisualisationHorizontalSpacing,
+                             double contextVisualisationLevelDistance,
+                             double contextVisualisationNodeDistance) {
+       this();
+       this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+       this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+       this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+       this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
     }
 
     /**
@@ -195,9 +223,8 @@ public abstract class Draw2dAdapterBase {
             mxHierarchicalLayout compactTreeLayout = new mxHierarchicalLayout(jGraphXAdapter);
             compactTreeLayout.setOrientation(SwingConstants.WEST);
             int depth = this.getGroupingDepth(visualisationLogicalGrouping);
-            compactTreeLayout.setIntraCellSpacing(120+(depth*20));
-            compactTreeLayout.setInterHierarchySpacing(1000);
-            compactTreeLayout.setInterRankCellSpacing(1000);
+            compactTreeLayout.setIntraCellSpacing(this.jobVisualisationVerticalSpacing+(depth*20));
+            compactTreeLayout.setInterRankCellSpacing(this.jobVisualisationHorizontalSpacing);
 
             compactTreeLayout.execute(jGraphXAdapter.getDefaultParent());
 
@@ -426,10 +453,9 @@ public abstract class Draw2dAdapterBase {
 
         mxCompactTreeLayout compactTreeLayout = new mxCompactTreeLayout(jGraphXAdapter);
         compactTreeLayout.setHorizontal(false);
-        compactTreeLayout.setLevelDistance(200);
+        compactTreeLayout.setLevelDistance((int)this.contextVisualisationLevelDistance);
         compactTreeLayout.setEdgeRouting(true);
-        compactTreeLayout.setNodeDistance(75);
-        compactTreeLayout.setGroupPadding(100);
+        compactTreeLayout.setNodeDistance((int)this.contextVisualisationNodeDistance);
 
         compactTreeLayout.execute(jGraphXAdapter.getDefaultParent());
 

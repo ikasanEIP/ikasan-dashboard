@@ -139,6 +139,15 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Resource
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
+    @Value("${job.visualisation.vertical.spacing:120}")
+    protected double jobVisualisationVerticalSpacing;
+    @Value("${job.visualisation.horizontal.spacing:400}")
+    protected double jobVisualisationHorizontalSpacing;
+    @Value("${context.visualisation.level.distance:150}")
+    protected double contextVisualisationLevelDistance;
+    @Value("${context.visualisation.node.distance:75}")
+    protected double contextVisualisationNodeDistance;
+
     private ContextTemplateManagementWidget contextTemplateManagementWidget;
 
     private ContextTemplate contextTemplate;
@@ -174,7 +183,8 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
                 , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                 , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                 , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
-                , this.contextInstanceSchedulerService, springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple);
+                , this.contextInstanceSchedulerService, springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple
+                , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
 
             this.getElement().getStyle().set("padding-top", "0px");
             this.add(this.contextTemplateManagementWidget);

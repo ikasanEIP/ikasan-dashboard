@@ -74,7 +74,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     protected boolean initialised = false;
 
-    protected ContextTemplateDraw2dAdapter adapter = new ContextTemplateDraw2dAdapter();
+    protected ContextTemplateDraw2dAdapter adapter;
 
     protected ModuleMetaDataService moduleMetaDataService;
     protected ScheduledProcessManagementService scheduledProcessManagementService;
@@ -106,6 +106,11 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     private boolean saveRequired = false;
     private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -113,7 +118,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                   UserService userService, SecurityService securityService, JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService,
-                                  Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                  Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                  double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -191,6 +197,14 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
+
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
+
+        this.adapter = new ContextTemplateDraw2dAdapter(jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing,
+            contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
         this.setMargin(false);
         this.setSpacing(false);
@@ -306,12 +320,14 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     }
 
     public void addAndGrouping() {
-        this.designerCanvas.addBoundaryStyled("AND-"+UUID.randomUUID().toString(), 200, 200, "--", IkasanColours.SCHEDULER_AND, 3);
+        this.designerCanvas.addBoundaryStyled("AND-"+UUID.randomUUID().toString(), 200, 200, "--"
+            , IkasanColours.SCHEDULER_AND, 3);
         this.saveRequired = true;
     }
 
     public void addOrGrouping() {
-        this.designerCanvas.addBoundaryStyled("OR-"+UUID.randomUUID().toString(), 200, 200, "--..", IkasanColours.SCHEDULER_OR, 3);
+        this.designerCanvas.addBoundaryStyled("OR-"+UUID.randomUUID().toString(), 200, 200, "--.."
+            , IkasanColours.SCHEDULER_OR, 3);
         this.saveRequired = true;
     }
 
@@ -324,7 +340,9 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
-                this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
+                this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
+                this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
+                this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
             this.jobSynchronisationRequiredListeners.forEach(listener
                 -> jobTemplateVisualisationDialog.addJobSynchronisationRequiredListener(listener));
             jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
@@ -346,7 +364,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
                 this.contextProfileService, this.userService, this.securityService, this.jobProvisionService,
-                this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
+                this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing,
+                this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
             contextTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
             contextTemplateVisualisationDialog.open();
 

@@ -82,6 +82,11 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
 
     private UI ui;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     /**
      * Constructor
      *
@@ -103,7 +108,8 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
     public SplitContextInstanceVisualisation(ScheduledContextInstanceService scheduledContextInstanceService, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
-                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
+                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService, double jobVisualisationVerticalSpacing,
+                                             double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -166,6 +172,11 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
+
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
 
@@ -184,7 +195,8 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
 
             this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation("", this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService
-                , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService, globalEventService);
+                , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService, globalEventService,
+                this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
             this.schedulerInstanceVisualisation.addContextOpenListener(this);
             this.schedulerInstanceVisualisation.setWidthFull();
             this.schedulerInstanceVisualisation.setHeight("100%");
@@ -205,7 +217,8 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
                 this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService, scheduledProcessManagementService,
                     configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
                     , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService
-                    , this.globalEventService, this.scheduledContextInstanceService);
+                    , this.globalEventService, this.scheduledContextInstanceService, this.jobVisualisationVerticalSpacing
+                    , this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
                 this.jobVisualisation.addContextOpenListener(this);
                 this.jobVisualisation.addContextSelectedListener(this);
                 this.jobVisualisation.setWidthFull();

@@ -32,6 +32,28 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
 
     Logger logger = LoggerFactory.getLogger(ContextInstanceDraw2dAdapter.class);
 
+    /**
+     * Constructs a new ContextInstanceDraw2dAdapter object.
+     * This class is a draw2d adapter for context instance visualization and provides methods for adapting the context instance.
+     */
+    public ContextInstanceDraw2dAdapter() {
+        super();
+    }
+
+    /**
+     * Constructor for the ContextInstanceDraw2dAdapter class.
+     *
+     * @param jobVisualisationVerticalSpacing   the vertical spacing to be used for job visualisation
+     * @param jobVisualisationHorizontalSpacing the horizontal spacing to be used for job visualisation
+     * @param contextVisualisationLevelDistance the distance between levels in the context visualisation
+     * @param contextVisualisationNodeDistance  the distance between nodes in the context visualisation
+     */
+    public ContextInstanceDraw2dAdapter(double jobVisualisationVerticalSpacing
+        , double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+        super(jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing
+            , contextVisualisationLevelDistance, contextVisualisationNodeDistance);
+    }
+
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
         , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
 

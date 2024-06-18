@@ -118,6 +118,15 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
     @Resource
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
+    @Value("${job.visualisation.vertical.spacing:120}")
+    protected double jobVisualisationVerticalSpacing;
+    @Value("${job.visualisation.horizontal.spacing:400}")
+    protected double jobVisualisationHorizontalSpacing;
+    @Value("${context.visualisation.level.distance:150}")
+    protected double contextVisualisationLevelDistance;
+    @Value("${context.visualisation.node.distance:75}")
+    protected double contextVisualisationNodeDistance;
+
     private ContextInstanceDashboardWidget contextInstanceDashboardWidget;
 
     private Board board;
@@ -138,10 +147,10 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService,
             this.systemEventLogger, this.schedulerService, this.schedulerJobService,
             this.schedulerJobInstanceService, this.scheduledContextInstanceService, "",
-            this.moduleMetaDataService, this.logStreamingService,
-            this.jobInitiationService, this.contextProfileService,
+            this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
             this.jobUtilsService, this.scheduledContextService, true, this.globalEventService,
-            this.contextInstanceRegistrationService, contextInstanceSchedulerService);
+            this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.jobVisualisationVerticalSpacing,
+            this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
 
         this.getElement().getStyle().set("padding-top", "0px");
         board = new Board();

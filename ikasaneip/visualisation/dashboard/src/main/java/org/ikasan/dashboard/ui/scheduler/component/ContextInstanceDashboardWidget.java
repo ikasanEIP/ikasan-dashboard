@@ -143,6 +143,11 @@ public class ContextInstanceDashboardWidget extends Div
     private Button errorFilterButton ;
     private Icon errorCheck;
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
 
     /**
      * Creates an instance of the ContextInstanceDashboardWidget.
@@ -176,7 +181,9 @@ public class ContextInstanceDashboardWidget extends Div
                                           ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                           JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen, GlobalEventService globalEventService,
-                                          ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                          ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                          double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                          double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         if(this.scheduledProcessManagementService ==  null) {
@@ -254,6 +261,11 @@ public class ContextInstanceDashboardWidget extends Div
         if (this.contextInstanceSchedulerService == null) {
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
+
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
         this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -1132,7 +1144,8 @@ public class ContextInstanceDashboardWidget extends Div
         ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService, contextInstance, contextTemplate,
             this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, contextInstanceWidgetTab, status.name(), this.globalEventService,
-            this.contextInstanceRegistrationService, this.contextInstanceSchedulerService);
+            this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+            this.contextVisualisationNodeDistance);
 
         contextInstanceDialog.open();
     }

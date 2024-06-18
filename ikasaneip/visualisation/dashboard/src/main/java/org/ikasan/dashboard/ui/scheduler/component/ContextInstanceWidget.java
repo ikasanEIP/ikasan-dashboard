@@ -161,6 +161,11 @@ public class ContextInstanceWidget extends VerticalLayout
     private SchedulerStatusFreeTextDiv skippedStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv errorStatus = new SchedulerStatusFreeTextDiv();
 
+    private double jobVisualisationVerticalSpacing;
+    private double jobVisualisationHorizontalSpacing;
+    private double contextVisualisationLevelDistance;
+    private double contextVisualisationNodeDistance;
+
     /**
      * Constructor
      *
@@ -191,12 +196,13 @@ public class ContextInstanceWidget extends VerticalLayout
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
                                  String selectedTab, String jobStatus, String jobName, GlobalEventService globalEventService,
-                                 ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                 ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                 double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService,
             logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService,
-            contextProfileService, jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService,
-            contextInstanceSchedulerService);
+            contextProfileService, jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService, contextInstanceSchedulerService,
+            jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
         this.selectedTab = selectedTab;
         this.jobStatus = jobStatus;
         this.jobName = jobName;
@@ -229,7 +235,8 @@ public class ContextInstanceWidget extends VerticalLayout
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                 GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                 GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                 double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -307,6 +314,11 @@ public class ContextInstanceWidget extends VerticalLayout
         if (this.contextInstanceSchedulerService == null) {
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
+
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -509,7 +521,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.initialiseEditor();
         this.initialiseTree();
         this.initialiseVisualisation(moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService);
         this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
         this.initialiseContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
@@ -685,17 +697,17 @@ public class ContextInstanceWidget extends VerticalLayout
      * @param moduleControlRestService
      * @param metaDataRestService
      * @param systemEventLogger
-     * @param schedulerJobService
      * @param logStreamingService
      */
     protected void initialiseVisualisation(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                            LogStreamingService logStreamingService) {
 
-        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
-                configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService,
-                contextInstance, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobUtilsService, scheduledContextService, this.globalEventService);
+        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(this.scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService,
+            this.contextInstance, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService,
+            this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
         this.splitContextInstanceVisualisation.setHeight("100%");
     }
 
@@ -718,7 +730,8 @@ public class ContextInstanceWidget extends VerticalLayout
             JobLockCacheDialog jobLockCacheDialog = new JobLockCacheDialog(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobInstanceService,
                 this.logStreamingService, this.jobInitiationService, this.scheduledContextService, this.jobUtilsService, this.scheduledContextInstanceService,
-                this.contextProfileService, this.globalEventService);
+                this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
+                this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
 
             jobLockCacheDialog.open();
         });
@@ -1138,7 +1151,8 @@ public class ContextInstanceWidget extends VerticalLayout
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus, this.jobName, this.contextProfileService, this.globalEventService);
+            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus, this.jobName, this.contextProfileService,
+            this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("100%");
         this.schedulerJobInstanceGridWidget.setVisible(false);
@@ -1151,8 +1165,9 @@ public class ContextInstanceWidget extends VerticalLayout
     private void initialiseTree() {
         this.contextInstanceTreeViewWidget = new ContextInstanceTreeViewWidget(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService
-            , this.contextProfileService, this.globalEventService);
+            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
+            this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+            this.contextVisualisationNodeDistance);
         this.contextInstanceTreeViewWidget.setSizeFull();
         this.contextInstanceTreeViewWidget.setVisible(false);
         this.contextInstanceTreeViewWidget.setVisible(true);
