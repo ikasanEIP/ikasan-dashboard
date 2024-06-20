@@ -28,6 +28,7 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
@@ -65,6 +66,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
@@ -947,29 +951,52 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             return false;
         }
 
-        try {
-            if(this.internalEventDrivenJobInstance.isTargetResidingContextOnly()) {
-                contextMachine.resetJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName());
-            }
-            else {
-                this.internalEventDrivenJobInstance.getChildContextNames().forEach(name
-                    -> contextMachine.resetJob(this.internalEventDrivenJobInstance.getIdentifier(), name));
-            }
+        AtomicReference<Boolean> result = new AtomicReference<>(true);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s], Job Plan Name[%s], Job Plan Id[%s]"
-                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true, internalEventDrivenJobInstance.getContextName()
-                , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
-                , internalEventDrivenJobInstance.getJobName(), internalEventDrivenJobInstance.getContextName()
-                , this.schedulerJobInstanceRecord.getContextInstanceId()), e);
-            NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
-            return false;
-        }
+        ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+        dialog.setWidth("600px");
+        dialog.setHeight("250px");
+        dialog.open(getTranslation("progress-dialog.reset-job-header", UI.getCurrent().getLocale()),
+            getTranslation("progress-dialog.reset-job-body", UI.getCurrent().getLocale()));
 
-        return true;
+        final UI current = UI.getCurrent();
+        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("AbstractGridSchedulerJobInstanceActionWidget"));
+        executor.execute(() -> {
+            boolean error = false;
+            try {
+                if(this.internalEventDrivenJobInstance.isTargetResidingContextOnly()) {
+                    contextMachine.resetJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName());
+                }
+                else {
+                    this.internalEventDrivenJobInstance.getChildContextNames().forEach(name
+                        -> contextMachine.resetJob(this.internalEventDrivenJobInstance.getIdentifier(), name));
+                }
+
+                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                    , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true, internalEventDrivenJobInstance.getContextName()
+                    , internalEventDrivenJobInstance.getContextInstanceId()), this.authentication.getName());
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
+                    , internalEventDrivenJobInstance.getJobName(), internalEventDrivenJobInstance.getContextName()
+                    , this.schedulerJobInstanceRecord.getContextInstanceId()), e);
+                error = true;
+            }
+            finally {
+                boolean finalError = error;
+                current.access(() -> {
+                    dialog.close();
+
+                    if (finalError) {
+                        NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
+                        result.set(false);
+                    }
+                });
+            }
+        });
+
+        return result.get();
     }
     
 
@@ -1102,7 +1129,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             if(this.ui.isAttached()) {
                 this.ui.access(() -> {
                     this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                    if(this.internalEventDrivenJobInstance.isKilled()) {
+
+                    if(this.internalEventDrivenJobInstance.isKilled() && jobInstanceStateChangeEvent.getNewStatus().equals(InstanceStatus.ERROR)) {
                         this.statusDiv.setStatus(InstanceStatus.KILLED);
                     }
                     else {
