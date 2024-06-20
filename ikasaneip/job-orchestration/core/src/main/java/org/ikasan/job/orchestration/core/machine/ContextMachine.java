@@ -830,10 +830,7 @@ public class ContextMachine {
                 schedulerJobInstance.setInitiationEventRaised(false);
 
                 ContextInstance child = ContextHelper.getChildContextInstance(schedulerJobInstance.getChildContextName(), this.contextInstance);
-                if (child.getStatus().equals(InstanceStatus.COMPLETE)) {
-                    child.setStatus(InstanceStatus.RUNNING);
-                    this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(this.contextInstance.getId(), child, InstanceStatus.COMPLETE, InstanceStatus.RUNNING));
-                }
+                child.setStatus(InstanceStatus.WAITING);
 
 
                 this.saveContext();
@@ -861,6 +858,13 @@ public class ContextMachine {
                     , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId()));
             }
         });
+
+        if(!jobs.isEmpty()) {
+            this.contextInstance.setStatus(InstanceStatus.WAITING);
+            this.recursivelySetContextStatus(this.contextInstance, true);
+            this.setContextStatus(this.contextInstance, true);
+            this.saveContext();
+        }
     }
 
     public void releaseJob(String jobIdentifier, String childContextName) {
@@ -1220,7 +1224,7 @@ public class ContextMachine {
 
              // Update the context status after event received and attached
              // to the job instance.
-             this.setContextStatus(contextInstance);
+             this.setContextStatus(contextInstance, false);
 
              if(contextInstance.getContexts() == null || contextInstance.getContexts().isEmpty()) {
                  return events;
@@ -1235,7 +1239,7 @@ public class ContextMachine {
             for(ContextInstance instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if any job initiation events need to be raised.
                 results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised, markAsRaised));
-                this.setContextStatus(contextInstance);
+                this.setContextStatus(contextInstance, false);
             }
         }
 
@@ -1267,12 +1271,22 @@ public class ContextMachine {
         return null;
     }
 
+    private void recursivelySetContextStatus(ContextInstance contextInstance, boolean broadcastStateChange) {
+        if(contextInstance.getContexts() != null) {
+            contextInstance.getContexts().forEach(context -> {
+                context.setStatus(InstanceStatus.WAITING);
+                this.recursivelySetContextStatus(context, broadcastStateChange);
+                this.setContextStatus(context, broadcastStateChange);
+            });
+        }
+    }
+
     /**
      * Helper method to set the context status.
      *
      * @param contextInstance
      */
-    private void setContextStatus(ContextInstance contextInstance) {
+    private void setContextStatus(ContextInstance contextInstance, boolean broadcastStateChange) {
         AtomicBoolean allJobsComplete = new AtomicBoolean(true);
         AtomicBoolean allLogicSatisfied = new AtomicBoolean(true);
         AtomicBoolean anyRunningOrCompletedOrQueuedJobs = new AtomicBoolean(false);
@@ -1375,7 +1389,7 @@ public class ContextMachine {
         InstanceStatus newStatus = contextInstance.getStatus();
 
         // If the context instance has had as state change, notify all interested parties.
-        if(!previousStatus.equals(newStatus)) {
+        if(!previousStatus.equals(newStatus) || broadcastStateChange) {
             this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(this.contextInstance.getId()
                 , contextInstance, previousStatus, newStatus));
         }
@@ -1388,7 +1402,7 @@ public class ContextMachine {
         this.jobLogicMachine.addQueuedSchedulerJobInitiationEvent(childContextInstance, this.contextInstance
             , event.getInternalEventDrivenJob().getIdentifier(), event);
 
-        this.setContextStatus(childContextInstance);
+        this.setContextStatus(childContextInstance, false);
 
         this.saveContext();
     }

@@ -7,8 +7,10 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -33,6 +35,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceGridWidget.class);
@@ -295,33 +300,56 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
             return false;
         }
 
-        try {
-            if(schedulerJobInstance instanceof InternalEventDrivenJobInstance) {
-                if(((InternalEventDrivenJobInstance) schedulerJobInstance).isTargetResidingContextOnly()) {
-                    contextMachine.resetJob(schedulerJobInstance.getIdentifier(), schedulerJobInstance.getChildContextName());
+        AtomicReference<Boolean> result = new AtomicReference<>(true);
+
+        ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+        dialog.setWidth("600px");
+        dialog.setHeight("250px");
+        dialog.open(getTranslation("progress-dialog.reset-job-header", UI.getCurrent().getLocale()),
+            getTranslation("progress-dialog.reset-job-body", UI.getCurrent().getLocale()));
+
+        final UI current = UI.getCurrent();
+        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("AbstractGridSchedulerJobInstanceActionWidget"));
+        executor.execute(() -> {
+            boolean error = false;
+            try {
+                if(schedulerJobInstance instanceof InternalEventDrivenJobInstance) {
+                    if(((InternalEventDrivenJobInstance) schedulerJobInstance).isTargetResidingContextOnly()) {
+                        contextMachine.resetJob(schedulerJobInstance.getIdentifier(), schedulerJobInstance.getChildContextName());
+                    }
+                    else {
+                        schedulerJobInstance.getChildContextNames().forEach(name
+                            -> contextMachine.resetJob(schedulerJobInstance.getIdentifier(), name));
+                    }
                 }
                 else {
-                    schedulerJobInstance.getChildContextNames().forEach(name
-                        -> contextMachine.resetJob(schedulerJobInstance.getIdentifier(), name));
+                    contextMachine.resetJob(schedulerJobInstance.getIdentifier(), schedulerJobInstance.getChildContextName());
                 }
-            }
-            else {
-                contextMachine.resetJob(schedulerJobInstance.getIdentifier(), schedulerJobInstance.getChildContextName());
-            }
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
-                , schedulerJobInstance.getAgentName(), schedulerJobInstance.getJobName(), true, this.contextInstance.getName(), this.contextInstance.getId()), this.authentication.getName());
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
-                , schedulerJobInstance.getJobName(), schedulerJobInstance.getContextName()
-                , schedulerJobInstance.getContextInstanceId()), e);
-            NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
-            return false;
-        }
+                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s], Job Plan Name[%s], Job Plan Instance Id[%s]"
+                    , schedulerJobInstance.getAgentName(), schedulerJobInstance.getJobName(), true, this.contextInstance.getName(), this.contextInstance.getId()), this.authentication.getName());
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
+                    , schedulerJobInstance.getJobName(), schedulerJobInstance.getContextName()
+                    , schedulerJobInstance.getContextInstanceId()), e);
+                error = true;
+            }
+            finally {
+                boolean finalError = error;
+                current.access(() -> {
+                    dialog.close();
 
-        return true;
+                    if (finalError) {
+                        NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
+                        result.set(false);
+                    }
+                });
+            }
+        });
+
+        return result.get();
     }
 
     protected void submitDownstreamJobs(InternalEventDrivenJobInstance internalEventDrivenJobInstance) {

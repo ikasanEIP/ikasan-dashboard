@@ -22,10 +22,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -35,10 +33,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -48,6 +43,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog implements SchedulerJobStateChangeEventBroadcastListener {
 
@@ -448,22 +446,45 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             return false;
         }
 
-        try {
-            contextMachine.resetJob(this.fileEventDrivenJobInstance.getIdentifier(), this.fileEventDrivenJobInstance.getChildContextName());
+        AtomicReference<Boolean> result = new AtomicReference<>(true);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s]"
-                , this.fileEventDrivenJobInstance.getAgentName(), fileEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
-                , fileEventDrivenJobInstance.getJobName(), fileEventDrivenJobInstance.getContextName()
-                , fileEventDrivenJobInstance.getContextInstanceId()), e);
-            NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
-            return false;
-        }
+        ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+        dialog.setWidth("600px");
+        dialog.setHeight("250px");
+        dialog.open(getTranslation("progress-dialog.reset-job-header", UI.getCurrent().getLocale()),
+            getTranslation("progress-dialog.reset-job-body", UI.getCurrent().getLocale()));
 
-        return true;
+        final UI current = UI.getCurrent();
+        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("AbstractGridSchedulerJobInstanceActionWidget"));
+        executor.execute(() -> {
+            boolean error = false;
+            try {
+                contextMachine.resetJob(this.fileEventDrivenJobInstance.getIdentifier(), this.fileEventDrivenJobInstance.getChildContextName());
+
+                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s]"
+                    , this.fileEventDrivenJobInstance.getAgentName(), fileEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                logger.error(String.format("An error has occurred resetting job[%s], context name[%s], context instance id[%s]"
+                    , fileEventDrivenJobInstance.getJobName(), fileEventDrivenJobInstance.getContextName()
+                    , fileEventDrivenJobInstance.getContextInstanceId()), e);
+                error = true;
+            }
+            finally {
+                boolean finalError = error;
+                current.access(() -> {
+                    dialog.close();
+
+                    if (finalError) {
+                        NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
+                        result.set(false);
+                    }
+                });
+            }
+        });
+
+        return result.get();
     }
 
     @Override
