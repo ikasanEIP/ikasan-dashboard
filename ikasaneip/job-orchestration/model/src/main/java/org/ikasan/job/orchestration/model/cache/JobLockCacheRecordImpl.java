@@ -1,22 +1,15 @@
 package org.ikasan.job.orchestration.model.cache;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
-import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
-import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.spec.scheduled.context.model.JobLockCache;
-import org.ikasan.spec.scheduled.context.model.JobLockHolder;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class JobLockCacheRecordImpl implements JobLockCacheRecord {
 

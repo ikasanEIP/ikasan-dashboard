@@ -376,7 +376,7 @@
         <version.big.queue>1.0.0</version.big.queue>
         <version.logback>1.4.14</version.logback>
         <ikasan.core.version>4.0.0-SNAPSHOT</ikasan.core.version>
-        <version.spring.webflux>5.3.32</version.spring.webflux>
+        <version.spring.webflux>6.1.6</version.spring.webflux>
         <version.reactor.test>3.4.10</version.reactor.test>
         <version.reactor.netty.http>1.0.39</version.reactor.netty.http>
         <version.okhttp3>3.7.0</version.okhttp3>
@@ -1646,6 +1646,18 @@
                     <exclusion>
                         <groupId>org.apache.logging.log4j</groupId>
                         <artifactId>log4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-webflux</artifactId>
+                <version>${version.org.springboot}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.projectreactor.netty</groupId>
+                        <artifactId>reactor-netty-http</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

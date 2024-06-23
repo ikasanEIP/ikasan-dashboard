@@ -7,6 +7,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -66,9 +67,16 @@ public class LogStreamingServiceRestImpl extends ModuleRestService implements Lo
         WebClient webClient;
         List<String> auths = super.createHttpHeaders().get(HttpHeaders.AUTHORIZATION);
         if (auths != null) {
-            webClient = WebClient.builder().baseUrl(host).defaultHeader(HttpHeaders.AUTHORIZATION, auths.toArray(new String[0])).build();
+            webClient = WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector())
+                .baseUrl(host)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, auths.toArray(new String[0]))
+                .build();
         } else {
-            webClient = WebClient.builder().baseUrl(host).build();
+            webClient = WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector())
+                .baseUrl(host)
+                .build();
         }
         return webClient;
     }
