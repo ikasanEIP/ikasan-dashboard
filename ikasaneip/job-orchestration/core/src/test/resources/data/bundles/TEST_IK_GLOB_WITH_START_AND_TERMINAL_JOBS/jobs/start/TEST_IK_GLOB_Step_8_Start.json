@@ -1,0 +1,10 @@
+{
+  "agentName" : "CONTEXT_START_JOB",
+  "jobName" : "TEST_IK_GLOB Step 8 Start",
+  "childContextNames" : ["TEST_IK_GLOB Step 8" ],
+  "startupControlType" : "AUTOMATIC",
+  "skippedContexts" : { },
+  "heldContexts" : { },
+  "ordinal" : -1,
+  "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 8 Start"
+}

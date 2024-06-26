@@ -23,12 +23,16 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     private SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao;
     private SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao;
     private SolrGlobalEventJobDaoImpl globalEventJobRecordDao;
+    private SolrContextStartJobDaoImpl contextStartJobDao;
+    private SolrContextTerminalJobDaoImpl contextTerminalJobDao;
     private SolrSchedulerJobDaoImpl schedulerJobRecordDao;
 
     public SolrSchedulerJobServiceImpl(SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao
         , SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao
         , SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao
         , SolrGlobalEventJobDaoImpl globalEventJobRecordDao
+        , SolrContextStartJobDaoImpl contextStartJobDao
+        , SolrContextTerminalJobDaoImpl contextTerminalJobDao
         , SolrSchedulerJobDaoImpl schedulerJobRecordDao) {
         this.fileEventDrivenJobRecordDao = fileEventDrivenJobRecordDao;
         if(this.fileEventDrivenJobRecordDao == null)
@@ -49,6 +53,16 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         if(this.globalEventJobRecordDao == null)
         {
             throw new IllegalArgumentException("globalEventJobRecordDao cannot be null!");
+        }
+        this.contextStartJobDao = contextStartJobDao;
+        if(this.contextStartJobDao == null)
+        {
+            throw new IllegalArgumentException("contextStartJobDao cannot be null!");
+        }
+        this.contextTerminalJobDao = contextTerminalJobDao;
+        if(this.contextTerminalJobDao == null)
+        {
+            throw new IllegalArgumentException("contextTerminalJobDao cannot be null!");
         }
         this.schedulerJobRecordDao = schedulerJobRecordDao;
         if(this.schedulerJobRecordDao == null)
@@ -104,15 +118,26 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
             List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
             List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
             List<GlobalEventJob> globalEventJobs = new ArrayList<>();
+            List<ContextStartJob> contextStartJobs = new ArrayList<>();
+            List<ContextTerminalJob> contextTerminalJobs = new ArrayList<>();
             records.forEach(job -> {
                 if (job instanceof InternalEventDrivenJob) {
                     internalEventDrivenJobs.add((InternalEventDrivenJob) job);
-                } else if (job instanceof FileEventDrivenJob) {
+                }
+                else if (job instanceof FileEventDrivenJob) {
                     fileEventDrivenJobs.add((FileEventDrivenJob) job);
-                } else if (job instanceof QuartzScheduleDrivenJob) {
+                }
+                else if (job instanceof QuartzScheduleDrivenJob) {
                     quartzScheduleDrivenJobs.add((QuartzScheduleDrivenJob) job);
-                } else if (job instanceof GlobalEventJob) {
+                }
+                else if (job instanceof GlobalEventJob) {
                     globalEventJobs.add((GlobalEventJob) job);
+                }
+                else if (job instanceof ContextStartJob) {
+                    contextStartJobs.add((ContextStartJob) job);
+                }
+                else if (job instanceof ContextTerminalJob) {
+                    contextTerminalJobs.add((ContextTerminalJob) job);
                 }
             });
 
@@ -130,6 +155,14 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
 
             if (!globalEventJobs.isEmpty()) {
                 this.saveGlobalEventJobs(globalEventJobs, actor);
+            }
+
+            if (!contextStartJobs.isEmpty()) {
+                this.saveContextStartJobs(contextStartJobs, actor);
+            }
+
+            if (!contextTerminalJobs.isEmpty()) {
+                this.saveContextTerminalJobs(contextTerminalJobs, actor);
             }
         }
     }
@@ -155,6 +188,16 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
+    public void saveContextStartJobRecord(ContextStartJobRecord contextStartJobRecord) {
+        this.contextStartJobDao.save(contextStartJobRecord);
+    }
+
+    @Override
+    public void saveContextTerminalJobRecord(ContextTerminalJobRecord contextTerminalJobRecord) {
+        this.contextTerminalJobDao.save(contextTerminalJobRecord);
+    }
+
+    @Override
     public void saveFileEventDrivenJobRecords(List<FileEventDrivenJobRecord> fileEventDrivenJobRecords) {
         this.fileEventDrivenJobRecordDao.save(fileEventDrivenJobRecords);
     }
@@ -172,6 +215,16 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     @Override
     public void saveGlobalEventJobRecords(List<GlobalEventJobRecord> globalEventJobRecords) {
         this.globalEventJobRecordDao.save(globalEventJobRecords);
+    }
+
+    @Override
+    public void saveContextStartJobRecords(List<ContextStartJobRecord> contextStartJobRecords) {
+        this.contextStartJobDao.save(contextStartJobRecords);
+    }
+
+    @Override
+    public void saveContextTerminalJobRecord(List<ContextTerminalJobRecord> contextTerminalJobRecords) {
+        this.contextTerminalJobDao.save(contextTerminalJobRecords);
     }
 
     @Override
@@ -269,7 +322,6 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         FileEventDrivenJobRecord fileEventDrivenJobRecord =  this.fileEventDrivenJobRecordDao
             .findById(JobConstants.FILE_EVENT_DRIVEN_JOB + "_" + fileEventDrivenJob.getAgentName() + "_"
                 + fileEventDrivenJob.getJobName() + "_" + fileEventDrivenJob.getContextName());
-        this.saveFileEventDrivenJobRecord(fileEventDrivenJobRecord(fileEventDrivenJob, modifiedBy));
 
         if(fileEventDrivenJobRecord == null) {
             fileEventDrivenJobRecord = fileEventDrivenJobRecord(fileEventDrivenJob, modifiedBy);
@@ -304,7 +356,6 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         GlobalEventJobRecord globalEventJobRecord = this.globalEventJobRecordDao
             .findById(JobConstants.GLOBAL_EVENT_JOB + "_" + globalEventJob.getAgentName() + "_"
                 + globalEventJob.getJobName() + "_" + globalEventJob.getContextName());
-        this.saveGlobalEventJobRecord(globalEventJobRecord(globalEventJob, modifiedBy));
 
         if (globalEventJobRecord == null) {
             globalEventJobRecord = globalEventJobRecord(globalEventJob, modifiedBy);
@@ -313,6 +364,36 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         globalEventJobRecord.setGlobalEventJob(globalEventJob);
         globalEventJobRecord.setModifiedBy(modifiedBy);
         this.saveGlobalEventJobRecord(globalEventJobRecord);
+    }
+
+    @Override
+    public void saveContextStartJob(ContextStartJob contextStartJob, String modifiedBy) {
+        ContextStartJobRecord globalEventJobRecord = this.contextStartJobDao
+            .findById(JobConstants.CONTEXT_START_JOB + "_"
+                + contextStartJob.getJobName() + "_" + contextStartJob.getContextName());
+
+        if (globalEventJobRecord == null) {
+            globalEventJobRecord = contextStartJobRecord(contextStartJob, modifiedBy);
+        }
+
+        globalEventJobRecord.setContextStartJob(contextStartJob);
+        globalEventJobRecord.setModifiedBy(modifiedBy);
+        this.saveContextStartJobRecord(globalEventJobRecord);
+    }
+
+    @Override
+    public void saveContextTerminalJob(ContextTerminalJob contextTerminalJob, String modifiedBy) {
+        ContextTerminalJobRecord contextTerminalJobRecord = this.contextTerminalJobDao
+            .findById(JobConstants.CONTEXT_TERMINAL_JOB + "_"
+                + contextTerminalJob.getJobName() + "_" + contextTerminalJob.getContextName());
+
+        if (contextTerminalJobRecord == null) {
+            contextTerminalJobRecord = contextTerminalJobRecord(contextTerminalJob, modifiedBy);
+        }
+
+        contextTerminalJobRecord.setContextTerminalJob(contextTerminalJob);
+        contextTerminalJobRecord.setModifiedBy(modifiedBy);
+        this.saveContextTerminalJobRecord(contextTerminalJobRecord);
     }
 
     @Override
@@ -331,6 +412,42 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         solrGlobalEventJobRecord.setGlobalEventJob(globalEventJob);
         solrGlobalEventJobRecord.setModifiedBy(actor);
         return solrGlobalEventJobRecord;
+    }
+
+    @Override
+    public void saveContextStartJobs(List<ContextStartJob> contextStartJobs, String actor) {
+        List<ContextStartJobRecord> records = new ArrayList<>();
+        contextStartJobs.forEach(job -> records.add(contextStartJobRecord(job, actor)));
+        this.saveContextStartJobRecords(records);
+    }
+
+    private SolrContextStartJobRecordImpl contextStartJobRecord(ContextStartJob contextStartJob, String actor) {
+        SolrContextStartJobRecordImpl solrContextStartJobRecord = new SolrContextStartJobRecordImpl();
+        solrContextStartJobRecord.setAgentName(contextStartJob.getAgentName());
+        solrContextStartJobRecord.setJobName(contextStartJob.getJobName());
+        solrContextStartJobRecord.setContextName(contextStartJob.getContextName());
+        solrContextStartJobRecord.setTimestamp(System.currentTimeMillis());
+        solrContextStartJobRecord.setContextStartJob(contextStartJob);
+        solrContextStartJobRecord.setModifiedBy(actor);
+        return solrContextStartJobRecord;
+    }
+
+    @Override
+    public void saveContextTerminalJobs(List<ContextTerminalJob> contextTerminalJobs, String actor) {
+        List<ContextTerminalJobRecord> records = new ArrayList<>();
+        contextTerminalJobs.forEach(job -> records.add(contextTerminalJobRecord(job, actor)));
+        this.saveContextTerminalJobRecord(records);
+    }
+
+    private SolrContextTerminalJobRecordImpl contextTerminalJobRecord(ContextTerminalJob contextTerminalJob, String actor) {
+        SolrContextTerminalJobRecordImpl solrContextTerminalJobRecord = new SolrContextTerminalJobRecordImpl();
+        solrContextTerminalJobRecord.setAgentName(contextTerminalJob.getAgentName());
+        solrContextTerminalJobRecord.setJobName(contextTerminalJob.getJobName());
+        solrContextTerminalJobRecord.setContextName(contextTerminalJob.getContextName());
+        solrContextTerminalJobRecord.setTimestamp(System.currentTimeMillis());
+        solrContextTerminalJobRecord.setContextTerminalJob(contextTerminalJob);
+        solrContextTerminalJobRecord.setModifiedBy(actor);
+        return solrContextTerminalJobRecord;
     }
 
     @Override
@@ -484,6 +601,8 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
         List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
         List<GlobalEventJob> globalEventJobs = new ArrayList<>();
+        List<ContextStartJob> contextStartJobs = new ArrayList<>();
+        List<ContextTerminalJob> contextTerminalJobs = new ArrayList<>();
 
         schedulerJobRecords.getResultList().forEach(schedulerJobRecord -> {
             SchedulerJob job = schedulerJobRecord.getJob();
@@ -502,6 +621,12 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
             else if(job instanceof GlobalEventJob) {
                 globalEventJobs.add((GlobalEventJob) job);
             }
+            else if(job instanceof ContextStartJob) {
+                contextStartJobs.add((ContextStartJob) job);
+            }
+            else if(job instanceof ContextTerminalJob) {
+                contextTerminalJobs.add((ContextTerminalJob) job);
+            }
 
         });
 
@@ -510,6 +635,8 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         this.saveQuartzScheduledJobs(quartzScheduleDrivenJobs, actor);
         this.saveFileEventDrivenJobs(fileEventDrivenJobs, actor);
         this.saveGlobalEventJobs(globalEventJobs, actor);
+        this.saveContextStartJobs(contextStartJobs, actor);
+        this.saveContextTerminalJobs(contextTerminalJobs, actor);
     }
 
     @Override

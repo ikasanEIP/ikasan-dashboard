@@ -1,0 +1,22 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "TEST_IK_JOB_4",
+  "jobDescription" : "TEST_IK_JOB_4",
+  "contextName" : "TEST_IK_GLOB",
+  "childContextNames" : [ "TEST_IK_AM_1 Step 1" ],
+  "startupControlType" : "AUTOMATIC",
+  "skippedContexts" : { },
+  "heldContexts" : { },
+  "ordinal" : -1,
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "#!/bin/bash\n. ~/.profile\n\nhostname\nid\n\necho `date` TEST_IK_JOB_4 starting>> ~/ikasan_test.log\ndate\nsleep $(( ( RANDOM % 10 )  + 10 ))\necho `date` TEST_IK_JOB_4 stopping>> ~/ikasan_test.log\ndate\n",
+  "minExecutionTime" : -1,
+  "maxExecutionTime" : -1,
+  "contextParameters" : [ ],
+  "targetResidingContextOnly" : false,
+  "participatesInLock" : false,
+  "jobRepeatable" : false,
+  "killed" : false,
+  "identifier" : "scheduler-agent-TEST_IK_JOB_4"
+}

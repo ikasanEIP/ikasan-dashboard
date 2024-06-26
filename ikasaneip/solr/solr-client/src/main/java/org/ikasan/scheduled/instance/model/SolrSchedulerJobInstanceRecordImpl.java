@@ -148,6 +148,12 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
             else if(this.type != null && this.type.equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)) {
                 instance =  objectMapper.readValue(this.schedulerJobInstance, SolrGlobalEventJobInstanceImpl.class);
             }
+            else if(this.type != null && this.type.equals(JobConstants.CONTEXT_START_JOB_INSTANCE)) {
+                instance =  objectMapper.readValue(this.schedulerJobInstance, SolrContextStartJobInstanceImpl.class);
+            }
+            else if(this.type != null && this.type.equals(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE)) {
+                instance =  objectMapper.readValue(this.schedulerJobInstance, SolrContextTerminalJobInstanceImpl.class);
+            }
             else {
                 instance = objectMapper.readValue(this.schedulerJobInstance, SolrSchedulerJobInstanceImpl.class);
             }
@@ -180,6 +186,12 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
             }
             else if(schedulerJobInstance instanceof GlobalEventJobInstance) {
                 this.type = JobConstants.GLOBAL_EVENT_JOB_INSTANCE;
+            }
+            else if(schedulerJobInstance instanceof ContextStartJobInstance) {
+                this.type = JobConstants.CONTEXT_START_JOB_INSTANCE;
+            }
+            else if(schedulerJobInstance instanceof ContextTerminalJobInstance) {
+                this.type = JobConstants.CONTEXT_START_JOB_INSTANCE;
             }
 
             this.schedulerJobInstance = objectMapper.writeValueAsString(schedulerJobInstance);

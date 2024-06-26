@@ -19,6 +19,8 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
+import org.ikasan.spec.scheduled.job.model.ContextStartJob;
+import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -222,6 +224,14 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                     }
                     schedulerJobInstances.add(globalEventJobInstance);
                 }
+                else if(schedulerJobRecord.getJob() instanceof ContextStartJob) {
+                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
+                        , SolrContextStartJobInstanceImpl.class));
+                }
+                else if(schedulerJobRecord.getJob() instanceof ContextTerminalJob) {
+                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
+                        , SolrContextTerminalJobInstanceImpl.class));
+                }
             }
 
             Map<String, SchedulerJobInstance> schedulerJobInstanceMap = schedulerJobInstances.stream()
@@ -229,6 +239,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
 
             List<SchedulerJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
 
+            // We are going to contextualise the
             contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
                 SchedulerJobInstance instance = schedulerJobInstanceMap.get(schedulerJobInstance.getIdentifier());
 

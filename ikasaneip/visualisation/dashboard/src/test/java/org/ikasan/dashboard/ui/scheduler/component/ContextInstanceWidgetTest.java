@@ -310,7 +310,7 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
         contextInstance.setQuartzScheduleDrivenJobsDisabledForContext(quartzScheduleDrivenJobsDisabledForContext);
 
         ContextMachine contextMachine = new ContextMachine(new ContextTemplateImpl(), contextInstance
-            , this.scheduledContextInstanceService, new HashMap<>(), new HashMap<>(), new HashMap<>()
+            , this.scheduledContextInstanceService, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>()
             , "this.queueDir", new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
             , this.contextInstancePublicationService, this.jobUtilsService);

@@ -98,6 +98,10 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
                     return objectMapper.readValue(this.job, SolrInternalEventDrivenJobImpl.class);
                 case JobConstants.GLOBAL_EVENT_JOB:
                     return objectMapper.readValue(this.job, SolrGlobalEventJobImpl.class);
+                case JobConstants.CONTEXT_START_JOB:
+                    return objectMapper.readValue(this.job, SolrContextStartJobImpl.class);
+                case JobConstants.CONTEXT_TERMINAL_JOB:
+                    return objectMapper.readValue(this.job, SolrContextTerminalJobImpl.class);
                 default:
                     throw new SolrEntityConversionException("Could not resolve job type: " + this.type);
 

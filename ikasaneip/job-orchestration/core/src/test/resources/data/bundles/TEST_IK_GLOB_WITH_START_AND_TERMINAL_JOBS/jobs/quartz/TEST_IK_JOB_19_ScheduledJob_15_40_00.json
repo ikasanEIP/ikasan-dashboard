@@ -1,0 +1,23 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "TEST_IK_JOB_19_ScheduledJob_15:40:00",
+  "jobDescription" : "Quartz scheduled job - TEST_IK_JOB_19_ScheduledJob_15:40:00 firing on cron schedule (0 40 15 ? * * *)",
+  "contextName" : "TEST_IK_GLOB",
+  "childContextNames" : [ "TEST_IK_GLOB Step 8" ],
+  "startupControlType" : "AUTOMATIC",
+  "skippedContexts" : { },
+  "heldContexts" : { },
+  "ordinal" : -1,
+  "cronExpression" : "0 40 15 ? * * *",
+  "timeZone" : "Australia/Sydney",
+  "blackoutWindowCronExpressions" : [ ],
+  "blackoutWindowDateTimeRanges" : { },
+  "ignoreMisfire" : false,
+  "eager" : false,
+  "maxEagerCallbacks" : 0,
+  "passthroughProperties" : { },
+  "persistentRecovery" : true,
+  "recoveryTolerance" : 1800000,
+  "dropEventOnBlackout" : false,
+  "identifier" : "scheduler-agent-TEST_IK_JOB_19_ScheduledJob_15:40:00"
+}

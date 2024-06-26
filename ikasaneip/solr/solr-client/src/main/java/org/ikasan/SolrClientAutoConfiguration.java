@@ -284,10 +284,11 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SchedulerJobService solrSchedulerJobService(SolrFileEventDrivenJobDaoImpl fileEventDrivenJobDao
         , SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobDao, SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobDao
-        , SolrGlobalEventJobDaoImpl globalEventJobRecordDao, SolrSchedulerJobDaoImpl schedulerJobDao) {
+        , SolrGlobalEventJobDaoImpl globalEventJobRecordDao, SolrContextStartJobDaoImpl contextStartJobDao
+        , SolrContextTerminalJobDaoImpl contextTerminalJobDao, SolrSchedulerJobDaoImpl schedulerJobDao) {
         return new SolrSchedulerJobServiceImpl(fileEventDrivenJobDao
             ,internalEventDrivenJobDao, quartzScheduleDrivenJobDao
-            ,globalEventJobRecordDao, schedulerJobDao);
+            ,globalEventJobRecordDao, contextStartJobDao, contextTerminalJobDao, schedulerJobDao);
     }
 
     @Bean
@@ -358,6 +359,28 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SolrGlobalEventJobDaoImpl globalEventJobRecordDao() {
         SolrGlobalEventJobDaoImpl dao = new SolrGlobalEventJobDaoImpl();
+        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
+            solrConnectionTimeoutMilli);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
+
+        return dao;
+    }
+
+    @Bean
+    public SolrContextStartJobDaoImpl contextStartJobDao() {
+        SolrContextStartJobDaoImpl dao = new SolrContextStartJobDaoImpl();
+        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
+            solrConnectionTimeoutMilli);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
+
+        return dao;
+    }
+
+    @Bean
+    public SolrContextTerminalJobDaoImpl contextTerminalJobDao() {
+        SolrContextTerminalJobDaoImpl dao = new SolrContextTerminalJobDaoImpl();
         dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
             solrConnectionTimeoutMilli);
         dao.setSolrUsername(solrUsername);

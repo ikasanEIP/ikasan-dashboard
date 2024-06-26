@@ -95,7 +95,7 @@ public class ContextProvisionHelperTest extends AbstractTest {
         schedulerJobRecordDao.setSolrPassword("1ka5an");
 
         schedulerJobService = new SolrSchedulerJobServiceImpl(fileEventDrivenJobRecordDao, internalEventDrivenJobRecordDao,
-            quartzScheduleDrivenJobRecordDao, globalEventJobRecordDao, schedulerJobRecordDao);
+            quartzScheduleDrivenJobRecordDao, globalEventJobRecordDao,  null, null, schedulerJobRecordDao);
 
     }
 

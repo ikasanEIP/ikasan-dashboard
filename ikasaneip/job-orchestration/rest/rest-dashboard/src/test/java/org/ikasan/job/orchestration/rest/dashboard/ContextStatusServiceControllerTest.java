@@ -1,15 +1,9 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
-
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
-import org.ikasan.job.orchestration.rest.dashboard.ContextStatusServiceController;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -22,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,7 +26,11 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.Collections;
-import java.util.Map;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ContextStatusServiceController.class)
@@ -254,7 +251,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -274,7 +271,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -296,7 +293,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -315,7 +312,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -335,7 +332,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -369,7 +366,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -390,7 +387,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -410,7 +407,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -432,7 +429,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -451,7 +448,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -471,7 +468,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -505,7 +502,7 @@ public class ContextStatusServiceControllerTest {
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
         ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
-            , null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null , JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
