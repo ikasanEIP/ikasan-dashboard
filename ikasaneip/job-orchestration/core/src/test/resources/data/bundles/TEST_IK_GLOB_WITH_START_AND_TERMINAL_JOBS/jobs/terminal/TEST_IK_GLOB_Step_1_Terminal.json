@@ -1,0 +1,10 @@
+{
+  "agentName" : "CONTEXT_TERMINAL_JOB",
+  "jobName" : "TEST_IK_GLOB Step 1 Terminal",
+  "childContextNames" : ["TEST_IK_GLOB Step 1", "TEST_IK_AM_1 Step 1" ],
+  "startupControlType" : "AUTOMATIC",
+  "skippedContexts" : { },
+  "heldContexts" : { },
+  "ordinal" : -1,
+  "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 1 Terminal"
+}

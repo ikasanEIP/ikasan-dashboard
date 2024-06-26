@@ -1,9 +1,10 @@
 package org.ikasan.job.orchestration.model.job;
 
 import org.ikasan.spec.scheduled.job.model.ContextStartJob;
+import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 
-public class ContextTerminalJobImpl extends SchedulerJobImpl implements ContextStartJob {
+public class ContextTerminalJobImpl extends SchedulerJobImpl implements ContextTerminalJob {
     private final String agentName = JobConstants.CONTEXT_TERMINAL_JOB;
 
     public final String getAgentName() {
