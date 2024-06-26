@@ -244,7 +244,8 @@ public abstract class ContextInstanceServiceBase {
 
         Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
 
-        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, queueDirectory, agents,
+        // todo sort out start and end jobs
+        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, new HashMap<>(), new HashMap<>(), queueDirectory, agents,
             moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine.init();
@@ -358,7 +359,8 @@ public abstract class ContextInstanceServiceBase {
 
         Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
 
-        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, queueDirectory, agents,
+        // todo sort out start and end jobs
+        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, new HashMap<>(), new HashMap<>(), queueDirectory, agents,
             moduleMetadataService, null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 

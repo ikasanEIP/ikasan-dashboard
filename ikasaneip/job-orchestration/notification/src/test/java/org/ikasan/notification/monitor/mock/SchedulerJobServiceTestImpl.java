@@ -34,6 +34,46 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
+    public void saveContextStartJobRecord(ContextStartJobRecord contextStartJobRecord) {
+
+    }
+
+    @Override
+    public void saveContextTerminalJobRecord(ContextTerminalJobRecord contextTerminalJobRecord) {
+
+    }
+
+    @Override
+    public void saveContextStartJob(ContextStartJob contextStartJob, String modifiedBy) {
+
+    }
+
+    @Override
+    public void saveContextTerminalJob(ContextTerminalJob contextTerminalJob, String modifiedBy) {
+
+    }
+
+    @Override
+    public void saveContextStartJobRecords(List list) {
+
+    }
+
+    @Override
+    public void saveContextTerminalJobRecord(List list) {
+
+    }
+
+    @Override
+    public void saveContextStartJobs(List list, String actor) {
+
+    }
+
+    @Override
+    public void saveContextTerminalJobs(List list, String actor) {
+
+    }
+
+    @Override
     public SearchResults findByContext(String contextId, int limit, int offset) {
 
         if (type.equalsIgnoreCase("file")) {

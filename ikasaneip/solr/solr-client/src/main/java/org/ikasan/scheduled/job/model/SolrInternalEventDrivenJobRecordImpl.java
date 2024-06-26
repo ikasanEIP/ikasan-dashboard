@@ -9,7 +9,7 @@ import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 
-public class SolrInternalEventDrivenJobRecordImpl implements InternalEventDrivenJobRecord {
+public class  SolrInternalEventDrivenJobRecordImpl implements InternalEventDrivenJobRecord {
 
     private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
