@@ -17,14 +17,17 @@ public class SchedulerJobBuilder {
     protected String startupControlType = "AUTOMATIC";
     protected int ordinal = -1;
 
+    /**
+     * The SchedulerJobBuilder class is used to build instances of SchedulerJob and its subclasses.
+     */
     public SchedulerJobBuilder() {
     }
 
     /**
-     * Set the agent name.
+     * Sets the agent name for the SchedulerJobBuilder.
      *
-     * @param agentName
-     * @return
+     * @param agentName the name of the agent
+     * @return the SchedulerJobBuilder instance
      */
     public SchedulerJobBuilder withAgentName(String agentName) {
         this.agentName = agentName;
@@ -33,10 +36,10 @@ public class SchedulerJobBuilder {
     }
 
     /**
-     * Set the job name.
+     * Sets the job name for the SchedulerJobBuilder.
      *
-     * @param jobName
-     * @return
+     * @param jobName the job name to set
+     * @return the SchedulerJobBuilder instance
      */
     public SchedulerJobBuilder withJobName(String jobName) {
         this.jobName = jobName;
@@ -45,10 +48,10 @@ public class SchedulerJobBuilder {
     }
 
     /**
-     * Set the context name.
+     * Sets the context name for the SchedulerJobBuilder.
      *
-     * @param contextName
-     * @return
+     * @param contextName the context name to set
+     * @return the SchedulerJobBuilder instance
      */
     public SchedulerJobBuilder withContextName(String contextName) {
         this.contextName = contextName;
@@ -57,10 +60,10 @@ public class SchedulerJobBuilder {
     }
 
     /**
-     * Add a child context id.
+     * Adds a child context ID to the SchedulerJobBuilder.
      *
-     * @param childContextId
-     * @return
+     * @param childContextId the child context ID to add
+     * @return the SchedulerJobBuilder instance
      */
     public SchedulerJobBuilder addChildContextId(String childContextId) {
         if(this.childContextNames == null) {
@@ -73,10 +76,10 @@ public class SchedulerJobBuilder {
     }
 
     /**
-     * Set the job description.
+     * Sets the description for the SchedulerJobBuilder.
      *
-     * @param description
-     * @return
+     * @param description the description to set
+     * @return the SchedulerJobBuilder instance
      */
     public SchedulerJobBuilder withDescription(String description) {
         this.description = description;
@@ -85,10 +88,11 @@ public class SchedulerJobBuilder {
     }
 
     /**
-     * Set the job startupControlType.
+     * Sets the startup control type for the SchedulerJobBuilder.
+     * The startup control type determines how the scheduler job will be started.
      *
-     * @param startupControlType
-     * @return
+     * @param startupControlType the startup control type to set
+     * @return the SchedulerJobBuilder instance
      */
     public SchedulerJobBuilder withStartupControlType(String startupControlType) {
         this.startupControlType = startupControlType;
@@ -97,10 +101,10 @@ public class SchedulerJobBuilder {
     }
 
     /**
-     * Set the job ordinal.
+     * Sets the ordinal value for the SchedulerJobBuilder.
      *
-     * @param ordinal
-     * @return
+     * @param ordinal the ordinal value to set
+     * @return the SchedulerJobBuilder instance with the ordinal value set
      */
     public SchedulerJobBuilder withOrdinal(int ordinal) {
         this.ordinal = ordinal;
@@ -109,10 +113,10 @@ public class SchedulerJobBuilder {
     }
 
     /**
-     * Set the display name.
+     * Sets the display name for the SchedulerJobBuilder.
      *
-     * @param displayName
-     * @return
+     * @param displayName the display name to set
+     * @return the SchedulerJobBuilder instance
      */
     public SchedulerJobBuilder withDisplayName(String displayName) {
         this.displayName = displayName;
@@ -121,6 +125,11 @@ public class SchedulerJobBuilder {
     }
 
 
+    /**
+     * Builds a SchedulerJob object based on the provided parameters.
+     * @return the built SchedulerJob object
+     * @throws ContextBuilderException if both agent name and job name are null
+     */
     public SchedulerJob build() {
         if(this.agentName == null || this.jobName == null) {
             throw new ContextBuilderException("Both agent name and job name must no be null!");

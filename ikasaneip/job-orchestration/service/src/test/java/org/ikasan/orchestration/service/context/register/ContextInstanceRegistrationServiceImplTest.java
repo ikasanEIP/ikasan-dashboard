@@ -40,7 +40,10 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationServi
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventService;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -48,7 +51,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -2733,7 +2738,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
             null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         ContextMachineCache.instance().put(contextMachine);
@@ -2791,7 +2796,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             job.setScheduledProcessEvent(event);
         });
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
             null, this.mockSchedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         ContextMachineCache.instance().put(contextMachine);
@@ -2868,7 +2873,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             job.setScheduledProcessEvent(event);
         });
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
             null, this.mockSchedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         ContextMachineCache.instance().put(contextMachine);
@@ -2943,7 +2948,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         contextInstance.getScheduledJobs().get(0).setStatus(InstanceStatus.RUNNING);
         contextInstance.getScheduledJobs().get(0).setScheduledProcessEvent(event);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
             null, this.mockSchedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         ContextMachineCache.instance().put(contextMachine);
@@ -3011,7 +3016,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
         contextInstance.setRunContextUntilManuallyEnded(true);
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
             null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         ContextMachineCache.instance().put(contextMachine);
@@ -3046,7 +3051,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
         contextInstance.setRunContextUntilManuallyEnded(true);
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
             null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         ContextMachineCache.instance().put(contextMachine);
