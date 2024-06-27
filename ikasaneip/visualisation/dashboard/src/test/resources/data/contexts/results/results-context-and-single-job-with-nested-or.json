@@ -1,5 +1,4 @@
 {
-  "contexts": [],
   "scheduledJobs": [
     {
       "agentName": "scheduler-agent",
@@ -72,7 +71,6 @@
       "identifier": "scheduler-agent--1876357615"
     }
   ],
-  "jobLocks": [],
   "name": "CONTEXT--1209755884",
   "jobDependencies": [
     {
@@ -138,6 +136,7 @@
   "treeViewExpandLevel": 1,
   "ableToRunConcurrently": true,
   "useDisplayName": false,
+  "ordinal": -1,
   "disabled": false,
   "quartzScheduleDrivenJobsDisabledForContext": false
 }

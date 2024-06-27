@@ -1,5 +1,4 @@
 {
-  "contexts" : [ ],
   "scheduledJobs" : [ {
     "agentName" : "[[agent.name]]",
     "jobName" : "-801842677",
@@ -165,6 +164,7 @@
   "treeViewExpandLevel" : 1,
   "ableToRunConcurrently" : true,
   "useDisplayName" : false,
+  "ordinal" : 0,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

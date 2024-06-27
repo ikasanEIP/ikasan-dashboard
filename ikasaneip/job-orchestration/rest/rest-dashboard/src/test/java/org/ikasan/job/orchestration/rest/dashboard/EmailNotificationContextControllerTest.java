@@ -117,9 +117,6 @@ public class EmailNotificationContextControllerTest extends AbstractRestMvcTest 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(HttpStatus.OK.value(), status);
 
-        String content = mvcResult.getResponse().getContentAsString();
-        System.out.println(content);
-
         verify(emailNotificationContextService).findByContextName("job-plan-1", 10, 0);
         verifyNoMoreInteractions(emailNotificationContextService);
     }

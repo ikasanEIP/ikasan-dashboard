@@ -24,6 +24,5 @@ public class ContextInstanceToContextInstanceStatusConverterTest extends Abstrac
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
         // todo some assertions
-//        System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextInstanceStatus));
     }
 }

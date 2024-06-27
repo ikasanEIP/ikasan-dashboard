@@ -11,6 +11,7 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ContextBundleImpl implements ContextBundle {
@@ -37,13 +38,12 @@ public class ContextBundleImpl implements ContextBundle {
         }
         this.contextProfiles = contextProfiles;
         if(this.contextProfiles == null) {
-            throw new IllegalArgumentException("contextProfiles cannot be null!");
+            this.contextProfiles = new ArrayList<>();
         }
         this.emailNotificationDetails = emailNotificationDetails;
         if(this.emailNotificationDetails == null) {
-            throw new IllegalArgumentException("emailNotificationDetails cannot by null!");
+            this.emailNotificationDetails = new ArrayList<>();
         }
-        // this can be null
         this.emailNotificationContexts = emailNotificationContexts;
     }
 
