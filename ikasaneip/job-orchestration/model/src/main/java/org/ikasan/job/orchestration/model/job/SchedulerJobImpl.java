@@ -176,11 +176,11 @@ public class SchedulerJobImpl implements SchedulerJob {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SchedulerJobImpl that = (SchedulerJobImpl) o;
-        return Objects.equals(jobIdentifier, that.jobIdentifier);
+        return Objects.equals(getIdentifier(), that.getIdentifier());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(jobIdentifier);
+        return Objects.hash(getIdentifier());
     }
 }

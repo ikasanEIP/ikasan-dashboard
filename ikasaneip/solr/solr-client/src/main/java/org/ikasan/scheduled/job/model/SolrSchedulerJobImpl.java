@@ -4,12 +4,10 @@ package org.ikasan.scheduled.job.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SolrSchedulerJobImpl implements SchedulerJob {
     protected String jobIdentifier;
@@ -150,5 +148,18 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SchedulerJobImpl that = (SchedulerJobImpl) o;
+        return Objects.equals(getIdentifier(), that.getIdentifier());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getIdentifier());
     }
 }

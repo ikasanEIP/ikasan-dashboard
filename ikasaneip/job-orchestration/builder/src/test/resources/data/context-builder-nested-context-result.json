@@ -1,26 +1,27 @@
 {
   "contexts" : [ {
-    "contexts" : [ ],
     "scheduledJobs" : [ {
       "agentName" : "AgentName",
       "jobName" : "Job1",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job1",
-      "jobDescription" : "Job1 Description"
+      "ordinal" : -1,
+      "jobDescription" : "Job1 Description",
+      "identifier" : "AgentName-Job1"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job2",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job2",
-      "jobDescription" : "Job2 Description"
+      "ordinal" : -1,
+      "jobDescription" : "Job2 Description",
+      "identifier" : "AgentName-Job2"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job3",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job3",
-      "jobDescription" : "Job3 Description"
+      "ordinal" : -1,
+      "jobDescription" : "Job3 Description",
+      "identifier" : "AgentName-Job3"
     } ],
-    "jobLocks" : [ ],
     "name" : "Context Template 1",
     "jobDependencies" : [ {
       "jobIdentifier" : "AgentName-Job2"
@@ -39,42 +40,47 @@
     "contextTtlMilliseconds" : 0,
     "treeViewExpandLevel" : 1,
     "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 0,
     "disabled" : false,
     "quartzScheduleDrivenJobsDisabledForContext" : false
   }, {
-    "contexts" : [ ],
     "scheduledJobs" : [ {
       "agentName" : "AgentName",
       "jobName" : "Job4",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job4",
-      "jobDescription" : "Job4 Description"
+      "ordinal" : -1,
+      "jobDescription" : "Job4 Description",
+      "identifier" : "AgentName-Job4"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job5",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job5",
-      "jobDescription" : "Job5 Description"
+      "ordinal" : -1,
+      "jobDescription" : "Job5 Description",
+      "identifier" : "AgentName-Job5"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job6",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job6",
-      "jobDescription" : "Job6 Description"
+      "ordinal" : -1,
+      "jobDescription" : "Job6 Description",
+      "identifier" : "AgentName-Job6"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job7",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job7",
-      "jobDescription" : "Job7 Description"
+      "ordinal" : -1,
+      "jobDescription" : "Job7 Description",
+      "identifier" : "AgentName-Job7"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job8",
       "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job8",
-      "jobDescription" : "Job8 Description"
+      "ordinal" : -1,
+      "jobDescription" : "Job8 Description",
+      "identifier" : "AgentName-Job8"
     } ],
-    "jobLocks" : [ ],
     "name" : "Context Template 2",
     "jobDependencies" : [ {
       "jobIdentifier" : "AgentName-Job4"
@@ -109,11 +115,11 @@
     "contextTtlMilliseconds" : 0,
     "treeViewExpandLevel" : 1,
     "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 1,
     "disabled" : false,
     "quartzScheduleDrivenJobsDisabledForContext" : false
   } ],
-  "scheduledJobs" : [ ],
-  "jobLocks" : [ ],
   "name" : "Parent Context",
   "description" : "Context Template Description",
   "contextDependencies" : [ {
@@ -145,6 +151,8 @@
   "contextTtlMilliseconds" : 100000,
   "treeViewExpandLevel" : 1,
   "ableToRunConcurrently" : true,
+  "useDisplayName" : false,
+  "ordinal" : -1,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

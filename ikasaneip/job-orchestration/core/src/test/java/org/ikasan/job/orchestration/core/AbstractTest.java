@@ -15,8 +15,10 @@ import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanc
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
+import org.junit.Assert;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -252,5 +254,30 @@ public class AbstractTest
      */
     protected void printLocks() throws JsonProcessingException {
         System.out.println(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(JobLockCacheImpl.instance()));
+    }
+
+    /**
+     * Asserts that the status of a given context in a ContextMachine object matches the expected status.
+     *
+     * @param contextMachine The ContextMachine object that contains the context.
+     * @param context The name of the context to check the status for.
+     * @param expected The expected status of the context.
+     */
+    protected void assertContextStatus(ContextMachine contextMachine, String context, InstanceStatus expected) {
+        InstanceStatus status = contextMachine.getContextStatus(context);
+        Assert.assertEquals(expected, status);
+    }
+
+    /**
+     * Asserts that the status of a job in a given context in a ContextMachine object matches the expected status.
+     *
+     * @param contextMachine The ContextMachine object that contains the job.
+     * @param context The name of the context where the job resides.
+     * @param jobName The name of the job to check the status for.
+     * @param expected The expected status of the job.
+     */
+    protected void assertJobStatus(ContextMachine contextMachine, String context, String jobName, InstanceStatus expected) {
+        InstanceStatus status = contextMachine.getJobStatus(context, jobName);
+        Assert.assertEquals(expected, status);
     }
 }

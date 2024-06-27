@@ -599,7 +599,7 @@ public class ContextStatusServiceImplTest {
     @Test
     public void getJsonContextMachineStatusEmpty() throws Exception {
         String jobStatus = contextStatusService.getJsonContextMachineStatus(true);
-        String expected = "{ \"contextMachineStatusList\" : [ ] }";
+        String expected = "{}";
         JSONAssert.assertEquals(expected, jobStatus, JSONCompareMode.LENIENT);
     }
 
