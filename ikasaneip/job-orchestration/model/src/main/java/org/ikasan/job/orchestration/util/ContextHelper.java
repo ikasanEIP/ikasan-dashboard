@@ -2,13 +2,13 @@ package org.ikasan.job.orchestration.util;
 
 import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.job.orchestration.model.job.ContextStartJobImpl;
+import org.ikasan.job.orchestration.model.job.ContextTerminalJobImpl;
 import org.ikasan.job.orchestration.model.status.ContextJobInstanceDetailsStatusImpl;
 import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatusImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.status.model.ContextJobInstanceDetailsStatus;
 import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatus;
 import org.slf4j.Logger;
@@ -22,6 +22,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Helper class that provides methods for manipulating and retrieving information from the job plan context.
+ */
 public class ContextHelper {
 
     static Logger logger = LoggerFactory.getLogger(ContextHelper.class);
@@ -218,9 +221,71 @@ public class ContextHelper {
     }
 
     /**
+     * Retrieves a map of {@link ContextStartJob} objects from the given {@link ContextTemplate} object.
      *
-     * @param internalJobs
-     * @return
+     * @param context The context template object from which to retrieve the context start jobs.
+     * @return A map of {@link ContextStartJob} objects, where the keys are the identifier of the jobs
+     * and the values are the objects themselves.
+     */
+    public static Map<String, ContextStartJob> getContextStartJobsFromContext(ContextTemplate context) {
+        return context.getAllSchedulerJobs().stream()
+            .distinct()
+            .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+            .map(schedulerJob -> {
+                ContextStartJob contextStartJob = new ContextStartJobImpl();
+                contextStartJob.setContextName(schedulerJob.getContextName());
+                contextStartJob.setJobName(schedulerJob.getJobName());
+                contextStartJob.setAgentName(schedulerJob.getAgentName());
+                contextStartJob.setChildContextNames(context.getAllContextNamesWhereJobResides(schedulerJob.getIdentifier()));
+                contextStartJob.setOrdinal(Integer.MIN_VALUE);
+
+                return contextStartJob;
+            })
+            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+    }
+
+    /**
+     * Retrieves a map of context terminal jobs from the given ContextTemplate.
+     *
+     * @param context The ContextTemplate from which to retrieve the context terminal jobs.
+     * @return A map of context terminal jobs, where the keys are identifiers and the values
+     * are ContextTerminalJob objects.
+     */
+    public static Map<String, ContextTerminalJob> getContextTerminalJobsFromContext(ContextTemplate context) {
+        return context.getAllSchedulerJobs().stream()
+            .distinct()
+            .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+            .map(schedulerJob -> {
+                ContextTerminalJob contextTerminalJob = new ContextTerminalJobImpl();
+                contextTerminalJob.setContextName(schedulerJob.getContextName());
+                contextTerminalJob.setJobName(schedulerJob.getJobName());
+                contextTerminalJob.setAgentName(schedulerJob.getAgentName());
+                contextTerminalJob.setChildContextNames(context.getAllContextNamesWhereJobResides(schedulerJob.getIdentifier()));
+                contextTerminalJob.setOrdinal(Integer.MAX_VALUE);
+
+                return contextTerminalJob;
+            })
+            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+    }
+
+    /**
+     * Populates the child context names on the given list of scheduler jobs using the provided context template.
+     *
+     * @param contextTemplate The context template used to retrieve the child context names.
+     * @param schedulerJobs The list of scheduler jobs to populate with child context names.
+     */
+    public static void populateChildContextNamesOnSchedulerJobs(ContextTemplate contextTemplate, List<SchedulerJob> schedulerJobs) {
+        schedulerJobs.forEach(schedulerJob -> {
+            schedulerJob.setChildContextNames(contextTemplate.getAllContextNamesWhereJobResides(schedulerJob.getIdentifier()));
+        });
+    }
+
+    /**
+     * Retrieves unique context parameter instances from a collection of job instances.
+     *
+     * @param internalJobs The map of internal event-driven job instances where the key is the job name and the
+     *                     value is the job instance.
+     * @return A list of unique context parameter instances.
      */
     public static List<ContextParameterInstance> getUniqueContextParameterInstancesFromJobInstances(Map<String, InternalEventDrivenJobInstance> internalJobs) {
         List<ContextParameterInstance> contextParameterInstances = new ArrayList<>();
@@ -242,10 +307,12 @@ public class ContextHelper {
             .collect( Collectors.toList() );
     }
 
+
     /**
+     * Retrieves a list of unique context parameter instances from a map of internal jobs.
      *
-     * @param internalJobs
-     * @return
+     * @param internalJobs A map of internal jobs, where the key is the job name and the value is an InternalEventDrivenJob object.
+     * @return A list of ContextParameterInstance objects, containing unique context parameter instances from all jobs.
      */
     public static List<ContextParameterInstance> getUniqueContextParameterInstancesFromJobs(Map<String, InternalEventDrivenJob> internalJobs) {
         List<ContextParameterInstance> contextParameterInstances = new ArrayList<>();
@@ -333,6 +400,12 @@ public class ContextHelper {
             -> !contextTransition.getContexts().isEmpty()).distinct().collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves the status of an aggregate context instance.
+     *
+     * @param contextInstance The context instance for which to retrieve the status.
+     * @return The aggregate context instance status.
+     */
     public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance contextInstance) {
         AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
         getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus, null, null, null);
@@ -340,6 +413,15 @@ public class ContextHelper {
         return aggregateContextInstanceStatus;
     }
 
+    /**
+     * Returns the AggregateContextInstanceStatus of a given ContextInstance.
+     *
+     * @param contextInstance The ContextInstance for which the AggregateContextInstanceStatus is to be retrieved.
+     * @param internalEventDrivenJobMap A map containing the InternalEventDrivenJobs associated with the contextInstance.
+     * @param quartzSchedulerJobMap A map containing the QuartzScheduleDrivenJobInstances associated with the contextInstance.
+     * @param parent The parent ContextInstance of the given contextInstance.
+     * @return The AggregateContextInstanceStatus of the given ContextInstance.
+     */
     public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance contextInstance, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap,
                                                                                    Map<String, QuartzScheduleDrivenJobInstance> quartzSchedulerJobMap, ContextInstance parent) {
         AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
@@ -348,6 +430,17 @@ public class ContextHelper {
         return aggregateContextInstanceStatus;
     }
 
+    /**
+     * Calculates the aggregate status of a given context instance and updates the aggregateContextInstanceStatus object.
+     * Updates the aggregateContextInstanceStatus object based on the status of each scheduled job within the context instance.
+     * Recursively traverses child context instances.
+     *
+     * @param contextInstance               The current context instance
+     * @param aggregateContextInstanceStatus The aggregate context instance status object to be updated
+     * @param internalEventDrivenJobMap     The map of internal event-driven jobs
+     * @param quartzSchedulerJobMap         The map of quartz schedule-driven job instances
+     * @param parent                        The parent context instance
+     */
     private static void getAggregateContextInstanceStatus(ContextInstance contextInstance, AggregateContextInstanceStatus aggregateContextInstanceStatus
         , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap, Map<String, QuartzScheduleDrivenJobInstance> quartzSchedulerJobMap, ContextInstance parent) {
         if(contextInstance.getScheduledJobs() != null) {
@@ -389,6 +482,14 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Retrieves the aggregate status of a context instance.
+     *
+     * @param parent the parent context instance
+     * @param contextInstance the context instance to retrieve the status for
+     * @param internalEventDrivenJobMap the map of internal event-driven jobs
+     * @return the aggregate context instance status
+     */
     public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance parent, ContextInstance contextInstance, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
         AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
         getAggregateContextInstanceStatus(parent, contextInstance, aggregateContextInstanceStatus, internalEventDrivenJobMap);
@@ -396,6 +497,14 @@ public class ContextHelper {
         return aggregateContextInstanceStatus;
     }
 
+    /**
+     * This method calculates the aggregate instance status for a given context instance and its child instances.
+     *
+     * @param parent the parent context instance
+     * @param contextInstance the current context instance
+     * @param aggregateContextInstanceStatus the object to store the aggregate instance status
+     * @param internalEventDrivenJobMap a map of internal event driven jobs
+     */
     private static void getAggregateContextInstanceStatus(ContextInstance parent, ContextInstance contextInstance
         , AggregateContextInstanceStatus aggregateContextInstanceStatus, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
         if(contextInstance.getScheduledJobs() != null) {
@@ -526,6 +635,12 @@ public class ContextHelper {
         return jobsOutsideLogicConstructs;
     }
 
+    /**
+     * Removes jobs within logical constructs recursively.
+     *
+     * @param logicalGrouping the logical grouping to remove jobs from
+     * @param schedulerJobMap the map containing the scheduler jobs
+     */
     private static void removeJobsInLogicalConstructs(LogicalGrouping logicalGrouping,
                                                 Map<String, SchedulerJob> schedulerJobMap) {
         if(logicalGrouping != null) {
@@ -671,6 +786,15 @@ public class ContextHelper {
         return finalResults.stream().map(job -> (SchedulerJobInstance)job).collect(Collectors.toList());
     }
 
+    /**
+     * Determines if Jobs transition from other contexts.
+     *
+     * @param context                    the parent context
+     * @param jobName                    the name of the job
+     * @param childContextName           the name of the child context
+     * @param internalEventDrivenJobMap  a map of internal event-driven jobs
+     * @return a list of context transitions where jobs transition from other contexts
+     */
     public static List<ContextTransition> determineIfJobsTransitionFromOtherContexts(Context context
         , String jobName, String childContextName, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
         Map<String, SchedulerJob> jobs = new HashMap<>();
@@ -746,6 +870,13 @@ public class ContextHelper {
         return finalResults.values().stream().collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves the upstream dependencies for a given logical grouping of scheduler jobs.
+     *
+     * @param logicalGrouping         the logical grouping of scheduler jobs
+     * @param schedulerJobInstances   the list of scheduler job instances
+     * @param schedulerJobInstanceMap the map of scheduler job instances
+     */
     private static void getUpstreamDependencies(LogicalGrouping logicalGrouping, List<SchedulerJob> schedulerJobInstances,
                                                 Map<String, SchedulerJob> schedulerJobInstanceMap) {
         if(logicalGrouping != null) {
@@ -755,6 +886,12 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Removes the "_in" or "_out" suffix from the given identifier.
+     *
+     * @param identifier the identifier to be processed
+     * @return the modified identifier without the "_in" or "_out" suffix
+     */
     public static String getIdentifier(String identifier) {
         if(identifier.contains("_in")) {
             identifier = identifier.substring(0, identifier.indexOf("_in"));
@@ -766,6 +903,13 @@ public class ContextHelper {
         return identifier;
     }
 
+    /**
+     * Creates a Predicate that filters elements based on their uniqueness with respect to a key extracted from the elements.
+     *
+     * @param <T> the type of elements in the input
+     * @param keyExtractor the function to extract the key from the elements
+     * @return a Predicate that filters elements based on uniqueness with respect to the extracted key
+     */
     private static <T> Predicate<T> distinctByKey(
         Function<? super T, ?> keyExtractor) {
 
@@ -773,6 +917,15 @@ public class ContextHelper {
         return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
+    /**
+     * Assess the logical grouping with an 'AND' operator.
+     *
+     * @param logicalGrouping        the logical grouping to assess
+     * @param schedulerJobInstances  the list of scheduler job instances
+     * @param schedulerJobInstanceMap  the map of scheduler job instances
+     *
+     * @return true if the logical grouping has an 'AND' operator, false otherwise
+     */
     private static boolean assessAnd(LogicalGrouping logicalGrouping, List<SchedulerJob> schedulerJobInstances,
                                 Map<String, SchedulerJob> schedulerJobInstanceMap) {
         AtomicBoolean and = new AtomicBoolean(false);
@@ -793,6 +946,14 @@ public class ContextHelper {
         return and.get();
     }
 
+    /**
+     * Assess the logical OR condition for a given LogicalGrouping.
+     *
+     * @param logicalGrouping        The LogicalGrouping object to be assessed.
+     * @param schedulerJobInstances  The list of SchedulerJob instances.
+     * @param schedulerJobInstanceMap The map of SchedulerJob instances.
+     * @return True if any of the operators in the logicalGrouping are satisfied by the schedulerJobInstances, false otherwise.
+     */
     private static boolean assessOr(LogicalGrouping logicalGrouping, List<SchedulerJob> schedulerJobInstances,
                                Map<String, SchedulerJob> schedulerJobInstanceMap) {
         AtomicBoolean or = new AtomicBoolean(false);
@@ -811,6 +972,15 @@ public class ContextHelper {
         return or.get();
     }
 
+    /**
+     * This method assesses the logical grouping by considering the negation (NOT) operator.
+     * It checks if any elements in the not list of the logical grouping satisfy the given criteria.
+     *
+     * @param logicalGrouping         the logical grouping to be assessed
+     * @param schedulerJobInstances   the list of scheduler job instances
+     * @param schedulerJobInstanceMap the map of scheduler job instances
+     * @return true if any elements in the not list satisfy the criteria, false otherwise
+     */
     private static boolean assessNot(LogicalGrouping logicalGrouping, List<SchedulerJob> schedulerJobInstances,
                                 Map<String, SchedulerJob> schedulerJobInstanceMap) {
         AtomicBoolean not = new AtomicBoolean(false);
@@ -829,6 +999,15 @@ public class ContextHelper {
         return not.get();
     }
 
+    /**
+     * Traces a job through the specified context and its child contexts, returning a linked list of lists
+     * of SchedulerJob objects that match the given job name and child context name.
+     *
+     * @param context The starting context from which to trace the job.
+     * @param jobName The name of the job to trace.
+     * @param childContextName The name of the child context to trace.
+     * @return A linked list of lists of SchedulerJob objects that match the given job name and child context name.
+     */
     public static LinkedList<List<SchedulerJob>> traceJobThroughContext(Context context, String jobName, String childContextName) {
         LinkedList<List<SchedulerJob>> results = new LinkedList<>();
         List<String> processedContexts = new ArrayList<>();
@@ -837,6 +1016,15 @@ public class ContextHelper {
         return results;
     }
 
+    /**
+     * Traces a job through a given context and its child contexts.
+     *
+     * @param results           The list containing the traced jobs.
+     * @param context           The current context.
+     * @param jobName           The name of the job to trace.
+     * @param childContextName  The name of the child context.
+     * @param processedContexts The list of processed contexts to avoid circular dependencies.
+     */
     private static void _traceJobThroughContext(LinkedList<List<SchedulerJob>> results, Context context, String jobName, String childContextName, List<String> processedContexts) {
         logger.debug(String.format("_traceJobThroughContext - contextName[%s], jobName[%s], childContextName[%s]", context.getName(),
             jobName, childContextName));
@@ -884,6 +1072,20 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Retrieves the next job from the given logical grouping based on job identifier.
+     * If the logicalGrouping is null, it adds the SchedulerJob with the specified job identifier to the jobIdentifiers list.
+     * If the logicalGrouping has logical grouping, it recursively calls getNextJob with the logicalGrouping.
+     * If the logicalGrouping has 'and' conditions, it checks each condition and adds the SchedulerJob with the specified job identifier to the jobIdentifiers list if it matches.
+     * If the logicalGrouping has 'or' conditions, it checks each condition and adds the SchedulerJob with the specified job identifier to the jobIdentifiers list if it matches.
+     * If the logicalGrouping has 'not' conditions, it checks each condition and adds the SchedulerJob with the specified job identifier to the jobIdentifiers list if it matches.
+     *
+     * @param child the context object
+     * @param jobIdentifier the job identifier to search for
+     * @param logicalGrouping the logical grouping to retrieve the job from
+     * @param schedulerJobInstance the scheduler job instance
+     * @param jobIdentifiers the list to store the matched jobs
+     */
     private static void getNextJob(Context child, String jobIdentifier, LogicalGrouping logicalGrouping, SchedulerJob schedulerJobInstance, List<SchedulerJob> jobIdentifiers) {
         if(logicalGrouping == null) {
             jobIdentifiers.add(((Map<String, SchedulerJob>)child.getScheduledJobsMap()).get(jobIdentifier));
@@ -928,6 +1130,15 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Retrieves the child context with the specified name from the given parent context.
+     * If the parent context matches the specified child context name, it is returned.
+     * Otherwise, it recursively searches through the child contexts of the parent context to find the matching child context.
+     *
+     * @param childContextName the name of the child context to retrieve
+     * @param context the parent context to search within
+     * @return the child context with the specified name, or null if it does not exist
+     */
     public static Context getChildContext(String childContextName, Context context) {
         if(context.getName().equals(childContextName)) {
             return context;
@@ -946,6 +1157,13 @@ public class ContextHelper {
         return null;
     }
 
+    /**
+     * Retrieves the child ContextInstance with the specified name from the given parent ContextInstance.
+     *
+     * @param childContextName The name of the child ContextInstance to retrieve.
+     * @param contextInstance The parent ContextInstance from which to retrieve the child ContextInstance.
+     * @return The child ContextInstance with the specified name, or null if not found.
+     */
     public static ContextInstance getChildContextInstance(String childContextName, ContextInstance contextInstance) {
         if(contextInstance.getName().equals(childContextName)) {
             return contextInstance;
@@ -964,6 +1182,13 @@ public class ContextHelper {
         return null;
     }
 
+    /**
+     * Retrieves a child context template based on its name from the given parent context template.
+     *
+     * @param childContextName    The name of the child context template to retrieve.
+     * @param contextTemplate     The parent context template from which to retrieve the child context template.
+     * @return The child context template if found, or null if no such child context template exists.
+     */
     public static ContextTemplate getChildContextTemplate(String childContextName, ContextTemplate contextTemplate) {
         if(contextTemplate.getName().equals(childContextName)) {
             return contextTemplate;
@@ -982,6 +1207,13 @@ public class ContextHelper {
         return null;
     }
 
+    /**
+     * Finds the parent context template that contains a child context with the specified name.
+     *
+     * @param childContextName the name of the child context to search for
+     * @param contextTemplate the root context template to search within
+     * @return the parent context template that contains the child context, or null if not found
+     */
     public static ContextTemplate getParentContextTemplate(String childContextName, ContextTemplate contextTemplate) {
         AtomicBoolean containsContext = new AtomicBoolean(false);
 
@@ -1008,6 +1240,12 @@ public class ContextHelper {
         return null;
     }
 
+    /**
+     * Removes the child context template with the specified name from the given context template.
+     *
+     * @param childContextName the name of the child context template to be removed
+     * @param contextTemplate the context template from which to remove the child context template
+     */
     public static void removeChildContextTemplate(String childContextName, ContextTemplate contextTemplate) {
         if(contextTemplate.getContexts() != null) {
             if(contextTemplate.getContextsMap().containsKey(childContextName)) {
@@ -1020,6 +1258,13 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Replaces a child context template within a parent context template with an updated version.
+     *
+     * @param contextTemplate The parent context template containing the child context template.
+     * @param updated The updated version of the child context template.
+     * @return The parent context template with the updated child context template. It may or may not be modified.
+     */
     public static ContextTemplate replaceChildContextTemplate(ContextTemplate contextTemplate, ContextTemplate updated) {
         if(contextTemplate.getName().equals(updated.getName())) {
             contextTemplate.setJobDependencies(updated.getJobDependencies());
@@ -1043,10 +1288,23 @@ public class ContextHelper {
         return contextTemplate;
     }
 
+    /**
+     * Holds all jobs in the provided context by setting their state to "hold".
+     *
+     * @param context The context instance where the jobs are held.
+     * @param internalEventDrivenJobInstanceMap A map of internal event-driven job instances to be held.
+     */
     public static void holdAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
         _holdAllJobs(context, internalEventDrivenJobInstanceMap);
     }
 
+    /**
+     * Holds all jobs that are either in the WAITING or RELEASED status, and sets their status to ON_HOLD.
+     * Additionally, it sets the child contexts of these jobs as held, and updates their status to ON_HOLD.
+     *
+     * @param context The ContextInstance object to hold the jobs.
+     * @param internalEventDrivenJobInstanceMap A map containing the instances of InternalEventDrivenJobInstance objects, with their identifiers as keys.
+     */
     private static void _holdAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
         if(context.getScheduledJobs() != null) {
             context.getScheduledJobs().forEach(job -> {
@@ -1070,10 +1328,24 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Sets the status of all job instances in the given internal event-driven job instance map.
+     *
+     * @param context The context instance.
+     * @param internalEventDrivenJobInstanceMap The map of internal event-driven job instances.
+     * @param instanceStatus The status to set for all job instances.
+     */
     public static void setJobStatusAll(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap, InstanceStatus instanceStatus) {
         _setJobStatusAll(context, internalEventDrivenJobInstanceMap, instanceStatus);
     }
 
+    /**
+     * Sets the job status for all the jobs in the given context and its child contexts.
+     *
+     * @param context The context instance.
+     * @param internalEventDrivenJobInstanceMap The map of internal event driven job instances.
+     * @param instanceStatus The status to be set for the jobs.
+     */
     private static void _setJobStatusAll(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap, InstanceStatus instanceStatus) {
         if(context.getScheduledJobs() != null) {
             context.getScheduledJobs().forEach(job -> {
@@ -1088,10 +1360,22 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Releases all the jobs associated with the given context instance.
+     *
+     * @param context The context instance for which the jobs need to be released.
+     * @param internalEventDrivenJobInstanceMap The map containing the internal event driven job instances associated with the context.
+     */
     public static void releaseAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
         _releaseAllJobs(context, internalEventDrivenJobInstanceMap);
     }
 
+    /**
+     * Releases all the jobs in the given context and its child contexts that are on hold.
+     *
+     * @param context                      the context instance containing the jobs
+     * @param internalEventDrivenJobInstanceMap the map of internal event-driven job instances
+     */
     private static void _releaseAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
         if(context.getScheduledJobs() != null) {
             context.getScheduledJobs().stream()
@@ -1110,14 +1394,32 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Enriches the jobs in the given context instance.
+     * The enrichment is done recursively starting from the given context instance.
+     *
+     * @param context The context instance to enrich the jobs.
+     */
     public static void enrichJobs(ContextInstance context) {
         _enrichJobs(context, context);
     }
 
+    /**
+     * Enriches the jobs in the given context by calling the private helper method.
+     *
+     * @param context the main context instance
+     * @param child   the child context instance
+     */
     private static void enrichJobs(ContextInstance context, Context child) {
         _enrichJobs(context, child);
     }
 
+    /**
+     * Enriches the jobs in the given child context with the context name and child context name.
+     *
+     * @param context The parent context instance.
+     * @param child The child context instance.
+     */
     private static void _enrichJobs(ContextInstance context, Context child) {
         if(child.getScheduledJobs() != null) {
             child.getScheduledJobs().forEach(job -> {
@@ -1131,14 +1433,34 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Enriches the jobs in the given scheduler job map by populating additional information using the given context.
+     *
+     * @param context           the context instance used to enrich the jobs
+     * @param schedulerJobMap   the map of scheduler jobs to be enriched
+     */
     public static void enrichJobs(ContextInstance context, Map<String, SchedulerJob> schedulerJobMap) {
         _enrichJobs(context, context, schedulerJobMap);
     }
 
+    /**
+     * Enriches the jobs in the given context and child with additional information from the schedulerJobMap.
+     *
+     * @param context          the parent context instance
+     * @param child            the child context instance
+     * @param schedulerJobMap  a map of scheduler jobs, keyed by a unique identifier
+     */
     private static void enrichJobs(ContextInstance context, Context child, Map<String, SchedulerJob> schedulerJobMap) {
         _enrichJobs(context, child, schedulerJobMap);
     }
 
+    /**
+     * Enriches the scheduled jobs in the child context with additional information.
+     *
+     * @param context The parent context instance
+     * @param child The child context instance
+     * @param schedulerJobMap A map of job names to SchedulerJob instances
+     */
     private static void _enrichJobs(ContextInstance context, Context child, Map<String, SchedulerJob> schedulerJobMap) {
         if(child.getScheduledJobs() != null) {
             child.getScheduledJobs().forEach(job -> {
@@ -1157,12 +1479,27 @@ public class ContextHelper {
     }
 
 
+    /**
+     * Returns a list of contexts where the specified job resides.
+     *
+     * @param context the main context to search for the job
+     * @param jobName the name of the job to search for
+     * @return a list of contexts where the job resides
+     */
     private static List<String> getContextsWhereJobResides(Context context, String jobName) {
         List<String> results = new ArrayList<>();
         getContextsWhereJobResides(results, context, jobName);
         return results;
     }
 
+    /**
+     * This method is used to find the contexts where a specified job resides.
+     * It recursively searches through the given context and its child contexts to find the job.
+     *
+     * @param results  [IN/OUT] A list to store the names of the contexts where the job is found
+     * @param context  [IN] The context to search within
+     * @param jobName  [IN] The name of the job to be searched
+     */
     private static void getContextsWhereJobResides(List<String> results, Context context, String jobName) {
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
             context.getScheduledJobs().forEach(job -> {
@@ -1177,12 +1514,26 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Retrieves a list of contexts from the given context where the job name matches the provided filter.
+     *
+     * @param context the context object from where to start searching for job name matches
+     * @param jobNameFilter the filter to match against job names
+     * @return a list of unique contexts where the job name matches the filter
+     */
     public static List<String> getContextsWhereJobFilterMatchResides(Context context, String jobNameFilter) {
         List<String> results = new ArrayList<>();
         getContextsWhereJobFilterMatchResides(results, context, jobNameFilter);
         return results.stream().distinct().collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves the contexts where a job filter match resides.
+     *
+     * @param results         the list to store the matching context names
+     * @param context         the current context to search for job filter match
+     * @param jobNameFilter   the job name filter to match with job names or display names within the context
+     */
     private static void getContextsWhereJobFilterMatchResides(List<String> results, Context context, String jobNameFilter) {
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
             context.getScheduledJobs().forEach(job -> {
@@ -1205,6 +1556,12 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Retrieves all contexts within the given context and its child contexts recursively.
+     *
+     * @param context the starting context to retrieve all contexts from
+     * @return a Map containing all the contexts, where the key is the name of the context and the value is the context object itself
+     */
     public static Map<String, Context> getAllContexts(Context context) {
         Map<String, Context> contextMap = new HashMap<>();
         contextMap.put(context.getName(), context);
@@ -1219,6 +1576,12 @@ public class ContextHelper {
     }
 
 
+    /**
+     * Recursively retrieves all contexts from the given context and adds them to the context map.
+     *
+     * @param context The starting context.
+     * @param contextMap The map to store the retrieved contexts.
+     */
     private static void getAllContexts(Context context, Map<String, Context> contextMap) {
         contextMap.put(context.getName(), context);
 
@@ -1229,6 +1592,13 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Returns a map of all jobs in the given context and its child contexts.
+     *
+     * @param context The context instance to retrieve jobs from. It must not be null.
+     * @return A map of all jobs in the context and its child contexts. The key of the map is the concatenation
+     *         of the job key and child context name, and the value is the corresponding SchedulerJobInstance object.
+     */
     public static Map<String, SchedulerJobInstance> getAllJobs(ContextInstance context) {
         Map<String, SchedulerJobInstance> contextMap = new HashMap<>();
 
@@ -1250,6 +1620,12 @@ public class ContextHelper {
     }
 
 
+    /**
+     * Recursively retrieves all jobs from the given context and adds them to a map.
+     *
+     * @param context     the context instance to retrieve jobs from
+     * @param contextMap  the map to store the retrieved jobs
+     */
     private static void getAllJobs(ContextInstance context, Map<String, SchedulerJobInstance> contextMap) {
         if(context.getScheduledJobsMap() != null
             && !context.getScheduledJobsMap().isEmpty()) {
@@ -1266,6 +1642,12 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Retrieves all the SchedulerJob objects from the given ContextTemplate and its child ContextTemplates recursively.
+     *
+     * @param context The ContextTemplate from which to retrieve the SchedulerJob objects.
+     * @return A List of SchedulerJob objects found in the given ContextTemplate and its child ContextTemplates.
+     */
     public static List<SchedulerJob> getAllJobs(ContextTemplate context) {
         List<SchedulerJob> contextMap = new ArrayList<>();
 
@@ -1286,6 +1668,12 @@ public class ContextHelper {
     }
 
 
+    /**
+     * Retrieves all jobs from the provided context and its child contexts recursively
+     *
+     * @param context The context to retrieve jobs from
+     * @param contextMap The list to store the retrieved jobs
+     */
     private static void getAllJobs(ContextTemplate context, List<SchedulerJob> contextMap) {
         if(context.getScheduledJobsMap() != null
             && !context.getScheduledJobsMap().isEmpty()) {
@@ -1302,6 +1690,14 @@ public class ContextHelper {
     }
 
 
+    /**
+     * Retrieves the instance of a SchedulerJob for a given job name, child context name, and context instance.
+     *
+     * @param jobName The name of the job.
+     * @param childContextName The name of the child context.
+     * @param contextInstance The context instance.
+     * @return The SchedulerJobInstance if found, or null if no matching job instance is found.
+     */
     public static SchedulerJobInstance getSchedulerJobInstance(String jobName, String childContextName, ContextInstance contextInstance) {
         ContextInstance instance = ContextHelper.getChildContextInstance(childContextName, contextInstance);
         if (instance != null) {
@@ -1315,6 +1711,12 @@ public class ContextHelper {
         return null;
     }
 
+    /**
+     * Returns a list of all agents.
+     *
+     * @param context the context used to retrieve the agents
+     * @return a list of agents
+     */
     public static List<String> getAllAgents(Context context) {
         HashSet<String> agentSet = new HashSet<>();
 
@@ -1323,10 +1725,22 @@ public class ContextHelper {
         return new ArrayList<>(agentSet);
     }
 
+    /**
+     * This method is used to get all agents in the provided context and add them to the given HashSet.
+     *
+     * @param context The context in which the method is called.
+     * @param agentSet The HashSet to which the agents will be added.
+     */
     private static void getAllAgents(Context context, HashSet<String> agentSet) {
         populateAgentSet(context, agentSet);
     }
 
+    /**
+     * Populates the agentSet with unique agent names from the given context.
+     *
+     * @param context   The context object from which to retrieve agent names.
+     * @param agentSet  The set to populate with unique agent names.
+     */
     private static void populateAgentSet(Context context, HashSet<String> agentSet) {
         if(context.getScheduledJobs()!= null && !context.getScheduledJobs().isEmpty()) {
             context.getScheduledJobs().forEach(job -> {
@@ -1342,12 +1756,25 @@ public class ContextHelper {
             });
         }
     }
+    /**
+     * Retrieves all job dependency identifiers from the given context.
+     *
+     * @param context the context containing the job dependencies
+     * @return a list of unique job dependency identifiers
+     */
     public static List<String> getAllJobDependencyIdentifiers(Context context) {
         List<String> results = new ArrayList<>();
         _getAllJobDependencyIdentifiers(context, results);
         return results.stream().distinct().collect(Collectors.toList());
     }
 
+    /**
+     * Recursively retrieves all job dependency identifiers within the given context.
+     * This method populates the provided results list with the retrieved identifiers.
+     *
+     * @param context The context to search for job dependencies.
+     * @param results The list to store the retrieved job dependency identifiers.
+     */
     private static void  _getAllJobDependencyIdentifiers(Context context, List<String> results) {
         if(context.getJobDependencies() != null && !context.getJobDependencies().isEmpty()) {
             context.getJobDependencies().forEach(jobDependency -> {
@@ -1361,9 +1788,10 @@ public class ContextHelper {
         }
     }
     /**
-     * Replace tokens in job dependencies.
+     * Recursively retrieves all job identifiers in a job dependency tree.
      *
-     * @param jobDependency
+     * @param jobDependency the root job dependency
+     * @param results       the list of job identifiers to store the results
      */
     private static void getAllJobsInJobDependencies(JobDependency jobDependency, List<String> results) {
         results.add(jobDependency.getJobIdentifier());
@@ -1374,9 +1802,11 @@ public class ContextHelper {
     }
 
     /**
-     * Replace tokens in logical groupings.
+     * This method recursively collects all the job identifiers in the given logical grouping
+     * and its subgroups, and stores them in the provided results list.
      *
-     * @param logicalGrouping
+     * @param logicalGrouping the logical grouping to collect job identifiers from
+     * @param results         the list to store the collected job identifiers in
      */
     private static void getAllJobsInJobDependencies(LogicalGrouping logicalGrouping, List<String> results) {
         if(logicalGrouping.getAnd() != null) {
@@ -1411,18 +1841,38 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Sets the replacement for the agent name.
+     *
+     * @param agentNameReplacement the replacement string for the agent name
+     */
     public void setAgentNameReplacement(String agentNameReplacement) {
         AGENT_NAME_REPLACEMENT = agentNameReplacement;
     }
 
+    /**
+     * Sets the replacement for the context name.
+     *
+     * @param contextNameReplacement the replacement for the context name
+     */
     public void setContextNameReplacement(String contextNameReplacement) {
         CONTEXT_NAME_REPLACEMENT = contextNameReplacement;
     }
 
+    /**
+     * Sets the replacement value for environment variable names.
+     *
+     * @param envNameReplacement the replacement value for environment variable names
+     */
     public void setEnvNameReplacement(String envNameReplacement) {
         ENV_NAME_REPLACEMENT = envNameReplacement;
     }
 
+    /**
+     * Sets whether to use the underscore separated context name convention.
+     *
+     * @param useUnderscoreSeparatedContextNameConvention a boolean value indicating whether to use the convention
+     */
     public void setUseUnderscoreSeparatedContextNameConvention(boolean useUnderscoreSeparatedContextNameConvention) {
         USE_UNDERSCORE_SEPARATED_CONTEXT_NAME_CONVENTION = useUnderscoreSeparatedContextNameConvention;
     }

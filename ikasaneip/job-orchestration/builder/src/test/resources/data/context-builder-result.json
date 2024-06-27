@@ -1,5 +1,4 @@
 {
-  "contexts" : [ ],
   "scheduledJobs" : [ {
     "agentName" : "AgentName",
     "jobName" : "Job1",
@@ -57,7 +56,6 @@
     "identifier" : "AgentName-Job8",
     "jobDescription" : "Job8 Description"
   } ],
-  "jobLocks" : [ ],
   "name" : "Context Template Name",
   "description" : "Context Template Description",
   "jobDependencies" : [ {

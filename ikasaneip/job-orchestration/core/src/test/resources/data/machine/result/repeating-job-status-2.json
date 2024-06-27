@@ -4,7 +4,6 @@
   "contextInstanceStatuses" : [ {
     "contextName" : "SIMPLE_ME",
     "instanceStatus" : "COMPLETE",
-    "contextInstanceStatuses" : [ ],
     "schedulerJobInstanceStatuses" : [ {
       "jobName" : "BE_MHI_EMIR_PFO",
       "agentName" : "scheduler-agent",
@@ -14,6 +13,5 @@
       "agentName" : "scheduler-agent",
       "instanceStatus" : "COMPLETE"
     } ]
-  } ],
-  "schedulerJobInstanceStatuses" : [ ]
+  } ]
 }

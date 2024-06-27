@@ -7,7 +7,6 @@
     "contextInstanceStatuses" : [ {
       "contextName" : "Context3",
       "instanceStatus" : "COMPLETE",
-      "contextInstanceStatuses" : [ ],
       "schedulerJobInstanceStatuses" : [ {
         "jobName" : "jobName1",
         "agentName" : "agentName1",
@@ -36,7 +35,6 @@
     }, {
       "contextName" : "Context4",
       "instanceStatus" : "COMPLETE",
-      "contextInstanceStatuses" : [ ],
       "schedulerJobInstanceStatuses" : [ {
         "jobName" : "jobName7",
         "agentName" : "agentName7",
@@ -58,12 +56,10 @@
         "agentName" : "agentName11",
         "instanceStatus" : "COMPLETE"
       } ]
-    } ],
-    "schedulerJobInstanceStatuses" : [ ]
+    } ]
   }, {
     "contextName" : "Context5",
     "instanceStatus" : "RUNNING",
-    "contextInstanceStatuses" : [ ],
     "schedulerJobInstanceStatuses" : [ {
       "jobName" : "jobName12",
       "agentName" : "agentName12",
@@ -85,6 +81,5 @@
       "agentName" : "agentName16",
       "instanceStatus" : "ON_HOLD"
     } ]
-  } ],
-  "schedulerJobInstanceStatuses" : [ ]
+  } ]
 }

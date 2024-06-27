@@ -1,5 +1,4 @@
 {
-  "contexts": [],
   "scheduledJobs": [
     {
       "agentName": "[[agent.name]]",
@@ -49,8 +48,8 @@
             "startupControlType": "AUTOMATIC",
             "ordinal": -1,
             "lockCount": 1,
-            "jobDescription": "Job3 Description",
-            "identifier": "[[agent.name]]-jobName3"
+            "identifier": "[[agent.name]]-jobName3",
+            "jobDescription": "Job3 Description"
           }
         ],
         "context1": [
@@ -60,8 +59,8 @@
             "startupControlType": "AUTOMATIC",
             "ordinal": -1,
             "lockCount": 1,
-            "jobDescription": "Job2 Description",
-            "identifier": "[[agent.name]]-jobName2"
+            "identifier": "[[agent.name]]-jobName2",
+            "jobDescription": "Job2 Description"
           }
         ]
       },
@@ -78,8 +77,8 @@
             "startupControlType": "AUTOMATIC",
             "ordinal": -1,
             "lockCount": 1,
-            "jobDescription": "Job5 Description",
-            "identifier": "[[agent.name]]-jobName5"
+            "identifier": "[[agent.name]]-jobName5",
+            "jobDescription": "Job5 Description"
           }
         ],
         "context1": [
@@ -89,8 +88,8 @@
             "startupControlType": "AUTOMATIC",
             "ordinal": -1,
             "lockCount": 1,
-            "jobDescription": "Job5 Description",
-            "identifier": "[[agent.name]]-jobName4"
+            "identifier": "[[agent.name]]-jobName4",
+            "jobDescription": "Job5 Description"
           }
         ]
       },
@@ -159,7 +158,7 @@
   "treeViewExpandLevel": 1,
   "ableToRunConcurrently": true,
   "useDisplayName": false,
-  "disabled": false,
   "ordinal": -1,
+  "disabled": false,
   "quartzScheduleDrivenJobsDisabledForContext": false
 }
