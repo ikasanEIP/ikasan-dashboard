@@ -1,5 +1,4 @@
 {
-  "contexts": [],
   "scheduledJobs": [
     {
       "agentName": "GLOBAL_EVENT",
@@ -37,7 +36,6 @@
       "identifier": "scheduler-agent-demo-command-2"
     }
   ],
-  "jobLocks": [],
   "name": "CONTEXT-1892741766",
   "jobDependencies": [
     {
@@ -71,6 +69,7 @@
   "treeViewExpandLevel": 1,
   "ableToRunConcurrently": true,
   "useDisplayName": false,
+  "ordinal": -1,
   "disabled": false,
   "quartzScheduleDrivenJobsDisabledForContext": false
 }

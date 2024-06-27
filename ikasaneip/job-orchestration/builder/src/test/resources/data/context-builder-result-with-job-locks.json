@@ -1,51 +1,58 @@
 {
-  "contexts" : [ ],
   "scheduledJobs" : [ {
     "agentName" : "AgentName",
     "jobName" : "Job1",
     "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
     "identifier" : "AgentName-Job1",
     "jobDescription" : "Job1 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job2",
     "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
     "identifier" : "AgentName-Job2",
     "jobDescription" : "Job2 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job3",
     "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
     "identifier" : "AgentName-Job3",
     "jobDescription" : "Job3 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job4",
     "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
     "identifier" : "AgentName-Job4",
     "jobDescription" : "Job4 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job5",
     "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
     "identifier" : "AgentName-Job5",
     "jobDescription" : "Job5 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job6",
     "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
     "identifier" : "AgentName-Job6",
     "jobDescription" : "Job6 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job7",
     "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
     "identifier" : "AgentName-Job7",
     "jobDescription" : "Job7 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job8",
     "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
     "identifier" : "AgentName-Job8",
     "jobDescription" : "Job8 Description"
   } ],
@@ -57,6 +64,7 @@
         "agentName" : "AgentName",
         "jobName" : "Job2",
         "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
         "lockCount" : 1,
         "identifier" : "AgentName-Job2",
         "jobDescription" : "Job2 Description"
@@ -65,6 +73,7 @@
         "agentName" : "AgentName",
         "jobName" : "Job1",
         "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
         "lockCount" : 1,
         "identifier" : "AgentName-Job1",
         "jobDescription" : "Job1 Description"
@@ -79,6 +88,7 @@
         "agentName" : "AgentName",
         "jobName" : "Job4",
         "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
         "lockCount" : 1,
         "identifier" : "AgentName-Job4",
         "jobDescription" : "Job4 Description"
@@ -87,6 +97,7 @@
         "agentName" : "AgentName",
         "jobName" : "Job3",
         "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
         "lockCount" : 1,
         "identifier" : "AgentName-Job3",
         "jobDescription" : "Job3 Description"
@@ -153,6 +164,8 @@
   "contextTtlMilliseconds" : 100000,
   "treeViewExpandLevel" : 1,
   "ableToRunConcurrently" : true,
+  "useDisplayName" : false,
+  "ordinal" : -1,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

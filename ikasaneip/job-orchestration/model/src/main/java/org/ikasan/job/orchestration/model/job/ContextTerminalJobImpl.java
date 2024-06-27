@@ -5,7 +5,11 @@ import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 
 public class ContextTerminalJobImpl extends SchedulerJobImpl implements ContextTerminalJob {
-    private final String agentName = JobConstants.CONTEXT_TERMINAL_JOB;
+
+    public ContextTerminalJobImpl() {
+        super();
+        super.agentName = JobConstants.CONTEXT_TERMINAL_JOB;
+    }
 
     public final String getAgentName() {
         return agentName;

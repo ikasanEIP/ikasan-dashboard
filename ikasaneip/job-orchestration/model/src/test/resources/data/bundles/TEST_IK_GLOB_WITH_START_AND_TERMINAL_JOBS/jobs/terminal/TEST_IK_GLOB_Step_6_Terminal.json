@@ -1,0 +1,9 @@
+{
+  "agentName" : "CONTEXT_TERMINAL_JOB",
+  "jobName" : "TEST_IK_GLOB Step 6 Terminal",
+  "startupControlType" : "AUTOMATIC",
+  "skippedContexts" : { },
+  "heldContexts" : { },
+  "ordinal" : -1,
+  "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 6 Terminal"
+}

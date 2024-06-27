@@ -5,7 +5,10 @@ import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 
 public class ContextStartJobImpl extends SchedulerJobImpl implements ContextStartJob {
-    private final String agentName = JobConstants.CONTEXT_START_JOB;
+    public ContextStartJobImpl() {
+        super();
+        super.agentName = JobConstants.CONTEXT_START_JOB;
+    }
 
     public final String getAgentName() {
         return agentName;

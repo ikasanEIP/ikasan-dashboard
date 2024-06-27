@@ -1,0 +1,9 @@
+{
+  "agentName" : "CONTEXT_TERMINAL_JOB",
+  "jobName" : "TEST_IK_EVENT2 Step 1 Terminal",
+  "startupControlType" : "AUTOMATIC",
+  "skippedContexts" : { },
+  "heldContexts" : { },
+  "ordinal" : -1,
+  "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal"
+}
