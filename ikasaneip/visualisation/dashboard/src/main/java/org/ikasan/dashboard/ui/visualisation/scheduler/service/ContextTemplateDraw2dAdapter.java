@@ -52,7 +52,7 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
     }
 
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
-        , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+        , Map<String, SchedulerJob> internalEventDrivenJobMap) {
             try {
                 ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, internalEventDrivenJobMap);
 

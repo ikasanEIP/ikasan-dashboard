@@ -6,6 +6,7 @@ import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
@@ -129,6 +130,11 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
 
             // set job participates in lock flag on relevant jobs
             this.setJobsParticipateInJobLock(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
+
+            // Helper method to populate the contextNames collection on each of the scheduler jobs.
+            ContextHelper.populateChildContextNamesOnSchedulerJobs(contextBundle.getContextTemplate(),
+                contextBundle.getSchedulerJobs());
+
             // save the jobs
             this.saveJobs(contextBundle.getSchedulerJobs());
             // saveContext

@@ -191,7 +191,7 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
                 this.type = JobConstants.CONTEXT_START_JOB_INSTANCE;
             }
             else if(schedulerJobInstance instanceof ContextTerminalJobInstance) {
-                this.type = JobConstants.CONTEXT_START_JOB_INSTANCE;
+                this.type = JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE;
             }
 
             this.schedulerJobInstance = objectMapper.writeValueAsString(schedulerJobInstance);

@@ -1,6 +1,7 @@
 package org.ikasan.orchestration.service.utils;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
@@ -75,7 +76,8 @@ public class StubSchedulerJobInstanceServiceTestImpl implements SchedulerJobInst
     }
 
     @Override
-    public List<SchedulerJobInstance> initialiseSchedulerJobInstancesForContext(ContextInstance contextInstance, SchedulerJobInstancesInitialisationParameters parameters) throws SchedulerJobInstanceInitialisationException {
+    public List<SchedulerJobInstance> initialiseSchedulerJobInstancesForContext(ContextTemplate contextTemplate, ContextInstance contextInstance
+        , SchedulerJobInstancesInitialisationParameters parameters) throws SchedulerJobInstanceInitialisationException {
         return null;
     }
 

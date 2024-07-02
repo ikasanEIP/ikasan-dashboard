@@ -1,10 +1,12 @@
 package org.ikasan.job.orchestration.provision.context;
 
+import org.ikasan.job.orchestration.AbstractTest;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.job.*;
+import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
@@ -13,6 +15,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
@@ -27,7 +30,9 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -35,6 +40,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -43,7 +49,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ContextProvisionServiceImplTest {
+public class ContextProvisionServiceImplTest extends AbstractTest {
     @Mock
     private ScheduledContextService scheduledContextService;
     @Mock
@@ -658,6 +664,54 @@ public class ContextProvisionServiceImplTest {
 
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+
+        verifyNoMoreInteractions(
+            scheduledContextService, moduleMetadataService, schedulerJobService,
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+    }
+
+    @Test
+    public void confirm_child_context_names_populated_on_jobs() throws IOException {
+        ContextService contextService = new ContextService();
+        List<SchedulerJob> schedulerJobs = new ArrayList<>();
+        loadFileJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1793100514/jobs/file");
+        loadCommandJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1793100514/jobs/internal");
+        loadQuartzJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1793100514/jobs/quartz");
+
+        String contextJson = loadDataFile("/data/full-context/CONTEXT-1793100514/context/-1793100514.json");
+        ContextTemplate contextTemplate = contextService.getContextTemplate(contextJson);
+
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
+        when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
+
+        EmailNotificationContext emailNotificationContext = new SolrEmailNotificationContextImpl();
+
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, schedulerJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, emailNotificationContext);
+        service.provisionContext(contextBundle);
+
+        verify(schedulerJobService).deleteByContextName(anyString());
+        verify(contextProfileService).deleteByContextName(anyString());
+        verify(emailNotificationDetailsService).deleteByContextName(anyString());
+        verify(emailNotificationContextService).deleteByContextName(anyString());
+        verify(contextInstanceRegistrationService).deRegisterByName(anyString());
+        verify(schedulerJobService).save(schedulerJobs, "system");
+        verify(emailNotificationContextService).saveEmailNotificationContext(emailNotificationContext);
+
+        ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
+        verify(scheduledContextService).save(contextCaptor.capture());
+        ScheduledContextRecord actualContextRecord = contextCaptor.getValue();
+        assertNull(null, actualContextRecord.getId());
+        assertNotNull(actualContextRecord.getContext());
+        assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
+        verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+
+        // Assert that context names has been populated on all jobs!
+        contextBundle.getSchedulerJobs().forEach(schedulerJob -> Assert.assertFalse(schedulerJob.getChildContextNames().isEmpty()));
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,

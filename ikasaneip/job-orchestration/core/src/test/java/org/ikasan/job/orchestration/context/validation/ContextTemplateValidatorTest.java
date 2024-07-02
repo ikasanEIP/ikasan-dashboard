@@ -1,11 +1,21 @@
 package org.ikasan.job.orchestration.context.validation;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import liquibase.pro.packaged.C;
 import org.apache.commons.lang.SerializationUtils;
 import org.ikasan.job.orchestration.core.AbstractTest;
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -14,12 +24,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ContextTemplateValidatorTest extends AbstractTest {
 
     Logger logger = LoggerFactory.getLogger(ContextTemplateValidatorTest.class);
+
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     @Test
     public void test_simple_context_validation_success() throws IOException, InvalidContextTemplateException {
@@ -80,13 +96,13 @@ public class ContextTemplateValidatorTest extends AbstractTest {
         }
         catch (InvalidContextTemplateException e) {
             Assert.assertEquals(32, e.getContextErrors().size());
-            Assert.assertEquals("Job[jobName5] defined in the job plan template with identifier[agentName5-jobName5] " +
+            Assert.assertEquals("Job [jobName5] defined in the job plan template with identifier[agentName5-jobName5] " +
                 "does not have a job defined with the same identifier! This job resides within the following child contexts " +
-                "within the job plan[Context3]. Please check the job definition artefact and confirm that the identifier in " +
+                "within the job plan [Context3]. Please check the job definition artefact and confirm that the identifier in " +
                 "the artefact is correct.\n", e.getContextErrors().get(0).getErrorMessage());
-            Assert.assertEquals("Job[jobName1] defined in the job plan template with identifier[agentName1-jobName1] " +
+            Assert.assertEquals("Job [jobName1] defined in the job plan template with identifier[agentName1-jobName1] " +
                 "does not have a job defined with the same identifier! This job resides within the following child contexts " +
-                "within the job plan[Context3, Context4, Context5]. Please check the job definition artefact and " +
+                "within the job plan [Context3, Context4, Context5]. Please check the job definition artefact and " +
                 "confirm that the identifier in the artefact is correct.\n", e.getContextErrors().get(1).getErrorMessage());
 
             throw e;
@@ -149,6 +165,34 @@ public class ContextTemplateValidatorTest extends AbstractTest {
                 , e.getMessage());
             logger.info(e.getMessage());
             throw e;
+        }
+    }
+
+    @Test
+    public void test_context_validation_with_start_and_terminal_jobs_success() throws IOException {
+        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // modify the context descriptor to add GRP1 for the environment group
+        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
+            "context/TEST_IK_GLOB.json");
+
+        ContextService contextService = new ContextService();
+        ContextTemplate context = contextService.getContextTemplate(contextJson);
+
+        List<SchedulerJob> schedulerJobs = loadInternalEventDrivenJobs
+            ("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal",
+                "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal");
+
+        schedulerJobs.addAll(loadQuartzDrivenJobs("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/quartz",
+            "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/quartz"));
+
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+        try {
+            validator.validateJobs(context, schedulerJobs);
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.fail("Should not throw an exception!");
         }
     }
 
@@ -314,5 +358,47 @@ public class ContextTemplateValidatorTest extends AbstractTest {
         }
 
         return schedulerJobs;
+    }
+
+    /**
+     * Loads the internal event-driven jobs from the specified directory.
+     *
+     * @param directory The directory where the job files are located.
+     * @param jobsBase The base path for the job files.
+     * @return A list of internal event-driven jobs.
+     * @throws IOException If an I/O error occurs while loading the jobs.
+     */
+    public List<SchedulerJob> loadInternalEventDrivenJobs(String directory, String jobsBase) throws IOException {
+        return Files.list(Path.of(directory)).map(path -> {
+            InternalEventDrivenJobImpl internalEventDrivenJob;
+            try {
+                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
+                internalEventDrivenJob = objectMapper.readValue(jobJson, InternalEventDrivenJobImpl.class);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return internalEventDrivenJob;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Loads the quartz-driven jobs from the specified directory.
+     *
+     * @param directory The directory where the job files are located.
+     * @param jobsBase The base path for the job files.
+     * @return A list of quartz-driven jobs.
+     * @throws IOException If an I/O error occurs while loading the jobs.
+     */
+    public List<SchedulerJob> loadQuartzDrivenJobs(String directory, String jobsBase) throws IOException {
+        return Files.list(Path.of(directory)).map(path -> {
+            QuartzScheduleDrivenJob quartzScheduleDrivenJob;
+            try {
+                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
+                quartzScheduleDrivenJob = objectMapper.readValue(jobJson, QuartzScheduleDrivenJobImpl.class);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return quartzScheduleDrivenJob;
+        }).collect(Collectors.toList());
     }
 }

@@ -2,10 +2,7 @@ package org.ikasan.job.orchestration.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.ContextStartJobInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.ContextTerminalJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -28,7 +25,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 // todo extensive tests need to be written here
@@ -470,7 +466,7 @@ public class ContextHelperTest {
 
         ContextTemplate context = this.contextService.getContextTemplate(contextJson);
 
-        Map<String, ContextStartJob> contextStartJobMap = ContextHelper.getContextStartJobsFromContext(context);
+        Map<String, ContextStartJob> contextStartJobMap = ContextHelper.getContextStartJobsMapFromContext(context);
 
         Assert.assertNotNull(contextStartJobMap);
         Assert.assertEquals(12, contextStartJobMap.size());
@@ -501,13 +497,52 @@ public class ContextHelperTest {
     }
 
     @Test
+    public void test_get_context_start_job_instances_from_context() throws IOException {
+        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
+            "context/TEST_IK_GLOB.json");
+
+        ContextTemplate context = this.contextService.getContextTemplate(contextJson);
+        ContextInstance contextInstance = this.contextService.getContextInstance(contextJson);
+
+        Map<String, ContextStartJobInstance> contextStartJobMap
+            = ContextHelper.getContextStartJobInstancesMapFromContextForInstance(context, contextInstance);
+
+        Assert.assertNotNull(contextStartJobMap);
+        Assert.assertEquals(12, contextStartJobMap.size());
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_GLOB Step 6 Start-TEST_IK_GLOB Step 6"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_GLOB Step 6 Start-TEST_IK_GLOB Step 6"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 2 Start-TEST_IK_LOCK_1 Step 2"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 2 Start-TEST_IK_LOCK_1 Step 2"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_GLOB Step 3 Start-TEST_IK_GLOB Step 3"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_GLOB Step 3 Start-TEST_IK_GLOB Step 3"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_AM_2 Step 1 Start-TEST_IK_AM_2 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_AM_2 Step 1 Start-TEST_IK_AM_2 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_EVENT2 Step 1 Start-TEST_IK_EVENT2 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_EVENT2 Step 1 Start-TEST_IK_EVENT2 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_GLOB Step 7 Start-TEST_IK_GLOB Step 7"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_GLOB Step 7 Start-TEST_IK_GLOB Step 7"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_GLOB Step 5 Start-TEST_IK_GLOB Step 5"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_GLOB Step 5 Start-TEST_IK_GLOB Step 5"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_AM_1 Step 1 Start-TEST_IK_AM_1 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_AM_1 Step 1 Start-TEST_IK_AM_1 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_GLOB Step 8 Start-TEST_IK_GLOB Step 8"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_GLOB Step 8 Start-TEST_IK_GLOB Step 8"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 1 Start-TEST_IK_LOCK_1 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 1 Start-TEST_IK_LOCK_1 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_EVENT1 Step 1 Start-TEST_IK_EVENT1 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_EVENT1 Step 1 Start-TEST_IK_EVENT1 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_START_JOB-TEST_IK_EVENT2 Step 2 Start-TEST_IK_EVENT2 Step 2"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_START_JOB-TEST_IK_EVENT2 Step 2 Start-TEST_IK_EVENT2 Step 2"));
+    }
+
+    @Test
     public void test_get_context_terminal_jobs_from_context() throws IOException {
         String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
             "context/TEST_IK_GLOB.json");
 
         ContextTemplate context = this.contextService.getContextTemplate(contextJson);
 
-        Map<String, ContextTerminalJob> contextStartJobMap = ContextHelper.getContextTerminalJobsFromContext(context);
+        Map<String, ContextTerminalJob> contextStartJobMap = ContextHelper.getContextTerminalJobsMapFromContext(context);
 
         Assert.assertNotNull(contextStartJobMap);
         Assert.assertEquals(13, contextStartJobMap.size());
@@ -537,6 +572,69 @@ public class ContextHelperTest {
         Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal"));
         Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal"));
         Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal"));
+    }
+
+    @Test
+    public void test_get_context_terminal_job_instances_from_context() throws IOException {
+        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
+            "context/TEST_IK_GLOB.json");
+
+        ContextTemplate context = this.contextService.getContextTemplate(contextJson);
+        ContextInstance contextInstance = this.contextService.getContextInstance(contextJson);
+
+        Map<String, ContextTerminalJobInstance> contextStartJobMap 
+            = ContextHelper.getContextTerminalJobInstancesMapFromContextForInstance(context, contextInstance);
+
+        Assert.assertNotNull(contextStartJobMap);
+        Assert.assertEquals(26, contextStartJobMap.size());
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal-TEST_IK_EVENT1 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal-TEST_IK_EVENT1 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal-TEST_IK_LOCK_1 Step 2"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal-TEST_IK_LOCK_1 Step 2"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal-TEST_IK_LOCK_1 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal-TEST_IK_LOCK_1 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal-TEST_IK_EVENT2 Step 2"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal-TEST_IK_EVENT2 Step 2"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 5 Terminal-TEST_IK_GLOB Step 5"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 5 Terminal-TEST_IK_GLOB Step 5"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 5 Terminal-TEST_IK_GLOB Step 6"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 5 Terminal-TEST_IK_GLOB Step 6"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal-TEST_IK_EVENT2 Step 2"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal-TEST_IK_EVENT2 Step 2"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal-TEST_IK_EVENT2 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal-TEST_IK_EVENT2 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal-TEST_IK_GLOB Step 3"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal-TEST_IK_GLOB Step 3"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT1 Step 1 Terminal-TEST_IK_EVENT1 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT1 Step 1 Terminal-TEST_IK_EVENT1 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal-TEST_IK_GLOB Step 3"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal-TEST_IK_GLOB Step 3"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 7 Terminal-TEST_IK_GLOB Step 7"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 7 Terminal-TEST_IK_GLOB Step 7"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 7 Terminal-TEST_IK_GLOB Step 8"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 7 Terminal-TEST_IK_GLOB Step 8"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_AM_1 Step 1 Terminal-TEST_IK_AM_2 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_AM_1 Step 1 Terminal-TEST_IK_AM_2 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_AM_1 Step 1 Terminal-TEST_IK_AM_1 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_AM_1 Step 1 Terminal-TEST_IK_AM_1 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 8 Terminal-TEST_IK_GLOB Step 8"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 8 Terminal-TEST_IK_GLOB Step 8"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 3 Terminal-TEST_IK_GLOB Step 3"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 3 Terminal-TEST_IK_GLOB Step 3"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal-TEST_IK_LOCK_1 Step 2"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal-TEST_IK_LOCK_1 Step 2"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal-TEST_IK_AM_2 Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal-TEST_IK_AM_2 Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 1 Terminal-TEST_IK_GLOB Step 1"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 1 Terminal-TEST_IK_GLOB Step 1"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal-TEST_IK_GLOB Step 5"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal-TEST_IK_GLOB Step 5"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 6 Terminal-TEST_IK_GLOB Step 7"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 6 Terminal-TEST_IK_GLOB Step 7"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 6 Terminal-TEST_IK_GLOB Step 6"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 6 Terminal-TEST_IK_GLOB Step 6"));
+        Assert.assertTrue(contextStartJobMap.containsKey("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT1 Step 1 Terminal-TEST_IK_GLOB Step 5"));
+        Assert.assertNotNull(contextStartJobMap.get("CONTEXT_TERMINAL_JOB-TEST_IK_EVENT1 Step 1 Terminal-TEST_IK_GLOB Step 5"));
     }
 
     @Test

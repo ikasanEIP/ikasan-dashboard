@@ -1,13 +1,14 @@
 package org.ikasan.scheduled.instance.model;
 
-import org.ikasan.spec.scheduled.instance.model.ContextStartJobInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextTerminalJobInstance;
-import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 
 public class SolrContextTerminalJobInstanceImpl extends SolrSchedulerJobInstanceImpl implements ContextTerminalJobInstance {
 
-    private final String agentName = JobConstants.CONTEXT_TERMINAL_JOB;
+    public SolrContextTerminalJobInstanceImpl() {
+        super();
+        super.agentName = JobConstants.CONTEXT_TERMINAL_JOB;
+    }
 
     public final String getAgentName() {
         return agentName;

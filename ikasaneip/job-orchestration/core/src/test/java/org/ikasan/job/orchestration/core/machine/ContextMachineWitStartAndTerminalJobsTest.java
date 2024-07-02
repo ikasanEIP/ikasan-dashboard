@@ -720,102 +720,102 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 8", InstanceStatus.COMPLETE);
     }
 
-    public Map<String, ContextTerminalJobInstance> loadContextTerminalJobInstanceMap(ContextInstance contextInstance, String directory, String jobsBase) throws IOException {
-        List<ContextTerminalJobInstance> files = Files.list(Path.of(directory)).map(path -> {
-            ContextTerminalJobInstance contextTerminalJobInstance = null;
-            try {
-                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
-                contextTerminalJobInstance = objectMapper.readValue(jobJson, ContextTerminalJobInstanceImpl.class);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return contextTerminalJobInstance;
-        }).collect(Collectors.toList());
-
-        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap =  files.stream()
-            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
-
-        List<ContextTerminalJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
-
-        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
-            ContextTerminalJobInstance instance = contextTerminalJobInstanceMap.get(schedulerJobInstance.getIdentifier());
-
-            if(instance != null) {
-                ContextTerminalJobInstance contextualisedInstance = (ContextTerminalJobInstance) SerializationUtils.clone(instance);
-                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
-                contextualisedInstance.setContextInstanceId(contextInstance.getId());
-
-                contextualisedSchedulerJobInstances.add(contextualisedInstance);
-            }
-        });
-
-        return contextualisedSchedulerJobInstances.stream()
-            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
-    }
-
-    public Map<String, ContextStartJobInstance> loadContextStartJobInstanceMap(ContextInstance contextInstance, String directory, String jobsBase) throws IOException {
-        List<ContextStartJobInstance> files = Files.list(Path.of(directory)).map(path -> {
-            ContextStartJobInstance contextStartJobInstance = null;
-            try {
-                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
-                contextStartJobInstance = objectMapper.readValue(jobJson, ContextStartJobInstanceImpl.class);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return contextStartJobInstance;
-        }).collect(Collectors.toList());
-
-        Map<String, ContextStartJobInstance> contextStartJobInstanceMap =  files.stream()
-            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
-
-        List<ContextStartJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
-
-        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
-            ContextStartJobInstance instance = contextStartJobInstanceMap.get(schedulerJobInstance.getIdentifier());
-
-            if(instance != null) {
-                ContextStartJobInstance contextualisedInstance = (ContextStartJobInstance) SerializationUtils.clone(instance);
-                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
-                contextualisedInstance.setContextInstanceId(contextInstance.getId());
-
-                contextualisedSchedulerJobInstances.add(contextualisedInstance);
-            }
-        });
-
-        return contextualisedSchedulerJobInstances.stream()
-            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
-    }
-
-    public Map<String, InternalEventDrivenJobInstance> loadInternalEventDrivenJobInstanceMap(ContextInstance contextInstance, String directory, String jobsBase) throws IOException {
-        List<InternalEventDrivenJobInstance> files = Files.list(Path.of(directory)).map(path -> {
-            InternalEventDrivenJobInstance internalEventDrivenJob = null;
-            try {
-                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
-                internalEventDrivenJob = objectMapper.readValue(jobJson, InternalEventDrivenJobInstanceImpl.class);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return internalEventDrivenJob;
-        }).collect(Collectors.toList());
-
-        Map<String, InternalEventDrivenJobInstance> schedulerJobInstanceMap =  files.stream()
-            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
-
-        List<InternalEventDrivenJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
-
-        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
-            InternalEventDrivenJobInstance instance = schedulerJobInstanceMap.get(schedulerJobInstance.getIdentifier());
-
-            if(instance != null) {
-                InternalEventDrivenJobInstance contextualisedInstance = (InternalEventDrivenJobInstance) SerializationUtils.clone(instance);
-                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
-                contextualisedInstance.setContextInstanceId(contextInstance.getId());
-
-                contextualisedSchedulerJobInstances.add(contextualisedInstance);
-            }
-        });
-
-        return contextualisedSchedulerJobInstances.stream()
-            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
-    }
+//    public Map<String, ContextTerminalJobInstance> loadContextTerminalJobInstanceMap(ContextInstance contextInstance, String directory, String jobsBase) throws IOException {
+//        List<ContextTerminalJobInstance> files = Files.list(Path.of(directory)).map(path -> {
+//            ContextTerminalJobInstance contextTerminalJobInstance = null;
+//            try {
+//                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
+//                contextTerminalJobInstance = objectMapper.readValue(jobJson, ContextTerminalJobInstanceImpl.class);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//            return contextTerminalJobInstance;
+//        }).collect(Collectors.toList());
+//
+//        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap =  files.stream()
+//            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+//
+//        List<ContextTerminalJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
+//
+//        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
+//            ContextTerminalJobInstance instance = contextTerminalJobInstanceMap.get(schedulerJobInstance.getIdentifier());
+//
+//            if(instance != null) {
+//                ContextTerminalJobInstance contextualisedInstance = (ContextTerminalJobInstance) SerializationUtils.clone(instance);
+//                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
+//                contextualisedInstance.setContextInstanceId(contextInstance.getId());
+//
+//                contextualisedSchedulerJobInstances.add(contextualisedInstance);
+//            }
+//        });
+//
+//        return contextualisedSchedulerJobInstances.stream()
+//            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+//    }
+//
+//    public Map<String, ContextStartJobInstance> loadContextStartJobInstanceMap(ContextInstance contextInstance, String directory, String jobsBase) throws IOException {
+//        List<ContextStartJobInstance> files = Files.list(Path.of(directory)).map(path -> {
+//            ContextStartJobInstance contextStartJobInstance = null;
+//            try {
+//                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
+//                contextStartJobInstance = objectMapper.readValue(jobJson, ContextStartJobInstanceImpl.class);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//            return contextStartJobInstance;
+//        }).collect(Collectors.toList());
+//
+//        Map<String, ContextStartJobInstance> contextStartJobInstanceMap =  files.stream()
+//            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+//
+//        List<ContextStartJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
+//
+//        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
+//            ContextStartJobInstance instance = contextStartJobInstanceMap.get(schedulerJobInstance.getIdentifier());
+//
+//            if(instance != null) {
+//                ContextStartJobInstance contextualisedInstance = (ContextStartJobInstance) SerializationUtils.clone(instance);
+//                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
+//                contextualisedInstance.setContextInstanceId(contextInstance.getId());
+//
+//                contextualisedSchedulerJobInstances.add(contextualisedInstance);
+//            }
+//        });
+//
+//        return contextualisedSchedulerJobInstances.stream()
+//            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+//    }
+//
+//    public Map<String, InternalEventDrivenJobInstance> loadInternalEventDrivenJobInstanceMap(ContextInstance contextInstance, String directory, String jobsBase) throws IOException {
+//        List<InternalEventDrivenJobInstance> files = Files.list(Path.of(directory)).map(path -> {
+//            InternalEventDrivenJobInstance internalEventDrivenJob = null;
+//            try {
+//                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
+//                internalEventDrivenJob = objectMapper.readValue(jobJson, InternalEventDrivenJobInstanceImpl.class);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//            return internalEventDrivenJob;
+//        }).collect(Collectors.toList());
+//
+//        Map<String, InternalEventDrivenJobInstance> schedulerJobInstanceMap =  files.stream()
+//            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+//
+//        List<InternalEventDrivenJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
+//
+//        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
+//            InternalEventDrivenJobInstance instance = schedulerJobInstanceMap.get(schedulerJobInstance.getIdentifier());
+//
+//            if(instance != null) {
+//                InternalEventDrivenJobInstance contextualisedInstance = (InternalEventDrivenJobInstance) SerializationUtils.clone(instance);
+//                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
+//                contextualisedInstance.setContextInstanceId(contextInstance.getId());
+//
+//                contextualisedSchedulerJobInstances.add(contextualisedInstance);
+//            }
+//        });
+//
+//        return contextualisedSchedulerJobInstances.stream()
+//            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+//    }
 }
