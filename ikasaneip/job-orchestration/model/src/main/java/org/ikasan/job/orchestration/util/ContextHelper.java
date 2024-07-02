@@ -1,7 +1,10 @@
 package org.ikasan.job.orchestration.util;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.ContextStartJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.ContextTerminalJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.ContextStartJobImpl;
 import org.ikasan.job.orchestration.model.job.ContextTerminalJobImpl;
 import org.ikasan.job.orchestration.model.status.ContextJobInstanceDetailsStatusImpl;
@@ -14,6 +17,10 @@ import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -221,13 +228,12 @@ public class ContextHelper {
     }
 
     /**
-     * Retrieves a map of {@link ContextStartJob} objects from the given {@link ContextTemplate} object.
+     * Retrieves a list of ContextStartJob objects from the given ContextTemplate object.
      *
-     * @param context The context template object from which to retrieve the context start jobs.
-     * @return A map of {@link ContextStartJob} objects, where the keys are the identifier of the jobs
-     * and the values are the objects themselves.
+     * @param context The ContextTemplate object to retrieve the ContextStartJobs from.
+     * @return A list of ContextStartJob objects.
      */
-    public static Map<String, ContextStartJob> getContextStartJobsFromContext(ContextTemplate context) {
+    public static List<ContextStartJob> getContextStartJobsFromContext(ContextTemplate context) {
         return context.getAllSchedulerJobs().stream()
             .distinct()
             .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB))
@@ -241,17 +247,28 @@ public class ContextHelper {
 
                 return contextStartJob;
             })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves a map of {@link ContextStartJob} objects from the given {@link ContextTemplate} object.
+     *
+     * @param context The context template object from which to retrieve the context start jobs.
+     * @return A map of {@link ContextStartJob} objects, where the keys are the identifier of the jobs
+     * and the values are the objects themselves.
+     */
+    public static Map<String, ContextStartJob> getContextStartJobsMapFromContext(ContextTemplate context) {
+        return getContextStartJobsFromContext(context).stream()
             .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
     }
 
     /**
-     * Retrieves a map of context terminal jobs from the given ContextTemplate.
+     * Retrieves all context terminal jobs from the given context template.
      *
-     * @param context The ContextTemplate from which to retrieve the context terminal jobs.
-     * @return A map of context terminal jobs, where the keys are identifiers and the values
-     * are ContextTerminalJob objects.
+     * @param context The context template from which to retrieve context terminal jobs.
+     * @return A list of context terminal jobs extracted from the context template.
      */
-    public static Map<String, ContextTerminalJob> getContextTerminalJobsFromContext(ContextTemplate context) {
+    public static List<ContextTerminalJob> getContextTerminalJobsFromContext(ContextTemplate context) {
         return context.getAllSchedulerJobs().stream()
             .distinct()
             .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
@@ -265,7 +282,123 @@ public class ContextHelper {
 
                 return contextTerminalJob;
             })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves a map of context terminal jobs from the given ContextTemplate.
+     *
+     * @param context The ContextTemplate from which to retrieve the context terminal jobs.
+     * @return A map of context terminal jobs, where the keys are identifiers and the values
+     * are ContextTerminalJob objects.
+     */
+    public static Map<String, ContextTerminalJob> getContextTerminalJobsMapFromContext(ContextTemplate context) {
+        return getContextTerminalJobsFromContext(context).stream()
             .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+    }
+
+    /**
+     * Retrieves a list of ContextStartJobInstances from a given ContextTemplate and ContextInstance.
+     *
+     * @param contextTemplate The ContextTemplate from which the ContextStartJobInstances are retrieved.
+     * @param contextInstance The ContextInstance for which the ContextStartJobInstances are retrieved.
+     * @return List of ContextStartJobInstances that are associated with the given ContextTemplate and ContextInstance.
+     */
+    public static List<ContextStartJobInstance> getContextStartJobInstancesFromContextForInstance(ContextTemplate contextTemplate
+        , ContextInstance contextInstance) {
+        List<ContextStartJob> contextStartJobs = getContextStartJobsFromContext(contextTemplate);
+
+        Map<String, ContextStartJobInstance> stringContextStartJobInstanceMap =  contextStartJobs.stream()
+            .map(contextTerminalJob -> {
+                ContextStartJobInstance contextStartJobInstance = new ContextStartJobInstanceImpl();
+                contextStartJobInstance.setContextName(contextTerminalJob.getContextName());
+                contextStartJobInstance.setJobName(contextTerminalJob.getJobName());
+
+                return contextStartJobInstance;
+            })
+            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+
+        List<ContextStartJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
+
+        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
+            ContextStartJobInstance instance = stringContextStartJobInstanceMap.get(schedulerJobInstance.getIdentifier());
+
+            if(instance != null) {
+                ContextStartJobInstance contextualisedInstance = SerializationUtils.clone(instance);
+                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
+                contextualisedInstance.setContextInstanceId(contextInstance.getId());
+
+                contextualisedSchedulerJobInstances.add(contextualisedInstance);
+            }
+        });
+
+        return contextualisedSchedulerJobInstances;
+    }
+
+
+    /**
+     * Retrieves a map of context start job instances from the given context template and context instance.
+     *
+     * @param contextTemplate The context template to retrieve the job instances from.
+     * @param contextInstance The context instance to retrieve the job instances for.
+     * @return A map of context start job instances, where the key is a combination of the job's identifier and child context name, and the value is the job instance itself.
+     */
+    public static Map<String, ContextStartJobInstance> getContextStartJobInstancesMapFromContextForInstance(ContextTemplate contextTemplate
+        , ContextInstance contextInstance) {
+        return getContextStartJobInstancesFromContextForInstance(contextTemplate, contextInstance).stream()
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+    }
+
+    /**
+     * Retrieves a list of ContextTerminalJobInstances from a ContextTemplate and ContextInstance.
+     *
+     * @param contextTemplate The ContextTemplate containing the ContextTerminalJobs.
+     * @param contextInstance The ContextInstance to retrieve SchedulerJobInstances from.
+     * @return A list of ContextTerminalJobInstances that are associated with the given ContextTemplate and ContextInstance.
+     */
+    public static List<ContextTerminalJobInstance> getContextTerminalJobInstancesFromContextForInstance(ContextTemplate contextTemplate
+        , ContextInstance contextInstance) {
+        List<ContextTerminalJob> contextTerminalJobs = getContextTerminalJobsFromContext(contextTemplate);
+
+        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap =  contextTerminalJobs.stream()
+            .map(contextTerminalJob -> {
+                ContextTerminalJobInstance contextTerminalJobInstance = new ContextTerminalJobInstanceImpl();
+                contextTerminalJobInstance.setContextName(contextTerminalJob.getContextName());
+                contextTerminalJobInstance.setJobName(contextTerminalJob.getJobName());
+
+                return contextTerminalJobInstance;
+            })
+            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+
+        List<ContextTerminalJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
+
+        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
+            ContextTerminalJobInstance instance = contextTerminalJobInstanceMap.get(schedulerJobInstance.getIdentifier());
+
+            if(instance != null) {
+                ContextTerminalJobInstance contextualisedInstance = SerializationUtils.clone(instance);
+                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
+                contextualisedInstance.setContextInstanceId(contextInstance.getId());
+
+                contextualisedSchedulerJobInstances.add(contextualisedInstance);
+            }
+        });
+
+        return contextualisedSchedulerJobInstances;
+    }
+
+    /**
+     * Retrieves the map of ContextTerminalJobInstances from the given ContextTemplate and ContextInstance.
+     *
+     * @param contextTemplate The context template to retrieve the instances from.
+     * @param contextInstance The specific instance to retrieve the job instances for.
+     * @return A map of ContextTerminalJobInstances where the key is a combination of identifier and child context name,
+     * and the value is the corresponding ContextTerminalJobInstance.
+     */
+    public static Map<String, ContextTerminalJobInstance> getContextTerminalJobInstancesMapFromContextForInstance(ContextTemplate contextTemplate
+        , ContextInstance contextInstance) {
+        return getContextTerminalJobInstancesFromContextForInstance(contextTemplate, contextInstance).stream()
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
     }
 
     /**
@@ -344,7 +477,7 @@ public class ContextHelper {
      * @return
      */
     public static List<ContextTransition> determineIfJobsTransitionToOtherContexts(Context parentContext, Map<String, SchedulerJob> schedulerJobs
-        , Context child, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+        , Context child, Map<String, SchedulerJob> internalEventDrivenJobMap) {
         List<ContextTransition> contextTransitions = new ArrayList<>();
 
         // Get any jobs that represent the last jobs in the context that could potentially transition
@@ -372,7 +505,9 @@ public class ContextHelper {
                         // We do not add jobs that target their residing context only as these jobs
                         // by their nature cannot transition ot another context.
                         if(internalEventDrivenJobMap.containsKey(precedingJob.getIdentifier())
-                            && !internalEventDrivenJobMap.get(precedingJob.getIdentifier()).isTargetResidingContextOnly()) {
+                            && ((internalEventDrivenJobMap.get(precedingJob.getIdentifier()) instanceof  InternalEventDrivenJob
+                                && !((InternalEventDrivenJob) internalEventDrivenJobMap.get(precedingJob.getIdentifier())).isTargetResidingContextOnly())
+                            || !(internalEventDrivenJobMap.get(precedingJob.getIdentifier()) instanceof  InternalEventDrivenJob))) {
                             ContextTransition contextTransition = new ContextTransition();
                             contextTransition.setProceedingJob(precedingJob);
                             contextTransition.setSubsequentJob(job);
@@ -509,11 +644,11 @@ public class ContextHelper {
         , AggregateContextInstanceStatus aggregateContextInstanceStatus, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
         if(contextInstance.getScheduledJobs() != null) {
             contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> {
-                if(!ContextHelper.determineIfJobsTransitionFromOtherContexts(parent,
-                    schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
-                    , internalEventDrivenJobMap).isEmpty()) {
-                    return;
-                }
+//                if(!ContextHelper.determineIfJobsTransitionFromOtherContexts(parent,
+//                    schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
+//                    , internalEventDrivenJobMap).isEmpty()) {
+//                    return;
+//                }
                 if(schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
                     aggregateContextInstanceStatus.setDisabledJobs();
                 }
@@ -796,7 +931,7 @@ public class ContextHelper {
      * @return a list of context transitions where jobs transition from other contexts
      */
     public static List<ContextTransition> determineIfJobsTransitionFromOtherContexts(Context context
-        , String jobName, String childContextName, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+        , String jobName, String childContextName, Map<String, SchedulerJob> internalEventDrivenJobMap) {
         Map<String, SchedulerJob> jobs = new HashMap<>();
         internalEventDrivenJobMap.entrySet().forEach(entry -> {
             jobs.put(entry.getKey(), entry.getValue());

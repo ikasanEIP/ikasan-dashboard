@@ -9,6 +9,8 @@ public class UserData {
     public static final String QUARTZ_EVENT_DRIVEN_JOB = "QUARTZ_EVENT_DRIVEN_JOB";
     public static final String FILE_EVENT_DRIVEN_JOB = "FILE_EVENT_DRIVEN_JOB";
     public static final String GLOBAL_EVENT_DRIVEN_JOB = "GLOBAL_EVENT_DRIVEN_JOB";
+    public static final String CONTEXT_START_JOB = "CONTEXT_START_JOB";
+    public static final String CONTEXT_TERMINAL_JOB = "CONTEXT_TERMINAL_JOB";
     public static final String CONTEXT = "CONTEXT";
     public static final String REPEATABLE = "REPEATABLE";
 

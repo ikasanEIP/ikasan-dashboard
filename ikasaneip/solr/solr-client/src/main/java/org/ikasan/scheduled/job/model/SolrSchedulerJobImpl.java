@@ -154,7 +154,7 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SchedulerJobImpl that = (SchedulerJobImpl) o;
+        SchedulerJob that = (SchedulerJob) o;
         return Objects.equals(getIdentifier(), that.getIdentifier());
     }
 

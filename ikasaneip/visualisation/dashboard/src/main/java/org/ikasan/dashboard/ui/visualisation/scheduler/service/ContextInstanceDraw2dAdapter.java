@@ -15,6 +15,7 @@ import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.jgrapht.ext.JGraphXAdapter;
@@ -55,7 +56,7 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
     }
 
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
-        , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+        , Map<String, SchedulerJob> internalEventDrivenJobMap) {
 
             ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, internalEventDrivenJobMap);
             this.addStatusRectangles(items, context, parentContext);
@@ -83,21 +84,25 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
             if (item instanceof Image) {
 
                 if(context.getScheduledJobsMap().get(((PositionedItem) item).getId()) instanceof SchedulerJobInstance) {
-                    RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
-                        .withId(((PositionedItem) item).getId() + "_status")
-                        .withWidth(100)
-                        .withHeight(100)
-                        .withStroke(0)
-                        .withRadius(20)
-                        .withX(((PositionedItem) item).getX())
-                        .withY(((PositionedItem) item).getY());
+                    SchedulerJobInstance instance = (SchedulerJobInstance)context.getScheduledJobsMap()
+                        .get(((PositionedItem) item).getId());
 
-                    rb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
-                        .get(((PositionedItem) item).getId())).getStatus()));
-                    rb.withColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
-                        .get(((PositionedItem) item).getId())).getStatus()));
+                    if(!instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB) &&
+                        !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                        RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
+                            .withId(((PositionedItem) item).getId() + "_status")
+                            .withWidth(100)
+                            .withHeight(100)
+                            .withStroke(0)
+                            .withRadius(20)
+                            .withX(((PositionedItem) item).getX())
+                            .withY(((PositionedItem) item).getY());
 
-                    statusRectangles.add(rb.build());
+                        rb.withBgColor(StatusColours.getInstanceStatusColour(instance.getStatus()));
+                        rb.withColor(StatusColours.getInstanceStatusColour(instance.getStatus()));
+
+                        statusRectangles.add(rb.build());
+                    }
                 }
                 else if(((Image) item).getUserData().getItemType().equals(UserData.CONTEXT)){
                     RectangleBuilder rb = diagramBuilder.getRectangleBuilder()

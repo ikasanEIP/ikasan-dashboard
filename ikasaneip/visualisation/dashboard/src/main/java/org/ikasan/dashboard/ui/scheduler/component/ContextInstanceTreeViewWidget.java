@@ -314,8 +314,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         , schedulerJobInstance.getJobName(), schedulerJobInstance.getContextName(), schedulerJobInstance.getChildContextName());
                 }
 
-                if (ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance, schedulerJobInstance.getJobName()
-                    , schedulerJobInstance.getChildContextName(), internalEventDrivenJobInstanceMap).size() > 0) {
+                if (ContextHelper.determineIfJobsTransitionFromOtherContexts(contextInstance, schedulerJobInstance.getJobName()
+                    , schedulerJobInstance.getChildContextName(), schedulerJobMap).size() > 0) {
                     horizontalLayout.add(VaadinIcon.ARROW_RIGHT.create());
                 }
 
@@ -1918,6 +1918,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         if (((ContextInstance)item).getScheduledJobs() != null
                             && !((ContextInstance)item).getScheduledJobs().isEmpty()) {
                             children.addAll(((ContextInstance)item).getScheduledJobs().stream()
+                                .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                                    && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
                                 .map(instance -> (Object) instance)
                                 .collect(Collectors.toList()));
                         }
@@ -1928,6 +1930,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                 schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
                                 , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
                             .stream()
+                            .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                                && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
                             .map(instance -> (Object) new PrecedingItem(instance))
                             .collect(Collectors.toList()));
                     }
@@ -1982,6 +1986,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             if (((ContextInstance)node).getScheduledJobs() != null
                 && !((ContextInstance)node).getScheduledJobs().isEmpty()) {
                 children.addAll(((ContextInstance)node).getScheduledJobs().stream()
+                    .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                        && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
                     .filter(instance -> filter != null && filter.isPresent()
                         ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
                             instance.getChildContextName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
@@ -1998,14 +2004,16 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
                     schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
                     , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
-                .stream()
-                .filter(instance -> filter != null && filter.isPresent()
-                    ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
-                    (instance.getDisplayName() != null && !instance.getDisplayName().isEmpty() &&
-                        instance.getDisplayName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
-                    : true)
-                .map(instance -> (Object) new PrecedingItem(instance))
-                .collect(Collectors.toList()));
+                    .stream()
+                    .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                        && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+                    .filter(instance -> filter != null && filter.isPresent()
+                        ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
+                        (instance.getDisplayName() != null && !instance.getDisplayName().isEmpty() &&
+                            instance.getDisplayName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
+                        : true)
+                    .map(instance -> (Object) new PrecedingItem(instance))
+                    .collect(Collectors.toList()));
         }
 
         children = children.stream().distinct().collect(Collectors.toList());
