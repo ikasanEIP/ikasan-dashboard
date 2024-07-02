@@ -2,7 +2,7 @@
   "agentName" : "scheduler-agent",
   "jobName" : "ACM_941942251_ScheduledJob_16:45:00",
   "contextId" : "CONTEXT-1447508514",
-  "childContextIds" : [ "CONTEXT-941942251" ],
+
   "startupControlType" : "AUTOMATIC",
   "cronExpression" : "0 45 16 ? * MON,TUE,WED,THU,FRI *",
   "ignoreMisfire" : true,

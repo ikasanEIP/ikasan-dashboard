@@ -111,7 +111,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
                     jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
                 this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextInstance, this.contextInstance, schedulerJobs
-                    , this.getCommandExecutionJobsForContextInstance(this.parentContextInstance.getId())));
+                    , this.getSchedulerJobsForContextInstance(this.parentContextInstance.getId())));
             }
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
@@ -140,7 +140,17 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
         this.schedulerJobInstanceService
             .getCommandExecutionJobsForContextInstance(contextInstanceId)
             .entrySet()
-            .forEach(entry -> result.put(entry.getKey(), (InternalEventDrivenJob) entry.getValue()));
+            .forEach(entry -> result.put(entry.getKey(), entry.getValue()));
+
+        return result;
+    }
+
+    private Map<String, SchedulerJob> getSchedulerJobsForContextInstance(String contextInstanceId) {
+        Map<String, SchedulerJob> result = new HashMap<>();
+        this.schedulerJobInstanceService
+            .getSchedulerJobInstancesByContextInstanceId(contextInstanceId, -1, -1, null, null)
+            .getResultList()
+            .forEach(entry -> result.put(entry.getSchedulerJobInstance().getIdentifier(), entry.getSchedulerJobInstance()));
 
         return result;
     }

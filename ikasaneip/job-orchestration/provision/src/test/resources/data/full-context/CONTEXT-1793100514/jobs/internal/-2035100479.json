@@ -2,7 +2,7 @@
   "agentName" : "scheduler-agent",
   "jobName" : "-2035100479",
   "contextId" : "-1793100514",
-  "childContextIds" : [ "CONTEXT--1457233531", "CONTEXT-427047261" ],
+
   "startupControlType" : "AUTOMATIC",
   "successfulReturnCodes" : [ "0" ],
   "workingDirectory" : "",

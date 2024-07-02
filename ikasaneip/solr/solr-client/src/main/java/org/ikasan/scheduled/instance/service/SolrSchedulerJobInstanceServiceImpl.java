@@ -3,7 +3,10 @@ package org.ikasan.scheduled.instance.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ikasan.job.orchestration.model.instance.ContextStartJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.ContextTerminalJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.model.job.ContextStartJobImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditAggregateDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
@@ -14,6 +17,7 @@ import org.ikasan.scheduled.job.model.SolrGlobalEventJobImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -152,7 +156,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
     }
 
     @Override
-    public List<SchedulerJobInstance> initialiseSchedulerJobInstancesForContext(ContextInstance contextInstance
+    public List<SchedulerJobInstance> initialiseSchedulerJobInstancesForContext(ContextTemplate contextTemplate, ContextInstance contextInstance
         , SchedulerJobInstancesInitialisationParameters schedulerJobInstancesInitialisationParameters) throws SchedulerJobInstanceInitialisationException {
         try {
             SearchResults<? extends SchedulerJobRecord> schedulerJobRecordSearchResults = this.solrSchedulerJobDao.findByContext(contextInstance.getName()
@@ -224,15 +228,29 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                     }
                     schedulerJobInstances.add(globalEventJobInstance);
                 }
-                else if(schedulerJobRecord.getJob() instanceof ContextStartJob) {
-                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
-                        , SolrContextStartJobInstanceImpl.class));
-                }
-                else if(schedulerJobRecord.getJob() instanceof ContextTerminalJob) {
-                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
-                        , SolrContextTerminalJobInstanceImpl.class));
-                }
             }
+
+            // We are automating the creation of the context start job instances by dipping into the
+            // context template via the ContextHelper and extracting all of the context start jobs.
+            schedulerJobInstances.addAll(ContextHelper.getContextStartJobsFromContext(contextTemplate).stream()
+                .map(contextStartJob -> {
+                    ContextStartJobInstance contextStartJobInstance = new SolrContextStartJobInstanceImpl();
+                    contextStartJobInstance.setJobName(contextStartJob.getJobName());
+                    contextStartJobInstance.setContextName(contextTemplate.getName());
+                    contextStartJobInstance.setContextInstanceId(contextInstance.getId());
+                    return contextStartJobInstance;
+                }).collect(Collectors.toList()));
+
+            // We are automating the creation of the context terminal job instances by dipping into the
+            // context template via the ContextHelper and extracting all of the context terminal jobs.
+            schedulerJobInstances.addAll(ContextHelper.getContextTerminalJobsFromContext(contextTemplate).stream()
+                .map(contextTerminalJob -> {
+                    ContextTerminalJobInstance contextTerminalJobInstance = new SolrContextTerminalJobInstanceImpl();
+                    contextTerminalJobInstance.setJobName(contextTerminalJob.getJobName());
+                    contextTerminalJobInstance.setContextName(contextTemplate.getName());
+                    contextTerminalJobInstance.setContextInstanceId(contextInstance.getId());
+                    return contextTerminalJobInstance;
+                }).collect(Collectors.toList()));
 
             Map<String, SchedulerJobInstance> schedulerJobInstanceMap = schedulerJobInstances.stream()
                 .collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity(), (key1, key2)-> key2));

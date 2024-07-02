@@ -177,7 +177,7 @@ public abstract class ContextInstanceServiceBase {
         if(initialiseJobs) {
             SchedulerJobInstancesInitialisationParameters parameters
                 = new SchedulerJobInstancesInitialisationParametersImpl(false);
-            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance, parameters);
+            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(context, instance, parameters);
         }
 
         Map<String, InternalEventDrivenJobInstance> internalJobs = getAllCommandExecutionJobs(instance.getId());
@@ -291,7 +291,7 @@ public abstract class ContextInstanceServiceBase {
             = new SchedulerJobInstancesInitialisationParametersImpl(false);
 
         if(initialiseJobs) {
-            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance, parameters);
+            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(context, instance, parameters);
         }
 
 
