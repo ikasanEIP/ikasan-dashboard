@@ -90,10 +90,6 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
                 + "_" + JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE);
             document.addField(TYPE, JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE);
         }
-        else {
-            logger.info("here");
-        }
-
 
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(schedulerJobInstance));
@@ -199,8 +195,10 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             typeBuffer.append(OR).append(" ");
             typeBuffer.append(TYPE + COLON);
             typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE).append("\" ");
+            typeBuffer.append(OR).append(" ");
             typeBuffer.append(TYPE + COLON);
             typeBuffer.append("\"").append(JobConstants.CONTEXT_START_JOB_INSTANCE).append("\" ");
+            typeBuffer.append(OR).append(" ");
             typeBuffer.append(TYPE + COLON);
             typeBuffer.append("\"").append(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE).append("\" ");
             typeBuffer.append(CLOSE_BRACKET);

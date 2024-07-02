@@ -14,10 +14,7 @@ import org.ikasan.designer.model.*;
 import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.*;
-import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -27,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -80,17 +78,17 @@ public abstract class Draw2dAdapterBase {
      * @param parentContext
      * @param context
      * @param schedulerJobs
-     * @param internalEventDrivenJobMap
+     * @param schedulerJobsMap
      * @return
      */
-    protected ArrayList<Object> _adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+    protected ArrayList<Object> _adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs, Map<String, SchedulerJob> schedulerJobsMap) {
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
 
             // Determine if any jobs are initiated from a previous or are responsible for initiating a job in a
             // subsequent flow.
-            List<ContextTransition> previousContexts = this.getPreviousContextTransitions(parentContext, context, internalEventDrivenJobMap);
+            List<ContextTransition> previousContexts = this.getPreviousContextTransitions(parentContext, context, schedulerJobsMap);
             List<ContextTransition> subsequentTransitions = ContextHelper.determineIfJobsTransitionToOtherContexts
-                (parentContext, context.getScheduledJobsMap(), context, internalEventDrivenJobMap);
+                (parentContext, context.getScheduledJobsMap(), context, schedulerJobsMap);
 
             // We create the draw2d items in parallel to creating
             // an instance of a DefaultDirectedGraph. The DefaultDirectedGraph
@@ -123,10 +121,29 @@ public abstract class Draw2dAdapterBase {
                 }
             });
 
+            List<SchedulerJob> jobsToFilter = new ArrayList<>();
+            previousContexts.forEach(contextTransition -> {
+                // we don't want to represent previous jobs that are terminal jobs in our diagrams
+                if(contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                    jobsToFilter.add(contextTransition.getPrecedingJob());
+                }
+            });
+
+            // remove any filtered jobs if there are any.
+            List<SchedulerJob> finalJobs = jobs.stream().filter(job -> {
+                AtomicBoolean keep = new AtomicBoolean(true);
+                jobsToFilter.forEach(terminal -> {
+                    if(terminal.getIdentifier().equals(job.getIdentifier())) {
+                        keep.set(false);
+                    }
+                });
+                return keep.get();
+            }).collect(Collectors.toList());
+
             // Create an item for each jobs as well as adding each job to the
             // DefaultDirectedGraph. We delegate to some builder classes that
             // create all the relevant items to be rendered in draw2d.
-            jobs.forEach(job -> {
+            finalJobs.forEach(job -> {
                 graph.addVertex(job.getIdentifier());
 
                 SchedulerJob schedulerJob = schedulerJobs.get(job.getJobName());
@@ -142,6 +159,8 @@ public abstract class Draw2dAdapterBase {
                     .withJobName(job.getJobName())
                     .withIdentifier(job.getIdentifier());
 
+                int imageHeight = 100;
+                int imageWidth = 100;
                 if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance) {
                     userDataBuilder.withItemType(UserData.INTERNAL_EVENT_DRIVEN_JOB);
                 }
@@ -154,16 +173,27 @@ public abstract class Draw2dAdapterBase {
                 else if(schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
                     userDataBuilder.withItemType(UserData.GLOBAL_EVENT_DRIVEN_JOB);
                 }
+                else if(schedulerJob instanceof ContextStartJob || schedulerJob instanceof ContextStartJobInstance) {
+                    userDataBuilder.withItemType(UserData.CONTEXT_START_JOB);
+                    imageHeight = 50;
+                    imageWidth = 50;
+                }
+                else if(schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextTerminalJobInstance) {
+                    userDataBuilder.withItemType(UserData.CONTEXT_TERMINAL_JOB);
+                    imageHeight = 50;
+                    imageWidth = 50;
+                }
 
                 ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
                     .withId(job.getIdentifier())
-                    .withHeight(100)
-                    .withWidth(100)
+                    .withHeight(imageHeight)
+                    .withWidth(imageWidth)
                     .withPath(image)
                     .withUserData(userDataBuilder.build());
 
                 if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance
-                    || schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
+                    || schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance
+                    || schedulerJob instanceof ContextStartJobInstance || schedulerJob instanceof ContextTerminalJobInstance) {
                     jobBuilder.withLeftPort()
                         .withRightPort();
                 }
@@ -195,7 +225,7 @@ public abstract class Draw2dAdapterBase {
             // Now delegate to a helper method to deal with the case that jobs within a job plan
             // may be linked by sub contexts.
             List<String> linkingConnections = this.manageLinkingContextTransitions(context, parentContext
-                , internalEventDrivenJobMap, diagramBuilder, graph);
+                , schedulerJobsMap, diagramBuilder, graph);
 
             // Manage the case that there are other contexts that the job plan links to.
             this.manageOutboundContextTransitions(subsequentTransitions, diagramBuilder, graph
@@ -203,7 +233,7 @@ public abstract class Draw2dAdapterBase {
 
             // Manage the case that there are other contexts that precede this one and link to it.
             List<String> inboundConnections =  this.manageInboundContextTransitions(previousContexts, diagramBuilder, graph
-                , linkingConnections, internalEventDrivenJobMap);
+                , linkingConnections, schedulerJobsMap);
 
             // Now delegate to the JGraphXAdapter to create the layout
             // of the visualisation.
@@ -215,8 +245,16 @@ public abstract class Draw2dAdapterBase {
                 .forEach(entry -> {
                     mxCell cell = entry.getValue();
                     if(cell.isVertex()) {
-                        cell.getGeometry().setWidth(100);
-                        cell.getGeometry().setHeight(100);
+                        if(schedulerJobsMap.containsKey(cell.getValue()) &&
+                            (schedulerJobsMap.get(cell.getValue()).getAgentName().equals(JobConstants.CONTEXT_START_JOB) ||
+                                schedulerJobsMap.get(cell.getValue()).getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))) {
+                            cell.getGeometry().setWidth(50);
+                            cell.getGeometry().setHeight(50);
+                        }
+                        else {
+                            cell.getGeometry().setWidth(100);
+                            cell.getGeometry().setHeight(100);
+                        }
                     }
                 });
 
@@ -260,40 +298,46 @@ public abstract class Draw2dAdapterBase {
                             .containsKey(((PositionedItem) item).getId())) {
                             ((Image) item).setComposite(group.getId());
                             // assuming each letter is 8 units long
-                            double labelLength = ((SchedulerJob) context.getScheduledJobsMap()
-                                .get(((PositionedItem) item).getId())).getJobName().length() * 7.5;
+                            if(!((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_START_JOB) &&
+                                !((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_TERMINAL_JOB)) {
+                                double labelLength = ((SchedulerJob) context.getScheduledJobsMap()
+                                    .get(((PositionedItem) item).getId())).getJobName().length() * 7.5;
 
-                            Label label = new LabelBuilder().withText(((SchedulerJob) context.getScheduledJobsMap()
-                                    .get(((PositionedItem) item).getId())).getJobName())
-                                .withX(positionedItemCentre - (labelLength / 2))
-                                .withY(((PositionedItem) item).getY() + 110)
-                                .withFontSize("14pt")
-                                .withComposite(group.getId())
-                                .build();
-
-                            group.setUserData(((Image) item).getUserData());
-                            label.setUserData(((Image) item).getUserData());
-
-                            labels.add(label);
-
-                            if(inboundConnections.contains(((PositionedItem) item).getId())){
-                                Circle eventCircle = new CircleBuilder()
-                                    .withColor(IkasanColours.BLACK)
-                                    .withBgColor(IkasanColours.SCHEDULER_EVENT_YELLOW)
-                                    .withWidth(200)
-                                    .withHeight(200)
-                                    .withX(((PositionedItem) item).getX() - 50)
-                                    .withY(((PositionedItem) item).getY() - 50)
+                                Label label = new LabelBuilder().withText(((SchedulerJob) context.getScheduledJobsMap()
+                                        .get(((PositionedItem) item).getId())).getJobName())
+                                    .withX(positionedItemCentre - (labelLength / 2))
+                                    .withY(((PositionedItem) item).getY() + 110)
+                                    .withFontSize("14pt")
                                     .withComposite(group.getId())
                                     .build();
 
-                                imageOverlay.add(eventCircle);
+                                group.setUserData(((Image) item).getUserData());
+                                label.setUserData(((Image) item).getUserData());
+
+                                labels.add(label);
                             }
 
-                            if(internalEventDrivenJobMap.containsKey(((PositionedItem) item).getId())) {
-                                InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobMap.get(((PositionedItem) item).getId());
+                            if(inboundConnections.contains(((PositionedItem) item).getId())){
+                                if(!((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_START_JOB) &&
+                                    !((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_TERMINAL_JOB)) {
+                                    Circle eventCircle = new CircleBuilder()
+                                        .withColor(IkasanColours.BLACK)
+                                        .withBgColor(IkasanColours.SCHEDULER_EVENT_YELLOW)
+                                        .withWidth(200)
+                                        .withHeight(200)
+                                        .withX(((PositionedItem) item).getX() - 50)
+                                        .withY(((PositionedItem) item).getY() - 50)
+                                        .withComposite(group.getId())
+                                        .build();
 
-                                if(internalEventDrivenJob.isJobRepeatable()) {
+                                    imageOverlay.add(eventCircle);
+                                }
+                            }
+
+                            if(schedulerJobsMap.containsKey(((PositionedItem) item).getId())) {
+                                SchedulerJob internalEventDrivenJob = schedulerJobsMap.get(((PositionedItem) item).getId());
+
+                                if(internalEventDrivenJob instanceof InternalEventDrivenJob && ((InternalEventDrivenJob) internalEventDrivenJob).isJobRepeatable()) {
                                     ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
                                         .withId(UUID.randomUUID().toString())
                                         .withWidth(30)
@@ -601,10 +645,13 @@ public abstract class Draw2dAdapterBase {
                         if(((Context)child).getScheduledJobsMap().containsKey(and.getIdentifier())) {
                         }
                     });
-                    graph.addEdge(and.getIdentifier(), jobIdentifier);
+                    if(context.getScheduledJobsMap().containsKey(and.getIdentifier())
+                        && !((SchedulerJob)context.getScheduledJobsMap().get(and.getIdentifier())).getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                        graph.addEdge(and.getIdentifier(), jobIdentifier);
 
-                    this.addConnection(and.getIdentifier(), "rightHybridSource"
-                        , jobIdentifier, "leftHybridTarget", diagramBuilder);
+                        this.addConnection(and.getIdentifier(), "rightHybridSource"
+                            , jobIdentifier, "leftHybridTarget", diagramBuilder);
+                    }
                 }
             });
         }
@@ -640,7 +687,7 @@ public abstract class Draw2dAdapterBase {
      * @param graph
      * @return
      */
-    protected List<String> manageLinkingContextTransitions(Context context, Context parentContext, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap,
+    protected List<String> manageLinkingContextTransitions(Context context, Context parentContext, Map<String, SchedulerJob> internalEventDrivenJobMap,
                                                            DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph) {
         List<String> linkingConnections = new ArrayList<>();
 
@@ -768,11 +815,19 @@ public abstract class Draw2dAdapterBase {
      */
     protected List<String> manageInboundContextTransitions(List<ContextTransition> contextTransitions
         , DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object
-        , DefaultEdge> graph, List<String> linkingConnections, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+        , DefaultEdge> graph, List<String> linkingConnections, Map<String, SchedulerJob> schedulerJobsMap) {
         List<String> addedContexts = new ArrayList<>();
         List<String> subsequentJobIdentifiers = new ArrayList<>();
         contextTransitions.forEach(contextTransition
-            -> subsequentJobIdentifiers.add(contextTransition.getPrecedingJob().getIdentifier()));
+            -> {
+            if(!contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                && !contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                subsequentJobIdentifiers.add(contextTransition.getPrecedingJob().getIdentifier());
+            }
+            else {
+                subsequentJobIdentifiers.add(contextTransition.getSubsequentJob().getIdentifier());
+            }
+        });
 
         contextTransitions.forEach(contextTransition -> {
             contextTransition.getContexts().forEach(context -> {
@@ -790,7 +845,7 @@ public abstract class Draw2dAdapterBase {
 
                     subsequentJobIdentifiers.forEach(id ->
                     {
-                        InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobMap.get(id);
+                        SchedulerJob internalEventDrivenJob = schedulerJobsMap.get(id);
                         if(internalEventDrivenJob != null && internalEventDrivenJob
                             .getChildContextNames().contains(contextName)) {
                             userDataBuilder.addSubsequentJobIdentifiers(id);
@@ -800,10 +855,21 @@ public abstract class Draw2dAdapterBase {
                     this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
                 }
 
-                this.addConnection(context, "rightHybridSource"
-                    , contextTransition.getPrecedingJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
+                if(!contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                    && !contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                    this.addConnection(context, "rightHybridSource"
+                        , contextTransition.getPrecedingJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
 
-                graph.addEdge(context, contextTransition.getPrecedingJob().getIdentifier());
+                    graph.addEdge(context, contextTransition.getPrecedingJob().getIdentifier());
+                }
+                else {
+                    this.addConnection(context, "rightHybridSource"
+                        , contextTransition.getSubsequentJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
+
+                    if(graph.containsVertex(contextTransition.getSubsequentJob().getIdentifier())) {
+                        graph.addEdge(context, contextTransition.getSubsequentJob().getIdentifier());
+                    }
+                }
 
                 addedContexts.add(context);
             });
@@ -821,7 +887,7 @@ public abstract class Draw2dAdapterBase {
      * @param internalEventDrivenJobMap
      * @return
      */
-    private Tree<String> getLinkedContexts(Context context, Context parentContext, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+    private Tree<String> getLinkedContexts(Context context, Context parentContext, Map<String, SchedulerJob> internalEventDrivenJobMap) {
         Tree<String> tree = new Tree<>(new TreeNode<>(context.getName()));
 
         if(!context.getContexts().isEmpty()) {
@@ -916,17 +982,28 @@ public abstract class Draw2dAdapterBase {
      *
      * @param parentContext
      * @param context
-     * @param internalEventDrivenJobMap
+     * @param schedulerJobsMap
      * @return
      */
-    protected List<ContextTransition> getPreviousContextTransitions(Context parentContext, Context context, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+    protected List<ContextTransition> getPreviousContextTransitions(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobsMap) {
         HashSet<ContextTransition> previousContexts = new HashSet<>();
 
         context.getScheduledJobs().forEach(job -> {
             List<ContextTransition>  jobsInto = ContextHelper.determineIfJobsTransitionFromOtherContexts(parentContext, ((SchedulerJob)job).getJobName(),
-                context.getName(), internalEventDrivenJobMap);
+                context.getName(), schedulerJobsMap);
 
-            jobsInto.forEach(jobsOtherContexts -> previousContexts.add(jobsOtherContexts));
+            jobsInto.forEach(jobsOtherContexts -> {
+                if(jobsOtherContexts.getSubsequentJob().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                    LinkedList<List<SchedulerJob>> trace = ContextHelper.traceJobThroughContext(parentContext, jobsOtherContexts.getSubsequentJob().getJobName(), context.getName());
+                    if(!trace.isEmpty()) {
+                        List<SchedulerJob> subsequentJobs = trace.get(0);
+                        if(!subsequentJobs.isEmpty()) {
+                            jobsOtherContexts.setSubsequentJob(subsequentJobs.get(0));
+                        }
+                    }
+                }
+                previousContexts.add(jobsOtherContexts);
+            });
         });
 
         return previousContexts.stream().filter(contextTransition -> !contextTransition.getContexts().isEmpty()).collect(Collectors.toList());
@@ -999,6 +1076,13 @@ public abstract class Draw2dAdapterBase {
                 yMaxExtent.set(-1.0);
 
                 this.calculateExtents(nestedVisualisationLogicalGrouping, xMinExtent, xMaxExtent, yMinExtent, yMaxExtent, cellMap);
+
+                if(xMinExtent.get() == -1.0
+                    && xMaxExtent.get() == -1.0
+                    && yMinExtent.get() == -1.0
+                    && yMaxExtent.get() == -1.0) {
+                    return;
+                }
 
                 RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
                     .withWidth(xMaxExtent.get() - xMinExtent.get() + 360)
@@ -1129,7 +1213,7 @@ public abstract class Draw2dAdapterBase {
 
         visualisationLogicalGrouping.getJobIdentifiers().forEach(id -> {
             mxCell cell = cellMap.get(id);
-
+            if(cell == null) return;
             if (xMinExtent.get() == -1) xMinExtent.set(cell.getGeometry().getX() + 600);
             else if (xMinExtent.get() > cell.getGeometry().getX() + 600) {
                 xMinExtent.set(cell.getGeometry().getX() + 600);
@@ -1156,6 +1240,13 @@ public abstract class Draw2dAdapterBase {
             }
         });
 
+        if(xMinExtent.get() == -1.0
+            && xMaxExtent.get() == -1.0
+            && yMinExtent.get() == -1.0
+            && yMaxExtent.get() == -1.0) {
+            return;
+        }
+
         xMinExtent.set(xMinExtent.get() - 15);
         xMaxExtent.set(xMaxExtent.get() + 15);
         yMinExtent.set(yMinExtent.get() - 15);
@@ -1179,6 +1270,12 @@ public abstract class Draw2dAdapterBase {
         }
         else if(schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
             image = "frontend/images/global-job.png";
+        }
+        else if(schedulerJob instanceof ContextStartJobInstance || schedulerJob instanceof ContextStartJob) {
+            image = "frontend/images/start-job.png";
+        }
+        else if(schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextStartJobInstance) {
+            image = "frontend/images/terminal-job.png";
         }
 
         return image;

@@ -6,6 +6,7 @@ import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.instance.model.SolrFileEventDrivenJobInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -109,7 +110,8 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
     }
 
     @Override
-    public List<SchedulerJobInstance> initialiseSchedulerJobInstancesForContext(ContextInstance contextInstance, SchedulerJobInstancesInitialisationParameters parameters) throws SchedulerJobInstanceInitialisationException {
+    public List<SchedulerJobInstance> initialiseSchedulerJobInstancesForContext(ContextTemplate contextTemplate
+        ,ContextInstance contextInstance, SchedulerJobInstancesInitialisationParameters parameters) throws SchedulerJobInstanceInitialisationException {
         return null;
     }
 

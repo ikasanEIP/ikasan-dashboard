@@ -59,13 +59,17 @@
   "name" : "Context Template Name",
   "description" : "Context Template Description",
   "jobDependencies" : [ {
-    "jobIdentifier" : "AgentName-Job2"
+    "jobIdentifier" : "AgentName-Job2",
+    "eventDependency": false
   }, {
-    "jobIdentifier" : "AgentName-Job3"
+    "jobIdentifier" : "AgentName-Job3",
+    "eventDependency": false
   }, {
-    "jobIdentifier" : "AgentName-Job5"
+    "jobIdentifier" : "AgentName-Job5",
+    "eventDependency": false
   }, {
     "jobIdentifier" : "AgentName-Job1",
+    "eventDependency": false,
     "logicalGrouping" : {
       "and" : [ {
         "identifier" : "AgentName-Job2"
@@ -75,6 +79,7 @@
     }
   }, {
     "jobIdentifier" : "AgentName-Job8",
+    "eventDependency": false,
     "logicalGrouping" : {
       "or" : [ {
         "logicalGrouping" : {

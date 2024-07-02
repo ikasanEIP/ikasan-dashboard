@@ -1,0 +1,21 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "TEST_IK_JOB_2",
+  "jobDescription" : "TEST_IK_JOB_2",
+  "contextName" : "TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS",
+  "startupControlType" : "AUTOMATIC",
+  "skippedContexts" : { },
+  "heldContexts" : { },
+  "ordinal" : -1,
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "#!/bin/bash\n. ~/.profile\n\nhostname\nid\n\necho `date` TEST_IK_JOB_2 starting>> ~/ikasan_test.log\ndate\nsleep $(( ( RANDOM % 10 )  + 10 ))\necho `date` TEST_IK_JOB_2 stopping>> ~/ikasan_test.log\ndate\n",
+  "minExecutionTime" : -1,
+  "maxExecutionTime" : -1,
+  "contextParameters" : [ ],
+  "targetResidingContextOnly" : false,
+  "participatesInLock" : false,
+  "jobRepeatable" : false,
+  "killed" : false,
+  "identifier" : "scheduler-agent-TEST_IK_JOB_2"
+}

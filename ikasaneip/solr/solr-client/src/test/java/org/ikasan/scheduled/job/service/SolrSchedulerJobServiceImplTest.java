@@ -718,12 +718,12 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
                 else if (job.getJob() instanceof ContextStartJob) {
                     ContextStartJob contextStartJob = (ContextStartJob) job.getJob();
                     assertEquals(contextId + "jobNameContextStartJob" + resetCount, job.getJobName());
-                    assertEquals(job.getAgentName() + "_" + job.getJobName(), contextStartJob.getIdentifier());
+                    assertEquals(job.getAgentName() + "-" + job.getJobName(), contextStartJob.getIdentifier());
                 }
                 else if (job.getJob() instanceof ContextTerminalJob) {
                     ContextTerminalJob contextTerminalJob = (ContextTerminalJob) job.getJob();
                     assertEquals(contextId + "jobNameContextTerminalJob" + resetCount, job.getJobName());
-                    assertEquals(job.getAgentName() + "_" + job.getJobName(), contextTerminalJob.getIdentifier());
+                    assertEquals(job.getAgentName() + "-" + job.getJobName(), contextTerminalJob.getIdentifier());
                 }
                 resetCount++;
                 if (resetCount == 3) {

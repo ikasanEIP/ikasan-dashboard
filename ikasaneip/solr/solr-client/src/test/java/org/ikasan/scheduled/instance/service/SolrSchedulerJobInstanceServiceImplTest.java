@@ -2,6 +2,7 @@ package org.ikasan.scheduled.instance.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.SolrTestCaseJ4;
@@ -9,7 +10,11 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
+import org.checkerframework.checker.units.qual.C;
+import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.context.model.SolrContextParameterImpl;
 import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventImpl;
@@ -21,6 +26,7 @@ import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -28,8 +34,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
-import org.ikasan.spec.scheduled.job.model.ContextStartJobRecord;
-import org.ikasan.spec.scheduled.job.model.JobConstants;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.Assert;
@@ -39,12 +44,15 @@ import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -64,8 +72,12 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     private SolrScheduledContextInstanceAuditDaoImpl scheduledContextInstanceAuditDao;
     private ScheduledContextInstanceService scheduledContextInstanceService;
 
+    ContextService contextService = new ContextService();
+
     private Path tmpPath;
     private EmbeddedSolrServer server;
+
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     @Before
     public void setup() throws SolrServerException, IOException {
@@ -527,8 +539,6 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
         this.insertInternalEventDrivenRecords("internal", 400, "context", null);
         this.insertGlobalEventRecords("global", 10, "context", false);
-        this.insertContextStartJobRecords("contextStart", 10, "context");
-        this.insertContextTerminalJobRecords("contextEnd", 17, "context");
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -552,13 +562,6 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
                         return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
                             , SolrGlobalEventJobInstanceImpl.class);
                     }
-                    else if (schedulerJobRecord.getJob() instanceof SolrContextStartJobImpl) {
-                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
-                            , SolrContextStartJobInstanceImpl.class);
-                    } else if (schedulerJobRecord.getJob() instanceof SolrContextTerminalJobImpl) {
-                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
-                            , SolrContextTerminalJobInstanceImpl.class);
-                    }
                 }
                 catch (Exception e) {
                     return null;
@@ -570,15 +573,61 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
 
         SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
 
-        List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
-            (contextInstance, parameters);
+        ContextTemplate contextTemplate = new ContextTemplateImpl();
+        contextTemplate.setName("context");
 
-        Assert.assertEquals(647, schedulerJobInstances.size());
+        List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
+            (contextTemplate, contextInstance, parameters);
+
+        Assert.assertEquals(620, schedulerJobInstances.size());
 
         SearchResults<SchedulerJobInstanceRecord> searchResults = this.service.getSchedulerJobInstancesByContextInstanceId
             ("contextInstanceId", 1000, 0, null, null);
 
-        Assert.assertEquals(647, searchResults.getResultList().size());
+        Assert.assertEquals(620, searchResults.getResultList().size());
+    }
+
+    @Test
+    public void test_initialise_scheduler_job_instances_with_automatically_created_start_and_terminal_jobs() throws SchedulerJobInstanceInitialisationException, IOException {
+        List<InternalEventDrivenJobRecord> internalEventDrivenJobRecords = this.loadInternalEventDrivenJobRecords("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal",
+            "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal");
+        this.solrInternalEventDrivenJobRecordDao.save(internalEventDrivenJobRecords);
+
+        List<QuartzScheduleDrivenJobRecord> quartzScheduleDrivenJobRecords = this.loadQuartzScheduleDrivenJobRecords("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/quartz",
+            "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/quartz");
+        this.solrQuartzScheduleDrivenJobRecordDao.save(quartzScheduleDrivenJobRecords);
+
+        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
+            "context/TEST_IK_GLOB.json");
+
+        ContextTemplate contextTemplate = this.contextService.getContextTemplate(contextJson);
+        ContextInstance contextInstance = this.contextService.getContextInstance(contextJson);
+
+        SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
+        List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
+            (contextTemplate, contextInstance, parameters);
+
+        Assert.assertEquals(65, schedulerJobInstances.size());
+        Assert.assertEquals(11, schedulerJobInstances.stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+            .collect(Collectors.toList()).size());
+        Assert.assertEquals(26, schedulerJobInstances.stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+            .collect(Collectors.toList()).size());
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.service.getSchedulerJobInstancesByContextInstanceId
+            (contextInstance.getId(), 1000, 0, null, null);
+
+        Assert.assertEquals(65, searchResults.getResultList().size());
+        Assert.assertEquals(11, searchResults.getResultList().stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getSchedulerJobInstance().getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+            .collect(Collectors.toList()).size());
+        Assert.assertEquals(26, searchResults.getResultList().stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getSchedulerJobInstance().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+            .collect(Collectors.toList()).size());
+        searchResults.getResultList().forEach(schedulerJobInstanceRecord -> {
+            Assert.assertFalse(schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName().isEmpty());
+        });
     }
 
     @Test
@@ -620,9 +669,11 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         );
 
         SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
+        ContextTemplate contextTemplate = new ContextTemplateImpl();
+        contextTemplate.setName("context");
 
         List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
-            (contextInstance, parameters);
+            (contextTemplate, contextInstance, parameters);
 
         Assert.assertEquals(620, schedulerJobInstances.size());
 
@@ -678,9 +729,11 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         );
 
         SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(true);
+        ContextTemplate contextTemplate = new ContextTemplateImpl();
+        contextTemplate.setName("context");
 
         List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
-            (contextInstance, parameters);
+            (contextTemplate, contextInstance, parameters);
 
         Assert.assertEquals(620, schedulerJobInstances.size());
 
@@ -737,7 +790,10 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
             .collect(Collectors.toList())
         );
 
-        service.initialiseSchedulerJobInstancesForContext(contextInstance, new SolrSchedulerJobInstancesInitialisationParametersImpl(false));
+        ContextTemplate contextTemplate = new ContextTemplateImpl();
+        contextTemplate.setName("context");
+
+        service.initialiseSchedulerJobInstancesForContext(contextTemplate, contextInstance, new SolrSchedulerJobInstancesInitialisationParametersImpl(false));
 
         SearchResults<SchedulerJobInstanceRecord> schedulerJobInstanceRecords
             = this.service.getSchedulerJobInstancesByContextInstanceId(contextInstance.getId()
@@ -810,8 +866,11 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
 
         SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
 
+        ContextTemplate contextTemplate = new ContextTemplateImpl();
+        contextTemplate.setName("context");
+
         List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
-            (contextInstance, parameters);
+            (contextTemplate, contextInstance, parameters);
 
         Assert.assertEquals(5, schedulerJobInstances.size());
 
@@ -1118,40 +1177,52 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         });
     }
 
-    private void insertContextStartJobRecords(String idPrefix, int num, String contextId) {
-        IntStream.range(0, num).forEach(i -> {
-            SolrContextStartJobImpl contextStartJob = new SolrContextStartJobImpl();
-            contextStartJob.setJobName(idPrefix+"jobName"+i);
-            contextStartJob.setIdentifier(contextStartJob.getAgentName()+"_"+contextStartJob.getJobName());
-            contextStartJob.setContextName(contextId);
+    public List<InternalEventDrivenJobRecord> loadInternalEventDrivenJobRecords(String directory, String jobsBase) throws IOException {
+        List<InternalEventDrivenJob> files = Files.list(Path.of(directory)).map(path -> {
+            InternalEventDrivenJob internalEventDrivenJob = null;
+            try {
+                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
+                internalEventDrivenJob = objectMapper.readValue(jobJson, SolrInternalEventDrivenJobImpl.class);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return internalEventDrivenJob;
+        }).collect(Collectors.toList());
 
-            SolrContextStartJobRecordImpl solrContextStartJobRecord = new SolrContextStartJobRecordImpl();
-            solrContextStartJobRecord.setAgentName(idPrefix+"agentName"+i);
-            solrContextStartJobRecord.setJobName("jobName"+i);
-            solrContextStartJobRecord.setContextName(contextId);
-            solrContextStartJobRecord.setTimestamp(1000000L);
-            solrContextStartJobRecord.setContextStartJob(contextStartJob);
-
-            this.solrContextStartJobDao.save(solrContextStartJobRecord);
-        });
+        return files.stream()
+            .map(internalEventDrivenJob -> {
+                SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
+                solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
+                solrInternalEventDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
+                solrInternalEventDrivenJobRecord.setContextName(internalEventDrivenJob.getContextName());
+                solrInternalEventDrivenJobRecord.setTimestamp(1000000L);
+                solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+                return solrInternalEventDrivenJobRecord;
+            }).collect(Collectors.toList());
     }
 
-    private void insertContextTerminalJobRecords(String idPrefix, int num, String contextId) {
-        IntStream.range(0, num).forEach(i -> {
-            SolrContextTerminalJobImpl solrContextTerminalJob = new SolrContextTerminalJobImpl();
-            solrContextTerminalJob.setJobName(idPrefix+"jobName"+i);
-            solrContextTerminalJob.setIdentifier(solrContextTerminalJob.getAgentName()+"_"+solrContextTerminalJob.getJobName());
-            solrContextTerminalJob.setContextName(contextId);
+    public List<QuartzScheduleDrivenJobRecord> loadQuartzScheduleDrivenJobRecords(String directory, String jobsBase) throws IOException {
+        List<QuartzScheduleDrivenJob> files = Files.list(Path.of(directory)).map(path -> {
+            QuartzScheduleDrivenJob quartzScheduleDrivenJob = null;
+            try {
+                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
+                quartzScheduleDrivenJob = objectMapper.readValue(jobJson, SolrQuartzScheduleDrivenJobImpl.class);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return quartzScheduleDrivenJob;
+        }).collect(Collectors.toList());
 
-            SolrContextTerminalJobRecordImpl solrContextTerminalJobRecord = new SolrContextTerminalJobRecordImpl();
-            solrContextTerminalJobRecord.setAgentName(idPrefix+"agentName"+i);
-            solrContextTerminalJobRecord.setJobName("jobName"+i);
-            solrContextTerminalJobRecord.setContextName(contextId);
-            solrContextTerminalJobRecord.setTimestamp(1000000L);
-            solrContextTerminalJobRecord.setContextTerminalJob(solrContextTerminalJob);
-
-            this.solrContextTerminalJobDao.save(solrContextTerminalJobRecord);
-        });
+        return files.stream()
+            .map(internalEventDrivenJob -> {
+                QuartzScheduleDrivenJobRecord solrQuartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
+                solrQuartzScheduleDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
+                solrQuartzScheduleDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
+                solrQuartzScheduleDrivenJobRecord.setContextName(internalEventDrivenJob.getContextName());
+                solrQuartzScheduleDrivenJobRecord.setTimestamp(1000000L);
+                solrQuartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(internalEventDrivenJob);
+                return solrQuartzScheduleDrivenJobRecord;
+            }).collect(Collectors.toList());
     }
 
     protected String loadDataFile(String fileName) throws IOException

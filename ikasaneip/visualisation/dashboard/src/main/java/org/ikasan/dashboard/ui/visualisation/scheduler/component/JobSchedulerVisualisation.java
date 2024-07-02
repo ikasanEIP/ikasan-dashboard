@@ -63,7 +63,7 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                         .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2));
 
                     this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
-                        this.getCommandExecutionJobsForContextInstance(this.parentContextTemplate.getName())));
+                        this.getSchedulerJobsForContextInstance(this.parentContextTemplate.getName())));
                 }
                 else {
                     this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
@@ -153,6 +153,12 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
     private Map<String, InternalEventDrivenJob> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
         return this.schedulerJobService
             .getCommandExecutionJobsForContext(contextInstanceId);
+
+    }
+
+    private Map<String, SchedulerJob> getSchedulerJobsForContextInstance(String contextInstanceId) {
+        // todo provide method to get all jobs
+        return Map.of();
 
     }
 }

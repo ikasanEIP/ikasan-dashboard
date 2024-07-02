@@ -6,9 +6,11 @@ import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -94,13 +96,28 @@ public class ContextTemplateValidator {
 
         contextTemplatesJobSet.removeAll(jobTemplatesSet);
 
+        Map<String, SchedulerJob> schedulerJobsFromContext = contextTemplate.getAllSchedulerJobs().stream()
+            .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (first, second) -> first));
+
         if(!contextTemplatesJobSet.isEmpty()) {
             contextTemplatesJobSet.forEach(jobName -> {
                 List<String> contexts = ContextHelper.getContextsWhereJobFilterMatchResides(contextTemplate, jobName);
 
                 contexts.forEach(contextName -> {
-                    this.reportError(contextTemplate.getName(), String.format("Job[%s] appears in job " +
-                        "plan but there is no job template defined for it!\n", jobName), "");
+                    ContextTemplate child = ContextHelper.getChildContextTemplate(contextName, contextTemplate);
+                    AtomicBoolean reportError = new AtomicBoolean(true);
+
+                    child.getScheduledJobs().forEach(schedulerJob -> {
+                        if (schedulerJob.getJobName().equals(jobName)
+                            && (schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                            || schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))) {
+                            reportError.set(false);
+                        }
+                    });
+                    if(reportError.get()) {
+                        this.reportError(contextTemplate.getName(), String.format("Job[%s] appears in job " +
+                            "plan but there is no job template defined for it!\n", jobName), "");
+                    }
                 });
             });
         }
@@ -115,6 +132,12 @@ public class ContextTemplateValidator {
             .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (first, second) -> first));
 
         jobsFromJobPlan.forEach(schedulerJob -> {
+            if(schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                || schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                // Context start and terminal jobs do not have job templates associated
+                // with them and can be ignored for the purpose of validation.
+                return;
+            }
             List<String> residingContextList;
             if(schedulerJob.getJobName() == null) {
                 residingContextList = schedulerJob.getChildContextNames();
@@ -130,9 +153,9 @@ public class ContextTemplateValidator {
             }
 
             if(!schedulerJobMap.containsKey(schedulerJob.getIdentifier())) {
-                this.reportError(contextTemplate.getName(), String.format("Job[%s] defined in the job plan template with identifier[%s] " +
+                this.reportError(contextTemplate.getName(), String.format("Job [%s] defined in the job plan template with identifier[%s] " +
                     "does not have a job defined with the same identifier! This job resides within the following child contexts" +
-                    " within the job plan[%s]. Please check the job definition artefact and confirm that the identifier in the artefact is correct.\n"
+                    " within the job plan [%s]. Please check the job definition artefact and confirm that the identifier in the artefact is correct.\n"
                     , schedulerJob.getJobName(), schedulerJob.getIdentifier(), residingContexts), schedulerJob.getJobName());
             }
         });
@@ -142,7 +165,20 @@ public class ContextTemplateValidator {
         Map<String, SchedulerJob> schedulerJobMap = jobTemplates.stream()
             .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (first, second) -> first));
 
+        Map<String, SchedulerJob> schedulerJobsFromContext = contextTemplate.getAllSchedulerJobs().stream()
+            .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (first, second) -> first));
+
         jobsIdentifiersFromJobDependencies.forEach(identifier -> {
+            if(schedulerJobsFromContext.containsKey(identifier)) {
+                SchedulerJob schedulerJobFromContext = schedulerJobsFromContext.get(identifier);
+                if(schedulerJobFromContext.getAgentName().equals(JobConstants.CONTEXT_START_JOB) ||
+                    schedulerJobFromContext.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                    // We can ignore context start and terminal jobs as they are not defined
+                    // in separate job artefacts.
+                    return;
+                }
+            }
+
             if(!schedulerJobMap.containsKey(identifier)) {
                 this.reportError(contextTemplate.getName(), String.format("Job Dependency Identifier [%s] defined in the job plan template " +
                         "does not have a job artefact defined with the same identifier!\n"
