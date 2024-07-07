@@ -810,6 +810,13 @@
               "ordinal" : 2,
               "identifier" : "scheduler-agent-TEST_IK_JOB_18"
             },{
+              "agentName" : "LOCAL_EVENT_JOB",
+              "jobName" : "TEST_IK_JOB_18_EVENT",
+              "childContextNames" : [ ],
+              "startupControlType" : "AUTOMATIC",
+              "ordinal" : 2,
+              "identifier" : "LOCAL_EVENT_JOB-TEST_IK_JOB_18"
+            },{
               "agentName" : "CONTEXT_TERMINAL_JOB",
               "jobName" : "TEST_IK_EVENT2 Step 2 Terminal",
               "childContextNames" : ["TEST_IK_EVENT2 Step 2" ],

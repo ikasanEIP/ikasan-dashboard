@@ -195,55 +195,31 @@
         "scheduledJobs" : [ {
           "agentName" : "CONTEXT_TERMINAL_JOB",
           "jobName" : "TEST_IK_AM_1 Step 1 Terminal",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : -1,
           "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_1 Step 1 Terminal"
         },{
           "agentName" : "CONTEXT_START_JOB",
           "jobName" : "TEST_IK_AM_2 Step 1 Start",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : -1,
           "identifier" : "CONTEXT_START_JOB-TEST_IK_AM_2 Step 1 Start"
         },{
           "agentName" : "CONTEXT_TERMINAL_JOB",
           "jobName" : "TEST_IK_AM_2 Step 1 Terminal",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : -1,
           "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal"
         }, {
           "agentName" : "scheduler-agent",
           "jobName" : "TEST_IK_JOB_6",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : 4,
           "identifier" : "scheduler-agent-TEST_IK_JOB_6"
         }, {
           "agentName" : "scheduler-agent",
           "jobName" : "TEST_IK_JOB_7",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : 5,
           "identifier" : "scheduler-agent-TEST_IK_JOB_7"
         }, {
           "agentName" : "scheduler-agent",
           "jobName" : "TEST_IK_JOB_8",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : 6,
           "identifier" : "scheduler-agent-TEST_IK_JOB_8"
         } ],
@@ -331,35 +307,21 @@
         "scheduledJobs" : [ {
           "agentName" : "scheduler-agent",
           "jobName" : "TEST_IK_JOB_9",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : 11,
           "identifier" : "scheduler-agent-TEST_IK_JOB_9"
         }, {
           "agentName" : "scheduler-agent",
           "jobName" : "TEST_IK_JOB_10",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : 3,
           "identifier" : "scheduler-agent-TEST_IK_JOB_10"
         }, {
           "agentName" : "CONTEXT_START_JOB",
           "jobName" : "TEST_IK_LOCK_1 Step 1 Start",
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : -1,
           "identifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 1 Start"
         },{
           "agentName" : "CONTEXT_TERMINAL_JOB",
           "jobName" : "TEST_IK_LOCK_1 Step 1 Terminal",
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : -1,
           "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal"
         }],
@@ -401,62 +363,36 @@
         "scheduledJobs" : [ {
           "agentName" : "CONTEXT_TERMINAL_JOB",
           "jobName" : "TEST_IK_LOCK_1 Step 1 Terminal",
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : -1,
           "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal"
         },{
           "agentName" : "CONTEXT_TERMINAL_JOB",
           "jobName" : "TEST_IK_LOCK_1 Step 2 Terminal",
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : -1,
           "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal"
         },{
           "agentName" : "CONTEXT_START_JOB",
           "jobName" : "TEST_IK_LOCK_1 Step 2 Start",
-          "childContextNames" : [ "TEST_IK_LOCK_1 Step 2" ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : -1,
           "identifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 2 Start"
         }, {
           "agentName" : "scheduler-agent",
           "jobName" : "TEST_IK_JOB_14",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : 2,
           "identifier" : "scheduler-agent-TEST_IK_JOB_14"
         }, {
           "agentName" : "scheduler-agent",
           "jobName" : "TEST_IK_JOB_13",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : 3,
           "identifier" : "scheduler-agent-TEST_IK_JOB_13"
         }, {
           "agentName" : "scheduler-agent",
           "jobName" : "TEST_IK_JOB_12",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : 4,
           "identifier" : "scheduler-agent-TEST_IK_JOB_12"
         }, {
           "agentName" : "scheduler-agent",
           "jobName" : "TEST_IK_JOB_11",
-          "childContextNames" : [ ],
-          "startupControlType" : "AUTOMATIC",
-          "skippedContexts" : { },
-          "heldContexts" : { },
           "ordinal" : 5,
           "identifier" : "scheduler-agent-TEST_IK_JOB_11"
         } ],
@@ -537,46 +473,26 @@
     "scheduledJobs" : [  {
       "agentName" : "CONTEXT_TERMINAL_JOB",
       "jobName" : "TEST_IK_AM_2 Step 1 Terminal",
-      "childContextNames" : [ ],
-      "startupControlType" : "AUTOMATIC",
-      "skippedContexts" : { },
-      "heldContexts" : { },
       "ordinal" : -1,
       "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal"
     }, {
       "agentName" : "scheduler-agent",
       "jobName" : "TEST_IK_JOB_9",
-      "childContextNames" : [ ],
-      "startupControlType" : "AUTOMATIC",
-      "skippedContexts" : { },
-      "heldContexts" : { },
       "ordinal" : 11,
       "identifier" : "scheduler-agent-TEST_IK_JOB_9"
     }, {
       "agentName" : "CONTEXT_START_JOB",
       "jobName" : "TEST_IK_GLOB Step 3 Start",
-      "childContextNames" : ["TEST_IK_GLOB Step 3" ],
-      "startupControlType" : "AUTOMATIC",
-      "skippedContexts" : { },
-      "heldContexts" : { },
       "ordinal" : -1,
       "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 3 Start"
     },{
       "agentName" : "CONTEXT_TERMINAL_JOB",
       "jobName" : "TEST_IK_GLOB Step 3 Terminal",
-      "childContextNames" : ["TEST_IK_GLOB Step 3" ],
-      "startupControlType" : "AUTOMATIC",
-      "skippedContexts" : { },
-      "heldContexts" : { },
       "ordinal" : -1,
       "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 3 Terminal"
     },{
       "agentName" : "CONTEXT_TERMINAL_JOB",
       "jobName" : "TEST_IK_LOCK_1 Step 2 Terminal",
-      "childContextNames" : ["TEST_IK_LOCK_1 Step 2" ],
-      "startupControlType" : "AUTOMATIC",
-      "skippedContexts" : { },
-      "heldContexts" : { },
       "ordinal" : -1,
       "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal"
     }],
@@ -622,64 +538,36 @@
             "scheduledJobs" : [ {
               "agentName" : "CONTEXT_TERMINAL_JOB",
               "jobName" : "TEST_IK_GLOB Step 3 Terminal",
-              "childContextNames" : ["TEST_IK_GLOB Step 3" ],
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : -1,
               "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 3 Terminal"
             },{
               "agentName" : "CONTEXT_START_JOB",
               "jobName" : "TEST_IK_EVENT1 Step 1 Start",
-              "childContextNames" : [ "TEST_IK_EVENT1 Step 1" ],
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : -1,
               "identifier" : "CONTEXT_START_JOB-TEST_IK_EVENT1 Step 1 Start"
             }, {
               "agentName" : "scheduler-agent",
               "jobName" : "TEST_IK_JOB_15",
-              "childContextNames" : [ ],
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : 5,
               "identifier" : "scheduler-agent-TEST_IK_JOB_15"
             }, {
               "agentName" : "scheduler-agent",
               "jobName" : "TEST_IK_JOB_16",
-              "childContextNames" : [ ],
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : 7,
               "identifier" : "scheduler-agent-TEST_IK_JOB_16"
             }, {
               "agentName" : "scheduler-agent",
               "jobName" : "TEST_IK_JOB_18",
-              "childContextNames" : [ ],
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : 6,
               "identifier" : "scheduler-agent-TEST_IK_JOB_18"
             }, {
               "agentName" : "CONTEXT_TERMINAL_JOB",
               "jobName" : "TEST_IK_EVENT2 Step 2 Terminal",
-              "childContextNames" : ["TEST_IK_EVENT2 Step 2" ],
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : -1,
               "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal"
             },{
               "agentName" : "CONTEXT_TERMINAL_JOB",
               "jobName" : "TEST_IK_EVENT1 Step 1 Terminal",
-              "childContextNames" : ["TEST_IK_EVENT1 Step 1" ],
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : -1,
               "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT1 Step 1 Terminal"
             }],
@@ -743,34 +631,21 @@
             "scheduledJobs" : [ {
               "agentName" : "scheduler-agent",
               "jobName" : "TEST_IK_JOB_15",
-              "childContextNames" : [ ],
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : 1,
               "identifier" : "scheduler-agent-TEST_IK_JOB_15"
             }, {
               "agentName" : "scheduler-agent",
               "jobName" : "TEST_IK_JOB_17",
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : 2,
               "identifier" : "scheduler-agent-TEST_IK_JOB_17"
             }, {
               "agentName" : "CONTEXT_START_JOB",
               "jobName" : "TEST_IK_EVENT2 Step 1 Start",
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : -1,
               "identifier" : "CONTEXT_START_JOB-TEST_IK_EVENT2 Step 1 Start"
             },{
               "agentName" : "CONTEXT_TERMINAL_JOB",
               "jobName" : "TEST_IK_EVENT2 Step 1 Terminal",
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : -1,
               "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal"
             }],
@@ -812,31 +687,21 @@
             "scheduledJobs" : [ {
               "agentName" : "CONTEXT_TERMINAL_JOB",
               "jobName" : "TEST_IK_EVENT2 Step 1 Terminal",
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : -1,
               "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal"
             }, {
               "agentName" : "CONTEXT_START_JOB",
               "jobName" : "TEST_IK_EVENT2 Step 2 Start",
-              "startupControlType" : "AUTOMATIC",
               "ordinal" : -1,
               "identifier" : "CONTEXT_START_JOB-TEST_IK_EVENT2 Step 2 Start"
             },{
               "agentName" : "scheduler-agent",
               "jobName" : "TEST_IK_JOB_18",
-              "childContextNames" : [ ],
-              "startupControlType" : "AUTOMATIC",
               "ordinal" : 2,
               "identifier" : "scheduler-agent-TEST_IK_JOB_18"
             },{
               "agentName" : "CONTEXT_TERMINAL_JOB",
               "jobName" : "TEST_IK_EVENT2 Step 2 Terminal",
-              "childContextNames" : ["TEST_IK_EVENT2 Step 2" ],
-              "startupControlType" : "AUTOMATIC",
-              "skippedContexts" : { },
-              "heldContexts" : { },
               "ordinal" : -1,
               "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal"
             } ],

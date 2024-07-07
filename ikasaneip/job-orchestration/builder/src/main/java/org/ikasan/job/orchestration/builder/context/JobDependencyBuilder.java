@@ -7,7 +7,6 @@ import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 public class JobDependencyBuilder {
     protected String agentName;
     protected String jobName;
-    protected boolean eventDependency = false;
     private LogicalGrouping logicalGrouping;
 
     /**
@@ -40,19 +39,6 @@ public class JobDependencyBuilder {
         return this;
     }
 
-
-    /**
-     * Sets whether the job dependency is an event dependency or not.
-     *
-     * @param isEventDependency true if the job dependency is an event dependency, false otherwise
-     * @return the JobDependencyBuilder instance
-     */
-    public JobDependencyBuilder withIsEventDependency(boolean isEventDependency) {
-        this.eventDependency = isEventDependency;
-
-        return this;
-    }
-
     /**
      * Sets the logical grouping for the JobDependencyBuilder.
      *
@@ -79,7 +65,6 @@ public class JobDependencyBuilder {
         JobDependency jobDependency = new JobDependencyImpl();
         jobDependency.setJobIdentifier(this.agentName+"-"+this.jobName);
         jobDependency.setLogicalGrouping(this.logicalGrouping);
-        jobDependency.setEventDependency(this.eventDependency);
 
         return jobDependency;
     }

@@ -161,49 +161,62 @@ public abstract class Draw2dAdapterBase {
 
                 int imageHeight = 100;
                 int imageWidth = 100;
+                boolean userDataSet = false;
                 if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance) {
                     userDataBuilder.withItemType(UserData.INTERNAL_EVENT_DRIVEN_JOB);
+                    userDataSet = true;
                 }
                 else if(schedulerJob instanceof FileEventDrivenJob || schedulerJob instanceof FileEventDrivenJobInstance) {
                     userDataBuilder.withItemType(UserData.FILE_EVENT_DRIVEN_JOB);
+                    userDataSet = true;
                 }
                 else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
                     userDataBuilder.withItemType(UserData.QUARTZ_EVENT_DRIVEN_JOB);
+                    userDataSet = true;
                 }
                 else if(schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
                     userDataBuilder.withItemType(UserData.GLOBAL_EVENT_DRIVEN_JOB);
+                    userDataSet = true;
                 }
                 else if(schedulerJob instanceof ContextStartJob || schedulerJob instanceof ContextStartJobInstance) {
                     userDataBuilder.withItemType(UserData.CONTEXT_START_JOB);
+                    userDataSet = true;
                     imageHeight = 50;
                     imageWidth = 50;
                 }
                 else if(schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextTerminalJobInstance) {
                     userDataBuilder.withItemType(UserData.CONTEXT_TERMINAL_JOB);
+                    userDataSet = true;
                     imageHeight = 50;
                     imageWidth = 50;
                 }
-
-                ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
-                    .withId(job.getIdentifier())
-                    .withHeight(imageHeight)
-                    .withWidth(imageWidth)
-                    .withPath(image)
-                    .withUserData(userDataBuilder.build());
-
-                if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance
-                    || schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance
-                    || schedulerJob instanceof ContextStartJobInstance || schedulerJob instanceof ContextTerminalJobInstance) {
-                    jobBuilder.withLeftPort()
-                        .withRightPort();
-                }
-                else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
-                    jobBuilder.withRightPort();
+                else if(schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance) {
+                    userDataBuilder.withItemType(UserData.LOCAL_EVENT_JOB);
+                    userDataSet = true;
                 }
 
-                diagramBuilder.addItem(jobBuilder
-                    .build());
+                if(userDataSet) {
+                    ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
+                        .withId(job.getIdentifier())
+                        .withHeight(imageHeight)
+                        .withWidth(imageWidth)
+                        .withPath(image)
+                        .withUserData(userDataBuilder.build());
 
+                    if (schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance
+                        || schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance
+                        || schedulerJob instanceof ContextStartJob || schedulerJob instanceof ContextStartJobInstance
+                        || schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextTerminalJobInstance
+                        || schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance) {
+                        jobBuilder.withLeftPort()
+                            .withRightPort();
+                    } else if (schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
+                        jobBuilder.withRightPort();
+                    }
+
+                    diagramBuilder.addItem(jobBuilder
+                        .build());
+                }
             });
 
             // Work out way through the job dependencies and add connections between jobs.
@@ -211,11 +224,6 @@ public abstract class Draw2dAdapterBase {
             if(context.getJobDependencies() != null) {
                 context.getJobDependencies().forEach(jobDependency -> {
                     if (((JobDependency) jobDependency).getLogicalGrouping() != null) {
-                            context.getContexts().forEach(child -> {
-                                if(((Context)child).getScheduledJobsMap()
-                                    .containsKey(((JobDependency) jobDependency).getJobIdentifier())) {
-                                }
-                            });
                         this.manageLogicalGroupings(context, ((JobDependency) jobDependency).getJobIdentifier(),
                             ((JobDependency) jobDependency).getLogicalGrouping(), diagramBuilder, graph);
                     }
@@ -319,7 +327,8 @@ public abstract class Draw2dAdapterBase {
 
                             if(inboundConnections.contains(((PositionedItem) item).getId())){
                                 if(!((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_START_JOB) &&
-                                    !((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_TERMINAL_JOB)) {
+                                    !((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_TERMINAL_JOB) &&
+                                    !((Image) item).getUserData().getItemType().equals(UserData.LOCAL_EVENT_JOB)) {
                                     Circle eventCircle = new CircleBuilder()
                                         .withColor(IkasanColours.BLACK)
                                         .withBgColor(IkasanColours.SCHEDULER_EVENT_YELLOW)
@@ -640,18 +649,13 @@ public abstract class Draw2dAdapterBase {
                 if(and.getLogicalGrouping() != null) {
                     manageLogicalGroupings(context, jobIdentifier, and.getLogicalGrouping(), diagramBuilder, graph);
                 }
-                else {
-                    context.getContexts().forEach(child -> {
-                        if(((Context)child).getScheduledJobsMap().containsKey(and.getIdentifier())) {
-                        }
-                    });
-                    if(context.getScheduledJobsMap().containsKey(and.getIdentifier())
-                        && !((SchedulerJob)context.getScheduledJobsMap().get(and.getIdentifier())).getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
-                        graph.addEdge(and.getIdentifier(), jobIdentifier);
+                else if(context.getScheduledJobsMap().containsKey(and.getIdentifier())
+                    && !((SchedulerJob)context.getScheduledJobsMap().get(and.getIdentifier()))
+                        .getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                    graph.addEdge(and.getIdentifier(), jobIdentifier);
 
-                        this.addConnection(and.getIdentifier(), "rightHybridSource"
-                            , jobIdentifier, "leftHybridTarget", diagramBuilder);
-                    }
+                    this.addConnection(and.getIdentifier(), "rightHybridSource"
+                        , jobIdentifier, "leftHybridTarget", diagramBuilder);
                 }
             });
         }
@@ -764,43 +768,46 @@ public abstract class Draw2dAdapterBase {
             -> precedingJobIdentifiers.add(contextTransition.getPrecedingJob().getIdentifier()));
 
         contextTransitions.forEach(contextTransition -> {
-            contextTransition.getContexts().forEach(context -> {
-                Context child = ContextHelper.getChildContext(context, parentContext);
+            if(!contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                contextTransition.getContexts().forEach(context -> {
+                    Context child = ContextHelper.getChildContext(context, parentContext);
 
-                if(child != null) {
-                    List<String> jobIdentifiers = (List<String>) child.getScheduledJobs().stream()
-                        .map(job -> ((SchedulerJob)job).getIdentifier())
-                        .collect(Collectors.toList());
+                    if (child != null) {
+                        List<String> jobIdentifiers = (List<String>) child.getScheduledJobs().stream()
+                            .map(job -> ((SchedulerJob) job).getIdentifier())
+                            .collect(Collectors.toList());
 
-                    if(!jobIdentifiers.stream().anyMatch(element -> precedingJobIdentifiers.contains(element))) return;
-                }
-
-                String contextName = context;
-                if(!linkingConnections.contains(context)) {
-                    context = context + "_out";
-                }
-
-                if(!graph.containsVertex(context)) {
-                    graph.addVertex(context);
-
-                    if (!addedContexts.contains(context)) {
-                        UserDataBuilder userDataBuilder = new UserDataBuilder()
-                            .withIdentifier(context)
-                            .withItemType(UserData.CONTEXT)
-                            .withContextName(contextName);
-
-                        precedingJobIdentifiers.forEach(id -> userDataBuilder.addPreviousJobIdentifiers(id));
-
-                        this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
-                        addedContexts.add(context);
+                        if (!jobIdentifiers.stream().anyMatch(element -> precedingJobIdentifiers.contains(element)))
+                            return;
                     }
-                }
 
-                this.addConnection(contextTransition.getPrecedingJob().getIdentifier(), "rightHybridSource"
-                    , context, "leftHybridTarget", diagramBuilder);
+                    String contextName = context;
+                    if (!linkingConnections.contains(context)) {
+                        context = context + "_out";
+                    }
 
-                graph.addEdge(contextTransition.getPrecedingJob().getIdentifier(), context);
-            });
+                    if (!graph.containsVertex(context)) {
+                        graph.addVertex(context);
+
+                        if (!addedContexts.contains(context)) {
+                            UserDataBuilder userDataBuilder = new UserDataBuilder()
+                                .withIdentifier(context)
+                                .withItemType(UserData.CONTEXT)
+                                .withContextName(contextName);
+
+                            precedingJobIdentifiers.forEach(id -> userDataBuilder.addPreviousJobIdentifiers(id));
+
+                            this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
+                            addedContexts.add(context);
+                        }
+                    }
+
+                    this.addConnection(contextTransition.getPrecedingJob().getIdentifier(), "rightHybridSource"
+                        , context, "leftHybridTarget", diagramBuilder);
+
+                    graph.addEdge(contextTransition.getPrecedingJob().getIdentifier(), context);
+                });
+            }
         });
     }
 
@@ -830,49 +837,50 @@ public abstract class Draw2dAdapterBase {
         });
 
         contextTransitions.forEach(contextTransition -> {
-            contextTransition.getContexts().forEach(context -> {
-                String contextName = context;
-                if(!linkingConnections.contains(context)) {
-                    context = context + "_in";
-                }
-                if (!addedContexts.contains(context) && ! graph.containsVertex(context)) {
-                    graph.addVertex(context);
-
-                    UserDataBuilder userDataBuilder = new UserDataBuilder()
-                        .withIdentifier(context)
-                        .withItemType(UserData.CONTEXT)
-                        .withContextName(contextName);
-
-                    subsequentJobIdentifiers.forEach(id ->
-                    {
-                        SchedulerJob internalEventDrivenJob = schedulerJobsMap.get(id);
-                        if(internalEventDrivenJob != null && internalEventDrivenJob
-                            .getChildContextNames().contains(contextName)) {
-                            userDataBuilder.addSubsequentJobIdentifiers(id);
-                        }
-                    });
-
-                    this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
-                }
-
-                if(!contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_START_JOB)
-                    && !contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
-                    this.addConnection(context, "rightHybridSource"
-                        , contextTransition.getPrecedingJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
-
-                    graph.addEdge(context, contextTransition.getPrecedingJob().getIdentifier());
-                }
-                else {
-                    this.addConnection(context, "rightHybridSource"
-                        , contextTransition.getSubsequentJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
-
-                    if(graph.containsVertex(contextTransition.getSubsequentJob().getIdentifier())) {
-                        graph.addEdge(context, contextTransition.getSubsequentJob().getIdentifier());
+            if(!contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                contextTransition.getContexts().forEach(context -> {
+                    String contextName = context;
+                    if (!linkingConnections.contains(context)) {
+                        context = context + "_in";
                     }
-                }
+                    if (!addedContexts.contains(context) && !graph.containsVertex(context)) {
+                        graph.addVertex(context);
 
-                addedContexts.add(context);
-            });
+                        UserDataBuilder userDataBuilder = new UserDataBuilder()
+                            .withIdentifier(context)
+                            .withItemType(UserData.CONTEXT)
+                            .withContextName(contextName);
+
+                        subsequentJobIdentifiers.forEach(id ->
+                        {
+                            SchedulerJob internalEventDrivenJob = schedulerJobsMap.get(id);
+                            if (internalEventDrivenJob != null && internalEventDrivenJob
+                                .getChildContextNames().contains(contextName)) {
+                                userDataBuilder.addSubsequentJobIdentifiers(id);
+                            }
+                        });
+
+                        this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
+                    }
+
+                    if (!contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                        && !contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                        this.addConnection(context, "rightHybridSource"
+                            , contextTransition.getPrecedingJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
+
+                        graph.addEdge(context, contextTransition.getPrecedingJob().getIdentifier());
+                    } else {
+                        this.addConnection(context, "rightHybridSource"
+                            , contextTransition.getSubsequentJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
+
+                        if (graph.containsVertex(contextTransition.getSubsequentJob().getIdentifier())) {
+                            graph.addEdge(context, contextTransition.getSubsequentJob().getIdentifier());
+                        }
+                    }
+
+                    addedContexts.add(context);
+                });
+            }
         });
 
         return subsequentJobIdentifiers;
@@ -884,17 +892,17 @@ public abstract class Draw2dAdapterBase {
      *
      * @param context
      * @param parentContext
-     * @param internalEventDrivenJobMap
+     * @param schedulerJobMap
      * @return
      */
-    private Tree<String> getLinkedContexts(Context context, Context parentContext, Map<String, SchedulerJob> internalEventDrivenJobMap) {
+    private Tree<String> getLinkedContexts(Context context, Context parentContext, Map<String, SchedulerJob> schedulerJobMap) {
         Tree<String> tree = new Tree<>(new TreeNode<>(context.getName()));
 
         if(!context.getContexts().isEmpty()) {
             Map<String, List<String>> contextSubsequentTransitionMap = new HashMap<>();
 
             List<String> subsequentTransitions = (List<String>) ContextHelper.determineIfJobsTransitionToOtherContexts
-                (parentContext, context.getScheduledJobsMap(), context, internalEventDrivenJobMap)
+                (parentContext, context.getScheduledJobsMap(), context, schedulerJobMap)
                 .stream()
                 .flatMap(contextTransition -> ((ContextTransition)contextTransition).getContexts().stream())
                 .filter(contextName -> !contextName.equals(context.getName()))
@@ -902,15 +910,7 @@ public abstract class Draw2dAdapterBase {
                 .collect(Collectors.toList());
 
             context.getContexts().forEach(child -> {
-                List<String> childSubsequentTransitions = (List<String>) ContextHelper.determineIfJobsTransitionToOtherContexts
-                    (parentContext, ((Context)child).getScheduledJobsMap(), (Context)child, internalEventDrivenJobMap)
-                    .stream()
-                    .flatMap(contextTransition -> ((ContextTransition)contextTransition).getContexts().stream())
-                    .filter(contextName -> !contextName.equals(context.getName()))
-                    .distinct()
-                    .collect(Collectors.toList());;
-
-                contextSubsequentTransitionMap.put(((Context<?, ?, ?, ?>) child).getName(), childSubsequentTransitions);
+                this.getAllChildContextTransitions(context, (Context) child, parentContext, contextSubsequentTransitionMap, schedulerJobMap);
             });
 
             AtomicReference<TreeNode<String>> node = new AtomicReference<>();
@@ -928,6 +928,26 @@ public abstract class Draw2dAdapterBase {
         }
 
         return tree;
+    }
+
+    private void getAllChildContextTransitions(Context theContext, Context context, Context parentContext, Map<String, List<String>> contextSubsequentTransitionMap
+        , Map<String, SchedulerJob> schedulerJobMap) {
+        context.getContexts().forEach(child -> {
+            List<String> childSubsequentTransitions = (List<String>) ContextHelper.determineIfJobsTransitionToOtherContexts
+                    (parentContext, ((Context)child).getScheduledJobsMap(), (Context)child, schedulerJobMap)
+                .stream()
+                .flatMap(contextTransition -> ((ContextTransition)contextTransition).getContexts().stream())
+                .filter(contextName -> !contextName.equals(context.getName()) && !contextName.equals(theContext.getName()))
+                .distinct()
+                .collect(Collectors.toList());;
+
+            ((Context<?, ?, ?, ?>) child).getContexts().forEach(c
+                -> getAllChildContextTransitions(theContext, c, (Context) child, contextSubsequentTransitionMap, schedulerJobMap));
+
+            if(!((Context<?, ?, ?, ?>) child).getName().equals(theContext.getName())) {
+                contextSubsequentTransitionMap.put(((Context<?, ?, ?, ?>) child).getName(), childSubsequentTransitions);
+            }
+        });
     }
 
     /**
@@ -994,7 +1014,8 @@ public abstract class Draw2dAdapterBase {
 
             jobsInto.forEach(jobsOtherContexts -> {
                 if(jobsOtherContexts.getSubsequentJob().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
-                    LinkedList<List<SchedulerJob>> trace = ContextHelper.traceJobThroughContext(parentContext, jobsOtherContexts.getSubsequentJob().getJobName(), context.getName());
+                    LinkedList<List<SchedulerJob>> trace = ContextHelper.traceJobThroughContext
+                        (parentContext, jobsOtherContexts.getSubsequentJob().getJobName(), context.getName());
                     if(!trace.isEmpty()) {
                         List<SchedulerJob> subsequentJobs = trace.get(0);
                         if(!subsequentJobs.isEmpty()) {
@@ -1145,25 +1166,25 @@ public abstract class Draw2dAdapterBase {
      */
     protected void drawContextBoundary(mxCell cell, ArrayList<Object> imageOverlay, UserData userData
         , DiagramBuilder diagramBuilder, String groupId) {
-        RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
-            .withWidth(200)
-            .withHeight(200)
-            .withStroke(3)
-            .withRadius(10)
-            .withX(cell.getGeometry().getX() + 550)
-            .withY(cell.getGeometry().getY() + 550)
-            .withSelectable(false)
-            .withDraggable(false)
-            .withResizable(false)
-            .withDasharray("--")
-            .withBgColor(IkasanColours.TRANSPARENT)
-            .withColor(IkasanColours.BLACK);
-
-        Rectangle rectangle = rb.build();
-        rectangle.setUserData(userData);
-        rectangle.setComposite(groupId);
-
-        imageOverlay.add(rectangle);
+//        RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
+//            .withWidth(110)
+//            .withHeight(110)
+//            .withStroke(3)
+//            .withRadius(10)
+//            .withX(cell.getGeometry().getX() + 595)
+//            .withY(cell.getGeometry().getY() + 595)
+//            .withSelectable(false)
+//            .withDraggable(false)
+//            .withResizable(false)
+//            .withDasharray("--")
+//            .withBgColor(IkasanColours.TRANSPARENT)
+//            .withColor(IkasanColours.BLACK);
+//
+//        Rectangle rectangle = rb.build();
+//        rectangle.setUserData(userData);
+//        rectangle.setComposite(groupId);
+//
+//        imageOverlay.add(rectangle);
     }
 
     /**
@@ -1277,6 +1298,9 @@ public abstract class Draw2dAdapterBase {
         else if(schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextStartJobInstance) {
             image = "frontend/images/terminal-job.png";
         }
+        else if(schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance) {
+            image = "frontend/images/local-event-job.png";
+        }
 
         return image;
     }
@@ -1359,7 +1383,7 @@ public abstract class Draw2dAdapterBase {
             .withId(identifier)
             .withHeight(100)
             .withWidth(100)
-            .withPath("frontend/images/external-context.png")
+            .withPath("frontend/images/context-icon.png")
             .withUserData(userData)
             .withLeftPort()
             .withRightPort();
