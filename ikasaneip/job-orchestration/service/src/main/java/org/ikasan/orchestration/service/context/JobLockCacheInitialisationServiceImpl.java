@@ -10,6 +10,12 @@ public class JobLockCacheInitialisationServiceImpl implements JobLockCacheInitia
 
     protected final JobLockCacheService jobLockCacheService;
 
+    /**
+     * Initializes the job lock cache with the provided job lock cache service.
+     *
+     * @param jobLockCacheService the job lock cache service
+     * @throws IllegalArgumentException if jobLockCacheService is null
+     */
     public JobLockCacheInitialisationServiceImpl(JobLockCacheService jobLockCacheService) {
         this.jobLockCacheService = jobLockCacheService;
         if(this.jobLockCacheService == null) {

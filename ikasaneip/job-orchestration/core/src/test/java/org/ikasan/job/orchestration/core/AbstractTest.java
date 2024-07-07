@@ -15,8 +15,12 @@ import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEv
 import org.ikasan.job.orchestration.model.instance.ContextStartJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextTerminalJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.LocalEventJobInstanceImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.scheduled.instance.model.SolrLocalEventJobInstanceImpl;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
@@ -291,25 +295,30 @@ public class AbstractTest
         Assert.assertEquals(expected, status);
     }
 
-    public Map<String, ContextTerminalJobInstance> loadContextTerminalJobInstanceMap(ContextInstance contextInstance, String directory, String jobsBase) throws IOException {
-        List<ContextTerminalJobInstance> files = Files.list(Path.of(directory)).map(path -> {
-            ContextTerminalJobInstance contextTerminalJobInstance = null;
-            try {
-                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
-                contextTerminalJobInstance = objectMapper.readValue(jobJson, ContextTerminalJobInstanceImpl.class);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return contextTerminalJobInstance;
-        }).collect(Collectors.toList());
 
-        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap =  files.stream()
-            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+    /**
+     * Loads a map of ContextTerminalJobInstance objects based on the given context template and instance.
+     *
+     * @param  contextTemplate    The context template.
+     * @param  contextInstance    The context instance.
+     * @return A map of ContextTerminalJobInstance objects, where the key is the identifier of the job and child context name (if applicable), and the value is
+     * the corresponding ContextTerminalJobInstance.
+     */
+    public Map<String, ContextTerminalJobInstance> loadContextTerminalJobInstanceMap(ContextTemplate contextTemplate, ContextInstance contextInstance) {
+        Map<String, ContextTerminalJobInstance> contextStartJobInstanceMap = ContextHelper.getContextTerminalJobsFromContext(contextTemplate).stream()
+            .map(localEventJob -> {
+                ContextTerminalJobInstance contextStartJobInstance = new ContextTerminalJobInstanceImpl();
+                contextStartJobInstance.setJobName(localEventJob.getJobName());
+                contextStartJobInstance.setContextName(contextTemplate.getName());
+                contextStartJobInstance.setContextInstanceId(contextInstance.getId());
+                contextStartJobInstance.setOrdinal(localEventJob.getOrdinal());
+                return contextStartJobInstance;
+            }).collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity(), (key1, key2)-> key2));
 
         List<ContextTerminalJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
 
         contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
-            ContextTerminalJobInstance instance = contextTerminalJobInstanceMap.get(schedulerJobInstance.getIdentifier());
+            ContextTerminalJobInstance instance = contextStartJobInstanceMap.get(schedulerJobInstance.getIdentifier());
 
             if(instance != null) {
                 ContextTerminalJobInstance contextualisedInstance = (ContextTerminalJobInstance) SerializationUtils.clone(instance);
@@ -324,20 +333,24 @@ public class AbstractTest
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
     }
 
-    public Map<String, ContextStartJobInstance> loadContextStartJobInstanceMap(ContextInstance contextInstance, String directory, String jobsBase) throws IOException {
-        List<ContextStartJobInstance> files = Files.list(Path.of(directory)).map(path -> {
-            ContextStartJobInstance contextStartJobInstance = null;
-            try {
-                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
-                contextStartJobInstance = objectMapper.readValue(jobJson, ContextStartJobInstanceImpl.class);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return contextStartJobInstance;
-        }).collect(Collectors.toList());
-
-        Map<String, ContextStartJobInstance> contextStartJobInstanceMap =  files.stream()
-            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (job1, job2) -> job1));
+    /**
+     * Loads a map of ContextStartJobInstance objects based on the given context template and instance.
+     *
+     * @param  contextTemplate   The context template.
+     * @param  contextInstance   The context instance.
+     * @return A map of ContextStartJobInstance objects, where the key is the identifier of the job and child context name (if applicable),
+     *         and the value is the corresponding ContextStartJobInstance.
+     */
+    public Map<String, ContextStartJobInstance> loadContextStartJobInstanceMap(ContextTemplate contextTemplate, ContextInstance contextInstance) {
+        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = ContextHelper.getContextStartJobsFromContext(contextTemplate).stream()
+            .map(localEventJob -> {
+                ContextStartJobInstance contextStartJobInstance = new ContextStartJobInstanceImpl();
+                contextStartJobInstance.setJobName(localEventJob.getJobName());
+                contextStartJobInstance.setContextName(contextTemplate.getName());
+                contextStartJobInstance.setContextInstanceId(contextInstance.getId());
+                contextStartJobInstance.setOrdinal(localEventJob.getOrdinal());
+                return contextStartJobInstance;
+            }).collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity(), (key1, key2)-> key2));
 
         List<ContextStartJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
 
@@ -357,6 +370,54 @@ public class AbstractTest
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
     }
 
+    /**
+     * Loads and returns a map of LocalEventJobInstance objects.
+     * The map is populated based on the given ContextTemplate and ContextInstance.
+     *
+     * @param contextTemplate The context template used to populate the map.
+     * @param contextInstance The context instance used to populate the map.
+     * @return A map of LocalEventJobInstance objects, where the key is the identifier concatenated with the child context name,
+     *         and the value is the LocalEventJobInstance object.
+     */
+    public Map<String, LocalEventJobInstance> loadLocalEventJobInstanceMap(ContextTemplate contextTemplate, ContextInstance contextInstance) {
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = ContextHelper.getLocalEventJobsFromContext(contextTemplate).stream()
+            .map(localEventJob -> {
+                LocalEventJobInstance contextStartJobInstance = new LocalEventJobInstanceImpl();
+                contextStartJobInstance.setJobName(localEventJob.getJobName());
+                contextStartJobInstance.setContextName(contextTemplate.getName());
+                contextStartJobInstance.setContextInstanceId(contextInstance.getId());
+                contextStartJobInstance.setOrdinal(localEventJob.getOrdinal());
+                return contextStartJobInstance;
+            }).collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity(), (key1, key2)-> key2));
+
+        List<LocalEventJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
+
+        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
+            LocalEventJobInstance instance = localEventJobInstanceMap.get(schedulerJobInstance.getIdentifier());
+
+            if(instance != null) {
+                LocalEventJobInstance contextualisedInstance = (LocalEventJobInstance) SerializationUtils.clone(instance);
+                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
+                contextualisedInstance.setContextInstanceId(contextInstance.getId());
+
+                contextualisedSchedulerJobInstances.add(contextualisedInstance);
+            }
+        });
+
+        return contextualisedSchedulerJobInstances.stream()
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+    }
+
+    /**
+     * Loads a map of InternalEventDrivenJobInstance objects based on the given context instance, directory, and jobsBase.
+     *
+     * @param contextInstance The context instance.
+     * @param directory The directory where the job instances are stored.
+     * @param jobsBase The base directory for the jobs.
+     * @return A map of InternalEventDrivenJobInstance objects, where the key is the identifier of the job and child context name (if applicable),
+     *         and the value is the corresponding InternalEventDrivenJobInstance.
+     * @throws IOException If an I/O error occurs while loading the job instances.
+     */
     public Map<String, InternalEventDrivenJobInstance> loadInternalEventDrivenJobInstanceMap(ContextInstance contextInstance, String directory, String jobsBase) throws IOException {
         List<InternalEventDrivenJobInstance> files = Files.list(Path.of(directory)).map(path -> {
             InternalEventDrivenJobInstance internalEventDrivenJob = null;

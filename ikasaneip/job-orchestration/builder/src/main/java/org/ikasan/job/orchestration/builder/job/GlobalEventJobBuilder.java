@@ -7,21 +7,25 @@ import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import java.util.List;
 
 public class GlobalEventJobBuilder extends SchedulerJobBuilder {
+
+
     /**
+     * Builds a GlobalEventJob instance with the specified properties.
      *
+     * @return a GlobalEventJob instance
+     * @throws ContextBuilderException if either agentName or jobName is null
      */
     public GlobalEventJob build() {
-        if(this.agentName == null || this.jobName == null) {
-            throw new ContextBuilderException("Both agent name and job name must no be null!");
+        if(this.jobName == null) {
+            throw new ContextBuilderException("Job name must no be null!");
         }
 
         GlobalEventJob globalEventJob = new GlobalEventJobImpl();
         globalEventJob.setJobName(this.jobName);
         globalEventJob.setJobDescription(this.description);
-        globalEventJob.setStartupControlType(this.startupControlType);
         globalEventJob.setContextName(this.contextName);
-        globalEventJob.setChildContextNames(super.childContextNames);
         globalEventJob.setDisplayName(super.displayName);
+        globalEventJob.setStartupControlType(null);
 
         return globalEventJob;
     }
