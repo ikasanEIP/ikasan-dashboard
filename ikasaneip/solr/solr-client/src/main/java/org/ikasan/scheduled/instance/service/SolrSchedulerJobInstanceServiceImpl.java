@@ -238,6 +238,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                     contextStartJobInstance.setJobName(contextStartJob.getJobName());
                     contextStartJobInstance.setContextName(contextTemplate.getName());
                     contextStartJobInstance.setContextInstanceId(contextInstance.getId());
+                    contextStartJobInstance.setOrdinal(contextStartJob.getOrdinal());
                     return contextStartJobInstance;
                 }).collect(Collectors.toList()));
 
@@ -249,7 +250,20 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                     contextTerminalJobInstance.setJobName(contextTerminalJob.getJobName());
                     contextTerminalJobInstance.setContextName(contextTemplate.getName());
                     contextTerminalJobInstance.setContextInstanceId(contextInstance.getId());
+                    contextTerminalJobInstance.setOrdinal(contextTerminalJob.getOrdinal());
                     return contextTerminalJobInstance;
+                }).collect(Collectors.toList()));
+
+            // We are automating the creation of the local event job instances by dipping into the
+            // context template via the ContextHelper and extracting all of the local event jobs.
+            schedulerJobInstances.addAll(ContextHelper.getLocalEventJobsFromContext(contextTemplate).stream()
+                .map(localEventJob -> {
+                    LocalEventJobInstance localEventJobInstance = new SolrLocalEventJobInstanceImpl();
+                    localEventJobInstance.setJobName(localEventJob.getJobName());
+                    localEventJobInstance.setContextName(contextTemplate.getName());
+                    localEventJobInstance.setContextInstanceId(contextInstance.getId());
+                    localEventJobInstance.setOrdinal(localEventJob.getOrdinal());
+                    return localEventJobInstance;
                 }).collect(Collectors.toList()));
 
             Map<String, SchedulerJobInstance> schedulerJobInstanceMap = schedulerJobInstances.stream()

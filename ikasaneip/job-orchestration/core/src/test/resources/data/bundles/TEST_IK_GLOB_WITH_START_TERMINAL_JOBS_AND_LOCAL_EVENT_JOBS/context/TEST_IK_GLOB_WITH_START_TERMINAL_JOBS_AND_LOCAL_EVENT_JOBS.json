@@ -1,0 +1,1138 @@
+{
+  "contexts" : [ {
+    "contexts" : [ ],
+    "scheduledJobs" : [ {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_2",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_2"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_1",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_1"
+    },{
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_GLOB Step 1 Terminal",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 1 Terminal"
+    } ],
+    "jobLocks" : [ ],
+    "name" : "TEST_IK_GLOB Step 1",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_2"
+    }, {
+      "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_1",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-TEST_IK_JOB_2"
+        } ]
+      }
+    } , {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 1 Terminal",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-TEST_IK_JOB_1"
+        } ]
+      }
+    } ],
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 0,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ {
+      "contexts" : [ {
+        "contexts" : [ ],
+        "scheduledJobs" : [ {
+          "agentName" : "CONTEXT_TERMINAL_JOB",
+          "jobName" : "TEST_IK_GLOB Step 1 Terminal",
+          "childContextNames" : [ ],
+          "startupControlType" : "AUTOMATIC",
+          "skippedContexts" : { },
+          "heldContexts" : { },
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 1 Terminal"
+        }, {
+          "agentName" : "CONTEXT_START_JOB",
+          "jobName" : "TEST_IK_AM_1 Step 1 Start",
+          "childContextNames" : [ ],
+          "startupControlType" : "AUTOMATIC",
+          "skippedContexts" : { },
+          "heldContexts" : { },
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_AM_1 Step 1 Start"
+        },{
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_1",
+          "childContextNames" : [ ],
+          "startupControlType" : "AUTOMATIC",
+          "skippedContexts" : { },
+          "heldContexts" : { },
+          "ordinal" : 0,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_1"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_3",
+          "childContextNames" : [ ],
+          "startupControlType" : "AUTOMATIC",
+          "skippedContexts" : { },
+          "heldContexts" : { },
+          "ordinal" : 1,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_3"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_4",
+          "childContextNames" : [ ],
+          "startupControlType" : "AUTOMATIC",
+          "skippedContexts" : { },
+          "heldContexts" : { },
+          "ordinal" : 2,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_4"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_5",
+          "childContextNames" : [ ],
+          "startupControlType" : "AUTOMATIC",
+          "skippedContexts" : { },
+          "heldContexts" : { },
+          "ordinal" : 3,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_5"
+        }, {
+          "agentName" : "CONTEXT_TERMINAL_JOB",
+          "jobName" : "TEST_IK_AM_1 Step 1 Terminal",
+          "childContextNames" : [ ],
+          "startupControlType" : "AUTOMATIC",
+          "skippedContexts" : { },
+          "heldContexts" : { },
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_1 Step 1 Terminal"
+        }],
+        "jobLocks" : [ ],
+        "name" : "TEST_IK_AM_1 Step 1",
+        "jobDependencies" : [ {
+          "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_AM_1 Step 1 Start",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 1 Terminal"
+            } ]
+          }
+        },{
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_3",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_AM_1 Step 1 Start"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_4",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_AM_1 Step 1 Start"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_5",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_AM_1 Step 1 Start"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_1 Step 1 Terminal",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-TEST_IK_JOB_3"
+            }, {
+              "identifier" : "scheduler-agent-TEST_IK_JOB_4"
+            }, {
+              "identifier" : "scheduler-agent-TEST_IK_JOB_5"
+            } ]
+          }
+        } ],
+        "contextDependencies" : [ ],
+        "contextParameters" : [ ],
+        "contextTtlMilliseconds" : 0,
+        "treeViewExpandLevel" : 1,
+        "ableToRunConcurrently" : true,
+        "useDisplayName" : false,
+        "ordinal" : 0,
+        "disabled" : false,
+        "quartzScheduleDrivenJobsDisabledForContext" : false
+      } ],
+      "scheduledJobs" : [ ],
+      "jobLocks" : [ ],
+      "name" : "TEST_IK_AM_1",
+      "contextDependencies" : [ ],
+      "contextParameters" : [ ],
+      "contextTtlMilliseconds" : 0,
+      "treeViewExpandLevel" : 1,
+      "ableToRunConcurrently" : true,
+      "useDisplayName" : false,
+      "ordinal" : 0,
+      "disabled" : false,
+      "quartzScheduleDrivenJobsDisabledForContext" : false
+    }, {
+      "contexts" : [ {
+        "contexts" : [ ],
+        "scheduledJobs" : [ {
+          "agentName" : "CONTEXT_TERMINAL_JOB",
+          "jobName" : "TEST_IK_AM_1 Step 1 Terminal",
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_1 Step 1 Terminal"
+        },{
+          "agentName" : "CONTEXT_START_JOB",
+          "jobName" : "TEST_IK_AM_2 Step 1 Start",
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_AM_2 Step 1 Start"
+        },{
+          "agentName" : "CONTEXT_TERMINAL_JOB",
+          "jobName" : "TEST_IK_AM_2 Step 1 Terminal",
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_6",
+          "ordinal" : 4,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_6"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_7",
+          "ordinal" : 5,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_7"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_8",
+          "ordinal" : 6,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_8"
+        } ],
+        "jobLocks" : [ ],
+        "name" : "TEST_IK_AM_2 Step 1",
+        "jobDependencies" : [ {
+          "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-TEST_IK_JOB_6"
+            },{
+              "identifier" : "scheduler-agent-TEST_IK_JOB_7"
+            },{
+              "identifier" : "scheduler-agent-TEST_IK_JOB_8"
+            }]
+          }
+        },{
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_6",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_AM_2 Step 1 Start"
+            }]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_7",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_AM_2 Step 1 Start"
+            }]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_8",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_AM_2 Step 1 Start"
+            }]
+          }
+        }, {
+          "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_AM_2 Step 1 Start",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_1 Step 1 Terminal"
+            }]
+          }
+        } ],
+        "contextDependencies" : [ ],
+        "contextParameters" : [ ],
+        "contextTtlMilliseconds" : 0,
+        "treeViewExpandLevel" : 1,
+        "ableToRunConcurrently" : true,
+        "useDisplayName" : false,
+        "ordinal" : 0,
+        "disabled" : false,
+        "quartzScheduleDrivenJobsDisabledForContext" : false
+      } ],
+      "scheduledJobs" : [ ],
+      "jobLocks" : [ ],
+      "name" : "TEST_IK_AM_2",
+      "contextDependencies" : [ ],
+      "contextParameters" : [ ],
+      "contextTtlMilliseconds" : 0,
+      "treeViewExpandLevel" : 1,
+      "ableToRunConcurrently" : true,
+      "useDisplayName" : false,
+      "ordinal" : 1,
+      "disabled" : false,
+      "quartzScheduleDrivenJobsDisabledForContext" : false
+    } ],
+    "scheduledJobs" : [ ],
+    "jobLocks" : [ ],
+    "name" : "TEST_IK_GLOB Step 2",
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 1,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ {
+      "contexts" : [ {
+        "contexts" : [ ],
+        "scheduledJobs" : [ {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_9",
+          "ordinal" : 11,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_9"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_10",
+          "ordinal" : 3,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_10"
+        }, {
+          "agentName" : "CONTEXT_START_JOB",
+          "jobName" : "TEST_IK_LOCK_1 Step 1 Start",
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 1 Start"
+        },{
+          "agentName" : "CONTEXT_TERMINAL_JOB",
+          "jobName" : "TEST_IK_LOCK_1 Step 1 Terminal",
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal"
+        }],
+        "jobLocks" : [ ],
+        "name" : "TEST_IK_LOCK_1 Step 1",
+        "jobDependencies" : [ {
+          "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-TEST_IK_JOB_10"
+            } ]
+          }
+        },{
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_10",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 1 Start"
+            } ]
+          }
+        },{
+          "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 1 Start",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-TEST_IK_JOB_9"
+            } ]
+          }
+        } ],
+        "contextDependencies" : [ ],
+        "contextParameters" : [ ],
+        "contextTtlMilliseconds" : 0,
+        "treeViewExpandLevel" : 1,
+        "ableToRunConcurrently" : true,
+        "useDisplayName" : false,
+        "ordinal" : 0,
+        "disabled" : false,
+        "quartzScheduleDrivenJobsDisabledForContext" : false
+      }, {
+        "contexts" : [ ],
+        "scheduledJobs" : [ {
+          "agentName" : "CONTEXT_TERMINAL_JOB",
+          "jobName" : "TEST_IK_LOCK_1 Step 1 Terminal",
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal"
+        },{
+          "agentName" : "CONTEXT_TERMINAL_JOB",
+          "jobName" : "TEST_IK_LOCK_1 Step 2 Terminal",
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal"
+        },{
+          "agentName" : "CONTEXT_START_JOB",
+          "jobName" : "TEST_IK_LOCK_1 Step 2 Start",
+          "ordinal" : -1,
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 2 Start"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_14",
+          "ordinal" : 2,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_14"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_13",
+          "ordinal" : 3,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_13"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_12",
+          "ordinal" : 4,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_12"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "TEST_IK_JOB_11",
+          "ordinal" : 5,
+          "identifier" : "scheduler-agent-TEST_IK_JOB_11"
+        } ],
+        "jobLocks" : [ ],
+        "name" : "TEST_IK_LOCK_1 Step 2",
+        "jobDependencies" : [ {
+          "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-TEST_IK_JOB_14"
+            },{
+              "identifier" : "scheduler-agent-TEST_IK_JOB_13"
+            },{
+              "identifier" : "scheduler-agent-TEST_IK_JOB_12"
+            },{
+              "identifier" : "scheduler-agent-TEST_IK_JOB_11"
+            } ]
+          }
+        },{
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_14",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 2 Start"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_13",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 2 Start"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_12",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 2 Start"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_11",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 2 Start"
+            } ]
+          }
+        } , {
+          "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_LOCK_1 Step 2 Start",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 1 Terminal"
+            } ]
+          }
+        } ],
+        "contextDependencies" : [ ],
+        "contextParameters" : [ ],
+        "contextTtlMilliseconds" : 0,
+        "treeViewExpandLevel" : 1,
+        "ableToRunConcurrently" : true,
+        "useDisplayName" : false,
+        "ordinal" : 1,
+        "disabled" : false,
+        "quartzScheduleDrivenJobsDisabledForContext" : false
+      } ],
+      "scheduledJobs" : [ ],
+      "jobLocks" : [ ],
+      "name" : "TEST_IK_LOCK_1",
+      "contextDependencies" : [ ],
+      "contextParameters" : [ ],
+      "contextTtlMilliseconds" : 0,
+      "treeViewExpandLevel" : 1,
+      "ableToRunConcurrently" : true,
+      "useDisplayName" : false,
+      "ordinal" : 0,
+      "disabled" : false,
+      "quartzScheduleDrivenJobsDisabledForContext" : false
+    } ],
+    "scheduledJobs" : [  {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_AM_2 Step 1 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_9",
+      "ordinal" : 11,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_9"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "TEST_IK_GLOB Step 3 Start",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 3 Start"
+    },{
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_GLOB Step 3 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 3 Terminal"
+    },{
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_LOCK_1 Step 2 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal"
+    }],
+    "jobLocks" : [ ],
+    "name" : "TEST_IK_GLOB Step 3",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_9",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 3 Start"
+        } ]
+      }
+    },{
+      "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 3 Start",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_AM_2 Step 1 Terminal"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 3 Terminal",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_LOCK_1 Step 2 Terminal"
+        } ]
+      }
+    } ],
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 2,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ {
+      "contexts" : [ {
+        "contexts" : [ {
+          "contexts" : [ {
+            "contexts" : [ ],
+            "scheduledJobs" : [ {
+              "agentName" : "CONTEXT_TERMINAL_JOB",
+              "jobName" : "TEST_IK_GLOB Step 3 Terminal",
+              "ordinal" : -1,
+              "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 3 Terminal"
+            },{
+              "agentName" : "CONTEXT_START_JOB",
+              "jobName" : "TEST_IK_EVENT1 Step 1 Start",
+              "ordinal" : -1,
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_EVENT1 Step 1 Start"
+            }, {
+              "agentName" : "scheduler-agent",
+              "jobName" : "TEST_IK_JOB_15",
+              "ordinal" : 5,
+              "identifier" : "scheduler-agent-TEST_IK_JOB_15"
+            }, {
+              "agentName" : "LOCAL_EVENT_JOB",
+              "jobName" : "TEST_IK_JOB_15_EVENT",
+              "ordinal" : 5,
+              "identifier" : "LOCAL_EVENT_JOB-TEST_IK_JOB_15_EVENT"
+            }, {
+              "agentName" : "scheduler-agent",
+              "jobName" : "TEST_IK_JOB_16",
+              "ordinal" : 7,
+              "identifier" : "scheduler-agent-TEST_IK_JOB_16"
+            }, {
+              "agentName" : "LOCAL_EVENT_JOB",
+              "jobName" : "TEST_IK_JOB_18_EVENT",
+              "ordinal" : 2,
+              "identifier" : "LOCAL_EVENT_JOB-TEST_IK_JOB_18_EVENT"
+            }, {
+              "agentName" : "CONTEXT_TERMINAL_JOB",
+              "jobName" : "TEST_IK_EVENT1 Step 1 Terminal",
+              "ordinal" : -1,
+              "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT1 Step 1 Terminal"
+            }],
+            "jobLocks" : [ ],
+            "name" : "TEST_IK_EVENT1 Step 1",
+            "jobDependencies" : [ {
+              "jobIdentifier" : "LOCAL_EVENT_JOB-TEST_IK_JOB_15_EVENT",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "scheduler-agent-TEST_IK_JOB_15"
+                }]
+              }
+            },{
+              "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_15",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "CONTEXT_START_JOB-TEST_IK_EVENT1 Step 1 Start"
+                }]
+              }
+            },{
+              "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_EVENT1 Step 1 Start",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 3 Terminal"
+                }]
+              }
+            }, {
+              "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_16",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "LOCAL_EVENT_JOB-TEST_IK_JOB_18_EVENT"
+                } ]
+              }
+            }
+            , {
+                "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT1 Step 1 Terminal",
+                "logicalGrouping" : {
+                  "and" : [ {
+                    "identifier" : "scheduler-agent-TEST_IK_JOB_16"
+                  } ]
+                }
+              } ],
+            "contextDependencies" : [ ],
+            "contextParameters" : [ ],
+            "contextTtlMilliseconds" : 0,
+            "treeViewExpandLevel" : 1,
+            "ableToRunConcurrently" : true,
+            "useDisplayName" : false,
+            "ordinal" : 0,
+            "disabled" : false,
+            "quartzScheduleDrivenJobsDisabledForContext" : false
+          } ],
+          "scheduledJobs" : [ ],
+          "jobLocks" : [ ],
+          "name" : "TEST_IK_EVENT1",
+          "contextDependencies" : [ ],
+          "contextParameters" : [ ],
+          "contextTtlMilliseconds" : 0,
+          "treeViewExpandLevel" : 1,
+          "ableToRunConcurrently" : true,
+          "useDisplayName" : false,
+          "ordinal" : 0,
+          "disabled" : false,
+          "quartzScheduleDrivenJobsDisabledForContext" : false
+        }, {
+          "contexts" : [ {
+            "contexts" : [ ],
+            "scheduledJobs" : [{
+            "agentName" : "LOCAL_EVENT_JOB",
+            "jobName" : "TEST_IK_JOB_15_EVENT",
+            "ordinal" : 5,
+            "identifier" : "LOCAL_EVENT_JOB-TEST_IK_JOB_15_EVENT"
+          }, {
+              "agentName" : "scheduler-agent",
+              "jobName" : "TEST_IK_JOB_17",
+              "ordinal" : 2,
+              "identifier" : "scheduler-agent-TEST_IK_JOB_17"
+            },{
+              "agentName" : "CONTEXT_TERMINAL_JOB",
+              "jobName" : "TEST_IK_EVENT2 Step 1 Terminal",
+              "ordinal" : -1,
+              "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal"
+            }],
+            "jobLocks" : [ ],
+            "name" : "TEST_IK_EVENT2 Step 1",
+            "jobDependencies" : [ {
+              "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "scheduler-agent-TEST_IK_JOB_17"
+                } ]
+              }
+            }, {
+              "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_17",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "LOCAL_EVENT_JOB-TEST_IK_JOB_15_EVENT"
+                } ]
+              }
+            } ],
+            "contextDependencies" : [ ],
+            "contextParameters" : [ ],
+            "contextTtlMilliseconds" : 0,
+            "treeViewExpandLevel" : 1,
+            "ableToRunConcurrently" : true,
+            "useDisplayName" : false,
+            "ordinal" : 0,
+            "disabled" : false,
+            "quartzScheduleDrivenJobsDisabledForContext" : false
+          }, {
+            "contexts" : [ ],
+            "scheduledJobs" : [ {
+              "agentName" : "CONTEXT_TERMINAL_JOB",
+              "jobName" : "TEST_IK_EVENT2 Step 1 Terminal",
+              "ordinal" : -1,
+              "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal"
+            }, {
+              "agentName" : "CONTEXT_START_JOB",
+              "jobName" : "TEST_IK_EVENT2 Step 2 Start",
+              "ordinal" : -1,
+              "identifier" : "CONTEXT_START_JOB-TEST_IK_EVENT2 Step 2 Start"
+            },{
+              "agentName" : "scheduler-agent",
+              "jobName" : "TEST_IK_JOB_18",
+              "ordinal" : 2,
+              "identifier" : "scheduler-agent-TEST_IK_JOB_18"
+            },{
+              "agentName" : "LOCAL_EVENT_JOB",
+              "jobName" : "TEST_IK_JOB_18_EVENT",
+              "ordinal" : 2,
+              "identifier" : "LOCAL_EVENT_JOB-TEST_IK_JOB_18_EVENT"
+            },{
+              "agentName" : "CONTEXT_TERMINAL_JOB",
+              "jobName" : "TEST_IK_EVENT2 Step 2 Terminal",
+              "ordinal" : -1,
+              "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal"
+            } ],
+            "jobLocks" : [ ],
+            "name" : "TEST_IK_EVENT2 Step 2",
+            "jobDependencies" : [ {
+              "jobIdentifier" : "LOCAL_EVENT_JOB-TEST_IK_JOB_18_EVENT",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "scheduler-agent-TEST_IK_JOB_18"
+                } ]
+              }
+            },{
+              "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "scheduler-agent-TEST_IK_JOB_18"
+                } ]
+              }
+            },{
+              "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_18",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "CONTEXT_START_JOB-TEST_IK_EVENT2 Step 2 Start"
+                } ]
+              }
+            },{
+              "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_EVENT2 Step 2 Start",
+              "logicalGrouping" : {
+                "and" : [ {
+                  "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 1 Terminal"
+                } ]
+              }
+            } ],
+            "contextDependencies" : [ ],
+            "contextParameters" : [ ],
+            "contextTtlMilliseconds" : 0,
+            "treeViewExpandLevel" : 1,
+            "ableToRunConcurrently" : true,
+            "useDisplayName" : false,
+            "ordinal" : 1,
+            "disabled" : false,
+            "quartzScheduleDrivenJobsDisabledForContext" : false
+          } ],
+          "scheduledJobs" : [ ],
+          "jobLocks" : [ ],
+          "name" : "TEST_IK_EVENT2",
+          "contextDependencies" : [ ],
+          "contextParameters" : [ ],
+          "contextTtlMilliseconds" : 0,
+          "treeViewExpandLevel" : 1,
+          "ableToRunConcurrently" : true,
+          "useDisplayName" : false,
+          "ordinal" : 1,
+          "disabled" : false,
+          "quartzScheduleDrivenJobsDisabledForContext" : false
+        } ],
+        "scheduledJobs" : [ ],
+        "jobLocks" : [ ],
+        "name" : "TEST_IK_EVENT_CHAIN Step 1",
+        "contextDependencies" : [ ],
+        "contextParameters" : [ ],
+        "contextTtlMilliseconds" : 0,
+        "treeViewExpandLevel" : 1,
+        "ableToRunConcurrently" : true,
+        "useDisplayName" : false,
+        "ordinal" : 0,
+        "disabled" : false,
+        "quartzScheduleDrivenJobsDisabledForContext" : false
+      } ],
+      "scheduledJobs" : [ ],
+      "jobLocks" : [ ],
+      "name" : "TEST_IK_EVENT_CHAIN",
+      "contextDependencies" : [ ],
+      "contextParameters" : [ ],
+      "contextTtlMilliseconds" : 0,
+      "treeViewExpandLevel" : 1,
+      "ableToRunConcurrently" : true,
+      "useDisplayName" : false,
+      "ordinal" : 0,
+      "disabled" : false,
+      "quartzScheduleDrivenJobsDisabledForContext" : false
+    } ],
+    "scheduledJobs" : [ ],
+    "jobLocks" : [ ],
+    "name" : "TEST_IK_GLOB Step 4",
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 3,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ ],
+    "scheduledJobs" : [ {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_EVENT1 Step 1 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT1 Step 1 Terminal"
+    },{
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_EVENT2 Step 2 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_23",
+      "ordinal" : 4,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_23"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "TEST_IK_GLOB Step 5 Start",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 5 Start"
+    },{
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_GLOB Step 5 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 5 Terminal"
+    }],
+    "jobLocks" : [ ],
+    "name" : "TEST_IK_GLOB Step 5",
+    "jobDependencies" : [  {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 5 Terminal",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-TEST_IK_JOB_23"
+        } ]
+      }
+    },{
+      "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_23",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 5 Start"
+        } ]
+      }
+    },{
+      "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 5 Start",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT1 Step 1 Terminal"
+        }, {
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_EVENT2 Step 2 Terminal"
+        } ]
+      }
+    } ],
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 4,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ ],
+    "scheduledJobs" : [ {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_GLOB Step 5 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 5 Terminal"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_26_HANG",
+      "ordinal" : 2,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_26_HANG"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "TEST_IK_GLOB Step 6 Start",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 6 Start"
+    }, {
+        "agentName" : "CONTEXT_TERMINAL_JOB",
+        "jobName" : "TEST_IK_GLOB Step 6 Terminal",
+        "ordinal" : -1,
+        "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 6 Terminal"
+      }],
+    "jobLocks" : [ ],
+    "name" : "TEST_IK_GLOB Step 6",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 6 Terminal",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-TEST_IK_JOB_26_HANG"
+        } ]
+      }
+    },{
+      "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_26_HANG",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 6 Start"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 6 Start",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 5 Terminal"
+        } ]
+      }
+    } ],
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 5,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ ],
+    "scheduledJobs" : [ {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_GLOB Step 6 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 6 Terminal"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_20_FAIL",
+      "ordinal" : 2,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_20_FAIL"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "TEST_IK_GLOB Step 7 Start",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 7 Start"
+    },{
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_GLOB Step 7 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 7 Terminal"
+    }],
+    "jobLocks" : [ ],
+    "name" : "TEST_IK_GLOB Step 7",
+    "jobDependencies" : [{
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 7 Terminal",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-TEST_IK_JOB_20_FAIL"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_20_FAIL",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 7 Start"
+        } ]
+      }
+    },{
+      "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 7 Start",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 6 Terminal"
+        } ]
+      }
+    } ],
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 6,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ ],
+    "scheduledJobs" : [ {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_GLOB Step 7 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 7 Terminal"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_21_MIN",
+      "ordinal" : 2,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_21_MIN"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_22_MAX",
+      "ordinal" : 3,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_22_MAX"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_19",
+      "ordinal" : 5,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_19"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "TEST_IK_JOB_19_ScheduledJob_15:40:00",
+      "ordinal" : 4,
+      "identifier" : "scheduler-agent-TEST_IK_JOB_19_ScheduledJob_15:40:00"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "TEST_IK_GLOB Step 8 Start",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 8 Start"
+    },{
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "TEST_IK_GLOB Step 8 Terminal",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 8 Terminal"
+    }],
+    "jobLocks" : [ ],
+    "name" : "TEST_IK_GLOB Step 8",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 8 Terminal",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-TEST_IK_JOB_21_MIN"
+        },{
+          "identifier" : "scheduler-agent-TEST_IK_JOB_22_MAX"
+        },{
+          "identifier" : "scheduler-agent-TEST_IK_JOB_19"
+        } ]
+      }
+    },{
+      "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_21_MIN",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 8 Start"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_22_MAX",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 8 Start"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-TEST_IK_JOB_19",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-TEST_IK_JOB_19_ScheduledJob_15:40:00"
+        }, {
+          "identifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 8 Start"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "CONTEXT_START_JOB-TEST_IK_GLOB Step 8 Start",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-TEST_IK_GLOB Step 7 Terminal"
+        } ]
+      }
+    }],
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 7,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  } ],
+  "scheduledJobs" : [ ],
+  "jobLocks" : [ {
+    "name" : "STPMUR.TEST_IK_LOCK",
+    "lockCount" : 2,
+    "jobs" : {
+      "TEST_IK_GLOB Step 3" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "TEST_IK_JOB_9",
+        "contextName" : "TEST_IK_GLOB",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "scheduler-agent-TEST_IK_JOB_9"
+      } ],
+      "TEST_IK_LOCK_1 Step 1" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "TEST_IK_JOB_10",
+        "contextName" : "TEST_IK_GLOB",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : 1,
+        "lockCount" : 2147483647,
+        "identifier" : "scheduler-agent-TEST_IK_JOB_10"
+      } ],
+      "TEST_IK_LOCK_1 Step 2" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "TEST_IK_JOB_14",
+        "contextName" : "TEST_IK_GLOB",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "scheduler-agent-TEST_IK_JOB_14"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "TEST_IK_JOB_13",
+        "contextName" : "TEST_IK_GLOB",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "scheduler-agent-TEST_IK_JOB_13"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "TEST_IK_JOB_12",
+        "contextName" : "TEST_IK_GLOB",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 1,
+        "identifier" : "scheduler-agent-TEST_IK_JOB_12"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "TEST_IK_JOB_11",
+        "contextName" : "TEST_IK_GLOB",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "lockCount" : 2147483647,
+        "identifier" : "scheduler-agent-TEST_IK_JOB_11"
+      } ]
+    },
+    "exclusiveJobLock" : false
+  } ],
+  "name" : "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS",
+  "description" : "Context Template Description",
+  "contextDependencies" : [ ],
+  "contextParameters" : [ ],
+  "timeWindowStart" : "0 0 1 ? * * *",
+  "contextTtlMilliseconds" : 86340000,
+  "treeViewExpandLevel" : 1,
+  "ableToRunConcurrently" : true,
+  "useDisplayName" : false,
+  "ordinal" : -1,
+  "disabled" : false,
+  "quartzScheduleDrivenJobsDisabledForContext" : false
+}

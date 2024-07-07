@@ -57,7 +57,7 @@ public class ContextResetServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null
-            , null, null, null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService
             , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -78,7 +78,7 @@ public class ContextResetServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null
-            , null, null, null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService
+            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService
             , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, null);
         ContextMachineCache.instance().put(contextMachine);
 

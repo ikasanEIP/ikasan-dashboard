@@ -10,17 +10,18 @@ import java.util.List;
 import java.util.Objects;
 
 public class ContextTransition {
-    private SchedulerJob proceedingJob;
+    private SchedulerJob precedingJob;
     private SchedulerJob subsequentJob;
+    private boolean transitionDueToEventDependency = false;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<String> contexts = new ArrayList<>();;
 
     public SchedulerJob getPrecedingJob() {
-        return proceedingJob;
+        return precedingJob;
     }
 
-    public void setProceedingJob(SchedulerJob proceedingJob) {
-        this.proceedingJob = proceedingJob;
+    public void setPrecedingJob(SchedulerJob precedingJob) {
+        this.precedingJob = precedingJob;
     }
 
     public SchedulerJob getSubsequentJob() {
@@ -29,6 +30,14 @@ public class ContextTransition {
 
     public void setSubsequentJob(SchedulerJob subsequentJob) {
         this.subsequentJob = subsequentJob;
+    }
+
+    public boolean isTransitionDueToEventDependency() {
+        return transitionDueToEventDependency;
+    }
+
+    public void setTransitionDueToEventDependency(boolean transitionDueToEventDependency) {
+        this.transitionDueToEventDependency = transitionDueToEventDependency;
     }
 
     public List<String> getContexts() {
@@ -44,14 +53,14 @@ public class ContextTransition {
         if (this == o) return true;
         if (!(o instanceof ContextTransition)) return false;
         ContextTransition that = (ContextTransition) o;
-        return Objects.equals(proceedingJob, that.proceedingJob)
+        return Objects.equals(precedingJob, that.precedingJob)
             && Objects.equals(subsequentJob, that.subsequentJob)
             && Objects.equals(contexts, that.contexts);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(proceedingJob, subsequentJob, contexts);
+        return Objects.hash(precedingJob, subsequentJob, contexts);
     }
 
     @Override

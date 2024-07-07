@@ -7,6 +7,7 @@ import org.ikasan.job.orchestration.model.instance.ContextStartJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextTerminalJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.ContextStartJobImpl;
 import org.ikasan.job.orchestration.model.job.ContextTerminalJobImpl;
+import org.ikasan.job.orchestration.model.job.LocalEventJobImpl;
 import org.ikasan.job.orchestration.model.status.ContextJobInstanceDetailsStatusImpl;
 import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatusImpl;
 import org.ikasan.spec.scheduled.context.model.*;
@@ -17,10 +18,6 @@ import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -248,6 +245,24 @@ public class ContextHelper {
                 return contextStartJob;
             })
             .collect(Collectors.toList());
+    }
+
+    public static List<LocalEventJob> getLocalEventJobsFromContext(ContextTemplate context) {
+        List<LocalEventJob> jobs = context.getAllSchedulerJobs().stream()
+            .distinct()
+            .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB))
+            .map(schedulerJob -> {
+                LocalEventJob localEventJob = new LocalEventJobImpl();
+                localEventJob.setContextName(schedulerJob.getContextName());
+                localEventJob.setJobName(schedulerJob.getJobName());
+                localEventJob.setChildContextNames(context.getAllContextNamesWhereJobResides(schedulerJob.getIdentifier()));
+                localEventJob.setOrdinal(schedulerJob.getOrdinal());
+
+                return localEventJob;
+            })
+            .collect(Collectors.toList());
+
+        return jobs;
     }
 
     /**
@@ -509,7 +524,7 @@ public class ContextHelper {
                                 && !((InternalEventDrivenJob) internalEventDrivenJobMap.get(precedingJob.getIdentifier())).isTargetResidingContextOnly())
                             || !(internalEventDrivenJobMap.get(precedingJob.getIdentifier()) instanceof  InternalEventDrivenJob))) {
                             ContextTransition contextTransition = new ContextTransition();
-                            contextTransition.setProceedingJob(precedingJob);
+                            contextTransition.setPrecedingJob(precedingJob);
                             contextTransition.setSubsequentJob(job);
                             contextTransitions.add(contextTransition);
                         }
@@ -927,13 +942,13 @@ public class ContextHelper {
      * @param context                    the parent context
      * @param jobName                    the name of the job
      * @param childContextName           the name of the child context
-     * @param internalEventDrivenJobMap  a map of internal event-driven jobs
+     * @param schedulerJobMap            a map of scheduler jobs
      * @return a list of context transitions where jobs transition from other contexts
      */
     public static List<ContextTransition> determineIfJobsTransitionFromOtherContexts(Context context
-        , String jobName, String childContextName, Map<String, SchedulerJob> internalEventDrivenJobMap) {
+        , String jobName, String childContextName, Map<String, SchedulerJob> schedulerJobMap) {
         Map<String, SchedulerJob> jobs = new HashMap<>();
-        internalEventDrivenJobMap.entrySet().forEach(entry -> {
+        schedulerJobMap.entrySet().forEach(entry -> {
             jobs.put(entry.getKey(), entry.getValue());
         });
         return determineIfSchedulerJobsTransitionFromOtherContexts(context, jobName, childContextName, jobs);
@@ -947,11 +962,11 @@ public class ContextHelper {
      * @param context
      * @param jobName
      * @param childContextName
-     * @param internalEventDrivenJobMap
+     * @param schedulerJobMap
      * @return
      */
     public static List<ContextTransition> determineIfSchedulerJobsTransitionFromOtherContexts(Context context
-        , String jobName, String childContextName, Map<String, SchedulerJob> internalEventDrivenJobMap) {
+        , String jobName, String childContextName, Map<String, SchedulerJob> schedulerJobMap) {
         List<String> residingContexts = getContextsWhereJobResides(context, jobName);
 
         Map<String, ContextTransition> finalResults = new HashMap<>();
@@ -967,9 +982,9 @@ public class ContextHelper {
 
             if (schedulerJob.isEmpty()) continue;
 
-            if(internalEventDrivenJobMap.containsKey(schedulerJob.get().getIdentifier())
-                && internalEventDrivenJobMap.get(schedulerJob.get().getIdentifier()) instanceof InternalEventDrivenJob) {
-                InternalEventDrivenJob instance = (InternalEventDrivenJob) internalEventDrivenJobMap.get(schedulerJob.get().getIdentifier());
+            if(schedulerJobMap.containsKey(schedulerJob.get().getIdentifier())
+                && schedulerJobMap.get(schedulerJob.get().getIdentifier()) instanceof InternalEventDrivenJob) {
+                InternalEventDrivenJob instance = (InternalEventDrivenJob) schedulerJobMap.get(schedulerJob.get().getIdentifier());
 
                 if (instance.isTargetResidingContextOnly()) continue;
             }
@@ -990,7 +1005,7 @@ public class ContextHelper {
             if(results.size() > 0 && !child.getName().equals(childContextName)) {
                 if(!finalResults.containsKey(schedulerJob.get().getIdentifier())) {
                     ContextTransition contextTransition = new ContextTransition();
-                    contextTransition.setProceedingJob(schedulerJob.get());
+                    contextTransition.setPrecedingJob(schedulerJob.get());
                     contextTransition.setSubsequentJob(schedulerJob.get());
                     contextTransition.setContexts(new ArrayList<>());
                     finalResults.put(schedulerJob.get().getIdentifier(), contextTransition);
