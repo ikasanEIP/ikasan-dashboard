@@ -22,10 +22,7 @@ import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventI
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
-import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateImpl;
-import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateRecordImpl;
-import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
+import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.BigQueueContextMachineManagementServiceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -102,6 +99,7 @@ public class ContextMachine {
     private Map<String, GlobalEventJobInstance> globalEventJobInstanceMap;
     private Map<String, ContextStartJobInstance> contextStartJobInstanceMap;
     private Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap;
+    private Map<String, LocalEventJobInstance> localEventJobInstanceMap;
     private Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap;
     private Map<String, ModuleMetaData> agents;
     private ModuleMetaDataService moduleMetaDataService;
@@ -121,6 +119,7 @@ public class ContextMachine {
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances,
                           Map<String, ContextStartJobInstance> contextStartJobInstanceMap,
                           Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap,
+                          Map<String, LocalEventJobInstance> localEventJobInstanceMap,
                           String queueDir,
                           Map<String, ModuleMetaData> agents, ModuleMetaDataService moduleMetaDataService, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService,
@@ -147,6 +146,10 @@ public class ContextMachine {
         this.contextTerminalJobInstanceMap = contextTerminalJobInstanceMap;
         if (this.contextTerminalJobInstanceMap == null) {
             this.contextTerminalJobInstanceMap = new HashMap<>(); // Empty Hashmap if the value is null.
+        }
+        this.localEventJobInstanceMap = localEventJobInstanceMap;
+        if (this.localEventJobInstanceMap == null) {
+            this.localEventJobInstanceMap = new HashMap<>(); // Empty Hashmap if the value is null.
         }
         this.agents = agents;
         this.moduleMetaDataService = moduleMetaDataService;
@@ -259,6 +262,11 @@ public class ContextMachine {
             this.contextTerminalJobInstanceMap  = schedulerJobInstances.stream()
                 .filter(job -> job instanceof ContextTerminalJobInstance)
                 .map(job -> (ContextTerminalJobInstance)job)
+                .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+
+            this.localEventJobInstanceMap  = schedulerJobInstances.stream()
+                .filter(job -> job instanceof LocalEventJobInstance)
+                .map(job -> (LocalEventJobInstance)job)
                 .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
 
             if(holdCommandJobs) {
@@ -1175,6 +1183,7 @@ public class ContextMachine {
                 this.addFinalGlobalEvents(event, scheduledProcessEvent, finalEvents);
                 this.addFinalContextStartEvents(event,scheduledProcessEvent, finalEvents);
                 this.addFinalContextTerminalEvents(event, scheduledProcessEvent, finalEvents);
+                this.addFinalLocalEvents(event, scheduledProcessEvent, finalEvents);
             }
         });
 
@@ -1267,6 +1276,33 @@ public class ContextMachine {
     }
 
     /**
+     * Adds the given SchedulerJobInitiationEvent to the list of final events if the event's job name matches
+     * the job name associated with a LocalEventJobInstance in the localEventJobInstanceMap.
+     *
+     * @param event The SchedulerJobInitiationEvent to be added to the list
+     * @param scheduledProcessEvent The ContextualisedScheduledProcessEvent associated with the event
+     * @param finalEvents The list of final events to which the event will be added
+     */
+    private void addFinalLocalEvents(SchedulerJobInitiationEvent event, ContextualisedScheduledProcessEvent scheduledProcessEvent,
+                                               List<SchedulerJobInitiationEvent> finalEvents) {
+        LocalEventJobInstance localEventJobInstance = null;
+
+        // localEventJobInstanceMap has a key of (JobIdentifier-ContextName) - this may not be available on the event, therefore
+        // check the jobName in the values within the localEventJobInstanceMap and if found, it is safe to add the Event to the finalEvents.
+        for (Map.Entry<String, LocalEventJobInstance> contextStartJobInstanceEntry : this.localEventJobInstanceMap.entrySet()) {
+            if (StringUtils.equals(contextStartJobInstanceEntry.getValue().getJobName(), event.getJobName())) {
+                localEventJobInstance = contextStartJobInstanceEntry.getValue();
+                localEventJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
+                break;
+            }
+        }
+
+        if (localEventJobInstance != null) {
+            finalEvents.add(event);
+        }
+    }
+
+    /**
      * Saves the audit record for a scheduled process event.
      *
      * @param scheduledProcessEvent The contextualized scheduled process event.
@@ -1325,8 +1361,8 @@ public class ContextMachine {
              // required to be raised.
              List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
                  , contextInstance, this.dryRunParameters, this.globalEventJobInstanceMap, this.internalEventDrivenJobInstances
-                 , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.contextInstance.getContextParameters()
-                 , this.contextInstance, lockRaised, markAsRaised);
+                 , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.localEventJobInstanceMap
+                 , this.contextInstance.getContextParameters(), this.contextInstance, lockRaised, markAsRaised);
 
              // Update the context status after event received and attached
              // to the job instance.
@@ -1695,69 +1731,49 @@ public class ContextMachine {
             }
         }
 
+        if(schedulerJobInstance == null) {
+            if (this.localEventJobInstanceMap != null && !this.localEventJobInstanceMap.isEmpty()) {
+                for (Map.Entry<String, LocalEventJobInstance> stringLocalEventJobInstanceEntry : localEventJobInstanceMap.entrySet()) {
+                    if (StringUtils.equals(stringLocalEventJobInstanceEntry.getValue().getJobName(), schedulerJobInitiationEvent.getJobName())) {
+                        schedulerJobInstance = stringLocalEventJobInstanceEntry.getValue();
+                        break;
+                    }
+                }
+            }
+        }
+
         // Only attempt to send the global event to other context instance if the global event exist in this context, or if "forceSending" is set to true.
         if (schedulerJobInstance != null) {
-//            logger.info("Job [{}] is a Global Event Job - Do not send to the agent [{}] and attempt to send to all Active Contexts by Environment Group",
-//                schedulerJobInitiationEvent.getJobName(), schedulerJobInitiationEvent.getAgentUrl());
-//            logger.info("[{}] Context is part of the EnvironmentGroup [{}]. ignoreEnvironmentGroup is set to [{}]. " +
-//                    "Will send to Contexts with the same Environment Group if ignoreEnvironmentGroup = false",
-//                context.getName(), context.getEnvironmentGroup(), ignoreEnvironmentGroup);
-//
-//            // Get all active context instances for the given environment group. If ignoreEnvironmentGroup is true, then get everything running
-//            List<String> contextInstanceInContextMachineCache =
-//                ContextMachineCache.instance().getListOfContextInstanceIdByEnvironmentGroup(context.getEnvironmentGroup(), ignoreEnvironmentGroup);
-//
-//            // Search each context instance if the Global Event also exist. If it does, create an event for it.
-//            for(String contextInstanceIdFromCache : contextInstanceInContextMachineCache) {
-//                ContextMachine contextMachineFromCache = ContextMachineCache.instance().getByContextInstanceId(contextInstanceIdFromCache);
-//                if(contextMachineFromCache == null) {
-//                    logger.warn("Unable to find the ContextMachine for the instance [{}] in the cache, skipping sending the Global Event [{}] to it",
-//                        contextInstanceIdFromCache, schedulerJobInitiationEvent.getJobName());
-//                    continue;
-//                }
-//
-//                if(contextMachineFromCache.getContext().getStatus().equals(InstanceStatus.PREPARED)) {
-//                    logger.info("Will not broadcast global event to instance [{}], Global Event [{}]. The instance is currently in a prepared state.",
-//                        contextInstanceIdFromCache, schedulerJobInitiationEvent.getJobName());
-//                    continue;
-//                }
-//
-//                // We don't broadcast global events to other contexts if they have been skipped.
-//                if(schedulerJobInitiationEvent.isSkipped()
-//                    && !schedulerJobInitiationEvent.getContextInstanceId().equals(contextInstanceIdFromCache)) {
-//                    continue;
-//                }
+            // Global Job found for this context instance, build the event.
+            ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
+            contextualisedScheduledProcessEvent.setAgentName(schedulerJobInitiationEvent.getAgentName());
+            contextualisedScheduledProcessEvent.setJobName(schedulerJobInitiationEvent.getJobName());
+            contextualisedScheduledProcessEvent.setSuccessful(true);
+            contextualisedScheduledProcessEvent.setFireTime(System.currentTimeMillis());
+            contextualisedScheduledProcessEvent.setContextName(schedulerJobInitiationEvent.getContextName());
+            contextualisedScheduledProcessEvent.setContextInstanceId(this.contextInstance.getId());
+            contextualisedScheduledProcessEvent.setJobStarting(false);
+            contextualisedScheduledProcessEvent.setSkipped(schedulerJobInitiationEvent.isSkipped());
+            contextualisedScheduledProcessEvent.setCatalystEvent(schedulerJobInitiationEvent.getCatalystEvent());
+            //No need to set the childContextNames property in ContextualisedScheduledProcessEvent
+            //as JobLogicMachine method getJobInitiationEvents should handle it.
 
-                // Global Job found for this context instance, build the event.
-                ContextualisedScheduledProcessEvent globalContextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
-                globalContextualisedScheduledProcessEvent.setAgentName(schedulerJobInitiationEvent.getAgentName());
-                globalContextualisedScheduledProcessEvent.setJobName(schedulerJobInitiationEvent.getJobName());
-                globalContextualisedScheduledProcessEvent.setSuccessful(true);
-                globalContextualisedScheduledProcessEvent.setFireTime(System.currentTimeMillis());
-                globalContextualisedScheduledProcessEvent.setContextName(schedulerJobInitiationEvent.getContextName());
-                globalContextualisedScheduledProcessEvent.setContextInstanceId(this.contextInstance.getId());
-                globalContextualisedScheduledProcessEvent.setJobStarting(false);
-                globalContextualisedScheduledProcessEvent.setSkipped(schedulerJobInitiationEvent.isSkipped());
-                globalContextualisedScheduledProcessEvent.setCatalystEvent(schedulerJobInitiationEvent.getCatalystEvent());
-                //No need to set the childContextNames property in ContextualisedScheduledProcessEvent as JobLogicMachine method getJobInitiationEvents should handle it.
+            // Event object to JSON and then build the BigQueue message
+            String contextualisedScheduledProcessEventJson = objectMapper.writeValueAsString(contextualisedScheduledProcessEvent);
+            BigQueueMessage<String> outgoingBigQueueMessage
+                = new BigQueueMessageBuilder<String>().withMessage(contextualisedScheduledProcessEventJson)
+                .withMessageProperties(
+                    Map.of("contextName", this.getContext().getName(),
+                        CONTEXT_INSTANCE_ID, this.getContext().getId()))
+                .build();
 
-                // Event object to JSON and then build the BigQueue message
-                String globalContextualisedScheduledProcessEventJson = objectMapper.writeValueAsString(globalContextualisedScheduledProcessEvent);
-                BigQueueMessage<String> outgoingBigQueueMessage
-                    = new BigQueueMessageBuilder<String>().withMessage(globalContextualisedScheduledProcessEventJson)
-                    .withMessageProperties(
-                        Map.of("contextName", this.getContext().getName(),
-                            CONTEXT_INSTANCE_ID, this.getContext().getId()))
-                    .build();
+            // BigQueue message to JSON
+            String jsonString = objectMapper.writeValueAsString(outgoingBigQueueMessage);
 
-                // BigQueue message to JSON
-                String jsonString = objectMapper.writeValueAsString(outgoingBigQueueMessage);
-
-                // Send the Event to the Context Machine
-                this.eventReceived(jsonString);
-                logger.info("Sending Global Event [{}] to the ContextMachine [{}][{}]", schedulerJobInitiationEvent.getJobName(),
-                    this.getContext().getName(), this.getContext().getId());
-//            }
+            // Send the Event to the Context Machine
+            this.eventReceived(jsonString);
+            logger.info("Sending Event [{}] to the ContextMachine [{}][{}]", schedulerJobInitiationEvent.getJobName(),
+                this.getContext().getName(), this.getContext().getId());
         }
     }
 
@@ -1806,11 +1822,12 @@ public class ContextMachine {
                             broadcastGlobalEvents(schedulerJobInitiationEvent, false, false);
                         }
                         else if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.CONTEXT_START_JOB)) {
-                            logger.info("here!");
                             broadcastLocalEvent(schedulerJobInitiationEvent);
                         }
                         else if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
-                            logger.info("here!");
+                            broadcastLocalEvent(schedulerJobInitiationEvent);
+                        }
+                        else if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
                             broadcastLocalEvent(schedulerJobInitiationEvent);
                         }
                     }

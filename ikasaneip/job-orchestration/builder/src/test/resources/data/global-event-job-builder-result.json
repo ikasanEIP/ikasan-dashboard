@@ -3,8 +3,6 @@
   "jobName" : "jobName",
   "displayName" : "displayName",
   "contextName" : "contextId",
-  "childContextNames" : [ "childContextId" ],
-  "startupControlType" : "MANUAL",
   "ordinal" : -1,
   "identifier" : "GLOBAL_EVENT-jobName",
   "jobDescription" : "description"

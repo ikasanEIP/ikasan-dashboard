@@ -7,6 +7,9 @@ public class JobServiceThreadFactory implements ThreadFactory {
     private static long counter = 0;
     private final String prefix;
 
+    /**
+     * A custom ThreadFactory implementation for creating threads in the JobService.
+     */
     public JobServiceThreadFactory(String prefix) {
         this.prefix = prefix;
     }

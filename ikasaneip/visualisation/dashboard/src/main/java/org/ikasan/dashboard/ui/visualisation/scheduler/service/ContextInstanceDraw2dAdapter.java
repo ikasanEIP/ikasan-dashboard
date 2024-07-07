@@ -107,12 +107,12 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
                 else if(((Image) item).getUserData().getItemType().equals(UserData.CONTEXT)){
                     RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
                         .withId(((PositionedItem) item).getUserData().getContextName() + "_status")
-                        .withWidth(200)
-                        .withHeight(200)
+                        .withWidth(100)
+                        .withHeight(100)
                         .withStroke(0)
-                        .withRadius(10)
-                        .withX(((PositionedItem) item).getX()-50)
-                        .withY(((PositionedItem) item).getY()-50);
+                        .withRadius(12)
+                        .withX(((PositionedItem) item).getX())
+                        .withY(((PositionedItem) item).getY());
 
                     ContextInstance contextInstance = ContextHelper.getChildContextInstance(((Image) item).getUserData().getContextName(), (ContextInstance) parentContext);
                     rb.withBgColor(StatusColours.getInstanceStatusColour(contextInstance.getStatus()));

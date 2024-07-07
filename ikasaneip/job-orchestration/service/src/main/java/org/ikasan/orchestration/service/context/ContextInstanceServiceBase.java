@@ -70,13 +70,35 @@ public abstract class ContextInstanceServiceBase {
     protected final ObjectMapper objectMapper;
 
 
+
+    /**
+     * Constructs a ContextInstanceServiceBase object with the provided parameters.
+     *
+     * @param queueDirectory                              the directory where the job queue is located (must not be null)
+     * @param scheduledContextInstanceService            the service for managing scheduled context instances (must not be null)
+     * @param jobInitiationService                        the service for initiating jobs (must not be null)
+     * @param moduleMetadataService                       the service for accessing module metadata (must not be null)
+     * @param internalEventDrivenJobService               the service for managing internal event driven jobs (must not be null)
+     * @param contextParametersInstanceService            the service for managing context parameters instances (must not be null)
+     * @param contextInstancePublicationService           the service for publishing context parameters updates (must not be null)
+     * @param jobLockCacheService                         the service for managing job lock cache (must not be null)
+     * @param scheduledContextService                     the service for managing scheduled contexts (must not be null)
+     * @param schedulerJobInstanceService                 the service for managing scheduler job instances (must not be null)
+     * @param contextInstanceStateChangeEventBroadcaster  the broadcaster for context instance state change events (must not be null)
+     * @param schedulerJobStateChangeEventBroadcaster     the broadcaster for scheduler job state change events (must not be null)
+     * @param jobLockCacheInitialisationService           the service for initializing job lock cache (must not be null)
+     * @param contextInstanceSchedulerService             the service for scheduling context instances (must not be null)
+     * @param timeService                                 the service for providing current time (must not be null)
+     * @param jobUtilsService                             the service for utility operations on jobs (must not be null)
+     * @throws IllegalArgumentException                  if any of the parameters is null
+     */
     public ContextInstanceServiceBase(String queueDirectory,
                                       ScheduledContextInstanceService scheduledContextInstanceService,
                                       JobInitiationService jobInitiationService,
                                       ModuleMetaDataService moduleMetadataService,
                                       InternalEventDrivenJobService internalEventDrivenJobService,
                                       ContextParametersInstanceService contextParametersInstanceService,
-                                      ContextInstancePublicationService contextParametersUpdateService,
+                                      ContextInstancePublicationService contextInstancePublicationService,
                                       JobLockCacheService jobLockCacheService,
                                       ScheduledContextService scheduledContextService,
                                       SchedulerJobInstanceService schedulerJobInstanceService,
@@ -110,7 +132,7 @@ public abstract class ContextInstanceServiceBase {
         if (this.contextParametersInstanceService == null) {
             throw new IllegalArgumentException("contextParametersInstanceService cannot be null!");
         }
-        this.contextInstancePublicationService = contextParametersUpdateService;
+        this.contextInstancePublicationService = contextInstancePublicationService;
         if (this.contextInstancePublicationService == null) {
             throw new IllegalArgumentException("contextParametersUpdateService cannot be null!");
         }
@@ -154,6 +176,12 @@ public abstract class ContextInstanceServiceBase {
         this.objectMapper = ObjectMapperFactory.newInstance();
     }
 
+    /**
+     * Saves the provided context instance with the given instance status.
+     *
+     * @param contextInstance The context instance to be saved.
+     * @param instanceStatus  The instance status to be set for the context instance.
+     */
     protected void saveContextInstance(ContextInstance contextInstance, InstanceStatus instanceStatus) {
         InstanceStatus previousStatus = contextInstance.getStatus();
         contextInstance.setStatus(instanceStatus);
@@ -172,6 +200,16 @@ public abstract class ContextInstanceServiceBase {
             previousStatus, contextInstance.getStatus()));
     }
 
+    /**
+     * Initializes the context machine for a given context and instance.
+     *
+     * @param context                    The context template.
+     * @param instance                   The context instance.
+     * @param initialiseJobs             Whether to initialise jobs or not.
+     * @param isInitialContextInstantiation   Whether it is the initial context instantiation or not.
+     * @param contextParameterInstances  The list of context parameter instances.
+     * @throws Exception                 If an error occurs during initialization.
+     */
     protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance
         , boolean initialiseJobs, boolean isInitialContextInstantiation, List<ContextParameterInstance> contextParameterInstances) throws Exception {
         if(initialiseJobs) {
@@ -243,11 +281,15 @@ public abstract class ContextInstanceServiceBase {
         });
 
         Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
+        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = this.getContextStartJobInstances(instance.getId());
+        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = this.geContextTerminalJobInstances(instance.getId());
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId());
 
-        // todo sort out start and end jobs
-        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, new HashMap<>(), new HashMap<>(), queueDirectory, agents,
-            moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
-            this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
+        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap,
+            quartzScheduleDrivenJobInstanceMap, internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, queueDirectory, agents,
+            moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService,
+            this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService,
+            this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine.init();
 
         // We add the listener to write initiation events to the agents.
@@ -285,6 +327,14 @@ public abstract class ContextInstanceServiceBase {
         ContextMachineCache.instance().put(contextMachine);
     }
 
+    /**
+     * Prepares the context instance by initializing jobs, setting job skips/holds, and creating a context machine.
+     *
+     * @param context          The context template.
+     * @param instance         The context instance.
+     * @param initialiseJobs   Whether to initialize jobs or not.
+     * @throws Exception       If an error occurs during preparation.
+     */
     protected void prepareContextInstance(ContextTemplate context, ContextInstance instance, boolean initialiseJobs) throws Exception {
 
         SchedulerJobInstancesInitialisationParameters parameters
@@ -358,9 +408,12 @@ public abstract class ContextInstanceServiceBase {
         });
 
         Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
+        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = this.getContextStartJobInstances(instance.getId());
+        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = this.geContextTerminalJobInstances(instance.getId());
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId());
 
-        // todo sort out start and end jobs
-        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, new HashMap<>(), new HashMap<>(), queueDirectory, agents,
+        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap,
+            internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, queueDirectory, agents,
             moduleMetadataService, null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
@@ -376,6 +429,11 @@ public abstract class ContextInstanceServiceBase {
         ContextMachineCache.instance().put(contextMachine);
     }
 
+    /**
+     * Prepares a future context instance for execution.
+     *
+     * @param contextName The name of the context for which to prepare the instance.
+     */
     protected void prepareFutureContextInstance(String contextName) {
         ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
         if (scheduledContextRecord == null) {
@@ -417,6 +475,14 @@ public abstract class ContextInstanceServiceBase {
         }
     }
 
+    /**
+     * Removes all agent instances associated with a given context instance.
+     * This method retrieves all agents associated with the context instance
+     * using the getAgents method and removes them one by one using the remove
+     * method of the contextInstancePublicationService.
+     *
+     * @param instance The context instance for which to remove agent instances.
+     */
     protected void removeAgentInstances(ContextInstance instance) {
         HashMap<String, ModuleMetaData> agents = getAgents(instance);
         if (!agents.keySet().isEmpty()) {
@@ -428,11 +494,24 @@ public abstract class ContextInstanceServiceBase {
     }
 
 
+    /**
+     * Initializes the job lock cache.
+     *
+     * @param context The context template to initialize the job lock cache.
+     * @param isRefresh Whether to refresh the job lock cache or not.
+     * @return The initialized JobLockCache.
+     */
     private JobLockCache initialiseJobLockCache(ContextTemplate context, boolean isRefresh) {
         this.jobLockCacheInitialisationService.initialiseJobLockCache(context, isRefresh);
         return JobLockCacheImpl.instance();
     }
 
+    /**
+     * Retrieves a map of agents associated with the given context.
+     *
+     * @param context The context object.
+     * @return A map of agents, where the key is the agent name and the value is the corresponding ModuleMetaData object.
+     */
     private HashMap<String, ModuleMetaData> getAgents(Context context) {
         HashMap<String, ModuleMetaData> agents = new HashMap<>();
 
@@ -446,6 +525,11 @@ public abstract class ContextInstanceServiceBase {
         return agents;
     }
 
+    /**
+     * Retrieves all agents as a HashMap with agent name as the key and ModuleMetaData as the value.
+     *
+     * @return A HashMap<String, ModuleMetaData> containing all agents.
+     */
     private HashMap<String, ModuleMetaData> getAllAgents() {
         HashMap<String, ModuleMetaData> agents = new HashMap<>();
 
@@ -457,6 +541,12 @@ public abstract class ContextInstanceServiceBase {
         return agents;
     }
 
+    /**
+     * Retrieves all command execution jobs associated with a given context instance ID.
+     *
+     * @param contextInstanceId The ID of the context instance.
+     * @return A map of command execution jobs, where the key is the job ID and the value is the corresponding InternalEventDrivenJobInstance.
+     */
     protected Map<String, InternalEventDrivenJobInstance> getAllCommandExecutionJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
@@ -465,6 +555,12 @@ public abstract class ContextInstanceServiceBase {
         return this.getFilteredCommandExecutionJobs(filter);
     }
 
+    /**
+     * Retrieves a list of running command execution jobs for a given context instance ID.
+     *
+     * @param contextInstanceId The ID of the context instance.
+     * @return A list of InternalEventDrivenJobInstance objects representing the running command execution jobs.
+     */
     protected List<InternalEventDrivenJobInstance> getRunningCommandExecutionJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
@@ -475,6 +571,13 @@ public abstract class ContextInstanceServiceBase {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a filtered map of InternalEventDrivenJobInstance objects based on the provided filter.
+     *
+     * @param filter The SchedulerJobInstanceSearchFilter used to filter the job instances.
+     * @return A map of InternalEventDrivenJobInstance objects, where the key is the concatenation of the identifier and childContextName,
+     *         and the value is the corresponding InternalEventDrivenJobInstance object.
+     */
     private Map<String, InternalEventDrivenJobInstance> getFilteredCommandExecutionJobs(SchedulerJobInstanceSearchFilter filter) {
         filter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
         SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
@@ -491,6 +594,13 @@ public abstract class ContextInstanceServiceBase {
         return internalEventDrivenJobMap;
     }
 
+    /**
+     * Retrieves a map of QuartzScheduleDrivenJobInstance objects associated with the specified context instance ID.
+     *
+     * @param contextInstanceId The ID of the context instance.
+     * @return A map of QuartzScheduleDrivenJobInstance objects, where the key is the identifier and the value is
+     * the corresponding QuartzScheduleDrivenJobInstance object.
+     */
     protected Map<String, QuartzScheduleDrivenJobInstance> getQuartzBasedJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
@@ -505,6 +615,66 @@ public abstract class ContextInstanceServiceBase {
         return quartzScheduleDrivenJobInstanceMap;
     }
 
+    /**
+     * Retrieves a map of ContextStartJobInstance objects with the specified context instance ID.
+     *
+     * @param contextInstanceId The ID of the context instance.
+     * @return A map of ContextStartJobInstance objects, where the key is the concatenation of the identifier and childContextName, and the value is the corresponding ContextStart
+     *JobInstance object.
+     */
+    protected Map<String, ContextStartJobInstance> getContextStartJobInstances(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType(JobConstants.CONTEXT_START_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = globalEventJobRecordSearchResults.getResultList().stream()
+            .map(jobInstanceRecord -> (ContextStartJobInstance) jobInstanceRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
+        return contextStartJobInstanceMap;
+    }
+
+    /**
+     * Retrieves a map of ContextTerminalJobInstance objects associated with the specified context instance ID.
+     *
+     * @param contextInstanceId The ID of the context instance.
+     * @return A map of ContextTerminalJobInstance objects, where the key is the concatenation of the identifier and childContextName,
+     *         and the value is the corresponding ContextTerminalJobInstance object.
+     */
+    protected Map<String, ContextTerminalJobInstance> geContextTerminalJobInstances(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, ContextTerminalJobInstance> contextStartJobInstanceMap = globalEventJobRecordSearchResults.getResultList().stream()
+            .map(jobInstanceRecord -> (ContextTerminalJobInstance) jobInstanceRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
+        return contextStartJobInstanceMap;
+    }
+
+    protected Map<String, LocalEventJobInstance> getLocalEventJobs(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType(JobConstants.LOCAL_EVENT_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = globalEventJobRecordSearchResults.getResultList().stream()
+            .map(globalEventJobRecord -> (LocalEventJobInstance) globalEventJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
+        return localEventJobInstanceMap;
+    }
+
+    /**
+     * Retrieves a map of global event jobs associated with a specific context instance.
+     *
+     * @param contextInstanceId The ID of the context instance.
+     * @return A map of global event jobs, where the key is the concatenation of the
+     * identifier and child context name, and the value is the corresponding GlobalEventJobInstance.
+     */
     protected Map<String, GlobalEventJobInstance> getGlobalEventJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
@@ -518,6 +688,13 @@ public abstract class ContextInstanceServiceBase {
         return globalEventJobMap;
     }
 
+    /**
+     * Removes all context instances associated with agents from the system.
+     * This method iterates over all agents, retrieves their URL using the getAllAgents method,
+     * and then calls the removeAll method of the contextInstancePublicationService to remove
+     * all context instances associated with the agent URL.
+     * If there are no agents, the method does nothing.
+     */
     protected void removeAllContextInstancesFromAgent() {
         HashMap<String, ModuleMetaData> agents = this.getAllAgents();
         if (!agents.keySet().isEmpty()) {
@@ -528,6 +705,12 @@ public abstract class ContextInstanceServiceBase {
         }
     }
 
+    /**
+     * Propagates a context instance to the specified agents.
+     *
+     * @param contextInstance The context instance to be propagated.
+     * @param agents          The agents to which the context instance will be propagated.
+     */
     private void propagateContextInstanceToAgents(ContextInstance contextInstance, HashMap<String, ModuleMetaData> agents) {
         if (!agents.keySet().isEmpty()) {
             for (String key : agents.keySet()) {
@@ -537,11 +720,23 @@ public abstract class ContextInstanceServiceBase {
         }
     }
 
+    /**
+     * Set the context parameters on the given context instance.
+     *
+     * @param contextInstance The context instance for which to set the context parameters.
+     * @param internalJobs    A map of internal event driven job instances.
+     */
     private void setContextParametersOnInstance(ContextInstance contextInstance, Map<String, InternalEventDrivenJobInstance> internalJobs) {
         contextParametersInstanceService.populateContextParameters();
         contextParametersInstanceService.populateContextParametersOnContextInstance(contextInstance, internalJobs);
     }
 
+    /**
+     * Finds prepared context instances with the specified context name.
+     *
+     * @param contextName The name of the context to search for prepared instances.
+     * @return A list of prepared context instances.
+     */
     protected List<ContextInstance> findPrepared(String contextName) {
         ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
         filter.setStatus(InstanceStatus.PREPARED.name());
@@ -556,6 +751,11 @@ public abstract class ContextInstanceServiceBase {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Removes all prepared context instances with the specified context name from the system.
+     *
+     * @param contextName The name of the context for which to remove prepared instances.
+     */
     protected void removeAllPrepared(String contextName) {
         ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
         filter.setStatus(InstanceStatus.PREPARED.name());
@@ -572,6 +772,11 @@ public abstract class ContextInstanceServiceBase {
         });
     }
 
+    /**
+     * Removes a context instance from the system.
+     *
+     * @param contextInstanceId The ID of the context instance to be removed.
+     */
     protected void removeContextInstance(String contextInstanceId) {
         this.scheduledContextInstanceService.deleteById(contextInstanceId);
         this.schedulerJobInstanceService.deleteSchedulerJobInstances(contextInstanceId);

@@ -110,7 +110,8 @@ public class ContextTemplateValidator {
                     child.getScheduledJobs().forEach(schedulerJob -> {
                         if (schedulerJob.getJobName().equals(jobName)
                             && (schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
-                            || schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))) {
+                            || schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)
+                            || schedulerJob.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB))) {
                             reportError.set(false);
                         }
                     });
@@ -133,7 +134,8 @@ public class ContextTemplateValidator {
 
         jobsFromJobPlan.forEach(schedulerJob -> {
             if(schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
-                || schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                || schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)
+                || schedulerJob.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
                 // Context start and terminal jobs do not have job templates associated
                 // with them and can be ignored for the purpose of validation.
                 return;
@@ -172,7 +174,8 @@ public class ContextTemplateValidator {
             if(schedulerJobsFromContext.containsKey(identifier)) {
                 SchedulerJob schedulerJobFromContext = schedulerJobsFromContext.get(identifier);
                 if(schedulerJobFromContext.getAgentName().equals(JobConstants.CONTEXT_START_JOB) ||
-                    schedulerJobFromContext.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                    schedulerJobFromContext.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) ||
+                    schedulerJobFromContext.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
                     // We can ignore context start and terminal jobs as they are not defined
                     // in separate job artefacts.
                     return;

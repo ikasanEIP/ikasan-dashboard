@@ -8,7 +8,6 @@ import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 public class SolrJobDependencyImpl implements JobDependency {
     private String jobIdentifier;
     private LogicalGrouping logicalGrouping;
-    private boolean eventDependency = false;
 
     @Override
     public String getJobIdentifier() {
@@ -28,16 +27,6 @@ public class SolrJobDependencyImpl implements JobDependency {
     @Override
     public void setLogicalGrouping(LogicalGrouping logicalGrouping) {
         this.logicalGrouping = logicalGrouping;
-    }
-
-    @Override
-    public boolean isEventDependency() {
-        return eventDependency;
-    }
-
-    @Override
-    public void setEventDependency(boolean eventDependency) {
-        this.eventDependency = eventDependency;
     }
 
     @Override

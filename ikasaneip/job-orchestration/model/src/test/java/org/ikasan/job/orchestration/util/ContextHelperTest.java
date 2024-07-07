@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
+import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.*;
@@ -25,6 +26,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 // todo extensive tests need to be written here
@@ -720,6 +722,49 @@ public class ContextHelperTest {
         Assert.assertEquals(List.of("TEST_IK_GLOB Step 3", "TEST_IK_EVENT1 Step 1"), allJobs.get(46).getChildContextNames());
         Assert.assertEquals(List.of("TEST_IK_AM_1 Step 1", "TEST_IK_AM_2 Step 1"), allJobs.get(47).getChildContextNames());
         Assert.assertEquals(List.of("TEST_IK_EVENT1 Step 1", "TEST_IK_GLOB Step 5"), allJobs.get(48).getChildContextNames());
+    }
+
+    @Test
+    public void test_determine_if_jobs_transition_from_other_contexts() throws IOException {
+        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
+            "context/TEST_IK_GLOB.json");
+
+        ContextTemplate context = this.contextService.getContextTemplate(contextJson);
+
+        List<InternalEventDrivenJob> internalEventDrivenJobs = this.loadInternalEventDrivenJobInstanceMap
+            ("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal",
+                "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal");
+
+        List<ContextTerminalJob> contextTerminalJobs = loadContextTerminalJobInstanceMap
+            ("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/terminal",
+                "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/terminal");
+
+        List<ContextStartJob> contextStartJobs = loadContextStartJobInstanceMap
+            ("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/start",
+                "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/start");
+
+        List<SchedulerJob> allJobs = new ArrayList<>();
+        allJobs.addAll(internalEventDrivenJobs);
+        allJobs.addAll(contextStartJobs);
+        allJobs.addAll(contextTerminalJobs);
+
+        // Assert all child context names are empty.
+        allJobs.forEach(schedulerJob -> Assert.assertTrue(schedulerJob.getChildContextNames().isEmpty()));
+
+        ContextHelper.populateChildContextNamesOnSchedulerJobs(context, allJobs);
+
+        List<ContextTransition> contextTransitions = ContextHelper.determineIfSchedulerJobsTransitionFromOtherContexts(context
+            , "TEST_IK_JOB_18"
+            , "TEST_IK_EVENT1 Step 1"
+            , allJobs.stream().collect(Collectors.toMap(SchedulerJob::getIdentifier
+                , Function.identity(), (key1, key2)-> key2)));
+
+        Assert.assertTrue(contextTransitions.size() > 0);
+
+        LinkedList<List<SchedulerJob>> trace = ContextHelper.traceJobThroughContext(context, "TEST_IK_JOB_16"
+            , "TEST_IK_EVENT1 Step 1");
+
+        Assert.assertNotNull(trace);
     }
 
     /**
