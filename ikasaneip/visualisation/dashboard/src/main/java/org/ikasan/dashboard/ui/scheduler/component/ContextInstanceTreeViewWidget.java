@@ -23,6 +23,7 @@ import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataPr
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.server.StreamResource;
+import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
@@ -128,10 +129,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private double jobVisualisationHorizontalSpacing;
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
-
-    private TreeFilter currentTreeFilter = null;
-    private Object currentNode = null;
-    private List<Object> currentQueryResults = null;
 
     /**
      * Constructor
@@ -843,7 +840,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         grid.setDataProvider(dataProvider);
 
         grid.setSizeFull();
-        grid.expandRecursively(Collections.singleton(contextInstance), contextInstance.getTreeViewExpandLevel() - 1);
+        grid.expand(Collections.singleton(contextInstance));
+//        grid.expandRecursively(Collections.singleton(contextInstance), contextInstance.getTreeViewExpandLevel() - 1);
 
         grid.addExpandListener(e -> this.expandedNodes.addAll(e.getItems()));
         grid.addCollapseListener(e -> this.expandedNodes.removeAll(e.getItems()));
@@ -1957,11 +1955,18 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 // returns the number of immediate child items
                 @Override
                 public int getChildCount(HierarchicalQuery<Object, TreeFilter> query) {
-                    return getNodeChildren(query.getParent(), query.getFilter(), 0, 0).size();
+                    StopWatch stopWatch = new StopWatch();
+                    stopWatch.start();
+                    int count = getNodeChildren(query.getParent(), query.getFilter(), 0, 0).size();
+                    stopWatch.stop();
+                    logger.info("TreeView getChildCount: Elapsed milli: " + stopWatch.getTime());
+                    return count;
                 }
                 // checks if a given item should be expandable
                 @Override
                 public boolean hasChildren(Object item) {
+                    StopWatch stopWatch = new StopWatch();
+                    stopWatch.start();
                     List<Object> children = new ArrayList<>();
                     if(item instanceof ContextInstance) {
                         if (((ContextInstance)item).getContexts() != null
@@ -1991,13 +1996,20 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             .map(instance -> (Object) new PrecedingItem(instance))
                             .collect(Collectors.toList()));
                     }
+                    stopWatch.stop();
+                    logger.info("TreeView hasChildren: Elapsed milli: " + stopWatch.getTime());
                     return children.stream().distinct().collect(Collectors.toList()).size() > 0;
                 }
 
                 // returns the immediate child items based on offset and limit
                 @Override
                 protected Stream<Object> fetchChildrenFromBackEnd(HierarchicalQuery<Object, TreeFilter> query) {
-                    return getNodeChildren(query.getParent(), query.getFilter(), query.getLimit(), query.getOffset()).stream();
+                    StopWatch stopWatch = new StopWatch();
+                    stopWatch.start();
+                    Stream<Object> results = getNodeChildren(query.getParent(), query.getFilter(), query.getLimit(), query.getOffset()).stream();
+                    stopWatch.stop();
+                    logger.info("TreeView fetchChildrenFromBackEnd: Elapsed milli: " + stopWatch.getTime());
+                    return results;
                 }
             }.withConfigurableFilter();
     }
@@ -2014,74 +2026,62 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      */
     private List<Object> getNodeChildren(Object node, Optional<TreeFilter> filter, int limit, int offset) {
         List<Object> children = new ArrayList<>();
-        if(node == null || this.currentNode == null || (node != null && this.currentNode != node && this.currentTreeFilter == filter.get())) {
-            if (node == null) {
-                children.add(contextInstance);
-            } else if (node instanceof ContextInstance) {
-                if (((ContextInstance) node).getContexts() != null
-                    && !((ContextInstance) node).getContexts().isEmpty()) {
-                    if (filter != null && filter.isPresent() && filter.get().getJobName().isEmpty()) {
-                        children.addAll(((ContextInstance) node).getContexts().stream()
-                            .map(instance -> (Object) instance)
-                            .collect(Collectors.toList()));
-                    } else {
-                        children.addAll(((ContextInstance) node).getContexts().stream()
-                            .filter(instance -> (instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase())))
-                            .map(instance -> (Object) instance)
-                            .collect(Collectors.toList()));
+        if (node == null) {
+            children.add(contextInstance);
+        } else if (node instanceof ContextInstance) {
+            if (((ContextInstance) node).getContexts() != null
+                && !((ContextInstance) node).getContexts().isEmpty()) {
+                if (filter != null && filter.isPresent() && filter.get().getJobName().isEmpty()) {
+                    children.addAll(((ContextInstance) node).getContexts().stream()
+                        .map(instance -> (Object) instance)
+                        .collect(Collectors.toList()));
+                } else {
+                    children.addAll(((ContextInstance) node).getContexts().stream()
+                        .filter(instance -> (instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase())))
+                        .map(instance -> (Object) instance)
+                        .collect(Collectors.toList()));
 
-                        children.addAll(((ContextInstance) node).getContexts().stream()
-                            .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
-                                (instance, filter.get().getJobName()).size() > 0)
-                            .map(instance -> (Object) instance)
-                            .collect(Collectors.toList()));
-                    }
-                }
-
-                if (((ContextInstance) node).getScheduledJobs() != null
-                    && !((ContextInstance) node).getScheduledJobs().isEmpty()) {
-                    children.addAll(((ContextInstance) node).getScheduledJobs().stream()
-                        .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
-                            && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
-                        .filter(instance -> filter != null && filter.isPresent()
-                            ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
-                            instance.getChildContextName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
-                            (instance.getDisplayName() != null && !instance.getDisplayName().isEmpty() &&
-                                instance.getDisplayName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
-                            : true)
-                        .sorted(Comparator.comparingInt(SchedulerJob::getOrdinal))
+                    children.addAll(((ContextInstance) node).getContexts().stream()
+                        .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
+                            (instance, filter.get().getJobName()).size() > 0)
                         .map(instance -> (Object) instance)
                         .collect(Collectors.toList()));
                 }
-            } else if (node instanceof SchedulerJobInstance) {
-                SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) node;
-                children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
-                        schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
-                        , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
-                    .stream()
+            }
+
+            if (((ContextInstance) node).getScheduledJobs() != null
+                && !((ContextInstance) node).getScheduledJobs().isEmpty()) {
+                children.addAll(((ContextInstance) node).getScheduledJobs().stream()
                     .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
                         && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
                     .filter(instance -> filter != null && filter.isPresent()
                         ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
+                        instance.getChildContextName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
                         (instance.getDisplayName() != null && !instance.getDisplayName().isEmpty() &&
                             instance.getDisplayName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
                         : true)
-                    .map(instance -> (Object) new PrecedingItem(instance))
+                    .sorted(Comparator.comparingInt(SchedulerJob::getOrdinal))
+                    .map(instance -> (Object) instance)
                     .collect(Collectors.toList()));
             }
-
-            children = children.stream().distinct().collect(Collectors.toList());
+        } else if (node instanceof SchedulerJobInstance) {
+            SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) node;
+            children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
+                    schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
+                    , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
+                .stream()
+                .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                    && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+                .filter(instance -> filter != null && filter.isPresent()
+                    ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
+                    (instance.getDisplayName() != null && !instance.getDisplayName().isEmpty() &&
+                        instance.getDisplayName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
+                    : true)
+                .map(instance -> (Object) new PrecedingItem(instance))
+                .collect(Collectors.toList()));
         }
-        else {
-            children = this.currentQueryResults;
-        }
 
-        if(node != null) {
-            this.currentTreeFilter = filter.get();
-            this.currentQueryResults = children;
-            this.currentNode = node;
-        }
-
+        children = children.stream().distinct().collect(Collectors.toList());
 
         if(offset >= 0 && limit > 0 && offset + limit >= children.size()) {
             children = children.subList(offset, children.size());
