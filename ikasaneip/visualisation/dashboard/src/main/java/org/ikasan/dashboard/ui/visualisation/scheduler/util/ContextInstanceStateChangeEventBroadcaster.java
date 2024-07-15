@@ -1,6 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.util;
 
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
 
@@ -9,7 +9,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ContextInstanceStateChangeEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextInstanceStateChangeEventBroadcaster"));
+    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceStateChangeEventBroadcaster"));
 
     private static WeakHashMap<ContextInstanceStateChangeEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();

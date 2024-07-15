@@ -8,7 +8,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 
 import java.io.InputStream;
 import java.util.Objects;
@@ -112,7 +112,7 @@ public class LazyDownloadButton extends Button {
                 }
 
                 Optional<UI> optionalUI = getUI();
-                Executors.newSingleThreadExecutor(new VaadimThreadFactory("LazyDownloadButton")).execute(() -> {
+                Executors.newSingleThreadExecutor(new VaadinThreadFactory("LazyDownloadButton")).execute(() -> {
                     try {
                         InputStream inputStream = inputStreamCallback.createInputStream();
 

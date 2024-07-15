@@ -2021,6 +2021,11 @@ public class ContextInstanceDashboardWidget extends Div
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
+        if(this.ui == null || !this.ui.isAttached()) {
+            this.unregisterFromBroadcasters();
+            return;
+        }
+
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
                 if(event.getContextInstance().getStatus().equals(InstanceStatus.PREPARED) ||
@@ -2043,6 +2048,11 @@ public class ContextInstanceDashboardWidget extends Div
 
     @Override
     public void receiveBroadcast(ContextInstance event) {
+        if(this.ui == null || !this.ui.isAttached()) {
+            this.unregisterFromBroadcasters();
+            return;
+        }
+
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
                 if(event.getStatus().equals(InstanceStatus.PREPARED) ||
@@ -2065,6 +2075,11 @@ public class ContextInstanceDashboardWidget extends Div
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
+        if(this.ui == null || !this.ui.isAttached()) {
+            this.unregisterFromBroadcasters();
+            return;
+        }
+
         if(this.ui.isAttached()) {
             this.ui.access(() -> {
                 this.updateAggregateContextInstanceAggregateStatus(event.getContextInstance().getId());
@@ -2099,6 +2114,10 @@ public class ContextInstanceDashboardWidget extends Div
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
+        this.unregisterFromBroadcasters();
+    }
+
+    protected void unregisterFromBroadcasters() {
         SchedulerJobStateChangeEventBroadcaster.unregister(this);
         ContextInstanceStateChangeEventBroadcaster.unregister(this);
         ContextInstanceSavedEventBroadcaster.unregister(this);

@@ -27,6 +27,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
+import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
@@ -518,16 +519,52 @@ public class ContextInstanceWidget extends VerticalLayout
             contextInstanceDetailsCollapsableLayout.getElement().getStyle().set("border", !e.isCurrentlyVisible() ? "1px solid #aaa" : "");
         });
 
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         this.initialiseEditor();
+        stopWatch.stop();
+        logger.info(String.format("Initialising context instance editor. Context Instance Name:[%s], Context Instance Id:[%s], Elapsed mill:[%s]"
+            , contextInstance.getName(), contextInstance.getId(), stopWatch.getTime()));
+        stopWatch.reset();
+
+        stopWatch.start();
         this.initialiseTree();
+        stopWatch.stop();
+        logger.info(String.format("Initialising context instance tree view. Context Instance Name:[%s], Context Instance Id:[%s], Elapsed mill:[%s]"
+            , contextInstance.getName(), contextInstance.getId(), stopWatch.getTime()));
+        stopWatch.reset();
+
+        stopWatch.start();
         this.initialiseVisualisation(moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService);
+        stopWatch.stop();
+        logger.info(String.format("Initialising context instance visualisation. Context Instance Name:[%s], Context Instance Id:[%s], Elapsed mill:[%s]"
+            , contextInstance.getName(), contextInstance.getId(), stopWatch.getTime()));
+        stopWatch.reset();
+
+        stopWatch.start();
         this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
+        stopWatch.stop();
+        logger.info(String.format("Initialising context instance job grid. Context Instance Name:[%s], Context Instance Id:[%s], Elapsed mill:[%s]"
+            , contextInstance.getName(), contextInstance.getId(), stopWatch.getTime()));
+        stopWatch.reset();
+
+        stopWatch.start();
         this.initialiseContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
         this.initialiseContextInstanceAuditWidget(scheduledContextInstanceService);
+        stopWatch.stop();
+        logger.info(String.format("Initialising context instance audit table. Context Instance Name:[%s], Context Instance Id:[%s], Elapsed mill:[%s]"
+            , contextInstance.getName(), contextInstance.getId(), stopWatch.getTime()));
+        stopWatch.reset();
+
+        stopWatch.start();
         this.initialiseTabs();
+        stopWatch.stop();
+        logger.info(String.format("Initialising context instance tabs. Context Instance Name:[%s], Context Instance Id:[%s], Elapsed mill:[%s]"
+            , contextInstance.getName(), contextInstance.getId(), stopWatch.getTime()));
+
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
         this.getStyle().set("padding-top", "0px");

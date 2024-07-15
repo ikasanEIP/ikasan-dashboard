@@ -22,7 +22,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToLongConverter;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.shared.Registration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
@@ -69,8 +68,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
 public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResizableDialog implements SchedulerJobStateChangeEventBroadcastListener {
 
@@ -960,7 +957,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             getTranslation("progress-dialog.reset-job-body", UI.getCurrent().getLocale()));
 
         final UI current = UI.getCurrent();
-        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("AbstractGridSchedulerJobInstanceActionWidget"));
+        Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("AbstractGridSchedulerJobInstanceActionWidget"));
         executor.execute(() -> {
             boolean error = false;
             try {

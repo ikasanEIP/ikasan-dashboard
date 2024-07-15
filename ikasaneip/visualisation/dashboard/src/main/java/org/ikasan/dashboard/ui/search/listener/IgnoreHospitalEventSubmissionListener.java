@@ -15,7 +15,7 @@ import org.ikasan.dashboard.ui.general.component.SearchResults;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
@@ -93,7 +93,7 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                 }
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("IgnoreHospitalEventSubmissionListener"));
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("IgnoreHospitalEventSubmissionListener"));
                 executor.execute(() ->
                 {
                     try {

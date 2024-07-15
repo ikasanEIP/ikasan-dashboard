@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.command;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import org.ikasan.dashboard.internationalisation.IkasanI18NProvider;
@@ -9,15 +8,11 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 
@@ -65,7 +60,7 @@ public class ReleaseAllCommandExecutionJobsForContextInstanceCommand {
                     this.ikasanI18NProvider.getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ReleaseAllCommand"));
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ReleaseAllCommand"));
                 executor.execute(() -> {
                     boolean error = false;
                     try {
