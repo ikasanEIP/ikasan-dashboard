@@ -1,19 +1,14 @@
 package org.ikasan.dashboard.ui.scheduler.util;
 
-import com.vaadin.flow.shared.Registration;
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 
-import java.util.LinkedList;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 public class ContextViewUpdateEventBroadcaster
 {
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextViewUpdateEventBroadcaster"));
+    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextViewUpdateEventBroadcaster"));
 
     private static WeakHashMap<ContextViewUpdateEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();

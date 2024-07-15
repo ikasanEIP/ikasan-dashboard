@@ -21,7 +21,7 @@ import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
@@ -185,7 +185,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(true);
                     progressIndicatorDialog.open(getTranslation("notification.re-submitting-hospital-event", UI.getCurrent().getLocale()), null);
 
-                    Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("HospitalDialog"));
+                    Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("HospitalDialog"));
                     executor.execute(() ->
                     {
                         ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());
@@ -239,7 +239,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(true);
                     progressIndicatorDialog.open(String.format(getTranslation("notification.ignoring-hospital-event", UI.getCurrent().getLocale())), null);
 
-                    Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("HospitalDialog"));
+                    Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("HospitalDialog"));
                     executor.execute(() ->
                     {
                         ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());

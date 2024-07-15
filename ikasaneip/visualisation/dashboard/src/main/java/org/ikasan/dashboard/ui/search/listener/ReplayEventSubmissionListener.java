@@ -17,8 +17,7 @@ import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditEventImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
-import org.ikasan.rest.client.ReplayRestServiceImpl;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -99,7 +98,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                         , current.getLocale()), this.selectionItems.size()), null);
                 }
 
-                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ReplayEventSubmission"));
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ReplayEventSubmission"));
                 executor.execute(() -> {
                     try
                     {

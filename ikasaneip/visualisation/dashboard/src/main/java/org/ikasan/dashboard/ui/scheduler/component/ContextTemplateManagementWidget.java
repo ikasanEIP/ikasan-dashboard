@@ -11,7 +11,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -64,7 +63,6 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
@@ -79,7 +77,6 @@ import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -995,7 +992,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                     getTranslation("progress-dialog.provision-job-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateManagementWidget"));
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateManagementWidget"));
                 executor.execute(() -> {
                     boolean success = true;
                     try {

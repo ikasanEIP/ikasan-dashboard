@@ -10,7 +10,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -309,7 +309,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
             getTranslation("progress-dialog.reset-job-body", UI.getCurrent().getLocale()));
 
         final UI current = UI.getCurrent();
-        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("AbstractGridSchedulerJobInstanceActionWidget"));
+        Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("AbstractGridSchedulerJobInstanceActionWidget"));
         executor.execute(() -> {
             boolean error = false;
             try {

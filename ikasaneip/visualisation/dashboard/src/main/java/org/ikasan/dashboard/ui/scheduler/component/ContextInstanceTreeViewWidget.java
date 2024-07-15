@@ -32,7 +32,6 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceState
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -126,6 +125,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private double jobVisualisationHorizontalSpacing;
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
+
+    private TreeFilter currentTreeFilter = null;
+    private Object currentNode = null;
+    private List<Object> currentQueryResults = null;
 
     /**
      * Constructor
@@ -976,7 +979,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     getTranslation("progress-dialog.hold-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextInstanceTreeViewWidget"));
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceTreeViewWidget"));
                 executor.execute(() -> {
                     boolean error = false;
                     try {
@@ -1058,7 +1061,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
                     final UI current = UI.getCurrent();
-                    Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextInstanceTreeViewWidget"));
+                    Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceTreeViewWidget"));
                     executor.execute(() -> {
                         boolean error = false;
                         try {
@@ -1123,7 +1126,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     getTranslation("progress-dialog.skip-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextInstanceTreeViewWidget"));
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceTreeViewWidget"));
                 executor.execute(() -> {
                     boolean error = false;
                     try {
@@ -1177,7 +1180,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     getTranslation("progress-dialog.enable-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextInstanceTreeViewWidget"));
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceTreeViewWidget"));
                 executor.execute(() -> {
                     boolean error = false;
                     try {
@@ -1860,7 +1863,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
         manageJobStatusStateChangeEvent(this.ui, event);
-        manageContextStatusIndicators(this.ui);
+        //manageContextStatusIndicators(this.ui);
     }
 
     @Override
@@ -1869,11 +1872,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                 this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                 this.manageContextInstanceStateChangeEvent(this.ui, event);
-                manageContextStatusIndicators(this.ui);
+                //manageContextStatusIndicators(this.ui);
             }
             else {
                 this.manageContextInstanceStateChangeEvent(this.ui, event);
-                manageContextStatusIndicators(this.ui);
+                //manageContextStatusIndicators(this.ui);
             }
         }
     }
@@ -1884,7 +1887,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             this.contextInstance = event;
             ContextHelper.enrichJobs(contextInstance);
             this.enableDisableScheduledJobs(this.contextInstance, this.ui);
-            manageContextStatusIndicators(this.ui);
+            //manageContextStatusIndicators(this.ui);
             this.grid.getDataCommunicator().reset();
             this.createTreeGridDataProvider().refreshAll();
         }
@@ -1957,52 +1960,50 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      */
     private List<Object> getNodeChildren(Object node, Optional<TreeFilter> filter, int limit, int offset) {
         List<Object> children = new ArrayList<>();
-        if(node == null) {
-            children.add(contextInstance);
-        }
-        else if(node instanceof ContextInstance) {
-            if (((ContextInstance)node).getContexts() != null
-                && !((ContextInstance)node).getContexts().isEmpty()) {
-                if(filter != null && filter.isPresent() && filter.get().getJobName().isEmpty()) {
-                    children.addAll(((ContextInstance) node).getContexts().stream()
-                        .map(instance -> (Object) instance)
-                        .collect(Collectors.toList()));
-                }
-                else {
-                    children.addAll(((ContextInstance) node).getContexts().stream()
-                        .filter(instance -> (instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase())))
-                        .map(instance -> (Object) instance)
-                        .collect(Collectors.toList()));
+        if(node == null || this.currentNode == null || (node != null && this.currentNode != node && this.currentTreeFilter == filter.get())) {
+            if (node == null) {
+                children.add(contextInstance);
+            } else if (node instanceof ContextInstance) {
+                if (((ContextInstance) node).getContexts() != null
+                    && !((ContextInstance) node).getContexts().isEmpty()) {
+                    if (filter != null && filter.isPresent() && filter.get().getJobName().isEmpty()) {
+                        children.addAll(((ContextInstance) node).getContexts().stream()
+                            .map(instance -> (Object) instance)
+                            .collect(Collectors.toList()));
+                    } else {
+                        children.addAll(((ContextInstance) node).getContexts().stream()
+                            .filter(instance -> (instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase())))
+                            .map(instance -> (Object) instance)
+                            .collect(Collectors.toList()));
 
-                    children.addAll(((ContextInstance) node).getContexts().stream()
-                        .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
-                            (instance, filter.get().getJobName()).size() > 0)
-                        .map(instance -> (Object) instance)
-                        .collect(Collectors.toList()));
+                        children.addAll(((ContextInstance) node).getContexts().stream()
+                            .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
+                                (instance, filter.get().getJobName()).size() > 0)
+                            .map(instance -> (Object) instance)
+                            .collect(Collectors.toList()));
+                    }
                 }
-            }
 
-            if (((ContextInstance)node).getScheduledJobs() != null
-                && !((ContextInstance)node).getScheduledJobs().isEmpty()) {
-                children.addAll(((ContextInstance)node).getScheduledJobs().stream()
-                    .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
-                        && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
-                    .filter(instance -> filter != null && filter.isPresent()
-                        ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
+                if (((ContextInstance) node).getScheduledJobs() != null
+                    && !((ContextInstance) node).getScheduledJobs().isEmpty()) {
+                    children.addAll(((ContextInstance) node).getScheduledJobs().stream()
+                        .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
+                            && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+                        .filter(instance -> filter != null && filter.isPresent()
+                            ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
                             instance.getChildContextName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
                             (instance.getDisplayName() != null && !instance.getDisplayName().isEmpty() &&
                                 instance.getDisplayName().toLowerCase().contains(filter.get().getJobName().toLowerCase()))
-                        : true)
-                    .sorted(Comparator.comparingInt(SchedulerJob::getOrdinal))
-                    .map(instance -> (Object) instance)
-                    .collect(Collectors.toList()));
-            }
-        }
-        if(node instanceof SchedulerJobInstance) {
-            SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) node;
-            children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
-                    schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
-                    , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
+                            : true)
+                        .sorted(Comparator.comparingInt(SchedulerJob::getOrdinal))
+                        .map(instance -> (Object) instance)
+                        .collect(Collectors.toList()));
+                }
+            } else if (node instanceof SchedulerJobInstance) {
+                SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) node;
+                children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
+                        schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
+                        , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
                     .stream()
                     .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
                         && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
@@ -2013,9 +2014,20 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         : true)
                     .map(instance -> (Object) new PrecedingItem(instance))
                     .collect(Collectors.toList()));
+            }
+
+            children = children.stream().distinct().collect(Collectors.toList());
+        }
+        else {
+            children = this.currentQueryResults;
         }
 
-        children = children.stream().distinct().collect(Collectors.toList());
+        if(node != null) {
+            this.currentTreeFilter = filter.get();
+            this.currentQueryResults = children;
+            this.currentNode = node;
+        }
+
 
         if(offset >= 0 && limit > 0 && offset + limit >= children.size()) {
             children = children.subList(offset, children.size());
@@ -2394,6 +2406,19 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         public void setJobName(String jobName) {
             this.jobName = jobName;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof TreeFilter)) return false;
+            TreeFilter that = (TreeFilter) o;
+            return Objects.equals(jobName, that.jobName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(jobName);
         }
     }
 }

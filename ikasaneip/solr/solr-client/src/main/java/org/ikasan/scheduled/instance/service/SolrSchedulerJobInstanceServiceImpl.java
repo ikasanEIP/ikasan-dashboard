@@ -3,6 +3,7 @@ package org.ikasan.scheduled.instance.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.job.orchestration.model.instance.ContextStartJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextTerminalJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
@@ -230,6 +231,9 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                 }
             }
 
+            StopWatch stopWatch = new StopWatch();
+
+            stopWatch.start();
             // We are automating the creation of the context start job instances by dipping into the
             // context template via the ContextHelper and extracting all of the context start jobs.
             schedulerJobInstances.addAll(ContextHelper.getContextStartJobsFromContext(contextTemplate).stream()
@@ -241,7 +245,11 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                     contextStartJobInstance.setOrdinal(contextStartJob.getOrdinal());
                     return contextStartJobInstance;
                 }).collect(Collectors.toList()));
+            stopWatch.stop();
+            logger.info("Time to load start jobs: " + stopWatch.getTime());
 
+            stopWatch.reset();
+            stopWatch.start();
             // We are automating the creation of the context terminal job instances by dipping into the
             // context template via the ContextHelper and extracting all of the context terminal jobs.
             schedulerJobInstances.addAll(ContextHelper.getContextTerminalJobsFromContext(contextTemplate).stream()
@@ -253,7 +261,11 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                     contextTerminalJobInstance.setOrdinal(contextTerminalJob.getOrdinal());
                     return contextTerminalJobInstance;
                 }).collect(Collectors.toList()));
+            stopWatch.stop();
+            logger.info("Time to load terminal jobs: " + stopWatch.getTime());
 
+            stopWatch.reset();
+            stopWatch.start();
             // We are automating the creation of the local event job instances by dipping into the
             // context template via the ContextHelper and extracting all of the local event jobs.
             schedulerJobInstances.addAll(ContextHelper.getLocalEventJobsFromContext(contextTemplate).stream()
@@ -265,6 +277,9 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                     localEventJobInstance.setOrdinal(localEventJob.getOrdinal());
                     return localEventJobInstance;
                 }).collect(Collectors.toList()));
+
+            stopWatch.stop();
+            logger.info("Time to load start local event jobs: " + stopWatch.getTime());
 
             Map<String, SchedulerJobInstance> schedulerJobInstanceMap = schedulerJobInstances.stream()
                 .collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity(), (key1, key2)-> key2));
