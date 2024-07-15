@@ -33,7 +33,6 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -70,17 +69,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestClientException;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
@@ -411,7 +407,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         getTranslation("progress-dialog.delete-context-template-body", UI.getCurrent().getLocale()));
 
                     final UI current = UI.getCurrent();
-                    Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateWidget"));
+                    Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateWidget"));
                     executor.execute(() -> {
                         try {
                             try {
@@ -865,7 +861,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         progressIndicatorDialog.open(getTranslation("progress-dialog.enable-context-template-header", UI.getCurrent().getLocale())
                             , getTranslation("progress-dialog.enable-context-template-text", UI.getCurrent().getLocale()));
 
-                        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateWidget"));
+                        Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateWidget"));
                         executor.execute(() -> {
                             try {
                                 ContextTemplate contextTemplate = scheduledContextRecord.getContext();
@@ -926,7 +922,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         progressIndicatorDialog.open(getTranslation("progress-dialog.disable-context-template-header", UI.getCurrent().getLocale())
                             , getTranslation("progress-dialog.disable-context-template-text", UI.getCurrent().getLocale()));
 
-                        Executor executor = Executors.newSingleThreadExecutor(new VaadimThreadFactory("ContextTemplateWidget"));
+                        Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateWidget"));
                         executor.execute(() -> {
                             try {
                                 ContextTemplate contextTemplate = scheduledContextRecord.getContext();

@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.LogStreamer;
 import org.ikasan.spec.module.client.LogStreamingService;
 
@@ -20,7 +20,7 @@ public class SchedulerJobLogFileViewerDialog extends AbstractCloseableResizableD
 
     private final VerticalLayout layout;
     private final LogStreamingService logStreamingService;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor(new VaadimThreadFactory("SchedulerJobLogFileViewerDialog"));
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor(new VaadinThreadFactory("SchedulerJobLogFileViewerDialog"));
 
     private AceEditor aceEditor;
     private LogStreamer logStreamer;

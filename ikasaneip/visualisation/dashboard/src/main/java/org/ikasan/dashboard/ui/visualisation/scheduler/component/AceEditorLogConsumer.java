@@ -6,7 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.ikasan.dashboard.ui.util.VaadimThreadFactory;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.codec.ServerSentEvent;
@@ -63,7 +63,7 @@ public class AceEditorLogConsumer {
     }
 
     private void startThread() {
-        executor = Executors.newSingleThreadScheduledExecutor(new VaadimThreadFactory("AceEditorLogConsumer"));
+        executor = Executors.newSingleThreadScheduledExecutor(new VaadinThreadFactory("AceEditorLogConsumer"));
         TimerTask task = new TimerTask() {
             @Override
             public void run() {

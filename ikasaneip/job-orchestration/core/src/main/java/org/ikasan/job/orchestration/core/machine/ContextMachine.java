@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -225,9 +226,15 @@ public class ContextMachine {
     public void resetContextInstance(boolean holdCommandJobs, boolean initiateWithSameParameters,
                                      List<ContextParameterInstance> contextParameterInstances) throws IOException, SchedulerJobInstanceInitialisationException {
         if(this.context != null) {
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
             String contextName = this.contextInstance.getName();
             this.killRunningJobs();
             this.teardownBigQueue();
+            stopWatch.stop();
+            logger.info("Cleaned up old instance running jobs and bigqueue! Elapsed milli: " + stopWatch.getTime());
+            stopWatch.reset();
+            stopWatch.start();
             ContextService contextService = new ContextService();
             this.context = scheduledContextService.findByName(contextName).getContext();
 
@@ -238,6 +245,11 @@ public class ContextMachine {
             ContextHelper.enrichJobs(contextInstance);
 
             this.init();
+
+            stopWatch.stop();
+            logger.info("Initialised the new context! Elapsed milli: " + stopWatch.getTime());
+            stopWatch.reset();
+            stopWatch.start();
 
             SchedulerJobInstancesInitialisationParameters parameters
                 = new SchedulerJobInstancesInitialisationParametersImpl(holdCommandJobs);
@@ -294,6 +306,11 @@ public class ContextMachine {
                 }
             });
 
+            stopWatch.stop();
+            logger.info("Sorted out the new job instances! Elapsed milli: " + stopWatch.getTime());
+            stopWatch.reset();
+            stopWatch.start();
+
             if(contextParameterInstances != null) {
                 this.contextInstance.setContextParameters(contextParameterInstances);
             } else if (initiateWithSameParameters) {
@@ -302,6 +319,11 @@ public class ContextMachine {
                 contextParametersInstanceService.populateContextParametersOnContextInstance(this.contextInstance
                     , this.internalEventDrivenJobInstances);
             }
+
+            stopWatch.stop();
+            logger.info("Sorted out the context paramaters! Elapsed milli: " + stopWatch.getTime());
+            stopWatch.reset();
+            stopWatch.start();
 
             // Remove the previous context instance from all agents
             for (var agent : this.agents.entrySet()) {
@@ -316,6 +338,11 @@ public class ContextMachine {
                 this.contextInstancePublicationService.remove(url, previousContextInstance);
             }
 
+            stopWatch.stop();
+            logger.info("Removed contexts from agents! Elapsed milli: " + stopWatch.getTime());
+            stopWatch.reset();
+            stopWatch.start();
+
             // Propagate the new context instance to all agents.
             for (var agent : this.agents.entrySet()) {
                 // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
@@ -329,6 +356,11 @@ public class ContextMachine {
                 this.contextInstancePublicationService.publish(url, this.contextInstance);
             }
 
+            stopWatch.stop();
+            logger.info("Sent new context instance to agents! Elapsed milli: " + stopWatch.getTime());
+            stopWatch.reset();
+            stopWatch.start();
+
             // Initialise the job lock cache for the new instance
             this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
 
@@ -339,6 +371,11 @@ public class ContextMachine {
                 (previousContextInstance.getId(), previousContextInstance, previousContextInstance.getStatus(), InstanceStatus.ENDED));
 
             this.saveContext();
+
+            stopWatch.stop();
+            logger.info("Saved the new context instances! Elapsed milli: " + stopWatch.getTime());
+            stopWatch.reset();
+            stopWatch.start();
         }
     }
 
