@@ -2,16 +2,15 @@ package org.ikasan.job.orchestration.model.instance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.model.context.ContextImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
@@ -145,6 +144,19 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     @Override
     public void setContainsRepeatingJobs(boolean containsRepeatingJobs) {
         this.containsRepeatingJobs = containsRepeatingJobs;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ContextInstanceImpl that = (ContextInstanceImpl) o;
+        return Objects.equals(super.getName(), that.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.getName());
     }
 
     @Override

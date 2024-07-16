@@ -3,9 +3,11 @@ package org.ikasan.scheduled.instance.model;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SolrFileEventDrivenJobInstanceImpl extends SolrQuartzScheduleDrivenJobInstanceImpl implements FileEventDrivenJobInstance {
     private String filePath;
@@ -176,5 +178,21 @@ public class SolrFileEventDrivenJobInstanceImpl extends SolrQuartzScheduleDriven
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FileEventDrivenJobInstance)) return false;
+        if (!super.equals(o)) return false;
+        FileEventDrivenJobInstance that = (FileEventDrivenJobInstance) o;
+        return Objects.equals(super.jobName, that.getJobName())
+            && Objects.equals(super.contextName, that.getContextName())
+            && Objects.equals(super.getChildContextName(), that.getChildContextName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.jobName, super.contextName, super.getChildContextName());
     }
 }

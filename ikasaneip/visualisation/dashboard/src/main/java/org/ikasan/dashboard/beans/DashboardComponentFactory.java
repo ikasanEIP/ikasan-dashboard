@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.beans;
 
 import com.vaadin.flow.server.*;
+import org.atmosphere.cpr.ApplicationConfig;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.dashboard.cache.FlowStateCache;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -35,6 +37,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.io.IOException;
 
 @Configuration
@@ -42,6 +46,15 @@ public class DashboardComponentFactory
 {
     @Value("${scheduled.job.context.queue.directory:.}")
     private String queueDirectory;
+
+    @Value("${org.atmosphere.cpr.broadcaster.use.externalised.configurations:false}")
+    private String atmosphereBroadcasterUseExternalisedConfigurations;
+
+    @Value("${org.atmosphere.cpr.broadcaster.maxProcessingThreads:null}")
+    private String atmosphereBroadcasterMaxProcessingThreads;
+
+    @Value("${org.atmosphere.cpr.broadcaster.maxAsyncWriteThreads:null}")
+    private String atmosphereBroadcasterMaxAsyncWriteThreads;
 
     @Resource
     private ModuleControlService moduleControlRestService;
@@ -123,6 +136,20 @@ public class DashboardComponentFactory
         public void serviceInit(ServiceInitEvent event) {
             event.getSource().addSessionInitListener(sessionListener);
             event.getSource().addSessionDestroyListener(sessionListener);
+        }
+    }
+
+    @Component
+    private class AtmosphereInitialiser implements ServletContextInitializer {
+
+        @Override
+        public void onStartup(ServletContext servletContext) throws ServletException {
+            servletContext.setInitParameter("org.atmosphere.cpr.AtmosphereConfig.getInitParameter"
+                , atmosphereBroadcasterUseExternalisedConfigurations);
+            servletContext.setInitParameter(ApplicationConfig.BROADCASTER_MESSAGE_PROCESSING_THREADPOOL_MAXSIZE
+                , atmosphereBroadcasterMaxProcessingThreads);
+            servletContext.setInitParameter(ApplicationConfig.BROADCASTER_ASYNC_WRITE_THREADPOOL_MAXSIZE
+                , atmosphereBroadcasterMaxAsyncWriteThreads);
         }
     }
 
