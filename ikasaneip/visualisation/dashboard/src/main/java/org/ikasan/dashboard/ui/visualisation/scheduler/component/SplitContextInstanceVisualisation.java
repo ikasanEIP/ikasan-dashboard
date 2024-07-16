@@ -375,7 +375,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         if(event.getContextInstance() != null) {
-            if(this.ui.isAttached()) {
+            if(this.ui != null && this.ui.isAttached()) {
                 this.ui.access(() -> {
                     if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                         this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
@@ -391,7 +391,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        if(this.ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached()) {
             this.ui.access(() -> {
                 if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                     this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();

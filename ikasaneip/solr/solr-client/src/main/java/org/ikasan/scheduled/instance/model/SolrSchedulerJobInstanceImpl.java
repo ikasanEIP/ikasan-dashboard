@@ -81,7 +81,7 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
 
     @Override
     public boolean equals(Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
+        return super.equals(other);
     }
 
     @Override
