@@ -150,11 +150,11 @@ public class SolrInternalEventDrivenJobInstanceImpl extends SolrSchedulerJobInst
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SolrInternalEventDrivenJobInstanceImpl)) return false;
+        if (!(o instanceof InternalEventDrivenJobInstance)) return false;
         if (!super.equals(o)) return false;
-        SolrInternalEventDrivenJobInstanceImpl that = (SolrInternalEventDrivenJobInstanceImpl) o;
-        return Objects.equals(super.jobName, that.jobName)
-            && Objects.equals(super.contextName, that.contextName)
+        InternalEventDrivenJobInstance that = (InternalEventDrivenJobInstance) o;
+        return Objects.equals(super.jobName, that.getJobName())
+            && Objects.equals(super.contextName, that.getContextName())
             && Objects.equals(super.getChildContextName(), that.getChildContextName());
     }
 

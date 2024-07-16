@@ -241,11 +241,21 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             this.grid.collapseRecursively(this.expandedNodes, 1);
         });
 
+        Button refreshTreeButton = new Button(getTranslation("button.refresh", UI.getCurrent().getLocale()), VaadinIcon.REFRESH.create());
+        refreshTreeButton.setIconAfterText(true);
+        refreshTreeButton.addClickListener(event -> {
+            if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+            }
+            this.grid.getDataProvider().refreshAll();
+        });
+
+
         Div div = new Div();
         div.setSizeFull();
 
         HorizontalLayout layout = new HorizontalLayout();
-        layout.add(collapse);
+        layout.add(collapse, refreshTreeButton);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, collapse);
 
         div.add(layout);
@@ -289,6 +299,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 ComponentKey componentKey = new ComponentKey(contextInstance.getName()
                     , ((ContextInstance)value).getId(), ((ContextInstance)value).getName());
                 if(this.instanceStatusMap.containsKey(componentKey)) {
+                    if(!this.instanceStatusMap.get(componentKey).equals(((ContextInstance) value).getStatus())) {
+                        this.instanceStatusMap.put(componentKey, ((ContextInstance) value).getStatus());
+                    }
                     schedulerStatusFreeTextDiv.setStatus(this.instanceStatusMap.get(componentKey)
                         , ((ContextInstance) value).getName());
                 }
@@ -835,8 +848,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         grid.setDataProvider(dataProvider);
 
         grid.setSizeFull();
-        grid.expand(Collections.singleton(contextInstance));
-//        grid.expandRecursively(Collections.singleton(contextInstance), contextInstance.getTreeViewExpandLevel() - 1);
+        grid.expandRecursively(Collections.singleton(contextInstance), contextInstance.getTreeViewExpandLevel() - 1);
 
         grid.addExpandListener(e -> this.expandedNodes.addAll(e.getItems()));
         grid.addCollapseListener(e -> this.expandedNodes.removeAll(e.getItems()));
@@ -1860,32 +1872,35 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
+        logger.debug("received SchedulerJobInstanceStateChangeEvent event: " + event.getSchedulerJobInstance().getJobName());
         manageJobStatusStateChangeEvent(this.ui, event);
-        //manageContextStatusIndicators(this.ui);
+        manageContextStatusIndicators(this.ui);
     }
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
+        logger.debug("received ContextInstanceStateChangeEvent event");
         if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
             if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                 this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                 this.manageContextInstanceStateChangeEvent(this.ui, event);
-                //manageContextStatusIndicators(this.ui);
+                manageContextStatusIndicators(this.ui);
             }
             else {
                 this.manageContextInstanceStateChangeEvent(this.ui, event);
-                //manageContextStatusIndicators(this.ui);
+                manageContextStatusIndicators(this.ui);
             }
         }
     }
 
     @Override
     public void receiveBroadcast(ContextInstance event) {
+        logger.debug("received ContextInstance event: " + contextInstance.getId());
         if(event.getId().equals(this.contextInstance.getId())) {
             this.contextInstance = event;
             ContextHelper.enrichJobs(contextInstance);
             this.enableDisableScheduledJobs(this.contextInstance, this.ui);
-            //manageContextStatusIndicators(this.ui);
+            manageContextStatusIndicators(this.ui);
             this.grid.getDataCommunicator().reset();
             this.createTreeGridDataProvider().refreshAll();
         }
@@ -1905,7 +1920,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     stopWatch.start();
                     int count = getNodeChildren(query.getParent(), query.getFilter(), 0, 0).size();
                     stopWatch.stop();
-                    logger.info("TreeView getChildCount: Elapsed milli: " + stopWatch.getTime());
+                    logger.debug("TreeView getChildCount: Elapsed milli: " + stopWatch.getTime());
                     return count;
                 }
                 // checks if a given item should be expandable
@@ -1943,7 +1958,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             .collect(Collectors.toList()));
                     }
                     stopWatch.stop();
-                    logger.info("TreeView hasChildren: Elapsed milli: " + stopWatch.getTime());
+                    logger.debug("TreeView hasChildren: Elapsed milli: " + stopWatch.getTime());
                     return children.stream().distinct().collect(Collectors.toList()).size() > 0;
                 }
 
@@ -1954,7 +1969,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     stopWatch.start();
                     Stream<Object> results = getNodeChildren(query.getParent(), query.getFilter(), query.getLimit(), query.getOffset()).stream();
                     stopWatch.stop();
-                    logger.info("TreeView fetchChildrenFromBackEnd: Elapsed milli: " + stopWatch.getTime());
+                    logger.debug("TreeView fetchChildrenFromBackEnd: Elapsed milli: " + stopWatch.getTime());
                     return results;
                 }
             }.withConfigurableFilter();
@@ -2175,6 +2190,16 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param jobInstanceStateChangeEvent the event received when a jobs state changes.
      */
     private void manageJobStatusStateChangeEvent(UI ui, SchedulerJobInstanceStateChangeEvent jobInstanceStateChangeEvent) {
+        if(jobInstanceStateChangeEvent.getSchedulerJobInstance() == null) {
+            return;
+        }
+
+        if(jobInstanceStateChangeEvent.getSchedulerJobInstance().getAgentName().equals(JobConstants.CONTEXT_START_JOB) ||
+            jobInstanceStateChangeEvent.getSchedulerJobInstance().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+            return;
+        }
+
+        logger.debug("Start manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
         ComponentKey key;
         ComponentKey precedingJobKey;
 
@@ -2314,6 +2339,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 ui.access(() -> this.manuallySubmittedBy.get(precedingJobKey).setText(schedulerJobInstanceRecord.getManuallySubmittedBy()));
             }
         }
+
+        logger.debug("End manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
     }
 
     /**
@@ -2324,7 +2351,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      */
     private void manageContextInstanceStateChangeEvent(UI ui, ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
         if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-
+            logger.debug("Start manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
             ComponentKey key = new ComponentKey(contextInstance.getName()
                 , contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getName());
 
@@ -2337,6 +2364,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             else {
                 this.instanceStatusMap.put(key, contextInstanceStateChangeEvent.getNewStatus());
             }
+
+            logger.debug("End manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
         }
     }
 
