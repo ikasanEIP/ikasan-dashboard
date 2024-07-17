@@ -6,6 +6,7 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter
 
 public class SchedulerJobInstanceSearchFilterImpl implements SchedulerJobInstanceSearchFilter {
     private String jobName;
+    private boolean includeStartAndTerminalJobsInSearchResults = true;
     private String displayNameFilter = null;
     private String jobType;
     private String contextName;
@@ -29,6 +30,16 @@ public class SchedulerJobInstanceSearchFilterImpl implements SchedulerJobInstanc
     @Override
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    @Override
+    public boolean includeStartAndTerminalJobsInSearchResults() {
+        return this.includeStartAndTerminalJobsInSearchResults;
+    }
+
+    @Override
+    public void setIncludeStartAndTerminalJobsInSearchResults(boolean includeStartAndTerminalJobsInSearchResults) {
+        this.includeStartAndTerminalJobsInSearchResults = includeStartAndTerminalJobsInSearchResults;
     }
 
     @Override

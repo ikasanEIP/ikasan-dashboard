@@ -180,6 +180,10 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
             this.openGlobalEventJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier(),
                 canvasItemDoubleClickEvent.getFigure().getUserData().getJobName());
         }
+        else if(canvasItemDoubleClickEvent.getFigure().getUserData().getItemType().equals(UserData.LOCAL_EVENT_JOB)) {
+            this.openLocalEventJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier(),
+                canvasItemDoubleClickEvent.getFigure().getUserData().getJobName());
+        }
 
         super.doubleClickEvent(canvasItemDoubleClickEvent);
     }
@@ -337,6 +341,16 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
         globalEventJobInstanceDialog.setJob(schedulerJobRecord);
 
         globalEventJobInstanceDialog.open();
+    }
+
+    private void openLocalEventJob(String identifier, String jobName) {
+        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, jobName, JobConstants.LOCAL_EVENT_JOB_INSTANCE);
+
+        LocalEventJobInstanceDialog localEventJobInstanceDialog = new LocalEventJobInstanceDialog(systemEventLogger
+            , schedulerJobInstanceService, this.parentContextInstance);
+        localEventJobInstanceDialog.setJob(schedulerJobRecord);
+
+        localEventJobInstanceDialog.open();
     }
 
     public void addContextSelectedListener(ContextSelectedListener listener) {
