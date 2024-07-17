@@ -215,7 +215,7 @@ public class AbstractTest
     protected ContextParameter getContextParameter(String name, String value) {
         ContextParameterImpl contextParameter = new ContextParameterImpl();
         contextParameter.setName(name);
-        contextParameter.setDefaultValue(value  );
+        contextParameter.setDefaultValue(value);
 
         return contextParameter;
     }
