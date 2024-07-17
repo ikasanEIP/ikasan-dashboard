@@ -35,6 +35,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.orchestration.service.context.local.LocalEventServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -56,6 +57,7 @@ import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.job.service.LocalEventService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -119,6 +121,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ContextProfileService contextProfileService;
     private GlobalEventService globalEventService;
+    private LocalEventService localEventService;
     private UI ui;
 
     private double jobVisualisationVerticalSpacing;
@@ -210,6 +213,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         if (this.globalEventService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
+
+        this.localEventService = new LocalEventServiceImpl();
 
         this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
         this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
@@ -935,6 +940,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         else if(schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
             image = "frontend/images/global-job.png";
         }
+        else if(schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance) {
+            image = "frontend/images/local-event-job.png";
+        }
 
         return image;
     }
@@ -1259,6 +1267,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                 globalEventJobInstanceDialog.open();
             }
+            else if(refreshedRecord.getSchedulerJobInstance() instanceof LocalEventJobInstance) {
+                LocalEventJobInstanceDialog localEventJobInstanceDialog = new LocalEventJobInstanceDialog(systemEventLogger, schedulerJobInstanceService
+                    , this.contextInstance);
+                localEventJobInstanceDialog.setJob(refreshedRecord);
+
+                localEventJobInstanceDialog.open();
+            }
         });
 
         layout.add(modal);
@@ -1471,6 +1486,40 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                             globalEventJobInstance.setStatus(InstanceStatus.COMPLETE);
                             schedulerJobInstanceRecord.setSchedulerJobInstance(globalEventJobInstance);
+                            schedulerJobInstanceRecord.setStatus(InstanceStatus.COMPLETE.toString());
+                            schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
+                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                        }
+                    });
+                }
+                else if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof LocalEventJobInstance) {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-local-job", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm-dialog-text.submit-local-job", UI.getCurrent().getLocale()));
+
+                    confirmDialog.setCancelable(true);
+
+                    confirmDialog.open();
+
+                    confirmDialog.addConfirmListener(confirmEvent -> {
+                        try {
+                            LocalEventJobInstance localEventJobInstance = (LocalEventJobInstance)schedulerJobInstanceRecord
+                                .getSchedulerJobInstance();
+
+                            localEventService.raiseLocalEventJob(localEventJobInstance,
+                                this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
+
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                                , this.authentication.getName());
+
+                            localEventJobInstance.setStatus(InstanceStatus.COMPLETE);
+                            schedulerJobInstanceRecord.setSchedulerJobInstance(localEventJobInstance);
                             schedulerJobInstanceRecord.setStatus(InstanceStatus.COMPLETE.toString());
                             schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
                             schedulerJobInstanceService.save(schedulerJobInstanceRecord);
@@ -1704,7 +1753,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         if (skip != null) {
             if ((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
-                schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)) &&
+                schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE) ||
+                schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
                 !((schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED)) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
@@ -1727,12 +1777,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         if(enable != null) {
             if ((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
-                schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)) &&
+                schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE) ||
+                schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE)) &&
                 (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
                     !(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED)))) {
                 enable.setVisible(false);
             } else if ((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
-                schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE))) {
+                schedulerJobInstanceRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE) ||
+                schedulerJobInstanceRecord.getType().equals(JobConstants.LOCAL_EVENT_JOB_INSTANCE))) {
                 enable.setVisible(true &&
                     ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                         SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,

@@ -71,6 +71,7 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
         if(this.searchFilter ==  null) {
             throw new IllegalArgumentException("searchFilter cannot be null!");
         }
+        this.searchFilter.setIncludeStartAndTerminalJobsInSearchResults(false);
     }
 
     /**

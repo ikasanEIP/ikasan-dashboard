@@ -207,13 +207,17 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE).append("\" ");
             typeBuffer.append(OR).append(" ");
             typeBuffer.append(TYPE + COLON);
-            typeBuffer.append("\"").append(JobConstants.CONTEXT_START_JOB_INSTANCE).append("\" ");
-            typeBuffer.append(OR).append(" ");
-            typeBuffer.append(TYPE + COLON);
-            typeBuffer.append("\"").append(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE).append("\" ");
-            typeBuffer.append(OR).append(" ");
-            typeBuffer.append(TYPE + COLON);
             typeBuffer.append("\"").append(JobConstants.LOCAL_EVENT_JOB_INSTANCE).append("\" ");
+
+            if(filter.includeStartAndTerminalJobsInSearchResults()) {
+                typeBuffer.append(OR).append(" ");
+                typeBuffer.append(TYPE + COLON);
+                typeBuffer.append("\"").append(JobConstants.CONTEXT_START_JOB_INSTANCE).append("\" ");
+                typeBuffer.append(OR).append(" ");
+                typeBuffer.append(TYPE + COLON);
+                typeBuffer.append("\"").append(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE).append("\" ");
+            }
+
             typeBuffer.append(CLOSE_BRACKET);
 
             queryString.append(typeBuffer);
@@ -319,6 +323,9 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         typeBuffer.append(OR).append(" ");
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(OR).append(" ");
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.LOCAL_EVENT_JOB_INSTANCE).append("\" ");
         typeBuffer.append(CLOSE_BRACKET);
 
         StringBuffer queryString = new StringBuffer();
@@ -374,6 +381,9 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         typeBuffer.append(OR).append(" ");
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(OR).append(" ");
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.LOCAL_EVENT_JOB_INSTANCE).append("\" ");
         typeBuffer.append(CLOSE_BRACKET);
 
         StringBuffer queryString = new StringBuffer();

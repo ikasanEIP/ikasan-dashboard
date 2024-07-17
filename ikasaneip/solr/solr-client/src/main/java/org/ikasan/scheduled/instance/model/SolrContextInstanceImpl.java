@@ -2,20 +2,18 @@ package org.ikasan.scheduled.instance.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.context.model.SolrContextImpl;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-
     private String id;
     private long createdDateTime;
     private long updatedDateTime;
@@ -157,12 +155,15 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
     }
 
     @Override
-    public boolean equals(Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SolrContextInstanceImpl that = (SolrContextInstanceImpl) o;
+        return Objects.equals(this.id, that.getId());
     }
 
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
+        return Objects.hash(super.getName());
     }
 }
