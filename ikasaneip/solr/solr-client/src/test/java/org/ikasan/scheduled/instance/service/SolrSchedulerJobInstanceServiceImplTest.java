@@ -291,6 +291,62 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_find_by_filter_with_without_start_and_terminal_jobs() {
+        IntStream.range(0, 371).forEach(i -> {
+            this.service.save(this.createQuartzSchedulerJobInstanceRecord("contextInstance1",
+                "context1", "job"+i, "display"+i));
+        });
+
+        IntStream.range(0, 275).forEach(i -> {
+            this.service.save(this.createQuartzSchedulerJobInstanceRecord("contextInstance2",
+                "context1", "job"+i, "display"+i));
+        });
+
+        IntStream.range(0, 275).forEach(i -> {
+            this.service.save(this.createQuartzSchedulerJobInstanceRecord("contextInstance3",
+                "context2", "context2Job"+i, "display2"+i));
+        });
+
+        IntStream.range(0, 475).forEach(i -> {
+                this.service.save(this.createContextStartJobInstanceRecord("contextInstance1",
+                    "context1", "startJob-1" + i, List.of("child1", "child2")));
+                this.service.save(this.createContextTerminalJobInstanceRecord("contextInstance1",
+                    "context1", "terminal-1" + i, List.of("child1", "child2")));
+        });
+
+        SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        filter.setIncludeStartAndTerminalJobsInSearchResults(false);
+        filter.setContextName("context1");
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.solrSchedulerJobInstanceDao
+            .getScheduledContextInstancesByFilter(filter, 1000, 0, null, null);
+
+        Assert.assertEquals(646, searchResults.getResultList().size());
+        Assert.assertEquals(646, searchResults.getTotalNumberOfResults());
+
+        searchResults = this.solrSchedulerJobInstanceDao
+            .getScheduledContextInstancesByFilter(filter, 0, 0, null, null);
+
+        Assert.assertEquals(0, searchResults.getResultList().size());
+        Assert.assertEquals(646, searchResults.getTotalNumberOfResults());
+
+        filter.setIncludeStartAndTerminalJobsInSearchResults(true);
+        filter.setContextName("context1");
+
+        searchResults = this.solrSchedulerJobInstanceDao
+            .getScheduledContextInstancesByFilter(filter, 5000, 0, null, null);
+
+        Assert.assertEquals(2546, searchResults.getResultList().size());
+        Assert.assertEquals(2546, searchResults.getTotalNumberOfResults());
+
+        searchResults = this.solrSchedulerJobInstanceDao
+            .getScheduledContextInstancesByFilter(filter, 0, 0, null, null);
+
+        Assert.assertEquals(0, searchResults.getResultList().size());
+        Assert.assertEquals(2546, searchResults.getTotalNumberOfResults());
+    }
+
+    @Test
     public void test_find_by_filter_with_escape_characters() {
         IntStream.range(0, 371).forEach(i -> {
             this.service.save(this.createQuartzSchedulerJobInstanceRecord("contextInstance:1",
@@ -903,7 +959,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
             this.service.save(this.createCommandExecutionJobInstanceRecord("contextInstance1",
                 "context1", "job1-1"+i, List.of(), false, InstanceStatus.WAITING));
             this.service.save(this.createContextStartJobInstanceRecord("contextInstance1",
-                "context1", "startJob-1"+i, List.of("child1", "child2")));
+                    "context1", "startJob-1"+i, List.of("child1", "child2")));
             this.service.save(this.createContextTerminalJobInstanceRecord("contextInstance1",
                 "context1", "terminal-1"+i, List.of("child1", "child2")));
         });
