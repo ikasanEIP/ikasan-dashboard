@@ -154,22 +154,12 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
         }
     }
 
-//    @Override
-//    public boolean equals(Object other) {
-//        return EqualsBuilder.reflectionEquals(this, other);
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return HashCodeBuilder.reflectionHashCode(this);
-//    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SolrContextInstanceImpl that = (SolrContextInstanceImpl) o;
-        return Objects.equals(super.getName(), that.getName());
+        return Objects.equals(this.id, that.getId());
     }
 
     @Override
