@@ -343,6 +343,14 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         return finalSchedulerJobInitiationEvents;
     }
 
+    /**
+     * Adds a queued scheduler job initiation event.
+     *
+     * @param contextInstance The context instance associated with the event.
+     * @param parentContextInstance The parent context instance associated with the event.
+     * @param jobIdentifier The identifier of the job to add.
+     * @param event The scheduler job initiation event to add.
+     */
     protected void addQueuedSchedulerJobInitiationEvent(ContextInstance contextInstance, ContextInstance parentContextInstance
         , String jobIdentifier, SchedulerJobInitiationEvent event) {
         logger.info("Locked {}", event.getInternalEventDrivenJob());
@@ -425,30 +433,19 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             internalEventDrivenJob.setSkip(true);
         }
 
-        if(contextParameters != null && internalEventDrivenJob != null && internalEventDrivenJob.getContextParameters() != null) {
-            schedulerJobInitiationEvent.setContextParameters(internalEventDrivenJob.getContextParameters().stream()
-                .map(contextParameter -> {
-                    AtomicReference<ContextParameterInstance> instance = new AtomicReference<>();
-                    contextParameters.forEach(contextParameterInstance -> {
-                        if(contextParameter.getName().equals(contextParameterInstance.getName())) {
-                            instance.set(contextParameterInstance);
-                        }
-                    });
-
-                    if(instance.get() != null) {
-                        return this.replaceParamIfNotSet(parentContextInstance.getName(), instance.get());
-                    }
-                    else {
-                        ContextParameterInstance defaultInstance = new ContextParameterInstanceImpl();
-                        defaultInstance.setName(contextParameter.getName());
-                        defaultInstance.setValue(contextParameter.getDefaultValue());
-                        defaultInstance.setDefaultValue(contextParameter.getDefaultValue());
-
-                        return defaultInstance;
-                    }
-                }).collect(Collectors.toList()));
+        if(contextInstance.getContextParameters() != null && !contextInstance.getContextParameters().isEmpty()
+            // Get context parameters from child context
+            && internalEventDrivenJob != null && internalEventDrivenJob.getContextParameters() != null) {
+            this.setContextParametersOnInitiationEventFromCollection(schedulerJobInitiationEvent, internalEventDrivenJob,
+                contextInstance.getContextParameters(), parentContextInstance);
         }
-        else if((contextParameters == null || contextParameters.isEmpty()) && internalEventDrivenJob != null && internalEventDrivenJob.getContextParameters() != null) {
+        else if(contextParameters != null && internalEventDrivenJob != null && internalEventDrivenJob.getContextParameters() != null) {
+            // Get context parameters from parent context
+            this.setContextParametersOnInitiationEventFromCollection(schedulerJobInitiationEvent, internalEventDrivenJob,
+                contextParameters, parentContextInstance);
+        }
+        else if((contextParameters == null || contextParameters.isEmpty()) && internalEventDrivenJob != null
+            && internalEventDrivenJob.getContextParameters() != null && !internalEventDrivenJob.getContextParameters().isEmpty()) {
             schedulerJobInitiationEvent.setContextParameters(internalEventDrivenJob.getContextParameters().stream()
                 .map(contextParameter -> {
                     ContextParameterInstanceImpl contextParameterInstance = new ContextParameterInstanceImpl();
@@ -460,6 +457,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 })
                 .collect(Collectors.toList()));
         }
+
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
         if(internalEventDrivenJob.isTargetResidingContextOnly() && !internalEventDrivenJob.isJobRepeatable()) {
@@ -488,6 +486,41 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
 
         return schedulerJobInitiationEvent;
+    }
+
+    /**
+     * Sets context parameters on initiation event from a collection of context parameter instances.
+     *
+     * @param schedulerJobInitiationEvent The initiation event of the scheduler job.
+     * @param internalEventDrivenJob The internal event-driven job instance.
+     * @param contextParameters The list of context parameter instances.
+     * @param parentContextInstance The parent context instance.
+     */
+    private void setContextParametersOnInitiationEventFromCollection(SchedulerJobInitiationEvent schedulerJobInitiationEvent,
+                                                                     InternalEventDrivenJobInstance internalEventDrivenJob,
+                                                                     List<ContextParameterInstance> contextParameters,
+                                                                     ContextInstance parentContextInstance) {
+        schedulerJobInitiationEvent.setContextParameters(internalEventDrivenJob.getContextParameters().stream()
+            .map(contextParameter -> {
+                AtomicReference<ContextParameterInstance> instance = new AtomicReference<>();
+                contextParameters.forEach(contextParameterInstance -> {
+                    if(contextParameter.getName().equals(contextParameterInstance.getName())) {
+                        instance.set(contextParameterInstance);
+                    }
+                });
+
+                if(instance.get() != null) {
+                    return this.replaceParamIfNotSet(parentContextInstance.getName(), instance.get());
+                }
+                else {
+                    ContextParameterInstance defaultInstance = new ContextParameterInstanceImpl();
+                    defaultInstance.setName(contextParameter.getName());
+                    defaultInstance.setValue(contextParameter.getDefaultValue());
+                    defaultInstance.setDefaultValue(contextParameter.getDefaultValue());
+
+                    return defaultInstance;
+                }
+            }).collect(Collectors.toList()));
     }
 
     /**
