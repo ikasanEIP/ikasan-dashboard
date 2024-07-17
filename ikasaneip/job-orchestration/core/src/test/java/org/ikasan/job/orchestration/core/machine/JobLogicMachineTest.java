@@ -13,6 +13,7 @@ import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.GlobalEventJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
@@ -1974,6 +1975,60 @@ public class JobLogicMachineTest extends AbstractTest {
                 , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
+    }
+
+    /**
+     * The role of this test is to confirm that context parameters get set on their respective job
+     * initiation events as expected.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_nested_context_with_context_parameters_at_child_context() throws IOException {
+        ContextInstance context = context("/data/nested_context_with_params_at_child_level.json");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context3", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job1 = new InternalEventDrivenJobInstanceImpl();
+        job1.setContextParameters(List.of(getContextParameter("test3", "String")
+            , getContextParameter("test4", "String")
+            , getContextParameter("test5", "String")));
+        internalEventDrivenJobs.put("agentName1-jobName1-Context3",job1);
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job5 = new InternalEventDrivenJobInstanceImpl();
+        job5.setContextParameters(List.of(getContextParameter("test1", "String"), getContextParameter("test2", "String")));
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", job5);
+        InternalEventDrivenJobInstanceImpl job6 = new InternalEventDrivenJobInstanceImpl();
+        job6.setContextParameters(List.of(getContextParameter("test3", "String")
+            , getContextParameter("test4", "String")
+            , getContextParameter("test5", "String")));
+        internalEventDrivenJobs.put("agentName6-jobName6-Context1", job6);
+        internalEventDrivenJobs.put("agentName7-jobName7-Context1", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job8 = new InternalEventDrivenJobInstanceImpl();
+        job8.setContextParameters(List.of(getContextParameter("test4", "String")
+            , getContextParameter("test5", "String")
+            , getContextParameter("test6", "String")
+            , getContextParameter("test7", "String")));
+        internalEventDrivenJobs.put("agentName8-jobName8-Context1", job8);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        ContextInstance child = ContextHelper.getChildContextInstance("Context3", context);
+        List<SchedulerJobInitiationEvent> events = jobLogicMachine
+            .getJobInitiationEvents(eventInstance, child, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName1", events.get(0).getAgentName());
+        Assert.assertEquals("jobName1", events.get(0).getJobName());
+        Assert.assertEquals(3, events.get(0).getContextParameters().size());
+        Assert.assertEquals("ContextParameterInstanceImpl[value=<null>,name=test3,defaultValue=String3]"
+            , events.get(0).getContextParameters().get(0).toString());
+        Assert.assertEquals("ContextParameterInstanceImpl[value=<null>,name=test4,defaultValue=String4]"
+            , events.get(0).getContextParameters().get(1).toString());
+        Assert.assertEquals("ContextParameterInstanceImpl[value=<null>,name=test5,defaultValue=String5]"
+            , events.get(0).getContextParameters().get(2).toString());
     }
 
     @Test
