@@ -633,6 +633,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             if (replacementForContextParamName != null) {
                 instance.setValue(replacementForContextParamName);
             }
+            else {
+                instance.setValue(instance.getDefaultValue());
+            }
         }
         return instance;
     }
