@@ -89,10 +89,16 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 , contextInstance.getName(), contextInstance.getId(), childContextNames);
         }
 
+        boolean targetResidingContextOnly = false;
+        if(scheduledProcessEvent.getInternalEventDrivenJob() != null) {
+            targetResidingContextOnly = scheduledProcessEvent.getInternalEventDrivenJob().isTargetResidingContextOnly();
+        }
         // Firstly the status of the job is set on the instance.
         if(schedulerJobInstance != null &&
-            (scheduledProcessEvent.getChildContextNames() == null || scheduledProcessEvent.getChildContextNames().isEmpty()
-            || scheduledProcessEvent.getChildContextNames().contains(contextInstance.getName()))) {
+            ((!targetResidingContextOnly && (scheduledProcessEvent.getChildContextNames() == null || scheduledProcessEvent.getChildContextNames().isEmpty()
+            || scheduledProcessEvent.getChildContextNames().contains(contextInstance.getName())))
+            || (targetResidingContextOnly && scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName() != null &&
+                scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName().equals(schedulerJobInstance.getChildContextName())))) {
             // we update the job result with the event if it is relevant in this context. A null or empty
             // collection of child contexts means the event is valid for all contexts.
             InstanceStatus currentJobState = schedulerJobInstance.getStatus();
