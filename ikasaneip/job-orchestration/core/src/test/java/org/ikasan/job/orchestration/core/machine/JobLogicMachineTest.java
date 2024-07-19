@@ -73,6 +73,41 @@ public class JobLogicMachineTest extends AbstractTest {
     }
 
     @Test
+    public void test_simple_context_and_single_dependency_relevant_event_target_residing_context() throws IOException, InvalidContextTemplateException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+
+        InternalEventDrivenJobInstance instance = new InternalEventDrivenJobInstanceImpl();
+        instance.setTargetResidingContextOnly(true);
+        instance.setJobName("jobName1");
+        instance.setAgentName("agentName1");
+        instance.setIdentifier("jobName1-agentName1");
+        instance.setChildContextName("Context1");
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setInternalEventDrivenJob(instance);
+
+        InternalEventDrivenJobInstance instance2 = new InternalEventDrivenJobInstanceImpl();
+        instance2.setTargetResidingContextOnly(false);
+        instance2.setJobName("jobName2");
+        instance2.setAgentName("agentName2");
+        instance2.setIdentifier("jobName1-agentName1");
+        instance2.setChildContextName("test");
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", instance2);
+
+        ContextHelper.enrichJobs(context);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals("jobName2", events.get(0).getJobName());
+    }
+
+    @Test
     public void test_simple_context_job_already_complete() throws IOException, InvalidContextTemplateException {
         ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
         context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.COMPLETE);
