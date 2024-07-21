@@ -312,7 +312,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                 event.getContextInstance().getName(), event.getContextInstance().getStatus().toString(),
                 StatusColours.getInstanceStatusColour(event.getContextInstance().getStatus()));
 
-            if(this.ui.isAttached()) {
+            if(this.ui != null && this.ui.isAttached()) {
                 this.ui.access(() -> {
                     if (this.designerCanvas != null) {
                         this.designerCanvas.setBackgroundColor(event.getContextInstance().getName() + "_status"
