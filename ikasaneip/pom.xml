@@ -268,7 +268,7 @@
         <version.org.springframework.data>3.2.0</version.org.springframework.data>
         <version.spring.cloud.config.client>4.1.0</version.spring.cloud.config.client>
         <version.org.springframework.webflow-spring-js>2.4.8.RELEASE</version.org.springframework.webflow-spring-js>
-        <version.org.springboot>3.2.1</version.org.springboot>
+        <version.org.springboot>3.2.7</version.org.springboot>
         <version.org.springframework.shell>2.0.1.RELEASE</version.org.springframework.shell>
         <version.io.springfox.swagger>2.9.2</version.io.springfox.swagger>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
@@ -375,7 +375,7 @@
         <version.ace.editor>3.4.2</version.ace.editor>
         <version.big.queue>1.0.0</version.big.queue>
         <version.logback>1.4.14</version.logback>
-        <ikasan.core.version>4.0.0-SNAPSHOT</ikasan.core.version>
+        <ikasan.core.version>4.0.2-SNAPSHOT</ikasan.core.version>
         <version.spring.webflux>6.1.6</version.spring.webflux>
         <version.reactor.test>3.4.10</version.reactor.test>
         <version.reactor.netty.http>1.0.39</version.reactor.netty.http>
