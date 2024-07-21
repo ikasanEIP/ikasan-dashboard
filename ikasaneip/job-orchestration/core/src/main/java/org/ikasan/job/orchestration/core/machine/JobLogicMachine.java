@@ -643,8 +643,10 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             SchedulerJobInstance schedulerJob = contextInstance.getScheduledJobsMap().get(agentName+"-"+jobName);
             if(schedulerJob != null && (schedulerJob.getStatus().equals(InstanceStatus.COMPLETE)
                 || schedulerJob.getStatus().equals(InstanceStatus.ERROR))
+                && (((ContextualisedScheduledProcessEvent)schedulerJob.getScheduledProcessEvent())
+                .getChildContextNames() != null
                 && ((ContextualisedScheduledProcessEvent)schedulerJob.getScheduledProcessEvent())
-                    .getChildContextNames().equals(childContextIds)) {
+                    .getChildContextNames().equals(childContextIds))) {
                 return true;
             }
         }

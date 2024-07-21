@@ -1354,26 +1354,43 @@ public class ContextMachine {
         , MutableBoolean lockRaised, boolean markAsRaised) {
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
+        this.getInitiationEvents(results, contextInstance, scheduledProcessEvent, lockRaised, markAsRaised);
+
+        return results;
+    }
+
+    /**
+     * Retrieves the SchedulerJobInitiationEvents for a given ContextInstance and ContextualisedScheduledProcessEvent.
+     *
+     * @param results The list to which the SchedulerJobInitiationEvents should be added.
+     * @param contextInstance The ContextInstance for which the SchedulerJobInitiationEvents are retrieved.
+     * @param scheduledProcessEvent The ContextualisedScheduledProcessEvent for which the SchedulerJobInitiationEvents are retrieved.
+     * @param lockRaised Indicates if the lock was raised for the job.
+     * @param markAsRaised Indicates if the events should be marked as raised.
+     */
+    private void getInitiationEvents(List<SchedulerJobInitiationEvent> results, ContextInstance contextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent
+        , MutableBoolean lockRaised, boolean markAsRaised) {
+
         if(contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
-                + "-" + scheduledProcessEvent.getJobName())) {
+            + "-" + scheduledProcessEvent.getJobName())) {
 
-             // Delegate to the JobLogicMachine to determine if any SchedulerJobInitiationEvents are
-             // required to be raised.
-             List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
-                 , contextInstance, this.dryRunParameters, this.globalEventJobInstanceMap, this.internalEventDrivenJobInstances
-                 , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.localEventJobInstanceMap
-                 , this.contextInstance.getContextParameters(), this.contextInstance, lockRaised, markAsRaised);
+            if(scheduledProcessEvent.getInternalEventDrivenJob() != null && scheduledProcessEvent.getInternalEventDrivenJob().isTargetResidingContextOnly()
+                && !scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName().equals(contextInstance.getName())) {
+                // do nothing if targeted job not relevant for its targeted context.
+                return;
+            }
 
-             // Update the context status after event received and attached
-             // to the job instance.
-             this.setContextStatus(contextInstance, false);
+            // Delegate to the JobLogicMachine to determine if any SchedulerJobInitiationEvents are
+            // required to be raised.
+            List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
+                , contextInstance, this.dryRunParameters, this.globalEventJobInstanceMap, this.internalEventDrivenJobInstances
+                , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.localEventJobInstanceMap
+                , this.contextInstance.getContextParameters(), this.contextInstance, lockRaised, markAsRaised);
 
-             if(contextInstance.getContexts() == null || contextInstance.getContexts().isEmpty()) {
-                 return events;
-             }
-             else {
-                 results.addAll(events);
-             }
+            // Update the context status after event received and attached
+            // to the job instance.
+            this.setContextStatus(contextInstance, false);
+            results.addAll(events);
         }
 
 
@@ -1384,8 +1401,6 @@ public class ContextMachine {
                 this.setContextStatus(contextInstance, false);
             }
         }
-
-        return results;
     }
 
     /**
