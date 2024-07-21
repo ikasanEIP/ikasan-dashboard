@@ -2,19 +2,14 @@ package org.ikasan.job.orchestration.context.validation;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import liquibase.pro.packaged.C;
 import org.apache.commons.lang.SerializationUtils;
 import org.ikasan.job.orchestration.core.AbstractTest;
-import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.junit.Assert;
@@ -28,7 +23,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ContextTemplateValidatorTest extends AbstractTest {
