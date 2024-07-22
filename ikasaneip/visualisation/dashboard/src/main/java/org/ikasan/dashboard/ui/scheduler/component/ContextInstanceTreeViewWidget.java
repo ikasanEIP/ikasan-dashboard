@@ -319,7 +319,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         , schedulerJobInstance.getJobName(), schedulerJobInstance.getContextName(), schedulerJobInstance.getChildContextName());
                 }
 
-                if (ContextHelper.determineIfJobsTransitionFromOtherContexts(contextInstance, schedulerJobInstance.getJobName()
+                boolean isTargetResidingContextOnly =
+                internalEventDrivenJobInstanceMap.containsKey(schedulerJobInstance.getIdentifier()+"-"+schedulerJobInstance.getChildContextName()) &&
+                    internalEventDrivenJobInstanceMap.get(schedulerJobInstance.getIdentifier()+"-"+schedulerJobInstance.getChildContextName()).isTargetResidingContextOnly();
+
+                if (!isTargetResidingContextOnly && ContextHelper.determineIfJobsTransitionFromOtherContexts(contextInstance, schedulerJobInstance.getJobName()
                     , schedulerJobInstance.getChildContextName(), schedulerJobMap).size() > 0) {
                     horizontalLayout.add(VaadinIcon.ARROW_RIGHT.create());
                 }
