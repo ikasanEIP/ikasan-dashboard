@@ -1147,7 +1147,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                     this.schedulerJobService, this.contextTemplate.isUseDisplayName());
 
                 GlobalEventJob globalEventJob = new GlobalEventJobImpl();
-                globalEventJob.setContextName(JobConstants.GLOBAL_EVENT);
+                globalEventJob.setContextName(this.contextTemplate.getName());
 
                 globalEventJobDialog.setJob(globalEventJob, EditMode.NEW);
                 globalEventJobDialog.open();

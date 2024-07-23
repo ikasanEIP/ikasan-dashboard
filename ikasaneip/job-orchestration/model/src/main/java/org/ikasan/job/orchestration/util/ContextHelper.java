@@ -50,9 +50,15 @@ public class ContextHelper {
         if(!schedulerJob.getAgentName().equals(GLOBAL_EVENT)) {
             schedulerJob.setAgentName(AGENT_NAME_REPLACEMENT);
         }
+        else {
+            schedulerJob.setJobName(getJobName(schedulerJob.getJobName()));
+        }
         schedulerJob.setContextName(getContextName(schedulerJob.getContextName()));
         if(!(schedulerJob instanceof GlobalEventJob)) {
             schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
+        }
+        else {
+            schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + getJobName(schedulerJob.getJobName()));
         }
     }
 
@@ -126,6 +132,20 @@ public class ContextHelper {
         else {
             return contextName.substring(0, contextName.lastIndexOf("_")) + "_" + ENV_NAME_REPLACEMENT;
         }
+    }
+
+    /**
+     * Helper method to get the job name.
+     *
+     * @param jobName
+     * @return
+     */
+    private static String getJobName(String jobName) {
+        if(jobName.contains("_")) {
+            return jobName.substring(0, jobName.lastIndexOf("_")) + "_" + ENV_NAME_REPLACEMENT;
+        }
+
+        return jobName;
     }
 
     /**

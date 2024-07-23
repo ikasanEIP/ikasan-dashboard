@@ -120,7 +120,7 @@ public class ContextHelperTest {
         Assert.assertEquals("contextName_[[env.name]]", fileEventDrivenJob.getContextName());
 
         GlobalEventJob globalEventJob = new GlobalEventJobImpl();
-        globalEventJob.setJobName("jobName");
+        globalEventJob.setJobName("jobName_dev1");
         globalEventJob.setAgentName("agentName");
         globalEventJob.setIdentifier("agentName-jobName");
         globalEventJob.setContextName("contextName");
@@ -128,8 +128,9 @@ public class ContextHelperTest {
         ContextHelper.addSchedulerJobReplacementTokens(globalEventJob);
 
         Assert.assertEquals("GLOBAL_EVENT", globalEventJob.getAgentName());
-        Assert.assertEquals("GLOBAL_EVENT-jobName", globalEventJob.getIdentifier());
+        Assert.assertEquals("GLOBAL_EVENT-jobName_[[env.name]]", globalEventJob.getIdentifier());
         Assert.assertEquals("contextName_[[env.name]]", globalEventJob.getContextName());
+        Assert.assertEquals("jobName_[[env.name]]", globalEventJob.getJobName());
     }
 
     @Test
