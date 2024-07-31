@@ -11,6 +11,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -79,6 +80,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
@@ -695,8 +697,26 @@ public class ContextInstanceWidget extends VerticalLayout
 //                        this.ikasanMinimapContainer.setHeight("200px");
 //                        this.ikasanMinimapContainer.getStyle().set("border", "1px solid black");
 //                        this.ikasanMinimapContainer.setId("ikasanMinimapContainer");
-//
 
+                        AtomicReference<Double> scale = new AtomicReference<>((double) 1);
+
+//                        Icon zoomIn = VaadinIcon.PLUS.create();
+//                        zoomIn.addClickListener(iconClickEvent -> {
+//                            if(scale.get() < 1) {
+//                                scale.updateAndGet(v -> Double.valueOf (v + .1));
+//                                this.dagComponent.zoom(scale.get());
+//                            }
+//                        });
+//                        Icon zoomOut = VaadinIcon.MINUS.create();
+//                        zoomOut.addClickListener(iconClickEvent -> {
+//                            if(scale.get() > 0) {
+//                                scale.updateAndGet(v -> Double.valueOf (v - .1));
+//                                this.dagComponent.zoom(scale.get());
+//                            }
+//                        });
+//
+//                        HorizontalLayout zoomButtons = new HorizontalLayout(zoomIn, zoomOut);
+//                        zoomButtons.setWidth("100%");
                         this.add(dagComponent);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
