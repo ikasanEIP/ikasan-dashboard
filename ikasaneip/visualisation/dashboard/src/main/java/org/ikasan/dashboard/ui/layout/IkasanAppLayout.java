@@ -76,7 +76,8 @@ public class IkasanAppLayout extends AppLayout {
         Image ikasan = new Image("frontend/images/ikasan-titling-transparent.png", "");
         ikasan.setHeight("30px");
 
-        Button logout = new Button(VaadinIcon.SIGN_OUT.create());
+        Button logout = new Button();
+        logout.getElement().appendChild(VaadinIcon.SIGN_OUT.create().getElement());
         logout.getElement().setProperty("title", "Log Out");
         logout.setId("logoutButton");
 
@@ -97,23 +98,34 @@ public class IkasanAppLayout extends AppLayout {
             UI.getCurrent().getSession().close();
         });
 
-        this.swaggerUI = new Button(VaadinIcon.CODE.create());
+        this.swaggerUI = new Button();
+        this.swaggerUI.getElement().appendChild(VaadinIcon.CODE.create().getElement());
         this.swaggerUI.getElement().setProperty("title", "Swagger UI");
         this.swaggerUI.addClickListener(event -> UI.getCurrent().getPage().open("/swagger-ui.html", "_blank"));
 
         this.swaggerUI.getElement().getStyle().set("position", "absolute");
         this.swaggerUI.getElement().getStyle().set("right", "70px");
 
-        Button aboutButton = new Button(VaadinIcon.QUESTION.create());
+        Button aboutButton = new Button();
+        aboutButton.getElement().appendChild(VaadinIcon.INFO_CIRCLE_O.create().getElement());
         aboutButton.setId("aboutButton");
-        aboutButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+        aboutButton.addClickListener(buttonClickEvent -> {
             AboutIkasanDialog aboutIkasanDialog = new AboutIkasanDialog();
             aboutIkasanDialog.open();
         });
         aboutButton.getElement().getStyle().set("position", "absolute");
         aboutButton.getElement().getStyle().set("right", "120px");
 
-        var header = new HorizontalLayout(new DrawerToggle(), ikasan, bannerLayout, aboutButton, swaggerUI, logout);
+        Button environmentButton = new Button("PRODUCTION");
+        environmentButton.setId("environmentButton");
+        environmentButton.addClickListener(buttonClickEvent -> {
+            AboutIkasanDialog aboutIkasanDialog = new AboutIkasanDialog();
+            aboutIkasanDialog.open();
+        });
+
+        DrawerToggle drawerToggle = new DrawerToggle();
+        drawerToggle.getElement().addEventListener("mouseover", domEvent -> super.setDrawerOpened(true));
+        var header = new HorizontalLayout(drawerToggle, ikasan, environmentButton, aboutButton, swaggerUI, logout);
 
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.setWidthFull();
@@ -122,7 +134,9 @@ public class IkasanAppLayout extends AppLayout {
             LumoUtility.Padding.Horizontal.MEDIUM);
 
         addToNavbar(header);
-        addToDrawer(getSideNav());
+        SideNav sideNav = this.getSideNav();
+        sideNav.getElement().addEventListener("mouseleave", domEvent -> super.setDrawerOpened(false));
+        addToDrawer(sideNav);
         super.setDrawerOpened(false);
         super.getStyle().set("--vaadin-app-layout-drawer-overlay", "true");
     }
