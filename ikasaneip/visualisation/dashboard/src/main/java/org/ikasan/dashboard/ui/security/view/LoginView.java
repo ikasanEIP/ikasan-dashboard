@@ -4,8 +4,7 @@ package org.ikasan.dashboard.ui.security.view;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.login.AbstractLogin;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -16,14 +15,13 @@ import com.vaadin.flow.server.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.security.ContextCache;
-import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
-import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.AuthenticationService;
 import org.ikasan.security.service.AuthenticationServiceException;
 import org.ikasan.security.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,18 +29,18 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 
 @Tag("sa-login-view")
 @Route(LoginView.ROUTE)
 @PageTitle("Ikasan - Login")
-//@HtmlImport("frontend://styles/shared-styles.html")
-//@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
 @Component
 @UIScope
 @AnonymousAllowed
-public class LoginView extends VerticalLayout //implements AppShellConfigurator //implements PageConfigurator//, HasUrlParameter<String>
+public class LoginView extends VerticalLayout
 {
     public static final String ROUTE = "login";
 
@@ -73,12 +71,21 @@ public class LoginView extends VerticalLayout //implements AppShellConfigurator 
             () -> LoginView.class.getResourceAsStream("/META-INF/resources/frontend/images/mr_squid_titling_dashboard.png")), "Mr Squid");
         ikasan.setHeight("180px");
 
+        H3 environmentLabel = new H3("PRODUCTION");
+
         Div loginDiv = new Div();
         loginDiv.add(login);
 
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, ikasan, loginDiv);
+        BuildProperties buildProperties = (BuildProperties) ApplicationContextProvider.getContext().getBean("buildProperties");
 
-        layout.add(ikasan, loginDiv);
+        NativeLabel versionLabel = new NativeLabel("Version: " + buildProperties.getVersion());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy hh:mm:ss")
+            .withZone(ZoneId.systemDefault());
+        NativeLabel timestamp =  new NativeLabel("Build date/time: " + formatter.format(buildProperties.getTime()));
+
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, ikasan, environmentLabel, loginDiv, versionLabel, timestamp);
+
+        layout.add(ikasan, environmentLabel, loginDiv, versionLabel, timestamp);
 
         login.addLoginListener((ComponentEventListener<AbstractLogin.LoginEvent>) loginEvent ->
         {
@@ -140,21 +147,4 @@ public class LoginView extends VerticalLayout //implements AppShellConfigurator 
             return false;
         });
     }
-
-//    @Override
-//    public void configurePage(AppShellSettings settings) {
-//        HashMap<String, String> attributes = new HashMap<>();
-//        attributes.put("rel", "shortcut icon");
-//        attributes.put("type", "image/png");
-//        settings.addLink("icons/icon.png", attributes);
-//        AppShellConfigurator.super.configurePage(settings);
-//    }
-
-//    @Override
-//    public void configurePage(InitialPageSettings settings) {
-//        HashMap<String, String> attributes = new HashMap<>();
-//        attributes.put("rel", "shortcut icon");
-//        attributes.put("type", "image/png");
-//        settings.addLink("icons/icon.png", attributes);
-//    }
 }
