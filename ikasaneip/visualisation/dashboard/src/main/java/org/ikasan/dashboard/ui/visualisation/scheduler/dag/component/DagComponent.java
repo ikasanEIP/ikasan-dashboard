@@ -9,6 +9,9 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -30,9 +33,10 @@ public class DagComponent extends VerticalLayout implements HasSize {
 
     private boolean initialised = false;
     private String dagJson;
+    private double scale = 1;
 
     private String ikasanDagNodeStyle = "width: 100%; height: 100%; border: 1px solid #8799c1; " +
-        "position: relative; border-radius: 10px; display: flex;flex-direction: column;";
+        "position: relative; border-radius: 10px; display: flex;flex-direction: column;title: 'test hover';";
 
     public DagComponent(String dagData) {
         this.dagJson = dagData;
@@ -56,6 +60,7 @@ public class DagComponent extends VerticalLayout implements HasSize {
         super.onAttach(attachEvent);
 
         initConnector();
+        this.styleNode();
     }
 
     public void styleNode() {

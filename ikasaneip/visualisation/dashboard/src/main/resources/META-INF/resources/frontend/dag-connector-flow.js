@@ -25,9 +25,7 @@ export class DagConnector extends LitElement {
     styleNode(id) {
         if(this.niceDag) {
             let element = this.niceDag.getElementByNodeId(id);
-            let status = document.createElement("div");
-            status.setAttribute("style", "width: 100%; height:100%; background: green;");
-            element.appendChild(status);
+            element.attributeStyleMap.set("background", "green");
         }
     }
 
@@ -36,11 +34,14 @@ export class DagConnector extends LitElement {
         container.id = "my-dag-chart";
         container.setAttribute("style", "width:40000px; height:40000px; display:flex;");
 
+        let ikasanMinimapContainer = document.getElementById("ikasanMinimapContainer");
+
         if(this.niceDag == null) {
             let args
                 = {
                 id: "my-dag-chart",
                 container: container,
+                // minimapContainer: ikasanMinimapContainer,
                 getNodeSize
             };
             this.niceDag = NiceDag.init(args, false);
@@ -70,6 +71,8 @@ export class DagConnector extends LitElement {
         console.log("rendering node " + node.id);
         const newDiv = document.createElement('div');
         newDiv.setAttribute("style", this.ikasanDagNodeStyle);
+        newDiv.setAttribute("title", node.id);
+        // this.styleNode(node.id);
 
         if(node.children?.length > 0 && !node.collapse) {
             newDiv.appendChild(this.groupControl(node));
@@ -82,7 +85,7 @@ export class DagConnector extends LitElement {
     }
 
     zoom(scale) {
-        this.niceDag.setScale(scale / 100);
+        this.niceDag.setScale(scale);
     }
 
     onChange() {
@@ -140,6 +143,7 @@ export class DagConnector extends LitElement {
                 </button>
             </div>`, groupControlDiv);
 
+        groupControlDiv.attributeStyleMap.set("background", "rgb(102,187,106)");
         return groupControlDiv;
     }
 
@@ -181,6 +185,7 @@ export class DagConnector extends LitElement {
                 </div>`, nodeControlDiv);
         }
 
+        nodeControlDiv.attributeStyleMap.set("background", "rgb(102,187,106)");
         return nodeControlDiv;
     }
 
@@ -219,8 +224,8 @@ export class DagConnector extends LitElement {
     }
 }
 
-const NODE_WIDTH = 250;
-const NODE_HEIGHT = 120;
+const NODE_WIDTH = 300;
+const NODE_HEIGHT = 170;
 const CIRCLE_W_H = 30;
 
 const getNodeSize = node => {
