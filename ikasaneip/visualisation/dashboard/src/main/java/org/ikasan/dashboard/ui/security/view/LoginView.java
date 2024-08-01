@@ -78,7 +78,7 @@ public class LoginView extends VerticalLayout
 
         BuildProperties buildProperties = (BuildProperties) ApplicationContextProvider.getContext().getBean("buildProperties");
 
-        NativeLabel versionLabel = new NativeLabel("Version: " + buildProperties.getVersion());
+        NativeLabel versionLabel = new NativeLabel("Build version: " + buildProperties.getVersion());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy hh:mm:ss")
             .withZone(ZoneId.systemDefault());
         NativeLabel timestamp =  new NativeLabel("Build date/time: " + formatter.format(buildProperties.getTime()));
