@@ -1,16 +1,20 @@
 package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.server.VaadinSession;
 import org.ikasan.dashboard.ui.util.ApplicationContextProvider;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class AboutIkasanDialog extends AbstractCloseableResizableDialog
 {
@@ -24,54 +28,31 @@ public class AboutIkasanDialog extends AbstractCloseableResizableDialog
     {
         BuildProperties buildProperties = (BuildProperties)ApplicationContextProvider.getContext().getBean("buildProperties");
 
-        VerticalLayout verticalLayout = new VerticalLayout();
+        FormLayout formLayout = new FormLayout();
+        formLayout.setWidthFull();
+        TextField applicationName = new TextField();
+        applicationName.setWidthFull();
+        applicationName.setValue(buildProperties.getName());
+        applicationName.setReadOnly(true);
+        formLayout.addFormItem(applicationName, "Application Name");
+        TextField buildVersion = new TextField();
+        buildVersion.setWidthFull();
+        buildVersion.setValue(buildProperties.getVersion());
+        buildVersion.setReadOnly(true);
+        formLayout.addFormItem(buildVersion, "Build Version");
+        TextField buildDateTime = new TextField();
+        buildDateTime.setWidthFull();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm:ss")
+            .withZone(ZoneId.systemDefault());
+        buildDateTime.setValue(formatter.format(buildProperties.getTime()));
+        buildDateTime.setReadOnly(true);
+        formLayout.addFormItem(buildDateTime, "Build date/time");
 
-        Image mrSquidImage = new Image("/frontend/images/mr-squid-head.png", "");
-        mrSquidImage.setHeight("35px");
-
-        H3 flowOptions = new H3(String.format(getTranslation("label.about", UI.getCurrent().getLocale())));
-
-        HorizontalLayout header = new HorizontalLayout();
-        header.add(mrSquidImage, flowOptions);
-        header.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, mrSquidImage, flowOptions);
-
-        verticalLayout.add(header);
-        verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.START, header);
-
-        HorizontalLayout applicationNameLayout = new HorizontalLayout();
-        applicationNameLayout.setWidthFull();
-        applicationNameLayout.setMargin(false);
-        applicationNameLayout.setSpacing(false);
-        H4 applicationName = new H4("Application Name");
-        applicationName.setWidth("50%");
-        Label name = new Label(buildProperties.getName());
-        applicationNameLayout.add(applicationName, name);
-        applicationNameLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, applicationName, name);
-
-        HorizontalLayout buildVersionLayout = new HorizontalLayout();
-        buildVersionLayout.setWidthFull();
-        buildVersionLayout.setMargin(false);
-        buildVersionLayout.setSpacing(false);
-        H4 buildVersion = new H4("Build Version");
-        buildVersion.setWidth("50%");
-        Label buildVersionLabel = new Label(buildProperties.getVersion());
-        buildVersionLayout.add(buildVersion, buildVersionLabel);
-        buildVersionLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, buildVersion, buildVersionLabel);
-
-        HorizontalLayout buildTimestampLayout = new HorizontalLayout();
-        buildTimestampLayout.setWidthFull();
-        buildTimestampLayout.setMargin(false);
-        buildTimestampLayout.setSpacing(false);
-        H4 buildTimestamp = new H4("Build Timestamp");
-        buildTimestamp.setWidth("50%");
-        Label timestamp =  new Label("" + buildProperties.getTime().getEpochSecond());
-        buildTimestampLayout.add(buildTimestamp, timestamp);
-        buildTimestampLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, buildTimestamp, timestamp);
-
-        verticalLayout.add(applicationNameLayout, buildVersionLayout, buildTimestampLayout);
-
-        super.content.add(verticalLayout);
-        this.setWidth("600px");
-        this.setHeight("500px");
+        super.content.add(formLayout);
+        showResize(false);
+        setResizable(false);
+        this.setWidth("650px");
+        this.setHeight("300px");
+        super.title.setText("About");
     }
 }

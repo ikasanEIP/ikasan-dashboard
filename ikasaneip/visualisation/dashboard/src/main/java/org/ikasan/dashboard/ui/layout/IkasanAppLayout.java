@@ -21,6 +21,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.ikasan.dashboard.ui.administration.view.*;
 import org.ikasan.dashboard.ui.dashboard.view.DashboardView;
 import org.ikasan.dashboard.ui.general.component.AboutIkasanDialog;
+import org.ikasan.dashboard.ui.general.component.SessionDetailsDialog;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.dashboard.ui.search.view.SearchView;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
@@ -119,8 +120,8 @@ public class IkasanAppLayout extends AppLayout {
         Button environmentButton = new Button("PRODUCTION");
         environmentButton.setId("environmentButton");
         environmentButton.addClickListener(buttonClickEvent -> {
-            AboutIkasanDialog aboutIkasanDialog = new AboutIkasanDialog();
-            aboutIkasanDialog.open();
+            SessionDetailsDialog sessionDetailsDialog = new SessionDetailsDialog();
+            sessionDetailsDialog.open();
         });
 
         DrawerToggle drawerToggle = new DrawerToggle();
