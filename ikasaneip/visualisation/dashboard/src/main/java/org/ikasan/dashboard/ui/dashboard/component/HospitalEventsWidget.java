@@ -121,7 +121,7 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
         refreshButton.addClickListener(buttonClickEvent -> {
             this.refresh();
         });
-        refreshButton.getElement().appendChild(VaadinIcon.RECYCLE.create().getElement());
+        refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
 
         div.add(refreshButton, chart);
 

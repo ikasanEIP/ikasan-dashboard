@@ -66,10 +66,8 @@ public class IkasanAppLayout extends AppLayout {
     private SideNavItem userDirectoryManagementMenuItem;
     private SideNavItem businessStreamDesignerMenuItem;
     private SideNavItem quartzSchedulerMenuItem;
-
+    private  Button environmentButton;
     private HorizontalLayout bannerLayout = new HorizontalLayout();
-
-    boolean bannerAdded = false;
 
     private Button swaggerUI;
 
@@ -79,7 +77,7 @@ public class IkasanAppLayout extends AppLayout {
 
         Button logout = new Button();
         logout.getElement().appendChild(VaadinIcon.SIGN_OUT.create().getElement());
-        logout.getElement().setProperty("title", "Log Out");
+        logout.getElement().setProperty("title", getTranslation("tooltip.log-out", getLocale()));
         logout.setId("logoutButton");
 
         logout.getElement().getStyle().set("position", "absolute");
@@ -109,6 +107,7 @@ public class IkasanAppLayout extends AppLayout {
 
         Button aboutButton = new Button();
         aboutButton.getElement().appendChild(VaadinIcon.INFO_CIRCLE_O.create().getElement());
+        aboutButton.getElement().setProperty("title", getTranslation("tooltip.about", getLocale()));
         aboutButton.setId("aboutButton");
         aboutButton.addClickListener(buttonClickEvent -> {
             AboutIkasanDialog aboutIkasanDialog = new AboutIkasanDialog();
@@ -117,9 +116,9 @@ public class IkasanAppLayout extends AppLayout {
         aboutButton.getElement().getStyle().set("position", "absolute");
         aboutButton.getElement().getStyle().set("right", "120px");
 
-        Button environmentButton = new Button("PRODUCTION");
-        environmentButton.setId("environmentButton");
-        environmentButton.addClickListener(buttonClickEvent -> {
+        this.environmentButton = new Button(bannerTextMessage);
+        this.environmentButton.setId("environmentButton");
+        this.environmentButton.addClickListener(buttonClickEvent -> {
             SessionDetailsDialog sessionDetailsDialog = new SessionDetailsDialog();
             sessionDetailsDialog.open();
         });
@@ -151,7 +150,7 @@ public class IkasanAppLayout extends AppLayout {
 
         sideNav.addItem(this.dashboardMenuItem);
 
-        this.searchMenuItem = new SideNavItem(getTranslation("menu-item.search", getLocale(), null), SearchView.class, VaadinIcon.SEARCH.create());
+        this.searchMenuItem = new SideNavItem(getTranslation("menu-item.search", getLocale()), SearchView.class, VaadinIcon.SEARCH.create());
         this.searchMenuItem.setId("searchMenuItem");
 
         sideNav.addItem(this.searchMenuItem);
@@ -211,7 +210,8 @@ public class IkasanAppLayout extends AppLayout {
         this.quartzSchedulerMenuItem.setId("quartzSchedulerViewMenuItem");
         adminMenuItem.addItem(this.quartzSchedulerMenuItem);
 
-        this.businessStreamDesignerMenuItem = new SideNavItem("Designer", BusinessStreamDesignerView.class, VaadinIcon.PALETTE.create());
+        this.businessStreamDesignerMenuItem = new SideNavItem(getTranslation("menu-item.designer",
+            getLocale()), BusinessStreamDesignerView.class, VaadinIcon.PALETTE.create());
         this.businessStreamDesignerMenuItem.setId("businessStreamDesignerMenuItem");
         this.businessStreamDesignerMenuItem.getElement().getThemeList().remove("spacing-s");
         adminMenuItem.addItem(this.businessStreamDesignerMenuItem);
@@ -221,18 +221,7 @@ public class IkasanAppLayout extends AppLayout {
     public void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        if (this.bannerTextMessage != null && !this.bannerTextMessage.isEmpty() && !bannerAdded) {
-            Span bannerText = new Span(bannerTextMessage);
-            bannerText.getElement().getStyle().set("font-size", "30pt");
-            bannerText.getElement().getStyle().set("color", bannerTextColor);
-
-            bannerLayout.getElement().getStyle().set("position", "absolute");
-            bannerLayout.getElement().getStyle().set("left", "50%");
-            bannerLayout.getElement().getStyle().set("transform", "translate(-50%)");
-            bannerLayout.add(bannerText);
-
-            bannerAdded = true;
-        }
+        this.environmentButton.setText(this.bannerTextMessage);
 
         this.dashboardMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.DASHBOARD_READ, SecurityConstants.DASHBOARD_WRITE,
             SecurityConstants.DASHBOARD_ADMIN));
