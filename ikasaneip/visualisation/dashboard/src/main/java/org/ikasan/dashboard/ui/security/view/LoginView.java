@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.security.view;
 
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -56,8 +57,12 @@ public class LoginView extends VerticalLayout
     @Resource
     private SecurityContextRepository securityContextRepository;
 
+    @Value("${banner.text.message:}")
+    private String bannerTextMessage;
 
     private LoginForm login = new LoginForm();
+
+    private H3 environmentLabel;
 
     public LoginView()
     {
@@ -71,17 +76,17 @@ public class LoginView extends VerticalLayout
             () -> LoginView.class.getResourceAsStream("/META-INF/resources/frontend/images/mr_squid_titling_dashboard.png")), "Mr Squid");
         ikasan.setHeight("180px");
 
-        H3 environmentLabel = new H3("PRODUCTION");
+        this.environmentLabel = new H3();
 
         Div loginDiv = new Div();
         loginDiv.add(login);
 
         BuildProperties buildProperties = (BuildProperties) ApplicationContextProvider.getContext().getBean("buildProperties");
 
-        NativeLabel versionLabel = new NativeLabel("Build version: " + buildProperties.getVersion());
+        NativeLabel versionLabel = new NativeLabel(getTranslation("label.build-version", getLocale()) + " " + buildProperties.getVersion());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy hh:mm:ss")
             .withZone(ZoneId.systemDefault());
-        NativeLabel timestamp =  new NativeLabel("Build date/time: " + formatter.format(buildProperties.getTime()));
+        NativeLabel timestamp =  new NativeLabel(getTranslation("label.build-date-time", getLocale()) + " " + formatter.format(buildProperties.getTime()));
 
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, ikasan, environmentLabel, loginDiv, versionLabel, timestamp);
 
@@ -89,7 +94,6 @@ public class LoginView extends VerticalLayout
 
         login.addLoginListener((ComponentEventListener<AbstractLogin.LoginEvent>) loginEvent ->
         {
-
             try
             {
                 Authentication authentication = this.authenticationService.login(loginEvent.getUsername(),
@@ -128,6 +132,10 @@ public class LoginView extends VerticalLayout
         });
 
         this.add(layout);
+    }
+    @Override
+    public void onAttach(AttachEvent attachEvent) {
+        this.environmentLabel.setText(this.bannerTextMessage);
     }
 
     private boolean isRouteValid(String context) {
