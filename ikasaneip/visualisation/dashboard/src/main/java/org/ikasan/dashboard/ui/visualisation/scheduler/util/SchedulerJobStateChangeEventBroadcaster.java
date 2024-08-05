@@ -10,7 +10,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class SchedulerJobStateChangeEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("SchedulerJobStateChangeEventBroadcaster"));
+    static Executor executor = Executors.newFixedThreadPool(10, new VaadinThreadFactory("SchedulerJobStateChangeEventBroadcaster"));
 
     private static WeakHashMap<SchedulerJobStateChangeEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();
