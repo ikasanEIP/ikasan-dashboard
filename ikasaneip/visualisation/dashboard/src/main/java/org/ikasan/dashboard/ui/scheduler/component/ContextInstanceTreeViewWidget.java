@@ -23,6 +23,7 @@ import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataPr
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
 import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
@@ -129,6 +130,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private double jobVisualisationHorizontalSpacing;
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
+
+    private VaadinSession vaadinSession;
 
     /**
      * Constructor
@@ -268,6 +271,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         super.add(div);
         super.setSizeFull();
+
+        this.vaadinSession = VaadinSession.getCurrent();
     }
 
     /**
@@ -903,6 +908,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         else if(instanceStatus.equals(InstanceStatus.ON_HOLD)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
         }
+        image.getElement().getNode().markAsDirty();
     }
 
     /**
@@ -2261,7 +2267,12 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             return;
         }
 
-        logger.debug("Start manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+        if(jobInstanceStateChangeEvent.getPreviousStatus().equals(jobInstanceStateChangeEvent.getNewStatus())) {
+            return;
+        }
+
+        logger.info("Start manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+        logger.info("Queue push size " + this.vaadinSession.getPendingAccessQueue().size());
         ComponentKey key;
         ComponentKey precedingJobKey;
 
@@ -2402,7 +2413,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             }
         }
 
-        logger.debug("End manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+        logger.info("End manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
     }
 
     /**
@@ -2412,22 +2423,27 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param contextInstanceStateChangeEvent event received when a context instance state change occurs.
      */
     private void manageContextInstanceStateChangeEvent(UI ui, ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
-        if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-            logger.debug("Start manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
+        if (contextInstanceStateChangeEvent.getContextInstance() != null && !contextInstanceStateChangeEvent.getPreviousStatus()
+                .equals(contextInstanceStateChangeEvent.getNewStatus())) {
+            logger.info("Start manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
+            logger.info("Queue push size " + this.vaadinSession.getPendingAccessQueue().size());
             ComponentKey key = new ComponentKey(contextInstance.getName()
                 , contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getName());
 
             if(this.schedulerStatusFreeTextDivMap.containsKey(key)) {
                 if(ui.isAttached()) {
-                    ui.access(() -> this.schedulerStatusFreeTextDivMap.get(key)
-                        .setStatus(contextInstanceStateChangeEvent.getNewStatus()));
+                    ui.access(() -> {
+                        this.schedulerStatusFreeTextDivMap.get(key)
+                            .setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                        this.schedulerStatusFreeTextDivMap.get(key).getElement().getNode().markAsDirty();
+                    });
                 }
             }
             else {
                 this.instanceStatusMap.put(key, contextInstanceStateChangeEvent.getNewStatus());
             }
 
-            logger.debug("End manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
+            logger.info("End manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
         }
     }
 
@@ -2439,14 +2455,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             = this.getQuartzSchedulerJobInstancesForContextInstance(contextInstance.getId());
 
         this.statusIconDivMap.keySet().forEach(componentKey -> {
-            if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()) != null) {
+            if (ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()) != null) {
                 ContextInstance instance = (ContextInstance) ContextHelper.getChildContext(componentKey.getChildContextName()
                     , ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
 
                 if (instance != null) {
                     AggregateContextInstanceStatus aggregateContextInstanceStatus
                         = ContextHelper.getAggregateContextInstanceStatus(instance
-                            , internalEventDrivenJobMap, quartzSchedulerJobMap, this.contextInstance);
+                        , internalEventDrivenJobMap, quartzSchedulerJobMap, this.contextInstance);
 
                     if (componentKey.getJobName().equals(InstanceStatus.ON_HOLD.name())) {
                         if (aggregateContextInstanceStatus.isHeldJobs()) {

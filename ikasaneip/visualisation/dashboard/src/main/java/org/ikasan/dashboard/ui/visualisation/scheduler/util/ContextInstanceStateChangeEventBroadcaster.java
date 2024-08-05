@@ -9,7 +9,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ContextInstanceStateChangeEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceStateChangeEventBroadcaster"));
+    static Executor executor = Executors.newFixedThreadPool(10, new VaadinThreadFactory("ContextInstanceStateChangeEventBroadcaster"));
 
     private static WeakHashMap<ContextInstanceStateChangeEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();
