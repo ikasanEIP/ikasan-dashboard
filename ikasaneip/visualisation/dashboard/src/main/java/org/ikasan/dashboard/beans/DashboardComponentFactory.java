@@ -150,6 +150,8 @@ public class DashboardComponentFactory
                 , atmosphereBroadcasterMaxProcessingThreads);
             servletContext.setInitParameter(ApplicationConfig.BROADCASTER_ASYNC_WRITE_THREADPOOL_MAXSIZE
                 , atmosphereBroadcasterMaxAsyncWriteThreads);
+            servletContext.setInitParameter(ApplicationConfig.BROADCASTER_FACTORY, "org.atmosphere.pool.PoolableBroadcasterFactory");
+            servletContext.setInitParameter(ApplicationConfig.POOLEABLE_PROVIDER, "org.atmosphere.pool.BoundedApachePoolableProvider");
         }
     }
 
