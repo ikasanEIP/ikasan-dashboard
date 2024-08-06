@@ -42,6 +42,13 @@ public class SolrContextInstanceAggregateJobStatusImpl implements ContextInstanc
 
     @Override
     public int getStatusCount(InstanceStatus instanceStatus) {
+
+        if(instanceStatus.equals(InstanceStatus.SKIPPED)) {
+            return (statusCounts.containsKey(InstanceStatus.SKIPPED.name()) ? statusCounts.get(InstanceStatus.SKIPPED.name()) : 0) +
+                (statusCounts.containsKey(InstanceStatus.SKIPPED_COMPLETE.name()) ? statusCounts.get(InstanceStatus.SKIPPED_COMPLETE.name()) : 0) +
+                (statusCounts.containsKey(InstanceStatus.SKIPPED_RUNNING.name()) ? statusCounts.get(InstanceStatus.SKIPPED_RUNNING.name()) : 0);
+        }
+
         if(!statusCounts.containsKey(instanceStatus.name())) {
             return 0;
         }
