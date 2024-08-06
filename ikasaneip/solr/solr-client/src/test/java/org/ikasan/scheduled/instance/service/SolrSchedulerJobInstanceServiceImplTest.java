@@ -510,6 +510,16 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
                 "context1", "job1"+i));
         });
 
+        IntStream.range(371, 383).forEach(i -> {
+            SchedulerJobInstanceRecord record = this.createQuartzSchedulerJobInstanceRecord("contextInstance1",
+                "context1", "job1"+i);
+            SchedulerJobInstance instance = record.getSchedulerJobInstance();
+            instance.setStatus(InstanceStatus.SKIPPED_COMPLETE);
+            record.setSchedulerJobInstance(instance);
+            record.setStatus(InstanceStatus.SKIPPED_COMPLETE.name());
+            this.service.save(record);
+        });
+
         IntStream.range(0, 275).forEach(i -> {
             this.service.save(this.createQuartzSchedulerJobInstanceRecord("contextInstance2",
                 "context2", "job2"+i));
@@ -529,6 +539,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals("contextInstance1", searchResults.get(0).getContextInstanceId());
         Assert.assertEquals("context1", searchResults.get(0).getContextInstanceName());
         Assert.assertEquals(371, searchResults.get(0).getStatusCount(InstanceStatus.RUNNING));
+        Assert.assertEquals(12, searchResults.get(0).getStatusCount(InstanceStatus.SKIPPED));
         Assert.assertEquals(0, searchResults.get(0).getStatusCount(InstanceStatus.ERROR));
         Assert.assertEquals(0, searchResults.get(0).getStatusCount(InstanceStatus.COMPLETE));
         Assert.assertEquals("contextInstance2", searchResults.get(1).getContextInstanceId());
