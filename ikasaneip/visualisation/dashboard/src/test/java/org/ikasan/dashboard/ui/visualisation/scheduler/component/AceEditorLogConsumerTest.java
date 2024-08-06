@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.flow.i18n.I18NProvider;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,11 +32,14 @@ public class AceEditorLogConsumerTest {
     @Mock
     private UI ui;
 
+    @Mock
+    private I18NProvider i18NProvider;
+
     private AceEditorLogConsumer aceEditorLogConsumer;
 
     @Before
     public void setUp() {
-        aceEditorLogConsumer = new AceEditorLogConsumer(aceEditor, ui);
+        aceEditorLogConsumer = new AceEditorLogConsumer(aceEditor, ui, i18NProvider);
     }
 
     @Test
