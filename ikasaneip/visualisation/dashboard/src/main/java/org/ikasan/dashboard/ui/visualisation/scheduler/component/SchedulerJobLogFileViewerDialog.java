@@ -1,20 +1,19 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.server.VaadinService;
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.LogStreamer;
 import org.ikasan.spec.module.client.LogStreamingService;
 
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-
-import de.f0rce.ace.AceEditor;
-import de.f0rce.ace.enums.AceMode;
-import de.f0rce.ace.enums.AceTheme;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SchedulerJobLogFileViewerDialog extends AbstractCloseableResizableDialog {
 
@@ -50,7 +49,8 @@ public class SchedulerJobLogFileViewerDialog extends AbstractCloseableResizableD
         this.initialiseEditor();
         this.layout.add(aceEditor);
         this.layout.expand(aceEditor);
-        AceEditorLogConsumer aceEditorLogConsumer = new AceEditorLogConsumer(aceEditor, UI.getCurrent());
+        AceEditorLogConsumer aceEditorLogConsumer = new AceEditorLogConsumer(aceEditor, UI.getCurrent(),
+            VaadinService.getCurrent().getInstantiator().getI18NProvider());
         this.logStreamer = new LogStreamer(
             logStreamingService,
             aceEditorLogConsumer::logConsumer,
