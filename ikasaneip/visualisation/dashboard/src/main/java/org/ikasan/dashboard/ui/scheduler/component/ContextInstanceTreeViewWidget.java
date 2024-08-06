@@ -308,6 +308,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                 ComponentKey componentKey = new ComponentKey(contextInstance.getName()
                     , ((ContextInstance)value).getId(), ((ContextInstance)value).getName());
+                if(ContextMachineCache.instance().containsInstanceIdentifier(contextInstance.getId())) {
+                    value = ContextHelper.getChildContextInstance(((ContextInstance) value).getName(),
+                        ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
+                }
                 if(this.instanceStatusMap.containsKey(componentKey)) {
                     if(!this.instanceStatusMap.get(componentKey).equals(((ContextInstance) value).getStatus())) {
                         this.instanceStatusMap.put(componentKey, ((ContextInstance) value).getStatus());

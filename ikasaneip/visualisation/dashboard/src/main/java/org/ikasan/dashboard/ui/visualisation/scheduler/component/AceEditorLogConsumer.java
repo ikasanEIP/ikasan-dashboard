@@ -1,20 +1,19 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UIDetachedException;
+import com.vaadin.flow.i18n.I18NProvider;
+import de.f0rce.ace.AceEditor;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.codec.ServerSentEvent;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.UIDetachedException;
-
-import de.f0rce.ace.AceEditor;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AceEditorLogConsumer {
     private static final Logger LOG = LoggerFactory.getLogger(AceEditorLogConsumer.class);
@@ -30,12 +29,14 @@ public class AceEditorLogConsumer {
     private final AtomicInteger streamCounter = new AtomicInteger(0);
     private final AceEditor aceEditor;
     private final UI ui;
+    private final I18NProvider i18NProvider;
 
     private ScheduledExecutorService executor;
 
-    public AceEditorLogConsumer(AceEditor aceEditor, UI ui) {
+    public AceEditorLogConsumer(AceEditor aceEditor, UI ui, I18NProvider i18NProvider) {
         this.aceEditor = aceEditor;
         this.ui = ui;
+        this.i18NProvider = i18NProvider;
     }
 
     public void logConsumer(ServerSentEvent<String> event) {
@@ -87,7 +88,8 @@ public class AceEditorLogConsumer {
     public void errorConsumer(Throwable error) {
         aceEditor.setCursorPosition(streamCounter.get(), 0);
         if(ui.isAttached()) {
-            ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, "Streaming error..." + System.getProperty("line.separator")));
+            ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, i18NProvider.getTranslation("message.log-streaming-error"
+                , ui.getLocale()) + System.getProperty("line.separator")));
         }
         sleepToGivEditorChanceToRender(RENDER_SLEEP_100);
         aceEditor.setCursorPosition(streamCounter.incrementAndGet(), 0);
@@ -97,15 +99,14 @@ public class AceEditorLogConsumer {
         sleepToGivEditorChanceToRender(RENDER_SLEEP_100);
         aceEditor.setCursorPosition(streamCounter.incrementAndGet(), 0);
         LOG.error("Got error streaming: " + error.getMessage());
-
-        // todo think about how display error NotificationHelper
     }
 
     public void completedConsumer() {
         aceEditor.setCursorPosition(streamCounter.get(), 0);
         try {
             if(ui.isAttached()) {
-                ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, "Log stream terminated." + System.getProperty("line.separator")));
+                ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, i18NProvider.getTranslation("message.log-streaming-terminated"
+                    , ui.getLocale()) + System.getProperty("line.separator")));
             }
             sleepToGivEditorChanceToRender(RENDER_SLEEP_100);
             aceEditor.setCursorPosition(streamCounter.incrementAndGet(), 0);
