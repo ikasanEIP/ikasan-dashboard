@@ -204,7 +204,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         if (event.getContextInstance() != null &&
-            event.getContextInstance().getName().equals(this.rootContextInstance.getName())) {
+            event.getContextInstance().getId().equals(this.rootContextInstance.getId())) {
             if(this.ui != null && this.ui.isAttached()) {
                 this.ui.access(() -> {
                     this.statusDiv.setStatus(event.getNewStatus());
