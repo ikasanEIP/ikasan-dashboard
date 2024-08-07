@@ -40,6 +40,7 @@ import javax.annotation.Resource;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.Map;
 
 @Configuration
 public class DashboardComponentFactory
@@ -50,11 +51,8 @@ public class DashboardComponentFactory
     @Value("${org.atmosphere.cpr.broadcaster.use.externalised.configurations:false}")
     private String atmosphereBroadcasterUseExternalisedConfigurations;
 
-    @Value("${org.atmosphere.cpr.broadcaster.maxProcessingThreads:null}")
-    private String atmosphereBroadcasterMaxProcessingThreads;
-
-    @Value("${org.atmosphere.cpr.broadcaster.maxAsyncWriteThreads:null}")
-    private String atmosphereBroadcasterMaxAsyncWriteThreads;
+    @Value("#{${org.atmosphere.cpr.configurations}}")
+    private Map<String, String> atomosphereConfigurationMap;
 
     @Resource
     private ModuleControlService moduleControlRestService;
@@ -146,12 +144,12 @@ public class DashboardComponentFactory
         public void onStartup(ServletContext servletContext) throws ServletException {
             servletContext.setInitParameter("org.atmosphere.cpr.AtmosphereConfig.getInitParameter"
                 , atmosphereBroadcasterUseExternalisedConfigurations);
-            servletContext.setInitParameter(ApplicationConfig.BROADCASTER_MESSAGE_PROCESSING_THREADPOOL_MAXSIZE
-                , atmosphereBroadcasterMaxProcessingThreads);
-            servletContext.setInitParameter(ApplicationConfig.BROADCASTER_ASYNC_WRITE_THREADPOOL_MAXSIZE
-                , atmosphereBroadcasterMaxAsyncWriteThreads);
-            servletContext.setInitParameter(ApplicationConfig.BROADCASTER_FACTORY, "org.atmosphere.pool.PoolableBroadcasterFactory");
-            servletContext.setInitParameter(ApplicationConfig.POOLEABLE_PROVIDER, "org.atmosphere.pool.BoundedApachePoolableProvider");
+
+            if(atmosphereBroadcasterUseExternalisedConfigurations.equals("true")) {
+                atomosphereConfigurationMap.entrySet().forEach(entry -> {
+                    servletContext.setInitParameter(entry.getKey(), entry.getValue());
+                });
+            }
         }
     }
 

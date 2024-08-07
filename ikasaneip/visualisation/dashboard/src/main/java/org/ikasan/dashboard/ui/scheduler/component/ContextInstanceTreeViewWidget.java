@@ -2269,8 +2269,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             return;
         }
 
-        logger.info("Start manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
-        logger.info("Queue push size " + this.vaadinSession.getPendingAccessQueue().size());
+        logger.debug("Start manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+        logger.debug("Queue push size " + this.vaadinSession.getPendingAccessQueue().size());
         ComponentKey key;
         ComponentKey precedingJobKey;
 
@@ -2411,7 +2411,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             }
         }
 
-        logger.info("End manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+        logger.debug("End manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
     }
 
     /**
@@ -2423,8 +2423,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private void manageContextInstanceStateChangeEvent(UI ui, ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
         if (contextInstanceStateChangeEvent.getContextInstance() != null && !contextInstanceStateChangeEvent.getPreviousStatus()
                 .equals(contextInstanceStateChangeEvent.getNewStatus())) {
-            logger.info("Start manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
-            logger.info("Queue push size " + this.vaadinSession.getPendingAccessQueue().size());
+            logger.debug("Start manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
+            logger.debug("Queue push size " + this.vaadinSession.getPendingAccessQueue().size());
             ComponentKey key = new ComponentKey(contextInstance.getName()
                 , contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getName());
 
@@ -2441,7 +2441,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 this.instanceStatusMap.put(key, contextInstanceStateChangeEvent.getNewStatus());
             }
 
-            logger.info("End manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
+            logger.debug("End manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
         }
     }
 
