@@ -321,7 +321,7 @@ public class ContextMachine {
             }
 
             stopWatch.stop();
-            logger.info("Sorted out the context paramaters! Elapsed milli: " + stopWatch.getTime());
+            logger.info("Sorted out the context parameters! Elapsed milli: " + stopWatch.getTime());
             stopWatch.reset();
             stopWatch.start();
 
@@ -1603,7 +1603,7 @@ public class ContextMachine {
 
     private void issueContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent event) {
         if(!event.getPreviousStatus().equals(event.getNewStatus())) {
-            logger.info("Issuing context instance state change event: " + event.getContextInstance().getName() + " " + event.getNewStatus());
+            logger.debug("Issuing context instance state change event: " + event.getContextInstance().getName() + " " + event.getNewStatus());
             this.statusListenerExecutor.submit(() -> this.contextInstanceStateChangeEventListeners
                 .forEach(listener -> listener.onContextInstanceStateChangeEvent(event)));
         }
