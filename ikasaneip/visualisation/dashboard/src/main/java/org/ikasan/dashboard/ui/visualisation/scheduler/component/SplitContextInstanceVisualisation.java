@@ -374,14 +374,14 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if(event.getContextInstance() != null) {
+        if(event.getContextInstance() != null && this.childContextInstance != null && this.childContextInstance.getId().equals(event.getContextInstance().getId())) {
             if(this.ui != null && this.ui.isAttached()) {
                 this.ui.access(() -> {
                     if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                         this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                     }
 
-                    if (this.childContextInstance != null && this.childContextInstance.getId().equals(event.getContextInstance().getId())) {
+                    if (this.childContextInstance != null) {
                         this.childJobPlansStatusDiv.setStatus(event.getNewStatus());
                     }
                 });
@@ -391,7 +391,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        if(this.ui != null && this.ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && event.getContextInstance().getId().equals(this.contextInstance.getId())) {
             this.ui.access(() -> {
                 if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                     this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
