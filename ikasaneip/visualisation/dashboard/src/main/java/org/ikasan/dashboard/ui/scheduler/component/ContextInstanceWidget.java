@@ -1299,20 +1299,12 @@ public class ContextInstanceWidget extends VerticalLayout
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         if (event.getContextInstance() != null) {
-            if(this.ui != null && this.ui.isAttached()) {
+            if(this.ui != null && this.ui.isAttached() && this.contextInstance.getId().equals(event.getContextInstance().getId())) {
                 this.ui.access(() -> {
-                    if (this.contextInstance.getId().equals(event.getContextInstance().getId())) {
-                        this.contextInstance = event.getContextInstance();
-                        ContextHelper.enrichJobs(this.contextInstance);
-                        this.statusDiv.setStatus(event.getNewStatus());
-                    } else {
-                        ScheduledContextInstanceRecord record = this.scheduledContextInstanceService
-                            .findById(this.contextInstance.getId());
-                        if (record != null) {
-                            this.contextInstance = record.getContextInstance();
-                            ContextHelper.enrichJobs(this.contextInstance);
-                        }
-                    }
+                    this.contextInstance = event.getContextInstance();
+                    ContextHelper.enrichJobs(this.contextInstance);
+                    this.statusDiv.setStatus(event.getNewStatus());
+
 
                     if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
                         this.jobLockDashboard.setEnabled(false);
@@ -1332,7 +1324,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        if(this.ui != null && this.ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && event.getContextInstance().getId().equals(this.contextInstance.getId())) {
             this.ui.access(() -> {
                 ScheduledContextInstanceRecord record = this.scheduledContextInstanceService
                     .findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE);
