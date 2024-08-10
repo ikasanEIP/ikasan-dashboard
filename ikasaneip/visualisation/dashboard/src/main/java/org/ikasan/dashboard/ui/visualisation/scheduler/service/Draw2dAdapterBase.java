@@ -122,10 +122,14 @@ public abstract class Draw2dAdapterBase {
             });
 
             List<SchedulerJob> jobsToFilter = new ArrayList<>();
+            Map<String, String> contextTerminalJobs = new HashMap<>();
             previousContexts.forEach(contextTransition -> {
                 // we don't want to represent previous jobs that are terminal jobs in our diagrams
                 if(contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
                     jobsToFilter.add(contextTransition.getPrecedingJob());
+                    contextTransition.getContexts().forEach(c -> {
+                        contextTerminalJobs.put(c, contextTransition.getPrecedingJob().getJobName());
+                    });
                 }
             });
 
@@ -178,19 +182,22 @@ public abstract class Draw2dAdapterBase {
                     userDataBuilder.withItemType(UserData.GLOBAL_EVENT_DRIVEN_JOB);
                     userDataSet = true;
                 }
-                else if(schedulerJob instanceof ContextStartJob || schedulerJob instanceof ContextStartJobInstance) {
+                else if(schedulerJob instanceof ContextStartJob || schedulerJob instanceof ContextStartJobInstance
+                    || schedulerJob.getAgentName().equals(UserData.CONTEXT_START_JOB)) {
                     userDataBuilder.withItemType(UserData.CONTEXT_START_JOB);
                     userDataSet = true;
                     imageHeight = 50;
                     imageWidth = 50;
                 }
-                else if(schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextTerminalJobInstance) {
+                else if(schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextTerminalJobInstance
+                    || schedulerJob.getAgentName().equals(UserData.CONTEXT_TERMINAL_JOB)) {
                     userDataBuilder.withItemType(UserData.CONTEXT_TERMINAL_JOB);
                     userDataSet = true;
                     imageHeight = 50;
                     imageWidth = 50;
                 }
-                else if(schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance) {
+                else if(schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance
+                    || schedulerJob.getAgentName().equals(UserData.LOCAL_EVENT_JOB)) {
                     userDataBuilder.withItemType(UserData.LOCAL_EVENT_JOB);
                     userDataSet = true;
                 }
@@ -366,7 +373,10 @@ public abstract class Draw2dAdapterBase {
                             double labelLength = ((Image) item).getUserData().getContextName().length() * 7.5;
 
                             ((Image) item).setComposite(group.getId());
-
+                            if(contextTerminalJobs.containsKey(((Image) item).getUserData().getContextName())) {
+                                ((Image) item).getUserData()
+                                    .setPreviousJobIdentifiers(List.of(contextTerminalJobs.get(((Image) item).getUserData().getContextName())));
+                            }
                             Label label = new LabelBuilder().withText(((Image) item).getUserData().getContextName())
                                 .withX(positionedItemCentre - (labelLength / 2))
                                 .withY(((PositionedItem) item).getY() + 110)
@@ -442,7 +452,7 @@ public abstract class Draw2dAdapterBase {
             .withId(context.getName())
             .withHeight(100)
             .withWidth(100)
-            .withPath("frontend/images/square_void.png")
+            .withPath("frontend/images/context-icon.png")
             .withTopPort()
             .withBottomPort()
             .withUserData(new UserDataBuilder()
@@ -470,7 +480,7 @@ public abstract class Draw2dAdapterBase {
                     .withId(((Context) c).getName())
                     .withHeight(100)
                     .withWidth(100)
-                    .withPath("frontend/images/square_void.png")
+                    .withPath("frontend/images/context-icon.png")
                     .withTopPort()
                     .withBottomPort()
                     .withUserData(new UserDataBuilder()
@@ -582,7 +592,7 @@ public abstract class Draw2dAdapterBase {
                     .withId(((Context)c).getName())
                     .withHeight(100)
                     .withWidth(100)
-                    .withPath("frontend/images/square_void.png")
+                    .withPath("frontend/images/context-icon.png")
                     .withTopPort()
                     .withBottomPort()
                     .withUserData(new UserDataBuilder()
@@ -650,8 +660,11 @@ public abstract class Draw2dAdapterBase {
                     manageLogicalGroupings(context, jobIdentifier, and.getLogicalGrouping(), diagramBuilder, graph);
                 }
                 else if(context.getScheduledJobsMap().containsKey(and.getIdentifier())
-                    && !((SchedulerJob)context.getScheduledJobsMap().get(and.getIdentifier()))
-                        .getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                    && context.getScheduledJobsMap().containsKey(jobIdentifier)
+                    && (!((SchedulerJob)context.getScheduledJobsMap().get(jobIdentifier))
+                        .getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+                    && (!((SchedulerJob)context.getScheduledJobsMap().get(and.getIdentifier()))
+                    .getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))) {
                     graph.addEdge(and.getIdentifier(), jobIdentifier);
 
                     this.addConnection(and.getIdentifier(), "rightHybridSource"
