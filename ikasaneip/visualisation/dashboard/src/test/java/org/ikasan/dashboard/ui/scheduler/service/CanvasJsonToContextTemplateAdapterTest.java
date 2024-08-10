@@ -57,4 +57,15 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
 
         JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
     }
+
+    @Test
+    public void test_sample_context_with_start_and_end_jobs() throws IOException {
+        String canvasJson = loadDataFile("/data/contexts/draw2d-json-with-start-and-end-jobs.json");
+        CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
+        ContextTemplate contextTemplate = adapter.adapt("CONTEXT-1892741766", canvasJson);
+
+        String result = loadDataFile("/data/contexts/results/results-context-with-repeating-jobs.json");
+
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
+    }
 }

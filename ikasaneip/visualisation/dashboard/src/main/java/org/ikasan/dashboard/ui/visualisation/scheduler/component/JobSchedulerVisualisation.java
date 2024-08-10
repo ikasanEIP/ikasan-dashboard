@@ -1,8 +1,10 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.vaadin.flow.component.UI;
+import org.ikasan.dashboard.ui.scheduler.component.SelectContextDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.designer.DesignerCanvas;
+import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemSingleClickEvent;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -14,11 +16,9 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -62,8 +62,17 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                         .map(record -> record.getJob())
                         .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2));
 
+                    schedulerJobs.putAll(ContextHelper.getContextTerminalJobsFromContext(parentContextTemplate).stream()
+                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
+
+                    schedulerJobs.putAll(ContextHelper.getContextStartJobsFromContext(parentContextTemplate).stream()
+                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
+
+                    schedulerJobs.putAll(ContextHelper.getLocalEventJobsFromContext(parentContextTemplate).stream()
+                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
+
                     this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
-                        this.getSchedulerJobsForContextInstance(this.parentContextTemplate.getName())));
+                        schedulerJobs.values().stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))));
                 }
                 else {
                     this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
@@ -138,27 +147,35 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                     });
                 }
             }
+
+            if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+
+            }
         }
         super.singleClickEvent(canvasItemDoubleClickEvent);
     }
 
-    /**
-     * Helper method to get all command execution jobs associated with an context instance.
-     *
-     * @param contextInstanceId the id of the context instance that we want the jobs for.
-     *
-     * @return Map<String, InternalEventDrivenJobInstance> containing the command execution jobs
-     * keyed on their identifier.
-     */
-    private Map<String, InternalEventDrivenJob> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
-        return this.schedulerJobService
-            .getCommandExecutionJobsForContext(contextInstanceId);
-
+    public void addContext(Context context) {
+        this.designerCanvas.addImageFigure(adapter.adaptJobPlanContext(context));
+        this.designerCanvas.addLabelToFigure(context.getName(), context.getName());
+        this.saveRequired = true;
     }
 
-    private Map<String, SchedulerJob> getSchedulerJobsForContextInstance(String contextInstanceId) {
-        // todo provide method to get all jobs
-        return Map.of();
+    @Override
+    public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {
+        if(canvasItemRightClickEvent.getFigure() != null && canvasItemRightClickEvent.getFigure().getIdentifier() != null) {
+            String identifier = ContextHelper.getIdentifier(canvasItemRightClickEvent.getFigure().getIdentifier());
 
+            SchedulerJob job = this.contextTemplate.getScheduledJobsMap()
+                .get(identifier);
+
+
+            if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                SelectContextDialog selectContextDialog = new SelectContextDialog
+                    (super.systemEventLogger, super.parentContextTemplate, this);
+                selectContextDialog.open();
+            }
+        }
+        super.rightClickEvent(canvasItemRightClickEvent);
     }
 }

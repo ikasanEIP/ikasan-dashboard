@@ -21,10 +21,7 @@ import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
@@ -48,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDialog implements SchedulerJobSelectedListener {
@@ -395,6 +393,48 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
             globalEventJobDialog.setJob(globalEventJob, EditMode.NEW);
             globalEventJobDialog.open();
+        });
+        jobTypesSubMenu.addItem(getTranslation("menu-item.local-event-job", UI.getCurrent().getLocale()), event -> {
+            LocalEventJobDialog localEventJobDialog = new LocalEventJobDialog(null, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
+                this.schedulerJobService, this.contextTemplate.isUseDisplayName());
+
+            localEventJobDialog.addSchedulerJobSelectedListener(this);
+
+            LocalEventJob localEventJob = new LocalEventJobImpl();
+            localEventJob.setContextName(this.rootContextTemplate.getName());
+            localEventJob.getChildContextNames().add(contextTemplate.getName());
+
+            localEventJobDialog.setJob(localEventJob, EditMode.NEW);
+            localEventJobDialog.open();
+        });
+        jobTypesSubMenu.addItem(getTranslation("menu-item.start-job", UI.getCurrent().getLocale()), event -> {
+            Optional<SchedulerJob> startJob = contextTemplate.getScheduledJobs().stream()
+                .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+                .findFirst();
+
+            if(startJob.isPresent()) {
+                NotificationHelper.showUserNotification(getTranslation("error.start-job-exists-in-context", UI.getCurrent().getLocale()));
+                return;
+            }
+
+            ContextStartJob contextStartJob = new ContextStartJobImpl();
+            contextStartJob.setJobName(this.contextTemplate.getName() + "_START");
+            this.jobSelected(contextStartJob);
+        });
+        jobTypesSubMenu.addItem(getTranslation("menu-item.terminal-job", UI.getCurrent().getLocale()), event -> {
+            Optional<SchedulerJob> startJob = contextTemplate.getScheduledJobs().stream()
+                .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+                .findFirst();
+
+            if(startJob.isPresent()) {
+                NotificationHelper.showUserNotification(getTranslation("error.terminal-job-exists-in-context", UI.getCurrent().getLocale()));
+                return;
+            }
+
+            ContextTerminalJob contextTerminalJob = new ContextTerminalJobImpl();
+            contextTerminalJob.setJobName(this.contextTemplate.getName() + "_TERMINAL");
+            this.jobSelected(contextTerminalJob);
         });
 
         return newJobMenuBar;

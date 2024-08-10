@@ -68,6 +68,10 @@ public class UserData {
         return previousJobIdentifiers;
     }
 
+    public void setPreviousJobIdentifiers(List<String> previousJobIdentifiers) {
+        this.previousJobIdentifiers = previousJobIdentifiers;
+    }
+
     public List<String> getSubsequentJobIdentifiers() {
         return subsequentJobIdentifiers;
     }

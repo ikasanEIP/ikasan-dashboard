@@ -3,10 +3,6 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.layout.mxCompactTreeLayout;
-import com.mxgraph.model.mxCell;
-import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.builder.*;
 import org.ikasan.designer.model.*;
@@ -14,20 +10,12 @@ import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.jgrapht.ext.JGraphXAdapter;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
 
@@ -56,9 +44,9 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
     }
 
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
-        , Map<String, SchedulerJob> internalEventDrivenJobMap) {
+        , Map<String, SchedulerJob> schedulerJobsMapByIdentifier) {
 
-            ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, internalEventDrivenJobMap);
+            ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, schedulerJobsMapByIdentifier);
             this.addStatusRectangles(items, context, parentContext);
 
             items.forEach(item -> {
