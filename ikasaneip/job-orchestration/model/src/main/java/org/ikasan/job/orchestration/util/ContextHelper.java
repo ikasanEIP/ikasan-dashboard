@@ -225,6 +225,29 @@ public class ContextHelper {
     }
 
     /**
+     * Retrieves a ContextStartJob from a given ContextTemplate.
+     *
+     * @param context the ContextTemplate from which to retrieve the ContextStartJob
+     * @return an Optional containing the ContextStartJob if found, otherwise an empty Optional
+     */
+    public static Optional<ContextStartJob> getContextStartJobFromContext(ContextTemplate context) {
+        return context.getScheduledJobs().stream()
+            .distinct()
+            .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+            .map(schedulerJob -> {
+                ContextStartJob contextStartJob = new ContextStartJobImpl();
+                contextStartJob.setContextName(schedulerJob.getContextName());
+                contextStartJob.setJobName(schedulerJob.getJobName());
+                contextStartJob.setAgentName(schedulerJob.getAgentName());
+                contextStartJob.setChildContextNames(context.getAllContextNamesWhereJobResides(schedulerJob.getIdentifier()));
+                contextStartJob.setOrdinal(Integer.MIN_VALUE);
+
+                return contextStartJob;
+            })
+            .findFirst();
+    }
+
+    /**
      * Retrieves a list of ContextStartJob objects from the given ContextTemplate object.
      *
      * @param context The ContextTemplate object to retrieve the ContextStartJobs from.
@@ -781,6 +804,11 @@ public class ContextHelper {
                 }
             });
         }
+        // We retain the terminal job if one exists as by its nature it can
+        // transition to other contexts.
+        Optional<SchedulerJob> terminal = ((List<SchedulerJob>)context.getScheduledJobs()).stream()
+            .filter(job -> job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)).findFirst();
+        if(terminal.isPresent()) jobsOutsideLogicConstructs.put(terminal.get().getIdentifier(), terminal.get());
 
         return jobsOutsideLogicConstructs;
     }
@@ -1415,27 +1443,16 @@ public class ContextHelper {
      * @param updated The updated version of the child context template.
      * @return The parent context template with the updated child context template. It may or may not be modified.
      */
-    public static ContextTemplate replaceChildContextTemplate(ContextTemplate contextTemplate, ContextTemplate updated) {
+    public static void replaceChildContextTemplate(ContextTemplate contextTemplate, ContextTemplate updated) {
         if(contextTemplate.getName().equals(updated.getName())) {
             contextTemplate.setJobDependencies(updated.getJobDependencies());
             contextTemplate.setScheduledJobs(updated.getScheduledJobs());
-            return contextTemplate;
+            return;
         }
 
         if(contextTemplate.getContexts() != null) {
-            for (int i=0; i<contextTemplate.getContexts().size(); i++) {
-
-                if(contextTemplate.getContexts().get(i).getName().equals(updated.getName())) {
-                    contextTemplate.getContexts().get(i).setJobDependencies(updated.getJobDependencies());
-                    contextTemplate.getContexts().get(i).setScheduledJobs(updated.getScheduledJobs());
-                }
-                else {
-                    replaceChildContextTemplate(contextTemplate.getContexts().get(i), updated);
-                }
-            }
+            contextTemplate.getContexts().forEach(template -> replaceChildContextTemplate(template, updated));
         }
-
-        return contextTemplate;
     }
 
     /**

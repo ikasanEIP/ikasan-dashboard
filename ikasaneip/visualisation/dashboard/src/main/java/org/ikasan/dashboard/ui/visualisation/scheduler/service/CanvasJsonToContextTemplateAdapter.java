@@ -8,8 +8,12 @@ import org.ikasan.designer.model.*;
 import org.ikasan.job.orchestration.builder.context.ContextTemplateBuilder;
 import org.ikasan.job.orchestration.builder.context.JobDependencyBuilder;
 import org.ikasan.job.orchestration.builder.context.LogicalGroupingBuilder;
+import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,6 +27,12 @@ public class CanvasJsonToContextTemplateAdapter {
         this.objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
+    /**
+     * Validates the given canvas JSON for overlapping items.
+     *
+     * @param canvasJson the canvas JSON to validate
+     * @throws CanvasJsonValidationException if the canvas JSON contains overlapping items
+     */
     public void validate(String canvasJson) throws CanvasJsonValidationException {
         List<PositionedItem> overlappingItems = new ArrayList<>();
 
@@ -69,6 +79,13 @@ public class CanvasJsonToContextTemplateAdapter {
         }
     }
 
+    /**
+     * Checks if the left PositionedItem is within the area of the right PositionedItem.
+     *
+     * @param left  the left PositionedItem
+     * @param right the right PositionedItem
+     * @return true if the left PositionedItem is within the area of the right PositionedItem, otherwise false
+     */
     private boolean withinArea(PositionedItem left, PositionedItem right) {
         if(left.getX() < right.getX() &&
             (left.getX() + left.getWidth()) > (right.getX() + right.getWidth()) &&
@@ -80,11 +97,20 @@ public class CanvasJsonToContextTemplateAdapter {
         return false;
     }
 
+    /**
+     * Adapts the given contextName and canvasJson to a ContextTemplate object.
+     *
+     * @param contextName  the name of the context
+     * @param canvasJson   the canvas JSON representing the context
+     * @return the ContextTemplate object
+     * @throws CanvasJsonToContextTemplateAdapterException if there is an error while adapting the canvas JSON
+     */
     public ContextTemplate adapt(String contextName, String canvasJson) {
         Map<String, Image> schedulerJobs = new HashMap<>();
         List<Rectangle> orBoundaries = new ArrayList<>();
         List<Rectangle> andBoundaries = new ArrayList<>();
         Map<String, List<Connection>> connections = new HashMap<>();
+        Map<String, Group> externalContexts = new HashMap<>();
 
         try {
             List<LinkedHashMap> values = objectMapper.readValue(canvasJson, List.class);
@@ -93,6 +119,12 @@ public class CanvasJsonToContextTemplateAdapter {
                 if (value.get("type").equals("draw2d.shape.basic.Image")) {
                     Image image = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Image.class);
                     if(!image.getPath().contains("repeating.png"))schedulerJobs.put(image.getId(), image);
+                }
+                else if (value.get("type").equals("draw2d.shape.composite.Group")) {
+                    Group group = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Group.class);
+                    if(group.getUserData().getItemType() != null && group.getUserData().getItemType().equals("CONTEXT")) {
+                        externalContexts.put(group.getUserData().getContextName(), group);
+                    }
                 }
                 else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("AND")) {
                     Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
@@ -137,7 +169,41 @@ public class CanvasJsonToContextTemplateAdapter {
                 this.addJobsToTree(entry.getRoot(), schedulerJobs);
             });
 
-            return this.buildContextTemplate(contextName, rootTrees, connections, schedulerJobs);
+            ContextTemplate c = this.buildContextTemplate(contextName, rootTrees, connections, schedulerJobs);
+
+            Optional<Image> startJob = schedulerJobs.values().stream()
+                .filter(image -> image.getUserData().getItemType().equals(JobConstants.CONTEXT_START_JOB)).findFirst();
+
+            if(startJob.isPresent()) {
+                externalContexts.entrySet().forEach(entry -> {
+                    if (entry.getValue().getUserData().getPreviousJobIdentifiers() != null
+                        && !entry.getValue().getUserData().getPreviousJobIdentifiers().isEmpty()) {
+                        entry.getValue().getUserData().getPreviousJobIdentifiers().forEach(jobName -> {
+                            if(c.getScheduledJobsMap().containsKey(jobName))return;
+                            SchedulerJob terminal = new SchedulerJobImpl();
+                            terminal.setAgentName(JobConstants.CONTEXT_TERMINAL_JOB);
+                            terminal.setJobName(jobName);
+                            terminal.setIdentifier(JobConstants.CONTEXT_TERMINAL_JOB + "-" + jobName);
+                            c.getScheduledJobs().add(terminal);
+
+                            ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
+                            c.getJobDependencies().add(contextTemplateBuilder.getJobDependencyBuilder()
+                                .withJobName(startJob.get().getUserData().getJobName())
+                                .withAgentName(startJob.get().getUserData().getAgentName())
+                                .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                                    .addAnd(contextTemplateBuilder
+                                        .getJobAndBuilder()
+                                            .withJobName(terminal.getJobName())
+                                            .withAgentName(terminal.getAgentName())
+                                        .build())
+                                    .build())
+                                .build());
+                        });
+                    }
+                });
+            }
+
+            return c;
 
         }
         catch (Exception e) {
@@ -145,6 +211,15 @@ public class CanvasJsonToContextTemplateAdapter {
         }
     }
 
+    /**
+     * Builds a ContextTemplate object based on the provided parameters.
+     *
+     * @param contextName     the name of the context
+     * @param rootTrees       the list of root trees representing the context
+     * @param connections     the map of connections between nodes
+     * @param schedulerJobs   the map of scheduler jobs
+     * @return the ContextTemplate object
+     */
     private ContextTemplate buildContextTemplate(String contextName, List<Tree<PositionedItem>> rootTrees, Map<String, List<Connection>> connections
         , Map<String, Image> schedulerJobs) {
         ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
@@ -229,6 +304,15 @@ public class CanvasJsonToContextTemplateAdapter {
         return contextTemplateBuilder.build();
     }
 
+    /**
+     * Manages the logical grouping of items in a tree node.
+     *
+     * @param node                       the tree node containing the items
+     * @param contextTemplateBuilder     the context template builder
+     * @param connections                the map of connections between nodes
+     * @param jobDependencyBuilderMap    the map of job dependency builders
+     * @return the logical grouping after managing the items
+     */
     private LogicalGrouping manageLogicalGrouping(TreeNode<PositionedItem> node, ContextTemplateBuilder contextTemplateBuilder, Map<String, List<Connection>> connections,
                                        Map<String, JobDependencyBuilder> jobDependencyBuilderMap) {
         LogicalGroupingBuilder logicalGroupingBuilder = contextTemplateBuilder.getLogicalGroupingBuilder();
@@ -243,6 +327,12 @@ public class CanvasJsonToContextTemplateAdapter {
         return logicalGroupingBuilder.build();
     }
 
+    /**
+     * Recursively retrieves the target job identifiers for a LogicalGrouping.
+     *
+     * @param logicalGrouping - the LogicalGrouping object to retrieve target job identifiers from
+     * @param identifiers - a list to store the target job identifiers
+     */
     private void getTargetJobForLogicalGrouping(LogicalGrouping logicalGrouping, List<String> identifiers) {
         if(logicalGrouping.getOr() != null) {
             logicalGrouping.getOr().forEach(or -> {
@@ -273,6 +363,15 @@ public class CanvasJsonToContextTemplateAdapter {
         }
     }
 
+    /**
+     * Manages the logical grouping of items in a tree node by adding 'AND' logical groupings to the ContextTemplateBuilder.
+     *
+     * @param logicalGroupingBuilder The LogicalGroupingBuilder object to add the 'AND' logical groupings to.
+     * @param branches               The list of TreeNode objects representing the branches of the tree node.
+     * @param contextTemplateBuilder The ContextTemplateBuilder object to retrieve and build the JobAndBuilder with.
+     * @param connections            The map of connections between nodes.
+     * @param jobDependencyBuilderMap The map of job dependency builders.
+     */
     private void manageAnd(LogicalGroupingBuilder logicalGroupingBuilder, List<TreeNode<PositionedItem>> branches, ContextTemplateBuilder contextTemplateBuilder,
                            Map<String, List<Connection>> connections, Map<String, JobDependencyBuilder> jobDependencyBuilderMap) {
         branches.forEach(branch -> {
@@ -298,6 +397,15 @@ public class CanvasJsonToContextTemplateAdapter {
         });
     }
 
+    /**
+     * Manages the logical grouping of items in a tree node by adding 'OR' logical groupings to the ContextTemplateBuilder.
+     *
+     * @param logicalGroupingBuilder   The LogicalGroupingBuilder object to add the 'OR' logical groupings to.
+     * @param branches                 The list of TreeNode objects representing the branches of the tree node.
+     * @param contextTemplateBuilder   The ContextTemplateBuilder object to retrieve and build the JobOrBuilder with.
+     * @param connections              The map of connections between nodes.
+     * @param jobDependencyBuilderMap  The map of job dependency builders.
+     */
     private void manageOr(LogicalGroupingBuilder logicalGroupingBuilder, List<TreeNode<PositionedItem>> branches, ContextTemplateBuilder contextTemplateBuilder,
                            Map<String, List<Connection>> connections, Map<String, JobDependencyBuilder> jobDependencyBuilderMap) {
         branches.forEach(branch -> {
@@ -431,6 +539,14 @@ public class CanvasJsonToContextTemplateAdapter {
     }
 
 
+    /**
+     * Adds jobs to the withinThisBoundary list if they are within the boundary of the given node
+     * and not already present in any children of the node.
+     *
+     * @param node           the tree node to check for jobs within its boundary
+     * @param schedulerJobs  the map of scheduler jobs
+     * @return the list of jobs within the boundary and not in any children of the node
+     */
     private ArrayList<PositionedItem> addJobsIfWithinBoundaryAndNotInAnyChildren(TreeNode<PositionedItem> node, Map<String, Image> schedulerJobs) {
         ArrayList<PositionedItem> withinThisBoundary = new ArrayList<>();
         schedulerJobs.entrySet().forEach(entry -> {
@@ -449,6 +565,14 @@ public class CanvasJsonToContextTemplateAdapter {
         return withinThisBoundary;
     }
 
+    /**
+     * Removes scheduler jobs from the withinThisBoundary list if they are within the boundary of the given node.
+     * It recursively checks all the child nodes of the given node.
+     *
+     * @param node                 the tree node to check for jobs within its boundary
+     * @param withinThisBoundary   the list of jobs within the boundary
+     * @param schedulerJobs        the map of scheduler jobs
+     */
     private void removeJobIfWithinChildChild(TreeNode<PositionedItem> node, ArrayList<PositionedItem> withinThisBoundary, Map<String, Image> schedulerJobs) {
         schedulerJobs.entrySet().forEach(entry -> {
             if(node.getData().getX() < entry.getValue().getX() &&
@@ -466,6 +590,12 @@ public class CanvasJsonToContextTemplateAdapter {
         }
     }
 
+    /**
+     * Returns the intersection of all sets of strings in the given list of connections.
+     *
+     * @param connections the list of connections, each containing a list of strings
+     * @return the set containing the intersection of all sets of strings
+     */
     public Set<String> intersect(List<List<String>> connections) {
         if(connections.isEmpty()) {
             return Set.of();

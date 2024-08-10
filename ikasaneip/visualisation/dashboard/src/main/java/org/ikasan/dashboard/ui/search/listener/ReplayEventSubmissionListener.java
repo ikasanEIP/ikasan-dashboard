@@ -171,7 +171,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
 
                                         replayAuditEvents.add(createReplayAuditEvent(result, replayDialogDto, document, current, i18NProvider));
 
-                                        replayCount.set(replayCount.get() + 1);
+                                        replayCount.getAndIncrement();
                                     }
                                 }
                             }
