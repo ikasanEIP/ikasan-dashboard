@@ -7,17 +7,13 @@ import org.ikasan.designer.builder.UserDataBuilder;
 import org.ikasan.designer.model.Image;
 import org.ikasan.designer.model.PositionedItem;
 import org.ikasan.designer.model.UserData;
-import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.Context;
-import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -52,9 +48,9 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
     }
 
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
-        , Map<String, SchedulerJob> internalEventDrivenJobMap) {
+        , Map<String, SchedulerJob> schedulerJobsMapByIdentifier) {
             try {
-                ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, internalEventDrivenJobMap);
+                ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, schedulerJobsMapByIdentifier);
 
                 return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
             }
@@ -64,31 +60,16 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
             }
     }
 
-    private void addStatusRectangles(List<Object> items, Context context) {
-        ArrayList<Object> statusRectangles = new ArrayList<>();
-
-        items.forEach(item -> {
-            if (item instanceof Image) {
-                RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
-                    .withId(((PositionedItem) item).getId() + "_status")
-                    .withWidth(100)
-                    .withHeight(100)
-                    .withStroke(0)
-                    .withRadius(20)
-                    .withX(((PositionedItem) item).getX())
-                    .withY(((PositionedItem) item).getY());
-
-                statusRectangles.add(rb.build());
-            }
-        });
-
-        items.addAll(statusRectangles);
-    }
-
+    /**
+     * Adapts a given context to a JSON representation in the draw2d format.
+     *
+     * @param context The context to be adapted.
+     * @return The JSON representation of the context.
+     * @throws Draw2dAdapterException If an exception occurs during the adaptation process.
+     */
     public String adaptContext(Context context) {
         try {
             ArrayList<Object> items = super._adaptContext(context);
-            //this.addStatusRectangles(items, context);
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
         }
         catch (JsonProcessingException e) {
@@ -103,9 +84,33 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
                 .withId(context.getName())
                 .withHeight(100)
                 .withWidth(100)
-                .withPath("frontend/images/square_void.png")
+                .withPath("frontend/images/context-icon.png")
                 .withTopPort()
                 .withBottomPort()
+                .withUserData(new UserDataBuilder()
+                    .withContextName(context.getName())
+                    .withIdentifier(context.getName())
+                    .withItemType(UserData.CONTEXT)
+                    .build())
+                .build();
+
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(childContext);
+        }
+        catch (JsonProcessingException e) {
+            throw new Draw2dAdapterException(String.format("An exception has occurred attempting to translate " +
+                "context[%s] to the draw 2d data format", context.getName()), e);
+        }
+    }
+
+    public String adaptJobPlanContext(Context context) {
+        try {
+            Image childContext = diagramBuilder.getImageBuilder()
+                .withId(context.getName())
+                .withHeight(100)
+                .withWidth(100)
+                .withPath("frontend/images/context-icon.png")
+                .withLeftPort()
+                .withRightPort()
                 .withUserData(new UserDataBuilder()
                     .withContextName(context.getName())
                     .withIdentifier(context.getName())
@@ -125,24 +130,65 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
         String image = getJobImage(schedulerJob);
 
         try {
+            UserDataBuilder userDataBuilder = new UserDataBuilder()
+                .withAgentName(schedulerJob.getAgentName())
+                .withJobName(schedulerJob.getJobName())
+                .withIdentifier(schedulerJob.getIdentifier());
+
+            if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance) {
+                userDataBuilder.withItemType(UserData.INTERNAL_EVENT_DRIVEN_JOB);
+            }
+            else if(schedulerJob instanceof FileEventDrivenJob || schedulerJob instanceof FileEventDrivenJobInstance) {
+                userDataBuilder.withItemType(UserData.FILE_EVENT_DRIVEN_JOB);
+            }
+            else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
+                userDataBuilder.withItemType(UserData.QUARTZ_EVENT_DRIVEN_JOB);
+            }
+            else if(schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
+                userDataBuilder.withItemType(UserData.GLOBAL_EVENT_DRIVEN_JOB);
+            }
+            else if(schedulerJob instanceof ContextStartJob || schedulerJob instanceof ContextStartJobInstance
+                || schedulerJob.getAgentName().equals(UserData.CONTEXT_START_JOB)) {
+                userDataBuilder.withItemType(UserData.CONTEXT_START_JOB);
+            }
+            else if(schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextTerminalJobInstance
+                || schedulerJob.getAgentName().equals(UserData.CONTEXT_TERMINAL_JOB)) {
+                userDataBuilder.withItemType(UserData.CONTEXT_TERMINAL_JOB);
+            }
+            else if(schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance
+                || schedulerJob.getAgentName().equals(UserData.LOCAL_EVENT_JOB)) {
+                userDataBuilder.withItemType(UserData.LOCAL_EVENT_JOB);
+            }
             ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
                 .withId((schedulerJob).getIdentifier())
-                .withHeight(100)
-                .withWidth(100)
                 .withPath(image)
-                .withUserData(new UserDataBuilder()
-                    .withAgentName(schedulerJob.getAgentName())
-                    .withJobName(schedulerJob.getJobName())
-                    .withIdentifier(schedulerJob.getIdentifier())
-                    .build()
-                );
+                .withUserData(userDataBuilder.build());
 
-            if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof GlobalEventJob) {
-                jobBuilder.withLeftPort()
+            if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof GlobalEventJob ||
+                schedulerJob instanceof LocalEventJob) {
+                jobBuilder
+                    .withHeight(100)
+                    .withWidth(100)
+                    .withLeftPort()
                     .withRightPort();
             }
             else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
-                jobBuilder.withRightPort();
+                jobBuilder
+                    .withHeight(100)
+                    .withWidth(100)
+                    .withRightPort();
+            }
+            else if(schedulerJob instanceof ContextStartJob) {
+                jobBuilder
+                    .withHeight(50)
+                    .withWidth(50)
+                    .withRightPort();
+            }
+            else if(schedulerJob instanceof ContextTerminalJob) {
+                jobBuilder
+                    .withHeight(50)
+                    .withWidth(50)
+                    .withLeftPort();
             }
 
             return mapper.writerWithDefaultPrettyPrinter()

@@ -70,12 +70,15 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private boolean toBack;
 
 
+
     /**
-     * Constructor
+     * Constructs a DesignerCanvas object with the specified parameters.
      *
-     * @param name
-     * @param dynamicImagePath
-     * @param readonly
+     * @param name              the name of the DesignerCanvas object
+     * @param dynamicImagePath  the path to the dynamic images
+     * @param readonly          whether the DesignerCanvas is read-only or not
+     * @param ui                the UI object to associate with the DesignerCanvas
+     * @param toBack            whether to send the DesignerCanvas to the back or not
      */
     public DesignerCanvas(String name, String dynamicImagePath, boolean readonly, UI ui, boolean toBack) {
         super();
@@ -144,14 +147,17 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         }
     }
 
+
     /**
-     * Constructor
+     * Constructs a new DesignerCanvas object.
      *
-     * @param saveFunction
-     * @param saveAsFunction
-     * @param name
-     * @param dynamicImagePath
-     * @param readonly
+     * @param saveFunction the function to be called when the canvas is saved
+     * @param saveAsFunction the function to be called when the canvas is saved as a new file
+     * @param name the name of the canvas
+     * @param dynamicImagePath the path to the dynamic image file
+     * @param readonly whether the canvas is read-only or not
+     * @param ui the user interface object associated with the canvas
+     * @param toBack whether the canvas should be sent to the back or not
      */
     public DesignerCanvas(SaveFunction saveFunction, SaveAsFunction saveAsFunction, String name
         , String dynamicImagePath, boolean readonly, UI ui, boolean toBack) {
@@ -162,7 +168,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
     /**
      * This method works in combination with designer-connector-flow.js to set up the
-     * interation between the Vaadin framework and draw2d javascript.
+     * interaction between the Vaadin framework and draw2d javascript.
      */
     private void initConnector() {
         getUI()
@@ -427,6 +433,15 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
+    /**
+     * Populates the context menu based on the selected element in the canvas.
+     *
+     * If a single connection is selected, triggers a {@link CanvasItemRightClickEvent} for the corresponding designer pallet item.
+     *
+     * If multiple figures are selected, triggers a {@link CanvasItemRightClickEvent} for each figure that contains the click coordinates.
+     *
+     * @see CanvasItemRightClickEvent
+     */
     public void populateContextMenu() {
 
         getElement().callJsFunction("$connector.getSelected").then(String.class, result -> {
@@ -639,39 +654,88 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
+    /**
+     * Runs the given command before the client receives a response from the server.
+     *
+     * @param command the command to run before the client response.
+     *                Accepts a {@link SerializableConsumer} with a {@link UI} parameter.
+     *                Use this parameter to access the current UI and perform any necessary operations.
+     * @throws NullPointerException if the command is null
+     */
     public void runBeforeClientResponse(SerializableConsumer<UI> command) {
         getElement().getNode()
             .runWhenAttached(ui -> ui.beforeClientResponse(this, context -> command.accept(ui)));
     }
 
+    /**
+     * Adds a pallet item to the pallet.
+     *
+     * @param designerPalletImageItem the pallet item to add
+     */
     public void addPalletItem(DesignerPalletImageItem designerPalletImageItem) {
         this.designerPalletItemMap.put(designerPalletImageItem.getIdentifier().toString(), designerPalletImageItem);
     }
 
+    /**
+     * Adds a CanvasItemRightClickEventListener to the list of listeners.
+     * The listener will be notified when a right-click event occurs on a canvas item.
+     *
+     * @param listener the CanvasItemRightClickEventListener to be added
+     */
     public void addCanvasItemRightClickEventListener(CanvasItemRightClickEventListener listener) {
         this.canvasItemRightClickEventListeners.add(listener);
     }
 
+    /**
+     * Adds a CanvasItemDoubleClickEventListener to the list of event listeners.
+     *
+     * @param listener the CanvasItemDoubleClickEventListener to be added
+     */
     public void addCanvasItemDoubleClickEventListener(CanvasItemDoubleClickEventListener listener) {
         this.canvasItemDoubleClickEventListeners.add(listener);
     }
 
+    /**
+     * Adds a {@link CanvasItemSingleClickEventListener} to the list of listeners.
+     *
+     * @param listener the listener to be added
+     */
     public void addCanvasItemSingleClickEventListener(CanvasItemSingleClickEventListener listener) {
         this.canvasItemSingleClickEventListeners.add(listener);
     }
 
+    /**
+     * Adds a ConnectorEventListener to the list of listeners.
+     *
+     * @param listener the ConnectorEventListener to be added
+     */
     public void addConnectorEventListener(ConnectorEventListener listener) {
         this.connectorEventListeners.add(listener);
     }
 
+    /**
+     * Adds a FigureDeleteEventListener to the list of listeners.
+     *
+     * @param listener the FigureDeleteEventListener to be added
+     */
     public void addFigureDeleteEventListeners(FigureDeleteEventListener listener) {
         this.figureDeleteEventListeners.add(listener);
     }
 
+    /**
+     * Adds an instance of FigureUndoDeleteEventListener to the list of event listeners.
+     *
+     * @param listener the FigureUndoDeleteEventListener to add
+     */
     public void addFigureUndoDeleteEventListeners(FigureUndoDeleteEventListener listener) {
         this.figureUndoDeleteEventListeners.add(listener);
     }
 
+    /**
+     * Adds a CanvasUpdatedListener to the list of listeners.
+     *
+     * @param listener The listener to be added.
+     */
     public void addCanvasUpdatedListener(CanvasUpdatedListener listener) {
         this.canvasUpdatedListeners.add(listener);
     }

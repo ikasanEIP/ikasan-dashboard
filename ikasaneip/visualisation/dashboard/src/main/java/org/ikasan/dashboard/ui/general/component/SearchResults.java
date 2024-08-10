@@ -606,7 +606,8 @@ public class SearchResults extends Div {
             this.replayEventRegistration.remove();
         }
 
-        this.replayEventSubmissionListener = new ReplayEventSubmissionListener(this.replayRestService, this.replayAuditService, this.moduleMetadataService, this.searchResultsGrid, this.selectionBoxes, this.selectionItems);
+        this.replayEventSubmissionListener = new ReplayEventSubmissionListener(this.replayRestService, this.replayAuditService
+            , this.moduleMetadataService, this.searchResultsGrid, this.selectionBoxes, this.selectionItems);
         this.replayEventRegistration = this.replayButton.addClickListener(this.replayEventSubmissionListener);
     }
 

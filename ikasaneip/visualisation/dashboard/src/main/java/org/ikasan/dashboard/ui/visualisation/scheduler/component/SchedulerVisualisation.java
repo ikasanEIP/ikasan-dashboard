@@ -15,6 +15,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
@@ -103,7 +104,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected List<String> nodeConnectionIndicators = new ArrayList<>();
 
     protected Map<String, String> schedulerJobExecutionEnvironmentLabel;
-    private boolean saveRequired = false;
+    protected boolean saveRequired = false;
     private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
 
     private double jobVisualisationVerticalSpacing;
@@ -457,7 +458,9 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     public void addJob(SchedulerJob schedulerJob) {
         this.designerCanvas.addImageFigure(adapter.adaptJob(schedulerJob));
-        this.designerCanvas.addLabelToFigure(schedulerJob.getIdentifier(), schedulerJob.getJobName());
+        if(!(schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextStartJob)) {
+            this.designerCanvas.addLabelToFigure(schedulerJob.getIdentifier(), schedulerJob.getJobName());
+        }
         this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
         this.saveRequired = true;
     }
@@ -566,13 +569,23 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     @Override
     public void save(String id, String name, String description, String payload) {
         try {
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+
+            logger.info("Starting save!");
             CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
             adapter.validate(payload);
 
             ContextTemplate updatedContext = adapter.adapt(this.contextTemplate.getName(), payload);
+            logger.info("Adapted context! " + stopWatch.getTime());
 
             Map<String, SchedulerJob> jobsToSave = new HashMap<>();
             this.contextTemplate.getScheduledJobs().forEach(job -> {
+                if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) ||
+                    job.getAgentName().equals(JobConstants.CONTEXT_START_JOB) ||
+                    job.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                    return;
+                }
                 SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(), job.getJobName());
                 SchedulerJob schedulerJob = schedulerJobRecord.getJob();
                 schedulerJob.getChildContextNames().removeAll(Collections.singleton(this.contextTemplate.getName()));
@@ -581,6 +594,11 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             });
 
             updatedContext.getScheduledJobs().forEach(job -> {
+                if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) ||
+                    job.getAgentName().equals(JobConstants.CONTEXT_START_JOB) ||
+                    job.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                    return;
+                }
                 if(jobsToSave.containsKey(job.getIdentifier())) {
                     jobsToSave.get(job.getIdentifier()).getChildContextNames().add(updatedContext.getName());
                 }
@@ -597,14 +615,16 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
             this.schedulerJobService.save(jobsToSave.values().stream()
                 .collect(Collectors.toList()), authentication.getName());
-            logger.info(this.parentContextTemplate.toString());
+
+            logger.info("Saved jobs! " + stopWatch.getTime());
 
             ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, updatedContext);
+            logger.info("Replace child! " + stopWatch.getTime());
 
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.parentContextTemplate.getName());
             scheduledContextRecord.setContext(this.parentContextTemplate);
             this.scheduledContextService.save(scheduledContextRecord);
-
+            logger.info("Saved context! " + stopWatch.getTime());
 
             try {
                 this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_SAVED, String.format("Job Plan Saved. Parent Job Plan [%s]. Name of Saved Job Plan [%s].\nBefore\n[%s]\nAfter\n[%s]"
@@ -616,6 +636,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             this.contextTemplate = updatedContext;
 
             ContextTemplateSavedEventBroadcaster.broadcast(this.parentContextTemplate);
+
+            logger.info("Broadcast context! " + stopWatch.getTime());
 
             NotificationHelper.showUserNotification(getTranslation("notification.context-template-saved-successfully"
                 , UI.getCurrent().getLocale()));

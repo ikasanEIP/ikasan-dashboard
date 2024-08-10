@@ -21,15 +21,14 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.job.model.SolrGlobalEventJobImpl;
-import org.ikasan.scheduled.job.model.SolrGlobalEventJobRecordImpl;
+import org.ikasan.scheduled.job.model.SolrLocalEventJobImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
-import org.ikasan.spec.scheduled.job.model.GlobalEventJobRecord;
+import org.ikasan.spec.scheduled.job.model.LocalEventJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
@@ -40,9 +39,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
+public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
 
-    Logger logger = LoggerFactory.getLogger(GlobalEventJobDialog.class);
+    Logger logger = LoggerFactory.getLogger(LocalEventJobDialog.class);
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
@@ -57,8 +56,8 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
     private ModuleMetaData agent;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
-    private GlobalEventJob globalEventJob;
-    private Binder<GlobalEventJob> formBinder;
+    private LocalEventJob localEventJob;
+    private Binder<LocalEventJob> formBinder;
     private EditMode editMode = EditMode.NEW;
     private FormLayout formLayout;
     private boolean enabled = true;
@@ -79,12 +78,12 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
      * @param metaDataRestService
      * @param systemEventLogger
      */
-    public GlobalEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
-                                ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                                SchedulerJobService schedulerJobService, boolean showDisplayName) {
+    public LocalEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
+                               SchedulerJobService schedulerJobService, boolean showDisplayName) {
         super.showResize(false);
-        super.title.setText(getTranslation("header.global-job", UI.getCurrent().getLocale()));
+        super.title.setText(getTranslation("header.local-event-job", UI.getCurrent().getLocale()));
 
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -95,10 +94,10 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
         this.schedulerJobService = schedulerJobService;
         this.showDisplayName = showDisplayName;
 
-        this.globalEventJob = new SolrGlobalEventJobImpl();
+        this.localEventJob = new SolrLocalEventJobImpl();
 
 
-        this.formBinder = new Binder<>(GlobalEventJob.class);
+        this.formBinder = new Binder<>(LocalEventJob.class);
 
         this.setHeight("500px");
         this.setWidth("90vw");
@@ -109,13 +108,13 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
 
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-            if(!this.performFormValidation(this.globalEventJob)) {
+            if(!this.performFormValidation(this.localEventJob)) {
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-configuration", UI.getCurrent().getLocale()));
                 return;
             }
 
             try {
-                createOrUpdateScheduledJob(this.globalEventJob, authentication);
+                createOrUpdateScheduledJob(this.localEventJob, authentication);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -124,16 +123,17 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
             }
 
             if (this.editMode == EditMode.NEW) {
-                String action = String.format("New quartz scheduled job created [%s].", this.globalEventJob);
+                String action = String.format("New quartz scheduled job created [%s].", this.localEventJob);
                 this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
             }
             else if (this.editMode == EditMode.EDIT) {
                 String action = String.format("Quartz scheduled job edited. \nBefore [%s]\nAfter [%s].", this.schedulerJobRecord.getJob(),
-                    this.globalEventJob);
+                    this.localEventJob);
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
             }
 
-            this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.globalEventJob));
+            this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.localEventJob));
+
             this.close();
             NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
         });
@@ -168,7 +168,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
         formLayout = new FormLayout();
 
         // Fields to capture schedule job properties.
-        H3 globaljobLabel = new H3(getTranslation("header.global-job", UI.getCurrent().getLocale()));
+        H3 globaljobLabel = new H3(getTranslation("header.local-event-job", UI.getCurrent().getLocale()));
         formLayout.add(globaljobLabel, 2);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
@@ -180,7 +180,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
-            .bind(GlobalEventJob::getJobName, GlobalEventJob::setJobName);
+            .bind(LocalEventJob::getJobName, LocalEventJob::setJobName);
         formLayout.add(jobNameTf, 2);
 
 
@@ -190,7 +190,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
-            .bind(GlobalEventJob::getJobDescription, GlobalEventJob::setJobDescription);
+            .bind(LocalEventJob::getJobDescription, LocalEventJob::setJobDescription);
         if(this.showDisplayName) {
             this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
             this.jobNameAliasTf.setId("jobNameAliasTf");
@@ -200,7 +200,7 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             formBinder.forField(this.jobNameAliasTf)
-                .bind(GlobalEventJob::getDisplayName, GlobalEventJob::setDisplayName);
+                .bind(LocalEventJob::getDisplayName, LocalEventJob::setDisplayName);
             formLayout.add(jobNameAliasTf, jobDescriptionTa);
         }
         else {
@@ -214,14 +214,14 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
     /**
      * Perform validation of the form.
      *
-     * @param globalEventJob
+     * @param localEventJob
      * @return
      */
-    private boolean performFormValidation(GlobalEventJob globalEventJob) {
+    private boolean performFormValidation(LocalEventJob localEventJob) {
 
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
-            formBinder.writeBean(globalEventJob);
+            formBinder.writeBean(localEventJob);
 
             if(!isValid.get()){
                 return false;
@@ -239,26 +239,26 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
     /**
      * Creates or updates a scheduled job.
      *
-     * @param globalEventJob The GlobalEventJob to be created or updated.
+     * @param localEventJob The GlobalEventJob to be created or updated.
      * @param authentication The IkasanAuthentication object used for authorization.
      */
-    public void createOrUpdateScheduledJob(GlobalEventJob globalEventJob, IkasanAuthentication authentication) {
-        globalEventJob.setIdentifier(globalEventJob.getAgentName()+"-"+ globalEventJob.getJobName());
+    public void createOrUpdateScheduledJob(LocalEventJob localEventJob, IkasanAuthentication authentication) {
+        localEventJob.setIdentifier(localEventJob.getAgentName()+"-"+ localEventJob.getJobName());
 
-        GlobalEventJobRecord globalEventJobRecord = new SolrGlobalEventJobRecordImpl();
-        globalEventJobRecord.setAgentName(globalEventJob.getAgentName());
-        globalEventJobRecord.setJobName(globalEventJob.getJobName());
-        globalEventJobRecord.setGlobalEventJob(globalEventJob);
-        globalEventJobRecord.setModifiedBy(authentication.getName());
-
-        if(this.schedulerJobRecord != null) {
-            globalEventJobRecord.setTimestamp(this.schedulerJobRecord.getTimestamp());
-        }
-        else {
-            globalEventJobRecord.setTimestamp(System.currentTimeMillis());
-        }
-
-        this.schedulerJobService.saveGlobalEventJobRecord(globalEventJobRecord);
+//        GlobalEventJobRecord globalEventJobRecord = new SolrGlobalEventJobRecordImpl();
+//        globalEventJobRecord.setAgentName(localEventJob.getAgentName());
+//        globalEventJobRecord.setJobName(localEventJob.getJobName());
+//        globalEventJobRecord.setGlobalEventJob(localEventJob);
+//        globalEventJobRecord.setModifiedBy(authentication.getName());
+//
+//        if(this.schedulerJobRecord != null) {
+//            globalEventJobRecord.setTimestamp(this.schedulerJobRecord.getTimestamp());
+//        }
+//        else {
+//            globalEventJobRecord.setTimestamp(System.currentTimeMillis());
+//        }
+//
+//        this.schedulerJobService.saveGlobalEventJobRecord(globalEventJobRecord);
      }
 
 
@@ -290,13 +290,13 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
     /**
      * Set the underlying pojo for the form along with the edit mode.
      *
-     * @param globalEventJob
+     * @param localEventJob
      * @param editMode
      */
-    public void setJob(GlobalEventJob globalEventJob, EditMode editMode) {
+    public void setJob(LocalEventJob localEventJob, EditMode editMode) {
         this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
-        this.globalEventJob = globalEventJob;
-        this.formBinder.readBean(this.globalEventJob);
+        this.localEventJob = localEventJob;
+        this.formBinder.readBean(this.localEventJob);
         this.editMode = editMode;
 
         // make sure all value are bound before calling set enabled
@@ -304,8 +304,8 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
     }
 
     public void setJob(SchedulerJobRecord schedulerJobRecord, EditMode editMode) {
-        this.schedulerJobRecord = schedulerJobRecord;
-        this.setJob((GlobalEventJob)this.schedulerJobService.findById(schedulerJobRecord.getId()).getJob(), editMode);
+//        this.schedulerJobRecord = schedulerJobRecord;
+//        this.setJob((GlobalEventJob)this.schedulerJobService.findById(schedulerJobRecord.getId()).getJob(), editMode);
     }
 
     public void addSchedulerJobSelectedListener(SchedulerJobSelectedListener listener) {
