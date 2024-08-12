@@ -6,10 +6,7 @@ import org.ikasan.rest.client.dto.ReplayRequestDto;
 import org.ikasan.spec.module.client.ReplayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestClientException;
@@ -43,15 +40,23 @@ public class ReplayRestServiceImpl implements ReplayService
         String url = contextUrl + REPLAY_URL;
         try
         {
-            restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
-            return true;
+            ResponseEntity response = restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
+
+            if(response.getStatusCode().is2xxSuccessful()) {
+                return true;
+            }
+            else {
+                throw new ReplayFailException("Issue replaying event [" + url + "] with module [" + moduleName + "] "
+                    + "and flows [" + flowName + "]" + " with response [{" + response.getStatusCode() + "}]");
+            }
         }
         catch (RestClientException e)
         {
             logger.warn(
                 "Issue replaying event [" + new String(event) + "] [" + url + "] with module [" + moduleName + "] "
                     + "and flows [" + flowName + "]" + " with response [{" + e.getLocalizedMessage() + "}]");
-            return false;
+            throw new ReplayFailException("Issue replaying event [" + url + "] with module [" + moduleName + "] "
+                + "and flows [" + flowName + "]" + " with response [{" + e.getLocalizedMessage() + "}]", e);
         }
     }
 
