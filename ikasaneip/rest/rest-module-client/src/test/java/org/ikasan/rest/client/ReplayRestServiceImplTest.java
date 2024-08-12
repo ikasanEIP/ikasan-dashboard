@@ -45,7 +45,7 @@ public class ReplayRestServiceImplTest
         assertEquals(true, result);
     }
 
-    @Test
+    @Test(expected = ReplayFailException.class)
     public void replay_returns400()
     {
         stubFor(put(urlEqualTo(ReplayRestServiceImpl.REPLAY_URL))
@@ -54,11 +54,10 @@ public class ReplayRestServiceImplTest
                 containing(
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(400)));
-        boolean result = uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes());
-        assertEquals(false, result);
+       uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes());
     }
 
-    @Test
+    @Test(expected = ReplayFailException.class)
     public void resubmit_returns404()
     {
         stubFor(put(urlEqualTo(ReplayRestServiceImpl.REPLAY_URL))
@@ -67,11 +66,10 @@ public class ReplayRestServiceImplTest
                 containing(
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(404)));
-        boolean result = uut.replay(contexBaseUrl,  null, null,"test Module Name", "flow Test", "resubmit".getBytes());
-        assertEquals(false, result);
+        uut.replay(contexBaseUrl,  null, null,"test Module Name", "flow Test", "resubmit".getBytes());
     }
 
-    @Test
+    @Test(expected = ReplayFailException.class)
     public void resubmit_returns500()
     {
 
@@ -83,13 +81,10 @@ public class ReplayRestServiceImplTest
                                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                                     .withStatus(500)
                                ));
-        boolean result = uut.replay(contexBaseUrl, null, null,"test Module Name","flow Test","resubmit".getBytes());
-        assertEquals(false, result);
-
-
+        uut.replay(contexBaseUrl, null, null,"test Module Name","flow Test","resubmit".getBytes());
     }
 
-    @Test
+    @Test(expected = ReplayFailException.class)
     public void testTimeout() {
         HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory
             = new HttpComponentsClientHttpRequestFactory(
@@ -111,6 +106,6 @@ public class ReplayRestServiceImplTest
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\"}"))
             .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(200).withFixedDelay(2000)));
 
-        Assert.assertFalse(uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes()));
+        uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes());
     }
 }
