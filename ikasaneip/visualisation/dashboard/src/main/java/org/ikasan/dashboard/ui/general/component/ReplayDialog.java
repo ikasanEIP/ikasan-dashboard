@@ -19,6 +19,7 @@ import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
+import org.ikasan.rest.client.ReplayFailException;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.persistence.BatchInsert;
@@ -144,8 +145,16 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                             List<ReplayAuditEvent> replayAuditEvents = new ArrayList<>();
                             ReplayAuditEvent replayAuditEvent;
 
-                            boolean result = this.replayRestService.replay(replayDialogDto.getTargetServer(), replayDialogDto.getAuthenticationUser(),
-                                replayDialogDto.getPassword(), this.replayEvent.getModuleName(), this.replayEvent.getFlowName(), this.replayEvent.getPayloadRaw());
+                            boolean result = false;
+                            String errorMessage = "";
+
+                            try {
+                                result = this.replayRestService.replay(replayDialogDto.getTargetServer(), replayDialogDto.getAuthenticationUser(),
+                                    replayDialogDto.getPassword(), this.replayEvent.getModuleName(), this.replayEvent.getFlowName(), this.replayEvent.getPayloadRaw());
+                            }
+                            catch (ReplayFailException e) {
+                                errorMessage = e.getMessage();
+                            }
 
                             replayAuditEvent = new ReplayAuditEventImpl();
                             replayAuditEvent.setId(this.replayEvent.getId());
@@ -159,18 +168,24 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                             else
                             {
                                 replayAuditEvent.setResultMessage(String.format(i18NProvider.getTranslation("message.replay-audit-failure"
-                                    , current.getLocale()), replayEvent.getId()));
+                                    , current.getLocale()) + " " + errorMessage, replayEvent.getId()));
                             }
                             replayAuditEvent.setSuccess(result);
                             replayAuditEvent.setTimestamp(System.currentTimeMillis());
 
                             replayAuditEvents.add(replayAuditEvent);
 
+                            String finalErrorMessage = errorMessage;
                             current.access(() ->
                             {
                                 progressIndicatorDialog.close();
-                                NotificationHelper.showUserNotification(i18NProvider.getTranslation("message.replay-complete"
-                                    , current.getLocale()));
+                                if(!finalErrorMessage.isEmpty()) {
+                                    NotificationHelper.showUserNotification(finalErrorMessage);
+                                }
+                                else {
+                                    NotificationHelper.showUserNotification(i18NProvider.getTranslation("message.replay-complete"
+                                        , current.getLocale()) + " " + finalErrorMessage);
+                                }
                             });
 
                             this.replayAuditService.insert(replayAuditEvents);
@@ -184,8 +199,6 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                                 NotificationHelper.showUserNotification(i18NProvider.getTranslation("message.replay-error"
                                     , current.getLocale()));
                             });
-
-                            return;
                         }
                     });
                 }
