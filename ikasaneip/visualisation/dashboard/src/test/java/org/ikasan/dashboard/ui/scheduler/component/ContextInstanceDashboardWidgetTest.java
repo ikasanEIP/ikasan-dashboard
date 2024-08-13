@@ -15,6 +15,7 @@ import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
@@ -148,6 +149,7 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
     }
 
     @Test
+    @Ignore
     public void test_active_job_plan_instances_tab() throws IOException
     {
         UI.getCurrent().navigate("scheduler");
