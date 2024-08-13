@@ -248,6 +248,29 @@ public class ContextHelper {
     }
 
     /**
+     * Retrieves a ContextTerminalJob from a given ContextTemplate.
+     *
+     * @param context the ContextTemplate from which to retrieve the ContextTerminalJob
+     * @return an Optional containing the ContextTerminalJob if found, otherwise an empty Optional
+     */
+    public static Optional<ContextTerminalJob> getContextTerminalJobFromContext(ContextTemplate context) {
+        return context.getScheduledJobs().stream()
+            .distinct()
+            .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) && schedulerJob.getJobName().contains(context.getName()))
+            .map(schedulerJob -> {
+                ContextTerminalJob contextStartJob = new ContextTerminalJobImpl();
+                contextStartJob.setContextName(schedulerJob.getContextName());
+                contextStartJob.setJobName(schedulerJob.getJobName());
+                contextStartJob.setAgentName(schedulerJob.getAgentName());
+                contextStartJob.setChildContextNames(context.getAllContextNamesWhereJobResides(schedulerJob.getIdentifier()));
+                contextStartJob.setOrdinal(Integer.MIN_VALUE);
+
+                return contextStartJob;
+            })
+            .findFirst();
+    }
+
+    /**
      * Retrieves a list of ContextStartJob objects from the given ContextTemplate object.
      *
      * @param context The ContextTemplate object to retrieve the ContextStartJobs from.

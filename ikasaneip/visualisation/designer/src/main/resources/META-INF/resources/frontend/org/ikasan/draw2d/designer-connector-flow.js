@@ -201,6 +201,14 @@ window.Vaadin.Flow.designerConnector = {
             _this.getCommandStack().execute(command);
         }
 
+        designer.$connector.addConnection = function (connectionAttributes) {
+            let attributes = JSON.parse(connectionAttributes);
+            let connection = new draw2d.Connection(attributes);
+            console.log(connection);
+
+            _this.designer.add(connection);
+        }
+
         designer.$connector.addIconNoCoordinates = function (identifier, image, h, w, isClickable) {
             debugger;
             let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
@@ -415,7 +423,7 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.clear = function () {
-            designer.$connector.designer.clear();
+            designer.$connector.designer.reset();
         }
 
         designer.$connector.addTriangle = function (h, w) {
