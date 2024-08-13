@@ -231,14 +231,14 @@ View = draw2d.Canvas.extend({
         this._super(newZoom);
     },
 
-    /**
-     * Reset the view without any decorations. This is good before loading a document
-     *
-     */
-    clear: function()
-    {
-        this._super();
-    },
+    // /**
+    //  * Reset the view without any decorations. This is good before loading a document
+    //  *
+    //  */
+    // clear: function()
+    // {
+    //     super.clear();
+    // },
 
     getExtFigure: function(id){
         var figure = null;

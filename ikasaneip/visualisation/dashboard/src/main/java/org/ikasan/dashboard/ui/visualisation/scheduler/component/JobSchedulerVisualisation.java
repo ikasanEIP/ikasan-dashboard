@@ -3,10 +3,13 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 import com.vaadin.flow.component.UI;
 import org.ikasan.dashboard.ui.scheduler.component.SelectContextDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dAdapterBase;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemSingleClickEvent;
+import org.ikasan.designer.event.FigureDeleteEvent;
 import org.ikasan.designer.model.UserData;
+import org.ikasan.job.orchestration.builder.context.ContextTemplateBuilder;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
@@ -17,6 +20,8 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -56,23 +61,7 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
 
             if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
                 if(this.scheduledContextViewRecord == null) {
-                    SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
-
-                    Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
-                        .map(record -> record.getJob())
-                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2));
-
-                    schedulerJobs.putAll(ContextHelper.getContextTerminalJobsFromContext(parentContextTemplate).stream()
-                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
-
-                    schedulerJobs.putAll(ContextHelper.getContextStartJobsFromContext(parentContextTemplate).stream()
-                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
-
-                    schedulerJobs.putAll(ContextHelper.getLocalEventJobsFromContext(parentContextTemplate).stream()
-                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
-
-                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
-                        schedulerJobs.values().stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))));
+                    this.setCanvasJson();
                 }
                 else {
                     this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
@@ -155,10 +144,41 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
         super.singleClickEvent(canvasItemDoubleClickEvent);
     }
 
-    public void addContext(Context context) {
-        this.designerCanvas.addImageFigure(adapter.adaptJobPlanContext(context));
-        this.designerCanvas.addLabelToFigure(context.getName(), context.getName());
-        this.saveRequired = true;
+    @Override
+    public void figureDeleted(FigureDeleteEvent figureDeleteEvent) {
+        if(figureDeleteEvent.getFigure().getUserData().getItemType().equals(UserData.CONTEXT)) {
+            // we are removing a link here
+            ContextTemplate contextLinkToDelete = (ContextTemplate) ContextHelper.getChildContext
+                (figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
+
+            Optional<ContextTerminalJob> contextTerminalJob = ContextHelper.getContextTerminalJobFromContext(this.contextTemplate);
+
+            if(contextTerminalJob.isPresent()) {
+                contextLinkToDelete.getScheduledJobs().remove(contextTerminalJob.get());
+                Optional<JobDependency> jobDependencyToRemove = contextLinkToDelete.getJobDependencies().stream()
+                    .filter(jobDependency -> jobDependency.getLogicalGrouping() != null
+                        && jobDependency.getLogicalGrouping().getAnd() != null
+                        && jobDependency.getLogicalGrouping().getAnd().stream().findFirst().get().getIdentifier().equals(contextTerminalJob.get().getIdentifier())).findFirst();
+
+                if(jobDependencyToRemove.isPresent()) {
+                    contextLinkToDelete.getJobDependencies().remove(jobDependencyToRemove.get());
+                }
+            }
+        }
+    }
+
+    public void linkToContext(ContextTerminalJob contextTerminalJob, ContextStartJob contextStartJob, ContextTemplate context) throws IOException {
+        ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
+        context.getScheduledJobs().add(contextTerminalJob);
+        if(context.getJobDependencies() == null)context.setJobDependencies(new ArrayList<>());
+        context.getJobDependencies().add(contextTemplateBuilder.getJobDependencyBuilder().withJobName(contextStartJob.getJobName())
+            .withAgentName(contextStartJob.getAgentName())
+            .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                .addAnd(contextTemplateBuilder.getJobAndBuilder().withJobName(contextTerminalJob.getJobName())
+                    .withAgentName(contextTerminalJob.getAgentName()).build()).build()).build());
+        ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, context);
+        this.setCanvasJson();
+        this.designerCanvas.importJson();
     }
 
     @Override
@@ -172,10 +192,30 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
 
             if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
                 SelectContextDialog selectContextDialog = new SelectContextDialog
-                    (super.systemEventLogger, super.parentContextTemplate, this);
+                    (super.systemEventLogger, super.parentContextTemplate, this.contextTemplate, this);
                 selectContextDialog.open();
             }
         }
         super.rightClickEvent(canvasItemRightClickEvent);
+    }
+
+    private void setCanvasJson() throws IOException {
+        SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
+
+        Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
+            .map(record -> record.getJob())
+            .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2));
+
+        schedulerJobs.putAll(ContextHelper.getContextTerminalJobsFromContext(parentContextTemplate).stream()
+            .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
+
+        schedulerJobs.putAll(ContextHelper.getContextStartJobsFromContext(parentContextTemplate).stream()
+            .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
+
+        schedulerJobs.putAll(ContextHelper.getLocalEventJobsFromContext(parentContextTemplate).stream()
+            .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
+
+        this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
+            schedulerJobs.values().stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))));
     }
 }

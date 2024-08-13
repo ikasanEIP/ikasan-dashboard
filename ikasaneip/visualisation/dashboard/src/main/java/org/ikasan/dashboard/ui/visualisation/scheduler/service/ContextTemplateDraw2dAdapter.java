@@ -1,9 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.ikasan.designer.builder.ImageBuilder;
-import org.ikasan.designer.builder.RectangleBuilder;
-import org.ikasan.designer.builder.UserDataBuilder;
+import org.ikasan.designer.builder.*;
 import org.ikasan.designer.model.Image;
 import org.ikasan.designer.model.PositionedItem;
 import org.ikasan.designer.model.UserData;
@@ -196,7 +194,40 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
         }
         catch (JsonProcessingException e) {
             throw new Draw2dAdapterException(String.format("An exception has occurred attempting to translate " +
-                "scheduler jon[%s] to the draw 2d data format", schedulerJob.getJobName()), e);
+                "scheduler job[%s] to the draw 2d data format", schedulerJob.getJobName()), e);
+        }
+    }
+
+    /**
+     * Helper method to add a connection between 2 items.
+     * @param sourceIdentifier
+     * @param sourcePort
+     * @param targetIdentifier
+     * @param targetPort
+     */
+    public String adaptConnection(String sourceIdentifier, String sourcePort, String targetIdentifier, String targetPort) {
+        try {
+            ConnectionBuilder connectionBuilder = new DiagramBuilder().getConnectionBuilder();
+            connectionBuilder.withSource(
+                diagramBuilder.getConnectionDetailsBuilder()
+                    .withNode(sourceIdentifier)
+                    .withPort(sourcePort)
+                    .build()
+            );
+            connectionBuilder.withTarget(
+                diagramBuilder.getConnectionDetailsBuilder()
+                    .withNode(targetIdentifier)
+                    .withPort(targetPort)
+                    .withDecoration("draw2d.decoration.connection.ArrowDecorator")
+                    .build()
+            );
+
+            return mapper.writerWithDefaultPrettyPrinter()
+                .writeValueAsString(connectionBuilder.build());
+        }
+        catch (JsonProcessingException e) {
+            throw new Draw2dAdapterException(String.format("An exception has occurred attempting to translate " +
+                "Connection to the draw 2d data format"), e);
         }
     }
 }

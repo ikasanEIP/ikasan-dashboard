@@ -359,6 +359,18 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
+
+    /**
+     * Adds a connection to the UI.
+     *
+     * @param connection the connection string to be added
+     */
+    public void addConnection(String connection) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addConnection", connection));
+        this.saved = false;
+    }
+
     /**
      * Add an image to a figure.
      *
@@ -879,6 +891,10 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
             this.saved = true;
         });
+    }
+
+    public void importJson() {
+        this.importJson(this.toBack);
     }
 
     public void importJson(boolean toBack){
