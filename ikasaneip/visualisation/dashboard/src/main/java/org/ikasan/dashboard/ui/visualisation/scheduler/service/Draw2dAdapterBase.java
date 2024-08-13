@@ -40,8 +40,13 @@ public abstract class Draw2dAdapterBase {
     protected double jobVisualisationVerticalSpacing = 120;
     protected double jobVisualisationHorizontalSpacing = 500;
 
-   protected double contextVisualisationLevelDistance = 200;
-   protected double contextVisualisationNodeDistance = 75;
+    protected double contextVisualisationLevelDistance = 200;
+    protected double contextVisualisationNodeDistance = 75;
+
+    public static final String CONNECTOR_BOTTOM_HYBRID_SOURCE = "bottomHybridSource";
+    public static final String CONNECTOR_TOP_HYBRID_TARGET = "topHybridTarget";
+    public static final String CONNECTOR_RIGHT_HYBRID_SOURCE = "rightHybridSource";
+    public static final String CONNECTOR_LEFT_HYBRID_TARGET = "leftHybridTarget";
 
     /**
      * Constructs a new Draw2dAdapterBase object.
@@ -397,7 +402,6 @@ public abstract class Draw2dAdapterBase {
 
             // Now draw the logic groupings abd context boundaries onto the diagram.
             this.addLogicGroupings(visualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder);
-            this.addContextBoundaries(items, imageOverlay, cellMap, diagramBuilder);
 
             items.addAll(imageOverlay);
             items.addAll(labels);
@@ -492,8 +496,8 @@ public abstract class Draw2dAdapterBase {
 
                 diagramBuilder.addItem(branch);
 
-                this.addConnection(root.getId(), "bottomHybridSource", branch.getId()
-                    , "topHybridTarget", diagramBuilder);
+                this.addConnection(root.getId(), CONNECTOR_BOTTOM_HYBRID_SOURCE, branch.getId()
+                    , CONNECTOR_TOP_HYBRID_TARGET, diagramBuilder);
 
                 this.manageContext((Context) c, graph, diagramBuilder, contextMap);
             });
@@ -604,8 +608,8 @@ public abstract class Draw2dAdapterBase {
 
                 diagramBuilder.addItem(branch);
 
-                this.addConnection(context.getName(), "bottomHybridSource", branch.getId()
-                    , "topHybridTarget", diagramBuilder);
+                this.addConnection(context.getName(), CONNECTOR_BOTTOM_HYBRID_SOURCE, branch.getId()
+                    , CONNECTOR_TOP_HYBRID_TARGET, diagramBuilder);
 
                 this.manageContext((Context)c, graph, diagramBuilder, contextInstanceMap);
             });
@@ -667,8 +671,8 @@ public abstract class Draw2dAdapterBase {
                     .getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))) {
                     graph.addEdge(and.getIdentifier(), jobIdentifier);
 
-                    this.addConnection(and.getIdentifier(), "rightHybridSource"
-                        , jobIdentifier, "leftHybridTarget", diagramBuilder);
+                    this.addConnection(and.getIdentifier(), CONNECTOR_RIGHT_HYBRID_SOURCE
+                        , jobIdentifier, CONNECTOR_LEFT_HYBRID_TARGET, diagramBuilder);
                 }
             });
         }
@@ -681,8 +685,8 @@ public abstract class Draw2dAdapterBase {
                 else {
                     graph.addEdge(or.getIdentifier(), jobIdentifier);
 
-                    this.addConnection(or.getIdentifier(), "rightHybridSource"
-                        , jobIdentifier, "leftHybridTarget", diagramBuilder);
+                    this.addConnection(or.getIdentifier(), CONNECTOR_RIGHT_HYBRID_SOURCE
+                        , jobIdentifier, CONNECTOR_LEFT_HYBRID_TARGET, diagramBuilder);
                 }
             });
         }
@@ -753,8 +757,8 @@ public abstract class Draw2dAdapterBase {
             this.addExternalContext(branch.getData(), diagramBuilder, userDataBuilder.build());
 
             // Now connect the parent to the branch.
-            this.addConnection(branch.getParent().getData(), "rightHybridSource",
-                branch.getData(), "leftHybridTarget", diagramBuilder);
+            this.addConnection(branch.getParent().getData(), CONNECTOR_RIGHT_HYBRID_SOURCE,
+                branch.getData(), CONNECTOR_TOP_HYBRID_TARGET, diagramBuilder);
 
             graph.addEdge(branch.getParent().getData(), branch.getData());
 
@@ -815,8 +819,8 @@ public abstract class Draw2dAdapterBase {
                         }
                     }
 
-                    this.addConnection(contextTransition.getPrecedingJob().getIdentifier(), "rightHybridSource"
-                        , context, "leftHybridTarget", diagramBuilder);
+                    this.addConnection(contextTransition.getPrecedingJob().getIdentifier(), CONNECTOR_RIGHT_HYBRID_SOURCE
+                        , context, CONNECTOR_LEFT_HYBRID_TARGET, diagramBuilder);
 
                     graph.addEdge(contextTransition.getPrecedingJob().getIdentifier(), context);
                 });
@@ -878,13 +882,13 @@ public abstract class Draw2dAdapterBase {
 
                     if (!contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_START_JOB)
                         && !contextTransition.getPrecedingJob().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
-                        this.addConnection(context, "rightHybridSource"
-                            , contextTransition.getPrecedingJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
+                        this.addConnection(context, CONNECTOR_RIGHT_HYBRID_SOURCE
+                            , contextTransition.getPrecedingJob().getIdentifier(), CONNECTOR_LEFT_HYBRID_TARGET, diagramBuilder);
 
                         graph.addEdge(context, contextTransition.getPrecedingJob().getIdentifier());
                     } else {
-                        this.addConnection(context, "rightHybridSource"
-                            , contextTransition.getSubsequentJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
+                        this.addConnection(context, CONNECTOR_RIGHT_HYBRID_SOURCE
+                            , contextTransition.getSubsequentJob().getIdentifier(), CONNECTOR_LEFT_HYBRID_TARGET, diagramBuilder);
 
                         if (graph.containsVertex(contextTransition.getSubsequentJob().getIdentifier())) {
                             graph.addEdge(context, contextTransition.getSubsequentJob().getIdentifier());
@@ -1145,60 +1149,6 @@ public abstract class Draw2dAdapterBase {
         });
     }
 
-    /**
-     * Helper method to draw all transition context boundaries for a given diagram.
-     *
-     * @param items
-     * @param imageOverlay
-     * @param cellMap
-     * @param diagramBuilder
-     */
-    protected void addContextBoundaries(ArrayList<Object> items, ArrayList<Object> imageOverlay
-        , Map<String, mxCell> cellMap, DiagramBuilder diagramBuilder) {
-        items.forEach(item -> {
-            if(item instanceof Image) {
-                Image image = (Image) item;
-
-                if (image.getUserData() != null
-                    && image.getUserData().getItemType() != null
-                    && image.getUserData().getItemType().equals(UserData.CONTEXT)) {
-                    mxCell cell = cellMap.get(image.getUserData().getIdentifier());
-
-                    this.drawContextBoundary(cell, imageOverlay, image.getUserData(), diagramBuilder, image.getComposite());
-                }
-            }
-        });
-    }
-
-    /**
-     * Draw a boundary around a transition context icon.
-     *
-     * @param cell
-     * @param imageOverlay
-     * @param userData
-     */
-    protected void drawContextBoundary(mxCell cell, ArrayList<Object> imageOverlay, UserData userData
-        , DiagramBuilder diagramBuilder, String groupId) {
-//        RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
-//            .withWidth(110)
-//            .withHeight(110)
-//            .withStroke(3)
-//            .withRadius(10)
-//            .withX(cell.getGeometry().getX() + 595)
-//            .withY(cell.getGeometry().getY() + 595)
-//            .withSelectable(false)
-//            .withDraggable(false)
-//            .withResizable(false)
-//            .withDasharray("--")
-//            .withBgColor(IkasanColours.TRANSPARENT)
-//            .withColor(IkasanColours.BLACK);
-//
-//        Rectangle rectangle = rb.build();
-//        rectangle.setUserData(userData);
-//        rectangle.setComposite(groupId);
-//
-//        imageOverlay.add(rectangle);
-    }
 
     /**
      * Method to calculate the x and y coordinate extents of all job within a VisualisationLogicalGrouping.
