@@ -5,6 +5,7 @@ import org.atmosphere.cpr.ApplicationConfig;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.dashboard.cache.FlowStateCache;
+import org.ikasan.dashboard.ui.scheduler.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.util.DashboardCacheAdapter;
@@ -22,6 +23,7 @@ import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcas
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
@@ -153,6 +155,12 @@ public class DashboardComponentFactory
         }
     }
 
+    @Bean
+    public AggregateStatusCollector aggregateStatusCollector(SchedulerJobInstanceService schedulerJobInstanceService) {
+        AggregateStatusCollector.init(schedulerJobInstanceService);
+
+        return AggregateStatusCollector.instance();
+    }
     @Bean
     public GlobalEventService globalEventService() {
         return new GlobalEventServiceImpl();

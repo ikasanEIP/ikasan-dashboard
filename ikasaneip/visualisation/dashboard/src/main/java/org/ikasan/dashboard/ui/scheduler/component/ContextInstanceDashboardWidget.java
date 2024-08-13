@@ -23,6 +23,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.ui.scheduler.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
@@ -1650,15 +1651,7 @@ public class ContextInstanceDashboardWidget extends Div
      * @return the filtered list of ContextInstanceAggregateJobStatus
      */
     private List<ContextInstanceAggregateJobStatus> filterContextInstanceAggregateJobStatus(StatusFilter statusFilter, int offset, int limit) {
-        List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
-
-        contextInstanceIdentifiers = contextInstanceIdentifiers.stream()
-            .filter(id -> ContextMachineCache.instance().getByContextInstanceId(id) != null
-                && !ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(InstanceStatus.PREPARED))
-            .collect(Collectors.toList());
-
-        List<ContextInstanceAggregateJobStatus> jobStatuses = this.schedulerJobInstanceService
-            .getJobStatusCountForContextInstances(contextInstanceIdentifiers);
+        List<ContextInstanceAggregateJobStatus> jobStatuses = AggregateStatusCollector.instance().getContextInstanceAggregateJobStatuses();
 
         boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
         Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
@@ -2034,14 +2027,6 @@ public class ContextInstanceDashboardWidget extends Div
                     this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
                     this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
                 }
-
-                if(event.getContextInstance().getStatus().equals(InstanceStatus.ENDED)) {
-                    this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
-                    this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
-                }
-                else {
-                    this.updateAggregateContextInstanceAggregateStatus(event.getContextInstanceId());
-                }
             });
         }
     }
@@ -2060,14 +2045,6 @@ public class ContextInstanceDashboardWidget extends Div
                     event.getStatus().equals(InstanceStatus.ENDED)) {
                     this.preparedFutureContextInstanceGrid.getDataCommunicator().reset();
                     this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
-                }
-
-                if(event.getStatus().equals(InstanceStatus.ENDED)) {
-                    this.contextInstanceAggregateJobStatusGrid.getDataCommunicator().reset();
-                    this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
-                }
-                else {
-                    this.updateAggregateContextInstanceAggregateStatus(event.getId());
                 }
             });
         }
