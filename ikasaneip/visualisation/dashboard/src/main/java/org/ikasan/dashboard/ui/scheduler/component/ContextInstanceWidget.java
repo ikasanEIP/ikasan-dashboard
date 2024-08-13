@@ -29,6 +29,7 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
@@ -73,7 +74,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
+import java.util.Optional;
 
+import static org.ikasan.dashboard.ui.scheduler.AggregateStatusCollector.instance;
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
 public class ContextInstanceWidget extends VerticalLayout
@@ -688,18 +691,30 @@ public class ContextInstanceWidget extends VerticalLayout
     }
 
     private void refreshJobStatusWidget() {
-        if(this.ui.isAttached()) {
-            ui.access(() -> {
-                List<ContextInstanceAggregateJobStatus> jobStatuses = this.schedulerJobInstanceService
-                    .getJobStatusCountForContextInstances(List.of(this.contextInstance.getId()));
+        Optional<ContextInstanceAggregateJobStatus> status = AggregateStatusCollector.instance().getContextInstanceAggregateJobStatuses().stream()
+            .filter(contextInstanceAggregateJobStatus -> contextInstanceAggregateJobStatus.getContextInstanceId().equals(this.contextInstance.getId()))
+            .findFirst();
 
-                waitingStatus.setStatus(InstanceStatus.WAITING, jobStatuses.get(0).getStatusCount(InstanceStatus.WAITING) + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale()));
-                completeStatus.setStatus(InstanceStatus.COMPLETE, jobStatuses.get(0).getStatusCount(InstanceStatus.COMPLETE) + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()));
-                runningStatus.setStatus(InstanceStatus.RUNNING, jobStatuses.get(0).getStatusCount(InstanceStatus.RUNNING) + " " + getTranslation(InstanceStatus.RUNNING.getTranslationLabel(), UI.getCurrent().getLocale()));
-                queuedStatus.setStatus(InstanceStatus.LOCK_QUEUED, jobStatuses.get(0).getStatusCount(InstanceStatus.LOCK_QUEUED) + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale()));
-                onHoldStatus.setStatus(InstanceStatus.ON_HOLD, jobStatuses.get(0).getStatusCount(InstanceStatus.ON_HOLD) + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()));
-                skippedStatus.setStatus(InstanceStatus.SKIPPED, jobStatuses.get(0).getStatusCount(InstanceStatus.SKIPPED) + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()));
-                errorStatus.setStatus(InstanceStatus.ERROR, jobStatuses.get(0).getStatusCount(InstanceStatus.ERROR) + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()));
+        if(this.ui.isAttached() && status.isPresent()) {
+            ui.access(() -> {
+                waitingStatus.setStatus(InstanceStatus.WAITING, status.get().getStatusCount(InstanceStatus.WAITING) + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale()));
+                completeStatus.setStatus(InstanceStatus.COMPLETE, status.get().getStatusCount(InstanceStatus.COMPLETE) + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()));
+                runningStatus.setStatus(InstanceStatus.RUNNING, status.get().getStatusCount(InstanceStatus.RUNNING) + " " + getTranslation(InstanceStatus.RUNNING.getTranslationLabel(), UI.getCurrent().getLocale()));
+                queuedStatus.setStatus(InstanceStatus.LOCK_QUEUED, status.get().getStatusCount(InstanceStatus.LOCK_QUEUED) + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale()));
+                onHoldStatus.setStatus(InstanceStatus.ON_HOLD, status.get().getStatusCount(InstanceStatus.ON_HOLD) + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()));
+                skippedStatus.setStatus(InstanceStatus.SKIPPED, status.get().getStatusCount(InstanceStatus.SKIPPED) + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()));
+                errorStatus.setStatus(InstanceStatus.ERROR, status.get().getStatusCount(InstanceStatus.ERROR) + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()));
+            });
+        }
+        else if(this.ui.isAttached() && !status.isPresent()) {
+            ui.access(() -> {
+                waitingStatus.setStatus(InstanceStatus.WAITING, 0 + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale()));
+                completeStatus.setStatus(InstanceStatus.COMPLETE, 0 + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()));
+                runningStatus.setStatus(InstanceStatus.RUNNING, 0 + " " + getTranslation(InstanceStatus.RUNNING.getTranslationLabel(), UI.getCurrent().getLocale()));
+                queuedStatus.setStatus(InstanceStatus.LOCK_QUEUED, 0 + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale()));
+                onHoldStatus.setStatus(InstanceStatus.ON_HOLD, 0 + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()));
+                skippedStatus.setStatus(InstanceStatus.SKIPPED, 0 + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()));
+                errorStatus.setStatus(InstanceStatus.ERROR, 0 + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()));
             });
         }
     }
