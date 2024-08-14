@@ -30,7 +30,7 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventBro
      *
      * @param schedulerJobInstanceService the service used to retrieve job status count for context instances
      */
-    public AggregateStatusCollector(SchedulerJobInstanceService schedulerJobInstanceService) {
+    private AggregateStatusCollector(SchedulerJobInstanceService schedulerJobInstanceService) {
         this.schedulerJobInstanceService = schedulerJobInstanceService;
     }
 
