@@ -1,138 +1,8 @@
 [
   {
     "type": "draw2d.shape.composite.Group",
-    "id": "e2cc39af-39fd-4d08-835c-0f812389cae6",
-    "x": 1502.75,
-    "y": 600,
-    "width": 255.8642578125,
-    "height": 135.4488935470581,
-    "alpha": 1,
-    "selectable": true,
-    "draggable": true,
-    "angle": 0,
-    "userData": {
-      "jobName": "ACC_BO_LIQ_MAINTENANCE_MHSS",
-      "identifier": "scheduler-agent-ACC_BO_LIQ_MAINTENANCE_MHSS",
-      "subsequentJobIdentifiers": [],
-      "itemType": "INTERNAL_EVENT_DRIVEN_JOB",
-      "agentName": "scheduler-agent",
-      "previousJobIdentifiers": []
-    },
-    "cssClass": "draw2d_shape_composite_Group",
-    "ports": [],
-    "bgColor": "rgba(0,0,0,0)",
-    "color": "rgba(0,0,0,0)",
-    "stroke": 1,
-    "radius": 0,
-    "dasharray": null
-  },
-  {
-    "type": "draw2d.shape.basic.Label",
-    "id": "f537e1ea-9855-47f5-9c96-9403b1b98f7f",
-    "x": 1502.75,
-    "y": 710,
-    "width": 185.6188201904297,
-    "height": 21.33333396911621,
-    "alpha": 1,
-    "selectable": true,
-    "draggable": true,
-    "angle": 0,
-    "userData": {
-      "jobName": "ACC_BO_LIQ_MAINTENANCE_MHSS",
-      "identifier": "scheduler-agent-ACC_BO_LIQ_MAINTENANCE_MHSS",
-      "subsequentJobIdentifiers": [],
-      "itemType": "INTERNAL_EVENT_DRIVEN_JOB",
-      "agentName": "scheduler-agent",
-      "previousJobIdentifiers": []
-    },
-    "cssClass": "draw2d_shape_basic_Label",
-    "composite": "e2cc39af-39fd-4d08-835c-0f812389cae6",
-    "ports": [],
-    "bgColor": "rgba(255,255,255,0)",
-    "color": "rgba(255,255,255,0)",
-    "stroke": 1,
-    "radius": 0,
-    "dasharray": null,
-    "text": "ACC_BO_LIQ_MAINTENANCE_MHSS",
-    "outlineStroke": 0,
-    "outlineColor": "rgba(255,255,255,0)",
-    "fontSize": "14pt",
-    "fontColor": "rgba(0,0,0,1)",
-    "fontFamily": "Arial, Helvetica, sans-serif"
-  },
-  {
-    "type": "draw2d.shape.basic.Image",
-    "id": "scheduler-agent-ACC_BO_LIQ_MAINTENANCE_MHSS",
-    "x": 1554,
-    "y": 600,
-    "width": 100,
-    "height": 100,
-    "alpha": 1,
-    "selectable": true,
-    "draggable": true,
-    "angle": 0,
-    "userData": {
-      "jobName": "ACC_BO_LIQ_MAINTENANCE_MHSS",
-      "identifier": "scheduler-agent-ACC_BO_LIQ_MAINTENANCE_MHSS",
-      "subsequentJobIdentifiers": [],
-      "itemType": "INTERNAL_EVENT_DRIVEN_JOB",
-      "agentName": "scheduler-agent",
-      "previousJobIdentifiers": []
-    },
-    "cssClass": "draw2d_shape_basic_Image",
-    "composite": "e2cc39af-39fd-4d08-835c-0f812389cae6",
-    "ports": [
-      {
-        "type": "draw2d.HybridPort",
-        "id": "3aa249fb-bea5-4ded-8bd0-3bec65f49799",
-        "width": 5,
-        "height": 5,
-        "alpha": 1,
-        "selectable": true,
-        "draggable": true,
-        "angle": 0,
-        "userData": {},
-        "cssClass": "draw2d_HybridPort",
-        "bgColor": "rgba(79,104,112,1)",
-        "color": "rgba(27,27,27,1)",
-        "stroke": 1,
-        "dasharray": null,
-        "maxFanOut": 9007199254740991,
-        "name": "leftHybridTarget",
-        "semanticGroup": "global",
-        "port": "draw2d.HybridPort",
-        "locator": "draw2d.layout.locator.LeftLocator",
-        "locatorAttr": {}
-      },
-      {
-        "type": "draw2d.HybridPort",
-        "id": "0716c09c-a96a-4ea3-aaa3-3a116601ddbf",
-        "width": 5,
-        "height": 5,
-        "alpha": 1,
-        "selectable": true,
-        "draggable": true,
-        "angle": 0,
-        "userData": {},
-        "cssClass": "draw2d_HybridPort",
-        "bgColor": "rgba(79,104,112,1)",
-        "color": "rgba(27,27,27,1)",
-        "stroke": 1,
-        "dasharray": null,
-        "maxFanOut": 9007199254740991,
-        "name": "rightHybridSource",
-        "semanticGroup": "global",
-        "port": "draw2d.HybridPort",
-        "locator": "draw2d.layout.locator.RightLocator",
-        "locatorAttr": {}
-      }
-    ],
-    "path": "frontend/images/command_black.png"
-  },
-  {
-    "type": "draw2d.shape.composite.Group",
-    "id": "7fd6b232-4bfd-4608-a879-42136c443a7b",
-    "x": 1102,
+    "id": "6e8b262c-80a6-4b49-a592-a3405b19a157",
+    "x": 1201,
     "y": 625,
     "width": 50,
     "height": 50,
@@ -151,8 +21,8 @@
   },
   {
     "type": "draw2d.shape.basic.Image",
-    "id": "CONTEXT_START_JOB-MHSS_ACCOUNTING_STEP_2_START",
-    "x": 1102,
+    "id": "CONTEXT_START_JOB-child-8_START",
+    "x": 1201,
     "y": 625,
     "width": 50,
     "height": 50,
@@ -161,19 +31,19 @@
     "draggable": true,
     "angle": 0,
     "userData": {
-      "jobName": "MHSS_ACCOUNTING_STEP_2_START",
-      "identifier": "CONTEXT_START_JOB-MHSS_ACCOUNTING_STEP_2_START",
+      "jobName": "child-8_START",
+      "identifier": "CONTEXT_START_JOB-child-8_START",
       "subsequentJobIdentifiers": [],
       "itemType": "CONTEXT_START_JOB",
       "agentName": "CONTEXT_START_JOB",
       "previousJobIdentifiers": []
     },
     "cssClass": "draw2d_shape_basic_Image",
-    "composite": "7fd6b232-4bfd-4608-a879-42136c443a7b",
+    "composite": "6e8b262c-80a6-4b49-a592-a3405b19a157",
     "ports": [
       {
         "type": "draw2d.HybridPort",
-        "id": "34a0b13f-1a8e-452a-a490-2feec677913a",
+        "id": "d1519646-9ddb-435f-aa61-03d63bfb3247",
         "width": 5,
         "height": 5,
         "alpha": 1,
@@ -195,7 +65,7 @@
       },
       {
         "type": "draw2d.HybridPort",
-        "id": "d98370db-901c-4217-a766-fe6381cf5865",
+        "id": "e93ccfc8-31f4-47f3-bcf2-b128d66215ae",
         "width": 5,
         "height": 5,
         "alpha": 1,
@@ -220,16 +90,23 @@
   },
   {
     "type": "draw2d.shape.composite.Group",
-    "id": "af05917c-c035-4cc7-a91f-a51138b7c197",
-    "x": 2055,
-    "y": 625,
-    "width": 50,
-    "height": 50,
+    "id": "e9573e76-4541-4497-aa23-66a74f03939e",
+    "x": 1751,
+    "y": 600,
+    "width": 100,
+    "height": 135.3333339691162,
     "alpha": 1,
     "selectable": true,
     "draggable": true,
     "angle": 0,
-    "userData": {},
+    "userData": {
+      "jobName": "child-8-cmd",
+      "identifier": "scheduler-agent-child-8-cmd",
+      "subsequentJobIdentifiers": [],
+      "itemType": "INTERNAL_EVENT_DRIVEN_JOB",
+      "agentName": "scheduler-agent",
+      "previousJobIdentifiers": []
+    },
     "cssClass": "draw2d_shape_composite_Group",
     "ports": [],
     "bgColor": "rgba(0,0,0,0)",
@@ -239,30 +116,64 @@
     "dasharray": null
   },
   {
-    "type": "draw2d.shape.basic.Image",
-    "id": "CONTEXT_TERMINAL_JOB-MHSS_ACCOUNTING_STEP_2_TERMINAL",
-    "x": 2055,
-    "y": 625,
-    "width": 50,
-    "height": 50,
+    "type": "draw2d.shape.basic.Label",
+    "id": "32f1e70a-fc6e-42e3-845c-3ae884563161",
+    "x": 1759.75,
+    "y": 710,
+    "width": 100,
+    "height": 21.33333396911621,
     "alpha": 1,
     "selectable": true,
     "draggable": true,
     "angle": 0,
     "userData": {
-      "jobName": "MHSS_ACCOUNTING_STEP_2_TERMINAL",
-      "identifier": "CONTEXT_TERMINAL_JOB-MHSS_ACCOUNTING_STEP_2_TERMINAL",
+      "jobName": "child-8-cmd",
+      "identifier": "scheduler-agent-child-8-cmd",
       "subsequentJobIdentifiers": [],
-      "itemType": "CONTEXT_TERMINAL_JOB",
-      "agentName": "CONTEXT_TERMINAL_JOB",
+      "itemType": "INTERNAL_EVENT_DRIVEN_JOB",
+      "agentName": "scheduler-agent",
+      "previousJobIdentifiers": []
+    },
+    "cssClass": "draw2d_shape_basic_Label",
+    "composite": "e9573e76-4541-4497-aa23-66a74f03939e",
+    "ports": [],
+    "bgColor": "rgba(255,255,255,0)",
+    "color": "rgba(255,255,255,0)",
+    "stroke": 1,
+    "radius": 0,
+    "dasharray": null,
+    "text": "child-8-cmd",
+    "outlineStroke": 0,
+    "outlineColor": "rgba(255,255,255,0)",
+    "fontSize": "14pt",
+    "fontColor": "rgba(0,0,0,1)",
+    "fontFamily": "Arial, Helvetica, sans-serif"
+  },
+  {
+    "type": "draw2d.shape.basic.Image",
+    "id": "scheduler-agent-child-8-cmd",
+    "x": 1751,
+    "y": 600,
+    "width": 100,
+    "height": 100,
+    "alpha": 1,
+    "selectable": true,
+    "draggable": true,
+    "angle": 0,
+    "userData": {
+      "jobName": "child-8-cmd",
+      "identifier": "scheduler-agent-child-8-cmd",
+      "subsequentJobIdentifiers": [],
+      "itemType": "INTERNAL_EVENT_DRIVEN_JOB",
+      "agentName": "scheduler-agent",
       "previousJobIdentifiers": []
     },
     "cssClass": "draw2d_shape_basic_Image",
-    "composite": "af05917c-c035-4cc7-a91f-a51138b7c197",
+    "composite": "e9573e76-4541-4497-aa23-66a74f03939e",
     "ports": [
       {
         "type": "draw2d.HybridPort",
-        "id": "e2cec081-53bb-481f-ab28-70a0e911d7d4",
+        "id": "cc58e4e3-c0d6-4ccc-90db-920a7647943e",
         "width": 5,
         "height": 5,
         "alpha": 1,
@@ -284,7 +195,96 @@
       },
       {
         "type": "draw2d.HybridPort",
-        "id": "056b0e04-0626-4c0b-ae6e-611cf6590f1b",
+        "id": "60897beb-ad1c-46a5-85fb-16efc6894988",
+        "width": 5,
+        "height": 5,
+        "alpha": 1,
+        "selectable": true,
+        "draggable": true,
+        "angle": 0,
+        "userData": {},
+        "cssClass": "draw2d_HybridPort",
+        "bgColor": "rgba(79,104,112,1)",
+        "color": "rgba(27,27,27,1)",
+        "stroke": 1,
+        "dasharray": null,
+        "maxFanOut": 9007199254740991,
+        "name": "rightHybridSource",
+        "semanticGroup": "global",
+        "port": "draw2d.HybridPort",
+        "locator": "draw2d.layout.locator.RightLocator",
+        "locatorAttr": {}
+      }
+    ],
+    "path": "frontend/images/command_black.png"
+  },
+  {
+    "type": "draw2d.shape.composite.Group",
+    "id": "70e0d831-46fd-4c7f-aa99-68516d8ff874",
+    "x": 2351,
+    "y": 625,
+    "width": 50,
+    "height": 50,
+    "alpha": 1,
+    "selectable": true,
+    "draggable": true,
+    "angle": 0,
+    "userData": {},
+    "cssClass": "draw2d_shape_composite_Group",
+    "ports": [],
+    "bgColor": "rgba(0,0,0,0)",
+    "color": "rgba(0,0,0,0)",
+    "stroke": 1,
+    "radius": 0,
+    "dasharray": null
+  },
+  {
+    "type": "draw2d.shape.basic.Image",
+    "id": "CONTEXT_TERMINAL_JOB-child-8_TERMINAL",
+    "x": 2351,
+    "y": 625,
+    "width": 50,
+    "height": 50,
+    "alpha": 1,
+    "selectable": true,
+    "draggable": true,
+    "angle": 0,
+    "userData": {
+      "jobName": "child-8_TERMINAL",
+      "identifier": "CONTEXT_TERMINAL_JOB-child-8_TERMINAL",
+      "subsequentJobIdentifiers": [],
+      "itemType": "CONTEXT_TERMINAL_JOB",
+      "agentName": "CONTEXT_TERMINAL_JOB",
+      "previousJobIdentifiers": []
+    },
+    "cssClass": "draw2d_shape_basic_Image",
+    "composite": "70e0d831-46fd-4c7f-aa99-68516d8ff874",
+    "ports": [
+      {
+        "type": "draw2d.HybridPort",
+        "id": "9c940d1c-ed26-4ac0-abb9-f7f113618a72",
+        "width": 5,
+        "height": 5,
+        "alpha": 1,
+        "selectable": true,
+        "draggable": true,
+        "angle": 0,
+        "userData": {},
+        "cssClass": "draw2d_HybridPort",
+        "bgColor": "rgba(79,104,112,1)",
+        "color": "rgba(27,27,27,1)",
+        "stroke": 1,
+        "dasharray": null,
+        "maxFanOut": 9007199254740991,
+        "name": "leftHybridTarget",
+        "semanticGroup": "global",
+        "port": "draw2d.HybridPort",
+        "locator": "draw2d.layout.locator.LeftLocator",
+        "locatorAttr": {}
+      },
+      {
+        "type": "draw2d.HybridPort",
+        "id": "aee76b97-c7f7-4381-b32f-8e83f93cab0e",
         "width": 5,
         "height": 5,
         "alpha": 1,
@@ -309,22 +309,22 @@
   },
   {
     "type": "draw2d.shape.composite.Group",
-    "id": "c4f57601-ec11-4d1e-a50f-abd634a5f90a",
-    "x": 2473.5,
+    "id": "cb1b3c88-40e2-4670-adbd-119c9c6b62a7",
+    "x": 600.5,
     "y": 600,
-    "width": 196.71875,
-    "height": 135.4488935470581,
+    "width": 100,
+    "height": 135.3333339691162,
     "alpha": 1,
     "selectable": true,
     "draggable": true,
     "angle": 0,
     "userData": {
-      "identifier": "MHSS_ACCOUNTING Step 3_out",
-      "contextName": "MHSS_ACCOUNTING Step 3",
+      "identifier": "child-7_in",
+      "contextName": "child-7",
       "subsequentJobIdentifiers": [],
       "itemType": "CONTEXT",
       "previousJobIdentifiers": [
-        "CONTEXT_TERMINAL_JOB-MHSS_ACCOUNTING_STEP_2_TERMINAL"
+        "child-7_TERMINAL"
       ]
     },
     "cssClass": "draw2d_shape_composite_Group",
@@ -337,33 +337,33 @@
   },
   {
     "type": "draw2d.shape.basic.Label",
-    "id": "b8b4b679-3b02-48e9-a331-15ea4fb002e1",
-    "x": 2473.5,
+    "id": "6f5bda5f-2d03-4b76-a040-8f7e621f4203",
+    "x": 624.25,
     "y": 710,
-    "width": 143.36459350585938,
+    "width": 100,
     "height": 21.33333396911621,
     "alpha": 1,
     "selectable": true,
     "draggable": true,
     "angle": 0,
     "userData": {
-      "identifier": "MHSS_ACCOUNTING Step 3_out",
-      "contextName": "MHSS_ACCOUNTING Step 3",
+      "identifier": "child-7_in",
+      "contextName": "child-7",
       "subsequentJobIdentifiers": [],
       "itemType": "CONTEXT",
       "previousJobIdentifiers": [
-        "CONTEXT_TERMINAL_JOB-MHSS_ACCOUNTING_STEP_2_TERMINAL"
+        "child-7_TERMINAL"
       ]
     },
     "cssClass": "draw2d_shape_basic_Label",
-    "composite": "c4f57601-ec11-4d1e-a50f-abd634a5f90a",
+    "composite": "cb1b3c88-40e2-4670-adbd-119c9c6b62a7",
     "ports": [],
     "bgColor": "rgba(255,255,255,0)",
     "color": "rgba(255,255,255,0)",
     "stroke": 1,
     "radius": 0,
     "dasharray": null,
-    "text": "MHSS_ACCOUNTING Step 3",
+    "text": "child-7",
     "outlineStroke": 0,
     "outlineColor": "rgba(255,255,255,0)",
     "fontSize": "14pt",
@@ -372,8 +372,8 @@
   },
   {
     "type": "draw2d.shape.basic.Image",
-    "id": "MHSS_ACCOUNTING Step 3_out",
-    "x": 2506,
+    "id": "child-7_in",
+    "x": 600.5,
     "y": 600,
     "width": 100,
     "height": 100,
@@ -382,20 +382,20 @@
     "draggable": true,
     "angle": 0,
     "userData": {
-      "identifier": "MHSS_ACCOUNTING Step 3_out",
-      "contextName": "MHSS_ACCOUNTING Step 3",
+      "identifier": "child-7_in",
+      "contextName": "child-7",
       "subsequentJobIdentifiers": [],
       "itemType": "CONTEXT",
       "previousJobIdentifiers": [
-        "CONTEXT_TERMINAL_JOB-MHSS_ACCOUNTING_STEP_2_TERMINAL"
+        "child-7_TERMINAL"
       ]
     },
     "cssClass": "draw2d_shape_basic_Image",
-    "composite": "c4f57601-ec11-4d1e-a50f-abd634a5f90a",
+    "composite": "cb1b3c88-40e2-4670-adbd-119c9c6b62a7",
     "ports": [
       {
         "type": "draw2d.HybridPort",
-        "id": "659a96cb-0d78-48af-abb8-d8413d9bca85",
+        "id": "f0bf4def-39c2-4241-abc7-701399a93f09",
         "width": 5,
         "height": 5,
         "alpha": 1,
@@ -417,134 +417,7 @@
       },
       {
         "type": "draw2d.HybridPort",
-        "id": "d10d8ba3-6a63-4f8f-96bb-9ff198807208",
-        "width": 5,
-        "height": 5,
-        "alpha": 1,
-        "selectable": true,
-        "draggable": true,
-        "angle": 0,
-        "userData": {},
-        "cssClass": "draw2d_HybridPort",
-        "bgColor": "rgba(79,104,112,1)",
-        "color": "rgba(27,27,27,1)",
-        "stroke": 1,
-        "dasharray": null,
-        "maxFanOut": 9007199254740991,
-        "name": "rightHybridSource",
-        "semanticGroup": "global",
-        "port": "draw2d.HybridPort",
-        "locator": "draw2d.layout.locator.RightLocator",
-        "locatorAttr": {}
-      }
-    ],
-    "path": "frontend/images/context-icon.png"
-  },
-  {
-    "type": "draw2d.shape.composite.Group",
-    "id": "a94e9d2e-bfc9-46ba-857d-0da6a890b396",
-    "x": 567.5,
-    "y": 600,
-    "width": 196.71875,
-    "height": 135.4488935470581,
-    "alpha": 1,
-    "selectable": true,
-    "draggable": true,
-    "angle": 0,
-    "userData": {
-      "identifier": "MHSS_ACCOUNTING Step 1_in",
-      "contextName": "MHSS_ACCOUNTING Step 1",
-      "subsequentJobIdentifiers": [],
-      "itemType": "CONTEXT",
-      "previousJobIdentifiers": []
-    },
-    "cssClass": "draw2d_shape_composite_Group",
-    "ports": [],
-    "bgColor": "rgba(0,0,0,0)",
-    "color": "rgba(0,0,0,0)",
-    "stroke": 1,
-    "radius": 0,
-    "dasharray": null
-  },
-  {
-    "type": "draw2d.shape.basic.Label",
-    "id": "d690b31f-2984-414d-997c-e6ed5d4cf98e",
-    "x": 567.5,
-    "y": 710,
-    "width": 143.36459350585938,
-    "height": 21.33333396911621,
-    "alpha": 1,
-    "selectable": true,
-    "draggable": true,
-    "angle": 0,
-    "userData": {
-      "identifier": "MHSS_ACCOUNTING Step 1_in",
-      "contextName": "MHSS_ACCOUNTING Step 1",
-      "subsequentJobIdentifiers": [],
-      "itemType": "CONTEXT",
-      "previousJobIdentifiers": []
-    },
-    "cssClass": "draw2d_shape_basic_Label",
-    "composite": "a94e9d2e-bfc9-46ba-857d-0da6a890b396",
-    "ports": [],
-    "bgColor": "rgba(255,255,255,0)",
-    "color": "rgba(255,255,255,0)",
-    "stroke": 1,
-    "radius": 0,
-    "dasharray": null,
-    "text": "MHSS_ACCOUNTING Step 1",
-    "outlineStroke": 0,
-    "outlineColor": "rgba(255,255,255,0)",
-    "fontSize": "14pt",
-    "fontColor": "rgba(0,0,0,1)",
-    "fontFamily": "Arial, Helvetica, sans-serif"
-  },
-  {
-    "type": "draw2d.shape.basic.Image",
-    "id": "MHSS_ACCOUNTING Step 1_in",
-    "x": 600,
-    "y": 600,
-    "width": 100,
-    "height": 100,
-    "alpha": 1,
-    "selectable": true,
-    "draggable": true,
-    "angle": 0,
-    "userData": {
-      "identifier": "MHSS_ACCOUNTING Step 1_in",
-      "contextName": "MHSS_ACCOUNTING Step 1",
-      "subsequentJobIdentifiers": [],
-      "itemType": "CONTEXT",
-      "previousJobIdentifiers": []
-    },
-    "cssClass": "draw2d_shape_basic_Image",
-    "composite": "a94e9d2e-bfc9-46ba-857d-0da6a890b396",
-    "ports": [
-      {
-        "type": "draw2d.HybridPort",
-        "id": "afe679d4-5394-48b1-b604-c2adbf43edc6",
-        "width": 5,
-        "height": 5,
-        "alpha": 1,
-        "selectable": true,
-        "draggable": true,
-        "angle": 0,
-        "userData": {},
-        "cssClass": "draw2d_HybridPort",
-        "bgColor": "rgba(79,104,112,1)",
-        "color": "rgba(27,27,27,1)",
-        "stroke": 1,
-        "dasharray": null,
-        "maxFanOut": 9007199254740991,
-        "name": "leftHybridTarget",
-        "semanticGroup": "global",
-        "port": "draw2d.HybridPort",
-        "locator": "draw2d.layout.locator.LeftLocator",
-        "locatorAttr": {}
-      },
-      {
-        "type": "draw2d.HybridPort",
-        "id": "b01664cf-2df6-4917-b190-325472b0cd8a",
+        "id": "6b0a2b6d-e04a-4171-9649-b1942dd23b18",
         "width": 5,
         "height": 5,
         "alpha": 1,
@@ -569,7 +442,7 @@
   },
   {
     "type": "draw2d.Connection",
-    "id": "6bc5b7a0-9e10-44b1-9b9e-2779b3c8ea76",
+    "id": "fcff1824-db57-40f3-b4f0-f93d90deaed7",
     "alpha": 1,
     "selectable": true,
     "draggable": true,
@@ -583,29 +456,29 @@
     "policy": "draw2d.policy.line.LineSelectionFeedbackPolicy",
     "vertex": [
       {
-        "x": 1152,
+        "x": 1251,
         "y": 650
       },
       {
-        "x": 1554,
+        "x": 1751,
         "y": 650
       }
     ],
     "router": "draw2d.layout.connection.ManhattanConnectionRouter",
     "radius": 5,
     "source": {
-      "node": "CONTEXT_START_JOB-MHSS_ACCOUNTING_STEP_2_START",
+      "node": "CONTEXT_START_JOB-child-8_START",
       "port": "rightHybridSource"
     },
     "target": {
-      "node": "scheduler-agent-ACC_BO_LIQ_MAINTENANCE_MHSS",
+      "node": "scheduler-agent-child-8-cmd",
       "port": "leftHybridTarget",
       "decoration": "draw2d.decoration.connection.ArrowDecorator"
     }
   },
   {
     "type": "draw2d.Connection",
-    "id": "7ae3d615-3110-47ec-909a-d8fba50e1e43",
+    "id": "bf9c2ba3-ac36-42fd-99e6-5b8d4c77e69d",
     "alpha": 1,
     "selectable": true,
     "draggable": true,
@@ -619,29 +492,29 @@
     "policy": "draw2d.policy.line.LineSelectionFeedbackPolicy",
     "vertex": [
       {
-        "x": 1654,
+        "x": 1851,
         "y": 650
       },
       {
-        "x": 2055,
+        "x": 2351,
         "y": 650
       }
     ],
     "router": "draw2d.layout.connection.ManhattanConnectionRouter",
     "radius": 5,
     "source": {
-      "node": "scheduler-agent-ACC_BO_LIQ_MAINTENANCE_MHSS",
+      "node": "scheduler-agent-child-8-cmd",
       "port": "rightHybridSource"
     },
     "target": {
-      "node": "CONTEXT_TERMINAL_JOB-MHSS_ACCOUNTING_STEP_2_TERMINAL",
+      "node": "CONTEXT_TERMINAL_JOB-child-8_TERMINAL",
       "port": "leftHybridTarget",
       "decoration": "draw2d.decoration.connection.ArrowDecorator"
     }
   },
   {
     "type": "draw2d.Connection",
-    "id": "56847e8e-0f86-47cb-8abf-6033fcff5765",
+    "id": "47789e0c-acea-4a1a-9328-50ff1d50e144",
     "alpha": 1,
     "selectable": true,
     "draggable": true,
@@ -655,58 +528,22 @@
     "policy": "draw2d.policy.line.LineSelectionFeedbackPolicy",
     "vertex": [
       {
-        "x": 2105,
+        "x": 700.5,
         "y": 650
       },
       {
-        "x": 2506,
+        "x": 1201,
         "y": 650
       }
     ],
     "router": "draw2d.layout.connection.ManhattanConnectionRouter",
     "radius": 5,
     "source": {
-      "node": "CONTEXT_TERMINAL_JOB-MHSS_ACCOUNTING_STEP_2_TERMINAL",
+      "node": "child-7_in",
       "port": "rightHybridSource"
     },
     "target": {
-      "node": "MHSS_ACCOUNTING Step 3_out",
-      "port": "leftHybridTarget",
-      "decoration": "draw2d.decoration.connection.ArrowDecorator"
-    }
-  },
-  {
-    "type": "draw2d.Connection",
-    "id": "bd457083-41a0-4f4c-abd4-1f5d75bb0bf9",
-    "alpha": 1,
-    "selectable": true,
-    "draggable": true,
-    "angle": 0,
-    "userData": {},
-    "cssClass": "draw2d_Connection",
-    "stroke": 2,
-    "color": "rgba(0,0,0,1)",
-    "outlineStroke": 0,
-    "outlineColor": "rgba(0,0,0,0)",
-    "policy": "draw2d.policy.line.LineSelectionFeedbackPolicy",
-    "vertex": [
-      {
-        "x": 700,
-        "y": 650
-      },
-      {
-        "x": 1102,
-        "y": 650
-      }
-    ],
-    "router": "draw2d.layout.connection.ManhattanConnectionRouter",
-    "radius": 5,
-    "source": {
-      "node": "MHSS_ACCOUNTING Step 1_in",
-      "port": "rightHybridSource"
-    },
-    "target": {
-      "node": "CONTEXT_START_JOB-MHSS_ACCOUNTING_STEP_2_START",
+      "node": "CONTEXT_START_JOB-child-8_START",
       "port": "leftHybridTarget",
       "decoration": "draw2d.decoration.connection.ArrowDecorator"
     }

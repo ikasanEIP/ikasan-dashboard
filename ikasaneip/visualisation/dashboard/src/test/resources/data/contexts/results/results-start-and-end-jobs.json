@@ -1,0 +1,72 @@
+{
+  "scheduledJobs": [
+    {
+      "agentName": "CONTEXT_TERMINAL_JOB",
+      "jobName": "child-7_TERMINAL",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "CONTEXT_TERMINAL_JOB-child-7_TERMINAL"
+    },
+    {
+      "agentName": "CONTEXT_TERMINAL_JOB",
+      "jobName": "child-8_TERMINAL",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "CONTEXT_TERMINAL_JOB-child-8_TERMINAL"
+    },
+    {
+      "agentName": "CONTEXT_START_JOB",
+      "jobName": "child-8_START",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "CONTEXT_START_JOB-child-8_START"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "child-8-cmd",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-child-8-cmd"
+    }
+  ],
+  "name": "child-8",
+  "jobDependencies": [
+    {
+      "jobIdentifier": "CONTEXT_START_JOB-child-8_START",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "CONTEXT_TERMINAL_JOB-child-7_TERMINAL"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-child-8-cmd",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "CONTEXT_START_JOB-child-8_START"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "CONTEXT_TERMINAL_JOB-child-8_TERMINAL",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-child-8-cmd"
+          }
+        ]
+      }
+    }
+  ],
+  "contextTtlMilliseconds": 0,
+  "treeViewExpandLevel": 1,
+  "ableToRunConcurrently": true,
+  "useDisplayName": false,
+  "ordinal": -1,
+  "disabled": false,
+  "quartzScheduleDrivenJobsDisabledForContext": false
+}
