@@ -23,6 +23,7 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -423,12 +424,11 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             this.jobSelected(contextStartJob);
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.terminal-job", UI.getCurrent().getLocale()), event -> {
-            Optional<SchedulerJob> startJob = contextTemplate.getScheduledJobs().stream()
-                .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
-                .findFirst();
+            Optional<ContextTerminalJob> terminalJob = ContextHelper.getContextTerminalJobFromContext(contextTemplate);
 
-            if(startJob.isPresent()) {
-                NotificationHelper.showUserNotification(getTranslation("error.terminal-job-exists-in-context", UI.getCurrent().getLocale()));
+            if(terminalJob.isPresent()) {
+                NotificationHelper.showUserNotification(getTranslation("error.terminal-job-exists-in-context"
+                    , UI.getCurrent().getLocale()));
                 return;
             }
 
@@ -462,6 +462,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             NotificationHelper.showUserNotification(getTranslation("error.job-exists-in-context", UI.getCurrent().getLocale()));
         }
         else {
+            this.contextTemplate.getScheduledJobs().add(schedulerJob);
             this.schedulerVisualisation.addJob(schedulerJob);
         }
     }

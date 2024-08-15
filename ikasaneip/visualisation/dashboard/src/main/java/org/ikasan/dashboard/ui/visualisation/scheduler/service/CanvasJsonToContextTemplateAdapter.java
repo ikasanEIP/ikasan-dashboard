@@ -8,12 +8,10 @@ import org.ikasan.designer.model.*;
 import org.ikasan.job.orchestration.builder.context.ContextTemplateBuilder;
 import org.ikasan.job.orchestration.builder.context.JobDependencyBuilder;
 import org.ikasan.job.orchestration.builder.context.LogicalGroupingBuilder;
-import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
-import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -171,37 +169,59 @@ public class CanvasJsonToContextTemplateAdapter {
 
             ContextTemplate c = this.buildContextTemplate(contextName, rootTrees, connections, schedulerJobs);
 
-            Optional<Image> startJob = schedulerJobs.values().stream()
-                .filter(image -> image.getUserData().getItemType().equals(JobConstants.CONTEXT_START_JOB)).findFirst();
+            Map<String, List<JobDependency>> jdMap = new HashMap<>();
+            c.getJobDependencies().forEach(jobDependency -> {
+                if(jdMap.containsKey(jobDependency.getJobIdentifier())) {
+                    jdMap.get(jobDependency.getJobIdentifier()).add(jobDependency);
+                }
+                else {
+                    ArrayList jobDependencies = new ArrayList();
+                    jobDependencies.add(jobDependency);
+                    jdMap.put(jobDependency.getJobIdentifier(), jobDependencies);
+                }
+            });
 
-            if(startJob.isPresent()) {
-                externalContexts.entrySet().forEach(entry -> {
-                    if (entry.getValue().getUserData().getPreviousJobIdentifiers() != null
-                        && !entry.getValue().getUserData().getPreviousJobIdentifiers().isEmpty()) {
-                        entry.getValue().getUserData().getPreviousJobIdentifiers().forEach(jobName -> {
-                            if(c.getScheduledJobsMap().containsKey(jobName))return;
-                            SchedulerJob terminal = new SchedulerJobImpl();
-                            terminal.setAgentName(JobConstants.CONTEXT_TERMINAL_JOB);
-                            terminal.setJobName(jobName);
-                            terminal.setIdentifier(JobConstants.CONTEXT_TERMINAL_JOB + "-" + jobName);
-                            c.getScheduledJobs().add(terminal);
+            // This fragment of code detects where there are parallel
+            // jobs that have not be placed in an AND job grouping and
+            // applies the relevant logic to wrap them up in the appropriate
+            // logical grouping. In effect making the default behaviour being
+            // that jobs that are defined concurrently will run in a logical
+            // AND.
+            jdMap.entrySet().forEach(jobDependencies -> {
+                if(jobDependencies.getValue().size() > 1) {
+                    AtomicBoolean allSingleAnds = new AtomicBoolean(true);
 
-                            ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
-                            c.getJobDependencies().add(contextTemplateBuilder.getJobDependencyBuilder()
-                                .withJobName(startJob.get().getUserData().getJobName())
-                                .withAgentName(startJob.get().getUserData().getAgentName())
-                                .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
-                                    .addAnd(contextTemplateBuilder
-                                        .getJobAndBuilder()
-                                            .withJobName(terminal.getJobName())
-                                            .withAgentName(terminal.getAgentName())
-                                        .build())
-                                    .build())
-                                .build());
-                        });
+                    jobDependencies.getValue().forEach(jobDependency -> {
+                        if(jobDependency.getLogicalGrouping() != null
+                            && jobDependency.getLogicalGrouping().getAnd() != null
+                            && jobDependency.getLogicalGrouping().getAnd().size() > 1) {
+                            allSingleAnds.set(false);
+                        }
+                    });
+
+                    if(allSingleAnds.get()) {
+                        ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
+                        JobDependencyBuilder jobDependencyBuilder = contextTemplateBuilder.getJobDependencyBuilder();
+                        jobDependencyBuilder.withAgentName(jobDependencies.getKey()
+                            .substring(0, jobDependencies.getKey().indexOf("-")));
+                        jobDependencyBuilder.withJobName(jobDependencies.getKey()
+                            .substring(jobDependencies.getKey().indexOf("-") + 1, jobDependencies.getKey().length()));
+
+                        LogicalGroupingBuilder logicalGroupingBuilder = contextTemplateBuilder.getLogicalGroupingBuilder();
+
+                        jobDependencies.getValue().forEach(jobDependency
+                            -> jobDependency.getLogicalGrouping().getAnd().forEach(and -> logicalGroupingBuilder.addAnd(and)));
+
+                        jobDependencyBuilder.withLogicalGrouping(logicalGroupingBuilder.build());
+
+                        c.setJobDependencies(c.getJobDependencies().stream()
+                            .filter(jobDependency -> !jobDependency.getJobIdentifier().equals(jobDependencies.getKey()))
+                            .collect(Collectors.toList()));
+
+                        c.getJobDependencies().add(jobDependencyBuilder.build());
                     }
-                });
-            }
+                }
+            });
 
             return c;
 
@@ -270,6 +290,40 @@ public class CanvasJsonToContextTemplateAdapter {
                 connections.entrySet().removeIf(e -> e.getValue().size() == 0);
             }
         });
+
+        Map<String, List<Connection>> inboundContexts = connections.entrySet().stream()
+            .filter(entry -> entry.getKey().endsWith("_in"))
+            .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), (existing, replacement) -> existing));
+
+        Optional<Image> startJob = schedulerJobs.values().stream()
+            .filter(job -> job.getUserData().getAgentName() != null
+                && job.getUserData().getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+            .findFirst();
+
+        if(startJob.isPresent() && !inboundContexts.isEmpty()) {
+            JobDependencyBuilder jobDependencyBuilder = contextTemplateBuilder.getJobDependencyBuilder();
+            jobDependencyBuilder.withJobName(startJob.get().getUserData().getJobName())
+                .withAgentName(startJob.get().getUserData().getAgentName());
+
+            LogicalGroupingBuilder logicalGroupingBuilder = contextTemplateBuilder.getLogicalGroupingBuilder();
+
+            inboundContexts.values().forEach(ibc -> ibc.forEach(connection -> {
+                logicalGroupingBuilder.addAnd(contextTemplateBuilder.getJobAndBuilder()
+                    .withAgentName(JobConstants.CONTEXT_TERMINAL_JOB)
+                    .withJobName(schedulerJobs.get(connection.getSource().getNode()).getUserData().getPreviousJobIdentifiers().get(0))
+                    .build());
+
+                contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
+                    .withJobName(schedulerJobs.get(connection.getSource().getNode()).getUserData().getPreviousJobIdentifiers().get(0))
+                    .withAgentName(JobConstants.CONTEXT_TERMINAL_JOB)
+                    .build());
+            }));
+
+            jobDependencyBuilder.withLogicalGrouping(logicalGroupingBuilder.build());
+            contextTemplateBuilder.addJobDependency(jobDependencyBuilder.build());
+        }
+
+        inboundContexts.keySet().forEach(key -> connections.remove(key));
 
         connections.entrySet().forEach(entry -> {
             entry.getValue().forEach(connection -> {
@@ -383,7 +437,6 @@ public class CanvasJsonToContextTemplateAdapter {
             }
             else {
                 if(branch.getData().getId().startsWith("AND")) {
-
                     LogicalGroupingBuilder andLogicalGroupingBuilder = contextTemplateBuilder.getLogicalGroupingBuilder();
                     this.manageAnd(andLogicalGroupingBuilder, branch.getBranches(), contextTemplateBuilder, connections, jobDependencyBuilderMap);
                     logicalGroupingBuilder.addAnd(contextTemplateBuilder.getJobAndBuilder().withLogicalGrouping(andLogicalGroupingBuilder.build()).build());

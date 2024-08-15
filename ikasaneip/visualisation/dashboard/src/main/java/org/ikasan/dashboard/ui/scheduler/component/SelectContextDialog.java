@@ -26,15 +26,12 @@ import java.util.stream.Collectors;
 public class SelectContextDialog extends AbstractCloseableResizableDialog {
 
     Logger logger = LoggerFactory.getLogger(SelectContextDialog.class);
-
     // Fields to capture schedule job properties.
 
     private ContextTemplate contextTemplate;
     private ContextTemplate parentContextTemplate;
 
     private SystemEventLogger systemEventLogger;
-
-
 
     /**
      * Dialog used for selecting a context to link to a downstream child job plan.
@@ -48,7 +45,7 @@ public class SelectContextDialog extends AbstractCloseableResizableDialog {
                                JobSchedulerVisualisation jobSchedulerVisualisation) {
         super.showResize(false);
         // todo translation
-        super.title.setText("Link to Downstream Child Job Plan");
+        super.title.setText(getTranslation("header.link-to-downstream-job-plan", UI.getCurrent().getLocale()));
         this.systemEventLogger = systemEventLogger;
         this.parentContextTemplate = parentContextTemplate;
         this.contextTemplate = contextTemplate;
@@ -65,22 +62,32 @@ public class SelectContextDialog extends AbstractCloseableResizableDialog {
         ComboBox<String> searchCb = new ComboBox<>();
         searchCb.setPlaceholder(getTranslation("label.search-job-plan-link", UI.getCurrent().getLocale()));
         List<String> childJobPlanNames = contextMap.keySet().stream().collect(Collectors.toList());
+        childJobPlanNames.remove(contextTemplate.getName());
+        Optional<ContextTerminalJob> terminalJob = ContextHelper.getContextTerminalJobFromContext(contextTemplate);
+        if(terminalJob.isPresent()) {
+            List<String> residingContexts = ContextHelper.getContextsWhereJobFilterMatchResides(parentContextTemplate, terminalJob.get().getJobName());
+            childJobPlanNames = childJobPlanNames.stream()
+                .filter(name -> !residingContexts.contains(name))
+                .collect(Collectors.toList());
+        }
+
         Collections.sort(childJobPlanNames);
         searchCb.setItems(childJobPlanNames);
         searchCb.setWidth("500px");
 
-        Button linkButton = new Button("Link");
+        Button linkButton = new Button(getTranslation("button.link", UI.getCurrent().getLocale()));
         linkButton.addClickListener(buttonClickEvent -> {
             ContextTemplate contextToLinkTo = (ContextTemplate) contextMap.get(searchCb.getValue());
             Optional<ContextStartJob> contextStartJob = ContextHelper.getContextStartJobFromContext(contextToLinkTo);
             Optional<ContextTerminalJob> contextTerminalJob = ContextHelper.getContextTerminalJobFromContext(contextTemplate);
 
             if(!contextStartJob.isPresent()) {
-                NotificationHelper.showUserNotification("The child job plan you are attempting link to does not contain a start job.");
+                NotificationHelper.showUserNotification(getTranslation("message.link-to-plan-without-start-job", UI.getCurrent().getLocale()));
             }
             else {
                 try {
                     jobSchedulerVisualisation.linkToContext(contextTerminalJob.get(), contextStartJob.get(), contextToLinkTo);
+                    this.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -88,7 +95,6 @@ public class SelectContextDialog extends AbstractCloseableResizableDialog {
         });
 
         layout.add(searchCb, linkButton);
-
         super.content.add(layout);
     }
 
