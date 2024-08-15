@@ -894,6 +894,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     }
 
     public void importJson() {
+        this.clear();
         this.importJson(this.toBack);
     }
 

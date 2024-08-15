@@ -140,6 +140,7 @@ public abstract class Draw2dAdapterBase {
 
             // remove any filtered jobs if there are any.
             List<SchedulerJob> finalJobs = jobs.stream().filter(job -> {
+                if(job == null) return false;
                 AtomicBoolean keep = new AtomicBoolean(true);
                 jobsToFilter.forEach(terminal -> {
                     if(terminal.getIdentifier().equals(job.getIdentifier())) {
@@ -379,8 +380,9 @@ public abstract class Draw2dAdapterBase {
 
                             ((Image) item).setComposite(group.getId());
                             if(contextTerminalJobs.containsKey(((Image) item).getUserData().getContextName())) {
-                                ((Image) item).getUserData()
-                                    .setPreviousJobIdentifiers(List.of(contextTerminalJobs.get(((Image) item).getUserData().getContextName())));
+                                ArrayList<String> previousIdentifiers = new ArrayList<>();
+                                previousIdentifiers.add(contextTerminalJobs.get(((Image) item).getUserData().getContextName()));
+                                ((Image) item).getUserData().setPreviousJobIdentifiers(previousIdentifiers);
                             }
                             Label label = new LabelBuilder().withText(((Image) item).getUserData().getContextName())
                                 .withX(positionedItemCentre - (labelLength / 2))
@@ -667,8 +669,9 @@ public abstract class Draw2dAdapterBase {
                     && context.getScheduledJobsMap().containsKey(jobIdentifier)
                     && (!((SchedulerJob)context.getScheduledJobsMap().get(jobIdentifier))
                         .getAgentName().equals(JobConstants.CONTEXT_START_JOB))
-                    && (!((SchedulerJob)context.getScheduledJobsMap().get(and.getIdentifier()))
-                    .getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))) {
+//                    && (!((SchedulerJob)context.getScheduledJobsMap().get(and.getIdentifier()))
+//                    .getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+                ) {
                     graph.addEdge(and.getIdentifier(), jobIdentifier);
 
                     this.addConnection(and.getIdentifier(), CONNECTOR_RIGHT_HYBRID_SOURCE
