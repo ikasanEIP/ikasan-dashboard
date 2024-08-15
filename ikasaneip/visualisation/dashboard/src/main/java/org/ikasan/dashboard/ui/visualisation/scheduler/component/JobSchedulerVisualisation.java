@@ -1,8 +1,10 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.vaadin.flow.component.UI;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.SelectContextDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dAdapterBase;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
@@ -37,6 +39,8 @@ import java.util.stream.Collectors;
 
 public class JobSchedulerVisualisation extends SchedulerVisualisation {
 
+    private UI ui;
+
     public JobSchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                      SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, JobInitiationService jobInitiationService,
@@ -50,14 +54,14 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
     }
 
     protected void init(UI ui) throws IOException {
+        this.ui = ui;
         if(!initialised && contextTemplate != null) {
 
             if (this.designerCanvas != null) {
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit, ui, true);
-            this.designerCanvas.addCanvasInitialisedListener(this);
+            this.initialiseCanvas();
 
             if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
                 if(this.scheduledContextViewRecord == null) {
@@ -68,18 +72,23 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                 }
             }
 
-            this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
-            this.designerCanvas.addCanvasItemRightClickEventListener(this);
-            this.designerCanvas.addConnectorEventListener(this);
-            this.designerCanvas.addCanvasUpdatedListener(this);
-            this.designerCanvas.addFigureDeleteEventListeners(this);
-            this.designerCanvas.addFigureUndoDeleteEventListeners(this);
-            this.designerCanvas.addCanvasItemSingleClickEventListener(this);
-
             this.add(initCanvasActions(), designerCanvas);
 
             this.initialised = true;
         }
+    }
+
+    private void initialiseCanvas() throws IOException {
+        this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit, ui, true);
+        this.designerCanvas.addCanvasInitialisedListener(this);
+
+        this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
+        this.designerCanvas.addCanvasItemRightClickEventListener(this);
+        this.designerCanvas.addConnectorEventListener(this);
+        this.designerCanvas.addCanvasUpdatedListener(this);
+        this.designerCanvas.addFigureDeleteEventListeners(this);
+        this.designerCanvas.addFigureUndoDeleteEventListeners(this);
+        this.designerCanvas.addCanvasItemSingleClickEventListener(this);
     }
 
     @Override
@@ -136,10 +145,6 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                     });
                 }
             }
-
-            if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
-
-            }
         }
         super.singleClickEvent(canvasItemDoubleClickEvent);
     }
@@ -158,10 +163,17 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                 Optional<JobDependency> jobDependencyToRemove = contextLinkToDelete.getJobDependencies().stream()
                     .filter(jobDependency -> jobDependency.getLogicalGrouping() != null
                         && jobDependency.getLogicalGrouping().getAnd() != null
-                        && jobDependency.getLogicalGrouping().getAnd().stream().findFirst().get().getIdentifier().equals(contextTerminalJob.get().getIdentifier())).findFirst();
+                        && jobDependency.getLogicalGrouping().getAnd().stream()
+                        .filter(and -> and.getIdentifier().equals(contextTerminalJob.get().getIdentifier())).findFirst().isPresent()).findFirst();
 
                 if(jobDependencyToRemove.isPresent()) {
-                    contextLinkToDelete.getJobDependencies().remove(jobDependencyToRemove.get());
+                    if(jobDependencyToRemove.get().getLogicalGrouping().getAnd().size() > 1) {
+                        jobDependencyToRemove.get().getLogicalGrouping().getAnd()
+                            .removeIf(a -> a.getIdentifier().equals(contextTerminalJob.get().getIdentifier()));
+                    }
+                    else {
+                        contextLinkToDelete.getJobDependencies().remove(jobDependencyToRemove.get());
+                    }
                 }
             }
         }
@@ -171,11 +183,27 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
         ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
         context.getScheduledJobs().add(contextTerminalJob);
         if(context.getJobDependencies() == null)context.setJobDependencies(new ArrayList<>());
-        context.getJobDependencies().add(contextTemplateBuilder.getJobDependencyBuilder().withJobName(contextStartJob.getJobName())
-            .withAgentName(contextStartJob.getAgentName())
-            .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
-                .addAnd(contextTemplateBuilder.getJobAndBuilder().withJobName(contextTerminalJob.getJobName())
-                    .withAgentName(contextTerminalJob.getAgentName()).build()).build()).build());
+
+        Optional<JobDependency> optionalJobDependency = context.getJobDependencies().stream()
+            .filter(jobDependency -> jobDependency.getJobIdentifier()
+                .equals(contextStartJob.getIdentifier())).findFirst();
+
+        if(optionalJobDependency.isPresent()) {
+            if(optionalJobDependency.get().getLogicalGrouping().getAnd() == null) {
+                optionalJobDependency.get().getLogicalGrouping().setAnd(new ArrayList<>());
+            }
+
+            optionalJobDependency.get().getLogicalGrouping().getAnd()
+                .add(contextTemplateBuilder.getJobAndBuilder().withJobName(contextTerminalJob.getJobName())
+                .withAgentName(contextTerminalJob.getAgentName()).build());
+        }
+        else {
+            context.getJobDependencies().add(contextTemplateBuilder.getJobDependencyBuilder().withJobName(contextStartJob.getJobName())
+                .withAgentName(contextStartJob.getAgentName())
+                .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                    .addAnd(contextTemplateBuilder.getJobAndBuilder().withJobName(contextTerminalJob.getJobName())
+                        .withAgentName(contextTerminalJob.getAgentName()).build()).build()).build());
+        }
         ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, context);
         this.setCanvasJson();
         this.designerCanvas.importJson();
@@ -191,6 +219,10 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
 
 
             if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                if(this.saveRequired) {
+                    NotificationHelper.showUserNotification("You must save the job plan before linking a terminal job!");
+                    return;
+                }
                 SelectContextDialog selectContextDialog = new SelectContextDialog
                     (super.systemEventLogger, super.parentContextTemplate, this.contextTemplate, this);
                 selectContextDialog.open();
@@ -215,7 +247,8 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
         schedulerJobs.putAll(ContextHelper.getLocalEventJobsFromContext(parentContextTemplate).stream()
             .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
 
-        this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
+        ContextTemplateDraw2dAdapter contextTemplateDraw2dAdapter = new ContextTemplateDraw2dAdapter();
+        this.designerCanvas.setCanvasJson(contextTemplateDraw2dAdapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
             schedulerJobs.values().stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))));
     }
 }
