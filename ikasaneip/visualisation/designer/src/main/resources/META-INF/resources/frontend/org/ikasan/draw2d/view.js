@@ -222,6 +222,13 @@ View = draw2d.Canvas.extend({
      */
     reset: function()
     {
+        let _this = this;
+        this.figures.each(function(i,f) {
+            debugger;
+            console.log("Deleting figure - " + f);
+            let command = new draw2d.command.CommandDelete(f);
+            _this.getCommandStack().execute(command);
+        });
         this.clear();
     },
 
@@ -230,15 +237,6 @@ View = draw2d.Canvas.extend({
         $("#canvas_zoom_normal").text((parseInt((1.0/newZoom)*100))+"%");
         this._super(newZoom);
     },
-
-    // /**
-    //  * Reset the view without any decorations. This is good before loading a document
-    //  *
-    //  */
-    // clear: function()
-    // {
-    //     super.clear();
-    // },
 
     getExtFigure: function(id){
         var figure = null;

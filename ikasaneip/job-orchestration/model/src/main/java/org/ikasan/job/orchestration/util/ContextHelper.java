@@ -547,8 +547,14 @@ public class ContextHelper {
 
         // Now iterate over all jobs in the context
         schedulerJobs.entrySet().forEach(entry -> {
+            LinkedList<List<SchedulerJob>> linkedJobs;
             // Trace from each job through the child context provided and any subsequent contexts that the job extends into
-            LinkedList<List<SchedulerJob>> linkedJobs = ContextHelper.traceJobThroughContext(parentContext, entry.getValue().getJobName(), child.getName());
+            if(entry.getValue().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                linkedJobs = new LinkedList<>();
+            }
+            else {
+                linkedJobs = ContextHelper.traceJobThroughContext(parentContext, entry.getValue().getJobName(), child.getName());
+            }
 
             List<SchedulerJob> precedingJobs = new ArrayList<>();
 
@@ -827,11 +833,13 @@ public class ContextHelper {
                 }
             });
         }
-        // We retain the terminal job if one exists as by its nature it can
+        // We retain the terminal jobs if one exists as by its nature it can
         // transition to other contexts.
-        Optional<SchedulerJob> terminal = ((List<SchedulerJob>)context.getScheduledJobs()).stream()
-            .filter(job -> job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)).findFirst();
-        if(terminal.isPresent()) jobsOutsideLogicConstructs.put(terminal.get().getIdentifier(), terminal.get());
+        List<SchedulerJob> terminal = ((List<SchedulerJob>)context.getScheduledJobs()).stream()
+            .filter(job -> job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)).collect(Collectors.toList());
+        if(!terminal.isEmpty()) {
+            terminal.forEach(terminalJob -> jobsOutsideLogicConstructs.put(terminalJob.getIdentifier(), terminalJob));
+        }
 
         return jobsOutsideLogicConstructs;
     }
