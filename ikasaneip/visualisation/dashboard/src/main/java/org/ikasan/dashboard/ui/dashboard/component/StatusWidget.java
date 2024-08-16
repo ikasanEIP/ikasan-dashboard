@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.dashboard.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
@@ -12,7 +11,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
@@ -101,7 +99,7 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
         refreshButton.getStyle().set("right", "10px");
 
         refreshButton.addClickListener(buttonClickEvent -> this.recalculate());
-        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+        refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
 
         layout.add(refreshButton);
 
