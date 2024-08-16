@@ -1,11 +1,11 @@
 package org.ikasan.dashboard.beans;
 
 import com.vaadin.flow.server.*;
-import org.atmosphere.cpr.ApplicationConfig;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.dashboard.cache.FlowStateCache;
-import org.ikasan.dashboard.ui.scheduler.AggregateStatusCollector;
+import org.ikasan.dashboard.cache.ModuleMetadataCache;
+import org.ikasan.dashboard.ui.scheduler.service.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.util.DashboardCacheAdapter;
@@ -72,6 +72,9 @@ public class DashboardComponentFactory
 
     @Value("${context.export.use.underscore.separated.context.name.convention:false}")
     private boolean useUnderscoreSeparatedContextNameConvention;
+
+    @Value("${module.metadata.cache.expiry.seconds:60}")
+    private int moduleMetadataCacheExpirySeconds;
 
     @Bean
     public ContextHelper contextHelper() {
@@ -160,6 +163,13 @@ public class DashboardComponentFactory
         AggregateStatusCollector.init(schedulerJobInstanceService);
 
         return AggregateStatusCollector.instance();
+    }
+
+    @Bean
+    public ModuleMetadataCache moduleMetadataCache(@Qualifier("moduleMetadataService")ModuleMetaDataService moduleMetaDataService) {
+        ModuleMetadataCache.init(moduleMetaDataService, moduleMetadataCacheExpirySeconds);
+
+        return ModuleMetadataCache.instance();
     }
     @Bean
     public GlobalEventService globalEventService() {

@@ -23,7 +23,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.security.SecurityUtils;
-import org.ikasan.dashboard.ui.scheduler.AggregateStatusCollector;
+import org.ikasan.dashboard.ui.scheduler.service.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
