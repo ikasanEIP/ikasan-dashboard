@@ -669,13 +669,12 @@ public abstract class Draw2dAdapterBase {
                     && context.getScheduledJobsMap().containsKey(jobIdentifier)
                     && (!((SchedulerJob)context.getScheduledJobsMap().get(jobIdentifier))
                         .getAgentName().equals(JobConstants.CONTEXT_START_JOB))
-//                    && (!((SchedulerJob)context.getScheduledJobsMap().get(and.getIdentifier()))
-//                    .getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
                 ) {
-                    graph.addEdge(and.getIdentifier(), jobIdentifier);
-
-                    this.addConnection(and.getIdentifier(), CONNECTOR_RIGHT_HYBRID_SOURCE
-                        , jobIdentifier, CONNECTOR_LEFT_HYBRID_TARGET, diagramBuilder);
+                    if(graph.containsVertex(and.getIdentifier()) && graph.containsVertex(jobIdentifier)) {
+                        graph.addEdge(and.getIdentifier(), jobIdentifier);
+                        this.addConnection(and.getIdentifier(), CONNECTOR_RIGHT_HYBRID_SOURCE
+                            , jobIdentifier, CONNECTOR_LEFT_HYBRID_TARGET, diagramBuilder);
+                    }
                 }
             });
         }
