@@ -1,6 +1,11 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.flowingcode.vaadin.addons.ironicons.IronIcons;
+import com.github.appreciated.app.layout.component.appbar.IconButton;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
@@ -10,6 +15,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
+import org.apache.commons.lang.SerializationUtils;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
@@ -17,6 +23,7 @@ import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
+import org.ikasan.dashboard.cache.ModuleMetadataCache;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
@@ -24,11 +31,13 @@ import org.ikasan.dashboard.ui.visualisation.component.FlowListFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
+import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.ModuleType;
+import org.ikasan.topology.metadata.model.FlowMetaDataImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -103,6 +112,16 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         layout.setHeight("50px");
         Label flows = new Label(getTranslation("label.scheduler-agent-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
+
+        Button refreshButton = new Button();
+        refreshButton.getStyle().set("position", "absolute");
+        refreshButton.getStyle().set("top", "10px");
+        refreshButton.getStyle().set("right", "10px");
+
+        refreshButton.addClickListener(buttonClickEvent -> this.recalculate());
+        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+
+        layout.add(refreshButton);
 
         layout.add(flows);
 
@@ -215,7 +234,6 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         Label flows = new Label(getTranslation("label.scheduler-agent-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
 
-
         Icon returnIcon = VaadinIcon.ARROW_CIRCLE_LEFT_O.create();
         returnIcon.setId("returnIcon");
         returnIcon.getElement().getStyle().set("margin-left", "5px");
@@ -271,7 +289,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         if(ui.isAttached()) {
             this.initialiseStateMap();
 
-            List<ModuleMetaData> moduleMetaData = this.moduleMetadataService.findAll();
+            List<ModuleMetaData> moduleMetaData = ModuleMetadataCache.instance().getModuleMetadata();
 
             moduleMetaData = moduleMetaData.stream()
                 .filter(metadata -> metadata.getType() == ModuleType.SCHEDULER_AGENT)
@@ -291,14 +309,15 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
                 })
                 .forEach(module -> module.getFlows().forEach(flow -> {
                     FlowState flowState = FlowStateCache.instance().get(module,flow.getName());
+                    FlowMetaData flowMetaData = new FlowMetaDataImpl();
+                    flowMetaData.setName(module.getName() + "." + flow.getName());
 
-                    flow.setName(module.getName() + "." + flow.getName());
 
                     if(flowState == null) {
-                        stateMap.get(State.UNKNOWN_STATE).add(flow);
+                        stateMap.get(State.UNKNOWN_STATE).add(flowMetaData);
                     }
                     else {
-                        stateMap.get(flowState.getState()).add(flow);
+                        stateMap.get(flowState.getState()).add(flowMetaData);
                     }
                 }));
 
