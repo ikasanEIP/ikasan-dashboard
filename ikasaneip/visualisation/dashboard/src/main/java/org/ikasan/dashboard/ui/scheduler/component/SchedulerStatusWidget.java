@@ -1,9 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.github.appreciated.app.layout.component.appbar.IconButton;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
@@ -15,7 +11,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
-import org.apache.commons.lang.SerializationUtils;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
@@ -31,7 +26,6 @@ import org.ikasan.dashboard.ui.visualisation.component.FlowListFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
-import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -119,7 +113,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         refreshButton.getStyle().set("right", "10px");
 
         refreshButton.addClickListener(buttonClickEvent -> this.recalculate());
-        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+        refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
 
         layout.add(refreshButton);
 
