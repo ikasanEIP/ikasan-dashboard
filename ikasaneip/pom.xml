@@ -381,6 +381,7 @@
         <version.okhttp3>3.7.0</version.okhttp3>
         <version.cron.utils>9.1.6</version.cron.utils>
         <version.tech.huffman.re-retrying>3.0.0</version.tech.huffman.re-retrying>
+        <version.caffine>3.1.8</version.caffine>
     </properties>
 
     <!-- Distribution for releases -->
@@ -2436,6 +2437,7 @@
                 <artifactId>activemq-all</artifactId>
                 <version>${version.activemq}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-kahadb-store</artifactId>
@@ -2462,6 +2464,12 @@
                 <groupId>org.apache.activemq.tooling</groupId>
                 <artifactId>activemq-junit</artifactId>
                 <version>${version.activemq}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>${version.caffine}</version>
             </dependency>
 
             <dependency>

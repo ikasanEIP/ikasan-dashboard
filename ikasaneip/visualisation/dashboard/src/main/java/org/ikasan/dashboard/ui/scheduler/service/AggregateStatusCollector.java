@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.scheduler;
+package org.ikasan.dashboard.ui.scheduler.service;
 
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
