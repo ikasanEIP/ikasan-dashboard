@@ -547,13 +547,6 @@
             <artifactId>httpclient</artifactId>
         </dependency>
 
-        <!-- Test dependencies -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
@@ -567,6 +560,13 @@
                     <artifactId>error_prone_annotations</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
