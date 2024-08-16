@@ -1,6 +1,8 @@
 package org.ikasan.dashboard.ui.dashboard.component;
 
+import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
@@ -18,6 +20,7 @@ import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
+import org.ikasan.dashboard.cache.ModuleMetadataCache;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.FlowListFilteringGrid;
@@ -29,6 +32,7 @@ import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.ModuleType;
+import org.ikasan.topology.metadata.model.FlowMetaDataImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -90,6 +94,17 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
         layout.setHeight("50px");
+
+        Button refreshButton = new Button();
+        refreshButton.getStyle().set("position", "absolute");
+        refreshButton.getStyle().set("top", "10px");
+        refreshButton.getStyle().set("right", "10px");
+
+        refreshButton.addClickListener(buttonClickEvent -> this.recalculate());
+        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+
+        layout.add(refreshButton);
+
         Label flows = new Label(getTranslation("label.flow-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
 
@@ -245,7 +260,7 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
     public void recalculate() {
         this.initialiseStateMap();
 
-        List<ModuleMetaData> moduleMetaData = this.moduleMetadataService.findAll();
+        List<ModuleMetaData> moduleMetaData = ModuleMetadataCache.instance().getModuleMetadata();
 
         final Set<String> accessibleModules = SecurityUtils.getAccessibleModules(authentication);
 
@@ -263,14 +278,14 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
             })
             .forEach(module -> module.getFlows().forEach(flow -> {
                 FlowState flowState = FlowStateCache.instance().get(module,flow.getName());
-
-                flow.setName(module.getName() + "." + flow.getName());
+                FlowMetaData flowMetaData = new FlowMetaDataImpl();
+                flowMetaData.setName(module.getName() + "." + flow.getName());
 
                 if(flowState == null) {
-                    stateMap.get(State.UNKNOWN_STATE).add(flow);
+                    stateMap.get(State.UNKNOWN_STATE).add(flowMetaData);
                 }
                 else {
-                    stateMap.get(flowState.getState()).add(flow);
+                    stateMap.get(flowState.getState()).add(flowMetaData);
                 }
             }));
 

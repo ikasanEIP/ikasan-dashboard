@@ -390,6 +390,7 @@
         <version.vcf-gridlayout>1.0.0</version.vcf-gridlayout>
         <version.javax.validation-api>2.0.1.Final</version.javax.validation-api>
         <version.woodstox.stax2-api>4.2.2</version.woodstox.stax2-api>
+        <version.caffine>3.1.8</version.caffine>
     </properties>
 
     <!-- Distribution for releases -->
@@ -2469,6 +2470,12 @@
                 <groupId>org.jgrapht</groupId>
                 <artifactId>jgrapht-ext</artifactId>
                 <version>${version.jtgraph}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>${version.caffine}</version>
             </dependency>
 
             <dependency>
