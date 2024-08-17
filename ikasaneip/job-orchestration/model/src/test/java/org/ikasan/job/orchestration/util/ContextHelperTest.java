@@ -67,6 +67,19 @@ public class ContextHelperTest {
     }
 
     @Test
+    public void test_context_template_token_replacement_with_no_job_dependencies() throws IOException, JSONException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/job-plan-no-dependencies.json"));
+
+        contextHelper.setUseUnderscoreSeparatedContextNameConvention(true);
+        ContextHelper.addContextTemplateReplacementTokens(contextTemplate);
+
+        Assert.assertNotNull(contextTemplate);
+        JSONAssert.assertEquals(loadDataFile("/data/job-plan-no-dependencies-with-tokens.json")
+            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+    }
+
+    @Test
     public void test_context_template_token_replacement_not_using_underscore_convention() throws IOException, JSONException {
         ContextTemplate contextTemplate = this.contextService
             .getContextTemplate(loadDataFile("/data/-1793100514.json"));
