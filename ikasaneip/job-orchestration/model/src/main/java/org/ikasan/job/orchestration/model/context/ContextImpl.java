@@ -7,6 +7,7 @@ import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,11 +20,11 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     // blackoutWindowDateTimeRanges - The UTC millisecond timestamp begin -> end for which a blackout occurs
     // Map<beginMilliSecondTimestamp -> endMilliSecondTimestamp>
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<Long, Long> blackoutWindowDateTimeRanges;
+    protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<String> blackoutWindowCronExpressions;
+    protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<JobDependency> jobDependencies;
+    protected List<JobDependency> jobDependencies = new ArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<ContextDependency> contextDependencies = new ArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)

@@ -6,6 +6,7 @@ import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,9 +16,9 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected String name;
     protected String description;
     protected String timezone;
-    protected Map<Long, Long> blackoutWindowDateTimeRanges;
-    protected List<String> blackoutWindowCronExpressions;
-    protected List<JobDependency> jobDependencies;
+    protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
+    protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
+    protected List<JobDependency> jobDependencies = new ArrayList<>() ;
     protected List<ContextDependency> contextDependencies = new ArrayList<>();
     protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>() ;
     protected String timeWindowStart;
