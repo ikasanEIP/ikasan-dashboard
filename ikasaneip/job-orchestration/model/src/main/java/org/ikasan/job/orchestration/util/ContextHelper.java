@@ -75,9 +75,11 @@ public class ContextHelper {
     private static void _addContextTemplateReplacementTokens(ContextTemplate contextTemplate) {
         if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
             contextTemplate.getScheduledJobs().forEach(schedulerJob -> {
-                contextTemplate.getJobDependencies().forEach(jobDependency -> {
-                    replaceJobIdentifierJobDependency(schedulerJob, jobDependency);
-                });
+                if(contextTemplate.getJobDependencies() != null) {
+                    contextTemplate.getJobDependencies().forEach(jobDependency -> {
+                        replaceJobIdentifierJobDependency(schedulerJob, jobDependency);
+                    });
+                }
 
                 if(!schedulerJob.getAgentName().equals(JobConstants.GLOBAL_EVENT) &&
                     !schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB) &&
