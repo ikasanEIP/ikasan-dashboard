@@ -434,6 +434,19 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     }
 
     /**
+     * Add a label to a given figure.
+     *
+     * @param figureIdentifier the figure identifier to add the label to
+     * @param label the string that appears in the label
+     */
+    public void addLabelToFigure(String figureIdentifier, String label, String fontSize) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addLabelToFigureWithFontSize"
+                , figureIdentifier, label, fontSize));
+        this.saved = false;
+    }
+
+    /**
      * Add a label to a give x y location
      * @param label the string that appears in the label
      * @param x the x coordinate of the label

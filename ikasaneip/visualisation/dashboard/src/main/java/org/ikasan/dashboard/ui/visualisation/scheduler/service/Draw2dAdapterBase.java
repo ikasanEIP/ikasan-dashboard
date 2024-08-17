@@ -38,10 +38,11 @@ public abstract class Draw2dAdapterBase {
     protected double jobMaxYExtent = 0;
 
     protected double jobVisualisationVerticalSpacing = 120;
-    protected double jobVisualisationHorizontalSpacing = 500;
+    protected double jobVisualisationHorizontalSpacing = 400;
 
     protected double contextVisualisationLevelDistance = 200;
     protected double contextVisualisationNodeDistance = 75;
+    protected int fontSize = 14;
 
     public static final String CONNECTOR_BOTTOM_HYBRID_SOURCE = "bottomHybridSource";
     public static final String CONNECTOR_TOP_HYBRID_TARGET = "topHybridTarget";
@@ -88,7 +89,7 @@ public abstract class Draw2dAdapterBase {
      */
     protected ArrayList<Object> _adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs, Map<String, SchedulerJob> schedulerJobsMap) {
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
-
+            this.setDiagramVisualisationLayoutConfiguration(context);
             // Determine if any jobs are initiated from a previous or are responsible for initiating a job in a
             // subsequent flow.
             List<ContextTransition> previousContexts = this.getPreviousContextTransitions(parentContext, context, schedulerJobsMap);
@@ -322,13 +323,13 @@ public abstract class Draw2dAdapterBase {
                             if(!((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_START_JOB) &&
                                 !((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_TERMINAL_JOB)) {
                                 double labelLength = ((SchedulerJob) context.getScheduledJobsMap()
-                                    .get(((PositionedItem) item).getId())).getJobName().length() * 7.5;
+                                    .get(((PositionedItem) item).getId())).getJobName().length() * this.fontSize * 0.65;
 
                                 Label label = new LabelBuilder().withText(((SchedulerJob) context.getScheduledJobsMap()
                                         .get(((PositionedItem) item).getId())).getJobName())
                                     .withX(positionedItemCentre - (labelLength / 2))
                                     .withY(((PositionedItem) item).getY() + 110)
-                                    .withFontSize("14pt")
+                                    .withFontSize(this.fontSize+"pt")
                                     .withComposite(group.getId())
                                     .build();
 
@@ -376,7 +377,7 @@ public abstract class Draw2dAdapterBase {
 
                         }
                         else if(((Image) item).getUserData().getItemType().equals(UserData.CONTEXT)) {
-                            double labelLength = ((Image) item).getUserData().getContextName().length() * 7.5;
+                            double labelLength = ((Image) item).getUserData().getContextName().length() * this.fontSize * 0.65;
 
                             ((Image) item).setComposite(group.getId());
                             if(contextTerminalJobs.containsKey(((Image) item).getUserData().getContextName())) {
@@ -387,7 +388,7 @@ public abstract class Draw2dAdapterBase {
                             Label label = new LabelBuilder().withText(((Image) item).getUserData().getContextName())
                                 .withX(positionedItemCentre - (labelLength / 2))
                                 .withY(((PositionedItem) item).getY() + 110)
-                                .withFontSize("14pt")
+                                .withFontSize(this.fontSize+"pt")
                                 .withComposite(group.getId())
                                 .build();
 
@@ -447,6 +448,7 @@ public abstract class Draw2dAdapterBase {
      * @return
      */
     protected ArrayList<Object> _adaptContext(Context context) {
+        this.setDiagramVisualisationLayoutConfiguration(context);
         DefaultDirectedGraph<Object, DefaultEdge> graph
             = new DefaultDirectedGraph<>(NoEdgeLabel.class);
 
@@ -554,13 +556,13 @@ public abstract class Draw2dAdapterBase {
                     double positionedItemCentre = ((PositionedItem) item).getX() + 50;
                     ((PositionedItem) item).setComposite(group.getId());
 
-                    // assuming each letter is 8 units long
-                    double labelLength = ((PositionedItem)item).getId().length() * 8;
+
+                    double labelLength = ((Image) item).getUserData().getContextName().length() * this.fontSize * 0.65;
 
                     Label label = new LabelBuilder().withText(((PositionedItem)item).getId())
                         .withX(positionedItemCentre - (labelLength / 2))
                         .withY(((PositionedItem)item).getY() + 110)
-                        .withFontSize("14pt")
+                        .withFontSize(this.fontSize + "pt")
                         .withComposite(group.getId())
                         .build();
 
@@ -949,6 +951,15 @@ public abstract class Draw2dAdapterBase {
         return tree;
     }
 
+    /**
+     * Recursively gets all child context transitions for the given context.
+     *
+     * @param theContext                  The top-level context to start from.
+     * @param context                     The current context being processed.
+     * @param parentContext               The parent context of the current context.
+     * @param contextSubsequentTransitionMap A map to store the subsequent transitions for each child context.
+     * @param schedulerJobMap             A map of scheduler jobs.
+     */
     private void getAllChildContextTransitions(Context theContext, Context context, Context parentContext, Map<String, List<String>> contextSubsequentTransitionMap
         , Map<String, SchedulerJob> schedulerJobMap) {
         context.getContexts().forEach(child -> {
@@ -1358,6 +1369,7 @@ public abstract class Draw2dAdapterBase {
 
     /**
      * Helper method to add a connection between 2 items.
+     *
      * @param sourceIdentifier
      * @param sourcePort
      * @param targetIdentifier
@@ -1381,5 +1393,32 @@ public abstract class Draw2dAdapterBase {
         );
 
         diagramBuilder.addItem(connectionBuilder.build());
+    }
+
+    /**
+     * Sets the layout configuration for diagram visualization.
+     *
+     * @param context the context containing the layout configuration properties
+     */
+    protected void setDiagramVisualisationLayoutConfiguration(Context context) {
+        if(context.getContextVisualisationLevelDistance() != null) {
+            this.contextVisualisationLevelDistance = context.getContextVisualisationLevelDistance();
+        }
+
+        if(context.getContextVisualisationNodeDistance() != null) {
+            this.contextVisualisationNodeDistance = context.getContextVisualisationNodeDistance();
+        }
+
+        if(context.getJobVisualisationHorizontalSpacing() != null) {
+            this.jobVisualisationHorizontalSpacing = context.getJobVisualisationHorizontalSpacing();
+        }
+
+        if(context.getJobVisualisationVerticalSpacing() != null) {
+            this.jobVisualisationVerticalSpacing = context.getJobVisualisationVerticalSpacing();
+        }
+
+        if(context.getVisualisationFontSize() != null) {
+            this.fontSize = context.getVisualisationFontSize();
+        }
     }
 }
