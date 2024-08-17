@@ -730,7 +730,7 @@ public class ContextMachine {
                 schedulerJobInstance.getChildContextName(), jobs);
             if ((this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-"
                 + schedulerJobInstance.getChildContextName()) ||
-                this.globalEventJobInstanceMap.containsKey(ContextHelper.GLOBAL_EVENT + "-" + schedulerJobInstance.getJobName() + "-"
+                this.globalEventJobInstanceMap.containsKey(JobConstants.GLOBAL_EVENT + "-" + schedulerJobInstance.getJobName() + "-"
                     + schedulerJobInstance.getChildContextName())) && contextTransitions.isEmpty()) {
                 if (this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-"
                     + schedulerJobInstance.getChildContextName()) && this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier() + "-"
