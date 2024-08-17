@@ -35,8 +35,13 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected boolean isQuartzScheduleDrivenJobsDisabledForContext;
     protected int treeViewExpandLevel = 1;
     protected boolean ableToRunConcurrently = true;
-    private boolean useDisplayName = false;
-    private int ordinal = -1;
+    protected boolean useDisplayName = false;
+    protected int ordinal = -1;
+    protected Integer jobVisualisationVerticalSpacing;
+    protected Integer jobVisualisationHorizontalSpacing;
+    protected Integer contextVisualisationLevelDistance;
+    protected Integer contextVisualisationNodeDistance;
+    protected Integer visualisationFontSize;
 
     @Override
     public String getName() {
@@ -201,6 +206,56 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setOrdinal(int ordinal) {
         this.ordinal = ordinal;
+    }
+
+    @Override
+    public Integer getJobVisualisationVerticalSpacing() {
+        return jobVisualisationVerticalSpacing;
+    }
+
+    @Override
+    public void setJobVisualisationVerticalSpacing(Integer jobVisualisationVerticalSpacing) {
+        this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
+    }
+
+    @Override
+    public Integer getJobVisualisationHorizontalSpacing() {
+        return jobVisualisationHorizontalSpacing;
+    }
+
+    @Override
+    public void setJobVisualisationHorizontalSpacing(Integer jobVisualisationHorizontalSpacing) {
+        this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
+    }
+
+    @Override
+    public Integer getContextVisualisationLevelDistance() {
+        return contextVisualisationLevelDistance;
+    }
+
+    @Override
+    public void setContextVisualisationLevelDistance(Integer contextVisualisationLevelDistance) {
+        this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
+    }
+
+    @Override
+    public Integer getContextVisualisationNodeDistance() {
+        return contextVisualisationNodeDistance;
+    }
+
+    @Override
+    public void setContextVisualisationNodeDistance(Integer contextVisualisationNodeDistance) {
+        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
+    }
+
+    @Override
+    public Integer getVisualisationFontSize() {
+        return visualisationFontSize;
+    }
+
+    @Override
+    public void setVisualisationFontSize(Integer visualisationFontSize) {
+        this.visualisationFontSize = visualisationFontSize;
     }
 
     @Override

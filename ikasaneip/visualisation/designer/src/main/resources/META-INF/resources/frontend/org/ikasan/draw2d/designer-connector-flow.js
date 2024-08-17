@@ -564,6 +564,56 @@ window.Vaadin.Flow.designerConnector = {
             }
         }
 
+        designer.$connector.addLabelToFigureWithFontSize = function (figureIdentifier, labelString, fontSize) {
+            let _figure = null;
+            debugger;
+            _this.getFigures().each((i, figure)=>{
+                if(figure.id === figureIdentifier) {
+                    _figure = figure;
+                }
+            });
+
+            if(_figure != null) {
+
+                let x = _figure.x - (_figure.width / 2);
+                let y = _figure.y + _figure.getHeight() + 10;
+                let label = new draw2d.shape.basic.Label({
+                    text: labelString,
+                    color: "rgba(255,255,255,0)",
+                    fontColor: "#0d0d0d",
+                    bgColor: "rgba(255,255,255,0)",
+                    outlineColor: "rgba(255,255,255,0)",
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    fontSize: fontSize,
+                    x: x, y: y
+                });
+
+                let command = new draw2d.command.CommandAdd(_this, label, x, y);
+                _this.getCommandStack().execute(command);
+
+                label.setX(_figure.x - (label.getWidth() / 2) + (_figure.getWidth() / 2));
+
+                let figuresToGroup = new draw2d.util.ArrayList();
+                figuresToGroup.add(label);
+                figuresToGroup.add(_figure);
+
+                _this.getCommandStack().execute(new draw2d.command.CommandGroup(_this, figuresToGroup));
+
+                _this.getFigures().each((i, figure) => {
+                    if (figure.NAME === 'draw2d.shape.basic.Image' || figure.NAME === 'draw2d.shape.composite.Group') {
+                        console.log("to front " + figure.NAME + " " + figure.id);
+                        figure.setKeepAspectRatio(true);
+                        // We want to bring images to the front so that
+                        // they can be double clicked!
+                        figure.toFront();
+                    } else {
+                        console.log("to back " + figure.NAME + " " + figure.id);
+                        figure.toBack();
+                    }
+                });
+            }
+        }
+
         designer.$connector.addImageToFigure = function (figureIdentifier, iconIdentifier, image, h, w) {
             let _figure = null;
             debugger;
