@@ -89,7 +89,7 @@ public abstract class Draw2dAdapterBase {
      */
     protected ArrayList<Object> _adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs, Map<String, SchedulerJob> schedulerJobsMap) {
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
-            this.setDiagramVisualisationLayoutConfiguration(context);
+            this.setDiagramVisualisationLayoutConfiguration(parentContext);
             // Determine if any jobs are initiated from a previous or are responsible for initiating a job in a
             // subsequent flow.
             List<ContextTransition> previousContexts = this.getPreviousContextTransitions(parentContext, context, schedulerJobsMap);
