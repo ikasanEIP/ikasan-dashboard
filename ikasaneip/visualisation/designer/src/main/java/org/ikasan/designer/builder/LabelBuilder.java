@@ -32,7 +32,7 @@ public class LabelBuilder {
     private String outlineColor = "rgba(255,255,255,0)";
     private String fontSize = "10pt";
     private String fontColor = "black";
-    private String fontFamily = "Arial, Helvetica, sans-serif";
+    private String fontFamily = "Roboto Mono";
 
     public LabelBuilder withId(String id) {
         this.id = id;

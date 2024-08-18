@@ -321,6 +321,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
         this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
+        this.setDefaultVisualisationDimensions();
+
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.setMargin(false);
@@ -961,6 +963,28 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
 
         return buttonWrapper;
+    }
+
+    private void setDefaultVisualisationDimensions() {
+        if(this.contextTemplate.getContextVisualisationLevelDistance() == null) {
+            this.contextTemplate.setContextVisualisationLevelDistance((int)this.contextVisualisationLevelDistance);
+        }
+
+        if(this.contextTemplate.getContextVisualisationNodeDistance() == null) {
+            this.contextTemplate.setContextVisualisationNodeDistance((int)this.contextVisualisationNodeDistance);
+        }
+
+        if(this.contextTemplate.getJobVisualisationHorizontalSpacing() == null) {
+            this.contextTemplate.setJobVisualisationHorizontalSpacing((int)this.jobVisualisationHorizontalSpacing);
+        }
+
+        if(this.contextTemplate.getJobVisualisationVerticalSpacing() == null) {
+            this.contextTemplate.setJobVisualisationVerticalSpacing((int)this.jobVisualisationVerticalSpacing);
+        }
+
+        if(this.contextTemplate.getVisualisationFontSize() == null) {
+            this.contextTemplate.setVisualisationFontSize(14);
+        }
     }
 
     /**

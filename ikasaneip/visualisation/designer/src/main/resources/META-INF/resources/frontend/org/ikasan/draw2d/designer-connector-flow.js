@@ -462,7 +462,7 @@ window.Vaadin.Flow.designerConnector = {
                 fontColor:"#0d0d0d",
                 bgColor:"rgba(255,255,255,0)",
                 outlineColor:"rgba(255,255,255,0)",
-                fontFamily: "Helvetica",
+                fontFamily: "Roboto Mono",
                 fontSize: "12pt",
                 x:x, y:y
             });
@@ -533,7 +533,7 @@ window.Vaadin.Flow.designerConnector = {
                     fontColor: "#0d0d0d",
                     bgColor: "rgba(255,255,255,0)",
                     outlineColor: "rgba(255,255,255,0)",
-                    fontFamily: "Arial, Helvetica, sans-serif",
+                    fontFamily: "Roboto Mono",
                     fontSize: "14pt",
                     x: x, y: y
                 });
@@ -583,7 +583,7 @@ window.Vaadin.Flow.designerConnector = {
                     fontColor: "#0d0d0d",
                     bgColor: "rgba(255,255,255,0)",
                     outlineColor: "rgba(255,255,255,0)",
-                    fontFamily: "Arial, Helvetica, sans-serif",
+                    fontFamily: "Roboto Mono",
                     fontSize: fontSize,
                     x: x, y: y
                 });
@@ -731,7 +731,7 @@ window.Vaadin.Flow.designerConnector = {
                 fontColor: "#0d0d0d",
                 bgColor: "rgba(255,255,255,0)",
                 outlineColor: "rgba(255,255,255,0)",
-                fontFamily: "Trebuchet MS",
+                fontFamily: "Roboto Mono",
                 fontSize: "12pt",
                 x: x, y: y
             });
