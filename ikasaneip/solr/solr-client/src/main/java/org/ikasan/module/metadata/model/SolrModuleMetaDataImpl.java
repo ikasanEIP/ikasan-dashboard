@@ -19,6 +19,7 @@ public class SolrModuleMetaDataImpl implements ModuleMetaData
     private String name;
     private String description;
     private String version;
+    private String ikasanVersion;
     private List<FlowMetaData> flows;
     private String configuredResourceId;
 
@@ -66,6 +67,16 @@ public class SolrModuleMetaDataImpl implements ModuleMetaData
     public String getVersion()
     {
         return this.version;
+    }
+
+    @Override
+    public String getIkasanVersion() {
+        return ikasanVersion;
+    }
+
+    @Override
+    public void setIkasanVersion(String ikasanVersion) {
+        this.ikasanVersion = ikasanVersion;
     }
 
     @Override
