@@ -67,10 +67,10 @@ public class SolrModuleMetadataServiceTest extends SolrTestCaseJ4
 
             objectMapper.registerModule(m);
 
-            ModuleMetaData solrConfigurationMetaData = objectMapper.readValue(loadDataFile(MODULE_RESULT_JSON), SolrModuleMetaDataImpl.class);
+            ModuleMetaData solrModuleMetaData = objectMapper.readValue(loadDataFile(MODULE_RESULT_JSON), SolrModuleMetaDataImpl.class);
 
             List<ModuleMetaData> moduleMetaDataList = new ArrayList<>();
-            moduleMetaDataList.add(solrConfigurationMetaData);
+            moduleMetaDataList.add(solrModuleMetaData);
 
             SolrModuleMetadataServiceImpl batchInsert = new SolrModuleMetadataServiceImpl(dao);
 
