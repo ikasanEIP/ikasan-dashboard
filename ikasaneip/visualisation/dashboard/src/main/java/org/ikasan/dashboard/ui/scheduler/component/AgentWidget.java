@@ -20,8 +20,10 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.DownloadLogFileService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 
 import java.util.Map;
 
@@ -40,21 +42,14 @@ public class AgentWidget extends Div {
 
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private DownloadLogFileService downloadLogFileService;
-    /**
-     * Constructor
-     *
-     * @param moduleMetadataService
-     * @param scheduledProcessManagementService
-     * @param configurationRestService
-     * @param moduleControlRestService
-     * @param metaDataRestService
-     * @param systemEventLogger
-     * @param schedulerService
-     */
+    private ScheduledContextService scheduledContextService;
+    private JobProvisionService jobProvisionService;
+
+
     public AgentWidget(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                       SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService,
-                       DownloadLogFileService downloadLogFileService) {
+                       SystemEventLogger systemEventLogger, SchedulerService schedulerService, JobProvisionService jobProvisionService, SchedulerJobService schedulerJobService,
+                       DownloadLogFileService downloadLogFileService, ScheduledContextService scheduledContextService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -63,7 +58,9 @@ public class AgentWidget extends Div {
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
         this.schedulerJobService = schedulerJobService;
+        this.jobProvisionService = jobProvisionService;
         this.downloadLogFileService = downloadLogFileService;
+        this.scheduledContextService = scheduledContextService;
         this.filterTextField = new TextField();
         this.createGrid();
 
@@ -115,7 +112,8 @@ public class AgentWidget extends Div {
         this.scheduledAgentsFilteringGrid.addGridFiltering(filterTextField, moduleSearchFilter::setModuleNameFilter);
         this.scheduledAgentsFilteringGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<ModuleMetaData>>) moduleMetaDataItemDoubleClickEvent -> {
             SchedulerAgentManagementDialog schedulerAgentManagementDialog
-                = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem(), downloadLogFileService);
+                = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem(), downloadLogFileService
+                , this.scheduledContextService, this.jobProvisionService, this.schedulerJobService);
 
             schedulerAgentManagementDialog.open();
         });

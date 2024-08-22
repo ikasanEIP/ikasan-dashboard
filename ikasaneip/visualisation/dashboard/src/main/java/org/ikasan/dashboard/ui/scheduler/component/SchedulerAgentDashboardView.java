@@ -23,6 +23,7 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.Resource;
@@ -53,6 +54,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
     private DownloadLogFileService downloadLogFileService;
+    private JobProvisionService jobProvisionService;
 
     private double jobVisualisationVerticalSpacing;
     private double jobVisualisationHorizontalSpacing;
@@ -82,7 +84,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                                        JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                        JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
                                        GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                       DownloadLogFileService downloadLogFileService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                       DownloadLogFileService downloadLogFileService, ContextInstanceSchedulerService contextInstanceSchedulerService, JobProvisionService jobProvisionService,
                                        double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
                                        double contextVisualisationNodeDistance) {
         this.moduleMetadataService = moduleMetadataService;
@@ -106,6 +108,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         this.downloadLogFileService = downloadLogFileService;
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        this.jobProvisionService = jobProvisionService;
         this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
         this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
         this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
@@ -123,7 +126,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         if(!initialised) {
             board.addRow(new AgentWidget(this.moduleMetadataService, this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
-                , this.schedulerService, this.schedulerJobService, this.downloadLogFileService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
+                , this.schedulerService, this.jobProvisionService, this.schedulerJobService, this.downloadLogFileService, this.scheduledContextService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
 
             board.addRow(new ContextInstanceDashboardWidget(this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
