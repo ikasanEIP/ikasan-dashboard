@@ -196,7 +196,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             , this.systemEventLogger, this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
             "", this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService,
             this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.downloadLogFileService, this.contextInstanceSchedulerService,
-            this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationNodeDistance);
+            this.jobProvisionService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationNodeDistance);
 
         this.schedulerAgentDashboardView.addClassName("styled");
         this.schedulerAgentDashboardView.setSizeFull();
