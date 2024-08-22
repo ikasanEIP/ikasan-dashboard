@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -96,6 +97,43 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
         });
 
         hr.getCell(getColumnByKey(columnKey)).setComponent(textField);
+    }
+
+    /**
+     * Add filtering to a column.
+     *
+     * @param hr
+     * @param setFilter
+     * @param columnKey
+     */
+    public void addComboBoxGridFiltering(HeaderRow hr, Consumer<String> setFilter, Set<Map.Entry<String, String>> options, String columnKey) {
+        ComboBox<Map.Entry<String, String>> select = new ComboBox<>();
+        select.setItems(options);
+        select.setWidthFull();
+        select.setClearButtonVisible(true);
+        select.setItemLabelGenerator(entry -> {
+            if(entry == null) {
+                return "";
+            }
+
+            return entry.getKey();
+        });
+
+        select.addValueChangeListener(ev-> {
+            if(ev.getValue() != null) {
+                setFilter.accept(ev.getValue().getValue());
+            }
+            else {
+                setFilter.accept(null);
+            }
+
+            filteredDataProvider.refreshAll();
+        });
+
+
+        HorizontalLayout layout = new HorizontalLayout(select);
+
+        hr.getCell(getColumnByKey(columnKey)).setComponent(layout);
     }
 
     /**

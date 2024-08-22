@@ -1,10 +1,13 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -24,7 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
@@ -101,6 +106,41 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
     }
 
     /**
+     * Add filtering to a column.
+     *
+     * @param hr
+     * @param setFilter
+     * @param columnKey
+     */
+    public void addComboBoxGridFiltering(HeaderRow hr, Consumer<String> setFilter, Set<Map.Entry<String, String>> options, String columnKey) {
+        ComboBox<Map.Entry<String, String>> select = new ComboBox<>();
+        select.setItems(options);
+        select.setWidthFull();
+        select.setClearButtonVisible(true);
+        select.setItemLabelGenerator(entry -> {
+            if(entry == null) {
+                return "";
+            }
+
+            return entry.getKey();
+        });
+
+        select.addValueChangeListener(ev-> {
+            if(ev.getValue() != null) {
+                setFilter.accept(ev.getValue().getValue());
+            }
+            else {
+                setFilter.accept(null);
+            }
+
+            filteredDataProvider.refreshAll();
+        });
+
+        HorizontalLayout layout = new HorizontalLayout(select);
+        hr.getCell(getColumnByKey(columnKey)).setComponent(layout);
+    }
+
+    /**
      * Initialise the grid.
      */
     public void init() {
@@ -142,7 +182,7 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
         this.setDataProvider(filteredDataProvider);
     }
 
-    private SearchResults getResults(ScheduledContextSearchFilter filter, int offset, int limit, String sortColumn, String sortOrder) {
+    public SearchResults getResults(ScheduledContextSearchFilter filter, int offset, int limit, String sortColumn, String sortOrder) {
         if(!SecurityUtils.canAccessAllJobPlans(this.authentication)) {
             filter.setContextNames(new ArrayList<>(SecurityUtils.getAccessibleJobPlans(this.authentication)));
         }

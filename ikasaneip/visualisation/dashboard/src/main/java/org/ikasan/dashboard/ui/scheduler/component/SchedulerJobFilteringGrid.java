@@ -2,13 +2,13 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
@@ -92,6 +92,34 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
      * @param setFilter
      * @param columnKey
      */
+    public void addComboBoxGridFiltering(HeaderRow hr, Consumer<String> setFilter, Set<Map.Entry<String, String>> options, String columnKey) {
+        ComboBox<Map.Entry<String, String>> select = new ComboBox<>();
+        select.setItems(options);
+        select.setWidthFull();
+        select.setClearButtonVisible(true);
+        select.setItemLabelGenerator(entry -> {
+            if(entry == null) {
+                return "";
+            }
+
+            return entry.getKey();
+        });
+
+        select.addValueChangeListener(ev-> {
+            if(ev.getValue() != null) {
+                setFilter.accept(ev.getValue().getValue());
+            }
+            else {
+                setFilter.accept(null);
+            }
+
+            filteredDataProvider.refreshAll();
+        });
+
+        HorizontalLayout layout = new HorizontalLayout(select);
+        hr.getCell(getColumnByKey(columnKey)).setComponent(layout);
+    }
+
     public void addSelectGridFiltering(HeaderRow hr, Consumer<String> setFilter, Set<Map.Entry<String, String>> options, String columnKey) {
         Select<Map.Entry<String, String>> select = new Select<>();
         select.setItems(options);
@@ -106,7 +134,6 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
         });
 
         select.addValueChangeListener(ev-> {
-
             if(ev.getValue() != null) {
                 setFilter.accept(ev.getValue().getValue());
             }

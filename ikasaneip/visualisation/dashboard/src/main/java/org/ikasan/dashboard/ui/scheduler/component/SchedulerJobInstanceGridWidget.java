@@ -32,6 +32,7 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.orchestration.service.context.local.LocalEventServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -60,6 +61,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SchedulerJobInstanceGridWidget extends Div
@@ -886,7 +888,11 @@ public class SchedulerJobInstanceGridWidget extends Div
         if(this.contextInstance.isUseDisplayName()) {
             this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setDisplayNameFilter, "alias");
         }
-        this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "moduleName");
+        Map<String, String> jobNamesMap = this.schedulerJobInstanceService.getSchedulerJobInstancesByContextInstanceId(this.contextInstance.getId(), -1, -1,  null, null).getResultList().stream()
+            .filter(job -> !job.getType().equals(JobConstants.CONTEXT_START_JOB_INSTANCE)
+                && !job.getType().equals(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE))
+            .collect(Collectors.toMap(SchedulerJobInstanceRecord::getJobName, SchedulerJobInstanceRecord::getJobName, (o1, o2) -> o1));
+        this.schedulerJobInstanceFilteringGrid.addComboBoxGridFiltering(hr, schedulerJobSearchFilter::setJobName, jobNamesMap.entrySet(), "moduleName");
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setChildContextName, "childContextName");
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobType
             , SolrSchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");

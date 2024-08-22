@@ -36,6 +36,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -57,6 +58,7 @@ import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceServi
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.*;
@@ -990,7 +992,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             .setFlexGrow(2);
 
         HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
-        this.contextTemplateFilteringGrid.addGridFiltering(hr, contextSearchFilter::setContextName, "moduleName");
+        Map<String, String> contextNamesMap = (Map<String, String>) this.contextTemplateFilteringGrid
+            .getResults(new ScheduledContextSearchFilterImpl(), -1, -1, null, null).getResultList().stream()
+            .collect(Collectors.toMap(ScheduledContextRecord::getContextName, ScheduledContextRecord::getContextName, (o1, o2) -> o1));
+        this.contextTemplateFilteringGrid.addComboBoxGridFiltering(hr, contextSearchFilter::setContextName,  contextNamesMap.entrySet(), "moduleName");
     }
 
     /**

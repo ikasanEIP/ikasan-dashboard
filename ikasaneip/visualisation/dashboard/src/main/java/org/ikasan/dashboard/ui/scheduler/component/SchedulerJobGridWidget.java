@@ -6,22 +6,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.shared.Registration;
-import liquibase.pro.packaged.L;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcastListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
@@ -29,11 +25,10 @@ import org.ikasan.dashboard.ui.scheduler.util.NewSchedulerJobEventBroadcastListe
 import org.ikasan.dashboard.ui.scheduler.util.NewSchedulerJobEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -44,10 +39,8 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -62,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedEventBroadcastListener
     , NewSchedulerJobEventBroadcastListener {
@@ -814,7 +808,12 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         if(this.contextTemplate.isUseDisplayName()) {
             this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setDisplayNameFilter, "alias");
         }
-        this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
+        Map<String, String> jobNamesMap = (Map<String, String>) this.schedulerJobService.findByContext(this.contextTemplate.getName(), -1, -1).getResultList().stream()
+            .filter(job -> !((SolrSchedulerJobRecordImpl)job).getType().equals(JobConstants.CONTEXT_START_JOB)
+                && !((SolrSchedulerJobRecordImpl)job).getType().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+            .collect(Collectors.toMap(SolrSchedulerJobRecordImpl::getJobName, SolrSchedulerJobRecordImpl::getJobName, (o1, o2) -> o1));
+        this.schedulerJobFilteringGrid.addComboBoxGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter
+            , jobNamesMap.entrySet(), "flowName");
         this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
             , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
 
@@ -822,7 +821,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         heldSkippedMap.put(getTranslation("filter-label.held", UI.getCurrent().getLocale()), InstanceStatus.ON_HOLD.name());
         heldSkippedMap.put(getTranslation("filter-label.skipped", UI.getCurrent().getLocale()), InstanceStatus.SKIPPED.name());
 
-        this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setStatus
+        this.schedulerJobFilteringGrid.addComboBoxGridFiltering(hr, schedulerJobSearchFilter::setStatus
             , heldSkippedMap.entrySet(), "status");
         this.schedulerJobFilteringGrid.getElement().getStyle().set("margin-top", "0px");
 

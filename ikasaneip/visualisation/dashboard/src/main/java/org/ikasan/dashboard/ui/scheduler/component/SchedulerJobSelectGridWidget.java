@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -15,26 +14,18 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
-import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.ConfigurationService;
-import org.ikasan.spec.module.client.LogStreamingService;
-import org.ikasan.spec.module.client.MetaDataService;
-import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
-import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
-import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SchedulerJobSelectGridWidget extends Div {
 
@@ -48,9 +39,14 @@ public class SchedulerJobSelectGridWidget extends Div {
 
     private String jobSelectLabel;
 
+    private SchedulerJobService schedulerJobService;
+    private ContextTemplate contextTemplate;
+
     public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent
         , SchedulerJobSearchFilter schedulerJobSearchFilter, String jobSelectLabel) {
         this.schedulerJobSearchFilter = schedulerJobSearchFilter;
+        this.schedulerJobService = schedulerJobService;
+        this.contextTemplate = contextTemplate;
         this.parent = parent;
         this.jobSelectLabel = jobSelectLabel;
 
@@ -62,8 +58,9 @@ public class SchedulerJobSelectGridWidget extends Div {
      */
     public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent
         , String jobSelectLabel) {
-
         this.parent = parent;
+        this.schedulerJobService = schedulerJobService;
+        this.contextTemplate = contextTemplate;
         this.schedulerJobSearchFilter = new SolrSchedulerJobSearchFilterImpl();
         this.jobSelectLabel = jobSelectLabel;
         init(schedulerJobService, contextTemplate);
@@ -165,7 +162,13 @@ public class SchedulerJobSelectGridWidget extends Div {
         });
 
         HeaderRow hr = schedulerJobFilteringGrid.appendHeaderRow();
-        this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
+        Map<String, String> jobNamesMap = (Map<String, String>) this.schedulerJobService.findByContext(this.contextTemplate.getName(), -1, -1).getResultList().stream()
+            .filter(job -> !((SolrSchedulerJobRecordImpl)job).getType().equals(JobConstants.CONTEXT_START_JOB)
+                && !((SolrSchedulerJobRecordImpl)job).getType().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+            .collect(Collectors.toMap(SolrSchedulerJobRecordImpl::getJobName, SolrSchedulerJobRecordImpl::getJobName, (o1, o2) -> o1));
+
+        this.schedulerJobFilteringGrid.addComboBoxGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter
+            , jobNamesMap.entrySet(), "flowName");
 
         if(this.jobType == null) {
             this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
