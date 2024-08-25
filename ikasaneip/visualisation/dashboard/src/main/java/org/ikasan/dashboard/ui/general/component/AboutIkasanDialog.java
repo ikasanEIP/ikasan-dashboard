@@ -1,17 +1,9 @@
 package org.ikasan.dashboard.ui.general.component;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.server.VaadinSession;
-import org.ikasan.dashboard.ui.util.ApplicationContextProvider;
-import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.dashboard.ui.util.DashboardApplicationContextProvider;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +18,7 @@ public class AboutIkasanDialog extends AbstractCloseableResizableDialog
 
     private void init()
     {
-        BuildProperties buildProperties = (BuildProperties)ApplicationContextProvider.getContext().getBean("buildProperties");
+        BuildProperties buildProperties = (BuildProperties) DashboardApplicationContextProvider.getContext().getBean("buildProperties");
 
         FormLayout formLayout = new FormLayout();
         formLayout.setWidthFull();
@@ -52,7 +44,7 @@ public class AboutIkasanDialog extends AbstractCloseableResizableDialog
         showResize(false);
         setResizable(false);
         this.setWidth("650px");
-        this.setHeight("300px");
+        this.setHeight("325px");
         super.title.setText("About");
     }
 }

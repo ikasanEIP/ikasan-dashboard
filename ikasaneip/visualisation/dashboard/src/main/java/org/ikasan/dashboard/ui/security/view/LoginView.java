@@ -10,7 +10,6 @@ import com.vaadin.flow.component.login.AbstractLogin;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -32,7 +31,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 
 @Tag("sa-login-view")
@@ -81,7 +79,7 @@ public class LoginView extends VerticalLayout
         Div loginDiv = new Div();
         loginDiv.add(login);
 
-        BuildProperties buildProperties = (BuildProperties) ApplicationContextProvider.getContext().getBean("buildProperties");
+        BuildProperties buildProperties = (BuildProperties) DashboardApplicationContextProvider.getContext().getBean("buildProperties");
 
         NativeLabel versionLabel = new NativeLabel(getTranslation("label.build-version", getLocale()) + " " + buildProperties.getVersion());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy hh:mm:ss")
