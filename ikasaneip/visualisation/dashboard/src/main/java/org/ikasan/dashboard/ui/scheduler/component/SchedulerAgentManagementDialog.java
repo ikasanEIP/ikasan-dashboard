@@ -96,7 +96,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
             SecurityConstants.SCHEDULER_ALL_ADMIN,
             SecurityConstants.SCHEDULER_ALL_WRITE);
 
-        Button synchroniseAllJobPlans = new Button(getTranslation("button.sychronise-all-enable-job-plans", UI.getCurrent().getLocale()), VaadinIcon.ARROWS_LONG_H.create());
+        Button synchroniseAllJobPlans = new Button(getTranslation("button.synchronise-all-enable-job-plans", UI.getCurrent().getLocale()), VaadinIcon.ARROWS_LONG_H.create());
         synchroniseAllJobPlans.setIconAfterText(false);
         synchroniseAllJobPlans.addClickListener(buttonClickEvent -> {
             this.synchroniseAllJobsOnAgent(scheduledContextService, jobProvisionService, schedulerJobService, agent);
