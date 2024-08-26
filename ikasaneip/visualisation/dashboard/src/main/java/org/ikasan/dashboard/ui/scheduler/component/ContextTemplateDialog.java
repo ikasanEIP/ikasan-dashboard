@@ -420,8 +420,9 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
             , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, cbLayout, this.descriptionTa
-            , this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.jobVisualisationHorizontalSpacing
-            , this.jobVisualisationVerticalSpacing, this.fontSize, this.blackoutWindowsGrid, addDateTimePairButton);
+            , this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance
+            , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
+            , this.fontSize, this.blackoutWindowsGrid, addDateTimePairButton);
 
         this.formLayout.setColspan(this.contextNameTf, 12);
         this.formLayout.setColspan(this.startWindowCronExpressionTf, 6);
