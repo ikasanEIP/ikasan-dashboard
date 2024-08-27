@@ -105,7 +105,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
 
         if(filter.getContextName() != null && !filter.getContextName().isEmpty()) {
             queryBuffer.append(AND);
-            queryBuffer.append(MODULE_NAME).append(COLON).append(WILDCARD).append(filter.getContextName()).append(WILDCARD);
+            queryBuffer.append(MODULE_NAME).append(COLON).append(WILDCARD).append(filter.getContextName().replaceAll("\\ ", "\\\\ ")).append(WILDCARD);
         }
 
         if(filter.getContextNames() != null && !filter.getContextNames().isEmpty()) {
