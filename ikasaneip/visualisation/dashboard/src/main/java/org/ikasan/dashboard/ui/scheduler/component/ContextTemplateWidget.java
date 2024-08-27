@@ -260,7 +260,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         newContextButton.addClickListener(buttonClickEvent -> {
             ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService, this.contextInstanceRegistrationService
                 , this.contextInstanceSchedulerService, this.systemEventLogger, getTranslation("label.new-context-template", UI.getCurrent().getLocale()), true
-                , this.jobPlanIntervalMultiple);
+                , this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
             contextTemplateDialog.open();
             contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> this.updateActiveContextMenu());
             contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
@@ -992,10 +992,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             .setFlexGrow(2);
 
         HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
-        Map<String, String> contextNamesMap = (Map<String, String>) this.contextTemplateFilteringGrid
-            .getResults(new ScheduledContextSearchFilterImpl(), -1, -1, null, null).getResultList().stream()
-            .collect(Collectors.toMap(ScheduledContextRecord::getContextName, ScheduledContextRecord::getContextName, (o1, o2) -> o1));
-        this.contextTemplateFilteringGrid.addComboBoxGridFiltering(hr, contextSearchFilter::setContextName,  contextNamesMap.entrySet(), "moduleName");
+        this.contextTemplateFilteringGrid.addGridFiltering(hr, contextSearchFilter::setContextName, "moduleName");
     }
 
     /**
