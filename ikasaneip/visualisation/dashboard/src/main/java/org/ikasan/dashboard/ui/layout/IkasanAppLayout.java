@@ -115,7 +115,7 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
         this.swaggerUI.getElement().setProperty("title", "Swagger UI");
         this.swaggerUI.addClickListener(event -> UI.getCurrent().getPage().open("/swagger-ui.html", "_blank"));
 
-        IconButton aboutButton = new IconButton(VaadinIcon.QUESTION.create());
+        IconButton aboutButton = new IconButton(VaadinIcon.INFO_CIRCLE_O.create());
         aboutButton.setId("aboutButton");
         aboutButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             AboutIkasanDialog aboutIkasanDialog = new AboutIkasanDialog();

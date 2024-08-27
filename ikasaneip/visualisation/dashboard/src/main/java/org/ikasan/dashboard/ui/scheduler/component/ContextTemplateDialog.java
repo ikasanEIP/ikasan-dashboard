@@ -66,10 +66,10 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private IntegerField contextTtlHours;
     private IntegerField contextTtlDays;
 
-    private IntegerField contextVisualisationLevelDistance;
-    private IntegerField contextVisualisationNodeDistance;
-    private IntegerField jobVisualisationHorizontalSpacing;
-    private IntegerField jobVisualisationVerticalSpacing;
+    private IntegerField contextVisualisationLevelDistanceIf;
+    private IntegerField contextVisualisationNodeDistanceIf;
+    private IntegerField jobVisualisationHorizontalSpacingIf;
+    private IntegerField jobVisualisationVerticalSpacingIf;
     private IntegerField fontSize;
     private IntegerField treeViewExpandLevel;
     private Checkbox isAbleToRunConcurrentlyCb;
@@ -87,6 +87,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private boolean editName;
     private int jobPlanIntervalMultiple;
 
+
+
     /**
      * Constructor
      *
@@ -96,7 +98,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      * @param editName
      */
     public ContextTemplateDialog(ScheduledContextService scheduledContextService, SchedulerJobService schedulerJobService, ContextInstanceRegistrationService contextInstanceRegistrationService
-        , ContextInstanceSchedulerService contextInstanceSchedulerService,  SystemEventLogger systemEventLogger, String title, boolean editName, int jobPlanIntervalMultiple) {
+        , ContextInstanceSchedulerService contextInstanceSchedulerService,  SystemEventLogger systemEventLogger, String title, boolean editName, int jobPlanIntervalMultiple
+        , double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
@@ -126,7 +129,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.jobPlanIntervalMultiple = jobPlanIntervalMultiple;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-
+        this.contextTemplate.setVisualisationFontSize(14);
+        this.contextTemplate.setJobVisualisationHorizontalSpacing((int)jobVisualisationHorizontalSpacing);
+        this.contextTemplate.setJobVisualisationVerticalSpacing((int)jobVisualisationVerticalSpacing);
+        this.contextTemplate.setContextVisualisationLevelDistance((int)contextVisualisationLevelDistance);
+        this.contextTemplate.setContextVisualisationNodeDistance((int)contextVisualisationNodeDistance);
         this.init();
     }
 
@@ -279,36 +286,36 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         binder.forField(this.treeViewExpandLevel)
             .bind(ContextTemplate::getTreeViewExpandLevel, ContextTemplate::setTreeViewExpandLevel);
 
-        this.contextVisualisationLevelDistance = new IntegerField(getTranslation("label.context-node-vertical-distance", UI.getCurrent().getLocale()));
-        this.contextVisualisationLevelDistance.getElement().getThemeList().add("always-float-label");
-        this.contextVisualisationLevelDistance.setRequiredIndicatorVisible(true);
-        this.contextVisualisationLevelDistance.setErrorMessage(getTranslation("error.context-node-vertical-distance", UI.getCurrent().getLocale()));
-        this.contextVisualisationLevelDistance.setMin(0);
-        binder.forField(this.contextVisualisationLevelDistance)
+        this.contextVisualisationLevelDistanceIf = new IntegerField(getTranslation("label.context-node-vertical-distance", UI.getCurrent().getLocale()));
+        this.contextVisualisationLevelDistanceIf.getElement().getThemeList().add("always-float-label");
+        this.contextVisualisationLevelDistanceIf.setRequiredIndicatorVisible(true);
+        this.contextVisualisationLevelDistanceIf.setErrorMessage(getTranslation("error.context-node-vertical-distance", UI.getCurrent().getLocale()));
+        this.contextVisualisationLevelDistanceIf.setMin(0);
+        binder.forField(this.contextVisualisationLevelDistanceIf)
             .bind(ContextTemplate::getContextVisualisationLevelDistance, ContextTemplate::setContextVisualisationLevelDistance);
 
-        this.contextVisualisationNodeDistance = new IntegerField(getTranslation("label.context-node-horizontal-distance", UI.getCurrent().getLocale()));
-        this.contextVisualisationNodeDistance.getElement().getThemeList().add("always-float-label");
-        this.contextVisualisationNodeDistance.setRequiredIndicatorVisible(true);
-        this.contextVisualisationNodeDistance.setErrorMessage(getTranslation("error.context-node-horizontal-distance", UI.getCurrent().getLocale()));
-        this.contextVisualisationNodeDistance.setMin(0);
-        binder.forField(this.contextVisualisationNodeDistance)
+        this.contextVisualisationNodeDistanceIf = new IntegerField(getTranslation("label.context-node-horizontal-distance", UI.getCurrent().getLocale()));
+        this.contextVisualisationNodeDistanceIf.getElement().getThemeList().add("always-float-label");
+        this.contextVisualisationNodeDistanceIf.setRequiredIndicatorVisible(true);
+        this.contextVisualisationNodeDistanceIf.setErrorMessage(getTranslation("error.context-node-horizontal-distance", UI.getCurrent().getLocale()));
+        this.contextVisualisationNodeDistanceIf.setMin(0);
+        binder.forField(this.contextVisualisationNodeDistanceIf)
             .bind(ContextTemplate::getContextVisualisationNodeDistance, ContextTemplate::setContextVisualisationNodeDistance);
 
-        this.jobVisualisationHorizontalSpacing = new IntegerField(getTranslation("label.job-visualisation-horizontal-spacing", UI.getCurrent().getLocale()));
-        this.jobVisualisationHorizontalSpacing.getElement().getThemeList().add("always-float-label");
-        this.jobVisualisationHorizontalSpacing.setRequiredIndicatorVisible(true);
-        this.jobVisualisationHorizontalSpacing.setErrorMessage(getTranslation("error.job-visualisation-horizontal-spacing", UI.getCurrent().getLocale()));
-        this.jobVisualisationHorizontalSpacing.setMin(0);
-        binder.forField(this.jobVisualisationHorizontalSpacing)
+        this.jobVisualisationHorizontalSpacingIf = new IntegerField(getTranslation("label.job-visualisation-horizontal-spacing", UI.getCurrent().getLocale()));
+        this.jobVisualisationHorizontalSpacingIf.getElement().getThemeList().add("always-float-label");
+        this.jobVisualisationHorizontalSpacingIf.setRequiredIndicatorVisible(true);
+        this.jobVisualisationHorizontalSpacingIf.setErrorMessage(getTranslation("error.job-visualisation-horizontal-spacing", UI.getCurrent().getLocale()));
+        this.jobVisualisationHorizontalSpacingIf.setMin(0);
+        binder.forField(this.jobVisualisationHorizontalSpacingIf)
             .bind(ContextTemplate::getJobVisualisationHorizontalSpacing, ContextTemplate::setJobVisualisationHorizontalSpacing);
 
-        this.jobVisualisationVerticalSpacing = new IntegerField(getTranslation("label.job-visualisation-vertical-spacing", UI.getCurrent().getLocale()));
-        this.jobVisualisationVerticalSpacing.getElement().getThemeList().add("always-float-label");
-        this.jobVisualisationVerticalSpacing.setRequiredIndicatorVisible(true);
-        this.jobVisualisationVerticalSpacing.setErrorMessage(getTranslation("error.job-visualisation-vertical-spacing", UI.getCurrent().getLocale()));
-        this.jobVisualisationVerticalSpacing.setMin(0);
-        binder.forField(this.jobVisualisationVerticalSpacing)
+        this.jobVisualisationVerticalSpacingIf = new IntegerField(getTranslation("label.job-visualisation-vertical-spacing", UI.getCurrent().getLocale()));
+        this.jobVisualisationVerticalSpacingIf.getElement().getThemeList().add("always-float-label");
+        this.jobVisualisationVerticalSpacingIf.setRequiredIndicatorVisible(true);
+        this.jobVisualisationVerticalSpacingIf.setErrorMessage(getTranslation("error.job-visualisation-vertical-spacing", UI.getCurrent().getLocale()));
+        this.jobVisualisationVerticalSpacingIf.setMin(0);
+        binder.forField(this.jobVisualisationVerticalSpacingIf)
             .bind(ContextTemplate::getJobVisualisationVerticalSpacing, ContextTemplate::setJobVisualisationVerticalSpacing);
 
         this.fontSize = new IntegerField(getTranslation("label.visualisation-font-size", UI.getCurrent().getLocale()));
@@ -420,8 +427,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
             , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, cbLayout, this.descriptionTa
-            , this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.jobVisualisationHorizontalSpacing
-            , this.jobVisualisationVerticalSpacing, this.fontSize, this.blackoutWindowsGrid, addDateTimePairButton);
+            , this.contextVisualisationLevelDistanceIf, this.contextVisualisationNodeDistanceIf, this.jobVisualisationHorizontalSpacingIf
+            , this.jobVisualisationVerticalSpacingIf, this.fontSize, this.blackoutWindowsGrid, addDateTimePairButton);
 
         this.formLayout.setColspan(this.contextNameTf, 12);
         this.formLayout.setColspan(this.startWindowCronExpressionTf, 6);
@@ -432,10 +439,10 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.formLayout.setColspan(this.treeViewExpandLevel, 4);
         this.formLayout.setColspan(cbLayout, 3);
         this.formLayout.setColspan(this.descriptionTa, 12);
-        this.formLayout.setColspan(this.contextVisualisationLevelDistance, 5);
-        this.formLayout.setColspan(this.contextVisualisationNodeDistance, 5);
-        this.formLayout.setColspan(this.jobVisualisationHorizontalSpacing, 5);
-        this.formLayout.setColspan(this.jobVisualisationVerticalSpacing, 5);
+        this.formLayout.setColspan(this.contextVisualisationLevelDistanceIf, 5);
+        this.formLayout.setColspan(this.contextVisualisationNodeDistanceIf, 5);
+        this.formLayout.setColspan(this.jobVisualisationHorizontalSpacingIf, 5);
+        this.formLayout.setColspan(this.jobVisualisationVerticalSpacingIf, 5);
         this.formLayout.setColspan(this.fontSize, 5 );
         this.formLayout.setColspan(blackoutWindowsGrid, 37);
         this.formLayout.setColspan(addDateTimePairButton, 3);
@@ -562,17 +569,17 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.contextTtlDays.setInvalid(this.contextTtlDays.isInvalid() || this.contextTtlDays.getValue() == null);
         this.contextTtlHours.setInvalid(this.contextTtlHours.isInvalid() || this.contextTtlHours.getValue() == null);
         this.contextTtlMinutes.setInvalid(this.contextTtlMinutes.isInvalid() || this.contextTtlMinutes.getValue() == null);
-        this.contextVisualisationNodeDistance.setInvalid(this.contextVisualisationNodeDistance.isInvalid() || this.contextVisualisationNodeDistance.getValue() == null);
-        this.contextVisualisationLevelDistance.setInvalid(this.contextVisualisationLevelDistance.isInvalid() || this.contextVisualisationLevelDistance.getValue() == null);
-        this.jobVisualisationVerticalSpacing.setInvalid(this.jobVisualisationVerticalSpacing.isInvalid() || this.jobVisualisationVerticalSpacing.getValue() == null);
-        this.jobVisualisationHorizontalSpacing.setInvalid(this.jobVisualisationHorizontalSpacing.isInvalid() || this.jobVisualisationHorizontalSpacing.getValue() == null);
+        this.contextVisualisationNodeDistanceIf.setInvalid(this.contextVisualisationNodeDistanceIf.isInvalid() || this.contextVisualisationNodeDistanceIf.getValue() == null);
+        this.contextVisualisationLevelDistanceIf.setInvalid(this.contextVisualisationLevelDistanceIf.isInvalid() || this.contextVisualisationLevelDistanceIf.getValue() == null);
+        this.jobVisualisationVerticalSpacingIf.setInvalid(this.jobVisualisationVerticalSpacingIf.isInvalid() || this.jobVisualisationVerticalSpacingIf.getValue() == null);
+        this.jobVisualisationHorizontalSpacingIf.setInvalid(this.jobVisualisationHorizontalSpacingIf.isInvalid() || this.jobVisualisationHorizontalSpacingIf.getValue() == null);
         this.fontSize.setInvalid(this.fontSize.isInvalid() || this.fontSize.getValue() == null);
 
 
         if(isValid && blackoutWindowsDefined.get() && timezoneValid && blackoutWindowsValid.get()
             && !this.contextTtlHours.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid()
-            && !this.contextVisualisationLevelDistance.isInvalid() && !this.contextVisualisationNodeDistance.isInvalid()
-            && !this.jobVisualisationHorizontalSpacing.isInvalid() && !this.jobVisualisationVerticalSpacing.isInvalid() && !this.fontSize.isInvalid()) {
+            && !this.contextVisualisationLevelDistanceIf.isInvalid() && !this.contextVisualisationNodeDistanceIf.isInvalid()
+            && !this.jobVisualisationHorizontalSpacingIf.isInvalid() && !this.jobVisualisationVerticalSpacingIf.isInvalid() && !this.fontSize.isInvalid()) {
             boolean intervalGreaterThanNextFireTime = CronUtils.isDurationGreaterThanNextFireTime(this.startWindowCronExpressionTf.getValue(), ContextDurationUtils.getMilliseconds(this.contextTtlDays.getValue()
                 , this.contextTtlHours.getValue(), this.contextTtlMinutes.getValue()), this.jobPlanIntervalMultiple);
 
@@ -586,8 +593,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
         return isValid && blackoutWindowsDefined.get() && timezoneValid && blackoutWindowsValid.get()
             && !this.contextTtlHours.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid()
-            && !this.contextVisualisationLevelDistance.isInvalid() && !this.contextVisualisationNodeDistance.isInvalid()
-            && !this.jobVisualisationHorizontalSpacing.isInvalid() && !this.jobVisualisationVerticalSpacing.isInvalid() && !this.fontSize.isInvalid();
+            && !this.contextVisualisationLevelDistanceIf.isInvalid() && !this.contextVisualisationNodeDistanceIf.isInvalid()
+            && !this.jobVisualisationHorizontalSpacingIf.isInvalid() && !this.jobVisualisationVerticalSpacingIf.isInvalid() && !this.fontSize.isInvalid();
     }
 
     /**
