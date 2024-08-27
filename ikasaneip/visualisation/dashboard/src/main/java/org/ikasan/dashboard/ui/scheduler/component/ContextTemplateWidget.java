@@ -258,7 +258,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         newContextButton.addClickListener(buttonClickEvent -> {
             ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService, this.contextInstanceRegistrationService
                 , this.contextInstanceSchedulerService, this.systemEventLogger, getTranslation("label.new-context-template", UI.getCurrent().getLocale()), true
-                , this.jobPlanIntervalMultiple);
+                , this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
             contextTemplateDialog.open();
             contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> this.updateActiveContextMenu());
             contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
