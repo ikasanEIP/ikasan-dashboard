@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Image;
@@ -9,7 +8,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import org.ikasan.dashboard.ui.util.ApplicationContextProvider;
+import org.ikasan.dashboard.ui.util.DashboardApplicationContextProvider;
 import org.springframework.boot.info.BuildProperties;
 
 public class AboutIkasanDialog extends AbstractCloseableResizableDialog
@@ -22,7 +21,7 @@ public class AboutIkasanDialog extends AbstractCloseableResizableDialog
 
     private void init()
     {
-        BuildProperties buildProperties = (BuildProperties)ApplicationContextProvider.getContext().getBean("buildProperties");
+        BuildProperties buildProperties = (BuildProperties) DashboardApplicationContextProvider.getContext().getBean("buildProperties");
 
         VerticalLayout verticalLayout = new VerticalLayout();
 
