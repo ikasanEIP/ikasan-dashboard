@@ -26,6 +26,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.Collections;
+import java.util.TimeZone;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -379,7 +380,6 @@ public class ContextStatusServiceControllerTest {
     }
 
 
-    //TODO
     @Test
     public void should_return_response_entity_correctly_json_context_name_job_status() throws Exception {
 
@@ -514,6 +514,49 @@ public class ContextStatusServiceControllerTest {
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
     }
 
+    @Test
+    public void test_get_overrun_job_plan_instances_none_overrun() throws Exception {
+        ContextInstance instance = new ContextInstanceImpl();
+        instance.setId("test-instance-id");
+        instance.setName("JOB_PLAN");
+        instance.setProjectedEndTime(System.currentTimeMillis() + System.currentTimeMillis());
+        instance.setStartTime(System.currentTimeMillis());
+        instance.setTimezone(TimeZone.getDefault().getID());
+        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+            , null, null, null, null, null, null, null , JobLockCacheImpl.instance(), null
+            , null, null, null, null, null);
+        ContextMachineCache.instance().put(contextMachine);
+
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/overRunningJobPlans")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+        assertEquals("[]", mvcResult.getResponse().getContentAsString());
+    }
+
+    @Test
+    public void test_get_overrun_job_plan_instances_overrun() throws Exception {
+        ContextInstance instance = new ContextInstanceImpl();
+        instance.setId("test-instance-id");
+        instance.setName("JOB_PLAN");
+        instance.setStartTime(10000000L);
+        instance.setProjectedEndTime(0);
+        instance.setTimezone(TimeZone.getTimeZone("Europe/London").getID());
+        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+            , null, null, null, null, null, null, null , JobLockCacheImpl.instance(), null
+            , null, null, null, null, null);
+        ContextMachineCache.instance().put(contextMachine);
+
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/overRunningJobPlans")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+        assertEquals("[{\"jobPlanInstanceId\":\"test-instance-id\",\"jobPlanName\":\"JOB_PLAN\"" +
+            ",\"jobPlanStartTimestamp\":10000000,\"jobPlanProjectedEndTimestamp\":0,\"timezone\":\"Europe/London\"}]"
+            , mvcResult.getResponse().getContentAsString());
+    }
 
 
 }

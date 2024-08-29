@@ -45,7 +45,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
+import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.OverrunJobPlanInstanceDto;
+import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequestMapping("/rest/contextStatus")
 @RestController
@@ -217,6 +222,20 @@ public class ContextStatusServiceController {
         }
 
         return new ResponseEntity(jobStatusJson, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+        path = {"/overRunningJobPlans"},
+        produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity getContextInstancesThatHaveNotEndedByTheirProjectEndTime() {
+        List<OverrunJobPlanInstanceDto> overRunningInstances = ContextMachineCache.instance().getAllContextInstances().stream()
+            .filter(contextInstance -> contextInstance.getProjectedEndTime() < System.currentTimeMillis())
+            .map(contextInstance -> new OverrunJobPlanInstanceDto(contextInstance.getId(), contextInstance.getName(),
+                contextInstance.getStartTime(), contextInstance.getProjectedEndTime(), contextInstance.getTimezone()))
+            .collect(Collectors.toList());
+
+        return new ResponseEntity(overRunningInstances, HttpStatus.OK);
     }
 
 }

@@ -1,7 +1,9 @@
 package org.ikasan.job.orchestration.context.cache;
 
+import liquibase.pro.packaged.L;
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +17,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * This class represents a cache for ContextMachine instances.
+ */
 public class ContextMachineCache
 {
     private Logger logger = LoggerFactory.getLogger(ContextMachineCache.class);
 
     private static ContextMachineCache INSTANCE;
 
+    /**
+     * Returns an instance of the ContextMachineCache class.
+     *
+     * @return An instance of the ContextMachineCache class.
+     */
     public static ContextMachineCache instance()
     {
         if(INSTANCE == null) {
@@ -33,21 +43,23 @@ public class ContextMachineCache
         return INSTANCE;
     }
 
-    /** Get all Context Instances in the cache */
-    public ConcurrentHashMap<String, ContextMachine> getContextInstanceByContextInstanceIdCache() {
-        return contextInstanceByContextInstanceIdCache;
-    }
-
     private final ConcurrentHashMap<String, ContextMachine> contextInstanceByContextInstanceIdCache;
     private final Set<String> contextNames;
 
+    /**
+     * This class represents a cache for ContextMachine objects.
+     */
     private ContextMachineCache() {
         this.contextInstanceByContextInstanceIdCache = new ConcurrentHashMap<>();
         this.contextNames = new HashSet<>();
     }
 
-    public void put(ContextMachine contextMachine)
-    {
+    /**
+     * Adds a ContextMachine object to the cache.
+     *
+     * @param contextMachine The ContextMachine object to add to the cache.
+     */
+    public synchronized void put(ContextMachine contextMachine) {
         // Note, we can now have multiple instances per plan, so the ContextNameCache will contain the latest only.
         this.contextInstanceByContextInstanceIdCache.put(contextMachine.getContext().getId(), contextMachine);
         this.contextNames.add(contextMachine.getContext().getName());
@@ -107,6 +119,13 @@ public class ContextMachineCache
         return contextMachines;
     }
 
+    /**
+     * Retrieves the ContextMachine object corresponding to the given context instance ID.
+     *
+     * @param contextInstanceId The ID of the context instance to retrieve.
+     * @return The ContextMachine object associated with the given context instance ID,
+     *         or null if the context instance ID is null or does not exist in the cache.
+     */
     public ContextMachine getByContextInstanceId(String contextInstanceId)
     {
         logger.debug(String.format("Attempting to get context using context instance id[%s]"
@@ -139,7 +158,34 @@ public class ContextMachineCache
         return contextInstanceIdList;
     }
 
+    /**
+     * Gets a list of all context instances managed by the ContextMachines held in the cache.
+     *
+     * @return A list of {@link ContextInstance} objects representing all the context instances.
+     */
+    public List<ContextInstance> getAllContextInstances() {
+        return new ArrayList<>(contextInstanceByContextInstanceIdCache.values())
+                .stream()
+                .map(ContextMachine::getContext)
+                .collect(Collectors.toList());
+    }
 
+
+    /**
+     * Retrieves the ConcurrentHashMap that maps context instance IDs to ContextMachine objects.
+     *
+     * @return The ConcurrentHashMap containing the context instances by their IDs.
+     */
+    public ConcurrentHashMap<String, ContextMachine> getContextInstanceByContextInstanceIdCache() {
+        return contextInstanceByContextInstanceIdCache;
+    }
+
+    /**
+     * Checks if the given context instance identifier exists in the cache.
+     *
+     * @param contextInstanceId The context instance identifier to check.
+     * @return true if the context instance identifier exists in the cache, false otherwise.
+     */
     public boolean containsInstanceIdentifier(String contextInstanceId)
     {
         if(contextInstanceId == null) return false;
@@ -159,11 +205,21 @@ public class ContextMachineCache
         return Set.copyOf(this.contextNames);
     }
 
+    /**
+     * Retrieves the set of context instance identifiers currently stored in the cache.
+     *
+     * @return The set of context instance identifiers.
+     */
     public Set<String> contextInstanceIdentifiers() {
         return this.contextInstanceByContextInstanceIdCache.keySet();
     }
 
-    public void remove(ContextMachine contextMachine)
+    /**
+     * Removes a ContextMachine object from the cache.
+     *
+     * @param contextMachine The ContextMachine object to remove.
+     */
+    public synchronized void remove(ContextMachine contextMachine)
     {
         contextMachine.unregisterToNotificationMonitors();
         this.contextInstanceByContextInstanceIdCache.remove(contextMachine.getContext().getId(), contextMachine);
@@ -173,7 +229,7 @@ public class ContextMachineCache
     /**
      * This is intended to support testability and remove the need for reflective access
      */
-    public void resetAllCache() {
+    public synchronized void resetAllCache() {
         contextInstanceByContextInstanceIdCache.clear();
         contextNames.clear();
     }
