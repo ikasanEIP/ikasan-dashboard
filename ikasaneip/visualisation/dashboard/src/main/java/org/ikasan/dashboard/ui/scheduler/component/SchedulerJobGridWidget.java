@@ -808,12 +808,9 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         if(this.contextTemplate.isUseDisplayName()) {
             this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setDisplayNameFilter, "alias");
         }
-        Map<String, String> jobNamesMap = (Map<String, String>) this.schedulerJobService.findByContext(this.contextTemplate.getName(), -1, -1).getResultList().stream()
-            .filter(job -> !((SolrSchedulerJobRecordImpl)job).getType().equals(JobConstants.CONTEXT_START_JOB)
-                && !((SolrSchedulerJobRecordImpl)job).getType().equals(JobConstants.CONTEXT_TERMINAL_JOB))
-            .collect(Collectors.toMap(SolrSchedulerJobRecordImpl::getJobName, SolrSchedulerJobRecordImpl::getJobName, (o1, o2) -> o1));
-        this.schedulerJobFilteringGrid.addComboBoxGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter
-            , jobNamesMap.entrySet(), "flowName");
+
+        this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter
+            , "flowName");
         this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
             , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
 

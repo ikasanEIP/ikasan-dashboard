@@ -888,11 +888,8 @@ public class SchedulerJobInstanceGridWidget extends Div
         if(this.contextInstance.isUseDisplayName()) {
             this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setDisplayNameFilter, "alias");
         }
-        Map<String, String> jobNamesMap = this.schedulerJobInstanceService.getSchedulerJobInstancesByContextInstanceId(this.contextInstance.getId(), -1, -1,  null, null).getResultList().stream()
-            .filter(job -> !job.getType().equals(JobConstants.CONTEXT_START_JOB_INSTANCE)
-                && !job.getType().equals(JobConstants.CONTEXT_TERMINAL_JOB_INSTANCE))
-            .collect(Collectors.toMap(SchedulerJobInstanceRecord::getJobName, SchedulerJobInstanceRecord::getJobName, (o1, o2) -> o1));
-        this.schedulerJobInstanceFilteringGrid.addComboBoxGridFiltering(hr, schedulerJobSearchFilter::setJobName, jobNamesMap.entrySet(), "moduleName");
+
+        this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "moduleName");
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setChildContextName, "childContextName");
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobType
             , SolrSchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
