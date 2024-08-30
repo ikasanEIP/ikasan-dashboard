@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -486,6 +487,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.formLayout.add(this.endTimeTf, 4);
 
         HorizontalLayout jobStatusLayout = new HorizontalLayout();
+        jobStatusLayout.setWidthFull();
         this.waitingStatus.setSizeFull();
         this.completeStatus.setSizeFull();
         this.runningStatus.setSizeFull();
@@ -493,8 +495,14 @@ public class ContextInstanceWidget extends VerticalLayout
         this.onHoldStatus.setSizeFull();
         this.skippedStatus.setSizeFull();
         this.errorStatus.setSizeFull();
+        Button refreshButton = new Button();
+        refreshButton.setWidth("200px");
+        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+        refreshButton.addClickListener(buttonClickEvent -> {
+            this.refreshJobStatusWidget();
+        });
         jobStatusLayout.add(this.waitingStatus, this.completeStatus, this.runningStatus, this.queuedStatus
-            , this.onHoldStatus, this.skippedStatus, this.errorStatus);
+            , this.onHoldStatus, this.skippedStatus, this.errorStatus, refreshButton);
 
         this.formLayout.add(jobStatusLayout, 22);
 
