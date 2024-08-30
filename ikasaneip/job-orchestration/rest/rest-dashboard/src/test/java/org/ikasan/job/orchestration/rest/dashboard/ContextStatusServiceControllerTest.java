@@ -548,15 +548,25 @@ public class ContextStatusServiceControllerTest {
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
-        // This one should not be reported as it is required to end manually.
-        instance = new ContextInstanceImpl();
-        instance.setId("test-instance-id-2");
-        instance.setName("JOB_PLAN-2");
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/overRunningJobPlans")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+        assertEquals("[{\"jobPlanInstanceId\":\"test-instance-id\",\"jobPlanName\":\"JOB_PLAN\"" +
+            ",\"jobPlanStartTimestamp\":10000000,\"jobPlanProjectedEndTimestamp\":0,\"timezone\":\"Europe/London\"}]"
+            , mvcResult.getResponse().getContentAsString());
+    }
+
+    @Test
+    public void test_get_overrun_job_plan_instances_overrun_manual_end() throws Exception {
+        ContextInstance instance = new ContextInstanceImpl();
+        instance.setId("test-instance-id");
+        instance.setName("JOB_PLAN");
         instance.setStartTime(10000000L);
         instance.setProjectedEndTime(0);
         instance.setRunContextUntilManuallyEnded(true);
         instance.setTimezone(TimeZone.getTimeZone("Europe/London").getID());
-        contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
             , null, null, null, null, null, null, null , JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -566,8 +576,7 @@ public class ContextStatusServiceControllerTest {
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
-        assertEquals("[{\"jobPlanInstanceId\":\"test-instance-id\",\"jobPlanName\":\"JOB_PLAN\"" +
-            ",\"jobPlanStartTimestamp\":10000000,\"jobPlanProjectedEndTimestamp\":0,\"timezone\":\"Europe/London\"}]"
+        assertEquals("[]"
             , mvcResult.getResponse().getContentAsString());
     }
 }
