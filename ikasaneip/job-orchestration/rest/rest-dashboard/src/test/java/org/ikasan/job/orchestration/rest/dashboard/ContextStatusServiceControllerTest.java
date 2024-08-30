@@ -548,6 +548,19 @@ public class ContextStatusServiceControllerTest {
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
+        // This one should not be reported as it is required to end manually.
+        instance = new ContextInstanceImpl();
+        instance.setId("test-instance-id-2");
+        instance.setName("JOB_PLAN-2");
+        instance.setStartTime(10000000L);
+        instance.setProjectedEndTime(0);
+        instance.setRunContextUntilManuallyEnded(true);
+        instance.setTimezone(TimeZone.getTimeZone("Europe/London").getID());
+        contextMachine = new ContextMachine(null, instance, null, null, null
+            , null, null, null, null, null, null, null , JobLockCacheImpl.instance(), null
+            , null, null, null, null, null);
+        ContextMachineCache.instance().put(contextMachine);
+
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/contextStatus/overRunningJobPlans")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
@@ -557,6 +570,4 @@ public class ContextStatusServiceControllerTest {
             ",\"jobPlanStartTimestamp\":10000000,\"jobPlanProjectedEndTimestamp\":0,\"timezone\":\"Europe/London\"}]"
             , mvcResult.getResponse().getContentAsString());
     }
-
-
 }
