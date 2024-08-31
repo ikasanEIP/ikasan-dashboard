@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -30,9 +29,9 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.service.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
+import org.ikasan.dashboard.ui.scheduler.service.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.*;
@@ -497,7 +496,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.errorStatus.setSizeFull();
         Button refreshButton = new Button();
         refreshButton.setWidth("200px");
-        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+        refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
         refreshButton.addClickListener(buttonClickEvent -> {
             this.refreshJobStatusWidget();
         });
