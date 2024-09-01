@@ -49,7 +49,7 @@
 
     <groupId>org.ikasan</groupId>
     <artifactId>ikasan-dashboard-build</artifactId>
-    <version>3.3.7-SNAPSHOT</version>
+    <version>3.3.7</version>
     <packaging>pom</packaging>
     <name>Ikasan Parent Project</name>
     <description>Ikasan Parent Project</description>
@@ -374,7 +374,7 @@
         <version.ace.editor>2.3.1</version.ace.editor>
         <version.big.queue>1.0.0</version.big.queue>
         <version.logback>1.2.3</version.logback>
-        <ikasan.core.version>3.3.5-SNAPSHOT</ikasan.core.version>
+        <ikasan.core.version>3.3.5</ikasan.core.version>
         <version.spring.webflux>5.3.10</version.spring.webflux>
         <version.reactor.test>3.4.10</version.reactor.test>
         <version.reactor.netty.http>1.0.11</version.reactor.netty.http>
