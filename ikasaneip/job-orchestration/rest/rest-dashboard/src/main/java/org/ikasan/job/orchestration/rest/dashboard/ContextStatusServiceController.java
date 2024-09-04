@@ -230,7 +230,10 @@ public class ContextStatusServiceController {
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
     public ResponseEntity getContextInstancesThatHaveNotEndedByTheirProjectEndTime() {
         List<OverrunJobPlanInstanceDto> overRunningInstances = ContextMachineCache.instance().getAllContextInstances().stream()
-            .filter(contextInstance -> contextInstance.getProjectedEndTime() < System.currentTimeMillis() && !contextInstance.isRunContextUntilManuallyEnded())
+            .filter(contextInstance -> contextInstance.getProjectedEndTime() < System.currentTimeMillis()
+                && !contextInstance.isRunContextUntilManuallyEnded()
+                && contextInstance.getStatus() != null
+                && !contextInstance.getStatus().equals(InstanceStatus.PREPARED))
             .map(contextInstance -> new OverrunJobPlanInstanceDto(contextInstance.getId(), contextInstance.getName(),
                 contextInstance.getStartTime(), contextInstance.getProjectedEndTime(), contextInstance.getTimezone()))
             .collect(Collectors.toList());
