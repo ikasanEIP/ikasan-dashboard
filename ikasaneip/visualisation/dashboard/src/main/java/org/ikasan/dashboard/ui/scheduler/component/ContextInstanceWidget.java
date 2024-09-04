@@ -495,7 +495,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.skippedStatus.setSizeFull();
         this.errorStatus.setSizeFull();
         Button refreshButton = new Button();
-        refreshButton.setWidth("200px");
+        refreshButton.setWidth("50px");
         refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
         refreshButton.addClickListener(buttonClickEvent -> {
             this.refreshJobStatusWidget();
