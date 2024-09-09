@@ -162,6 +162,7 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
                 .build());
 
         networkDiagram.setSizeFull();
+        networkDiagram.scale(1.2);
 
         networkDiagram.addDoubleClickListener((DoubleClickListener) doubleClickEvent ->
         {
@@ -191,7 +192,6 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
                                 .collect(Collectors.toList()),
                             node, networkDiagram, WiretapManagementDialog.WIRETAP, WiretapManagementDialog.BEFORE);
                         wiretapManagementDialog.open();
-                        return;
                     }
                     else if(node.wiretapAfterClickedOn(x, y)) {
                         WiretapManagementDialog wiretapManagementDialog = new WiretapManagementDialog(this.triggerRestService,
@@ -202,7 +202,6 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
                                 .collect(Collectors.toList()),
                             node, networkDiagram, WiretapManagementDialog.WIRETAP, WiretapManagementDialog.AFTER);
                         wiretapManagementDialog.open();
-                        return;
                     }
                     else if(node.logWiretapBeforeClickedOn(x, y)) {
                        WiretapManagementDialog wiretapManagementDialog = new WiretapManagementDialog(this.triggerRestService,
@@ -417,6 +416,8 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
     protected void onAttach(AttachEvent attachEvent)
     {
         this.redraw();
+        this.networkDiagram.diagamRedraw();
+        this.networkDiagram.diagramFit();
         this.current = attachEvent.getUI();
         FlowStateBroadcaster.register(this);
         CacheStateBroadcaster.register(this);

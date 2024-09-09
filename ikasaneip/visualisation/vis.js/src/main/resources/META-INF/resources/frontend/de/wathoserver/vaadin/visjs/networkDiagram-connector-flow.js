@@ -1,10 +1,9 @@
 window.Vaadin.Flow.networkDiagramConnector = {
 	initLazy : function(graph, initialNodes, initialEdges, options) {
 
-        // Check whether the connector was already initialized for the Iron list
-        if (graph.$connector) {
-            return;
-        }
+        // if (graph.$connector) {
+        //     return;
+        // }
         console.log('init networkDiagramConnector');
 
         graph.$connector = {};
@@ -101,6 +100,7 @@ window.Vaadin.Flow.networkDiagramConnector = {
         let scaleOption = { scale : 0.6,
             animation: false};
         graph.$connector.diagram.moveTo(scaleOption);
+        graph.$connector.diagram.fit();
 
         // Enable event dispatching to vaadin only for registered eventTypes to
         // avoid too much overhead.
