@@ -1,9 +1,9 @@
 window.Vaadin.Flow.networkDiagramConnector = {
 	initLazy : function(graph, initialNodes, initialEdges, options) {
 
-        // if (graph.$connector) {
-        //     return;
-        // }
+        if (graph.$connector) {
+            return;
+        }
         console.log('init networkDiagramConnector');
 
         graph.$connector = {};
