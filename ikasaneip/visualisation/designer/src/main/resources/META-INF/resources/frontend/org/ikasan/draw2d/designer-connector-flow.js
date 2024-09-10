@@ -104,6 +104,9 @@ window.Vaadin.Flow.designerConnector = {
             return JSON.stringify(container);
         }
 
+        document.getElementById(name).addEventListener("wheel", (event) => {
+            designer.$connector.zoom(event);
+        });
 
         designer.$connecIconNoCoordinates = function (identifier, image, h, w, isClickable) {
             debugger;
@@ -257,11 +260,18 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.zoomIn = function () {
-            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*0.8,true);
+            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*0.98,true);
+            scrollToCenter(0.98);
         }
 
         designer.$connector.zoomOut = function () {
-            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*1.2,true);
+            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*1.02,true);
+            scrollToCenter(1.02);
+        }
+
+        designer.$connector.zoomFactor = function (factor) {
+            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*factor,true);
+            scrollToCenter(factor);
         }
 
         designer.$connector.bringToFront = function () {
@@ -270,6 +280,18 @@ window.Vaadin.Flow.designerConnector = {
                     figure.toFront();
                 }
             });
+        }
+
+        designer.$connector.zoom = function(event) {
+            debugger;
+            event.preventDefault();
+
+            if(event.deltaY > 0) {
+                designer.$connector.zoomFactor(1.02);
+            }
+            else {
+                designer.$connector.zoomFactor(0.99);
+            }
         }
 
         designer.$connector.sendToBack = function () {
@@ -1039,6 +1061,21 @@ window.Vaadin.Flow.designerConnector = {
             console.log("finished import json " + performance.now());
 
             element.$server.canvasInitialised();
+        }
+
+        function scrollToCenter(factor) {
+            let scrollTopFactor = designer.$connector.designer.getScrollTop() * (1/factor);
+            let scrollLeftFactor = 0;
+
+            if(factor < 1) {
+                scrollLeftFactor = designer.$connector.designer.getScrollLeft() + (designer.$connector.designer.getScrollLeft() - designer.$connector.designer.getScrollLeft() * factor)  * ((1/factor) ** 6);
+            }
+            else {
+                scrollLeftFactor = designer.$connector.designer.getScrollLeft() + (designer.$connector.designer.getScrollLeft() - designer.$connector.designer.getScrollLeft() * factor)  * ((factor) ** 6);
+            }
+
+            debugger;
+            designer.$connector.designer.scrollTo(scrollTopFactor, scrollLeftFactor);
         }
 
          function exportJsonLocal() {
