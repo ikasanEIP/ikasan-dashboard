@@ -3,10 +3,16 @@ package org.ikasan.designer;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.componentfactory.Popup;
+import com.vaadin.componentfactory.PopupVariant;
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -48,6 +54,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private List<CanvasUpdatedListener> canvasUpdatedListeners = new ArrayList<>();
     private List<FigureUndoDeleteEventListener> figureUndoDeleteEventListeners = new ArrayList<>();
     private List<FigureDeleteEventListener> figureDeleteEventListeners = new ArrayList<>();
+    private List<JobMouseOverListener> jobMouseOverListeners = new ArrayList<>();
 
     private SaveFunction saveFunction;
     private SaveAsFunction saveAsFunction;
@@ -747,6 +754,10 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.figureDeleteEventListeners.add(listener);
     }
 
+    public void addJobMouseOverEventListener(JobMouseOverListener jobMouseOverListener) {
+        this.jobMouseOverListeners.add(jobMouseOverListener);
+    }
+
     /**
      * Adds an instance of FigureUndoDeleteEventListener to the list of event listeners.
      *
@@ -763,6 +774,17 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      */
     public void addCanvasUpdatedListener(CanvasUpdatedListener listener) {
         this.canvasUpdatedListeners.add(listener);
+    }
+
+    @ClientCallable
+    private void showJobDetails(String figure){
+        try {
+            Figure figureObj = mapper.readValue(figure, Figure.class);
+            this.jobMouseOverListeners.forEach(jobMouseOverListener -> jobMouseOverListener.onJobMouseOverEvent(new JobMouseOverEvent(figureObj)));
+        }
+        catch (JsonProcessingException e) {
+            logger.error("An error has occurred processing figure json associated with a job mouse over event - [%s]!".formatted(e.getMessage()), e);
+        }
     }
 
     @ClientCallable
