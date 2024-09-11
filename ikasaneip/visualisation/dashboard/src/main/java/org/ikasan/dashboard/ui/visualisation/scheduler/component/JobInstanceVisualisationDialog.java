@@ -152,7 +152,9 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
 
         layout = new VerticalLayout();
         this.layout.getStyle().set("padding-top", "0px");
-        layout.setSizeFull();
+        this.layout.getStyle().set("padding-bottom", "10px");
+        layout.setHeight("98vh");
+        super.content.setHeight("96vh");
         super.content.add(layout);
     }
 
