@@ -888,6 +888,15 @@ window.Vaadin.Flow.designerConnector = {
             spinner = null;
         }
 
+        let cursor_x = -1;
+        let cursor_y = -1;
+        document.onmousemove = function(event)
+        {
+            debugger;
+            cursor_x = event.pageX;
+            cursor_y = event.pageY;
+        }
+
         designer.$connector.importJson = async function (jsonDocument, toBack) {
 
             let opts = {
@@ -935,6 +944,21 @@ window.Vaadin.Flow.designerConnector = {
                 } else if(toBack){
                     console.log("to back " + figure.NAME + " " + figure.id);
                     figure.toBack();
+                }
+                figure.onMouseEnter = function () {
+                    if(figure.getUserData() != null &&
+                        figure.getUserData().itemType != null &&
+                        (figure.getUserData().itemType === 'INTERNAL_EVENT_DRIVEN_JOB' ||
+                        figure.getUserData().itemType === 'QUARTZ_EVENT_DRIVEN_JOB'||
+                        figure.getUserData().itemType === 'FILE_EVENT_DRIVEN_JOB')) {
+                        console.log("mouse dragged onto " + figure.getUserData().jobName);
+                        console.log(cursor_x);
+                        console.log(cursor_y);
+                        let element = document.getElementById(canvasName);
+                        let figureLite = new FigureLite(figure.id, cursor_x, cursor_y, figure.getWidth()
+                            , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
+                        element.$server.showJobDetails(JSON.stringify(figureLite));
+                    }
                 }
             });
 

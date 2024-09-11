@@ -21,6 +21,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateCha
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.CanvasInitialisedListener;
 import org.ikasan.designer.DesignerCanvas;
+import org.ikasan.designer.PositionedDialog;
 import org.ikasan.designer.event.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;

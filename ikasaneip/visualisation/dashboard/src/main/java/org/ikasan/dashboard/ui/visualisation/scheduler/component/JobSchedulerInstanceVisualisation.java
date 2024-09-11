@@ -7,8 +7,11 @@ import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceDraw2dAdapter;
 import org.ikasan.designer.DesignerCanvas;
+import org.ikasan.designer.PositionedDialog;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemSingleClickEvent;
+import org.ikasan.designer.event.JobMouseOverEvent;
+import org.ikasan.designer.event.JobMouseOverListener;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -37,7 +40,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualisation {
+public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualisation implements JobMouseOverListener {
 
     private static Logger logger = LoggerFactory.getLogger(ContextInstanceWidget.class);
 
@@ -118,6 +121,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
             this.designerCanvas.addCanvasItemSingleClickEventListener(this);
             this.designerCanvas.addCanvasInitialisedListener(this);
+            this.designerCanvas.addJobMouseOverEventListener(this);
 
             this.designerCanvas.manageClickableItems();
 
@@ -245,6 +249,16 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
             }
         }
         super.singleClickEvent(canvasItemDoubleClickEvent);
+    }
+
+    @Override
+    public void onJobMouseOverEvent(JobMouseOverEvent event) {
+        SchedulerJobInstanceRecord jobInstanceRecord = this.loadJob(event.getFigure().getUserData().getIdentifier(), event.getFigure().getUserData().getJobName(),
+            JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+        CommandExecutionJobPositionedDialog positionedDialog = new CommandExecutionJobPositionedDialog(jobInstanceRecord, this.logStreamingService);
+        PositionedDialog.Position position = new PositionedDialog.Position(event.getFigure().getY()+"px", event.getFigure().getX()+"px");
+        positionedDialog.setPosition(position);
+        positionedDialog.open();
     }
 
     /**
