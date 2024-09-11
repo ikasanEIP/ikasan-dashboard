@@ -212,6 +212,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
 
                 this.visualisationSplitLayout = new SplitLayout();
                 this.visualisationSplitLayout.setWidthFull();
+                this.visualisationSplitLayout.setHeightFull();
                 this.visualisationSplitLayout.setOrientation(SplitLayout.Orientation.VERTICAL);
 
                 this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService, scheduledProcessManagementService,
