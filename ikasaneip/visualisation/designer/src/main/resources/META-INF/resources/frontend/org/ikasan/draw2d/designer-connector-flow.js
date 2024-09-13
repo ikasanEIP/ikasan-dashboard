@@ -303,10 +303,10 @@ window.Vaadin.Flow.designerConnector = {
             event.preventDefault();
 
             if(event.deltaY > 0) {
-                designer.$connector.zoomFactor(1.05);
+                designer.$connector.zoomFactor(1.15);
             }
             else {
-                designer.$connector.zoomFactor(0.95);
+                designer.$connector.zoomFactor(0.90);
             }
         }
 

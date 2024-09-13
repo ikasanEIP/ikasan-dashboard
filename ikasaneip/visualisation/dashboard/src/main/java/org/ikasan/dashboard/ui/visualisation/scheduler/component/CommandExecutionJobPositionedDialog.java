@@ -179,7 +179,7 @@ public class CommandExecutionJobPositionedDialog extends PositionedDialog {
                     if (record.getSchedulerJobInstance() != null && record.getStatus().equals(InstanceStatus.COMPLETE.toString())) {
                         return DurationFormatUtils.formatDuration(record.getSchedulerJobInstance()
                             .getScheduledProcessEvent().getCompletionTime() - record.getSchedulerJobInstance()
-                            .getScheduledProcessEvent().getFireTime(), "HH'h':MM'm':ss.SSS's'", true);
+                            .getScheduledProcessEvent().getFireTime(), "HH'h':mm'm':ss.SSS's'", true);
                     } else {
                         return "";
                     }
