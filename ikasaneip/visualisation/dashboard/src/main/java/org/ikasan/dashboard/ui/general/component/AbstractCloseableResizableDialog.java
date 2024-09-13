@@ -68,7 +68,7 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
 
         content = new VerticalLayout();
         content.setWidthFull();
-        content.setHeight("90%");
+        content.setHeight("95%");
         content.setMargin(false);
         content.setSpacing(false);
         content.addClassName("dialog-content");

@@ -26,6 +26,16 @@ window.Vaadin.Flow.designerConnector = {
         let rightClickY=0;
         let spinner=null;
 
+        let cursor_x = -1;
+        let cursor_y = -1;
+        document.onmousemove = function(event)
+        {
+            debugger;
+            console.log(event);
+            cursor_x = event.pageX;
+            cursor_y = event.pageY;
+        }
+
         $(document).ready(function () {
             $("#"+canvasName).mouseover(function (e) {
                 if(e.offsetX > 100) {
@@ -35,6 +45,12 @@ window.Vaadin.Flow.designerConnector = {
                     y=e.offsetY;
                 }
             });
+            $("#"+canvasName).on("mousemove", function(event) {
+                debugger;
+                console.log(event);
+                cursor_x = event.pageX;
+                cursor_y = event.pageY;
+            }) ;
             $("#"+canvasName).on("contextmenu", function(e){
                 console.log("Context Menu Mouse click:" + e.offsetX + "," + e.offsetY);
                 canvasRightClickX=e.offsetX;
@@ -908,15 +924,6 @@ window.Vaadin.Flow.designerConnector = {
         designer.$connector.stopSpinner = function() {
             if(spinner != null) spinner.stop();
             spinner = null;
-        }
-
-        let cursor_x = -1;
-        let cursor_y = -1;
-        document.onmousemove = function(event)
-        {
-            debugger;
-            cursor_x = event.pageX;
-            cursor_y = event.pageY;
         }
 
         designer.$connector.importJson = async function (jsonDocument, toBack) {
