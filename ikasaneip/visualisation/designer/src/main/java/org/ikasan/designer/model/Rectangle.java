@@ -1,6 +1,7 @@
 package org.ikasan.designer.model;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Rectangle extends PositionedItem {
     private List<Port> ports;
@@ -65,5 +66,23 @@ public class Rectangle extends PositionedItem {
 
     public void setResizable(boolean resizable) {
         this.resizable = resizable;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Rectangle rectangle = (Rectangle) o;
+        return stroke == rectangle.stroke
+            && Objects.equals(dasharray, rectangle.dasharray)
+            && getX() == rectangle.getX()
+            && getY() == rectangle.getY()
+            && getHeight() == rectangle.getHeight()
+            && getWidth() == rectangle.getWidth();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(stroke, dasharray);
     }
 }

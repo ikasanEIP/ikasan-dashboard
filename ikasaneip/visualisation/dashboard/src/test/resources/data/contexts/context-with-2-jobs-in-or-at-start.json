@@ -1,0 +1,745 @@
+{
+  "contexts" : [ {
+    "scheduledJobs" : [ {
+      "agentName" : "scheduler-agent",
+      "jobName" : "test-cmd",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-test-cmd"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "david-test",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-david-test"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "test-sched",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-test-sched"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "test-cm2-2",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-test-cm2-2"
+    }, {
+      "agentName" : "LOCAL_EVENT_JOB",
+      "jobName" : "child-1-complete",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "LOCAL_EVENT_JOB-child-1-complete"
+    }, {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-1_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-1_TERMINAL"
+    } ],
+    "name" : "child-1",
+    "description" : "test",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-child-1_TERMINAL",
+      "logicalGrouping" : {
+        "or" : [ {
+          "identifier" : "scheduler-agent-test-cmd"
+        }, {
+          "identifier" : "scheduler-agent-david-test"
+        }, {
+          "identifier" : "scheduler-agent-test-cm2-2"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-david-test",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-test-sched"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-test-cmd",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-test-sched"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-test-cm2-2",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-test-sched"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "LOCAL_EVENT_JOB-child-1-complete",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-child-1_TERMINAL"
+        } ]
+      }
+    } ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : -1,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "scheduledJobs" : [ {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-1_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-1_TERMINAL"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "child-2_START",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-child-2_START"
+    }, {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-2_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-2_TERMINAL"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "child-2-cmd",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-child-2-cmd"
+    } ],
+    "name" : "child-2",
+    "description" : "test",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "CONTEXT_START_JOB-child-2_START",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-child-1_TERMINAL"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-child-2-cmd",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-child-2_START"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-child-2_TERMINAL",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-child-2-cmd"
+        } ]
+      }
+    } ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : -1,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ {
+      "scheduledJobs" : [ {
+        "agentName" : "CONTEXT_TERMINAL_JOB",
+        "jobName" : "child-3_TERMINAL",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "CONTEXT_TERMINAL_JOB-child-3_TERMINAL"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "child-4-job",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "scheduler-agent-child-4-job"
+      }, {
+        "agentName" : "CONTEXT_TERMINAL_JOB",
+        "jobName" : "child-4_TERMINAL",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "CONTEXT_TERMINAL_JOB-child-4_TERMINAL"
+      }, {
+        "agentName" : "CONTEXT_START_JOB",
+        "jobName" : "child-4_START",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "CONTEXT_START_JOB-child-4_START"
+      } ],
+      "name" : "child-4",
+      "description" : "test",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "CONTEXT_START_JOB-child-4_START",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "CONTEXT_TERMINAL_JOB-child-3_TERMINAL"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "CONTEXT_TERMINAL_JOB-child-4_TERMINAL",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-child-4-job"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-child-4-job",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "CONTEXT_START_JOB-child-4_START"
+          } ]
+        }
+      } ],
+      "contextTtlMilliseconds" : 0,
+      "treeViewExpandLevel" : 1,
+      "ableToRunConcurrently" : true,
+      "useDisplayName" : false,
+      "ordinal" : -1,
+      "disabled" : false,
+      "quartzScheduleDrivenJobsDisabledForContext" : false
+    } ],
+    "scheduledJobs" : [ {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-2_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-2_TERMINAL"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "child-3_START",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-child-3_START"
+    }, {
+      "agentName" : "GLOBAL_EVENT",
+      "jobName" : "demo-2",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "GLOBAL_EVENT-demo-2"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "child-3-cmd",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-child-3-cmd"
+    }, {
+      "agentName" : "LOCAL_EVENT_JOB",
+      "jobName" : "demo1",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "LOCAL_EVENT_JOB-demo1"
+    }, {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-3_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-3_TERMINAL"
+    } ],
+    "name" : "child-3",
+    "description" : "test",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "CONTEXT_START_JOB-child-3_START",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-child-2_TERMINAL"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-child-3-cmd",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-child-3_START"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-child-3_TERMINAL",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-child-3-cmd"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "LOCAL_EVENT_JOB-demo1",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-child-3_TERMINAL"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "GLOBAL_EVENT-demo-2",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-child-3_TERMINAL"
+        } ]
+      }
+    } ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : -1,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "scheduledJobs" : [ {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-4_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-4_TERMINAL"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "child-5-cmd",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-child-5-cmd"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "child-5_START",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-child-5_START"
+    }, {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-5_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-5_TERMINAL"
+    } ],
+    "name" : "child-5",
+    "description" : "test",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "CONTEXT_START_JOB-child-5_START",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-child-4_TERMINAL"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-child-5_TERMINAL",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-child-5-cmd"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-child-5-cmd",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-child-5_START"
+        } ]
+      }
+    } ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : -1,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ {
+      "scheduledJobs" : [ {
+        "agentName" : "CONTEXT_TERMINAL_JOB",
+        "jobName" : "child-6_TERMINAL",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "CONTEXT_TERMINAL_JOB-child-6_TERMINAL"
+      }, {
+        "agentName" : "CONTEXT_TERMINAL_JOB",
+        "jobName" : "child-4_TERMINAL",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "CONTEXT_TERMINAL_JOB-child-4_TERMINAL"
+      }, {
+        "agentName" : "CONTEXT_TERMINAL_JOB",
+        "jobName" : "child-7_TERMINAL",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "CONTEXT_TERMINAL_JOB-child-7_TERMINAL"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "test-33",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "scheduler-agent-test-33"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "test-44",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "scheduler-agent-test-44"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "test-55",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "scheduler-agent-test-55"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "test-77",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "scheduler-agent-test-77"
+      }, {
+        "agentName" : "CONTEXT_START_JOB",
+        "jobName" : "child-7_START",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "CONTEXT_START_JOB-child-7_START"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "cmd6",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "scheduler-agent-cmd6"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "cmd-7",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "scheduler-agent-cmd-7"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "single-job",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "scheduler-agent-single-job"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "cmd-5",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "scheduler-agent-cmd-5"
+      } ],
+      "name" : "child-7",
+      "description" : "rws",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "scheduler-agent-single-job",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-test-33"
+          }, {
+            "identifier" : "scheduler-agent-test-44"
+          }, {
+            "identifier" : "scheduler-agent-test-55"
+          }, {
+            "identifier" : "scheduler-agent-test-77"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "CONTEXT_START_JOB-child-7_START",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "CONTEXT_TERMINAL_JOB-child-6_TERMINAL"
+          }, {
+            "identifier" : "CONTEXT_TERMINAL_JOB-child-4_TERMINAL"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-test-77",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "CONTEXT_START_JOB-child-7_START"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-test-55",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "CONTEXT_START_JOB-child-7_START"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-test-33",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "CONTEXT_START_JOB-child-7_START"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-test-44",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "CONTEXT_START_JOB-child-7_START"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-cmd-7",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-cmd6"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "CONTEXT_TERMINAL_JOB-child-7_TERMINAL",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-cmd-7"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-cmd-5",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-single-job"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-cmd6",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-cmd-5"
+          } ]
+        }
+      } ],
+      "contextTtlMilliseconds" : 0,
+      "treeViewExpandLevel" : 1,
+      "ableToRunConcurrently" : true,
+      "useDisplayName" : false,
+      "ordinal" : -1,
+      "disabled" : false,
+      "quartzScheduleDrivenJobsDisabledForContext" : false
+    } ],
+    "scheduledJobs" : [ {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-5_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-5_TERMINAL"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "child-6-cmd",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-child-6-cmd"
+    }, {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-6_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-6_TERMINAL"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "child-6_START",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-child-6_START"
+    } ],
+    "name" : "child-6",
+    "description" : "test",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "CONTEXT_START_JOB-child-6_START",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-child-5_TERMINAL"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-child-6_TERMINAL",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-child-6-cmd"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-child-6-cmd",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-child-6_START"
+        } ]
+      }
+    } ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : -1,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "scheduledJobs" : [ {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-7_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-7_TERMINAL"
+    }, {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "child-8_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-child-8_TERMINAL"
+    }, {
+      "agentName" : "CONTEXT_START_JOB",
+      "jobName" : "child-8_START",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_START_JOB-child-8_START"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "child-8-cmd",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-child-8-cmd"
+    } ],
+    "name" : "child-8",
+    "description" : "test",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "CONTEXT_START_JOB-child-8_START",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_TERMINAL_JOB-child-7_TERMINAL"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-child-8-cmd",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "CONTEXT_START_JOB-child-8_START"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-child-8_TERMINAL",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-child-8-cmd"
+        } ]
+      }
+    } ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : -1,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "scheduledJobs" : [ {
+      "agentName" : "scheduler-agent",
+      "jobName" : "ch7",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-ch7"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "ch3",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-ch3"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "sc1",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-sc1"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "ch5",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-ch5"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "fw1",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-fw1"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "ch2",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-ch2"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "ch1",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-ch1"
+    } ],
+    "name" : "DEMO-WITH_UPPER_CASE",
+    "description" : "test",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-ch7",
+      "logicalGrouping" : {
+        "or" : [ {
+          "identifier" : "scheduler-agent-ch3"
+        }, {
+          "identifier" : "scheduler-agent-ch5"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-ch2",
+      "logicalGrouping" : {
+        "or" : [ {
+          "identifier" : "scheduler-agent-sc1"
+        }, {
+          "identifier" : "scheduler-agent-fw1"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-ch1",
+      "logicalGrouping" : {
+        "or" : [ {
+          "identifier" : "scheduler-agent-sc1"
+        }, {
+          "identifier" : "scheduler-agent-fw1"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-ch3",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-ch2"
+        }, {
+          "identifier" : "scheduler-agent-ch1"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-ch5",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-ch1"
+        } ]
+      }
+    } ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : -1,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "name" : "demo-with-lower-case",
+    "description" : "test",
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : -1,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  } ],
+  "name" : "test-start-end",
+  "description" : "test",
+  "timezone" : "Asia/Aden",
+  "timeWindowStart" : "0 0 1 ? * * *",
+  "contextTtlMilliseconds" : 82800000,
+  "treeViewExpandLevel" : 1,
+  "ableToRunConcurrently" : true,
+  "useDisplayName" : false,
+  "ordinal" : -1,
+  "jobVisualisationVerticalSpacing" : 150,
+  "jobVisualisationHorizontalSpacing" : 400,
+  "contextVisualisationLevelDistance" : 100,
+  "contextVisualisationNodeDistance" : 75,
+  "visualisationFontSize" : 24,
+  "disabled" : false,
+  "quartzScheduleDrivenJobsDisabledForContext" : false
+}

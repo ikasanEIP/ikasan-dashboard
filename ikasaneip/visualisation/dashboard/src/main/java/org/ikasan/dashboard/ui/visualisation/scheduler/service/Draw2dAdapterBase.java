@@ -1157,7 +1157,11 @@ public abstract class Draw2dAdapterBase {
                         .withDasharray("--..");
                 }
 
-                imageOverlay.add(rb.build());
+                Rectangle rectangle = rb.build();
+
+                if(imageOverlay.stream().filter(r -> r.equals(rectangle)).count() == 0) {
+                    imageOverlay.add(rectangle);
+                }
             }
         });
     }
