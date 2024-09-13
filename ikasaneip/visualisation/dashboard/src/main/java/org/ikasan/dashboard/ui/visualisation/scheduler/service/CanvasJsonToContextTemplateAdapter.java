@@ -276,19 +276,19 @@ public class CanvasJsonToContextTemplateAdapter {
 
             Set<String> intersect = this.intersect(all);
 
-            if(intersect.size() == 1) {
+            intersect.forEach(identifier -> {
                 contextTemplateBuilder.addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
-                    .withJobName(schedulerJobs.get(intersect.stream().findFirst().get()).getUserData().getJobName())
-                    .withAgentName(schedulerJobs.get(intersect.stream().findFirst().get()).getUserData().getAgentName())
+                    .withJobName(schedulerJobs.get(identifier).getUserData().getJobName())
+                    .withAgentName(schedulerJobs.get(identifier).getUserData().getAgentName())
                     .withLogicalGrouping(logicalGrouping)
                     .build());
 
                 // clean up connections that have been used in logical grouping
                 connections.entrySet().forEach(entry -> {
-                    entry.getValue().removeIf(connection -> connection.getTarget().getNode().equals(intersect.stream().findFirst().get()));
+                    entry.getValue().removeIf(connection -> connection.getTarget().getNode().equals(identifier));
                 });
                 connections.entrySet().removeIf(e -> e.getValue().size() == 0);
-            }
+            });
         });
 
         Map<String, List<Connection>> inboundContexts = connections.entrySet().stream()

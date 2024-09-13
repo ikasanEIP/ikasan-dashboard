@@ -1,0 +1,125 @@
+{
+  "scheduledJobs": [
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "ch7",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-ch7"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "ch3",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-ch3"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "sc1",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-sc1"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "ch5",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-ch5"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "fw1",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-fw1"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "ch2",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-ch2"
+    },
+    {
+      "agentName": "scheduler-agent",
+      "jobName": "ch1",
+      "startupControlType": "AUTOMATIC",
+      "ordinal": -1,
+      "identifier": "scheduler-agent-ch1"
+    }
+  ],
+  "name": "DEMO-WITH_UPPER_CASE",
+  "jobDependencies": [
+    {
+      "jobIdentifier": "scheduler-agent-ch7",
+      "logicalGrouping": {
+        "or": [
+          {
+            "identifier": "scheduler-agent-ch3"
+          },
+          {
+            "identifier": "scheduler-agent-ch5"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-ch3",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-ch2"
+          },
+          {
+            "identifier": "scheduler-agent-ch1"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-ch2",
+      "logicalGrouping": {
+        "or": [
+          {
+            "identifier": "scheduler-agent-sc1"
+          },
+          {
+            "identifier": "scheduler-agent-fw1"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-ch1",
+      "logicalGrouping": {
+        "or": [
+          {
+            "identifier": "scheduler-agent-sc1"
+          },
+          {
+            "identifier": "scheduler-agent-fw1"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-ch5",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-ch1"
+          }
+        ]
+      }
+    }
+  ],
+  "contextTtlMilliseconds": 0,
+  "treeViewExpandLevel": 1,
+  "ableToRunConcurrently": true,
+  "useDisplayName": false,
+  "ordinal": -1,
+  "disabled": false,
+  "quartzScheduleDrivenJobsDisabledForContext": false
+}
