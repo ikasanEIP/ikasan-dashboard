@@ -253,12 +253,15 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
 
     @Override
     public void onJobMouseOverEvent(JobMouseOverEvent event) {
-        SchedulerJobInstanceRecord jobInstanceRecord = this.loadJob(event.getFigure().getUserData().getIdentifier(), event.getFigure().getUserData().getJobName(),
-            JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
-        CommandExecutionJobPositionedDialog positionedDialog = new CommandExecutionJobPositionedDialog(jobInstanceRecord, this.logStreamingService);
-        PositionedDialog.Position position = new PositionedDialog.Position(event.getFigure().getY()+"px", event.getFigure().getX()+"px");
-        positionedDialog.setPosition(position);
-        positionedDialog.open();
+        if(event.getFigure().getUserData().getItemType().equals("INTERNAL_EVENT_DRIVEN_JOB")) {
+            SchedulerJobInstanceRecord jobInstanceRecord = this.loadJob(event.getFigure().getUserData().getIdentifier(), event.getFigure().getUserData().getJobName(),
+                JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+            CommandExecutionJobPositionedDialog positionedDialog = new CommandExecutionJobPositionedDialog(jobInstanceRecord, this.logStreamingService, this.moduleMetaDataService,
+                this.schedulerJobInstanceService, this.scheduledContextInstanceService, this.parentContextInstance);
+            PositionedDialog.Position position = new PositionedDialog.Position(event.getFigure().getY(), event.getFigure().getX());
+            positionedDialog.setPosition(position);
+            positionedDialog.open();
+        }
     }
 
     /**
