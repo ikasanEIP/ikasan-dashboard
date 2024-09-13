@@ -156,7 +156,7 @@ public class CommandExecutionJobPositionedDialog extends PositionedDialog {
                 .getScheduledProcessEvent().getCompletionTime() == 0 ? getTranslation("label.not-available", UI.getCurrent().getLocale())
                 : DurationFormatUtils.formatDuration(this.schedulerJobInstanceRecord.getSchedulerJobInstance()
                 .getScheduledProcessEvent().getCompletionTime() - this.schedulerJobInstanceRecord.getSchedulerJobInstance()
-                .getScheduledProcessEvent().getFireTime(), "HH'h':MM'm':ss.SSS's'", true));
+                .getScheduledProcessEvent().getFireTime(), "HH'h':mm'm':ss.SSS's'", true));
 
         }
         else {

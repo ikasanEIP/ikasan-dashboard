@@ -276,13 +276,13 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.zoomIn = function () {
-            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*0.98,true);
-            scrollToCenter(0.98);
+            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*0.95,true);
+            scrollToCenter(0.95);
         }
 
         designer.$connector.zoomOut = function () {
-            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*1.02,true);
-            scrollToCenter(1.02);
+            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*1.05,true);
+            scrollToCenter(1.05);
         }
 
         designer.$connector.zoomFactor = function (factor) {
@@ -303,10 +303,10 @@ window.Vaadin.Flow.designerConnector = {
             event.preventDefault();
 
             if(event.deltaY > 0) {
-                designer.$connector.zoomFactor(1.02);
+                designer.$connector.zoomFactor(1.05);
             }
             else {
-                designer.$connector.zoomFactor(0.99);
+                designer.$connector.zoomFactor(0.95);
             }
         }
 
