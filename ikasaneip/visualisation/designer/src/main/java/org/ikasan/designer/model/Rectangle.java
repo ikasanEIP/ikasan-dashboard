@@ -83,6 +83,6 @@ public class Rectangle extends PositionedItem {
 
     @Override
     public int hashCode() {
-        return Objects.hash(stroke, dasharray);
+        return Objects.hash(stroke, dasharray, getX(), getY(), getHeight(), getWidth());
     }
 }
