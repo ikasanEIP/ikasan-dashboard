@@ -314,7 +314,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             }
         });
 
-        super.aceEditor.setHeight("48vh");
+        super.aceEditor.setHeight("100%");
 
         Button newWindowButton = new TableButton(VaadinIcon.EXTERNAL_LINK.create());
         newWindowButton.addClickListener(buttonClickEvent -> {
