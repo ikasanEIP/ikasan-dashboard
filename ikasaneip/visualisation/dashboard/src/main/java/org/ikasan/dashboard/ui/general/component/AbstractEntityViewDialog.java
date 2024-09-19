@@ -135,7 +135,7 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
         aceEditor.setFontSize(11);
         aceEditor.setTabSize(4);
         aceEditor.setWidth("auto");
-        aceEditor.setHeight("50vh");
+        aceEditor.setHeight("100%");
         aceEditor.setReadOnly(true);
         aceEditor.setWrap(false);
     }
