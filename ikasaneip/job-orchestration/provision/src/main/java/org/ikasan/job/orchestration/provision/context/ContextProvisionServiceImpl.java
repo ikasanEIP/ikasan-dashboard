@@ -7,6 +7,7 @@ import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.security.service.SecurityService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
@@ -52,6 +53,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     private final boolean uploadProvisionJobs;
     private final ContextInstanceSchedulerService contextInstanceSchedulerService;
     private int jobPlanIntervalMultiple;
+    private SecurityService securityService;
 
     public ContextProvisionServiceImpl(ScheduledContextService scheduledContextService,
                                        ModuleMetaDataService moduleMetadataService,
@@ -63,7 +65,8 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                                        EmailNotificationContextService emailNotificationContextService,
                                        boolean uploadProvisionJobs,
                                        ContextInstanceSchedulerService contextInstanceSchedulerService,
-                                       int jobPlanIntervalMultiple) {
+                                       int jobPlanIntervalMultiple,
+                                       SecurityService securityService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -107,6 +110,11 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         }
 
         this.jobPlanIntervalMultiple = jobPlanIntervalMultiple;
+
+        this.securityService = securityService;
+        if (this.securityService == null) {
+            throw new IllegalArgumentException("securityService cannot be null!");
+        }
     }
 
     /**
@@ -155,6 +163,12 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             if (this.uploadProvisionJobs) {
                 provisionJobs(contextBundle.getSchedulerJobs());
             }
+
+            if(!contextBundle.getRoles().isEmpty()) {
+                this.securityService.setJobPlanRoles(contextBundle.getContextTemplate().getName()
+                    , contextBundle.getRoles());
+            }
+
             // Even though the next start job may be tomorrow, the trigger must be setup
             contextInstanceSchedulerService.registerStartJobAndTrigger(jobPlanName, contextBundle.getContextTemplate().getTimeWindowStart(),
                 contextBundle.getContextTemplate().getTimezone());
