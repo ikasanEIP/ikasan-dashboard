@@ -10,6 +10,7 @@ import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
+import org.ikasan.security.service.SecurityService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -69,6 +70,9 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
     @Mock
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
+    @Mock
+    private SecurityService securityService;
+
     private ContextProvisionServiceImpl service;
 
     @Before
@@ -76,18 +80,18 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         service = new ContextProvisionServiceImpl(
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService,
-            emailNotificationContextService, true, contextInstanceSchedulerService, 3);
+            emailNotificationContextService, true, contextInstanceSchedulerService, 3, securityService);
     }
 
     @Test(expected = RuntimeException.class)
     public void should_validate_not_null_context() {
-        ContextBundle contextBundle = new ContextBundleImpl(null, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        ContextBundle contextBundle = new ContextBundleImpl(null, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, new ArrayList<>());
         service.provisionContext(contextBundle);
     }
 
     @Test(expected = RuntimeException.class)
     public void should_validate_not_null_jobs() {
-        ContextBundle contextBundle = new ContextBundleImpl(new ContextTemplateImpl(), null, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        ContextBundle contextBundle = new ContextBundleImpl(new ContextTemplateImpl(), null, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, new ArrayList<>());
         service.provisionContext(contextBundle);
     }
 
@@ -107,7 +111,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, new ArrayList<>());
         service.provisionContext(contextBundle);
     }
 
@@ -133,7 +137,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        List<String> roleList = List.of("role1", "role2");
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -154,10 +159,12 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -183,7 +190,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        List<String> roleList = List.of("role1", "role2");
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -205,10 +213,12 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -237,7 +247,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        List<String> roleList = List.of("role1", "role2");
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -257,10 +268,12 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -286,7 +299,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, new ArrayList<>());
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -309,7 +322,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -357,7 +371,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, new ArrayList<>());
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -390,7 +404,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -420,7 +435,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, Collections.EMPTY_LIST, null);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, Collections.EMPTY_LIST, null, new ArrayList<>());
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -444,7 +459,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -464,7 +480,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, new ArrayList<>());
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -484,7 +500,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -520,7 +537,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, emailNotificationDetails, null);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, emailNotificationDetails, null, new ArrayList<>());
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -545,7 +562,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -583,7 +601,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, emailNotificationDetails, emailNotificationContext);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, emailNotificationDetails, emailNotificationContext, new ArrayList<>());
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -609,7 +627,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -642,7 +661,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, Collections.EMPTY_LIST, emailNotificationContext);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, Collections.EMPTY_LIST, emailNotificationContext, new ArrayList<>());
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -667,7 +686,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 
     @Test
@@ -689,7 +709,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         EmailNotificationContext emailNotificationContext = new SolrEmailNotificationContextImpl();
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, schedulerJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, emailNotificationContext);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, schedulerJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, emailNotificationContext, new ArrayList<>());
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(anyString());
@@ -715,6 +735,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
 
         verifyNoMoreInteractions(
             scheduledContextService, moduleMetadataService, schedulerJobService,
-            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
 }
