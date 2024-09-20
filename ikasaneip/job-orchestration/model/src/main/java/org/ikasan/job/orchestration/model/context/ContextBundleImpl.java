@@ -2,8 +2,6 @@ package org.ikasan.job.orchestration.model.context;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -13,6 +11,7 @@ import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class ContextBundleImpl implements ContextBundle {
 
@@ -21,13 +20,15 @@ public class ContextBundleImpl implements ContextBundle {
     private List<ContextProfileRecord> contextProfiles;
     private List<EmailNotificationDetails> emailNotificationDetails;
     private EmailNotificationContext emailNotificationContexts;
+    private List<String> roles;
 
     @JsonCreator
     public ContextBundleImpl(@JsonProperty("contextTemplate") ContextTemplate contextTemplate,
                              @JsonProperty("schedulerJobs") List<SchedulerJob> schedulerJobs,
                              @JsonProperty("contextProfiles") List<ContextProfileRecord> contextProfiles,
                              @JsonProperty("emailNotificationDetails") List<EmailNotificationDetails> emailNotificationDetails,
-                             @JsonProperty("emailNotificationContext") EmailNotificationContext emailNotificationContexts) {
+                             @JsonProperty("emailNotificationContext") EmailNotificationContext emailNotificationContexts,
+                             @JsonProperty("roles") List<String> roles) {
         this.contextTemplate = contextTemplate;
         if(this.contextTemplate == null) {
             throw new IllegalArgumentException("contextTemplate cannot be null!");
@@ -45,11 +46,20 @@ public class ContextBundleImpl implements ContextBundle {
             this.emailNotificationDetails = new ArrayList<>();
         }
         this.emailNotificationContexts = emailNotificationContexts;
+        this.roles = roles;
+        if(this.roles == null) {
+            this.roles = new ArrayList<>();
+        }
     }
 
     @Override
     public ContextTemplate getContextTemplate() {
         return this.contextTemplate;
+    }
+
+    @Override
+    public List<String> getRoles() {
+        return this.roles;
     }
 
     @Override
@@ -74,6 +84,12 @@ public class ContextBundleImpl implements ContextBundle {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        return new StringJoiner(", ", ContextBundleImpl.class.getSimpleName() + "[", "]")
+            .add("contextTemplate=" + contextTemplate)
+            .add("schedulerJobs=" + schedulerJobs)
+            .add("contextProfiles=" + contextProfiles)
+            .add("emailNotificationDetails=" + emailNotificationDetails)
+            .add("emailNotificationContexts=" + emailNotificationContexts)
+            .toString();
     }
 }

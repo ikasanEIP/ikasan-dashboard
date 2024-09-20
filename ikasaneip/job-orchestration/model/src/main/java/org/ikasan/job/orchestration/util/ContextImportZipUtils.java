@@ -108,7 +108,7 @@ public final class ContextImportZipUtils {
         ContextTemplate contextTemplate = dirToTemplates.get("context").get(0);
         rebuildSubContexts(contextTemplate, dirToTemplates);
 
-        return new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, emailNotificationDetails, emailNotificationContexts.get());
+        return new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, emailNotificationDetails, emailNotificationContexts.get(), new ArrayList<>());
     }
 
     /**
