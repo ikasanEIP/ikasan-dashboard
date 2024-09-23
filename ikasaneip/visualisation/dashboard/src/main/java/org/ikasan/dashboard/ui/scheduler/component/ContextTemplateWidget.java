@@ -110,6 +110,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private double jobVisualisationHorizontalSpacing;
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
+    private UserService userService;
+    private SecurityService securityService;
 
     /**
      * Constructor
@@ -206,6 +208,14 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         if (this.contextParametersInstanceService == null) {
             throw new IllegalArgumentException("contextParametersInstanceService cannot be null!");
         }
+        this.userService = userService;
+        if (this.userService == null) {
+            throw new IllegalArgumentException("userService cannot be null!");
+        }
+        this.securityService = securityService;
+        if (this.securityService == null) {
+            throw new IllegalArgumentException("securityService cannot be null!");
+        }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.removeTrailingPlanNameContextAfterUnderscore = removeTrailingPlanNameContextAfterUnderscore;
@@ -258,7 +268,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         newContextButton.addClickListener(buttonClickEvent -> {
             ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService, this.contextInstanceRegistrationService
                 , this.contextInstanceSchedulerService, this.systemEventLogger, getTranslation("label.new-context-template", UI.getCurrent().getLocale()), true
-                , this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
+                , this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance
+                , this.contextVisualisationNodeDistance, this.userService, this.securityService);
             contextTemplateDialog.open();
             contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> this.updateActiveContextMenu());
             contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {

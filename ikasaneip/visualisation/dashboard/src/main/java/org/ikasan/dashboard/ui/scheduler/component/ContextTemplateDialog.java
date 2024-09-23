@@ -35,6 +35,10 @@ import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.rest.dashboard.model.user.IkasanPrincipal;
+import org.ikasan.security.model.User;
+import org.ikasan.security.service.SecurityService;
+import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -46,8 +50,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.time.*;
-import java.util.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
@@ -86,7 +96,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private IkasanAuthentication authentication;
     private boolean editName;
     private int jobPlanIntervalMultiple;
-
+    private UserService userService;
+    private SecurityService securityService;
 
 
     /**
@@ -99,7 +110,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      */
     public ContextTemplateDialog(ScheduledContextService scheduledContextService, SchedulerJobService schedulerJobService, ContextInstanceRegistrationService contextInstanceRegistrationService
         , ContextInstanceSchedulerService contextInstanceSchedulerService,  SystemEventLogger systemEventLogger, String title, boolean editName, int jobPlanIntervalMultiple
-        , double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+        , double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance
+        , UserService userService, SecurityService securityService) {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
@@ -119,6 +131,14 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.systemEventLogger = systemEventLogger;
         if(this.systemEventLogger == null) {
             throw new IllegalArgumentException("systemEventLogger cannot be null!");
+        }
+        this.userService = userService;
+        if(this.userService == null) {
+            throw new IllegalArgumentException("userService cannot be null!");
+        }
+        this.securityService = securityService;
+        if(this.securityService == null) {
+            throw new IllegalArgumentException("securityService cannot be null!");
         }
         if(title == null) {
             throw new IllegalArgumentException("title cannot be null!");
@@ -613,6 +633,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             scheduledContextRecord.setTimestamp(System.currentTimeMillis());
             this.scheduledContextService.save(scheduledContextRecord);
 
+            this.applyJobPlanSecurity();
+
             String action = String.format("New job plan [%s] has been created.", this.contextTemplate.getName());
             this.systemEventLogger.logEvent(SystemEventConstants.NEW_JOB_PLAN_CREATED, action, authentication.getName());
 
@@ -627,6 +649,28 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         NotificationHelper.showUserNotification(getTranslation("notification.context-template-created-successfully"
             , UI.getCurrent().getLocale()));
         this.close();
+    }
+
+
+    /**
+     * Applies job plan security based on the authenticated user's roles.
+     * This method retrieves the authenticated user from the UserService,
+     * and then iterates over the user's principals and their roles.
+     * It excludes roles with names equal to "ADMIN" and "User".
+     * The remaining role names are passed to the SecurityService's setJobPlanRoles method.
+     */
+    private void applyJobPlanSecurity() {
+        User user = this.userService.loadUserByUsername(this.authentication.getName());
+        List<String> roleNames = new ArrayList<>();
+        user.getPrincipals().forEach(ikasanPrincipal -> {
+            ikasanPrincipal.getRoles().forEach(role -> {
+                if (!role.getName().equals("ADMIN")  && !role.getName().equals("User")) {
+                    roleNames.add(role.getName());
+                }
+            });
+        });
+
+        this.securityService.setJobPlanRoles(this.contextTemplate.getName(), roleNames);
     }
 
     /**

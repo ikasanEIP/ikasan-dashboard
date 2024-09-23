@@ -847,7 +847,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService
                     , this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventLogger
                     , getTranslation("header.manage-context-template", UI.getCurrent().getLocale()), false, this.jobPlanIntervalMultiple
-                    , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
+                    , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance
+                    , this.contextVisualisationNodeDistance, this.userService, this.securityService);
                 contextTemplateDialog.setContextTemplate(this.contextTemplate);
                 contextTemplateDialog.open();
             })
