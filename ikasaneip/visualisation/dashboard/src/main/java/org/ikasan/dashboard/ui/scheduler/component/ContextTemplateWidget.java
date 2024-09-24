@@ -253,8 +253,14 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         Button uploadJobPlan = new Button(getTranslation("button.upload-job-plan", UI.getCurrent().getLocale()), uploadIcon);
         uploadJobPlan.setIconAfterText(true);
         uploadJobPlan.addClickListener(buttonClickEvent -> {
-            ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService, provisionJobs);
+            ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService, provisionJobs, this.userService, this.authentication);
             importer.open();
+
+            importer.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened()) {
+                    this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                }
+            });
         });
 
         ComponentSecurityVisibility.applySecurity(authentication, uploadJobPlan
@@ -301,7 +307,19 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
             , SecurityConstants.SCHEDULER_ALL_ADMIN);
 
-        actionButtonLayout.add(refreshContextParamButton, newContextButton, uploadJobPlan, quickAccessMenu);
+        Icon refreshJobPlansIcon = VaadinIcon.REFRESH.create();
+        Button refreshJobPlansButton = new Button(getTranslation("button.refresh-grid", UI.getCurrent().getLocale()), refreshJobPlansIcon);
+        refreshJobPlansButton.setIconAfterText(true);
+        refreshJobPlansButton.addClickListener(buttonClickEvent -> {
+            this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
+        });
+
+        ComponentSecurityVisibility.applySecurity(authentication, refreshJobPlansButton
+            , SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN
+            , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
+            , SecurityConstants.SCHEDULER_ALL_ADMIN);
+
+        actionButtonLayout.add(refreshContextParamButton, newContextButton, uploadJobPlan, quickAccessMenu, refreshJobPlansButton);
         actionButtonLayout.getElement().getStyle().set("position", "absolute");
         actionButtonLayout.getElement().getStyle().set("right", "30px");
 

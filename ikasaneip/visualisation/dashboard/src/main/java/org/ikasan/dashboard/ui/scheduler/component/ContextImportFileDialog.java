@@ -15,7 +15,11 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
+import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
+import org.ikasan.security.model.User;
+import org.ikasan.security.service.UserService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.slf4j.Logger;
@@ -24,10 +28,11 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-// TODO write a vaadin test if we keep this dialogue
 public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
     private static final Logger LOG = LoggerFactory.getLogger(ContextImportFileDialog.class);
 
@@ -36,10 +41,21 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
     private ContextProvisionService contextProvisionService;
 
     private boolean provisionJobs;
+    private UserService userService;
+    private IkasanAuthentication ikasanAuthentication;
 
-    public ContextImportFileDialog(ContextProvisionService contextProvisionService, boolean provisionJobs) {
+    public ContextImportFileDialog(ContextProvisionService contextProvisionService, boolean provisionJobs, UserService userService,
+                                   IkasanAuthentication ikasanAuthentication) {
         this.contextProvisionService = contextProvisionService;
         if (this.contextProvisionService == null) {
+            throw new IllegalArgumentException("contextUploadInitialisationService cannot be null!");
+        }
+        this.userService = userService;
+        if (this.userService == null) {
+            throw new IllegalArgumentException("userService cannot be null!");
+        }
+        this.ikasanAuthentication = ikasanAuthentication;
+        if (this.ikasanAuthentication == null) {
             throw new IllegalArgumentException("contextUploadInitialisationService cannot be null!");
         }
         this.provisionJobs = provisionJobs;
@@ -104,27 +120,47 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
                 final UI current = UI.getCurrent();
                 Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextImportFileDialog"));
                 executor.execute(() -> {
+                    boolean error = false;
                     try {
                         ContextBundle contextBundle
                             = ContextImportZipUtils.extractZipFile(new ByteArrayInputStream(contextZipFile));
+
+                        User user = this.userService.loadUserByUsername(this.ikasanAuthentication.getName());
+
+                        List<String> roleNames = new ArrayList<>();
+                        user.getPrincipals().forEach(ikasanPrincipal -> {
+                            ikasanPrincipal.getRoles().forEach(role -> {
+                                if (!role.getName().equals("ADMIN")  && !role.getName().equals("User")) {
+                                    roleNames.add(role.getName());
+                                }
+                            });
+                        });
+
+
+                        contextBundle = new ContextBundleImpl(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs(),
+                            contextBundle.getContextProfiles(), contextBundle.getEmailNotificationDetails(), contextBundle.getEmailNotificationContext(), roleNames);
 
                         this.contextProvisionService.provisionContext(contextBundle);
 
                     } catch (Exception e) {
                         LOG.warn("Could not upload context and jobs error " + e.getMessage());
                         current.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.provisioning-context-jobs", UI.getCurrent().getLocale())));
+                        error = true;
                     } finally {
+                        boolean finalError = error;
                         current.access(() -> {
                             dialog.close();
-                            if (this.provisionJobs) {
-                                NotificationHelper.showUserNotification(getTranslation("notification.provisioned-context-jobs", UI.getCurrent().getLocale()));
-                            } else {
-                                NotificationHelper.showUserNotification(getTranslation("notification.provisioned-context", UI.getCurrent().getLocale()));
+                            this.close();
+                            if(!finalError) {
+                                if (this.provisionJobs) {
+                                    NotificationHelper.showUserNotification(getTranslation("notification.provisioned-context-jobs", UI.getCurrent().getLocale()));
+                                } else {
+                                    NotificationHelper.showUserNotification(getTranslation("notification.provisioned-context", UI.getCurrent().getLocale()));
+                                }
                             }
                         });
                     }
                 });
-                this.close();
             });
             confirmDialog.addCancelListener(cancelEvent -> {
                 confirmDialog.close();
