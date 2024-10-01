@@ -566,9 +566,11 @@ public class ContextMachine {
         return null;
     }
 
+
     /**
+     * Retrieves the status of the current context instance.
      *
-     * @return
+     * @return The status of the current context instance.
      */
     public ContextInstanceStatus getContextInstanceStatus() {
         return this.statusConverter.convert(this.contextInstance);
@@ -895,9 +897,7 @@ public class ContextMachine {
                 InstanceStatus previousState = schedulerJobInstance.getStatus();
                 schedulerJobInstance.setStatus(InstanceStatus.WAITING);
                 schedulerJobInstance.setInitiationEventRaised(false);
-
-                ContextInstance child = ContextHelper.getChildContextInstance(schedulerJobInstance.getChildContextName(), this.contextInstance);
-                child.setStatus(InstanceStatus.WAITING);
+                schedulerJobInstance.setErrorAcknowledged(false);
 
 
                 this.saveContext();
@@ -912,13 +912,17 @@ public class ContextMachine {
                     if(schedulerJobInstanceRecord != null) {
                         InternalEventDrivenJobInstance instance = (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
                         instance.setKilled(false);
+                        instance.setErrorAcknowledged(false);
+                        instance.setErrorAcknowledgeUser(null);
+                        instance.setErrorAcknowledgeTimestamp(0L);
+                        instance.setStatus(InstanceStatus.WAITING);
                         schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
                         this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+                        jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(instance, this.contextInstance
+                            , previousState, schedulerJobInstance.getStatus()));
                     }
                 }
-
-                jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
-                    , previousState, schedulerJobInstance.getStatus()));
             } else {
                 throw new ContextMachineException(String.format("Attempting to reset job[%s], however this job does not " +
                         "appear in context[%s] with instance id[%s], or any of its nested contexts."
@@ -927,8 +931,8 @@ public class ContextMachine {
         });
 
         if(!jobs.isEmpty()) {
-            this.contextInstance.setStatus(InstanceStatus.WAITING);
             this.recursivelySetContextStatus(this.contextInstance, true);
+            this.contextInstance.setStatus(InstanceStatus.WAITING);
             this.setContextStatus(this.contextInstance, true);
             this.saveContext();
         }
@@ -1035,6 +1039,47 @@ public class ContextMachine {
         });
     }
 
+    /**
+     * Acknowledge any errors encountered while processing a scheduler job.
+     * If the scheduler job instance is targeting the residing only in the target context, the error is acknowledged in that context.
+     * If the scheduler job instance is residing in multiple child contexts, the error is acknowledged in each child context.
+     *
+     * @param schedulerJobInstance the instance of the scheduler job where the error occurred
+     */
+    public void acknowledgeSchedulerJobError(InternalEventDrivenJobInstance schedulerJobInstance) {
+        if(schedulerJobInstance.isTargetResidingContextOnly()) {
+            ContextInstance child = ContextHelper.getChildContextInstance(schedulerJobInstance.getChildContextName(), this.contextInstance);
+            this.acknowledgeSchedulerJobError(child, schedulerJobInstance.getIdentifier());
+        }
+        else {
+            schedulerJobInstance.getChildContextNames().forEach(name -> {
+                ContextInstance child = ContextHelper.getChildContextInstance(name, this.contextInstance);
+                this.acknowledgeSchedulerJobError(child, schedulerJobInstance.getIdentifier());
+            });
+        }
+
+        this.recursivelySetContextStatus(this.contextInstance, true);
+        this.contextInstance.setStatus(InstanceStatus.WAITING);
+        this.setContextStatus(this.contextInstance, true);
+        this.saveContext();
+    }
+
+    /**
+     * Acknowledges an error in a scheduler job.
+     *
+     * @param child a ContextInstance object representing the context in which the scheduler job is running
+     * @param identifier the identifier of the scheduler job that encountered the error
+     */
+    private void acknowledgeSchedulerJobError(ContextInstance child, String identifier) {
+        SchedulerJobInstance schedulerJobInstance = child.getScheduledJobsMap().get(identifier);
+        if(schedulerJobInstance != null) {
+            schedulerJobInstance.setErrorAcknowledged(true);
+        }
+    }
+
+    /**
+     * Kills all currently running jobs within the context instance.
+     */
     public void killRunningJobs() {
         List<SchedulerJobInstance> runningJobs = this.contextInstance.getAllSchedulerJobInstances().stream()
             .filter(internalEventDrivenJobInstance -> internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.RUNNING))
@@ -1177,10 +1222,13 @@ public class ContextMachine {
         }
     }
 
+
     /**
+     * Processes the received event and returns a list of SchedulerJobInitiationEvent.
      *
-     * @param scheduledProcessEvent
-     * @return
+     * @param scheduledProcessEvent The received ContextualisedScheduledProcessEvent to process.
+     *
+     * @return A list of SchedulerJobInitiationEvent after processing the event.
      */
     protected List<SchedulerJobInitiationEvent> eventReceived(ContextualisedScheduledProcessEvent scheduledProcessEvent) {
         logger.info("Context Machine Received Event [{}]", scheduledProcessEvent);
@@ -1468,7 +1516,6 @@ public class ContextMachine {
     private void recursivelySetContextStatus(ContextInstance contextInstance, boolean broadcastStateChange) {
         if(contextInstance.getContexts() != null) {
             contextInstance.getContexts().forEach(context -> {
-                context.setStatus(InstanceStatus.WAITING);
                 this.recursivelySetContextStatus(context, broadcastStateChange);
                 this.setContextStatus(context, broadcastStateChange);
             });
@@ -1489,7 +1536,6 @@ public class ContextMachine {
         AtomicBoolean anyRunningOrCompletedContexts = new AtomicBoolean(false);
         AtomicBoolean anyErrorContexts = new AtomicBoolean(false);
 
-
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
             // Get all jobs that are not part of a logical construct
             Map<String, SchedulerJob> jobsOutsideLogicConstructs
@@ -1499,7 +1545,11 @@ public class ContextMachine {
             jobsOutsideLogicConstructs.entrySet().forEach(entry -> {
                 if (!((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.COMPLETE)
                     && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED)
-                    && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
+                    && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)
+                    && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.ERROR) &&
+                        (((SchedulerJobInstance)entry.getValue()).isErrorAcknowledged() == null) ||
+                            ((SchedulerJobInstance)entry.getValue()).isErrorAcknowledged() != null
+                                && !((SchedulerJobInstance)entry.getValue()).isErrorAcknowledged()) {
                     allJobsComplete.set(false);
                 }
             });
@@ -1544,7 +1594,17 @@ public class ContextMachine {
                 }
 
                 if (job.getStatus().equals(InstanceStatus.ERROR)) {
-                    anyErrorJobs.set(true);
+                    if(job.isErrorAcknowledged() == null) {
+                        anyErrorJobs.set(true);
+                    }
+                    else if(job.isErrorAcknowledged() != null
+                        && !job.isErrorAcknowledged()) {
+                        anyErrorJobs.set(true);
+                    }
+                    else if(job.isErrorAcknowledged() != null
+                        && job.isErrorAcknowledged()) {
+                        anyRunningOrCompletedContexts.set(true);
+                    }
                 }
             });
         }
@@ -1575,8 +1635,12 @@ public class ContextMachine {
         } else if(allJobsComplete.get() && allContextsComplete.get() && allLogicSatisfied.get()) {
             contextInstance.setStatus(InstanceStatus.COMPLETE);
             contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-        } else if(anyRunningOrCompletedOrQueuedJobs.get() || anyRunningOrCompletedContexts.get()){
+        } else if(anyRunningOrCompletedOrQueuedJobs.get() || anyRunningOrCompletedContexts.get()) {
             contextInstance.setStatus(InstanceStatus.RUNNING);
+            contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+        }
+        else {
+            contextInstance.setStatus(InstanceStatus.WAITING);
             contextInstance.setUpdatedDateTime(System.currentTimeMillis());
         }
 

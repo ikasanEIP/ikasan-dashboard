@@ -32,6 +32,7 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.designer.PositionedDialog;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
@@ -70,6 +71,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -93,6 +95,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private static final String EVENT_ICON = "EVENT_ICON";
     private static final String EXECUTION_ENVIRONMENT_ICON = "EXECUTION_ENVIRONMENT_ICON";
     private static final String RESET_JOB_ICON = "RESET_JOB_ICON";
+    private static final String ACKNOWLEDGE_ERROR_JOB_ICON = "ACKNOWLEDGE_ERROR_JOB_ICON";
     private static final String SUBMIT_DOWNSTREAM_JOBS_ICON = "SUBMIT_DOWNSTREAM_JOBS_ICON";
     private Logger logger = LoggerFactory.getLogger(ContextInstanceTreeViewWidget.class);
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -110,6 +113,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private Map<ComponentKey, Image> jobImageMap;
     private Map<ComponentKey, Map<String, Icon>> schedulerJobIconMap;
     private Map<ComponentKey, SchedulerStatusDiv> statusDivMap;
+    private Map<ComponentKey, Icon> errorAcknowledgedMap;
     private Map<ComponentKey, SchedulerStatusIconDiv> statusIconDivMap;
     private Map<ComponentKey, InstanceStatus> instanceStatusMap;
     private Map<ComponentKey, SchedulerStatusFreeTextDiv> schedulerStatusFreeTextDivMap;
@@ -225,15 +229,16 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
         this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
-        this.jobImageMap = new HashMap<>();
-        this.schedulerJobIconMap = new HashMap<>();
-        this.statusDivMap = new HashMap<>();
-        this.statusIconDivMap = new HashMap<>();
-        this.instanceStatusMap = new HashMap<>();
-        this.schedulerStatusFreeTextDivMap = new HashMap<>();
-        this.startTimes = new HashMap<>();
-        this.endTimes = new HashMap<>();
-        this.manuallySubmittedBy = new HashMap<>();
+        this.jobImageMap = new ConcurrentHashMap<>();
+        this.schedulerJobIconMap = new ConcurrentHashMap<>();
+        this.statusDivMap = new ConcurrentHashMap<>();
+        this.errorAcknowledgedMap = new ConcurrentHashMap<>();
+        this.statusIconDivMap = new ConcurrentHashMap<>();
+        this.instanceStatusMap = new ConcurrentHashMap<>();
+        this.schedulerStatusFreeTextDivMap = new ConcurrentHashMap<>();
+        this.startTimes = new ConcurrentHashMap<>();
+        this.endTimes = new ConcurrentHashMap<>();
+        this.manuallySubmittedBy = new ConcurrentHashMap<>();
         this.expandedNodes = new ArrayList<>();
 
         parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(QUARTZ));
@@ -354,7 +359,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 Image image = new Image(this.getJobImage(schedulerJobInstance), "");
                 horizontalLayout.add(image);
                 image.setHeight("30px");
-                this.setImageBackgroundColour(image, schedulerJobInstance.getStatus());
+                this.setImageBackgroundColour(image, schedulerJobInstance.getStatus(), schedulerJobInstance.isErrorAcknowledged());
                 horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, image);
 
                 this.jobImageMap.put(new ComponentKey(schedulerJobInstance instanceof GlobalEventJobInstance ? JobConstants.GLOBAL_EVENT : this.contextInstance.getName()
@@ -394,7 +399,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 Image image = new Image(this.getJobImage(schedulerJobInstance), "");
                 horizontalLayout.add(arrow, image);
                 image.setHeight("30px");
-                this.setImageBackgroundColour(image, schedulerJobInstance.getStatus());
+                this.setImageBackgroundColour(image, schedulerJobInstance.getStatus(), schedulerJobInstance.isErrorAcknowledged());
                 horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, image);
 
                 this.jobImageMap.put(new ComponentKey(PRECEDING_ITEM_COMPONENT+this.contextInstance.getName()
@@ -710,13 +715,43 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             statusDiv.setStatus(InstanceStatus.KILLED);
                         }
                         else {
-                            statusDiv.setStatus(schedulerJobInstance.getStatus());
+                            statusDiv.setStatus(schedulerJobInstance.getStatus().name()
+                                , schedulerJobInstance.isErrorAcknowledged());
                         }
                     }
 
                     ComponentKey componentKey = new ComponentKey(schedulerJobInstance instanceof GlobalEventJob ? JobConstants.GLOBAL_EVENT :  schedulerJobInstance.getContextName()
                         , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName());
+
+                    Icon acknowledgedIcon = VaadinIcon.THUMBS_UP.create();
+                    acknowledgedIcon.getStyle().set("cursor", "pointer");
+                    acknowledgedIcon.getElement().setAttribute("title", getTranslation("tooltip.view-acknowledgement-details"));
+                    acknowledgedIcon.setId(Integer.toString(componentKey.hashCode()));
+                    if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) &&
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged() != null &&
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged()) {
+                        acknowledgedIcon.setVisible(true);
+                    }
+                    else {
+                        acknowledgedIcon.setVisible(false);
+                    }
+
+                    acknowledgedIcon.addClickListener(event -> {
+                        SchedulerJobInstanceRecord dbRecord = this.schedulerJobInstanceService.findById(schedulerJobInstanceRecord.getId());
+                        ErrorAcknowledgedPositionedDialog errorAcknowledgedPositionedDialog = new ErrorAcknowledgedPositionedDialog(dbRecord,
+                            this.contextInstance, this.scheduledContextInstanceService, this.moduleMetaDataService, this.logStreamingService,
+                            this.schedulerJobInstanceService);
+                        PositionedDialog.Position position = new PositionedDialog.Position(event.getScreenY(), event.getScreenX());
+                        errorAcknowledgedPositionedDialog.setPosition(position);
+                        errorAcknowledgedPositionedDialog.open();
+                    });
+
+                    horizontalLayout.add(acknowledgedIcon);
+                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, acknowledgedIcon);
+
                     this.statusDivMap.put(componentKey, statusDiv);
+                    this.errorAcknowledgedMap.put(componentKey, acknowledgedIcon);
                 }
                 else if(value instanceof PrecedingItem) {
                     SchedulerJobInstance schedulerJobInstance = ((PrecedingItem) value).schedulerJobInstance;
@@ -885,7 +920,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param image the image to set the background colour on.
      * @param instanceStatus the status to be reflected.
      */
-    private void setImageBackgroundColour(Image image, InstanceStatus instanceStatus) {
+    private void setImageBackgroundColour(Image image, InstanceStatus instanceStatus, Boolean errorAcknowledged) {
         image.getElement().getStyle().remove("background-color");
         if(instanceStatus.equals(InstanceStatus.COMPLETE)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_COMPLETE);
@@ -897,7 +932,12 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_WAITING);
         }
         else if(instanceStatus.equals(InstanceStatus.ERROR)) {
-            image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+            if(errorAcknowledged != null && errorAcknowledged) {
+                image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR_ACKNOWLEDGED);
+            }
+            else {
+                image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+            }
         }
         else if(instanceStatus.equals(InstanceStatus.LOCK_QUEUED)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_LOCK_QUEUED);
@@ -1005,8 +1045,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                dialog.setWidth("600px");
-                dialog.setHeight("250px");
                 dialog.open(getTranslation("progress-dialog.hold-all-jobs-jobs-header", UI.getCurrent().getLocale()),
                     getTranslation("progress-dialog.hold-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
@@ -1087,8 +1125,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                 confirmDialog.addConfirmListener(confirmEvent -> {
                     ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                    dialog.setWidth("600px");
-                    dialog.setHeight("250px");
                     dialog.open(getTranslation("progress-dialog.release-all-jobs-jobs-header", UI.getCurrent().getLocale()),
                         getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
@@ -1152,8 +1188,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                dialog.setWidth("600px");
-                dialog.setHeight("250px");
                 dialog.open(getTranslation("progress-dialog.skip-all-jobs-jobs-header", UI.getCurrent().getLocale()),
                     getTranslation("progress-dialog.skip-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
@@ -1206,8 +1240,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                dialog.setWidth("600px");
-                dialog.setHeight("250px");
                 dialog.open(getTranslation("progress-dialog.enable-all-jobs-jobs-header", UI.getCurrent().getLocale()),
                     getTranslation("progress-dialog.enable-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
@@ -1719,6 +1751,30 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         layout.add(reset);
 
+        Icon acknowledgeError;
+
+        if(!iconMap.containsKey(ACKNOWLEDGE_ERROR_JOB_ICON)) {
+            acknowledgeError = IconDecorator.decorate(new Icon(VaadinIcon.THUMBS_UP), getTranslation("tooltip.acknowledge-error"
+                , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            acknowledgeError.getStyle().set("cursor", "pointer");
+            acknowledgeError.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction(false)) {
+                    return;
+                }
+
+                AcknowledgeErrorDialog errorDialog = new AcknowledgeErrorDialog(this.contextInstance, this.schedulerJobInstanceService,
+                    schedulerJobInstanceRecord, this.systemEventLogger);
+                errorDialog.open();
+            });
+
+            iconMap.put(ACKNOWLEDGE_ERROR_JOB_ICON, acknowledgeError);
+        }
+        else {
+            acknowledgeError = iconMap.get(ACKNOWLEDGE_ERROR_JOB_ICON);
+        }
+
+        layout.add(acknowledgeError);
+
         Icon submitDownstreamJobs;
 
         if(!iconMap.containsKey(SUBMIT_DOWNSTREAM_JOBS_ICON)) {
@@ -1897,6 +1953,15 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             schedulerJobInstanceRecord.getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) &&
             (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE)
                 || schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)) &&
+            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
+        Icon acknowledge = iconMap.get(ACKNOWLEDGE_ERROR_JOB_ICON);
+        acknowledge.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
+            schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) &&
+            (schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged() == null
+                || !schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged()) &&
             ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
@@ -2270,7 +2335,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
 
         if(jobInstanceStateChangeEvent.getPreviousStatus().equals(jobInstanceStateChangeEvent.getNewStatus())) {
-            return;
+            if(!(jobInstanceStateChangeEvent.getSchedulerJobInstance().isErrorAcknowledged() != null
+                && jobInstanceStateChangeEvent.getSchedulerJobInstance().isErrorAcknowledged())) {
+                return;
+            }
         }
 
         logger.debug("Start manageJobStatusStateChangeEvent " + jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
@@ -2305,7 +2373,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
                         , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
                         jobInstanceStateChangeEvent.getNewStatus()));
-                    this.setImageBackgroundColour(statusImage, jobInstanceStateChangeEvent.getNewStatus());
+                    this.setImageBackgroundColour(statusImage, jobInstanceStateChangeEvent.getNewStatus()
+                        , jobInstanceStateChangeEvent.getSchedulerJobInstance().isErrorAcknowledged());
                 });
             }
         }
@@ -2318,7 +2387,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
                         , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
                         jobInstanceStateChangeEvent.getNewStatus()));
-                    this.setImageBackgroundColour(preccedingJobStatusImage, jobInstanceStateChangeEvent.getNewStatus());
+                    this.setImageBackgroundColour(preccedingJobStatusImage, jobInstanceStateChangeEvent.getNewStatus(),
+                        jobInstanceStateChangeEvent.getSchedulerJobInstance().isErrorAcknowledged());
                 });
             }
         }
@@ -2351,7 +2421,24 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         this.statusDivMap.get(key).setStatus(InstanceStatus.KILLED);
                     }
                     else {
-                        this.statusDivMap.get(key).setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                        this.statusDivMap.get(key).setStatus(jobInstanceStateChangeEvent.getNewStatus().name()
+                            , schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged());
+                    }
+                });
+            }
+        }
+
+        if(this.errorAcknowledgedMap.containsKey(key)) {
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) &&
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged() != null &&
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged()) {
+                        this.errorAcknowledgedMap.get(key).setVisible(true);
+                    }
+                    else {
+                        this.errorAcknowledgedMap.get(key).setVisible(false);
                     }
                 });
             }
@@ -2366,6 +2453,22 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     }
                     else {
                         this.statusDivMap.get(precedingJobKey).setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    }
+                });
+            }
+        }
+
+        if(this.errorAcknowledgedMap.containsKey(precedingJobKey)) {
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) &&
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged() != null &&
+                        schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged()) {
+                        this.errorAcknowledgedMap.get(precedingJobKey).setVisible(true);
+                    }
+                    else {
+                        this.errorAcknowledgedMap.get(precedingJobKey).setVisible(false);
                     }
                 });
             }
@@ -2425,6 +2528,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param contextInstanceStateChangeEvent event received when a context instance state change occurs.
      */
     private void manageContextInstanceStateChangeEvent(UI ui, ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
+        if(ui == null) return;
         if (contextInstanceStateChangeEvent.getContextInstance() != null && !contextInstanceStateChangeEvent.getPreviousStatus()
                 .equals(contextInstanceStateChangeEvent.getNewStatus())) {
             logger.debug("Start manageContextInstanceStateChangeEvent " + contextInstanceStateChangeEvent.getContextInstance().getName());
@@ -2450,6 +2554,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     }
 
     private void manageContextStatusIndicators(UI ui) {
+        if(ui == null) return;
+
         Map<String, InternalEventDrivenJob> internalEventDrivenJobMap
             = this.getCommandExecutionJobsForContextInstance(this.contextInstance.getId());
 

@@ -25,4 +25,12 @@ public class StatusColours {
     public static String getInstanceStatusColour(InstanceStatus status) {
         return STATUS_COLOURS.get(status);
     }
+
+    public static String getInstanceStatusColour(InstanceStatus status, boolean errorAcknowledged) {
+        if(status.equals(InstanceStatus.ERROR) && errorAcknowledged) {
+            return IkasanColours.SCHEDULER_ERROR_ACKNOWLEDGED;
+        }
+
+        return STATUS_COLOURS.get(status);
+    }
 }

@@ -383,7 +383,6 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
 		synchronise.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
             ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
-
             progressIndicatorDialog.open("Synchronising User Directory", null);
 
             final UI current = UI.getCurrent();

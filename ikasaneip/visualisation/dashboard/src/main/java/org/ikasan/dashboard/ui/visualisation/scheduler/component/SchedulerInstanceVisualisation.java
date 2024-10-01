@@ -339,7 +339,9 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                 this.ui.access(() -> {
                     if (this.designerCanvas != null) {
                         this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
-                            , StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+                            , schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().isErrorAcknowledged() != null ?
+                                StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().isErrorAcknowledged()) :
+                                StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
                     }
                 });
             }

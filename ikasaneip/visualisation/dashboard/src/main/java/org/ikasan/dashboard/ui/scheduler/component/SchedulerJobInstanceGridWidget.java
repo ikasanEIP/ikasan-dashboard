@@ -23,6 +23,7 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.designer.PositionedDialog;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
@@ -656,6 +657,26 @@ public class SchedulerJobInstanceGridWidget extends Div
                             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
+            Icon acknowledgeError = IconDecorator.decorate(new Icon(VaadinIcon.THUMBS_UP), getTranslation("tooltip.acknowledge-error"
+                    , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            acknowledgeError.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction()) {
+                    return;
+                }
+
+                AcknowledgeErrorDialog errorDialog = new AcknowledgeErrorDialog(this.contextInstance, this.schedulerJobInstanceService,
+                    schedulerJobInstanceRecord, this.systemEventLogger);
+                errorDialog.open();
+            });
+
+            layout.add(acknowledgeError);
+            acknowledgeError.setVisible(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) &&
+                    (schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged() == null
+                        || !schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged()) &&
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
             Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale())
                 , "14pt", "rgba(0, 0, 0, 1.0)");
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -868,11 +889,33 @@ public class SchedulerJobInstanceGridWidget extends Div
                     schedulerStatusDiv.setStatus(InstanceStatus.KILLED);
                 }
                 else {
-                    schedulerStatusDiv.setStatus(schedulerJobInstanceRecord.getStatus());
+                    schedulerStatusDiv.setStatus(schedulerJobInstanceRecord.getStatus()
+                        , schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged());
                 }
             }
 
             horizontalLayout.add(schedulerStatusDiv);
+
+            if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) &&
+                schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged() != null &&
+                schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged()) {
+                Icon acknowledgedIcon = VaadinIcon.THUMBS_UP.create();
+                acknowledgedIcon.getStyle().set("cursor", "pointer");
+                acknowledgedIcon.getElement().setAttribute("title", getTranslation("tooltip.view-acknowledgement-details"));
+
+                acknowledgedIcon.addClickListener(event -> {
+                    SchedulerJobInstanceRecord dbRecord = this.schedulerJobInstanceService.findById(schedulerJobInstanceRecord.getId());
+                    ErrorAcknowledgedPositionedDialog errorAcknowledgedPositionedDialog = new ErrorAcknowledgedPositionedDialog(dbRecord,
+                        this.contextInstance, this.scheduledContextInstanceService, this.moduleMetaDataService, this.logStreamingService,
+                        this.schedulerJobInstanceService);
+                    PositionedDialog.Position position = new PositionedDialog.Position(event.getScreenY(), event.getScreenX());
+                    errorAcknowledgedPositionedDialog.setPosition(position);
+                    errorAcknowledgedPositionedDialog.open();
+                });
+                horizontalLayout.add(acknowledgedIcon);
+            }
+
             return horizontalLayout;
         })).setHeader(getTranslation("table-header.status", UI.getCurrent().getLocale()))
             .setResizable(true)

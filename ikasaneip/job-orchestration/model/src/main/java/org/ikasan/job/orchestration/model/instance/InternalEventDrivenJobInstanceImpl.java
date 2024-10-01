@@ -21,6 +21,10 @@ public class InternalEventDrivenJobInstanceImpl extends SchedulerJobInstanceImpl
     private String executionEnvironmentProperties;
     private boolean jobRepeatable;
     private boolean killed = false;
+    private String errorAcknowledgedMessage;
+    private String errorAcknowledgmentTicketId;
+    private String errorAcknowledgeUser;
+    private long errorAcknowledgeTimestamp;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -140,6 +144,46 @@ public class InternalEventDrivenJobInstanceImpl extends SchedulerJobInstanceImpl
     @Override
     public void setKilled(boolean killed) {
         this.killed = killed;
+    }
+
+    @Override
+    public String getErrorAcknowledgedMessage() {
+        return errorAcknowledgedMessage;
+    }
+
+    @Override
+    public void setErrorAcknowledgedMessage(String errorAcknowledgedMessage) {
+        this.errorAcknowledgedMessage = errorAcknowledgedMessage;
+    }
+
+    @Override
+    public String getErrorAcknowledgmentTicketId() {
+        return errorAcknowledgmentTicketId;
+    }
+
+    @Override
+    public void setErrorAcknowledgmentTicketId(String errorAcknowledgmentTicketId) {
+        this.errorAcknowledgmentTicketId = errorAcknowledgmentTicketId;
+    }
+
+    @Override
+    public String getErrorAcknowledgeUser() {
+        return errorAcknowledgeUser;
+    }
+
+    @Override
+    public void setErrorAcknowledgeUser(String errorAcknowledgeUser) {
+        this.errorAcknowledgeUser = errorAcknowledgeUser;
+    }
+
+    @Override
+    public long getErrorAcknowledgeTimestamp() {
+        return errorAcknowledgeTimestamp;
+    }
+
+    @Override
+    public void setErrorAcknowledgeTimestamp(long errorAcknowledgeTimestamp) {
+        this.errorAcknowledgeTimestamp = errorAcknowledgeTimestamp;
     }
 
     @Override

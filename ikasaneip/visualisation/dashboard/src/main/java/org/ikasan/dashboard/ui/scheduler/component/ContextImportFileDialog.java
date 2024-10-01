@@ -112,8 +112,6 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
             confirmDialog.open();
             confirmDialog.addConfirmListener(confirmEvent -> {
                 ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                dialog.setWidth("600px");
-                dialog.setHeight("250px");
                 dialog.open(getTranslation("progress-dialog.provision-job-header", UI.getCurrent().getLocale()),
                     getTranslation("progress-dialog.provision-job-body", UI.getCurrent().getLocale()));
 

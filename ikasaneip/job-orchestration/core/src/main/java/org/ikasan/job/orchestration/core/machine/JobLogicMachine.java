@@ -86,7 +86,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             childContextNames.append("]");
 
             logger.info("Processing Schedule Process Event [{}], for Context Instance [{}] with identifier [{}], with Child Ids {}", scheduledProcessEvent.getJobName()
-                , contextInstance.getName(), contextInstance.getId(), childContextNames);
+                , contextInstance.getName(), parentContextInstance.getId(), childContextNames);
         }
 
         // Firstly the status of the job is set on the instance.

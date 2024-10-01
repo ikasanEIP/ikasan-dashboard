@@ -114,7 +114,10 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         }
 
         document.addField(DISPLAY_NAME, schedulerJobInstance.getDisplayName());
-        document.addField(STATUS, schedulerJobInstanceRecord.getStatus());
+        document.addField(STATUS, schedulerJobInstance.isErrorAcknowledged() != null
+            && schedulerJobInstance.isErrorAcknowledged()
+            && schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR)
+            ? InstanceStatus.ERROR_ACKNOWLEDGED.name() : schedulerJobInstanceRecord.getStatus());
         document.addField(MODULE_NAME, schedulerJobInstanceRecord.getJobName());
         document.addField(FLOW_NAME, schedulerJobInstanceRecord.getContextName());
         document.addField(CHILD_CONTEXT_NAME, schedulerJobInstanceRecord.getChildContextName());

@@ -128,7 +128,7 @@ public class ContextStatusServiceControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
         String content = mvcResult.getResponse().getContentAsString();
         assertThat(content,
-            containsString("An error has occurred attempting to get status for instance Instance_Name, context Context_Name, jobName null!"));
+            containsString("An error has occurred attempting to get status for job plan Instance_Name, context Context_Name, jobName null!"));
     }
 
     @Test
@@ -163,7 +163,7 @@ public class ContextStatusServiceControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
         String content = mvcResult.getResponse().getContentAsString();
         assertThat(content,
-            containsString("An error has occurred attempting to get status for instance instance-name, context context-name, jobName job-name!"));
+            containsString("An error has occurred attempting to get status for job plan instance-name, context context-name, jobName job-name!"));
     }
 
     @Test

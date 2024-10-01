@@ -112,7 +112,8 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
 
         for (Map.Entry<String, ContextMachine> contextMachineEntry : mapAllContextMachine.entrySet()) {
             if (!contextMachineEntry.getValue().getContext().getStatus().equals(InstanceStatus.PREPARED)) {
-                ContextJobInstanceStatus contextJobInstanceStatus = ContextHelper.getContextJobInstanceStatus(contextMachineEntry.getValue().getContext(), contextMachineEntry.getValue().getInternalEventDrivenJobInstancesMap());
+                ContextJobInstanceStatus contextJobInstanceStatus = ContextHelper.getContextJobInstanceStatus(contextMachineEntry.getValue().getContext()
+                    , contextMachineEntry.getValue().getInternalEventDrivenJobInstancesMap());
                 // Only keep job status based on instanceStatus
                 if (instanceStatus != null) {
                     contextJobInstanceStatus.getJobDetails().removeIf(list -> !list.getInstanceStatus().equals(instanceStatus));

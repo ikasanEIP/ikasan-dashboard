@@ -17,8 +17,8 @@ public class SchedulerJobInstanceImpl extends SchedulerJobImpl implements Schedu
     private boolean initiationEventRaised = false;
     private InstanceStatus status;
     private ScheduledProcessEvent scheduledProcessEvent;
-
     private boolean skip;
+    private Boolean errorAcknowledged;
 
     public SchedulerJobInstanceImpl() {
         status = InstanceStatus.WAITING;
@@ -92,6 +92,16 @@ public class SchedulerJobInstanceImpl extends SchedulerJobImpl implements Schedu
     @Override
     public void setSkip(boolean skip) {
         this.skip = skip;
+    }
+
+    @Override
+    public Boolean isErrorAcknowledged() {
+        return errorAcknowledged;
+    }
+
+    @Override
+    public void setErrorAcknowledged(Boolean errorAcknowledged) {
+        this.errorAcknowledged = errorAcknowledged;
     }
 
     @Override

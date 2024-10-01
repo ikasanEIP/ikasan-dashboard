@@ -31,6 +31,7 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.designer.PositionedDialog;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -140,6 +141,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private Button executionHistoryButton;
     private Button viewProcessEventButton;
     private Button viewExecutionDetailsButton;
+    private Icon acknowledgedIcon;
+    private Button acknowledgedButton;
     private ScheduledProcessEvent scheduledProcessEvent;
     private LogStreamingService logStreamingService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -276,6 +279,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private FormLayout createJobForm() {
         formLayout = new FormLayout();
         formLayout.getStyle().set("padding-top", "0px");
+        HorizontalLayout statusLayout = new HorizontalLayout();
+        statusLayout.setMargin(false);
+        statusLayout.setWidth("100%");
+
         this.statusDiv = new SchedulerStatusDiv();
         this.statusDiv.setHeight("45px");
         this.statusDiv.setWidth("100%");
@@ -283,10 +290,27 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.statusDiv.setStatus(InstanceStatus.KILLED);
         }
         else {
-            this.statusDiv.setStatus(this.internalEventDrivenJobInstance.getStatus());
+            this.statusDiv.setStatus(this.internalEventDrivenJobInstance.getStatus().name(), this.internalEventDrivenJobInstance.isErrorAcknowledged());
         }
 
-        formLayout.add(this.statusDiv, 2);
+        this.acknowledgedIcon = VaadinIcon.THUMBS_UP.create();
+        this.acknowledgedIcon.getStyle().set("cursor", "pointer");
+        this.acknowledgedIcon.getElement().setAttribute("title", getTranslation("tooltip.view-acknowledgement-details"));
+        this.acknowledgedIcon.addClickListener(event -> {
+            SchedulerJobInstanceRecord dbRecord = this.schedulerJobInstanceService.findById(schedulerJobInstanceRecord.getId());
+            ErrorAcknowledgedPositionedDialog errorAcknowledgedPositionedDialog = new ErrorAcknowledgedPositionedDialog(dbRecord,
+                this.contextInstance, this.scheduledContextInstanceService, this.moduleMetaDataService, this.logStreamingService,
+                this.schedulerJobInstanceService);
+            PositionedDialog.Position position = new PositionedDialog.Position(event.getScreenY(), event.getScreenX());
+            errorAcknowledgedPositionedDialog.setPosition(position);
+            errorAcknowledgedPositionedDialog.open();
+        });
+
+        this.acknowledgedIcon.setVisible(false);
+        statusLayout.add(this.statusDiv, this.acknowledgedIcon);
+        statusLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.acknowledgedIcon);
+
+        formLayout.add(statusLayout, 2);
 
         this.holdButton = new Button(getTranslation("button.hold", UI.getCurrent().getLocale()), new Icon(VaadinIcon.HAND));
         this.holdButton.setIconAfterText(true);
@@ -524,9 +548,17 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             }
         });
 
+        this.acknowledgedButton = new Button("Acknowledge Error", VaadinIcon.THUMBS_UP.create());
+        this.acknowledgedButton.setVisible(false);
+
+        acknowledgedButton.addClickListener(event -> {
+            AcknowledgeErrorDialog errorDialog = new AcknowledgeErrorDialog(this.contextInstance, this.schedulerJobInstanceService,
+                schedulerJobInstanceRecord, this.systemEventLogger);
+            errorDialog.open();
+        });
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(this.holdButton, this.releaseButton, this.skipButton, this.enableButton, this.submitButton
+        actionsLayout.add(this.holdButton, this.releaseButton, this.skipButton, this.enableButton, this.submitButton, this.acknowledgedButton
             , this.killButton, this.resetButton, this.submitDownstreamJobsButton);
         actionsLayout.setMargin(false);
 
@@ -951,8 +983,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         AtomicReference<Boolean> result = new AtomicReference<>(true);
 
         ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-        dialog.setWidth("600px");
-        dialog.setHeight("250px");
         dialog.open(getTranslation("progress-dialog.reset-job-header", UI.getCurrent().getLocale()),
             getTranslation("progress-dialog.reset-job-body", UI.getCurrent().getLocale()));
 
@@ -1125,13 +1155,18 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.internalEventDrivenJobInstance.getJobName())) {
             if(this.ui.isAttached()) {
                 this.ui.access(() -> {
-                    this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    if(jobInstanceStateChangeEvent.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+                        this.internalEventDrivenJobInstance = (InternalEventDrivenJobInstance) jobInstanceStateChangeEvent.getSchedulerJobInstance();
+                    }
+                    else {
+                        this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    }
 
                     if(this.internalEventDrivenJobInstance.isKilled() && jobInstanceStateChangeEvent.getNewStatus().equals(InstanceStatus.ERROR)) {
                         this.statusDiv.setStatus(InstanceStatus.KILLED);
                     }
                     else {
-                        this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                        this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus().name(), this.internalEventDrivenJobInstance.isErrorAcknowledged());
                     }
 
                     this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
@@ -1166,7 +1201,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private void setButtonVisibility() {
         if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.RUNNING)) {
             this.killButton.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.submitButton.setVisible(false);
@@ -1176,6 +1211,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.enableButton.setVisible(false);
             this.resetButton.setVisible(false);
             this.submitDownstreamJobsButton.setVisible(false);
+            this.acknowledgedButton.setVisible(false);
+            this.acknowledgedIcon.setVisible(false);
         }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
             this.killButton.setVisible(false);
@@ -1184,46 +1221,63 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.releaseButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
+            if(internalEventDrivenJobInstance.isErrorAcknowledged() == null
+                || !internalEventDrivenJobInstance.isErrorAcknowledged()) {
+                this.acknowledgedButton.setVisible(true);
+            }
+            else {
+                this.acknowledgedButton.setVisible(false);
+            }
+
+            if(this.internalEventDrivenJobInstance.isErrorAcknowledged() != null &&
+                this.internalEventDrivenJobInstance.isErrorAcknowledged()) {
+                this.acknowledgedIcon.setVisible(true);
+            }
+
             this.resetButton.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.submitDownstreamJobsButton.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
             this.killButton.setVisible(false);
             this.submitButton.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.holdButton.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.releaseButton.setVisible(false);
             this.skipButton.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.enableButton.setVisible(false);
             this.resetButton.setVisible(false);
             this.submitDownstreamJobsButton.setVisible(false);
+            this.acknowledgedButton.setVisible(false);
+            this.acknowledgedIcon.setVisible(false);
         }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
             this.killButton.setVisible(false);
             this.submitButton.setVisible(false);
             this.holdButton.setVisible(false);
             this.releaseButton.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
             this.resetButton.setVisible(false);
             this.submitDownstreamJobsButton.setVisible(false);
+            this.acknowledgedButton.setVisible(false);
+            this.acknowledgedIcon.setVisible(false);
         }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED) ||
             this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
@@ -1234,11 +1288,13 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.releaseButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.resetButton.setVisible(false);
             this.submitDownstreamJobsButton.setVisible(false);
+            this.acknowledgedButton.setVisible(false);
+            this.acknowledgedIcon.setVisible(false);
         }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.COMPLETE)) {
             this.killButton.setVisible(false);
@@ -1252,6 +1308,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.submitDownstreamJobsButton.setVisible(false);
+            this.acknowledgedButton.setVisible(false);
+            this.acknowledgedIcon.setVisible(false);
         }
     }
 }
