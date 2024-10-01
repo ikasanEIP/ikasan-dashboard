@@ -52,7 +52,7 @@ public class JobLogicMachineTest extends AbstractTest {
      * @throws IOException
      */
     @Test
-    public void test_simple_context_and_single_dependency_relevant_event() throws IOException, InvalidContextTemplateException {
+    public void test_simple_context_and_single_dependency_relevant_event() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
@@ -68,12 +68,10 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName2", events.get(0).getAgentName());
         Assert.assertEquals("jobName2", events.get(0).getJobName());
-
-        // todo make sure context has been updated
     }
 
     @Test
-    public void test_simple_context_and_single_dependency_relevant_event_target_residing_context() throws IOException, InvalidContextTemplateException {
+    public void test_simple_context_and_single_dependency_relevant_event_target_residing_context() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
 
         InternalEventDrivenJobInstance instance = new InternalEventDrivenJobInstanceImpl();
@@ -108,7 +106,7 @@ public class JobLogicMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_simple_context_job_already_complete() throws IOException, InvalidContextTemplateException {
+    public void test_simple_context_job_already_complete() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
         context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.COMPLETE);
 
@@ -126,7 +124,7 @@ public class JobLogicMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_simple_context_job_already_error() throws IOException, InvalidContextTemplateException {
+    public void test_simple_context_job_already_error() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
         context.getScheduledJobsMap().get("agentName2-jobName2").setStatus(InstanceStatus.ERROR);
 
@@ -162,7 +160,7 @@ public class JobLogicMachineTest extends AbstractTest {
      * @throws IOException
      */
     @Test
-    public void test_simple_context_and_single_dependency_relevant_event_job_skipped() throws IOException, InvalidContextTemplateException {
+    public void test_simple_context_and_single_dependency_relevant_event_job_skipped() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
         context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(true);
 
@@ -336,6 +334,62 @@ public class JobLogicMachineTest extends AbstractTest {
     }
 
     /**
+     * This test evaluates a simple dependency (a && b) -> c:
+     *
+     *      agentName1-jobName1 ----------> agentName3-jobName3
+     *                               |
+     *      agentName2-jobName2 -----
+     *
+     * "jobDependencies" : [ {
+     *     "jobIdentifier" : "agentName3-jobName3",
+     *     "logicalGrouping" : {
+     *       "logicalGrouping" : null,
+     *       "and" : [ {
+     *         "identifier" : "agentName1-jobName1"
+     *       }, {
+     *         "identifier" : "agentName2-jobName2"
+     *       }],
+     *       "or" : null,
+     *       "not" : null
+     *     }
+     *   } ]
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_and_multiple_dependency_relevant_event_with_error_acknowledged() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-multiple-dependency.json");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
+
+        // we set the event to ERROR
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", false);
+
+        // we acknowledge the error - user would normally do this via the UI
+        context.getScheduledJobsMap().get("agentName2-jobName2").setErrorAcknowledged(true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName3", events.get(0).getAgentName());
+        Assert.assertEquals("jobName3", events.get(0).getJobName());
+    }
+
+    /**
      * This test evaluates a simple dependency (a & b) -> c:
      *
      *      agentName1-jobName1 ----------> agentName3-jobName3
@@ -418,6 +472,55 @@ public class JobLogicMachineTest extends AbstractTest {
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName3", events.get(0).getAgentName());
+        Assert.assertEquals("jobName3", events.get(0).getJobName());
+    }
+
+    /**
+     * This test evaluates a simple dependency (a || b) -> c:
+     *
+     *      agentName1-jobName1 ----------> agentName3-jobName3
+     *                               |
+     *                               or
+     *      agentName2-jobName2 -----
+     *
+     * "jobDependencies" : [ {
+     *     "jobIdentifier" : "agentName3-jobName3",
+     *     "logicalGrouping" : {
+     *       "logicalGrouping" : null,
+     *       "or" : [ {
+     *         "identifier" : "agentName1-jobName1"
+     *       }, {
+     *         "identifier" : "agentName2-jobName2"
+     *       }],
+     *       "and" : null,
+     *       "not" : null
+     *     }
+     *   } ]
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_or_dependency_relevant_event_error_acknowledged() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-or-dependency.json");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        // we set the event to ERROR
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", false);
+
+        // we acknowledge the error - user would normally do this via the UI
+        context.getScheduledJobsMap().get("agentName2-jobName2").setErrorAcknowledged(true);
+
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
@@ -555,6 +658,70 @@ public class JobLogicMachineTest extends AbstractTest {
      *                                    or
      *      agentName3-jobName3------------
      *
+     *  This test asserts that an event is raised when the and clause is satisfied.
+     *
+     * "jobDependencies" : [ {
+     *     "jobIdentifier" : "agentName4-jobName4",
+     *     "logicalGrouping" : {
+     *       "logicalGrouping" : null,
+     *       "and" : [ {
+     *         "identifier" : "agentName1-jobName1",
+     *         "identifier" : "agentName2-jobName2"
+     *       }],
+     *       "or" :[ {
+     *         "identifier" : "agentName3-jobName3"
+     *       }],
+     *       "not" : null
+     *     }
+     *   } ]
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_and_or_dependency_relevant_and_statement_fulfilled_error_acknowledged() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
+
+        // set the event to ERROR
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", false);
+
+        // we acknowledge the error - user would normally do this via the UI
+        context.getScheduledJobsMap().get("agentName2-jobName2").setErrorAcknowledged(true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName4", events.get(0).getAgentName());
+        Assert.assertEquals("jobName4", events.get(0).getJobName());
+    }
+
+    /**
+     * This test evaluates a simple dependency ((a && b) || c) -> d:
+     *
+     *      agentName1-jobName1 ----------------> agentName4-jobName4
+     *                               |     |
+     *                               and   |
+     *      agentName2-jobName2 -----      |
+     *                                     |
+     *                                    or
+     *      agentName3-jobName3------------
+     *
      *  This test asserts that an event is raised when the or clause is satisfied.
      *
      * "jobDependencies" : [ {
@@ -585,6 +752,61 @@ public class JobLogicMachineTest extends AbstractTest {
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName4", events.get(0).getAgentName());
+        Assert.assertEquals("jobName4", events.get(0).getJobName());
+    }
+
+    /**
+     * This test evaluates a simple dependency ((a && b) || c) -> d:
+     *
+     *      agentName1-jobName1 ----------------> agentName4-jobName4
+     *                               |     |
+     *                               and   |
+     *      agentName2-jobName2 -----      |
+     *                                     |
+     *                                    or
+     *      agentName3-jobName3------------
+     *
+     *  This test asserts that an event is raised when the or clause is satisfied.
+     *
+     * "jobDependencies" : [ {
+     *     "jobIdentifier" : "agentName4-jobName4",
+     *     "logicalGrouping" : {
+     *       "logicalGrouping" : null,
+     *       "and" : [ {
+     *         "identifier" : "agentName1-jobName1",
+     *         "identifier" : "agentName2-jobName2"
+     *       }],
+     *       "or" :[ {
+     *         "identifier" : "agentName3-jobName3"
+     *       }],
+     *       "not" : null
+     *     }
+     *   } ]
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_and_or_dependency_relevant_or_statement_fulfilled_error_acknowledged() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        // set the event to ERROR
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName3", "agentName3", false);
+
+        // we acknowledge the error - user would normally do this via the UI
+        context.getScheduledJobsMap().get("agentName3-jobName3").setErrorAcknowledged(true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
@@ -754,6 +976,97 @@ public class JobLogicMachineTest extends AbstractTest {
     /**
      * This test evaluates a simple dependency (((a && b) || c) && d) -> e:
      *
+     *                                       agentName4-jobName5-----
+     *                                                              and
+     *                                                               |
+     *      agentName1-jobName1 -----------O-------------------------0----------> agentName5-jobName5
+     *                               |     |
+     *                               and   |
+     *      agentName2-jobName2 -----      |
+     *                                     |
+     *                                    or
+     *      agentName3-jobName3------------
+     *
+     *  This test asserts that an event is raised when inner and outer and clauses are satisfied.
+     *
+     * "jobDependencies": [
+     *     {
+     *       "jobIdentifier": "agentName5-jobName5",
+     *       "logicalGrouping": {
+     *         "logicalGrouping": {
+     *           "logicalGrouping": null,
+     *           "and": [
+     *             {
+     *               "identifier": "agentName1-jobName1",
+     *               "identifier": "agentName2-jobName2"
+     *             }
+     *           ],
+     *           "or": [
+     *             {
+     *               "identifier": "agentName3-jobName3"
+     *             }
+     *           ],
+     *           "not": null
+     *         },
+     *         "and": [
+     *           {
+     *             "identifier": "agentName4-jobName4"
+     *           }
+     *         ],
+     *         "or": null,
+     *         "not": null
+     *       }
+     *     }
+     *   ]
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_and_outer_and_statement_fulfilled_error_acknowledged() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
+
+        // Set the event to ERROR
+        eventInstance
+            = scheduledProcessEventInstance("jobName4", "agentName4", false);
+
+        // Acknowledge the error
+        context.getScheduledJobsMap().get("agentName4-jobName4").setErrorAcknowledged(true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+    }
+
+    /**
+     * This test evaluates a simple dependency (((a && b) || c) && d) -> e:
+     *
      *                                       agentName4-jobName4-----
      *                                                              and
      *                                                               |
@@ -820,6 +1133,93 @@ public class JobLogicMachineTest extends AbstractTest {
 
         eventInstance
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+    }
+
+    /**
+     * This test evaluates a simple dependency (((a && b) || c) && d) -> e:
+     *
+     *                                       agentName4-jobName4-----
+     *                                                              and
+     *                                                               |
+     *      agentName1-jobName1 -----------O-------------------------0----------> agentName5-jobName5
+     *                               |     |
+     *                               and   |
+     *      agentName2-jobName2 -----      |
+     *                                     |
+     *                                    or
+     *      agentName3-jobName3------------
+     *
+     *  This test asserts that an event is raised when inner or outer and clauses are satisfied.
+     *
+     * "jobDependencies": [
+     *     {
+     *       "jobIdentifier": "agentName5-jobName5",
+     *       "logicalGrouping": {
+     *         "logicalGrouping": {
+     *           "logicalGrouping": null,
+     *           "and": [
+     *             {
+     *               "identifier": "agentName1-jobName1",
+     *               "identifier": "agentName2-jobName2"
+     *             }
+     *           ],
+     *           "or": [
+     *             {
+     *               "identifier": "agentName3-jobName3"
+     *             }
+     *           ],
+     *           "not": null
+     *         },
+     *         "and": [
+     *           {
+     *             "identifier": "agentName4-jobName4"
+     *           }
+     *         ],
+     *         "or": null,
+     *         "not": null
+     *       }
+     *     }
+     *   ]
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_or_outer_and_statement_fulfilled_error_acknowledged() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        // set the event to ERROR
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName3", "agentName3", false);
+
+        // acknowledge the error
+        context.getScheduledJobsMap().get("agentName3-jobName3").setErrorAcknowledged(true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
+
+        // set the event to ERROR
+        eventInstance
+            = scheduledProcessEventInstance("jobName4", "agentName4", false);
+
+        // acknowledge the error
+        context.getScheduledJobsMap().get("agentName4-jobName4").setErrorAcknowledged(true);
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
@@ -1013,6 +1413,106 @@ public class JobLogicMachineTest extends AbstractTest {
 
         eventInstance
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+    }
+
+    /**
+     * This test evaluates a simple dependency ((a && b) || (c && d)) -> e:
+     *
+     *      agentName1-jobName1------
+     *                               and
+     *                               |
+     *      agentName2-jobName2-------------
+     *                                      |
+     *                                      or--------------> agentName5-jobName5
+     *                                      |
+     *      agentName3-jobName3 ------------
+     *                               |
+     *                               and
+     *      agentName4-jobName4 -----
+     *
+     *
+     *
+     *  This test asserts that the event is raised when the left hand side and is satisfied.
+     *
+     * "jobDependencies": [
+     *     {
+     *       "jobIdentifier": "agentName5-jobName5",
+     *       "logicalGrouping": {
+     *         "logicalGrouping": null,
+     *         "and": [
+     *         ],
+     *         "or": [
+     *           {
+     *             "logicalGrouping": {
+     *               "logicalGrouping": null,
+     *               "and": [
+     *                 {
+     *                   "identifier": "agentName1-jobName1"
+     *                 },
+     *                 {
+     *                   "identifier": "agentName2-jobName2"
+     *                 }
+     *               ],
+     *               "or": [],
+     *               "not": null
+     *             }
+     *           },
+     *           {
+     *             "logicalGrouping": {
+     *               "logicalGrouping": null,
+     *               "and": [
+     *                 {
+     *                   "identifier": "agentName3-jobName3"
+     *                 },
+     *                 {
+     *                   "identifier": "agentName4-jobName4"
+     *                 }
+     *               ],
+     *               "or": [],
+     *               "not": null
+     *             }
+     *           }
+     *         ],
+     *         "not": null
+     *       }
+     *     }
+     *   ]
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled_error_acknowledged() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
+
+        // set the event to ERROR
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", false);
+
+        // acknowledge the error
+        context.getScheduledJobsMap().get("agentName2-jobName2").setErrorAcknowledged(true);
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs

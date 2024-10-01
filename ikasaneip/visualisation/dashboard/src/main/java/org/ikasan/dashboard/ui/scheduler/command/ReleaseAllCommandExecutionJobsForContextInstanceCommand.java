@@ -54,8 +54,6 @@ public class ReleaseAllCommandExecutionJobsForContextInstanceCommand {
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                dialog.setWidth("600px");
-                dialog.setHeight("250px");
                 dialog.open(this.ikasanI18NProvider.getTranslation("progress-dialog.release-all-jobs-jobs-header", UI.getCurrent().getLocale()),
                     this.ikasanI18NProvider.getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 

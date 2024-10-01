@@ -2653,6 +2653,59 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    public void test_get_context_status_error_acknowledged() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", false);
+
+        // delegate to the context machine which will also broadcast the status update
+        contextMachine.acknowledgeSchedulerJobError(internalEventDrivenJobs.get("agentName2-jobName2-Context3"));
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+    }
+
+    @Test
     public void test_error_then_resubmit_to_raise_downstream_events() throws IOException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));

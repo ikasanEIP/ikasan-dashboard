@@ -81,52 +81,52 @@ public class ContextStatusServiceController {
         this.contextStatusService = contextStatusService;
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = {"/{instanceName}/{contextName}", "/{instanceName}/{contextName}/{jobIdentifier}"})
+    @RequestMapping(method = RequestMethod.GET, path = {"/{jobPlanName}/{contextName}", "/{jobPlanName}/{contextName}/{jobIdentifier}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getContextStatusForJob(@PathVariable(value = "instanceName") String instanceName,
+    public ResponseEntity getContextStatusForJob(@PathVariable(value = "jobPlanName") String jobPlanName,
                                                  @PathVariable(value = "contextName") String contextName,
                                                  @PathVariable(value = "jobIdentifier", required = false) String jobIdentifier) {
         String contextNameStatus;
 
         try {
             if (jobIdentifier == null) {
-                contextNameStatus = contextStatusService.getContextStatus(instanceName, contextName);
+                contextNameStatus = contextStatusService.getContextStatus(jobPlanName, contextName);
             } else {
-                contextNameStatus = contextStatusService.getContextStatusForJob(instanceName, contextName, jobIdentifier);
+                contextNameStatus = contextStatusService.getContextStatusForJob(jobPlanName, contextName, jobIdentifier);
             }
         } catch (Exception e) {
             LOG.error(e.getMessage());
             String errorMessage = String.format("An error has occurred attempting to get status for instance %s, context %s, jobIdentifier %s!",
-                instanceName, contextName, jobIdentifier);
+                jobPlanName, contextName, jobIdentifier);
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
 
-        String infoMessage = String.format("Got status %s for instance %s and context %s and jobIdentifier %s",
-            contextNameStatus, instanceName, contextName, jobIdentifier);
+        String infoMessage = String.format("Got status %s for job plan %s and context %s and jobIdentifier %s",
+            contextNameStatus, jobPlanName, contextName, jobIdentifier);
         LOG.info(infoMessage);
 
         return new ResponseEntity(contextNameStatus, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = {"/json/{instanceName}/{contextName}", "/json/{instanceName}/{contextName}/{jobName}"})
+    @RequestMapping(method = RequestMethod.GET, path = {"/json/{jobPlanName}/{contextName}", "/json/{jobPlanName}/{contextName}/{jobName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getJsonContextStatusForJob(@PathVariable(value = "instanceName") String instanceName,
+    public ResponseEntity getJsonContextStatusForJob(@PathVariable(value = "jobPlanName") String jobPlanName,
                                                  @PathVariable(value = "contextName") String contextName,
                                                  @PathVariable(value = "jobName", required = false) String jobName) {
         String contextStatus;
 
         try {
             if (jobName == null) {
-                contextStatus = contextStatusService.getJsonContextStatus(instanceName, contextName);
+                contextStatus = contextStatusService.getJsonContextStatus(jobPlanName, contextName);
             } else {
-                contextStatus = contextStatusService.getJsonContextStatusForJob(instanceName, contextName, jobName);
+                contextStatus = contextStatusService.getJsonContextStatusForJob(jobPlanName, contextName, jobName);
             }
         } catch (Exception e) {
             LOG.error(e.getMessage());
-            String errorMessage = String.format("An error has occurred attempting to get status for instance %s, context %s, jobName %s!",
-                instanceName, contextName, jobName);
+            String errorMessage = String.format("An error has occurred attempting to get status for job plan %s, context %s, jobName %s!",
+                jobPlanName, contextName, jobName);
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -135,12 +135,12 @@ public class ContextStatusServiceController {
         // HTTP 204 - nothing in payload
         if ("".equals(contextStatus) || contextStatus == null) {
             LOG.info(String.format("Empty response for instance %s and context %s and jobName %s",
-                instanceName, contextName, jobName));
+                jobPlanName, contextName, jobName));
             return new ResponseEntity(HttpStatus.NO_CONTENT);
         }
 
-        LOG.info(String.format("Got json for instance %s and context %s and jobName %s",
-            instanceName, contextName, jobName));
+        LOG.info(String.format("Got json for job plan %s and context %s and jobName %s",
+            jobPlanName, contextName, jobName));
 
         return new ResponseEntity(contextStatus, HttpStatus.OK);
     }

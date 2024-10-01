@@ -163,6 +163,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private SchedulerStatusFreeTextDiv onHoldStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv skippedStatus = new SchedulerStatusFreeTextDiv();
     private SchedulerStatusFreeTextDiv errorStatus = new SchedulerStatusFreeTextDiv();
+    private SchedulerStatusFreeTextDiv errorAckedStatus = new SchedulerStatusFreeTextDiv();
 
     private double jobVisualisationVerticalSpacing;
     private double jobVisualisationHorizontalSpacing;
@@ -494,6 +495,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.onHoldStatus.setSizeFull();
         this.skippedStatus.setSizeFull();
         this.errorStatus.setSizeFull();
+        this.errorAckedStatus.setSizeFull();
         Button refreshButton = new Button();
         refreshButton.setWidth("50px");
         refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
@@ -501,7 +503,7 @@ public class ContextInstanceWidget extends VerticalLayout
             this.refreshJobStatusWidget();
         });
         jobStatusLayout.add(this.waitingStatus, this.completeStatus, this.runningStatus, this.queuedStatus
-            , this.onHoldStatus, this.skippedStatus, this.errorStatus, refreshButton);
+            , this.onHoldStatus, this.skippedStatus, this.errorStatus, this.errorAckedStatus, refreshButton);
 
         this.formLayout.add(jobStatusLayout, 22);
 
@@ -692,7 +694,6 @@ public class ContextInstanceWidget extends VerticalLayout
         aceEditor.setReadOnly(true);
         aceEditor.setWrap(false);
         aceEditor.setVisible(false);
-//        aceEditor.setBaseUrl("/ace-builds/src-min-noconflict/");
 
         this.updateJson(this.contextInstance);
     }
@@ -711,6 +712,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 onHoldStatus.setStatus(InstanceStatus.ON_HOLD, status.get().getStatusCount(InstanceStatus.ON_HOLD) + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()));
                 skippedStatus.setStatus(InstanceStatus.SKIPPED, status.get().getStatusCount(InstanceStatus.SKIPPED) + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()));
                 errorStatus.setStatus(InstanceStatus.ERROR, status.get().getStatusCount(InstanceStatus.ERROR) + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()));
+                errorAckedStatus.setStatus(InstanceStatus.ERROR_ACKNOWLEDGED, status.get().getStatusCount(InstanceStatus.ERROR_ACKNOWLEDGED) + " " + getTranslation(InstanceStatus.ERROR_ACKNOWLEDGED.getTranslationLabel(), UI.getCurrent().getLocale()));
             });
         }
         else if(this.ui.isAttached() && !status.isPresent()) {
@@ -722,6 +724,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 onHoldStatus.setStatus(InstanceStatus.ON_HOLD, 0 + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()));
                 skippedStatus.setStatus(InstanceStatus.SKIPPED, 0 + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()));
                 errorStatus.setStatus(InstanceStatus.ERROR, 0 + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()));
+                errorAckedStatus.setStatus(InstanceStatus.ERROR_ACKNOWLEDGED, 0 + " " + getTranslation(InstanceStatus.ERROR_ACKNOWLEDGED.getTranslationLabel(), UI.getCurrent().getLocale()));
             });
         }
     }

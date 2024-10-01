@@ -86,8 +86,12 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
                             .withX(((PositionedItem) item).getX())
                             .withY(((PositionedItem) item).getY());
 
-                        rb.withBgColor(StatusColours.getInstanceStatusColour(instance.getStatus()));
-                        rb.withColor(StatusColours.getInstanceStatusColour(instance.getStatus()));
+                        rb.withBgColor(instance.isErrorAcknowledged() != null ?
+                            StatusColours.getInstanceStatusColour(instance.getStatus(), instance.isErrorAcknowledged())
+                            :StatusColours.getInstanceStatusColour(instance.getStatus()));
+                        rb.withColor(instance.isErrorAcknowledged() != null ?
+                            StatusColours.getInstanceStatusColour(instance.getStatus(), instance.isErrorAcknowledged())
+                            :StatusColours.getInstanceStatusColour(instance.getStatus()));
 
                         statusRectangles.add(rb.build());
                     }
@@ -119,7 +123,7 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
 
         ArrayList<Object> items = super._adaptContext(context);
 
-        // For context instances, we add rectngles that can be updated to reflect the
+        // For context instances, we add rectangles that can be updated to reflect the
         // context status.
         ArrayList<Object> statusRectangles = new ArrayList<>();
         items.forEach(item -> {

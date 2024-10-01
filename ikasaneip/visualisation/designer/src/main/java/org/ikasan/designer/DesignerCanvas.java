@@ -50,7 +50,6 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private List<FigureUndoDeleteEventListener> figureUndoDeleteEventListeners = new ArrayList<>();
     private List<FigureDeleteEventListener> figureDeleteEventListeners = new ArrayList<>();
     private List<JobMouseOverListener> jobMouseOverListeners = new ArrayList<>();
-
     private SaveFunction saveFunction;
     private SaveAsFunction saveAsFunction;
 

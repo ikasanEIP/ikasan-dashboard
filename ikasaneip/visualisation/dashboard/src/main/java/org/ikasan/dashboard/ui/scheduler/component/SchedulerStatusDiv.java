@@ -37,6 +37,9 @@ public class SchedulerStatusDiv extends Div {
     }
 
     public void setStatus(String status) {
+        this.setStatus(status, null);
+    }
+    public void setStatus(String status, Boolean isErrorAcknowledged) {
         if(status == null) return;
 
         if(status.equals(InstanceStatus.COMPLETE.name())) {
@@ -52,7 +55,20 @@ public class SchedulerStatusDiv extends Div {
                 , this.current.getLocale()));
         }
         else if(status.equals(InstanceStatus.ERROR.name())) {
-            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+            if(isErrorAcknowledged != null && isErrorAcknowledged) {
+                super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR_ACKNOWLEDGED);
+            }
+            else {
+                super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+            }
+            super.getElement().getStyle().set("color", "#FFF");
+            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.ERROR.name()
+                , this.current.getLocale()));
+        }
+        else if(status.equals(InstanceStatus.ERROR_ACKNOWLEDGED.name())) {
+            if(isErrorAcknowledged != null && isErrorAcknowledged) {
+                super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR_ACKNOWLEDGED);
+            }
             super.getElement().getStyle().set("color", "#FFF");
             super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.ERROR.name()
                 , this.current.getLocale()));

@@ -16,6 +16,7 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
     private boolean initiationEventRaised = false;
     private InstanceStatus status;
     private ScheduledProcessEvent scheduledProcessEvent;
+    private Boolean errorAcknowledged;
 
     public SolrSchedulerJobInstanceImpl() {
         status = InstanceStatus.WAITING;
@@ -70,6 +71,16 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
 
     public void setScheduledProcessEvent(ScheduledProcessEvent scheduledProcessEvent) {
         this.scheduledProcessEvent = scheduledProcessEvent;
+    }
+
+    @Override
+    public Boolean isErrorAcknowledged() {
+        return errorAcknowledged;
+    }
+
+    @Override
+    public void setErrorAcknowledged(Boolean errorAcknowledged) {
+        this.errorAcknowledged = errorAcknowledged;
     }
 
     @Override

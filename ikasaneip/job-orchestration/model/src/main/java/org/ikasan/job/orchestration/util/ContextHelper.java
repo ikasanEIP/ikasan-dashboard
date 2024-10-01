@@ -787,6 +787,7 @@ public class ContextHelper {
                 contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> {
                     ContextJobInstanceDetailsStatus contextJobInstanceDetailsStatus = new ContextJobInstanceDetailsStatusImpl();
                     contextJobInstanceDetailsStatus.setTargetResidingContextOnly(false);
+                    contextJobInstanceDetailsStatus.setErrorAcknowledged(schedulerJobInstance.isErrorAcknowledged() != null && schedulerJobInstance.isErrorAcknowledged());
 
                     // check if the job is targetResiding. If so create new ContextJobInstanceDetailsStatus, else we check if we already have it in our contextJobInstanceDetailsStatusList
                     if (internalEventDrivenJobs != null && internalEventDrivenJobs.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {

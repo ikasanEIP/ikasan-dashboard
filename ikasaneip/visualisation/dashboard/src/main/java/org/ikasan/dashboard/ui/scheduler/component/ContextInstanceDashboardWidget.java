@@ -8,6 +8,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -497,15 +498,20 @@ public class ContextInstanceDashboardWidget extends Div
         contextInstanceAggregateJobStatusGrid.setVisible(true);
         contextInstanceAggregateJobStatusGrid.setWidthFull();
 
-        contextInstanceAggregateJobStatusGrid.addColumn(ContextInstanceAggregateJobStatus::getContextInstanceName)
+        contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
+                NativeLabel jobPlanName = new NativeLabel(contextInstanceAggregateJobStatus.getContextInstanceName());
+                jobPlanName.getStyle().set("font-size", "8pt");
+                return new HorizontalLayout(jobPlanName);
+            }))
             .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
-            .setFlexGrow(5)
+            .setFlexGrow(6)
             .setResizable(true);
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-                Button contextBreakoutButton = new Button(contextInstanceAggregateJobStatus.getContextInstanceId()
-                    , VaadinIcon.EXTERNAL_LINK.create());
+                Button contextBreakoutButton = new Button(contextInstanceAggregateJobStatus.getContextInstanceId());
+                contextBreakoutButton.getStyle().set("font-size", "8pt");
+                contextBreakoutButton.setHeight("30px");
                 contextBreakoutButton.setId("contextBreakOut");
                 contextBreakoutButton.addClickListener(event -> {
                     String route = RouteConfiguration.forSessionScope()
@@ -523,14 +529,14 @@ public class ContextInstanceDashboardWidget extends Div
                 return horizontalLayout;
             }))
             .setHeader(getTranslation("table-header.context-instance-id", UI.getCurrent().getLocale())).setKey("id")
-            .setFlexGrow(5)
+            .setFlexGrow(7)
             .setResizable(true);
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
 
                 Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)
                         + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_WAITING, IkasanColours.BLACK,
-                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING));
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING), "100px");
                 statusButton.setId("waitingStatusButton");
                 statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.WAITING)>0);
                 statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
@@ -562,7 +568,7 @@ public class ContextInstanceDashboardWidget extends Div
 
                 Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)
                         + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE,
-                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE));
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE), "100px");
                 statusButton.setId("completeStatusButton");
                 statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.COMPLETE)>0);
                 statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
@@ -593,7 +599,7 @@ public class ContextInstanceDashboardWidget extends Div
 
                 Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)
                         + " " + getTranslation(InstanceStatus.RUNNING.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_RUNNING, IkasanColours.WHITE,
-                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING));
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING), "100px");
                 statusButton.setId("runningStatusButton");
                 statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.RUNNING)>0);
                 statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
@@ -625,7 +631,7 @@ public class ContextInstanceDashboardWidget extends Div
 
                 Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)
                         + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_LOCK_QUEUED, IkasanColours.WHITE,
-                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED));
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED), "100px");
                 statusButton.setId("queuedStatusButton");
                 statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.LOCK_QUEUED)>0);
                 statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
@@ -656,7 +662,7 @@ public class ContextInstanceDashboardWidget extends Div
 
                 Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)
                         + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ON_HOLD, IkasanColours.WHITE,
-                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD));
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD), "100px");
                 statusButton.setId("onHoldStatusButton");
                 statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ON_HOLD)>0);
                 statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
@@ -687,7 +693,7 @@ public class ContextInstanceDashboardWidget extends Div
 
                 Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)
                         + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_SKIPPED, IkasanColours.WHITE,
-                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED));
+                    contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED), "100px");
                 statusButton.setId("skippedStatusButton");
                 statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.SKIPPED)>0);
                 statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
@@ -718,7 +724,7 @@ public class ContextInstanceDashboardWidget extends Div
 
                 Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)
                         + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
-                    , contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR));
+                    , contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR), "70px");
                 statusButton.setId("errorStatusButton");
                 statusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR)>0);
                 statusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
@@ -736,12 +742,33 @@ public class ContextInstanceDashboardWidget extends Div
                 });
                 breakOut.getElement().getStyle().set("cursor", "pointer");
 
+                Button acknowledgedStatusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR_ACKNOWLEDGED)
+                        + " " + getTranslation(InstanceStatus.ERROR_ACKNOWLEDGED.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR_ACKNOWLEDGED, IkasanColours.WHITE
+                    , contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR_ACKNOWLEDGED), "70px");
+                acknowledgedStatusButton.setId("errorAckedStatusButton");
+                acknowledgedStatusButton.setEnabled(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR_ACKNOWLEDGED)>0);
+                acknowledgedStatusButton.addClickListener(event -> this.openContextInstanceDialog(contextInstanceAggregateJobStatus
+                    , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ERROR));
+                if(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR_ACKNOWLEDGED)>0) acknowledgedStatusButton.getElement().getStyle().set("cursor", "pointer");
+
+                Button errorAckBreakOut = this.buildStatusBreakoutButton(IkasanColours.SCHEDULER_ERROR_ACKNOWLEDGED, IkasanColours.WHITE);
+                errorAckBreakOut.setVisible(contextInstanceAggregateJobStatus.getStatusCount(InstanceStatus.ERROR_ACKNOWLEDGED)>0);
+                errorAckBreakOut.addClickListener(event -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, List.of(contextInstanceAggregateJobStatus.getContextInstanceId() +"_scheduledContextInstance"
+                            , ContextInstanceWidget.JOB_INSTANCE_TAB, InstanceStatus.ERROR_ACKNOWLEDGED.name()));
+
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+                errorAckBreakOut.getElement().getStyle().set("cursor", "pointer");
+
                 statusButton.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-dialog", UI.getCurrent().getLocale()));
                 breakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
+                errorAckBreakOut.getElement().setAttribute("title", getTranslation("tooltip.open-job-plan-new-tab", UI.getCurrent().getLocale()));
 
-                horizontalLayout.add(statusButton, breakOut);
+                horizontalLayout.add(statusButton, breakOut, acknowledgedStatusButton, errorAckBreakOut);
                 return horizontalLayout;
-            })).setFlexGrow(3)
+            })).setFlexGrow(7)
             .setKey("errorStatusCounts");
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -750,7 +777,7 @@ public class ContextInstanceDashboardWidget extends Div
                 if(contextInstanceAggregateJobStatus.containsRepeatableJobs()) {
                     Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE)
                             + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE
-                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE));
+                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE), "100px");
                     statusButton.setEnabled(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.COMPLETE)>0);
                     statusButton.setId("repeatingJobSuccessesButton");
                     statusButton.addClickListener(event -> {
@@ -767,7 +794,7 @@ public class ContextInstanceDashboardWidget extends Div
                 }
                 else {
                     Button statusButton = this.buildStatusCountButton(getTranslation("label.not-applicable", UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
-                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR));
+                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR), "100px");
                     statusButton.setEnabled(false);
                     statusButton.setId("repeatingJobSuccessesButton");
                     horizontalLayout.add(statusButton);
@@ -782,7 +809,7 @@ public class ContextInstanceDashboardWidget extends Div
                 if(contextInstanceAggregateJobStatus.containsRepeatableJobs()) {
                     Button statusButton = this.buildStatusCountButton(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR)
                             + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
-                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR));
+                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR), "100px");
                     statusButton.setId("repeatingJobErrorsButton");
                     statusButton.setEnabled(contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR)>0);
 
@@ -801,7 +828,7 @@ public class ContextInstanceDashboardWidget extends Div
                 }
                 else {
                     Button statusButton = this.buildStatusCountButton(getTranslation("label.not-applicable", UI.getCurrent().getLocale()), IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE
-                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR));
+                        , contextInstanceAggregateJobStatus.repeatingJobInstanceStatusCount(InstanceStatus.ERROR), "100px");
                     statusButton.setEnabled(false);
                     statusButton.setId("repeatingJobErrorsButton");
                     horizontalLayout.add(statusButton);
@@ -1100,15 +1127,16 @@ public class ContextInstanceDashboardWidget extends Div
      * @param count            the count displayed on the button
      * @return the built status count button
      */
-    private Button buildStatusCountButton(String label, String backgroundColour, String fontColour, int count) {
+    private Button buildStatusCountButton(String label, String backgroundColour, String fontColour, int count, String width) {
         Button statusButton = new Button(label);
         if(count > 0) {
             statusButton.getElement().getStyle().set("background-color", backgroundColour);
             statusButton.getElement().getStyle().set("color", fontColour);
         }
-        statusButton.getElement().getStyle().set("font-size", "8pt");
-        statusButton.setWidth("120px");
 
+        statusButton.setWidth(width);
+        statusButton.getElement().getStyle().set("font-size", "7pt");
+        statusButton.setHeight("30px");
         return statusButton;
     }
 
@@ -1121,10 +1149,13 @@ public class ContextInstanceDashboardWidget extends Div
      */
     private Button buildStatusBreakoutButton(String backgroundColour, String fontColour) {
         Button breakOut = new Button();
-        breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
+        Icon breakOutIcon = VaadinIcon.EXTERNAL_LINK.create();
+        breakOutIcon.setSize("8pt");
+        breakOut.getElement().appendChild(breakOutIcon.getElement());
         breakOut.getElement().getStyle().set("background-color", backgroundColour);
         breakOut.getElement().getStyle().set("color", fontColour);
-        breakOut.setWidth("40px");
+        breakOut.setWidth("30px");
+        breakOut.setHeight("30px");
 
         return breakOut;
     }
@@ -1181,13 +1212,14 @@ public class ContextInstanceDashboardWidget extends Div
     private void addAggregateActiveContextInstanceGridFiltering(HeaderRow hr) {
         this.waitingFilterButton = this.buildStatusCountButton(1
                 + " " + getTranslation(InstanceStatus.WAITING.getTranslationLabel(), UI.getCurrent().getLocale())
-            , IkasanColours.SCHEDULER_WAITING, IkasanColours.BLACK, 1);
+            , IkasanColours.SCHEDULER_WAITING, IkasanColours.BLACK, 1, "120px");
         this.waitingFilterButton.setId("waitingFilterButton");
         this.waitingFilterButton.getElement().getStyle().set("cursor", "pointer");
         this.waitingFilterButton.getElement().setAttribute("title"
             , getTranslation("tooltip.click-to-filter", UI.getCurrent().getLocale()));
 
         this.waitingCheck = VaadinIcon.CHECK.create();
+        this.waitingCheck.setSize("8pt");
         this.waitingCheck.setVisible(false);
 
         this.waitingFilterButton.addClickListener(event -> {
@@ -1197,19 +1229,21 @@ public class ContextInstanceDashboardWidget extends Div
         });
 
         HorizontalLayout waitingLayout = new HorizontalLayout(this.waitingFilterButton, this.waitingCheck);
+        waitingLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.waitingCheck);
         waitingLayout.getElement().getStyle().set("margin-bottom", "20px");
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("waitingStatusCounts")).setComponent(waitingLayout);
 
         this.completeFilterButton = this.buildStatusCountButton(5
                 + " " + getTranslation(InstanceStatus.COMPLETE.getTranslationLabel(), UI.getCurrent().getLocale())
-            , IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE, 5);
+            , IkasanColours.SCHEDULER_COMPLETE, IkasanColours.WHITE, 5, "120px");
         this.completeFilterButton.setId("completeFilterButton");
         this.completeFilterButton.getElement().getStyle().set("cursor", "pointer");
         this.completeFilterButton.getElement().setAttribute("title"
             , getTranslation("tooltip.click-to-filter", UI.getCurrent().getLocale()));
 
         this.completeCheck = VaadinIcon.CHECK.create();
+        this.completeCheck.setSize("8pt");
         this.completeCheck.setVisible(false);
 
         this.completeFilterButton.addClickListener(event -> {
@@ -1219,18 +1253,20 @@ public class ContextInstanceDashboardWidget extends Div
         });
 
         HorizontalLayout completeLayout = new HorizontalLayout(this.completeFilterButton, this.completeCheck);
+        completeLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.completeCheck);
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("completeStatusCounts")).setComponent(completeLayout);
 
         this.runningFilterButton = this.buildStatusCountButton(5
                 + " " + getTranslation(InstanceStatus.RUNNING.getTranslationLabel(), UI.getCurrent().getLocale())
-            , IkasanColours.SCHEDULER_RUNNING, IkasanColours.WHITE, 5);
+            , IkasanColours.SCHEDULER_RUNNING, IkasanColours.WHITE, 5, "120px");
         this.runningFilterButton.setId("runningFilterButton");
         this.runningFilterButton.getElement().getStyle().set("cursor", "pointer");
         this.runningFilterButton.getElement().setAttribute("title"
             , getTranslation("tooltip.click-to-filter", UI.getCurrent().getLocale()));
 
         this.runningCheck = VaadinIcon.CHECK.create();
+        this.runningCheck.setSize("8pt");
         this.runningCheck.setVisible(false);
 
         this.runningFilterButton.addClickListener(event -> {
@@ -1240,18 +1276,20 @@ public class ContextInstanceDashboardWidget extends Div
         });
 
         HorizontalLayout runningLayout = new HorizontalLayout(this.runningFilterButton, this.runningCheck);
+        runningLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.runningCheck);
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("runningStatusCounts")).setComponent(runningLayout);
 
         this.queuedFilterButton = this.buildStatusCountButton(5
                 + " " + getTranslation(InstanceStatus.LOCK_QUEUED.getTranslationLabel(), UI.getCurrent().getLocale())
-            , IkasanColours.SCHEDULER_LOCK_QUEUED, IkasanColours.WHITE, 5);
+            , IkasanColours.SCHEDULER_LOCK_QUEUED, IkasanColours.WHITE, 5, "120px");
         this.queuedFilterButton.setId("queuedFilterButton");
         this.queuedFilterButton.getElement().getStyle().set("cursor", "pointer");
         this.queuedFilterButton.getElement().setAttribute("title"
             , getTranslation("tooltip.click-to-filter", UI.getCurrent().getLocale()));
 
         this.queuedCheck = VaadinIcon.CHECK.create();
+        this.queuedCheck.setSize("8pt");
         this.queuedCheck.setVisible(false);
 
         this.queuedFilterButton.addClickListener(event -> {
@@ -1261,18 +1299,20 @@ public class ContextInstanceDashboardWidget extends Div
         });
 
         HorizontalLayout queuedLayout = new HorizontalLayout(this.queuedFilterButton, this.queuedCheck);
+        queuedLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.queuedCheck);
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("queuedStatusCounts")).setComponent(queuedLayout);
 
         this.onHoldFilterButton = this.buildStatusCountButton(5
                 + " " + getTranslation(InstanceStatus.ON_HOLD.getTranslationLabel(), UI.getCurrent().getLocale())
-            , IkasanColours.SCHEDULER_ON_HOLD, IkasanColours.WHITE, 5);
+            , IkasanColours.SCHEDULER_ON_HOLD, IkasanColours.WHITE, 5, "120px");
         this.onHoldFilterButton.setId("onHoldFilterButton");
         this.onHoldFilterButton.getElement().getStyle().set("cursor", "pointer");
         this.onHoldFilterButton.getElement().setAttribute("title"
             , getTranslation("tooltip.click-to-filter", UI.getCurrent().getLocale()));
 
         this.onHoldCheck = VaadinIcon.CHECK.create();
+        this.onHoldCheck.setSize("8pt");
         this.onHoldCheck.setVisible(false);
 
         this.onHoldFilterButton.addClickListener(event -> {
@@ -1282,18 +1322,20 @@ public class ContextInstanceDashboardWidget extends Div
         });
 
         HorizontalLayout onHoldLayout = new HorizontalLayout(this.onHoldFilterButton, this.onHoldCheck);
+        onHoldLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.onHoldCheck);
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("onHoldStatusCounts")).setComponent(onHoldLayout);
 
         this.skippedFilterButton = this.buildStatusCountButton(5
                 + " " + getTranslation(InstanceStatus.SKIPPED.getTranslationLabel(), UI.getCurrent().getLocale())
-            , IkasanColours.SCHEDULER_SKIPPED, IkasanColours.WHITE, 5);
+            , IkasanColours.SCHEDULER_SKIPPED, IkasanColours.WHITE, 5, "120px");
         this.skippedFilterButton.setId("skippedFilterButton");
         this.skippedFilterButton.getElement().getStyle().set("cursor", "pointer");
         this.skippedFilterButton.getElement().setAttribute("title"
             , getTranslation("tooltip.click-to-filter", UI.getCurrent().getLocale()));
 
         this.skippedCheck = VaadinIcon.CHECK.create();
+        this.skippedCheck.setSize("8pt");
         this.skippedCheck.setVisible(false);
 
         this.skippedFilterButton.addClickListener(event -> {
@@ -1303,12 +1345,13 @@ public class ContextInstanceDashboardWidget extends Div
         });
 
         HorizontalLayout skippedLayout = new HorizontalLayout(this.skippedFilterButton, this.skippedCheck);
+        skippedLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.skippedCheck);
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("skippedStatusCounts")).setComponent(skippedLayout);
 
         this.errorFilterButton = this.buildStatusCountButton(5
                 + " " + getTranslation(InstanceStatus.ERROR.getTranslationLabel(), UI.getCurrent().getLocale())
-            , IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE, 5);
+            , IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE, 5, "120px");
         this.errorFilterButton.setId("errorFilterButton");
         this.errorFilterButton.getElement().getStyle().set("cursor", "pointer");
         this.errorFilterButton.getElement().getStyle().set("margin-bottom", "10px");
@@ -1316,6 +1359,7 @@ public class ContextInstanceDashboardWidget extends Div
             , getTranslation("tooltip.click-to-filter", UI.getCurrent().getLocale()));
 
         this.errorCheck = VaadinIcon.CHECK.create();
+        this.errorCheck.setSize("8pt");
         this.errorCheck.setVisible(false);
 
         this.errorFilterButton.addClickListener(event -> {
@@ -1325,6 +1369,7 @@ public class ContextInstanceDashboardWidget extends Div
         });
 
         HorizontalLayout errorLayout = new HorizontalLayout(this.errorFilterButton, this.errorCheck);
+        errorLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.errorCheck);
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("errorStatusCounts")).setComponent(errorLayout);
 
@@ -1696,7 +1741,8 @@ public class ContextInstanceDashboardWidget extends Div
                 }
 
                 if(statusFilter.isFilterError() && filter) {
-                    filter = item.getStatusCount(InstanceStatus.ERROR) > 0;
+                    filter = (item.getStatusCount(InstanceStatus.ERROR) > 0
+                        || item.getStatusCount(InstanceStatus.ERROR_ACKNOWLEDGED) > 0);
                 }
 
                 return filter;

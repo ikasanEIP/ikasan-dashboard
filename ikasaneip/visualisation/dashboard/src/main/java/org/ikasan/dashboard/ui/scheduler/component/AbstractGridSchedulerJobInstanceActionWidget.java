@@ -303,8 +303,6 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
         AtomicReference<Boolean> result = new AtomicReference<>(true);
 
         ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-        dialog.setWidth("600px");
-        dialog.setHeight("250px");
         dialog.open(getTranslation("progress-dialog.reset-job-header", UI.getCurrent().getLocale()),
             getTranslation("progress-dialog.reset-job-body", UI.getCurrent().getLocale()));
 

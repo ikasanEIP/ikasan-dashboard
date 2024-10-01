@@ -39,6 +39,10 @@ public class SchedulerStatusFreeTextDiv extends Div {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
             super.getElement().getStyle().set("color", "#FFF");
         }
+        else if(status.equals(InstanceStatus.ERROR_ACKNOWLEDGED)) {
+            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR_ACKNOWLEDGED);
+            super.getElement().getStyle().set("color", "#FFF");
+        }
         else if(status.equals(InstanceStatus.ON_HOLD)) {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
             super.getElement().getStyle().set("color", "#FFF");

@@ -8,6 +8,7 @@ public class IkasanColours {
     public static final String SCHEDULER_COMPLETE = "#66bb6a";
     public static final String SCHEDULER_WAITING = "rgba(210, 215, 211, 1)";
     public static final String SCHEDULER_ERROR = "#ef5350";
+    public static final String SCHEDULER_ERROR_ACKNOWLEDGED = "rgba(239, 83, 80, 0.5)";
     public static final String SCHEDULER_RUNNING = "rgba(133,181,225,1.0)";
     public static final String SCHEDULER_LOCK_QUEUED = "rgba(200, 162, 200,1.0)";
     public static final String SCHEDULER_SKIPPED = "#19AFBA";

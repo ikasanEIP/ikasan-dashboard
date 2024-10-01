@@ -11,10 +11,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceTreeViewWidget;
-import org.ikasan.dashboard.ui.scheduler.component.JsonViewerDialog;
-import org.ikasan.dashboard.ui.scheduler.component.LogFileHistoryDialog;
-import org.ikasan.dashboard.ui.scheduler.component.TextViewerDialog;
+import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
@@ -24,10 +21,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -37,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 public class CommandExecutionJobPositionedDialog extends PositionedDialog {
-    private Logger logger = LoggerFactory.getLogger(ContextInstanceTreeViewWidget.class);
+    private Logger logger = LoggerFactory.getLogger(CommandExecutionJobPositionedDialog.class);
     private SchedulerJobInstanceRecord schedulerJobInstanceRecord;
     private LogStreamingService logStreamingService;
     private ModuleMetaDataService moduleMetaDataService;
@@ -109,7 +103,30 @@ public class CommandExecutionJobPositionedDialog extends PositionedDialog {
             dialog.open();
         });
 
-        buttonLayout.add(logFile, errorLogFile, logFileHistory, event, executionDetails);
+        Icon acknowledgedIcon = IconDecorator.decorate(new Icon(VaadinIcon.THUMBS_UP), getTranslation("tooltip.view-acknowledgement-details"
+            , UI.getCurrent().getLocale()), "14pt", IkasanColours.IKASAN_ORANGE);
+
+        if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
+            schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) &&
+            schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged() != null &&
+            schedulerJobInstanceRecord.getSchedulerJobInstance().isErrorAcknowledged()) {
+            acknowledgedIcon.setVisible(true);
+        }
+        else {
+            acknowledgedIcon.setVisible(false);
+        }
+
+        acknowledgedIcon.addClickListener(ackEvent -> {
+            SchedulerJobInstanceRecord dbRecord = this.schedulerJobInstanceService.findById(schedulerJobInstanceRecord.getId());
+            ErrorAcknowledgedPositionedDialog errorAcknowledgedPositionedDialog = new ErrorAcknowledgedPositionedDialog(dbRecord,
+                this.contextInstance, this.scheduledContextInstanceService, this.moduleMetaDataService, this.logStreamingService,
+                this.schedulerJobInstanceService);
+            PositionedDialog.Position position = new PositionedDialog.Position(ackEvent.getScreenY(), ackEvent.getScreenX());
+            errorAcknowledgedPositionedDialog.setPosition(position);
+            errorAcknowledgedPositionedDialog.open();
+        });
+
+        buttonLayout.add(logFile, errorLogFile, logFileHistory, event, executionDetails, acknowledgedIcon);
         buttonLayout.getStyle().set("position", "absolute");
         buttonLayout.getStyle().set("right", "20px");
 

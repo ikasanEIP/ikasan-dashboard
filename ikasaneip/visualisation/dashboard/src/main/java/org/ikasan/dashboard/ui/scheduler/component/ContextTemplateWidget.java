@@ -430,8 +430,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 confirmDialog.setCancelable(true);
                 confirmDialog.addConfirmListener(confirmEvent -> {
                     ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                    dialog.setWidth("700px");
-                    dialog.setHeight("250px");
                     dialog.open(getTranslation("progress-dialog.delete-context-template-header", UI.getCurrent().getLocale()),
                         getTranslation("progress-dialog.delete-context-template-body", UI.getCurrent().getLocale()));
 
@@ -886,7 +884,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                     confirmDialog.addConfirmListener(confirmEvent -> {
                         ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
-                        progressIndicatorDialog.setWidth("550px");
                         progressIndicatorDialog.open(getTranslation("progress-dialog.enable-context-template-header", UI.getCurrent().getLocale())
                             , getTranslation("progress-dialog.enable-context-template-text", UI.getCurrent().getLocale()));
 
@@ -947,7 +944,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                     confirmDialog.addConfirmListener(confirmEvent -> {
                         ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
-                        progressIndicatorDialog.setWidth("550px");
                         progressIndicatorDialog.open(getTranslation("progress-dialog.disable-context-template-header", UI.getCurrent().getLocale())
                             , getTranslation("progress-dialog.disable-context-template-text", UI.getCurrent().getLocale()));
 

@@ -5,11 +5,12 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.progressbar.ProgressBar;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 
 public class ProgressIndicatorDialog extends Dialog
@@ -29,8 +30,18 @@ public class ProgressIndicatorDialog extends Dialog
 
         ProgressBar progressBar = new ProgressBar();
         progressBar.setIndeterminate(true);
+        NativeLabel progressBarLabel = new NativeLabel(label + "...");
+        progressBarLabel.setId("pblbl");
+        progressBarLabel.addClassName(LumoUtility.TextColor.SECONDARY);
 
-        H2 h2 = new H2(label);
+        Span progressBarSubLabel = new Span(text);
+        progressBarSubLabel.setId("sublbl");
+        progressBarSubLabel.addClassNames(LumoUtility.TextColor.SECONDARY,
+            LumoUtility.FontSize.XSMALL);
+
+
+        progressBar.getElement().setAttribute("aria-labelledby", "pblbl");
+        progressBar.getElement().setAttribute("aria-describedby", "sublbl");
 
         Button cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
         cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
@@ -39,17 +50,9 @@ public class ProgressIndicatorDialog extends Dialog
         });
 
         VerticalLayout layout = new VerticalLayout();
-        layout.add(h2, progressBar, cancelButton);
+        layout.add(progressBarLabel, progressBar, progressBarSubLabel, cancelButton);
 
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, cancelButton);
-
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, h2);
-
-        if(text != null) {
-            Label textLabel = new Label(text);
-            layout.add(textLabel);
-            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, textLabel);
-        }
 
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, progressBar);
         layout.setSizeFull();
