@@ -1157,6 +1157,23 @@ public class JobLockCacheImplTest {
     }
 
     @Test
+    public void test_job_lock_cache_attempt_to_lock_job_not_in_cache() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        String contextId0 = UUID.randomUUID().toString();
+
+        assertFalse(jlc.locked("jobIdentifier", "contextName"));
+
+        // 3 jobs one lock count
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)));
+
+        assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName"));
+
+        // lock it
+        assertFalse(jlc.lock("bad job name", contextId0));
+    }
+
+    @Test
     public void test_job_participates_in_lock() {
         JobLockCache jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);

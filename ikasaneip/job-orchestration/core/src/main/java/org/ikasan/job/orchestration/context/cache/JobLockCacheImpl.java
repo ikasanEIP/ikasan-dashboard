@@ -130,6 +130,11 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
         boolean locked = false;
         LOGGER.debug(String.format("Locking jobIdentifier: %s contextName: %s", jobIdentifier, contextName));
         if (jobIdentifier != null && contextName != null) {
+            if(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier) == null) {
+                LOGGER.info("Cannot get lock holder for job[{}] in context[{}]!", jobIdentifier, contextName);
+                return false;
+            }
+
             JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByLockName()
                 .get(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier));
             if(jobLockHolder != null && jobLockHolder.isExclusiveJobLock()) {
