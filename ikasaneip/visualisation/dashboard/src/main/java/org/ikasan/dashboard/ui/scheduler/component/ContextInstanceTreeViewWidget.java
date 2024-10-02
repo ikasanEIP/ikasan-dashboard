@@ -359,7 +359,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 Image image = new Image(this.getJobImage(schedulerJobInstance), "");
                 horizontalLayout.add(image);
                 image.setHeight("30px");
-                this.setImageBackgroundColour(image, schedulerJobInstance.getStatus(), schedulerJobInstance.isErrorAcknowledged());
+                this.setImageBackgroundColour(image, schedulerJobInstance);
                 horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, image);
 
                 this.jobImageMap.put(new ComponentKey(schedulerJobInstance instanceof GlobalEventJobInstance ? JobConstants.GLOBAL_EVENT : this.contextInstance.getName()
@@ -399,7 +399,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 Image image = new Image(this.getJobImage(schedulerJobInstance), "");
                 horizontalLayout.add(arrow, image);
                 image.setHeight("30px");
-                this.setImageBackgroundColour(image, schedulerJobInstance.getStatus(), schedulerJobInstance.isErrorAcknowledged());
+                this.setImageBackgroundColour(image, schedulerJobInstance);
                 horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, image);
 
                 this.jobImageMap.put(new ComponentKey(PRECEDING_ITEM_COMPONENT+this.contextInstance.getName()
@@ -914,38 +914,53 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         });
     }
 
+
     /**
-     * Helper method to set the background colour on an image in order to reflect the status.
+     * Sets the background color of an Image based on the status of the SchedulerJobInstance.
+     * If the schedulerJobInstance is an instance of InternalEventDrivenJobInstance and is killed,
+     * the background color is set to SCHEDULER_ERROR.
+     * If the status of the schedulerJobInstance is COMPLETE, the background color is set to SCHEDULER_COMPLETE.
+     * If the status of the schedulerJobInstance is RUNNING or SKIPPED_RUNNING, the background color is set to SCHEDULER_RUNNING.
+     * If the status of the schedulerJobInstance is WAITING, the background color is set to SCHEDULER_WAITING.
+     * If the status of the schedulerJobInstance is ERROR, and the error is acknowledged, the background color is set to SCHEDULER_ERROR_ACKNOWLEDGED,
+     * otherwise, the background color is set to SCHEDULER_ERROR.
+     * If the status of the schedulerJobInstance is LOCK_QUEUED, the background color is set to SCHEDULER_LOCK_QUEUED.
+     * If the status of the schedulerJobInstance is SKIPPED or SKIPPED_COMPLETE, the background color is set to SCHEDULER_SKIPPED.
+     * If the status of the schedulerJobInstance is ON_HOLD, the background color is set to SCHEDULER_ON_HOLD.
+     * Finally, the image is marked as dirty to update the UI.
      *
-     * @param image the image to set the background colour on.
-     * @param instanceStatus the status to be reflected.
+     * @param image                the Image object whose background color is to be set
+     * @param schedulerJobInstance the SchedulerJobInstance whose status is used to determine the background color
      */
-    private void setImageBackgroundColour(Image image, InstanceStatus instanceStatus, Boolean errorAcknowledged) {
+    private void setImageBackgroundColour(Image image, SchedulerJobInstance schedulerJobInstance) {
         image.getElement().getStyle().remove("background-color");
-        if(instanceStatus.equals(InstanceStatus.COMPLETE)) {
+        if(schedulerJobInstance instanceof InternalEventDrivenJobInstance && ((InternalEventDrivenJobInstance) schedulerJobInstance).isKilled()) {
+            image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+        }
+        else if(schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_COMPLETE);
         }
-        else if(instanceStatus.equals(InstanceStatus.RUNNING) || instanceStatus.equals(InstanceStatus.SKIPPED_RUNNING)) {
+        else if(schedulerJobInstance.getStatus().equals(InstanceStatus.RUNNING) || schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RUNNING);
         }
-        else if(instanceStatus.equals(InstanceStatus.WAITING)) {
+        else if(schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_WAITING);
         }
-        else if(instanceStatus.equals(InstanceStatus.ERROR)) {
-            if(errorAcknowledged != null && errorAcknowledged) {
+        else if(schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
+            if(schedulerJobInstance.isErrorAcknowledged() != null && schedulerJobInstance.isErrorAcknowledged()) {
                 image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR_ACKNOWLEDGED);
             }
             else {
                 image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
             }
         }
-        else if(instanceStatus.equals(InstanceStatus.LOCK_QUEUED)) {
+        else if(schedulerJobInstance.getStatus().equals(InstanceStatus.LOCK_QUEUED)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_LOCK_QUEUED);
         }
-        else if(instanceStatus.equals(InstanceStatus.SKIPPED) || instanceStatus.equals(InstanceStatus.SKIPPED_COMPLETE)) {
+        else if(schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED) || schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
         }
-        else if(instanceStatus.equals(InstanceStatus.ON_HOLD)) {
+        else if(schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
         }
         image.getElement().getNode().markAsDirty();
@@ -2373,8 +2388,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
                         , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
                         jobInstanceStateChangeEvent.getNewStatus()));
-                    this.setImageBackgroundColour(statusImage, jobInstanceStateChangeEvent.getNewStatus()
-                        , jobInstanceStateChangeEvent.getSchedulerJobInstance().isErrorAcknowledged());
+                    this.setImageBackgroundColour(statusImage, jobInstanceStateChangeEvent.getSchedulerJobInstance());
                 });
             }
         }
@@ -2387,8 +2401,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
                         , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
                         jobInstanceStateChangeEvent.getNewStatus()));
-                    this.setImageBackgroundColour(preccedingJobStatusImage, jobInstanceStateChangeEvent.getNewStatus(),
-                        jobInstanceStateChangeEvent.getSchedulerJobInstance().isErrorAcknowledged());
+                    this.setImageBackgroundColour(preccedingJobStatusImage, jobInstanceStateChangeEvent.getSchedulerJobInstance());
                 });
             }
         }
