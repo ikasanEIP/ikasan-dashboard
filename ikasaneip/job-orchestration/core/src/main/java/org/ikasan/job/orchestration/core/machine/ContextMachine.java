@@ -229,6 +229,15 @@ public class ContextMachine {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
             String contextName = this.contextInstance.getName();
+
+            // remove the context instance from the agents
+            this.removeContextInstanceFromAgents();
+
+            stopWatch.stop();
+            logger.info("Removed contexts from agents! Elapsed milli: " + stopWatch.getTime());
+            stopWatch.reset();
+
+            stopWatch.start();
             this.killRunningJobs();
             this.teardownBigQueue();
             stopWatch.stop();
@@ -325,36 +334,8 @@ public class ContextMachine {
             stopWatch.reset();
             stopWatch.start();
 
-            // Remove the previous context instance from all agents
-            for (var agent : this.agents.entrySet()) {
-                // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
-                String url;
-                ModuleMetaData agentMetaFromSolr = moduleMetaDataService.findById(agent.getKey());
-                if (agentMetaFromSolr == null || StringUtils.isBlank(agentMetaFromSolr.getUrl())) {
-                    url = agent.getValue().getUrl();
-                } else {
-                    url = agentMetaFromSolr.getUrl();
-                }
-                this.contextInstancePublicationService.remove(url, previousContextInstance);
-            }
-
-            stopWatch.stop();
-            logger.info("Removed contexts from agents! Elapsed milli: " + stopWatch.getTime());
-            stopWatch.reset();
-            stopWatch.start();
-
             // Propagate the new context instance to all agents.
-            for (var agent : this.agents.entrySet()) {
-                // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
-                String url;
-                ModuleMetaData agentMetaFromSolr = moduleMetaDataService.findById(agent.getKey());
-                if (agentMetaFromSolr == null || StringUtils.isBlank(agentMetaFromSolr.getUrl())) {
-                    url = agent.getValue().getUrl();
-                } else {
-                    url = agentMetaFromSolr.getUrl();
-                }
-                this.contextInstancePublicationService.publish(url, this.contextInstance);
-            }
+            this.propagateContextInstanceToAgents();
 
             stopWatch.stop();
             logger.info("Sent new context instance to agents! Elapsed milli: " + stopWatch.getTime());
@@ -376,6 +357,42 @@ public class ContextMachine {
             logger.info("Saved the new context instances! Elapsed milli: " + stopWatch.getTime());
             stopWatch.reset();
             stopWatch.start();
+        }
+    }
+
+    /**
+     * Removes the previous context instance from all agents.
+     */
+    private void removeContextInstanceFromAgents() {
+        // Remove the previous context instance from all agents
+        for (var agent : this.agents.entrySet()) {
+            // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
+            String url;
+            ModuleMetaData agentMetaFromSolr = moduleMetaDataService.findById(agent.getKey());
+            if (agentMetaFromSolr == null || StringUtils.isBlank(agentMetaFromSolr.getUrl())) {
+                url = agent.getValue().getUrl();
+            } else {
+                url = agentMetaFromSolr.getUrl();
+            }
+            this.contextInstancePublicationService.remove(url, this.contextInstance);
+        }
+    }
+
+    /**
+     * Propagates the new context instance to all agents.
+     */
+    private void propagateContextInstanceToAgents() {
+        // Propagate the new context instance to all agents.
+        for (var agent : this.agents.entrySet()) {
+            // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
+            String url;
+            ModuleMetaData agentMetaFromSolr = moduleMetaDataService.findById(agent.getKey());
+            if (agentMetaFromSolr == null || StringUtils.isBlank(agentMetaFromSolr.getUrl())) {
+                url = agent.getValue().getUrl();
+            } else {
+                url = agentMetaFromSolr.getUrl();
+            }
+            this.contextInstancePublicationService.publish(url, this.contextInstance);
         }
     }
 
@@ -1105,6 +1122,7 @@ public class ContextMachine {
 
                     SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(this.contextInstance.getId(),
                         job.getJobName(), job.getChildContextName());
+                    schedulerJobInstanceRecord.setStatus(InstanceStatus.KILLED.name());
                     InternalEventDrivenJobInstance dbInstance = (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
                     dbInstance.setStatus(InstanceStatus.KILLED);
                     dbInstance.setKilled(true);
@@ -1112,7 +1130,7 @@ public class ContextMachine {
                     schedulerJobInstanceRecord.setSchedulerJobInstance(dbInstance);
                     this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
-                    jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(job, this.contextInstance
+                    jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(dbInstance, this.contextInstance
                         , InstanceStatus.RUNNING, InstanceStatus.ERROR));
 
                     killedPids.add(job.getScheduledProcessEvent().getPid());

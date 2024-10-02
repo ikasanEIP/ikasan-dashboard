@@ -234,7 +234,7 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
                 verticalLayout.setWidth("100%");
                 verticalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-                Button downloadLogFileButton = new Button("Log File", VaadinIcon.FILE_PROCESS.create());
+                Button downloadLogFileButton = new Button(getTranslation("button.log-file"), VaadinIcon.FILE_PROCESS.create());
 
                 verticalLayout.add(downloadLogFileButton);
                 verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadLogFileButton);
@@ -251,7 +251,7 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
                 verticalLayout.setWidth("100%");
                 verticalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-                Button downloadLogFileButton = new Button("Error Log File", VaadinIcon.FILE_REMOVE.create());
+                Button downloadLogFileButton = new Button(getTranslation("button.error-log-file"), VaadinIcon.FILE_REMOVE.create());
 
                 verticalLayout.add(downloadLogFileButton);
                 verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadLogFileButton);
