@@ -220,6 +220,12 @@
             <artifactId>vaadin-slidetab</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.vaadin.componentfactory</groupId>
+            <artifactId>togglebutton</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
         <!-- Ikasan  dependencies -->
         <dependency>
             <groupId>org.ikasan</groupId>

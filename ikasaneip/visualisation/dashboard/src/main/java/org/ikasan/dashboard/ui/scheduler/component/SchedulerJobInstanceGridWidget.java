@@ -20,7 +20,7 @@ import com.vaadin.flow.server.StreamResource;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceSplitVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.designer.PositionedDialog;
@@ -713,7 +713,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation"
                 , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             visualisation.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                JobInstanceSplitVisualisationDialog jobInstanceSplitVisualisationDialog = new JobInstanceSplitVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                     this.configurationService, this.moduleControlService, this.metaDataService, this.systemEventLogger, this.logStreamingService,
                     this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
                     this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
@@ -726,8 +726,8 @@ public class SchedulerJobInstanceGridWidget extends Div
                 ContextInstance childContext = ContextHelper.getChildContextInstance(schedulerJobInstanceRecord.getChildContextName(), this.contextInstance);
 
                 try {
-                    jobInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, childContext);
-                    jobInstanceVisualisationDialog.open();
+                    jobInstanceSplitVisualisationDialog.createSchedulerVisualisation(this.contextInstance, childContext);
+                    jobInstanceSplitVisualisationDialog.open();
                 }
                 catch (IOException e) {
                     e.printStackTrace();

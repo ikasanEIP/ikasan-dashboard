@@ -11,7 +11,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -677,7 +676,10 @@ public class ContextInstanceWidget extends VerticalLayout
                     try {
                         ContextTemplateToDagConverter contextTemplateToDagConverter = new ContextTemplateToDagConverter();
                         List<DagNode> dagNodes = contextTemplateToDagConverter.convert(contextInstance);
-                        this.dagComponent = new DagComponent(ObjectMapperFactory.newInstance().writeValueAsString(dagNodes));
+                        this.dagComponent = new DagComponent(ObjectMapperFactory.newInstance().writeValueAsString(dagNodes), this.moduleMetaDataService, this.scheduledProcessManagementService,
+                            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService, this.schedulerJobInstanceService,
+                            this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService, this.globalEventService,
+                            this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.contextInstance);
 
 //                        this.ikasanMinimapContainer = new Div();
 //                        this.ikasanMinimapContainer.setWidth("400px");
@@ -704,6 +706,7 @@ public class ContextInstanceWidget extends VerticalLayout
 //
 //                        HorizontalLayout zoomButtons = new HorizontalLayout(zoomIn, zoomOut);
 //                        zoomButtons.setWidth("100%");
+
                         this.add(dagComponent);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
