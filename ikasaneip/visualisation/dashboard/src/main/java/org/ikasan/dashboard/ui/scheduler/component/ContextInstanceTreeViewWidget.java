@@ -29,7 +29,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceSplitVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.designer.PositionedDialog;
@@ -977,7 +977,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation"
             , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
         visualisation.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-            JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+            JobInstanceSplitVisualisationDialog jobInstanceSplitVisualisationDialog = new JobInstanceSplitVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
                 this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
                 this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
@@ -992,8 +992,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             ContextInstance childContext = ContextHelper.getChildContextInstance(contextInstance.getName(), this.contextInstance);
 
             try {
-                jobInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, childContext);
-                jobInstanceVisualisationDialog.open();
+                jobInstanceSplitVisualisationDialog.createSchedulerVisualisation(this.contextInstance, childContext);
+                jobInstanceSplitVisualisationDialog.open();
             }
             catch (IOException e) {
                 e.printStackTrace();

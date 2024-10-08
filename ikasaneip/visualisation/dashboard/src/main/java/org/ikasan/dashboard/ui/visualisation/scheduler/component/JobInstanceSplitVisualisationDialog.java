@@ -1,20 +1,13 @@
-package org.ikasan.dashboard.ui.visualisation.scheduler.dag.component;
+package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.*;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.PreserveOnRefresh;
+import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobSchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -34,20 +27,20 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@NpmPackage(value = "@ebay/nice-dag-core", version = "1.0.34")
-@NpmPackage(value = "lit-fontawesome", version = "0.1.3")
-@CssImport(value = "./css/font.css")
-@CssImport(value = "./css/ikasan-dag.css")
-@JsModule("./dag-connector-flow.js")
-@Tag("dag-chart")
-@PreserveOnRefresh
-public class DagComponent extends VerticalLayout implements HasSize, ContextInstanceStateChangeEventBroadcastListener {
+import java.io.IOException;
 
-    Logger logger = LoggerFactory.getLogger(DagComponent.class);
+public class JobInstanceSplitVisualisationDialog extends AbstractCloseableResizableDialog implements ContextInstanceStateChangeEventBroadcastListener {
 
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private Logger logger = LoggerFactory.getLogger(JobInstanceSplitVisualisationDialog.class);
+
+    private VerticalLayout layout;
 
     private boolean initialised = false;
+
+    private ContextInstance rootContextInstance;
+    private ContextInstance contextInstance;
+
+    private String dynamicImagePath = ".";
 
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
@@ -62,33 +55,24 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
     private ScheduledContextService scheduledContextService;
     private ContextProfileService contextProfileService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
+    private SplitContextInstanceVisualisation splitContextInstanceVisualisation;
     private GlobalEventService globalEventService;
-    private ContextInstance parentContextInstance;
-
+    private SchedulerStatusDiv statusDiv;
     private UI ui;
 
     private double jobVisualisationVerticalSpacing;
     private double jobVisualisationHorizontalSpacing;
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
-    private String dagJson;
-    private double scale = 1;
 
-    private String ikasanDagNodeStyle = "width: 100%; height: 100%; border: 1px solid #8799c1; " +
-        "position: relative; border-radius: 10px; display: flex;flex-direction: column;title: 'test hover';";
-
-    public DagComponent(String dagData, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                        SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
-                        JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                        ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService,
-                        double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance,
-                        ContextInstance parentContextInstance) {
-        this.dagJson = dagData;
-        this.dagJson = dagJson;
-        if(this.dagJson == null) {
-            throw new IllegalArgumentException("dagJson cannot be null!");
-        }
+    public JobInstanceSplitVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
+                                               SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
+                                               JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
+                                               ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService,
+                                               double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+        this.setHeight("98vh");
+        this.setWidth("98vw");
 
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {
@@ -160,71 +144,56 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
-        this.parentContextInstance = parentContextInstance;
-        if(this.parentContextInstance == null) {
-            throw new IllegalArgumentException("parentContextInstance cannot be null!");
-        }
-
         this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
         this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
         this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
         this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
-        this.setWidth("100%");
-        this.setHeight("100%");
-        this.getStyle().set("display", "block");
-        this.getStyle().set("overflow","auto");
+
+        layout = new VerticalLayout();
+        this.layout.getStyle().set("padding-top", "0px");
+        this.layout.getStyle().set("padding-bottom", "10px");
+        layout.setHeight("98vh");
+        super.content.setHeight("96vh");
+        super.content.add(layout);
     }
 
     /**
-     * This method works in combination with dag-connector-flow.js to set up the
-     * integration between the Vaadin framework and nice-dag javascript.
+     * Create the visualisation.
+     *
+     * @param contextInstance
      */
-    public void initConnector() {
-        getElement().setProperty("dagNodes", this.dagJson);
-        getElement().setProperty("ikasanDagNodeStyle", this.ikasanDagNodeStyle);
+    public void createSchedulerVisualisation(ContextInstance rootContextInstance, ContextInstance contextInstance) throws IOException {
+        this.rootContextInstance = rootContextInstance;
+        this.contextInstance = contextInstance;
+        this.initialised = false;
+
+        this.statusDiv = new SchedulerStatusDiv();
+        this.statusDiv.setHeight("20px");
+        this.statusDiv.setWidth("100%");
+        this.statusDiv.getElement().getStyle().set("font-size", "12pt");
+        this.statusDiv.setStatus(this.rootContextInstance.getStatus());
+
+        this.layout.add(this.statusDiv);
+
+        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(this.scheduledContextInstanceService, this.moduleMetaDataService, this.scheduledProcessManagementService,
+            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService, rootContextInstance, this.schedulerJobInstanceService,
+            this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
+            this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
+        this.splitContextInstanceVisualisation.initialiseVisualisation();
+        this.splitContextInstanceVisualisation.setVisible(true);
+        this.splitContextInstanceVisualisation.contextOpened(contextInstance);
+        this.splitContextInstanceVisualisation.contextSelected(contextInstance.getName());
+
+        this.layout.add(this.splitContextInstanceVisualisation);
+        this.title.setText(rootContextInstance.getName());
     }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-
-        initConnector();
-        this.styleNode();
-
         this.ui = attachEvent.getUI();
 
         ContextInstanceStateChangeEventBroadcaster.register(this);
-    }
-
-    public void styleNode() {
-        this.getElement().callJsFunction("styleNode", "start");
-    }
-
-    public void zoom(double scale) {
-        this.getElement().callJsFunction("zoom", scale);
-    }
-
-    @ClientCallable
-    public void setDag(String dag) {
-        logger.info("Received data: " + dag);
-        this.dagJson = dag;
-    }
-
-    @ClientCallable
-    public void openDiagram(String contextId) {
-        try {
-            ContextInstance child = ContextHelper.getChildContextInstance(contextId, this.parentContextInstance);
-            JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
-                configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
-                , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService
-                , this.scheduledContextInstanceService, contextProfileService, globalEventService, this.jobVisualisationVerticalSpacing
-                , this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
-            jobInstanceVisualisationDialog.createSchedulerVisualisation(parentContextInstance, child);
-            jobInstanceVisualisationDialog.open();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -238,8 +207,12 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         if (event.getContextInstance() != null &&
-            event.getContextInstance().getId().equals(this.parentContextInstance.getId())) {
-            this.parentContextInstance = event.getContextInstance();
+            event.getContextInstance().getId().equals(this.rootContextInstance.getId())) {
+            if(this.ui != null && this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    this.statusDiv.setStatus(event.getNewStatus());
+                });
+            }
         }
     }
 }

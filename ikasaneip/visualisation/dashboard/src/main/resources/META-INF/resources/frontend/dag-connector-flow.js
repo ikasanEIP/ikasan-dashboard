@@ -16,9 +16,18 @@ export class DagConnector extends LitElement {
     }
 
     niceDag = null;
+    scale = 1;
+    x = 0;
+    y = 0;
+    mousedown = false;
+    container = null;
+    isZooming = true;
 
     constructor() {
         super();
+        this.container = document.createElement("div");
+        this.container.id = "my-dag-chart";
+        this.container.setAttribute("style", "width:100%; height:100%; display:flex; overflow:auto");
         console.log("constructor called!");
     }
 
@@ -30,17 +39,13 @@ export class DagConnector extends LitElement {
     }
 
     render() {
-        let container = document.createElement("div");
-        container.id = "my-dag-chart";
-        container.setAttribute("style", "width:40000px; height:40000px; display:flex;");
-
         let ikasanMinimapContainer = document.getElementById("ikasanMinimapContainer");
 
         if(this.niceDag == null) {
             let args
                 = {
                 id: "my-dag-chart",
-                container: container,
+                container: this.container,
                 // minimapContainer: ikasanMinimapContainer,
                 getNodeSize
             };
@@ -60,10 +65,100 @@ export class DagConnector extends LitElement {
             });
 
             this.niceDag.addNiceDagChangeListener(this);
+
+            this.addZoomListener();
+
+            addEventListener("dblclick", (event) => {{
+                if(this.isZooming) {
+                    this.removeZoomListener();
+                }
+                else {
+                    this.addZoomListener();
+                }
+            }});
         }
 
         console.log("render method called!");
-        return container;
+        return this.container;
+    }
+
+    /**
+     * Handle zoom functionality based on the scroll event.
+     *
+     * @param {Event} event - The scroll event triggering the zoom operation.
+     *
+     * @return {void} - This method does not return anything.
+     */
+    handleZoom(event) {
+
+        if(event.deltaY > 0) {
+            this.scale = this.scale * .98;
+        }
+        else {
+            this.scale = this.scale * 1.02;
+        }
+
+        this.niceDag.setScale(this.scale);
+    }
+
+    addZoomListener() {
+        this.addEventListener("wheel", this.handleZoom);
+        this.isZooming = true;
+    }
+
+    removeZoomListener() {
+        this.removeEventListener("wheel", this.handleZoom);
+        this.isZooming=false;
+    }
+
+    connectedCallback() {
+        // be sure to call the super
+        super.connectedCallback();
+        this.now = Date.now();
+        this.interval = window.setInterval(this.ensureScrollVisible, 250, this);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        window.clearInterval(this.interval);
+    }
+
+    ensureScrollVisible(container) {
+        // Vertical scroll bar
+        console.log("ensureScrollVisible " + container);
+        if (container.scrollTop === 0) {
+            container.scrollTop += 1;
+            container.scrollTop -= 1;
+        } else {
+            container.scrollTop -= 1;
+            container.scrollTop += 1;
+        }
+
+        // Horizontal scroll bar
+        if (container.scrollLeft === 0) {
+            container.scrollLeft += 1;
+            container.scrollLeft -= 1;
+        } else {
+            container.scrollLeft -= 1;
+            container.scrollLeft += 1;
+        }
+    }
+
+    firstUpdated(changedProperties) {
+        // document.getElementById("my-dag-chart").addEventListener("wheel", (event) => {
+        //     debugger;
+        //     event.preventDefault();
+        //
+        //     let scale = this.niceDag.getScale();
+        //     if(event.deltaY > 0) {
+        //         scale = scale * 1.02;
+        //     }
+        //     else {
+        //         scale = scale * 0.98;
+        //     }
+        //
+        //     this.zoom(scale);
+        // });
     }
 
     renderNode(node, element) {
@@ -89,11 +184,14 @@ export class DagConnector extends LitElement {
     }
 
     onChange() {
-        console.log("the dag has changed!");
+        console.log("the dag has changed! " + this.niceDag);
         let nodes = this.niceDag.getAllNodes(true);
+        console.log("the dag has changed! nodes " + nodes);
         let dagJsonModel = "["
         nodes.forEach((node) => {
-            if(!node.parentId) {
+            console.log("the dag has changed! node " + node);
+            console.log("the dag has changed! node " + node.parentId);
+            //if(!node.parentId) {
                 console.log("adding node " + node.id);
                 if(node.children) {
                     this.setChildCollapseStatus(node.children);
@@ -107,10 +205,10 @@ export class DagConnector extends LitElement {
                         "children": node.children,
                         "parentId": node.parentId
                     }) + ",";
-            }
-            else {
-                console.log("skipping node " + node.id + " with collapse " + node.collapse);
-            }
+            // }
+            // else {
+            //     console.log("skipping node " + node.id + " with collapse " + node.collapse);
+            // }
         })
         dagJsonModel = dagJsonModel.substring(0, dagJsonModel.length - 1);
         dagJsonModel = dagJsonModel + "]";
