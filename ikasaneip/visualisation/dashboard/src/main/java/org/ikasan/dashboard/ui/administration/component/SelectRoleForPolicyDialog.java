@@ -58,7 +58,7 @@ public class SelectRoleForPolicyDialog extends AbstractCloseableResizableDialog
         H3 selectRoleLabel = new H3(getTranslation("label.select-role", UI.getCurrent().getLocale()));
 
         List<Role> roleList = this.securityService.getAllRoles();
-        roleList.removeAll(policy.getRoles());
+        //roleList.removeAll(policy.getRoles());
 
         RoleFilter roleFilter = new RoleFilter();
 
@@ -72,7 +72,7 @@ public class SelectRoleForPolicyDialog extends AbstractCloseableResizableDialog
 
         roleGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<Role>>) roleItemDoubleClickEvent ->
         {
-            policy.getRoles().add(roleItemDoubleClickEvent.getItem());
+            //policy.getRoles().add(roleItemDoubleClickEvent.getItem());
 
             this.securityService.savePolicy(policy);
 

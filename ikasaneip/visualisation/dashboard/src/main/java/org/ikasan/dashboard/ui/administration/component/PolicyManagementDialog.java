@@ -94,8 +94,8 @@ public class PolicyManagementDialog extends AbstractCloseableResizableDialog
             Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
             deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
             {
-                policy.getRoles().remove(role);
-                securityService.savePolicy(policy);
+//                policy.getRoles().remove(role);
+//                securityService.savePolicy(policy);
 
                 String action = String.format("Role [%s] removed from policy [%s].", role.getName(), policy.getName());
 
@@ -159,7 +159,7 @@ public class PolicyManagementDialog extends AbstractCloseableResizableDialog
 
     private void updateRolesGrid()
     {
-        roleGrid.setItems(this.policy.getRoles());
+        //roleGrid.setItems(this.policy.getRoles());
     }
 
 
