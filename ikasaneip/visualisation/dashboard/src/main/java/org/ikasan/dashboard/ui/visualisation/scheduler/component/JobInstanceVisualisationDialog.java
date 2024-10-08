@@ -4,7 +4,6 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -56,7 +55,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     private ScheduledContextService scheduledContextService;
     private ContextProfileService contextProfileService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
-    private SplitContextInstanceVisualisation splitContextInstanceVisualisation;
+    private JobSchedulerInstanceVisualisation jobVisualisation;
     private GlobalEventService globalEventService;
     private SchedulerStatusDiv statusDiv;
     private UI ui;
@@ -172,21 +171,24 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
         this.statusDiv.setHeight("20px");
         this.statusDiv.setWidth("100%");
         this.statusDiv.getElement().getStyle().set("font-size", "12pt");
-        this.statusDiv.setStatus(this.rootContextInstance.getStatus());
+        this.statusDiv.setStatus(this.contextInstance.getStatus());
 
         this.layout.add(this.statusDiv);
 
-        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(this.scheduledContextInstanceService, this.moduleMetaDataService, this.scheduledProcessManagementService,
-            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService, rootContextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
-            this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
-        this.splitContextInstanceVisualisation.initialiseVisualisation();
-        this.splitContextInstanceVisualisation.setVisible(true);
-        this.splitContextInstanceVisualisation.contextOpened(contextInstance);
-        this.splitContextInstanceVisualisation.contextSelected(contextInstance.getName());
+        this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService, scheduledProcessManagementService,
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
+            , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService
+            , this.globalEventService, this.scheduledContextInstanceService, this.jobVisualisationVerticalSpacing
+            , this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
+//        this.splitContextInstanceVisualisation.addContextOpenListener(this);
+//        this.splitContextInstanceVisualisation.addContextSelectedListener(this);
+        this.jobVisualisation.setWidthFull();
+        this.jobVisualisation.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance, null);
+        this.jobVisualisation.setHeight("100%");
+        this.jobVisualisation.setVisible(true);
 
-        this.layout.add(this.splitContextInstanceVisualisation);
-        this.title.setText(rootContextInstance.getName());
+        this.layout.add(this.jobVisualisation);
+        this.title.setText(contextInstance.getName());
     }
 
     @Override
@@ -208,7 +210,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         if (event.getContextInstance() != null &&
-            event.getContextInstance().getId().equals(this.rootContextInstance.getId())) {
+            event.getContextInstance().getId().equals(this.contextInstance.getId())) {
             if(this.ui != null && this.ui.isAttached()) {
                 this.ui.access(() -> {
                     this.statusDiv.setStatus(event.getNewStatus());

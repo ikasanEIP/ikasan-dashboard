@@ -507,6 +507,139 @@ public class ContextHelper {
     }
 
     /**
+     * Returns an optional {@link SchedulerJob} object representing the first job found in the given context
+     * whose agent name matches the constant {@code JobConstants.CONTEXT_TERMINAL_JOB}.
+     *
+     * @param context the context object from which to retrieve the jobs
+     * @return an optional containing the first {@link SchedulerJob} object found, or an empty optional if no such job exists
+     */
+    public static Optional<SchedulerJob> getContextStartJobFromContext(Context context) {
+        return context.getScheduledJobs().stream()
+            .filter(job -> ((SchedulerJob)job).getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+            .findFirst();
+    }
+
+    /**
+     * Returns a list of terminal jobs from the given context.
+     *
+     * @param context the context from which to retrieve the terminal jobs
+     * @return a list of SchedulerJob objects representing the terminal jobs
+     */
+    public static List<SchedulerJob> getContextTerminalJobsFromContext(Context context) {
+        List<SchedulerJob> terminalJobs = new ArrayList<>();
+        getContextTerminalJobFromContext(context, terminalJobs);
+
+        return terminalJobs;
+    }
+
+    /**
+     * Retrieves the terminal job from the given context.
+     *
+     * @param context the context from which to retrieve the terminal job
+     * @return an Optional containing the terminal job, or an empty Optional if no terminal job is found
+     */
+    public static void getContextTerminalJobFromContext(Context context, List<SchedulerJob> terminalJobs) {
+        Optional<SchedulerJob> terminalJob = context.getScheduledJobs().stream()
+            .filter(job -> ((SchedulerJob)job).getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)
+                && ((SchedulerJob)job).getJobName().toLowerCase().replaceAll("_", "").replaceAll(" ", "")
+                .contains(context.getName().toLowerCase().replaceAll("_", "").replaceAll(" ", "")))
+            .findFirst();
+
+        if(terminalJob.isPresent()) terminalJobs.add(terminalJob.get());
+
+        context.getContexts().forEach(c -> getContextTerminalJobFromContext((Context) c, terminalJobs));
+    }
+
+//    /**
+//     * Finds the list of Contexts that transition to the given source Context.
+//     *
+//     * @param source The source Context to find transitions from
+//     * @param targets The List of target Contexts to search for transitions to the source Context
+//     * @return A List of Contexts that transition from the given source Context
+//     */
+//    public static List<Context> transitionsToContext(Context source, List<Context> targets) {
+//        Optional<SchedulerJob> sourceTerminal = ContextHelper.getContextTerminalJobsFromContext(source);
+//        if(sourceTerminal.isEmpty()) return new ArrayList<>();
+//
+//        List<Context> targetedContexts = new ArrayList<>();
+//        targets.forEach(target -> {
+//            target.getJobDependencies()
+//                .forEach(jd -> {
+//                    if(((JobDependency)jd).getLogicalGrouping().getAnd().size() == 1
+//                        && ((JobDependency)jd).getLogicalGrouping().getAnd().get(0)
+//                            .getIdentifier().equals(sourceTerminal.get().getIdentifier())) {
+//                       targetedContexts.add(target);
+//                    }
+//                });
+//        });
+//
+//        return targetedContexts;
+//    }
+
+
+    /**
+     * Returns a list of contexts that transition from the given target context.
+     *
+     * @param target The target context from which the transitions are searched.
+     * @param sources The list of contexts to search for transitions from the target context.
+     * @return A list of contexts that transition from the target context. If the target context does not have a start job,
+     *         null is returned.
+     */
+    public static List<Context> transitionsFromContext(Context target, List<Context> sources) {
+        List<Context> sourceContexts = new ArrayList<>();
+        sources.forEach(source -> {
+            List<SchedulerJob> terminalJobs = ContextHelper.getContextTerminalJobsFromContext(source);
+            AtomicBoolean found = new AtomicBoolean(false);
+            if(!target.getJobDependencies().isEmpty()) {
+                target.getJobDependencies()
+                    .forEach(jd -> {
+                        terminalJobs.forEach(schedulerJob -> {
+                            if (((JobDependency) jd).getLogicalGrouping().getAnd().size() == 1
+                                && ((JobDependency) jd).getLogicalGrouping().getAnd().get(0)
+                                .getIdentifier().equals(schedulerJob.getIdentifier())) {
+                                sourceContexts.add(source);
+                            }
+                        });
+                    });
+            }
+            else {
+                terminalJobs.forEach(schedulerJob -> {
+                    nestedSourcesTransitionTo(schedulerJob, target, source.getContexts(), found);
+                    if(found.get()) {
+                        sourceContexts.add(source);
+                    }
+                });
+            }
+        });
+
+        return sourceContexts;
+    }
+
+    /**
+     * Determines whether a nested transition exists from the given target context
+     * to any of the provided source contexts.
+     *
+     * @param terminalJob The terminal job to check for in the job dependencies.
+     * @param target The target context to check for nested transition to.
+     * @param sources The list of source contexts to check for nested transition from.
+     * @return {@code true} if a nested transition from the target to any of the sources
+     *         is found, {@code false} otherwise.
+     */
+    private static void nestedSourcesTransitionTo(SchedulerJob terminalJob, Context target, List<Context> sources, AtomicBoolean found) {
+        sources.forEach(source -> {
+            target.getJobDependencies().forEach(jd -> {
+                if(((JobDependency)jd).getLogicalGrouping().getAnd().size() == 1
+                    && ((JobDependency)jd).getLogicalGrouping().getAnd().get(0)
+                    .getIdentifier().equals(terminalJob.getIdentifier())) {
+                    found.set(true);
+                }
+            });
+        });
+
+        target.getContexts().forEach(c -> nestedSourcesTransitionTo(terminalJob, (Context) c, sources, found));
+    }
+
+    /**
      * Retrieves the map of ContextTerminalJobInstances from the given ContextTemplate and ContextInstance.
      *
      * @param contextTemplate The context template to retrieve the instances from.
@@ -592,7 +725,7 @@ public class ContextHelper {
      *
      * @param parentContext the parent context.
      * @param schedulerJobs the map of scheduler jobs in the child context.
-     * @param child the child context we will detremine if jobs transition from.
+     * @param child the child context we will determine if jobs transition from.
      * @return
      */
     public static List<ContextTransition> determineIfJobsTransitionToOtherContexts(Context parentContext, Map<String, SchedulerJob> schedulerJobs
@@ -769,11 +902,6 @@ public class ContextHelper {
         , AggregateContextInstanceStatus aggregateContextInstanceStatus, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
         if(contextInstance.getScheduledJobs() != null) {
             contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> {
-//                if(!ContextHelper.determineIfJobsTransitionFromOtherContexts(parent,
-//                    schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
-//                    , internalEventDrivenJobMap).isEmpty()) {
-//                    return;
-//                }
                 if(schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
                     aggregateContextInstanceStatus.setDisabledJobs();
                 }
