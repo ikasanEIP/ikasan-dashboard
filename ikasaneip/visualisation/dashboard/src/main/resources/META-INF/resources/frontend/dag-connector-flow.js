@@ -92,10 +92,10 @@ export class DagConnector extends LitElement {
     handleZoom(event) {
 
         if(event.deltaY > 0) {
-            this.scale = this.scale * .98;
+            this.scale = this.scale * .96;
         }
         else {
-            this.scale = this.scale * 1.02;
+            this.scale = this.scale * 1.04;
         }
 
         this.niceDag.setScale(this.scale);
