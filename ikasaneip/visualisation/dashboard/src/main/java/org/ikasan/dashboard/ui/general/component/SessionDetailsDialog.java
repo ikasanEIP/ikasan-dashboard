@@ -1,15 +1,16 @@
 package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.formlayout.FormLayout;
+
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.server.VaadinSession;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
 public class SessionDetailsDialog extends AbstractCloseableResizableDialog
 {
@@ -22,40 +23,44 @@ public class SessionDetailsDialog extends AbstractCloseableResizableDialog
     {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         FormLayout formLayout = new FormLayout();
+        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP)
+            , new FormLayout.ResponsiveStep("600px", 1, FormLayout.ResponsiveStep.LabelsPosition.ASIDE));
         formLayout.setWidthFull();
         TextField username = new TextField();
         username.setWidthFull();
         username.setValue(authentication.getName());
         username.setReadOnly(true);
-        formLayout.addFormItem(username, "Username");
+        formLayout.addFormItem(username, getTranslation("label.username"));
         TextField locale = new TextField();
         locale.setWidthFull();
-        locale.setValue(VaadinSession.getCurrent().getLocale().getDisplayName());
+        locale.setValue(VaadinSession.getCurrent().getLocale()
+            .getDisplayName(VaadinSession.getCurrent().getLocale()));
         locale.setReadOnly(true);
-        formLayout.addFormItem(locale, "Locale");
+        formLayout.addFormItem(locale, getTranslation("label.locale"));
         TextArea browser = new TextArea();
         browser.setWidthFull();
         browser.setValue(VaadinSession.getCurrent().getBrowser().getBrowserApplication());
         browser.setReadOnly(true);
-        formLayout.addFormItem(browser, "Browser");
+        formLayout.addFormItem(browser, getTranslation("label.browser"));
         TextField sessionId = new TextField();
         sessionId.setWidthFull();
         sessionId.setValue(VaadinSession.getCurrent().getSession().getId());
         sessionId.setReadOnly(true);
-        formLayout.addFormItem(sessionId, "Session Id");
+        formLayout.addFormItem(sessionId, getTranslation("label.session-id"));
 
         TextField buildDateTime = new TextField();
         buildDateTime.setWidthFull();
-        SimpleDateFormat formatter = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
-        buildDateTime.setValue(formatter.format(VaadinSession.getCurrent().getSession().getCreationTime()));
+        buildDateTime.setValue(DateFormatter.instance().getLongFormattedDate(VaadinSession.getCurrent().getSession().getCreationTime()));
         buildDateTime.setReadOnly(true);
-        formLayout.addFormItem(buildDateTime, "Session start time");
+        formLayout.addFormItem(buildDateTime, getTranslation("label.session-start-time"));
+        formLayout.getStyle().setMarginBottom("50px");
 
-        super.content.add(formLayout);
+        super.content.add(new VerticalLayout(formLayout));
         showResize(false);
         setResizable(false);
-        this.setWidth("650px");
-        this.setHeight("500px");
-        super.title.setText("Session details");
+        this.setSizeUndefined();
+        this.setWidth("590px");
+        this.setHeight("750px");
+        super.title.setText(getTranslation("label.session-details"));
     }
 }

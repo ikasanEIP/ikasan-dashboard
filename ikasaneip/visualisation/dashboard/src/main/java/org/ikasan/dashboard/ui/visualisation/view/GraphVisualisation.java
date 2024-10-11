@@ -524,8 +524,8 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             }
         });
 
-        tabs.add((SerializableSupplier<com.vaadin.flow.component.Component>) () -> businessStreamLayout, "Business Streams");
-        tabs.add((SerializableSupplier<com.vaadin.flow.component.Component>) () -> modulesLayout, "Modules");
+        tabs.add((SerializableSupplier<com.vaadin.flow.component.Component>) () -> businessStreamLayout, getTranslation("label.business-streams", UI.getCurrent().getLocale()));
+        tabs.add((SerializableSupplier<com.vaadin.flow.component.Component>) () -> modulesLayout, getTranslation("label.modules", UI.getCurrent().getLocale()));
 
 
         Image transparent = new Image("frontend/images/transparent.png", "");
@@ -545,7 +545,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         toolSlider = new SlideTabBuilder(card)
             .expanded(true)
             .mode(SlideMode.RIGHT)
-            .caption("Tools")
+            .caption(" " + getTranslation("label.tools", UI.getCurrent().getLocale()) + " ")
             .tabPosition(SlideTabPosition.MIDDLE)
             .fixedContentSize(700)
             .zIndex(1)
@@ -585,7 +585,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         searchSlider = new SlideTabBuilder(wrapperDiv)
             .expanded(false)
             .mode(SlideMode.BOTTOM)
-            .caption("  Search  ")
+            .caption("  " + getTranslation("label.search", UI.getCurrent().getLocale()) + "  ")
             .tabPosition(SlideTabPosition.MIDDLE)
             .zIndex(1)
             .flowInContent(true)

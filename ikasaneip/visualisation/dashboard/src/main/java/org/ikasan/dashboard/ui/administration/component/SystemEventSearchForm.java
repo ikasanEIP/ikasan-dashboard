@@ -88,7 +88,7 @@ public class SystemEventSearchForm extends VerticalLayout {
 
         this.searchText.setWidth("600px");
         this.searchText.setHeight("80px");
-        this.searchText.setPlaceholder("search term");
+        this.searchText.setPlaceholder(getTranslation("label.search-term", UI.getCurrent().getLocale()));
         this.searchText.setRequired(true);
 
         HorizontalLayout searchTextLayout = new HorizontalLayout();

@@ -30,11 +30,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.security.PermitAll;
 
-//@Push
-//@HtmlImport("frontend://styles/shared-styles.html")
-//@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
-//@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-//@Theme(themeClass = Material.class)
+
 @Route(value = "visualisationTab")
 @UIScope
 @Component

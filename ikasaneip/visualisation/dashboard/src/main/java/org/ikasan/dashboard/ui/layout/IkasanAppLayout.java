@@ -7,13 +7,17 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.server.VaadinSession;
@@ -30,9 +34,11 @@ import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.view.BusinessStreamDesignerView;
 import org.ikasan.dashboard.ui.visualisation.view.GraphView;
+import org.ikasan.designer.PositionedDialog;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.vaadin.flow.component.menubar.MenuBar;
 
 import javax.annotation.Resource;
 
@@ -72,6 +78,10 @@ public class IkasanAppLayout extends AppLayout {
     private Button swaggerUI;
 
     public IkasanAppLayout() {
+        super();
+    }
+
+   private void init() {
         Image ikasan = new Image("frontend/images/ikasan-titling-transparent.png", "");
         ikasan.setHeight("30px");
 
@@ -144,7 +154,7 @@ public class IkasanAppLayout extends AppLayout {
     private SideNav getSideNav() {
         SideNav sideNav = new SideNav();
 
-        this.dashboardMenuItem = new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create());
+        this.dashboardMenuItem = new SideNavItem(getTranslation("menu-item.dashboard", getLocale()), DashboardView.class, VaadinIcon.DASHBOARD.create());
         this.dashboardMenuItem.setId("dashboardMenuItem");
         this.dashboardMenuItem.getElement().getStyle().remove("padding");
 
@@ -161,7 +171,7 @@ public class IkasanAppLayout extends AppLayout {
 
         sideNav.addItem(this.visualisationMenuItem);
 
-        this.schedulerMenuItem = new SideNavItem("Scheduler", SchedulerView.class, VaadinIcon.CLOCK.create());
+        this.schedulerMenuItem = new SideNavItem(getTranslation("menu-item.scheduler", getLocale()), SchedulerView.class, VaadinIcon.CLOCK.create());
         this.schedulerMenuItem.setId("schedulerMenuItem");
 
         sideNav.addItem(this.schedulerMenuItem);
@@ -220,6 +230,7 @@ public class IkasanAppLayout extends AppLayout {
     @Override
     public void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
+        this.init();
 
         this.environmentButton.setText(this.bannerTextMessage);
 

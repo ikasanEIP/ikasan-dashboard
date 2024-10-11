@@ -5,14 +5,19 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.spring.annotation.RouteScope;
 import com.vaadin.flow.spring.annotation.UIScope;
+import jakarta.servlet.http.Cookie;
 import org.apache.commons.lang3.time.StopWatch;
+import org.ikasan.dashboard.internationalisation.IkasanI18NProvider;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceWidget;
+import org.ikasan.dashboard.ui.util.CookieUtil;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
@@ -43,6 +48,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -185,6 +192,21 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        Cookie uiLanguage = CookieUtil.getCookieByName("ikasan-language", VaadinRequest.getCurrent());
+
+        if (uiLanguage != null){
+            Optional<Locale> optionalLocale = IkasanI18NProvider.providedLocales.stream()
+                .filter(locale -> locale.getLanguage().equals(uiLanguage.getValue()))
+                .findFirst();
+
+            if(optionalLocale.isPresent()) {
+                beforeEnterEvent.getUI().getSession().setAttribute("locale",
+                    optionalLocale.get().getLanguage());
+                VaadinSession.getCurrent().setLocale(optionalLocale.get());
+                beforeEnterEvent.getUI().setLocale(optionalLocale.get());
+            }
+        }
+
         this.contextInstance = scheduledContextInstanceService.findById(this.contextInstanceId).getContextInstance();
         this.contextTemplate = this.scheduledContextService.findByName(this.contextInstance.getName()).getContext();
         init(beforeEnterEvent);

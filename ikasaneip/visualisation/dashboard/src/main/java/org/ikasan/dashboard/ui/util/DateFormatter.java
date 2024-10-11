@@ -11,9 +11,11 @@ import java.time.format.DateTimeFormatter;
 public class DateFormatter
 {
     public static final String DATE_FORMAT_TABLE_VIEWS = "dd/MM/yyyy HH:mm:ss.SSS '['VV '-' z']'";
+    public static final String DATE_FORMAT_LONG = "dd MMMM yyyy HH:mm:ss.SSS '['VV '-' z']'";
     public static final DateTimeFormatter DATE_FORMAT_WITH_TIMEZONE = DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
     private DateTimeFormatter tableFormatter;
+    private DateTimeFormatter longFormatter;
     private ZoneId zoneId;
     private static DateFormatter instance;
 
@@ -34,7 +36,8 @@ public class DateFormatter
     }
 
     public DateFormatter() {
-        tableFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT_TABLE_VIEWS);
+        this.tableFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT_TABLE_VIEWS);
+        this.longFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT_LONG);
     }
 
     public DateFormatter(ZoneId zoneId) {
@@ -66,5 +69,26 @@ public class DateFormatter
     public String getFormattedDate(ZonedDateTime dateTime)
     {
         return DATE_FORMAT_WITH_TIMEZONE.format(dateTime);
+    }
+
+    public String getLongFormattedDate(long timestamp)
+    {
+        if(timestamp == 0)
+        {
+            return "N/A";
+        }
+
+        ZonedDateTime zdt;
+
+        if(this.zoneId != null) {
+            zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                this.zoneId);
+        }
+        else {
+            zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                DateTimeUtil.getZoneId());
+        }
+
+        return this.longFormatter.format(zdt);
     }
 }

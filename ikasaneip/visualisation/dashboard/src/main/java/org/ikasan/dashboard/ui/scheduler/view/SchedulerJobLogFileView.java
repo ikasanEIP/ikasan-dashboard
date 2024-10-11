@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 
-//@Push
 @Route(value = "schedulerJobLogFile")
 @UIScope
 @Component

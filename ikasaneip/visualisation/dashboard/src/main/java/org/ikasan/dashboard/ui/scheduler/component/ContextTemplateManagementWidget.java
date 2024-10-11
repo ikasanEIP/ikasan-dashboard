@@ -839,7 +839,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.validate();
 
 
-        MenuItem actionsMenuItem = this.createIconItem(actionsMenuBar, VaadinIcon.MENU, "Actions");
+        MenuItem actionsMenuItem = this.createIconItem(actionsMenuBar, VaadinIcon.MENU, getTranslation("label.actions", UI.getCurrent().getLocale()));
         SubMenu actions = actionsMenuItem.getSubMenu();
 
         actions.addItem(getTranslation("button.edit-context-template", UI.getCurrent().getLocale()),

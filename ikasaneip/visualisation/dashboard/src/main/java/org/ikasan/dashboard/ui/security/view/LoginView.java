@@ -8,12 +8,18 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.login.AbstractLogin;
 import com.vaadin.flow.component.login.LoginForm;
+import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.spring.annotation.UIScope;
+import jakarta.servlet.http.Cookie;
+import org.ikasan.dashboard.internationalisation.IkasanI18NProvider;
 import org.ikasan.dashboard.security.ContextCache;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.security.model.User;
@@ -32,6 +38,8 @@ import javax.annotation.Resource;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 @Tag("sa-login-view")
 @Route(LoginView.ROUTE)
@@ -39,7 +47,8 @@ import java.util.List;
 @Component
 @UIScope
 @AnonymousAllowed
-public class LoginView extends VerticalLayout
+public class LoginView extends VerticalLayout implements LocaleChangeObserver
+    , AfterNavigationObserver, BeforeEnterObserver
 {
     public static final String ROUTE = "login";
 
@@ -58,17 +67,27 @@ public class LoginView extends VerticalLayout
     @Value("${banner.text.message:}")
     private String bannerTextMessage;
 
+    private NativeLabel versionLabel;
+    private NativeLabel timestamp;
+
     private LoginForm login = new LoginForm();
 
     private H3 environmentLabel;
 
+    private Select<Locale> lang;
+
     public LoginView()
     {
+        super();
+    }
+
+    private void init() {
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
         layout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
         login.setForgotPasswordButtonVisible(false);
+        login.setI18n(this.getI18n());
 
         Image ikasan = new Image(new StreamResource("Mr Squid",
             () -> LoginView.class.getResourceAsStream("/META-INF/resources/frontend/images/mr_squid_titling_dashboard.png")), "Mr Squid");
@@ -76,19 +95,18 @@ public class LoginView extends VerticalLayout
 
         this.environmentLabel = new H3();
 
-        Div loginDiv = new Div();
-        loginDiv.add(login);
-
         BuildProperties buildProperties = (BuildProperties) DashboardApplicationContextProvider.getContext().getBean("buildProperties");
 
-        NativeLabel versionLabel = new NativeLabel(getTranslation("label.build-version", getLocale()) + " " + buildProperties.getVersion());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy hh:mm:ss")
-            .withZone(ZoneId.systemDefault());
-        NativeLabel timestamp =  new NativeLabel(getTranslation("label.build-date-time", getLocale()) + " " + formatter.format(buildProperties.getTime()));
+        versionLabel = new NativeLabel(getTranslation("label.build-version", getLocale()) + " " + buildProperties.getVersion());
+        versionLabel.getStyle().set("margin-top", "50px");
+        timestamp =  new NativeLabel(getTranslation("label.build-date-time", getLocale()) + " " + DateFormatter.instance(ZoneId.systemDefault())
+            .getLongFormattedDate(buildProperties.getTime().toEpochMilli()));
+        timestamp.getStyle().set("margin-top", "20px");
 
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, ikasan, environmentLabel, loginDiv, versionLabel, timestamp);
+        this.buildLanguageSelect();
 
-        layout.add(ikasan, environmentLabel, loginDiv, versionLabel, timestamp);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, ikasan, environmentLabel, login, this.lang, versionLabel, timestamp);
+        layout.add(ikasan, environmentLabel, login, this.lang, versionLabel, timestamp);
 
         login.addLoginListener((ComponentEventListener<AbstractLogin.LoginEvent>) loginEvent ->
         {
@@ -125,15 +143,100 @@ public class LoginView extends VerticalLayout
             }
             catch (AuthenticationServiceException e)
             {
-                login.setError(true);
+                loginEvent.getSource().setError(true);
             }
         });
 
         this.add(layout);
     }
+
+    private void buildLanguageSelect() {
+        lang = new Select<>();
+        lang.setLabel(getTranslation("label.language", getLocale()));
+        lang.setItems(IkasanI18NProvider.providedLocales);
+        lang.setItemLabelGenerator(item -> item.getDisplayLanguage(item));
+
+        Cookie localeCookie = CookieUtil.getCookieByName("ikasan-language",
+            VaadinRequest.getCurrent());
+
+        if(localeCookie != null) {
+            Optional<Locale> optionalLocale = IkasanI18NProvider.providedLocales.stream().filter(locale
+                -> locale.getLanguage().equals(localeCookie.getValue())).findFirst();
+
+            if(optionalLocale.isPresent()) {
+                lang.setValue(optionalLocale.get());
+            }
+            else {
+                lang.setValue(Locale.ENGLISH);
+            }
+        }
+
+        lang.addValueChangeListener(e -> {
+            if (e.isFromClient()) {
+                getUI().ifPresent(ui -> {
+                    ui.getSession().setAttribute("locale",
+                        e.getValue().getLanguage());
+                    ui.setLocale(e.getValue());
+                    Cookie myCookie = new Cookie("ikasan-language", e.getValue().getLanguage());
+                    myCookie.setMaxAge(60 * 60 * 24 * 7 * 52);
+                    myCookie.setPath("/");
+                    VaadinService.getCurrentResponse().addCookie(myCookie);
+                });
+            }
+        });
+    }
+
+    private LoginI18n getI18n() {
+        LoginI18n i18n = new LoginI18n();
+
+        LoginI18n.Form form = new LoginI18n.Form();
+        form.setPassword(getTranslation("label.password"));
+        form.setUsername(getTranslation("label.username"));
+        form.setTitle(getTranslation("label.login"));
+        form.setSubmit(getTranslation("button.login"));
+        i18n.setForm(form);
+        LoginI18n.ErrorMessage errorMessage = new LoginI18n.ErrorMessage();
+        errorMessage.setTitle(getTranslation("error.login-title"));
+        errorMessage.setMessage(getTranslation("error.login-message"));
+        i18n.setErrorMessage(errorMessage);
+        return i18n;
+    }
+
     @Override
     public void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        this.init();
         this.environmentLabel.setText(this.bannerTextMessage);
+    }
+
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        Cookie localeCookie = CookieUtil.getCookieByName("ikasan-language",
+            VaadinRequest.getCurrent());
+        if (localeCookie != null && localeCookie.getValue() != null) {
+            Optional<Locale> locale = IkasanI18NProvider.providedLocales.stream()
+                .filter(loc -> loc.getLanguage()
+                    .equals(localeCookie.getValue()))
+                .findFirst();
+            if(lang != null) {
+                lang.setValue(locale.get());
+            }
+            VaadinSession.getCurrent().setLocale(locale.get());
+            event.getLocationChangeEvent().getUI().setLocale(locale.get());
+        }
+    }
+
+    @Override
+    public void localeChange(LocaleChangeEvent localeChangeEvent) {
+        login.setI18n(getI18n());
+        BuildProperties buildProperties = (BuildProperties) DashboardApplicationContextProvider.getContext().getBean("buildProperties");
+        if(versionLabel != null && timestamp != null && this.lang != null) {
+            versionLabel.setText(getTranslation("label.build-version", getLocale()) + " " + buildProperties.getVersion());
+            timestamp.setText(getTranslation("label.build-date-time", getLocale()) + " " + DateFormatter.instance(ZoneId.systemDefault())
+                .getLongFormattedDate(buildProperties.getTime().toEpochMilli()));
+
+            lang.setLabel(getTranslation("label.language", getLocale()));
+        }
     }
 
     private boolean isRouteValid(String context) {
@@ -152,5 +255,25 @@ public class LoginView extends VerticalLayout
 
             return false;
         });
+    }
+
+
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        Cookie uiLanguage = CookieUtil.getCookieByName("ikasan-language", VaadinRequest.getCurrent());
+
+        if (uiLanguage != null){
+            Optional<Locale> optionalLocale = IkasanI18NProvider.providedLocales.stream()
+                .filter(locale -> locale.getLanguage().equals(uiLanguage.getValue()))
+                .findFirst();
+
+            if(optionalLocale.isPresent()) {
+                beforeEnterEvent.getUI().getSession().setAttribute("locale",
+                    optionalLocale.get().getLanguage());
+                VaadinSession.getCurrent().setLocale(optionalLocale.get());
+                beforeEnterEvent.getUI().setLocale(optionalLocale.get());
+            }
+        }
     }
 }

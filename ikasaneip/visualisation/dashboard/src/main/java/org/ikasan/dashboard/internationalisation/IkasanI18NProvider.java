@@ -11,8 +11,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 @Configuration
-public class IkasanI18NProvider implements I18NProvider
-{
+public class IkasanI18NProvider implements I18NProvider {
     Logger logger = LoggerFactory.getLogger(IkasanI18NProvider.class);
 
     public static final String RESOURCE_BUNDLE_NAME = "ikasanapp";
@@ -21,13 +20,11 @@ public class IkasanI18NProvider implements I18NProvider
     private static final ResourceBundle RESOURCE_BUNDLE_DE = ResourceBundle.getBundle(RESOURCE_BUNDLE_NAME , Locale.GERMAN);
     private static final ResourceBundle RESOURCE_BUNDLE_JP = ResourceBundle.getBundle(RESOURCE_BUNDLE_NAME , Locale.JAPAN);
 
-    private static final List<Locale> providedLocales;
+    public static final List<Locale> providedLocales;
 
-    static
-    {
+    static {
         providedLocales = new ArrayList<>();
         providedLocales.add(Locale.ENGLISH);
-        providedLocales.add(Locale.GERMAN);
         providedLocales.add(Locale.JAPAN);
     }
 
@@ -39,32 +36,26 @@ public class IkasanI18NProvider implements I18NProvider
     }
 
     @Override
-    public String getTranslation(String key, Locale locale, Object... params)
-    {
+    public String getTranslation(String key, Locale locale, Object... params) {
         ResourceBundle resourceBundle = RESOURCE_BUNDLE_EN;
 
-        if(Locale.GERMAN.equals(locale))
-        {
+        if(Locale.GERMAN.equals(locale)) {
             resourceBundle = RESOURCE_BUNDLE_DE;
         }
-        else if(Locale.JAPAN.equals(locale))
-        {
+        else if(Locale.JAPAN.equals(locale)) {
             resourceBundle = RESOURCE_BUNDLE_JP;
         }
 
-        if (!resourceBundle.containsKey(key))
-        {
+        if (!resourceBundle.containsKey(key)) {
             logger.info("missing resource key (i18n) " + key);
             return key + " - " + locale;
         }
         else
         {
-            try
-            {
-                return new String(resourceBundle.getString(key).getBytes("ISO-8859-1"), "UTF-8");
+            try {
+                return resourceBundle.getString(key);
             }
-            catch(Exception e)
-            {
+            catch(Exception e) {
                 e.printStackTrace();
                 return "";
             }

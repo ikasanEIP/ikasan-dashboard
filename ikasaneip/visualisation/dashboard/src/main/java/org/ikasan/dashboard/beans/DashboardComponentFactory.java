@@ -12,6 +12,7 @@ import org.ikasan.dashboard.ui.util.DashboardCacheAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceStateChangeEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.JobLockCacheEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.SchedulerJobStateChangeEventBroadcasterImpl;
+import org.ikasan.flow.configuration.FlowPersistentConfiguration;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
@@ -37,11 +38,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.ikasan.flow.configuration.FlowComponentInvokerSetupServiceConfiguration;
 
 import javax.annotation.Resource;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
@@ -218,6 +221,19 @@ public class DashboardComponentFactory
     @Primary
     public ModuleMetaDataProvider<String> moduleMetaDataProvider() {
         return new JsonModuleMetaDataProvider(new JsonFlowMetaDataProvider());
+    }
+
+
+    @Bean(name = "flowConfigurations")
+    @ConfigurationProperties(prefix = "ikasan.flow.configuration")
+    public Map<String, FlowPersistentConfiguration> flowConfigurations(){
+        return new HashMap<>();
+    }
+
+    @Bean(name = "flowComponentInvokerConfigurations")
+    @ConfigurationProperties(prefix = "ikasan.flow.component.invoker.configuration")
+    public FlowComponentInvokerSetupServiceConfiguration componentInvokerConfiguration(){
+        return new FlowComponentInvokerSetupServiceConfiguration();
     }
 
 }
