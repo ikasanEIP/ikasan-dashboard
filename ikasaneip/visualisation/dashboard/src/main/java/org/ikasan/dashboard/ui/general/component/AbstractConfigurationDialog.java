@@ -24,6 +24,7 @@ import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
@@ -157,7 +158,8 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
         {
             try
             {
-                this.configurationRestService.delete(module.getUrl(), this.configurationMetaData.getConfigurationId());
+                this.configurationRestService.delete(module.getUrl(), this.configurationMetaData.getConfigurationId()
+                    , SecurityContextHolder.getContext().getAuthentication().getName());
                 NotificationHelper.showUserNotification(getTranslation("message.successfully-deleted-configuration"
                     , UI.getCurrent().getLocale()));
                 this.close();
@@ -288,7 +290,8 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
             return;
         }
 
-        boolean success = this.configurationRestService.storeConfiguration(this.module.getUrl(), this.configurationMetaData);
+        boolean success = this.configurationRestService.storeConfiguration(this.module.getUrl()
+            , this.configurationMetaData, SecurityContextHolder.getContext().getAuthentication().getName());
         if(success)
         {
             this.loadConfigurationMetaData();

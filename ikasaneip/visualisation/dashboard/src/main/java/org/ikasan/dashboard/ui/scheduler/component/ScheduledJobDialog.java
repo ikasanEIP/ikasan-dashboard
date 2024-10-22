@@ -555,7 +555,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
                     logger.info("Module Configuration: " + moduleConfiguration);
                     // update the configuration back onto the module.
-                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+                    this.configurationRestService.storeConfiguration(this.agent.getUrl()
+                        , moduleConfiguration, SecurityContextHolder.getContext().getAuthentication().getName());
                 }, () -> {
                     throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
                 });
@@ -583,19 +584,22 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
             // Save all the configurations back to the agent.
             logger.debug(scheduledConsumerConfiguration.toString());
-            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), scheduledConsumerConfiguration)) {
+            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), scheduledConsumerConfiguration
+                , SecurityContextHolder.getContext().getAuthentication().getName())) {
                 throw new RuntimeException(String.format("Could not store scheduled consumer configuration [%s]", scheduledConsumerConfiguration));
             }
             this.scheduledProcessManagementService.saveConfiguration(scheduledConsumerConfiguration);
 
             logger.debug(blackoutRouterConfiguration.toString());
-            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), blackoutRouterConfiguration)) {
+            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), blackoutRouterConfiguration
+                , SecurityContextHolder.getContext().getAuthentication().getName())) {
                 throw new RuntimeException(String.format("Could not store blackout router configuration [%s]", blackoutRouterConfiguration));
             }
             this.scheduledProcessManagementService.saveConfiguration(blackoutRouterConfiguration);
 
             logger.debug(processExecutionBrokerConfiguration.toString());
-            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), processExecutionBrokerConfiguration)) {
+            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), processExecutionBrokerConfiguration
+                , SecurityContextHolder.getContext().getAuthentication().getName())) {
                 throw new RuntimeException(String.format("Could not store process execution configuration [%s]", blackoutRouterConfiguration));
             }
             this.scheduledProcessManagementService.saveConfiguration(processExecutionBrokerConfiguration);
@@ -614,7 +618,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
                     logger.info("Module Configuration: " + moduleConfiguration);
                     // update the configuration back onto the module.
-                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration
+                        , SecurityContextHolder.getContext().getAuthentication().getName());
                 }, () -> {
                     throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s] " +
                         "when attempting to update start up control.", agent));
@@ -643,7 +648,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
                     logger.info("Module Configuration: " + moduleConfiguration);
                     // update the configuration back onto the module.
-                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration
+                        , SecurityContextHolder.getContext().getAuthentication().getName());
                 }, () -> {
                     throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
                 });

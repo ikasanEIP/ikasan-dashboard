@@ -210,7 +210,7 @@ public class ConfigurationRestServiceImplTest
                 aResponse()
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(200)));
-        boolean result = uut.storeConfiguration(contexBaseUrl,configurationMetaData);
+        boolean result = uut.storeConfiguration(contexBaseUrl,configurationMetaData, "username");
 
         assertEquals(true, result);
 
@@ -227,7 +227,7 @@ public class ConfigurationRestServiceImplTest
                 aResponse()
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(200)));
-        boolean result = uut.delete(contexBaseUrl,"testConfigurationId");
+        boolean result = uut.delete(contexBaseUrl,"testConfigurationId", "username");
 
         assertEquals(true, result);
 
@@ -244,7 +244,7 @@ public class ConfigurationRestServiceImplTest
                 aResponse()
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(400)));
-        boolean result = uut.delete(contexBaseUrl,"testConfigurationId");
+        boolean result = uut.delete(contexBaseUrl,"testConfigurationId", "username");
 
         assertEquals(false, result);
 
