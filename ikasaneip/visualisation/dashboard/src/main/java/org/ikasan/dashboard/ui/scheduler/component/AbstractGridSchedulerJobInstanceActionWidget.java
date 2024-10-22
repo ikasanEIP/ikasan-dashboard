@@ -316,7 +316,9 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
                         contextMachine.resetJob(schedulerJobInstance.getIdentifier(), schedulerJobInstance.getChildContextName());
                     }
                     else {
-                        schedulerJobInstance.getChildContextNames().forEach(name
+                        ContextHelper.getContextsWhereJobFilterMatchResides
+                            (this.contextInstance, schedulerJobInstance.getJobName())
+                            .forEach(name
                             -> contextMachine.resetJob(schedulerJobInstance.getIdentifier(), name));
                     }
                 }
