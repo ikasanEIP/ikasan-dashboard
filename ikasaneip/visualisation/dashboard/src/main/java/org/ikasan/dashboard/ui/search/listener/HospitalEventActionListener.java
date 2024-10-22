@@ -21,6 +21,7 @@ import org.ikasan.spec.module.client.ResubmissionService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
     }
 
     protected List<ExclusionEventAction> actionHospitalEvents(List<IkasanSolrDocument> exclusionEvents, ExclusionEventAction exclusionEventAction, ProgressIndicatorDialog progressIndicatorDialog
-        , String action, String username, UI current) throws JsonProcessingException {
+        , String action, String username, UI current, Authentication authentication) throws JsonProcessingException {
         ExclusionEventAction eventAction;
         ObjectMapper mapper = new ObjectMapper();
         List<ExclusionEventAction> exclusionEventActions = new ArrayList<>();
@@ -80,7 +81,7 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
             if (this.shouldActionEvent(document)) {
                 ModuleMetaData moduleMetaData = super.getModuleMetaData(document.getModuleName());
                 boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), document.getModuleName(),
-                    document.getFlowName(), action, this.getErrorUri(document.getId()));
+                    document.getFlowName(), action, this.getErrorUri(document.getId()), authentication.getName());
 
                 if (!result) {
                     current.access(() ->

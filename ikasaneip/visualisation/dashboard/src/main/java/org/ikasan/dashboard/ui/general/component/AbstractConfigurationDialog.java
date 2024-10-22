@@ -158,13 +158,15 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
             try
             {
                 this.configurationRestService.delete(module.getUrl(), this.configurationMetaData.getConfigurationId());
-                NotificationHelper.showUserNotification(getTranslation("message.successfully-deleted-configuration", UI.getCurrent().getLocale()));
+                NotificationHelper.showUserNotification(getTranslation("message.successfully-deleted-configuration"
+                    , UI.getCurrent().getLocale()));
                 this.close();
             }
             catch (Exception e)
             {
                 e.printStackTrace();
-                NotificationHelper.showUserNotification(getTranslation("error.could-not-delete-configuration", UI.getCurrent().getLocale()));
+                NotificationHelper.showUserNotification(getTranslation("error.could-not-delete-configuration"
+                    , UI.getCurrent().getLocale()));
             }
         });
 

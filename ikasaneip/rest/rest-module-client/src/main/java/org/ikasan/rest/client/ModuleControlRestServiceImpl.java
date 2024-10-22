@@ -1,6 +1,7 @@
 package org.ikasan.rest.client;
 
 import org.ikasan.rest.client.dto.*;
+import org.ikasan.rest.client.util.UserUtil;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestClientException;
 
 import java.util.HashMap;
@@ -76,7 +78,7 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
     }
 
     @Override
-    public boolean changeModuleActivationState(String contextUrl, String moduleName, String action)
+    public boolean changeModuleActivationState(String contextUrl, String moduleName, String action, String username)
     {
         ModuleActivationDto activationDto = new ModuleActivationDto();
         activationDto.setAction(action);
@@ -120,9 +122,9 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
     }
 
     @Override
-    public boolean changeFlowState(String contextUrl, String moduleName, String flowName, String action)
+    public boolean changeFlowState(String contextUrl, String moduleName, String flowName, String action, String username)
     {
-        ChangeFlowStateDto dto = new ChangeFlowStateDto(moduleName,flowName,action);
+        ChangeFlowStateDto dto = new ChangeFlowStateDto(moduleName, flowName, action, username);
         HttpHeaders headers = createHttpHeaders();
         HttpEntity entity = new HttpEntity(dto,headers);
         String url = contextUrl+CHANGE_FLOW_STATE_URL;
@@ -144,9 +146,9 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
 
     @Override
     public boolean changeFlowStartupType(String contextUrl, String moduleName, String flowName, String startupType,
-                                         String comment)
+                                         String comment, String username)
     {
-        ChangeFlowStartupModeDto dto = new ChangeFlowStartupModeDto(moduleName, flowName, startupType, comment);
+        ChangeFlowStartupModeDto dto = new ChangeFlowStartupModeDto(moduleName, flowName, startupType, comment, username);
         HttpHeaders headers = createHttpHeaders();
         HttpEntity entity = new HttpEntity(dto, headers);
         String url = contextUrl + CHANGE_FLOW_STARTUP_MODE_URL;

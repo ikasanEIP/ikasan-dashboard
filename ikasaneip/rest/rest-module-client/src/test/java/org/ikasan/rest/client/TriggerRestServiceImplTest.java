@@ -44,7 +44,7 @@ public class TriggerRestServiceImplTest
     @Test
     public void create() throws JsonProcessingException
     {
-        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100" );
+        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100", "user");
 
         stubFor(put(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL))
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -61,7 +61,7 @@ public class TriggerRestServiceImplTest
     @Test
     public void createreturns400() throws JsonProcessingException
     {
-        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100" );
+        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100", "user");
 
         stubFor(put(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL))
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -76,7 +76,7 @@ public class TriggerRestServiceImplTest
     @Test
     public void resubmit_returns404() throws JsonProcessingException
     {
-        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100" );
+        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100", "user");
 
         stubFor(put(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL))
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -93,7 +93,7 @@ public class TriggerRestServiceImplTest
     public void resubmit_returns500() throws JsonProcessingException
     {
 
-        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100" );
+        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100", "user");
 
         stubFor(put(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -140,7 +140,7 @@ public class TriggerRestServiceImplTest
 
         uut = new TriggerRestServiceImpl(environment, httpComponentsClientHttpRequestFactory);
 
-        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100" );
+        TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100", "user");
 
         stubFor(put(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))

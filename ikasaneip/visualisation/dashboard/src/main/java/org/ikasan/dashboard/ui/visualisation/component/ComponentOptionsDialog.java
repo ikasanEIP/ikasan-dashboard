@@ -16,6 +16,7 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.model.flow.AbstractWiretapNode;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.rest.client.dto.TriggerDto;
+import org.ikasan.rest.client.util.UserUtil;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
@@ -205,8 +206,7 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
 
     private void createTrigger(String relationship, String job, String ttl) {
         TriggerDto triggeDto = new TriggerDto(this.module.getName(), this.flowName, this.componentName, relationship,
-            job, ttl
-        );
+            job, ttl, UserUtil.getUser());
         boolean success = this.triggerRestService.create(this.module.getUrl(), triggeDto);
         if (success) {
             this.updateDiagramState(job, relationship);

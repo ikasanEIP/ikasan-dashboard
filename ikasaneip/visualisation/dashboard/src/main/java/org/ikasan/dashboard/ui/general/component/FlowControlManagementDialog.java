@@ -19,6 +19,8 @@ import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.spec.module.StartupType;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -109,6 +111,7 @@ public class FlowControlManagementDialog extends Dialog
             .findFirst()
             .ifPresent(flow -> binder.setBean(flow));
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
            BinderValidationStatus<Flow> binderValidationStatus = binder.validate();
@@ -116,7 +119,8 @@ public class FlowControlManagementDialog extends Dialog
            if(binderValidationStatus.isOk()) {
                this.flows.forEach(flow -> {
                    this.moduleControlService.changeFlowStartupType(module.getUrl(), module.getName(), flow.getName(),
-                       startupTypeCombo.getValue().name().toLowerCase(), startupTypeCombo.getValue() == StartupType.DISABLED ? textArea.getValue() : "");
+                       startupTypeCombo.getValue().name().toLowerCase(), startupTypeCombo.getValue() == StartupType.DISABLED ? textArea.getValue() : "",
+                       authentication.getName());
 
                    flow.setStartupType(startupTypeCombo.getValue());
                    flow.setStartupComment(startupTypeCombo.getValue() == StartupType.DISABLED ? textArea.getValue() : "");

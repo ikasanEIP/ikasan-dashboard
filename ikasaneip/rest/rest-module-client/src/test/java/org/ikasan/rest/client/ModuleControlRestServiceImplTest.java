@@ -9,6 +9,7 @@ import org.apache.hc.core5.util.Timeout;
 import org.ikasan.rest.client.dto.FlowDto;
 import org.ikasan.rest.client.dto.FlowStartupTypeDto;
 import org.ikasan.rest.client.dto.ModuleDto;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,7 +20,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -41,7 +45,11 @@ public class ModuleControlRestServiceImplTest
         contexBaseUrl = "http://localhost:" + wireMockRule.port();
         Environment environment = new StandardEnvironment();
         uut = new ModuleControlRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
-
+        SecurityContextHolder
+            .setContext(new SecurityContextImpl(
+                new IkasanAuthentication(true, () -> "testUser"
+                    , List.of(), "credentials"
+                    , System.currentTimeMillis())));
     }
 
     @Test
@@ -122,7 +130,7 @@ public class ModuleControlRestServiceImplTest
                 .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                 .withStatus(200)
             ));
-        boolean result = uut.changeModuleActivationState(contexBaseUrl,"test Module Name","activate");
+        boolean result = uut.changeModuleActivationState(contexBaseUrl,"test Module Name","activate", "username");
         assertEquals(true, result);
     }
 
@@ -136,7 +144,7 @@ public class ModuleControlRestServiceImplTest
                 .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                 .withStatus(200)
             ));
-        boolean result = uut.changeModuleActivationState(contexBaseUrl,"test Module Name","deactivate");
+        boolean result = uut.changeModuleActivationState(contexBaseUrl,"test Module Name","deactivate", "username");
         assertEquals(true, result);
     }
 
@@ -150,7 +158,7 @@ public class ModuleControlRestServiceImplTest
                 .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                 .withStatus(HttpStatus.FORBIDDEN.value())
             ));
-        boolean result = uut.changeModuleActivationState(contexBaseUrl,"test Module Name","deactivate");
+        boolean result = uut.changeModuleActivationState(contexBaseUrl,"test Module Name","deactivate", "username");
         assertEquals(false, result);
     }
 
@@ -206,12 +214,12 @@ public class ModuleControlRestServiceImplTest
         stubFor(put(urlEqualTo(ModuleControlRestServiceImpl.CHANGE_FLOW_STATE_URL))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
-            .withRequestBody(containing("{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"action\":\"start\"}"))
+            .withRequestBody(containing("{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"action\":\"start\",\"username\":\"testUser\"}"))
             .willReturn(aResponse()
                 .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                 .withStatus(200)
             ));
-        boolean result = uut.changeFlowState(contexBaseUrl,"test Module Name","flow Test","start");
+        boolean result = uut.changeFlowState(contexBaseUrl,"test Module Name","flow Test","start", "username");
         assertEquals(true, result);
     }
 
@@ -222,12 +230,12 @@ public class ModuleControlRestServiceImplTest
         stubFor(put(urlEqualTo(ModuleControlRestServiceImpl.CHANGE_FLOW_STATE_URL))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
-            .withRequestBody(containing("{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"action\":\"T\"}"))
+            .withRequestBody(containing("{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"action\":\"T\",\"username\":\"testUser\"}"))
             .willReturn(aResponse()
                 .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                 .withStatus(400)
             ));
-        boolean result = uut.changeFlowState(contexBaseUrl,"test Module Name","flow Test","T");
+        boolean result = uut.changeFlowState(contexBaseUrl,"test Module Name","flow Test","T", "username");
         assertEquals(false, result);
     }
 
@@ -238,12 +246,12 @@ public class ModuleControlRestServiceImplTest
         stubFor(put(urlEqualTo(ModuleControlRestServiceImpl.CHANGE_FLOW_STARTUP_MODE_URL))
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
-                    .withRequestBody(containing("{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"startupType\":\"automatic\",\"comment\":null}"))
+                    .withRequestBody(containing("{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"startupType\":\"automatic\",\"comment\":null,\"username\":\"testUser\"}"))
                     .willReturn(aResponse()
                                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                                     .withStatus(200)
                                ));
-        boolean result = uut.changeFlowStartupType(contexBaseUrl,"test Module Name","flow Test","automatic",null);
+        boolean result = uut.changeFlowStartupType(contexBaseUrl,"test Module Name","flow Test","automatic",null, "username");
         assertEquals(true, result);
     }
 

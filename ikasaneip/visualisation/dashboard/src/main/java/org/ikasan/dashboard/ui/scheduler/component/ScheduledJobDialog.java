@@ -562,8 +562,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
 
                 // We need to deactivate and activate the module so the new flow is initialised
-                this.changeActivation("deactivate");
-                this.changeActivation("activate");
+                this.changeActivation("deactivate", SecurityContextHolder.getContext().getAuthentication().getName());
+                this.changeActivation("activate", SecurityContextHolder.getContext().getAuthentication().getName());
             }
 
             // Load the required configurations for a scheduled job.
@@ -621,12 +621,14 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
                 });
 
                 this.moduleControlRestService.changeFlowStartupType(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
-                    , startupType, "Scheduler flow requires automatic startup.");
+                    , startupType, "Scheduler flow requires automatic startup.", SecurityContextHolder.getContext().getAuthentication().getName());
             }
 
             // In order for the configuration to be applied the flow must be stopped and started.
-            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "stop");
-            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "start");
+            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName()
+                , scheduleProcessAggregateConfiguration.getJobName(), "stop", SecurityContextHolder.getContext().getAuthentication().getName());
+            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName()
+                , scheduleProcessAggregateConfiguration.getJobName(), "start", SecurityContextHolder.getContext().getAuthentication().getName());
         }
         catch (Exception e) {
             // If any exceptions occur we are going to remove the job that we attempted to create.
@@ -648,8 +650,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
 
                 // We need to deactivate and activate the module so the new flow is removed when initialisation occurs.
-                this.changeActivation("deactivate");
-                this.changeActivation("activate");
+                this.changeActivation("deactivate", SecurityContextHolder.getContext().getAuthentication().getName());
+                this.changeActivation("activate", SecurityContextHolder.getContext().getAuthentication().getName());
             }
 
             throw e;
@@ -661,8 +663,9 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      *
      * @param action
      */
-    private void changeActivation(String action) {
-        boolean success = this.moduleControlRestService.changeModuleActivationState(this.agent.getUrl(), this.agent.getName(), action);
+    private void changeActivation(String action, String username) {
+        boolean success = this.moduleControlRestService
+            .changeModuleActivationState(this.agent.getUrl(), this.agent.getName(), action, username);
         if (!success) {
             throw new RuntimeException(String.format("Could not %s agent[%s]", action, agent));
         }
@@ -902,7 +905,6 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         dateTimeRange.startDate = new DatePicker(getTranslation("label.start-date", UI.getCurrent().getLocale()));
         dateTimeRange.startDate.setId("dateTimeRange.startDate"+this.dateTimeRanges.size());
         dateTimeRange.startDate.setEnabled(this.enabled);
-//        dateTimeRange.startDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
         dateTimeRange.startDate.setErrorMessage(getTranslation("error.missing-start-date", UI.getCurrent().getLocale()));
         dateTimeRange.startDate.setLocale(UI.getCurrent().getLocale());
         if(startMilli > 0) {
@@ -922,7 +924,6 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         dateTimeRange.endDate = new DatePicker(getTranslation("label.end-date", UI.getCurrent().getLocale()));
         dateTimeRange.endDate.setId("dateTimeRange.endDate"+this.dateTimeRanges.size());
         dateTimeRange.endDate.setEnabled(this.enabled);
-//        dateTimeRange.endDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
         dateTimeRange.endDate.setErrorMessage(getTranslation("error.missing-end-date", UI.getCurrent().getLocale()));
         dateTimeRange.endDate.setLocale(UI.getCurrent().getLocale());
         if(endMilli > 0) {
