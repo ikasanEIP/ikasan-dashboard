@@ -196,7 +196,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
 
                     ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());
                     boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanSolrDocument.getModuleName(),
-                        ikasanSolrDocument.getFlowName(), "resubmit", this.getErrorUri(ikasanSolrDocument.getId()));
+                        ikasanSolrDocument.getFlowName(), "resubmit", this.getErrorUri(ikasanSolrDocument.getId()), authentication.getName());
 
                     if(!result)
                     {
@@ -244,7 +244,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
 
                     ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());
                     boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanSolrDocument.getModuleName(),
-                        ikasanSolrDocument.getFlowName(), "ignore", this.getErrorUri(ikasanSolrDocument.getId()));
+                        ikasanSolrDocument.getFlowName(), "ignore", this.getErrorUri(ikasanSolrDocument.getId()), authentication.getName());
 
                     if(!result)
                     {

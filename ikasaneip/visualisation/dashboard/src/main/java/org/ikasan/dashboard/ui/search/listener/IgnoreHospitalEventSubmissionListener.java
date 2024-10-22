@@ -109,7 +109,7 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                             resubmissionEvents.sort(Comparator.comparingLong(IkasanSolrDocument::getTimestamp));
 
                             exclusionEventActions = super.actionHospitalEvents(resubmissionEvents, exclusionEventAction, progressIndicatorDialog,
-                                "ignore", authentication.getName(), current);
+                                "ignore", authentication.getName(), current, authentication);
 
                             if (exclusionEventActions.size() > 0) {
                                 hospitalAuditService.save(exclusionEventActions);
@@ -129,7 +129,7 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
                                     .collect(Collectors.toList());
 
                                 exclusionEventActions = super.actionHospitalEvents(resubmissionEvents, exclusionEventAction, progressIndicatorDialog,
-                                    "ignore", authentication.getName(), current);
+                                    "ignore", authentication.getName(), current, authentication);
 
                                 if (exclusionEventActions.size() > 0) {
                                     hospitalAuditService.save(exclusionEventActions);

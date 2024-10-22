@@ -24,9 +24,12 @@ import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeListener;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -237,6 +240,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
     protected void performAction(ProgressIndicatorDialog progressIndicatorDialog, String action)
     {
         final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ControlPanel"));
         executor.execute(() -> {
             try
@@ -246,7 +250,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
                 if(action.equals(ControlPanel.START))
                 {
                     if(this.moduleControlRestService.changeFlowState(module.getUrl(),
-                        module.getName(), currentFlow.getName(), "start"))
+                        module.getName(), currentFlow.getName(), "start", authentication.getName()))
                     {
                         state = State.RUNNING_STATE;
                         FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
@@ -262,7 +266,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
                 else if(action.equals(ControlPanel.STOP))
                 {
                     if(this.moduleControlRestService.changeFlowState(module.getUrl(),
-                        module.getName(), currentFlow.getName(), "stop"))
+                        module.getName(), currentFlow.getName(), "stop", authentication.getName()))
                     {
                         state = State.STOPPED_STATE;
                         FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
@@ -278,7 +282,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
                 else if(action.equals(ControlPanel.PAUSE))
                 {
                     if(this.moduleControlRestService.changeFlowState(module.getUrl(),
-                        module.getName(), currentFlow.getName(), "pause"))
+                        module.getName(), currentFlow.getName(), "pause", authentication.getName()))
                     {
                         state = State.PAUSED_STATE;
                         FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
@@ -294,7 +298,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
                 else if(action.equals(ControlPanel.START_PAUSE))
                 {
                     if(this.moduleControlRestService.changeFlowState(module.getUrl(),
-                        module.getName(), currentFlow.getName(), "startPause"))
+                        module.getName(), currentFlow.getName(), "startPause", authentication.getName()))
                     {
                         state = State.START_PAUSE_STATE;
                         FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));

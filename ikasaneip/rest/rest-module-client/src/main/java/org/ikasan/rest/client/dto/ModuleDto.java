@@ -9,8 +9,6 @@ public class ModuleDto implements Serializable
     private String name;
     private List<FlowDto> flows;
 
-
-
     public String getName()
     {
         return name;

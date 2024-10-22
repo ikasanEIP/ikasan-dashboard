@@ -9,17 +9,19 @@ public class ResubmissionRequestDto implements Serializable
     private String flowName;
     private String errorUri;
     private String action;
+    private String userName;
 
     public ResubmissionRequestDto(){
 
     }
 
-    public ResubmissionRequestDto(String moduleName, String flowName, String errorUri, String action)
+    public ResubmissionRequestDto(String moduleName, String flowName, String errorUri, String action, String userName)
     {
         this.moduleName = moduleName;
         this.flowName = flowName;
         this.errorUri = errorUri;
         this.action = action;
+        this.userName = userName;
     }
 
     public String getModuleName()
@@ -60,6 +62,14 @@ public class ResubmissionRequestDto implements Serializable
     public void setErrorUri(String errorUri)
     {
         this.errorUri = errorUri;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     @Override
