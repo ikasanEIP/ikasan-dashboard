@@ -108,7 +108,7 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                             resubmitCount.set(resubmissionEvents.size());
 
                             exclusionEventActions = super.actionHospitalEvents(resubmissionEvents, exclusionEventAction, progressIndicatorDialog,
-                                "resubmit", authentication.getName(), current);
+                                "resubmit", authentication.getName(), current, authentication);
 
                             if (exclusionEventActions.size() > 0) {
                                 hospitalAuditService.save(exclusionEventActions);
@@ -133,7 +133,7 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                                 resubmitCount.set(resubmitCount.get()+ resubmissionEvents.size());
 
                                 exclusionEventActions = super.actionHospitalEvents(resubmissionEvents, exclusionEventAction, progressIndicatorDialog,
-                                    "resubmit", authentication.getName(), current);
+                                    "resubmit", authentication.getName(), current, authentication);
 
                                 if (exclusionEventActions.size() > 0) {
                                     hospitalAuditService.save(exclusionEventActions);

@@ -1,6 +1,7 @@
 package org.ikasan.rest.client;
 
 import org.ikasan.rest.client.dto.ResubmissionRequestDto;
+import org.ikasan.rest.client.util.UserUtil;
 import org.ikasan.spec.module.client.ResubmissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +24,9 @@ public class ResubmissionRestServiceImpl extends ModuleRestService implements Re
     }
 
     @Override
-    public boolean resubmit(String contextUrl, String moduleName, String flowName, String action, String errorUri)
+    public boolean resubmit(String contextUrl, String moduleName, String flowName, String action, String errorUri, String username)
     {
-        ResubmissionRequestDto dto = new ResubmissionRequestDto(moduleName, flowName, errorUri, action);
+        ResubmissionRequestDto dto = new ResubmissionRequestDto(moduleName, flowName, errorUri, action, username);
         HttpHeaders headers = createHttpHeaders();
         HttpEntity entity = new HttpEntity(dto, headers);
         String url = contextUrl + RESUBMSSION_URL;

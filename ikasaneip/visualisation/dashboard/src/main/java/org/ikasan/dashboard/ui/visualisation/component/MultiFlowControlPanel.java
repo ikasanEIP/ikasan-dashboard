@@ -14,6 +14,8 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collection;
 import java.util.concurrent.Executor;
@@ -74,6 +76,7 @@ public class MultiFlowControlPanel extends ControlPanel {
     {
         final UI current = UI.getCurrent();
         final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("MultiFlowControlPanel"));
         executor.execute(() -> {
             try
@@ -84,7 +87,7 @@ public class MultiFlowControlPanel extends ControlPanel {
                 {
                     flows.forEach(flow -> {
                         if(this.moduleControlRestService.changeFlowState(module.getUrl(),
-                            module.getName(), flow.getName(), "start"))
+                            module.getName(), flow.getName(), "start", authentication.getName()))
                         {
                             state.set(State.RUNNING_STATE);
                             FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
@@ -102,7 +105,7 @@ public class MultiFlowControlPanel extends ControlPanel {
                 {
                     flows.forEach(flow -> {
                     if(this.moduleControlRestService.changeFlowState(module.getUrl(),
-                        module.getName(), flow.getName(), "stop"))
+                        module.getName(), flow.getName(), "stop", authentication.getName()))
                     {
                         state.set(State.STOPPED_STATE);
                         FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
@@ -119,7 +122,7 @@ public class MultiFlowControlPanel extends ControlPanel {
                 {
                     flows.forEach(flow -> {
                         if(this.moduleControlRestService.changeFlowState(module.getUrl(),
-                            module.getName(), flow.getName(), "pause"))
+                            module.getName(), flow.getName(), "pause", authentication.getName()))
                         {
                             state.set(State.PAUSED_STATE);
                             FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
@@ -137,7 +140,7 @@ public class MultiFlowControlPanel extends ControlPanel {
                 {
                     flows.forEach(flow -> {
                         if(this.moduleControlRestService.changeFlowState(module.getUrl(),
-                            module.getName(), flow.getName(), "startPause"))
+                            module.getName(), flow.getName(), "startPause", authentication.getName()))
                         {
                             state.set(State.START_PAUSE_STATE);
                             FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));

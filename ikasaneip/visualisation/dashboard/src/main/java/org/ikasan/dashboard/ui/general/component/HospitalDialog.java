@@ -190,7 +190,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                     {
                         ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());
                         boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanSolrDocument.getModuleName(),
-                            ikasanSolrDocument.getFlowName(), "resubmit", this.getErrorUri(ikasanSolrDocument.getId()));
+                            ikasanSolrDocument.getFlowName(), "resubmit", this.getErrorUri(ikasanSolrDocument.getId()), authentication.getName());
 
                         if(!result)
                         {
@@ -244,7 +244,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                     {
                         ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());
                         boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanSolrDocument.getModuleName(),
-                            ikasanSolrDocument.getFlowName(), "ignore", this.getErrorUri(ikasanSolrDocument.getId()));
+                            ikasanSolrDocument.getFlowName(), "ignore", this.getErrorUri(ikasanSolrDocument.getId()), authentication.getName());
 
                         if(!result)
                         {

@@ -3,6 +3,7 @@ package org.ikasan.rest.client;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
 import org.ikasan.rest.client.dto.ReplayRequestDto;
+import org.ikasan.rest.client.util.UserUtil;
 import org.ikasan.spec.module.client.ReplayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class ReplayRestServiceImpl implements ReplayService
     public boolean replay(String contextUrl, String username, String password, String moduleName, String flowName,
                           byte[] event)
     {
-        ReplayRequestDto dto = new ReplayRequestDto(moduleName, flowName, event);
+        ReplayRequestDto dto = new ReplayRequestDto(moduleName, flowName, event, username);
         HttpHeaders headers = createHttpHeaders(username, password);
         HttpEntity entity = new HttpEntity(dto, headers);
         String url = contextUrl + REPLAY_URL;

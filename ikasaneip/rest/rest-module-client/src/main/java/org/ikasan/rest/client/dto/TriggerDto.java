@@ -11,13 +11,14 @@ public class TriggerDto implements Serializable
     private String relationship;
     private String jobType;
     private String timeToLive;
+    private String userName;
 
     public TriggerDto()
     {
     }
 
     public TriggerDto(String moduleName, String flowName, String flowElementName, String relationship, String jobType,
-                      String timeToLive)
+                      String timeToLive, String userName)
     {
         this.moduleName = moduleName;
         this.flowName = flowName;
@@ -25,6 +26,7 @@ public class TriggerDto implements Serializable
         this.relationship = relationship;
         this.jobType = jobType;
         this.timeToLive = timeToLive;
+        this.userName = userName;
     }
 
     public String getModuleName()
@@ -85,6 +87,14 @@ public class TriggerDto implements Serializable
     public void setTimeToLive(String timeToLive)
     {
         this.timeToLive = timeToLive;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     @Override

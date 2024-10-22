@@ -114,7 +114,8 @@ public class HospitalViewTest extends UITest {
         Mockito.when(moduleMetaData.getUrl())
             .thenReturn("http://dashboard.com:9090");
 
-        Mockito.when(this.resubmissionRestService.resubmit(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(this.resubmissionRestService.resubmit(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()
+                , Mockito.anyString(), Mockito.anyString(), "username"))
             .thenReturn(true);
 
         UI.getCurrent().navigate("exclusion/12345");
@@ -169,7 +170,8 @@ public class HospitalViewTest extends UITest {
         Mockito.when(moduleMetaData.getUrl())
             .thenReturn("http://dashboard.com:9090");
 
-        Mockito.when(this.resubmissionRestService.resubmit(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(this.resubmissionRestService.resubmit(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()
+                , Mockito.anyString(), Mockito.anyString(), "username"))
             .thenReturn(true);
 
         UI.getCurrent().navigate("exclusion/12345");
