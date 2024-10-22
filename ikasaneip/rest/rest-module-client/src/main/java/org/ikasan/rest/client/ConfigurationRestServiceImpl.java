@@ -105,9 +105,10 @@ public class ConfigurationRestServiceImpl extends ModuleRestService implements C
     }
 
     @Override
-    public boolean storeConfiguration(String contextUrl, ConfigurationMetaData configuration)
+    public boolean storeConfiguration(String contextUrl, ConfigurationMetaData configuration, String username)
     {
-        HttpHeaders headers = createHttpHeaders();
+        HttpHeaders headers =   createHttpHeaders();
+        headers.set("username", username);
         HttpEntity entity = new HttpEntity(configuration, headers);
         String url = contextUrl + PUT_CONFIGURATION_URL;
         try
@@ -124,14 +125,15 @@ public class ConfigurationRestServiceImpl extends ModuleRestService implements C
     }
 
     @Override
-    public boolean delete(String contextUrl, String configurationId)
+    public boolean delete(String contextUrl, String configurationId, String username)
     {
         HttpHeaders headers = createHttpHeaders();
+        headers.set("username", username);
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl + DELETE_CONFIGURATION_URL;
         try
         {
-            Map<String, String> parameters = new HashMap<String, String>()
+            Map<String, String> parameters = new HashMap<>()
             {{put("configurationId", configurationId);}};
 
             restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class,parameters);
