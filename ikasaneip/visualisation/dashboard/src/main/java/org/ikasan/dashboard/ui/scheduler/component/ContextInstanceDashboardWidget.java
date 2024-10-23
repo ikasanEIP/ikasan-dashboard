@@ -344,14 +344,14 @@ public class ContextInstanceDashboardWidget extends Div
             getUI().ifPresent(ui -> ui.getPage().open(route));
         });
 
-        Button refresh = new Button("Refresh", VaadinIcon.REFRESH.create());
+        Button refresh = new Button(getTranslation("button.refresh"), VaadinIcon.REFRESH.create());
         refresh.getElement().getStyle().set("cursor", "pointer");
         refresh.setIconAfterText(true);
         refresh.addClickListener(event -> {
             this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
         });
 
-        Button clearFiltersButton = new Button("Clear Filters", VaadinIcon.FILTER.create());
+        Button clearFiltersButton = new Button(getTranslation("button.clear-filters"), VaadinIcon.FILTER.create());
         clearFiltersButton.setIconAfterText(true);
         clearFiltersButton.getElement().getStyle().set("cursor", "pointer");
         clearFiltersButton.addClickListener(event -> {
@@ -415,13 +415,13 @@ public class ContextInstanceDashboardWidget extends Div
             getUI().ifPresent(ui -> ui.getPage().open(route));
         });
 
-        Button refresh = new Button("Refresh", VaadinIcon.REFRESH.create());
+        Button refresh = new Button(getTranslation("button.refresh"), VaadinIcon.REFRESH.create());
         refresh.setIconAfterText(true);
         refresh.addClickListener(event -> {
             this.preparedFutureContextInstanceGrid.getDataProvider().refreshAll();
         });
 
-        Button clearFiltersButton = new Button("Clear Filters", VaadinIcon.FILTER.create());
+        Button clearFiltersButton = new Button(getTranslation("button.clear-filters"), VaadinIcon.FILTER.create());
         clearFiltersButton.setIconAfterText(true);
         clearFiltersButton.addClickListener(event -> {
             this.preparedContextNameTf.setValue("");
@@ -465,7 +465,7 @@ public class ContextInstanceDashboardWidget extends Div
             getUI().ifPresent(ui -> ui.getPage().open(route));
         });
 
-        Button refresh = new Button("Refresh", VaadinIcon.REFRESH.create());
+        Button refresh = new Button(getTranslation("button.refresh"), VaadinIcon.REFRESH.create());
         refresh.setIconAfterText(true);
         refresh.addClickListener(event -> {
             this.completedContextInstanceGrid.getDataProvider().refreshAll();
@@ -801,7 +801,7 @@ public class ContextInstanceDashboardWidget extends Div
                 }
                 return horizontalLayout;
             })).setFlexGrow(2)
-            .setKey("repeatingJobsSuccess").setHeader("Repeating Jobs");
+            .setKey("repeatingJobsSuccess").setHeader(getTranslation("header.repeating-jobs"));
         contextInstanceAggregateJobStatusGrid.addColumn(new ComponentRenderer<>(contextInstanceAggregateJobStatus -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
                 horizontalLayout.setId("repeatingJobErrorsButtonLayout");
