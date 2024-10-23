@@ -427,6 +427,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     , UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog.delete-context-template-body"
                     , UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
                 confirmDialog.addConfirmListener(confirmEvent -> {
                     ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
@@ -524,6 +526,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.enable-scheduled-jobs-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog.enable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
                 confirmDialog.open();
 
@@ -556,6 +560,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.disable-scheduled-jobs-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog.disable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
                 confirmDialog.open();
 
@@ -761,6 +767,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.create-new-context-instance-header", UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
 
                 Checkbox modifyParams = new Checkbox(getTranslation("label.update-params-prior-to-initiating-job-plan-instance", UI.getCurrent().getLocale()));
                 VerticalLayout verticalLayout = new VerticalLayout();
@@ -879,6 +887,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm.enable-context-header", UI.getCurrent().getLocale()));
                     confirmDialog.setText(getTranslation("confirm.enable-context-body", UI.getCurrent().getLocale()));
+                    confirmDialog.setConfirmText(getTranslation("button.ok"));
+                    confirmDialog.setCancelText(getTranslation("button.cancel"));
                     confirmDialog.setCancelable(true);
                     confirmDialog.open();
 
@@ -939,6 +949,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm.disable-context-header", UI.getCurrent().getLocale()));
                     confirmDialog.setText(getTranslation("confirm.disable-context-body", UI.getCurrent().getLocale()));
+                    confirmDialog.setConfirmText(getTranslation("button.ok"));
+                    confirmDialog.setCancelText(getTranslation("button.cancel"));
                     confirmDialog.setCancelable(true);
                     confirmDialog.open();
 

@@ -472,6 +472,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("header.save-required", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("label.unsaved-diagram", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 

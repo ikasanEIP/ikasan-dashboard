@@ -428,6 +428,8 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.header-delete-job-lock", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.body-delete-job-lock", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 

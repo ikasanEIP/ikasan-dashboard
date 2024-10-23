@@ -1055,6 +1055,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 
@@ -1135,6 +1137,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 confirmDialog.setHeader(getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(String.format(getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale())
                     , jobsToReleaseWithinContext.size()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
                 confirmDialog.open();
 
@@ -1198,6 +1202,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.skip-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.skip-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 
@@ -1250,6 +1256,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.enable-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.enable-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 
@@ -1364,7 +1372,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog-header.skip-job", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog-text.skip-job", UI.getCurrent().getLocale()));
-
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
 
                 confirmDialog.open();
@@ -1391,7 +1400,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog-header.enable-job", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog-text.enable-job", UI.getCurrent().getLocale()));
-
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
 
                 confirmDialog.open();
@@ -1419,7 +1429,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog-header.hold-job", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog-text.hold-job", UI.getCurrent().getLocale()));
-
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
 
                 confirmDialog.open();
@@ -1447,7 +1458,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog-header.release-job", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog-text.release-job", UI.getCurrent().getLocale()));
-
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
 
                 confirmDialog.open();
@@ -1481,7 +1493,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-file-job", UI.getCurrent().getLocale()));
                     confirmDialog.setText(getTranslation("confirm-dialog-text.submit-file-job", UI.getCurrent().getLocale()));
-
+                    confirmDialog.setConfirmText(getTranslation("button.ok"));
+                    confirmDialog.setCancelText(getTranslation("button.cancel"));
                     confirmDialog.setCancelable(true);
 
                     confirmDialog.open();
@@ -1512,7 +1525,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-quartz-job", UI.getCurrent().getLocale()));
                     confirmDialog.setText(getTranslation("confirm-dialog-text.submit-quartz-job", UI.getCurrent().getLocale()));
-
+                    confirmDialog.setConfirmText(getTranslation("button.ok"));
+                    confirmDialog.setCancelText(getTranslation("button.cancel"));
                     confirmDialog.setCancelable(true);
 
                     confirmDialog.open();
@@ -1542,7 +1556,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-global-job", UI.getCurrent().getLocale()));
                     confirmDialog.setText(getTranslation("confirm-dialog-text.submit-global-job", UI.getCurrent().getLocale()));
-
+                    confirmDialog.setConfirmText(getTranslation("button.ok"));
+                    confirmDialog.setCancelText(getTranslation("button.cancel"));
                     confirmDialog.setCancelable(true);
 
                     confirmDialog.open();
@@ -1576,7 +1591,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-local-job", UI.getCurrent().getLocale()));
                     confirmDialog.setText(getTranslation("confirm-dialog-text.submit-local-job", UI.getCurrent().getLocale()));
-
+                    confirmDialog.setConfirmText(getTranslation("button.ok"));
+                    confirmDialog.setCancelText(getTranslation("button.cancel"));
                     confirmDialog.setCancelable(true);
 
                     confirmDialog.open();
@@ -1748,7 +1764,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.reset-job-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog.reset-job-body", UI.getCurrent().getLocale()));
-
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
 
                 confirmDialog.open();

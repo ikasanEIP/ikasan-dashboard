@@ -322,7 +322,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.hold-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.hold-job", UI.getCurrent().getLocale()));
-
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();
@@ -346,7 +347,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.release-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.release-job", UI.getCurrent().getLocale()));
-
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();
@@ -370,7 +372,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.skip-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.skip-job", UI.getCurrent().getLocale()));
-
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();
@@ -394,7 +397,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.enable-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.enable-job", UI.getCurrent().getLocale()));
-
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();
@@ -450,7 +454,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             confirmDialog.setCancelable(true);
             confirmDialog.setHeader(getTranslation("confirm-dialog.downstream-job-initiation-header"
                 , UI.getCurrent().getLocale()));
-
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             VerticalLayout verticalLayout = new VerticalLayout();
             initiationEvents.forEach(initiationEvent -> {
                 Div jobName = new Div();
@@ -492,7 +497,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.reset-job-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.reset-job-body", UI.getCurrent().getLocale()));
-
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();

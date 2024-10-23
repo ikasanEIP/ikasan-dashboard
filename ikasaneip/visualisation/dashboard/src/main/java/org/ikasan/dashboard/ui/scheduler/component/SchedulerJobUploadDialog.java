@@ -198,6 +198,8 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
         ConfirmDialog confirmDialog = new ConfirmDialog();
         confirmDialog.setHeader(getTranslation("confirm-dialog.job-exists-header", UI.getCurrent().getLocale()));
         confirmDialog.setText(getTranslation("confirm-dialog.job-exists-text", UI.getCurrent().getLocale()));
+        confirmDialog.setConfirmText(getTranslation("button.ok"));
+        confirmDialog.setCancelText(getTranslation("button.cancel"));
         confirmDialog.setCancelable(true);
         confirmDialog.open();
         confirmDialog.addConfirmListener(event -> this.saveJob(schedulerJob, actor));
