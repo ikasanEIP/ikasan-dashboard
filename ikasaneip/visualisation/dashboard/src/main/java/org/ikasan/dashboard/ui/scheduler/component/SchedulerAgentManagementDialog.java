@@ -148,7 +148,8 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         confirmDialog.setCancelable(true);
         confirmDialog.setHeader(getTranslation("confirm-dialog.provision-job-header", UI.getCurrent().getLocale()));
         confirmDialog.setText(getTranslation("confirm-dialog.provision-job-body", UI.getCurrent().getLocale()));
-
+        confirmDialog.setConfirmText(getTranslation("button.ok"));
+        confirmDialog.setCancelText(getTranslation("button.cancel"));
         confirmDialog.open();
 
         confirmDialog.addConfirmListener(confirmEvent -> {

@@ -876,6 +876,8 @@ public class ContextInstanceWidget extends VerticalLayout
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.enable-scheduled-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.enable-scheduled-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 
@@ -914,6 +916,8 @@ public class ContextInstanceWidget extends VerticalLayout
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.disable-scheduled-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.disable-scheduled-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 
@@ -958,6 +962,8 @@ public class ContextInstanceWidget extends VerticalLayout
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.end-job-plan-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.end-job-plan-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 
@@ -989,6 +995,8 @@ public class ContextInstanceWidget extends VerticalLayout
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.ignore-job-plan-duration-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.ignore-job-plan-duration-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 
@@ -1024,6 +1032,8 @@ public class ContextInstanceWidget extends VerticalLayout
             actionPopup.close();
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.reset-context", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
 
             Checkbox hold = new Checkbox(getTranslation("label.hold-all-command-execution-jobs", UI.getCurrent().getLocale()));
             Checkbox initiateSameParams = new Checkbox(getTranslation("label.initiate-job-plan-instance-with-same-params", UI.getCurrent().getLocale()));

@@ -105,6 +105,8 @@ public class DownloadModulesLogDialog extends AbstractCloseableResizableDialog {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("header.cannot-download-log-file", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("paragraph.download-module-log-file", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(false);
             confirmDialog.open();
         } else{

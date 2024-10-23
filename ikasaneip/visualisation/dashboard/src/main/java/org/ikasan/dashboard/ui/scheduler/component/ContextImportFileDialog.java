@@ -108,6 +108,8 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
             }
 
             confirmDialog.setText(getTranslation("confirm-dialog.provision-context-job-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
 
             confirmDialog.open();
             confirmDialog.addConfirmListener(confirmEvent -> {

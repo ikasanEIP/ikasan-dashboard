@@ -380,6 +380,8 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
             verticalLayout.add(jobName);
         });
         confirmDialog.setText(verticalLayout);
+        confirmDialog.setConfirmText(getTranslation("button.ok"));
+        confirmDialog.setCancelText(getTranslation("button.cancel"));
 
         confirmDialog.open();
 

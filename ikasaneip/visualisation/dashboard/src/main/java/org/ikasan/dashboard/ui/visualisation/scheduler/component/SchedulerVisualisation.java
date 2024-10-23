@@ -294,6 +294,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("header.save-required", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("label.unsaved-diagram", UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
                 confirmDialog.open();
 
@@ -539,7 +541,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             message.append("<p style=\"color:red\">" + getTranslation("error-dialog-body.cannot-add-context", UI.getCurrent().getLocale()) +
                 "</p>");
             errorDialog.setText(new Html("<div>"+message.toString()+"</div>"));
-            errorDialog.setConfirmText(getTranslation("button.ok", UI.getCurrent().getLocale()));
+            errorDialog.setConfirmText(getTranslation("button.ok"));
+            errorDialog.setCancelText(getTranslation("button.cancel"));
             errorDialog.open();
             return;
         }
@@ -667,8 +670,9 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 message.append("<li>" + value + "</li>");
             });
 
-            errorDialog.setText(new Html("<div>"+message.toString()+"<ul></div>"));
-            errorDialog.setConfirmText(getTranslation("button.ok", UI.getCurrent().getLocale()));
+            errorDialog.setText(new Html("<div>"+message+"<ul></div>"));
+            errorDialog.setConfirmText(getTranslation("button.ok"));
+            errorDialog.setCancelText(getTranslation("button.cancel"));
             errorDialog.open();
         }
     }

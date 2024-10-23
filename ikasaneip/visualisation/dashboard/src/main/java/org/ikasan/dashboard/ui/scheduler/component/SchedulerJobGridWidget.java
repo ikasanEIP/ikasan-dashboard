@@ -451,7 +451,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 confirmDialog.setCancelable(true);
                 confirmDialog.setHeader(getTranslation("confirm-dialog.delete-job-template-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog.delete-job-template-body", UI.getCurrent().getLocale()));
-
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.addConfirmListener(event -> {
                     // todo only delete jobs that no longer belong to the context.
                     this.schedulerJobService.delete(schedulerJobRecord);
@@ -852,6 +853,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.enabled-all-skipped-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.enabled-all-skipped-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
             confirmDialog.addConfirmListener(confirmEvent -> {
@@ -891,6 +894,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.hold-all-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.hold-all-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
             confirmDialog.addConfirmListener(confirmEvent -> {
@@ -930,6 +935,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.release-all-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.release-all-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
             confirmDialog.addConfirmListener(confirmEvent -> {
@@ -978,6 +985,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.enable-scheduled-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.enable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 
@@ -1009,6 +1018,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.disable-scheduled-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.disable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 

@@ -44,6 +44,8 @@ public class HoldAllCommandExecutionJobsForContextInstanceCommand {
         ConfirmDialog confirmDialog = new ConfirmDialog();
         confirmDialog.setHeader(this.ikasanI18NProvider.getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
         confirmDialog.setText(this.ikasanI18NProvider.getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
+        confirmDialog.setConfirmText(this.ikasanI18NProvider.getTranslation("button.ok", UI.getCurrent().getLocale()));
+        confirmDialog.setCancelText(this.ikasanI18NProvider.getTranslation("button.cancel", UI.getCurrent().getLocale()));
         confirmDialog.setCancelable(true);
         confirmDialog.open();
 

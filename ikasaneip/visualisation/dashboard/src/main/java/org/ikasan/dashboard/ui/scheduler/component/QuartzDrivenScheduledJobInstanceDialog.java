@@ -150,7 +150,8 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-quartz-job", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog-text.submit-quartz-job", UI.getCurrent().getLocale()));
-
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();

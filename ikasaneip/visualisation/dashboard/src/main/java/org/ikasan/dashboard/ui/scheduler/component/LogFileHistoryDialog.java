@@ -120,6 +120,8 @@ public class LogFileHistoryDialog extends AbstractCloseableResizableDialog imple
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("header.no-job-execution-history", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("paragraph.no-job-execution-history", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
             confirmDialog.setCancelable(false);
             confirmDialog.open();
         } else{

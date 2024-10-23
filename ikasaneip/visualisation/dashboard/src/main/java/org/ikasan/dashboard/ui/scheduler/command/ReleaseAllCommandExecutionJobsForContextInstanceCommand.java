@@ -49,6 +49,8 @@ public class ReleaseAllCommandExecutionJobsForContextInstanceCommand {
             confirmDialog.setHeader(this.ikasanI18NProvider.getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(String.format(this.ikasanI18NProvider.getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale())
                 , jobsToReleaseWithinContext.size()));
+            confirmDialog.setConfirmText(this.ikasanI18NProvider.getTranslation("button.ok", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelText(this.ikasanI18NProvider.getTranslation("button.cancel", UI.getCurrent().getLocale()));
             confirmDialog.setCancelable(true);
             confirmDialog.open();
 
