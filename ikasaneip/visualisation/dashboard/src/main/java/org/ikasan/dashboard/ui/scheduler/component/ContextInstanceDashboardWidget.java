@@ -349,6 +349,7 @@ public class ContextInstanceDashboardWidget extends Div
         refresh.setIconAfterText(true);
         refresh.addClickListener(event -> {
             this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+            this.updateAggregateJobStatusFilteringCounts();
         });
 
         Button clearFiltersButton = new Button(getTranslation("button.clear-filters"), VaadinIcon.FILTER.create());
