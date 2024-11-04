@@ -13,10 +13,17 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceSt
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.JobLockCacheEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.SchedulerJobStateChangeEventBroadcasterImpl;
 import org.ikasan.flow.configuration.FlowPersistentConfiguration;
+import org.ikasan.harvesting.HarvestingAutoConfiguration;
+import org.ikasan.harvesting.HarvestingSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
+import org.ikasan.scheduler.CachingScheduledJobFactory;
+import org.ikasan.scheduler.SchedulerFactory;
+import org.ikasan.security.SecurityAutoConfiguration;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
+import org.ikasan.spec.harvest.HarvestingJob;
+import org.ikasan.spec.harvest.HarvestingSchedulerService;
 import org.ikasan.spec.metadata.ModuleMetaDataProvider;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
@@ -26,6 +33,7 @@ import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
+import org.ikasan.systemevent.SystemEventAutoConfiguration;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,6 +43,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -45,9 +54,11 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
+@Import({HarvestingAutoConfiguration.class})
 public class DashboardComponentFactory
 {
     @Value("${scheduled.job.context.queue.directory:.}")
@@ -110,6 +121,17 @@ public class DashboardComponentFactory
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public IBigQueue inboundQueue() throws IOException {
         return new BigQueueImpl(queueDirectory, INBOUND_QUEUE);
+    }
+
+    @Bean(name = "harvestingSchedulerService")
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "false")
+    public HarvestingSchedulerService harvestingSchedulerService(List<HarvestingJob> harvestingJobs)
+    {
+        HarvestingSchedulerService harvestingSchedulerService =  new HarvestingSchedulerServiceImpl
+            (SchedulerFactory.getInstance().getScheduler(), CachingScheduledJobFactory.getInstance(), harvestingJobs);
+
+        harvestingSchedulerService.registerJobs();
+        return harvestingSchedulerService;
     }
 
     @Component
