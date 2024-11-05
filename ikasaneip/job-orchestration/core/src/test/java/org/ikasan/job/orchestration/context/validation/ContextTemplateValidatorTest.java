@@ -51,6 +51,16 @@ public class ContextTemplateValidatorTest extends AbstractTest {
         validator.validate(contextTemplate);
     }
 
+    @Test
+    public void test_simple_context_validation_success_with_bridging_jobs() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContextTemplate(loadDataFile("/data/context-with-bridging-job.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+        validator.validate(contextTemplate);
+    }
+
     @Test(expected = InvalidContextTemplateException.class)
     public void test_simple_context_validation_fail_null_job_names() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
