@@ -18,6 +18,7 @@ import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanc
 import org.ikasan.job.orchestration.model.instance.LocalEventJobInstanceImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.scheduled.instance.model.SolrBridgingJobInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrLocalEventJobInstanceImpl;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -440,6 +441,35 @@ public class AbstractTest
 
             if(instance != null) {
                 InternalEventDrivenJobInstance contextualisedInstance = (InternalEventDrivenJobInstance) SerializationUtils.clone(instance);
+                contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
+                contextualisedInstance.setContextInstanceId(contextInstance.getId());
+
+                contextualisedSchedulerJobInstances.add(contextualisedInstance);
+            }
+        });
+
+        return contextualisedSchedulerJobInstances.stream()
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+    }
+
+    public Map<String, BridgingJobInstance> loadBridgingJobInstanceMap(ContextTemplate contextTemplate, ContextInstance contextInstance) {
+        Map<String, BridgingJobInstance> contextStartJobInstanceMap = ContextHelper.getBridgingJobsFromContext(contextTemplate).stream()
+            .map(localEventJob -> {
+                BridgingJobInstance bridgingJobInstance = new SolrBridgingJobInstanceImpl();
+                bridgingJobInstance.setJobName(localEventJob.getJobName());
+                bridgingJobInstance.setContextName(contextTemplate.getName());
+                bridgingJobInstance.setContextInstanceId(contextInstance.getId());
+                bridgingJobInstance.setOrdinal(localEventJob.getOrdinal());
+                return bridgingJobInstance;
+            }).collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity(), (key1, key2)-> key2));
+
+        List<BridgingJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
+
+        contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
+            BridgingJobInstance instance = contextStartJobInstanceMap.get(schedulerJobInstance.getIdentifier());
+
+            if(instance != null) {
+                BridgingJobInstance contextualisedInstance = (BridgingJobInstance) SerializationUtils.clone(instance);
                 contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
                 contextualisedInstance.setContextInstanceId(contextInstance.getId());
 

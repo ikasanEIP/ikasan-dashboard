@@ -5,6 +5,7 @@ import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextStartJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextTerminalJobInstanceImpl;
+import org.ikasan.job.orchestration.model.job.BridgingJobImpl;
 import org.ikasan.job.orchestration.model.job.ContextStartJobImpl;
 import org.ikasan.job.orchestration.model.job.ContextTerminalJobImpl;
 import org.ikasan.job.orchestration.model.job.LocalEventJobImpl;
@@ -314,6 +315,35 @@ public class ContextHelper {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a list of BridgingJob objects from the given ContextTemplate.
+     *
+     * @param context the ContextTemplate from which to retrieve BridgingJob objects
+     * @return a list of BridgingJob objects filtered from all scheduler jobs in the context
+     */
+    public static List<BridgingJob> getBridgingJobsFromContext(ContextTemplate context) {
+        return context.getAllSchedulerJobs().stream()
+            .distinct()
+            .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.BRIDGING_JOB))
+            .map(schedulerJob -> {
+                BridgingJob contextStartJob = new BridgingJobImpl();
+                contextStartJob.setContextName(schedulerJob.getContextName());
+                contextStartJob.setJobName(schedulerJob.getJobName());
+                contextStartJob.setAgentName(schedulerJob.getAgentName());
+                contextStartJob.setChildContextNames(context.getAllContextNamesWhereJobResides(schedulerJob.getIdentifier()));
+                contextStartJob.setOrdinal(Integer.MIN_VALUE);
+
+                return contextStartJob;
+            })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves a list of LocalEventJobs from the given ContextTemplate object based on certain criteria.
+     *
+     * @param context The ContextTemplate object from which to retrieve LocalEventJobs
+     * @return A list of LocalEventJob objects satisfying the specified criteria
+     */
     public static List<LocalEventJob> getLocalEventJobsFromContext(ContextTemplate context) {
         List<LocalEventJob> jobs = context.getAllSchedulerJobs().stream()
             .distinct()

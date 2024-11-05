@@ -1,6 +1,5 @@
 package org.ikasan.orchestration.service.context.recovery;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
@@ -10,7 +9,6 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
-import org.ikasan.job.orchestration.model.context.ContextImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
@@ -62,7 +60,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.time.ZonedDateTime.now;
-import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults.CONTEXT_NAME;
 import static org.ikasan.spec.scheduled.instance.model.InstanceStatus.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;

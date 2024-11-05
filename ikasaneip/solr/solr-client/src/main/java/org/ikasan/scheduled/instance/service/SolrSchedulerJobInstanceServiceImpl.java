@@ -281,6 +281,23 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
             stopWatch.stop();
             logger.info("Time to load start local event jobs: " + stopWatch.getTime());
 
+            stopWatch.reset();
+            stopWatch.start();
+            // We are automating the creation of the bridging job instances by dipping into the
+            // context template via the ContextHelper and extracting all of the bridging jobs.
+            schedulerJobInstances.addAll(ContextHelper.getBridgingJobsFromContext(contextTemplate).stream()
+                .map(localEventJob -> {
+                    BridgingJobInstance bridgingJobInstance = new SolrBridgingJobInstanceImpl();
+                    bridgingJobInstance.setJobName(localEventJob.getJobName());
+                    bridgingJobInstance.setContextName(contextTemplate.getName());
+                    bridgingJobInstance.setContextInstanceId(contextInstance.getId());
+                    bridgingJobInstance.setOrdinal(localEventJob.getOrdinal());
+                    return bridgingJobInstance;
+                }).collect(Collectors.toList()));
+
+            stopWatch.stop();
+            logger.info("Time to load start bridging jobs: " + stopWatch.getTime());
+
             Map<String, SchedulerJobInstance> schedulerJobInstanceMap = schedulerJobInstances.stream()
                 .collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity(), (key1, key2)-> key2));
 

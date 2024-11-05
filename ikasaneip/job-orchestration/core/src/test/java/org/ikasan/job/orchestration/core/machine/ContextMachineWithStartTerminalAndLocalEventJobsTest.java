@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
+public class ContextMachineWithStartTerminalAndLocalEventJobsTest extends AbstractTest {
 
     protected ContextService contextService = new ContextService();
     protected ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -77,22 +77,24 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         // modify the context descriptor to add GRP1 for the environment group
-        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
-            "context/TEST_IK_GLOB.json");
+        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/" +
+            "context/TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS.json");
 
         ContextTemplate context = this.contextService.getContextTemplate(contextJson);
         ContextInstance contextInstance = this.contextService.getContextInstance(contextJson);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap = this.loadInternalEventDrivenJobInstanceMap
-            (contextInstance, "./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal",
-            "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal");
+            (contextInstance, "./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/jobs/internal",
+            "/data/bundles/TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/jobs/internal");
+
 
         Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = loadContextTerminalJobInstanceMap(context, contextInstance);
-
         Map<String, ContextStartJobInstance> contextStartJobInstanceMap = loadContextStartJobInstanceMap(context, contextInstance);
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = loadLocalEventJobInstanceMap(context, contextInstance);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
-            , internalEventDrivenJobInstanceMap, contextStartJobInstanceMap, contextTerminalJobInstanceMap, new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , internalEventDrivenJobInstanceMap, contextStartJobInstanceMap, contextTerminalJobInstanceMap,localEventJobInstanceMap, new HashMap<>(), this.queueDir
+            , new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
             , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
         contextMachine.init();
@@ -100,7 +102,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
 
         ContextMachineCache.instance().put(contextMachine);
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.WAITING);
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("TEST_IK_JOB_2",
             "scheduler-agent", false);
@@ -115,7 +117,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.WAITING);
@@ -157,7 +159,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(3, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.RUNNING);
@@ -211,7 +213,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(3, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);
@@ -254,7 +256,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);
@@ -271,7 +273,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);
@@ -384,7 +386,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);
@@ -412,12 +414,12 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        Assert.assertEquals("TEST_IK_EVENT2 Step 1 Start", events.get(0).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_15_EVENT", events.get(0).getJobName());
 
         processEventJobName = events.get(0).getJobName();
 
         eventInstance = scheduledProcessEventInstance(processEventJobName,
-            JobConstants.CONTEXT_START_JOB, true);
+            JobConstants.LOCAL_EVENT_JOB, true);
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
@@ -460,14 +462,22 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
             "scheduler-agent", true);
 
         events = contextMachine.eventReceived(eventInstance);
-        Assert.assertEquals(1, events.size());
+        Assert.assertEquals(2, events.size());
 
-        Assert.assertEquals("TEST_IK_EVENT2 Step 2 Terminal", events.get(0).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_18_EVENT", events.get(0).getJobName());
+        Assert.assertEquals("TEST_IK_EVENT2 Step 2 Terminal", events.get(1).getJobName());
+
+        processEventJobName = events.get(1).getJobName();
+
+        eventInstance = scheduledProcessEventInstance(processEventJobName,
+            JobConstants.CONTEXT_TERMINAL_JOB, true);
+        ;
+        Assert.assertEquals(0, contextMachine.eventReceived(eventInstance).size());
 
         processEventJobName = events.get(0).getJobName();
 
         eventInstance = scheduledProcessEventInstance(processEventJobName,
-            JobConstants.CONTEXT_TERMINAL_JOB, true);
+            JobConstants.LOCAL_EVENT_JOB, true);
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
@@ -492,15 +502,6 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "TEST_IK_AM_2 Step 1", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 3", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 4", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 5", InstanceStatus.RUNNING);
-
         Assert.assertEquals("TEST_IK_GLOB Step 5 Start", events.get(0).getJobName());
 
         processEventJobName = events.get(0).getJobName();
@@ -510,6 +511,15 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
+
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "TEST_IK_AM_2 Step 1", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 3", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 4", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 5", InstanceStatus.RUNNING);
 
         Assert.assertEquals("TEST_IK_JOB_23", events.get(0).getJobName());
 
@@ -542,7 +552,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);
@@ -582,7 +592,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);
@@ -627,7 +637,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(3, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);
@@ -675,7 +685,7 @@ public class ContextMachineWitStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(0, events.size());
 
-        this.assertContextStatus(contextMachine, "TEST_IK_GLOB", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 1", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 2", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.COMPLETE);

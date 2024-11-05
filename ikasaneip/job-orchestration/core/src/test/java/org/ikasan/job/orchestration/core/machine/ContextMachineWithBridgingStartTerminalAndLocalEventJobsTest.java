@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ContextMachineWitStartTerminalAndLocalEventJobsTest extends AbstractTest {
+public class ContextMachineWithBridgingStartTerminalAndLocalEventJobsTest extends AbstractTest {
 
     protected ContextService contextService = new ContextService();
     protected ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -72,28 +72,30 @@ public class ContextMachineWitStartTerminalAndLocalEventJobsTest extends Abstrac
     }
 
     @Test
-    public void test_context_with_start_and_terminal_jobs_success() throws IOException {
+    public void test_context_with_bridging_start_and_terminal_jobs_success() throws IOException {
         ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         // modify the context descriptor to add GRP1 for the environment group
-        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/" +
-            "context/TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS.json");
+        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_BRIDGING_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/" +
+            "context/TEST_IK_GLOB_WITH_BRIDGING_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS.json");
 
         ContextTemplate context = this.contextService.getContextTemplate(contextJson);
         ContextInstance contextInstance = this.contextService.getContextInstance(contextJson);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap = this.loadInternalEventDrivenJobInstanceMap
-            (contextInstance, "./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/jobs/internal",
-            "/data/bundles/TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/jobs/internal");
+            (contextInstance, "./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_BRIDGING_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/jobs/internal",
+            "/data/bundles/TEST_IK_GLOB_WITH_BRIDGING_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/jobs/internal");
 
 
         Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = loadContextTerminalJobInstanceMap(context, contextInstance);
         Map<String, ContextStartJobInstance> contextStartJobInstanceMap = loadContextStartJobInstanceMap(context, contextInstance);
         Map<String, LocalEventJobInstance> localEventJobInstanceMap = loadLocalEventJobInstanceMap(context, contextInstance);
+        Map<String, BridgingJobInstance> bridgingJobInstanceMap = loadBridgingJobInstanceMap(context, contextInstance);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
-            , internalEventDrivenJobInstanceMap, contextStartJobInstanceMap, contextTerminalJobInstanceMap,localEventJobInstanceMap, this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , internalEventDrivenJobInstanceMap, contextStartJobInstanceMap, contextTerminalJobInstanceMap,localEventJobInstanceMap, bridgingJobInstanceMap, this.queueDir
+            , new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
             , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
         contextMachine.init();
@@ -122,8 +124,18 @@ public class ContextMachineWitStartTerminalAndLocalEventJobsTest extends Abstrac
         this.assertContextStatus(contextMachine, "TEST_IK_AM_1 Step 1",   InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "TEST_IK_AM_2 Step 1", InstanceStatus.WAITING);
 
-        Assert.assertEquals("TEST_IK_JOB_1", events.get(0).getJobName());
+        Assert.assertEquals("BRIDGING_JOB_1", events.get(0).getJobName());
         String processEventJobName = events.get(0).getJobName();
+
+        eventInstance = scheduledProcessEventInstance(processEventJobName,
+            JobConstants.BRIDGING_JOB, true);
+        eventInstance.setInternalEventDrivenJob(null);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        Assert.assertEquals("TEST_IK_JOB_1", events.get(0).getJobName());
+        processEventJobName = events.get(0).getJobName();
 
         eventInstance = scheduledProcessEventInstance(processEventJobName,
             "scheduler-agent", false);
@@ -137,7 +149,6 @@ public class ContextMachineWitStartTerminalAndLocalEventJobsTest extends Abstrac
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
-
         Assert.assertEquals("TEST_IK_GLOB Step 1 Terminal", events.get(0).getJobName());
         processEventJobName = events.get(0).getJobName();
 

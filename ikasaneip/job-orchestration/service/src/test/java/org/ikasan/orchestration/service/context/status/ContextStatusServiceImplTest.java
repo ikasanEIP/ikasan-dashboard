@@ -66,7 +66,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null , null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -84,7 +84,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null,JobLockCacheImpl.instance()
+            , null, null, null, null, null, null, null, null,JobLockCacheImpl.instance()
             , null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -103,7 +103,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null,null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null,null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         String contextStatus = contextStatusService.getContextStatus("CONTEXT-1436221681", "CONTEXT-1436221681");
@@ -123,14 +123,15 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null,null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         ContextInstance contextInstance2 = this.contextService.getContextInstance(jsonContext);
         contextInstance2.setId("77777777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine2 = new ContextMachine(context, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null,null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+
         ContextMachineCache.instance().put(contextMachine2);
 
         String contextStatus = contextStatusService.getContextStatus("CONTEXT-1436221681", "CONTEXT-1436221681");
@@ -150,15 +151,15 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null,null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         ContextInstance contextInstance2 = this.contextService.getContextInstance(jsonContext);
         contextInstance2.setId("77777777-8ee0-4354-b390-f2ad0712ca63");
         contextInstance2.setStatus(InstanceStatus.PREPARED);
 
-        ContextMachine contextMachine2 = new ContextMachine(context, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+        ContextMachine contextMachine2 = new ContextMachine(context, contextInstance, null, null, null
+            , null, null, null, null, null, null,null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine2);
 
         // contextMachine2 is expected to be ignored
@@ -178,7 +179,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null
-            , null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         try {
@@ -195,7 +196,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         contextStatusService.getContextStatusForJob("CONTEXT-1436221681", "UNKNOWN_INSTANCE", "scheduler-agent-1799613995");
@@ -207,7 +208,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         try {
@@ -225,7 +226,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         String status = contextStatusService.getContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1616645609", "scheduler-agent-1799613995");
@@ -245,14 +246,14 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         ContextInstance contextInstance2 = this.contextService.getContextInstance(jsonContext);
         contextInstance2.setId("77777777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine2 = new ContextMachine(context, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine2);
 
         String status = contextStatusService.getContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1616645609", "scheduler-agent-1799613995");
@@ -272,7 +273,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
         ContextInstance contextInstance2 = this.contextService.getContextInstance(jsonContext);
@@ -280,7 +281,7 @@ public class ContextStatusServiceImplTest {
         contextInstance2.setStatus(InstanceStatus.PREPARED);
 
         ContextMachine contextMachine2 = new ContextMachine(context, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine2);
 
         String status = contextStatusService.getContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1616645609", "scheduler-agent-1799613995");
@@ -299,7 +300,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -317,7 +318,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -336,7 +337,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("6ae44543-3b4c-4cf0-a84f-95f64ffc3ac5");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -363,7 +364,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("6ae44543-3b4c-4cf0-a84f-95f64ffc3ac5");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -371,7 +372,7 @@ public class ContextStatusServiceImplTest {
         contextInstance2.setId("44444444-3b4c-4cf0-a84f-95f64ffc3ac5");
 
         ContextMachine contextMachine2 = new ContextMachine(context, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine2);
 
@@ -404,7 +405,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("6ae44543-3b4c-4cf0-a84f-95f64ffc3ac5");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -413,7 +414,7 @@ public class ContextStatusServiceImplTest {
         contextInstance2.setStatus(InstanceStatus.PREPARED);
 
         ContextMachine contextMachine2 = new ContextMachine(context, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine2);
 
@@ -445,7 +446,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -463,7 +464,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -481,7 +482,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -500,7 +501,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("d772ed1d-84c7-4cc2-bb54-4c5ba378a515");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -524,7 +525,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("d772ed1d-84c7-4cc2-bb54-4c5ba378a515");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -532,7 +533,7 @@ public class ContextStatusServiceImplTest {
         contextInstance2.setId("d772ed1d-8888-8888-8888-4c5ba378a515");
 
         ContextMachine contextMachine2 = new ContextMachine(context, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine2);
 
@@ -563,7 +564,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setId("d772ed1d-84c7-4cc2-bb54-4c5ba378a515");
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -572,7 +573,7 @@ public class ContextStatusServiceImplTest {
         contextInstance2.setStatus(InstanceStatus.PREPARED);
 
         ContextMachine contextMachine2 = new ContextMachine(context, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine2);
 
@@ -609,7 +610,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
 
         ContextTemplate context2 = this.contextService.getContextTemplate(jsonContext);
@@ -617,7 +618,7 @@ public class ContextStatusServiceImplTest {
         contextInstance2.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine2 = new ContextMachine(context2, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
 
         ContextMachineCache.instance().put(contextMachine);
@@ -645,7 +646,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setStatus(InstanceStatus.PREPARED);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
 
         ContextTemplate context2 = this.contextService.getContextTemplate(jsonContext);
@@ -653,7 +654,7 @@ public class ContextStatusServiceImplTest {
         contextInstance2.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine2 = new ContextMachine(context2, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
 
         ContextMachineCache.instance().put(contextMachine);
@@ -681,7 +682,7 @@ public class ContextStatusServiceImplTest {
         contextInstance.setStatus(InstanceStatus.PREPARED);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
 
         ContextTemplate context2 = this.contextService.getContextTemplate(jsonContext);
@@ -689,7 +690,7 @@ public class ContextStatusServiceImplTest {
         contextInstance2.setId("3e774777-8ee0-4354-b390-f2ad0712ca63");
 
         ContextMachine contextMachine2 = new ContextMachine(context2, contextInstance2, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
 
         ContextMachineCache.instance().put(contextMachine);
@@ -717,7 +718,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -731,7 +732,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -762,7 +763,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContextCONTEXTNAMEPLANSTATUS);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null
-            , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
+            , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 

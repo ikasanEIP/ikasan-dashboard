@@ -68,6 +68,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         , Map<String, ContextStartJobInstance> contextStartJobInstanceMap
         , Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap
         , Map<String, LocalEventJobInstance> localEventJobInstanceMap
+        , Map<String, BridgingJobInstance> bridgingJobInstanceMap
         , List<ContextParameterInstance> contextParameters
         , ContextInstance parentContextInstance
         , MutableBoolean lockRaised
@@ -140,7 +141,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         getScheduledJobInitiationEventsThatCanBeRaised(scheduledProcessEvent, contextInstance, dryRunParameters
             , globalEventJobInstanceMap, internalEventDrivenJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap
-            , localEventJobInstanceMap, contextParameters, parentContextInstance, schedulerJobInitiationEvents, markAsRaised);
+            , localEventJobInstanceMap, bridgingJobInstanceMap, contextParameters, parentContextInstance
+            , schedulerJobInitiationEvents, markAsRaised);
 
         if(markAsRaised) {
             schedulerJobInitiationEvents = this.manageJobLocks(scheduledProcessEvent, contextInstance
@@ -177,6 +179,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                                                                 Map<String, ContextStartJobInstance> contextStartJobInstanceMap,
                                                                 Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap,
                                                                 Map<String, LocalEventJobInstance> localEventJobInstanceMap,
+                                                                Map<String, BridgingJobInstance> bridgingJobInstanceMap,
                                                                 List<ContextParameterInstance> contextParameters,
                                                                 ContextInstance parentContextInstance,
                                                                 List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents,
@@ -206,6 +209,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         + "-" + contextInstance.getName());
 
                     LocalEventJobInstance localEventJobInstance = localEventJobInstanceMap.get(jobDependency.getJobIdentifier()
+                        + "-" + contextInstance.getName());
+
+                    BridgingJobInstance bridgingJobInstance = bridgingJobInstanceMap.get(jobDependency.getJobIdentifier()
                         + "-" + contextInstance.getName());
 
                     // Find events that can be raised on the back of a GlobalEvents 
@@ -243,6 +249,16 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         if(markAsRaised) jobInstance.setInitiationEventRaised(true);
 
                         SchedulerJobInitiationEvent event = createLocalEventJobInitiationEvent(localEventJobInstance
+                            , dryRunParameters, parentContextInstance, scheduledProcessEvent);
+
+                        if (event != null) {
+                            schedulerJobInitiationEvents.add(event);
+                        }
+                    }
+                    else if (!jobInstance.isInitiationEventRaised() && bridgingJobInstance != null) {
+                        if(markAsRaised) jobInstance.setInitiationEventRaised(true);
+
+                        SchedulerJobInitiationEvent event = createBridgingJobInitiationEvent(bridgingJobInstance
                             , dryRunParameters, parentContextInstance, scheduledProcessEvent);
 
                         if (event != null) {
@@ -623,6 +639,31 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
         schedulerJobInitiationEvent.setCatalystEvent(scheduledProcessEvent);
         schedulerJobInitiationEvent.setChildContextNames(localEventJobInstance.getChildContextNames());
+
+        return schedulerJobInitiationEvent;
+    }
+
+    /**
+     * Creates a SchedulerJobInitiationEvent for bridging job.
+     *
+     * @param bridgingJobInstance the bridging job instance to create event for
+     * @param dryRunParameters the dry run parameters for the job, can be null
+     * @param parentContextInstance the parent context instance for the job
+     * @param scheduledProcessEvent the scheduled process event associated with the job
+     *
+     * @return a SchedulerJobInitiationEvent object for the bridging job
+     */
+    private SchedulerJobInitiationEvent createBridgingJobInitiationEvent(BridgingJobInstance bridgingJobInstance
+        , DryRunParameters dryRunParameters, ContextInstance parentContextInstance, ScheduledProcessEvent scheduledProcessEvent) {
+        SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+        schedulerJobInitiationEvent.setAgentName(bridgingJobInstance.getAgentName());
+        schedulerJobInitiationEvent.setJobName(bridgingJobInstance.getJobName());
+        schedulerJobInitiationEvent.setContextName(parentContextInstance.getName());
+        schedulerJobInitiationEvent.setContextInstanceId(parentContextInstance.getId());
+        schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
+        schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
+        schedulerJobInitiationEvent.setCatalystEvent(scheduledProcessEvent);
+        schedulerJobInitiationEvent.setChildContextNames(bridgingJobInstance.getChildContextNames());
 
         return schedulerJobInitiationEvent;
     }

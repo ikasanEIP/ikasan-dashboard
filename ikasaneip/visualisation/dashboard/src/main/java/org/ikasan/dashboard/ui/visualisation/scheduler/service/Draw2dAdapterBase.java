@@ -208,6 +208,11 @@ public abstract class Draw2dAdapterBase {
                     userDataBuilder.withItemType(UserData.LOCAL_EVENT_JOB);
                     userDataSet = true;
                 }
+                else if(schedulerJob instanceof BridgingJob || schedulerJob instanceof BridgingJobInstance
+                    || schedulerJob.getAgentName().equals(UserData.BRIDGING_JOB)) {
+                    userDataBuilder.withItemType(UserData.BRIDGING_JOB);
+                    userDataSet = true;
+                }
 
                 if(userDataSet) {
                     ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
@@ -221,7 +226,8 @@ public abstract class Draw2dAdapterBase {
                         || schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance
                         || schedulerJob instanceof ContextStartJob || schedulerJob instanceof ContextStartJobInstance
                         || schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextTerminalJobInstance
-                        || schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance) {
+                        || schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance
+                        || schedulerJob instanceof BridgingJob || schedulerJob instanceof BridgingJobInstance) {
                         jobBuilder.withLeftPort()
                             .withRightPort();
                     } else if (schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
@@ -321,7 +327,8 @@ public abstract class Draw2dAdapterBase {
                             ((Image) item).setComposite(group.getId());
                             // assuming each letter is 8 units long
                             if(!((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_START_JOB) &&
-                                !((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_TERMINAL_JOB)) {
+                                !((Image) item).getUserData().getItemType().equals(UserData.CONTEXT_TERMINAL_JOB) &&
+                                !((Image) item).getUserData().getItemType().equals(UserData.BRIDGING_JOB)) {
                                 double labelLength = ((SchedulerJob) context.getScheduledJobsMap()
                                     .get(((PositionedItem) item).getId())).getJobName().length() * this.fontSize * 0.65;
 
@@ -1280,6 +1287,9 @@ public abstract class Draw2dAdapterBase {
         }
         else if(schedulerJob instanceof LocalEventJob || schedulerJob instanceof LocalEventJobInstance) {
             image = "frontend/images/local-event-job.png";
+        }
+        else if(schedulerJob instanceof BridgingJob || schedulerJob instanceof BridgingJobInstance) {
+            image = "frontend/images/bridging-job.png";
         }
 
         return image;

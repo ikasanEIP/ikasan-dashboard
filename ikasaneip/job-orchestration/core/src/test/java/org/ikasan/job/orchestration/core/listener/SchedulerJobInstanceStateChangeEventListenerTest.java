@@ -78,7 +78,7 @@ public class SchedulerJobInstanceStateChangeEventListenerTest extends AbstractTe
         internalEventDrivenJobs.put("agentName8-jobName8", job8);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
-            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine.init();
         contextMachine.addSchedulerJobStateChangeEventListener(event -> {

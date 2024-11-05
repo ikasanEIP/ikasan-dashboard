@@ -774,7 +774,8 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private void showJobDetails(String figure){
         try {
             Figure figureObj = mapper.readValue(figure, Figure.class);
-            this.jobMouseOverListeners.forEach(jobMouseOverListener -> jobMouseOverListener.onJobMouseOverEvent(new JobMouseOverEvent(figureObj)));
+            this.jobMouseOverListeners.forEach(jobMouseOverListener
+                -> jobMouseOverListener.onJobMouseOverEvent(new JobMouseOverEvent(figureObj)));
         }
         catch (JsonProcessingException e) {
             logger.error("An error has occurred processing figure json associated with a job mouse over event - [%s]!".formatted(e.getMessage()), e);

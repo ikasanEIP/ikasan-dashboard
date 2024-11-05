@@ -12,6 +12,7 @@ import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
 import org.checkerframework.checker.units.qual.C;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
+import org.ikasan.job.orchestration.model.instance.BridgingJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -687,6 +688,55 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_initialise_scheduler_job_instances_with_automatically_created_start_bridging_and_terminal_jobs() throws SchedulerJobInstanceInitialisationException, IOException {
+        List<InternalEventDrivenJobRecord> internalEventDrivenJobRecords = this.loadInternalEventDrivenJobRecords("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal",
+            "/data/bundles/TEST_IK_GLOB_WITH_BRIDGING_START_AND_TERMINAL_JOBS/jobs/internal");
+        this.solrInternalEventDrivenJobRecordDao.save(internalEventDrivenJobRecords);
+
+        List<QuartzScheduleDrivenJobRecord> quartzScheduleDrivenJobRecords = this.loadQuartzScheduleDrivenJobRecords("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/quartz",
+            "/data/bundles/TEST_IK_GLOB_WITH_BRIDGING_START_AND_TERMINAL_JOBS/jobs/quartz");
+        this.solrQuartzScheduleDrivenJobRecordDao.save(quartzScheduleDrivenJobRecords);
+
+        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_BRIDGING_START_AND_TERMINAL_JOBS/" +
+            "context/TEST_IK_GLOB.json");
+
+        ContextTemplate contextTemplate = this.contextService.getContextTemplate(contextJson);
+        ContextInstance contextInstance = this.contextService.getContextInstance(contextJson);
+
+        SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
+        List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
+            (contextTemplate, contextInstance, parameters);
+
+        Assert.assertEquals(66, schedulerJobInstances.size());
+        Assert.assertEquals(11, schedulerJobInstances.stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+            .collect(Collectors.toList()).size());
+        Assert.assertEquals(26, schedulerJobInstances.stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+            .collect(Collectors.toList()).size());
+        Assert.assertEquals(1, schedulerJobInstances.stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getAgentName().equals(JobConstants.BRIDGING_JOB))
+            .collect(Collectors.toList()).size());
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.service.getSchedulerJobInstancesByContextInstanceId
+            (contextInstance.getId(), 1000, 0, null, null);
+
+        Assert.assertEquals(66, searchResults.getResultList().size());
+        Assert.assertEquals(11, searchResults.getResultList().stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getSchedulerJobInstance().getAgentName().equals(JobConstants.CONTEXT_START_JOB))
+            .collect(Collectors.toList()).size());
+        Assert.assertEquals(26, searchResults.getResultList().stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getSchedulerJobInstance().getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+            .collect(Collectors.toList()).size());
+        Assert.assertEquals(1, schedulerJobInstances.stream()
+            .filter(schedulerJobInstance -> schedulerJobInstance.getAgentName().equals(JobConstants.BRIDGING_JOB))
+            .collect(Collectors.toList()).size());
+        searchResults.getResultList().forEach(schedulerJobInstanceRecord -> {
+            Assert.assertFalse(schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName().isEmpty());
+        });
+    }
+
+    @Test
     public void test_initialise_scheduler_job_instances_with_skipped_global_jobs() throws SchedulerJobInstanceInitialisationException {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
@@ -962,6 +1012,8 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
                     "context1", "startJob-1"+i, List.of("child1", "child2")));
             this.service.save(this.createContextTerminalJobInstanceRecord("contextInstance1",
                 "context1", "terminal-1"+i, List.of("child1", "child2")));
+            this.service.save(this.createBridgingJobInstanceRecord("contextInstance1",
+                "context1", "bridging-1"+i, List.of("child1", "child2")));
         });
 
         IntStream.range(0, 275).forEach(i -> {
@@ -977,7 +1029,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         SearchResults<SchedulerJobInstanceRecord> searchResults = this.service
             .getSchedulerJobInstancesByContextInstanceId("contextInstance1", 1000, 0, null, null);
 
-        Assert.assertEquals(1855, searchResults.getTotalNumberOfResults());
+        Assert.assertEquals(2597, searchResults.getTotalNumberOfResults());
 
         this.service.deleteSchedulerJobInstances("contextInstance1");
 
@@ -1079,6 +1131,29 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         List<SchedulerJobInstanceRecord> records = new ArrayList<>();
         childContextNames.forEach(child -> {
             ContextTerminalJobInstance solrSchedulerJobInstance = new SolrContextTerminalJobInstanceImpl();
+            solrSchedulerJobInstance.setJobName(jobName);
+            solrSchedulerJobInstance.setScheduledProcessEvent(createProcessEvent());
+            solrSchedulerJobInstance.setChildContextName(child);
+
+            SolrSchedulerJobInstanceRecordImpl schedulerJobInstanceRecord = new SolrSchedulerJobInstanceRecordImpl();
+            schedulerJobInstanceRecord.setJobName(jobName);
+            schedulerJobInstanceRecord.setContextInstanceId(contextInstanceId);
+            schedulerJobInstanceRecord.setContextName(contextName);
+            schedulerJobInstanceRecord.setSchedulerJobInstance(solrSchedulerJobInstance);
+            schedulerJobInstanceRecord.setTimestamp(1000000L);
+            schedulerJobInstanceRecord.setChildContextName(child);
+
+            records.add(schedulerJobInstanceRecord);
+        });
+
+        return records;
+    }
+
+    private List<SchedulerJobInstanceRecord> createBridgingJobInstanceRecord(String contextInstanceId, String contextName, String jobName
+        , List<String> childContextNames) {
+        List<SchedulerJobInstanceRecord> records = new ArrayList<>();
+        childContextNames.forEach(child -> {
+            BridgingJobInstance solrSchedulerJobInstance = new SolrBridgingJobInstanceImpl();
             solrSchedulerJobInstance.setJobName(jobName);
             solrSchedulerJobInstance.setScheduledProcessEvent(createProcessEvent());
             solrSchedulerJobInstance.setChildContextName(child);
