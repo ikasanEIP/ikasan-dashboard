@@ -284,9 +284,11 @@ public abstract class ContextInstanceServiceBase {
         Map<String, ContextStartJobInstance> contextStartJobInstanceMap = this.getContextStartJobInstances(instance.getId());
         Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = this.geContextTerminalJobInstances(instance.getId());
         Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId());
+        Map<String, BridgingJobInstance> bridgingJobInstanceMap = this.getBridgingJobs(instance.getId());
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap,
-            quartzScheduleDrivenJobInstanceMap, internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, queueDirectory, agents,
+            quartzScheduleDrivenJobInstanceMap, internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap,
+            localEventJobInstanceMap, bridgingJobInstanceMap, queueDirectory, agents,
             moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService,
             this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService,
             this.contextInstancePublicationService, this.jobUtilsService);
@@ -411,9 +413,10 @@ public abstract class ContextInstanceServiceBase {
         Map<String, ContextStartJobInstance> contextStartJobInstanceMap = this.getContextStartJobInstances(instance.getId());
         Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = this.geContextTerminalJobInstances(instance.getId());
         Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId());
+        Map<String, BridgingJobInstance> bridgingJobInstanceMap = this.getBridgingJobs(instance.getId());
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap,
-            internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, queueDirectory, agents,
+            internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, bridgingJobInstanceMap, queueDirectory, agents,
             moduleMetadataService, null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
@@ -666,6 +669,19 @@ public abstract class ContextInstanceServiceBase {
             .map(globalEventJobRecord -> (LocalEventJobInstance) globalEventJobRecord.getSchedulerJobInstance())
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
         return localEventJobInstanceMap;
+    }
+
+    protected Map<String, BridgingJobInstance> getBridgingJobs(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType(JobConstants.BRIDGING_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> bridgingJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, BridgingJobInstance> bridgingJobInstanceMap = bridgingJobRecordSearchResults.getResultList().stream()
+            .map(globalEventJobRecord -> (BridgingJobInstance) globalEventJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
+        return bridgingJobInstanceMap;
     }
 
     /**

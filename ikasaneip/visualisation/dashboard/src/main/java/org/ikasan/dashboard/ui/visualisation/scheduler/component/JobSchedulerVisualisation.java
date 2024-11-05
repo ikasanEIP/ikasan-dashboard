@@ -247,6 +247,9 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
         schedulerJobs.putAll(ContextHelper.getLocalEventJobsFromContext(parentContextTemplate).stream()
             .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
 
+        schedulerJobs.putAll(ContextHelper.getBridgingJobsFromContext(parentContextTemplate).stream()
+            .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
+
         ContextTemplateDraw2dAdapter contextTemplateDraw2dAdapter = new ContextTemplateDraw2dAdapter();
         this.designerCanvas.setCanvasJson(contextTemplateDraw2dAdapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
             schedulerJobs.values().stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))));

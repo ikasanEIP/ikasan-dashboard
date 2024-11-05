@@ -157,13 +157,17 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
                 || schedulerJob.getAgentName().equals(UserData.LOCAL_EVENT_JOB)) {
                 userDataBuilder.withItemType(UserData.LOCAL_EVENT_JOB);
             }
+            else if(schedulerJob instanceof BridgingJob || schedulerJob instanceof BridgingJobInstance
+                || schedulerJob.getAgentName().equals(UserData.BRIDGING_JOB)) {
+                userDataBuilder.withItemType(UserData.BRIDGING_JOB);
+            }
             ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
                 .withId((schedulerJob).getIdentifier())
                 .withPath(image)
                 .withUserData(userDataBuilder.build());
 
             if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof GlobalEventJob ||
-                schedulerJob instanceof LocalEventJob) {
+                schedulerJob instanceof LocalEventJob || schedulerJob instanceof BridgingJob) {
                 jobBuilder
                     .withHeight(100)
                     .withWidth(100)

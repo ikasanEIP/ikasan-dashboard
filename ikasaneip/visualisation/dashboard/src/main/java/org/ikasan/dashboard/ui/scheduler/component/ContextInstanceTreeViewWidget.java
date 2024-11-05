@@ -2181,7 +2181,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 && !((ContextInstance) node).getScheduledJobs().isEmpty()) {
                 children.addAll(((ContextInstance) node).getScheduledJobs().stream()
                     .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
-                        && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+                        && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)
+                        && !instance.getAgentName().equals(JobConstants.BRIDGING_JOB))
                     .filter(instance -> filter != null && filter.isPresent()
                         ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
                         instance.getChildContextName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
@@ -2199,7 +2200,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
                 .stream()
                 .filter(instance -> !instance.getAgentName().equals(JobConstants.CONTEXT_START_JOB)
-                    && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB))
+                    && !instance.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)
+                    && !instance.getAgentName().equals(JobConstants.BRIDGING_JOB))
                 .filter(instance -> filter != null && filter.isPresent()
                     ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase()) ||
                     (instance.getDisplayName() != null && !instance.getDisplayName().isEmpty() &&

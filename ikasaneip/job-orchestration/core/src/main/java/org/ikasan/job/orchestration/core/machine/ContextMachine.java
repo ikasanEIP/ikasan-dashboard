@@ -102,6 +102,7 @@ public class ContextMachine {
     private Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap;
     private Map<String, LocalEventJobInstance> localEventJobInstanceMap;
     private Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap;
+    private Map<String, BridgingJobInstance> bridgingJobInstanceMap;
     private Map<String, ModuleMetaData> agents;
     private ModuleMetaDataService moduleMetaDataService;
     private String queueDir;
@@ -121,6 +122,7 @@ public class ContextMachine {
                           Map<String, ContextStartJobInstance> contextStartJobInstanceMap,
                           Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap,
                           Map<String, LocalEventJobInstance> localEventJobInstanceMap,
+                          Map<String, BridgingJobInstance> bridgingJobInstanceMap,
                           String queueDir,
                           Map<String, ModuleMetaData> agents, ModuleMetaDataService moduleMetaDataService, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService,
@@ -151,6 +153,10 @@ public class ContextMachine {
         this.localEventJobInstanceMap = localEventJobInstanceMap;
         if (this.localEventJobInstanceMap == null) {
             this.localEventJobInstanceMap = new HashMap<>(); // Empty Hashmap if the value is null.
+        }
+        this.bridgingJobInstanceMap = bridgingJobInstanceMap;
+        if (this.bridgingJobInstanceMap == null) {
+            this.bridgingJobInstanceMap = new HashMap<>(); // Empty Hashmap if the value is null.
         }
         this.agents = agents;
         this.moduleMetaDataService = moduleMetaDataService;
@@ -288,6 +294,11 @@ public class ContextMachine {
             this.localEventJobInstanceMap  = schedulerJobInstances.stream()
                 .filter(job -> job instanceof LocalEventJobInstance)
                 .map(job -> (LocalEventJobInstance)job)
+                .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+
+            this.bridgingJobInstanceMap  = schedulerJobInstances.stream()
+                .filter(job -> job instanceof BridgingJobInstance)
+                .map(job -> (BridgingJobInstance)job)
                 .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
 
             if(holdCommandJobs) {
@@ -940,6 +951,21 @@ public class ContextMachine {
                             , previousState, schedulerJobInstance.getStatus()));
                     }
                 }
+                if(this.bridgingJobInstanceMap.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {
+                    SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findById(schedulerJobInstance.getJobName()
+                        + "_" + schedulerJobInstance.getContextInstanceId()
+                        + "_" + schedulerJobInstance.getChildContextName()
+                        + "_" + JobConstants.BRIDGING_JOB_INSTANCE);
+                    if(schedulerJobInstanceRecord != null) {
+                        BridgingJobInstance instance = (BridgingJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
+                        instance.setStatus(InstanceStatus.WAITING);
+                        schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
+                        this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+                        jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(instance, this.contextInstance
+                            , previousState, schedulerJobInstance.getStatus()));
+                    }
+                }
             } else {
                 throw new ContextMachineException(String.format("Attempting to reset job[%s], however this job does not " +
                         "appear in context[%s] with instance id[%s], or any of its nested contexts."
@@ -1287,6 +1313,7 @@ public class ContextMachine {
                 this.addFinalContextStartEvents(event,scheduledProcessEvent, finalEvents);
                 this.addFinalContextTerminalEvents(event, scheduledProcessEvent, finalEvents);
                 this.addFinalLocalEvents(event, scheduledProcessEvent, finalEvents);
+                this.addFinalBridgingEvents(event, scheduledProcessEvent, finalEvents);
             }
         });
 
@@ -1405,6 +1432,25 @@ public class ContextMachine {
         }
     }
 
+    private void addFinalBridgingEvents(SchedulerJobInitiationEvent event, ContextualisedScheduledProcessEvent scheduledProcessEvent,
+                                     List<SchedulerJobInitiationEvent> finalEvents) {
+        BridgingJobInstance bridgingJobInstance = null;
+
+        // bridgingJobInstanceMap has a key of (JobIdentifier-ContextName) - this may not be available on the event, therefore
+        // check the jobName in the values within the bridgingJobInstanceMap and if found, it is safe to add the Event to the finalEvents.
+        for (Map.Entry<String, BridgingJobInstance> contextStartJobInstanceEntry : this.bridgingJobInstanceMap.entrySet()) {
+            if (StringUtils.equals(contextStartJobInstanceEntry.getValue().getJobName(), event.getJobName())) {
+                bridgingJobInstance = contextStartJobInstanceEntry.getValue();
+                bridgingJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
+                break;
+            }
+        }
+
+        if (bridgingJobInstance != null) {
+            finalEvents.add(event);
+        }
+    }
+
     /**
      * Saves the audit record for a scheduled process event.
      *
@@ -1487,7 +1533,7 @@ public class ContextMachine {
             // required to be raised.
             List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
                 , contextInstance, this.dryRunParameters, this.globalEventJobInstanceMap, this.internalEventDrivenJobInstances
-                , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.localEventJobInstanceMap
+                , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.localEventJobInstanceMap, this.bridgingJobInstanceMap
                 , this.contextInstance.getContextParameters(), this.contextInstance, lockRaised, markAsRaised);
 
             // Update the context status after event received and attached
@@ -1879,6 +1925,17 @@ public class ContextMachine {
             }
         }
 
+        if(schedulerJobInstance == null) {
+            if (this.bridgingJobInstanceMap != null && !this.bridgingJobInstanceMap.isEmpty()) {
+                for (Map.Entry<String, BridgingJobInstance> stringLocalEventJobInstanceEntry : bridgingJobInstanceMap.entrySet()) {
+                    if (StringUtils.equals(stringLocalEventJobInstanceEntry.getValue().getJobName(), schedulerJobInitiationEvent.getJobName())) {
+                        schedulerJobInstance = stringLocalEventJobInstanceEntry.getValue();
+                        break;
+                    }
+                }
+            }
+        }
+
         // Only attempt to send the global event to other context instance if the global event exist in this context, or if "forceSending" is set to true.
         if (schedulerJobInstance != null) {
             // Global Job found for this context instance, build the event.
@@ -1965,6 +2022,9 @@ public class ContextMachine {
                             broadcastLocalEvent(schedulerJobInitiationEvent);
                         }
                         else if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                            broadcastLocalEvent(schedulerJobInitiationEvent);
+                        }
+                        else if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.BRIDGING_JOB)) {
                             broadcastLocalEvent(schedulerJobInitiationEvent);
                         }
                     }

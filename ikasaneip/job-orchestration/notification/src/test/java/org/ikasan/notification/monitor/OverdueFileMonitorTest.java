@@ -112,7 +112,7 @@ public class OverdueFileMonitorTest {
         monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(overdueFileMonitor);
 
-        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null, null, null, null, null, null, "./target"
+        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null, null, null, null, null, null, null, "./target"
             , null, null, null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine1.init();

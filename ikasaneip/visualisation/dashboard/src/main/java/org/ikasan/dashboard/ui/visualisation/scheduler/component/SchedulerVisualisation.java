@@ -460,7 +460,9 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     public void addJob(SchedulerJob schedulerJob) {
         this.designerCanvas.addImageFigure(adapter.adaptJob(schedulerJob));
-        if(!(schedulerJob instanceof ContextTerminalJob || schedulerJob instanceof ContextStartJob)) {
+        if(!(schedulerJob instanceof ContextTerminalJob
+            || schedulerJob instanceof ContextStartJob
+            || schedulerJob instanceof BridgingJob)) {
             this.designerCanvas.addLabelToFigure(schedulerJob.getIdentifier(), schedulerJob.getJobName());
         }
         this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
@@ -586,7 +588,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             this.contextTemplate.getScheduledJobs().forEach(job -> {
                 if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) ||
                     job.getAgentName().equals(JobConstants.CONTEXT_START_JOB) ||
-                    job.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                    job.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) ||
+                    job.getAgentName().equals(JobConstants.BRIDGING_JOB)) {
                     return;
                 }
                 SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(), job.getJobName());
@@ -599,7 +602,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             updatedContext.getScheduledJobs().forEach(job -> {
                 if(job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) ||
                     job.getAgentName().equals(JobConstants.CONTEXT_START_JOB) ||
-                    job.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                    job.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) ||
+                    job.getAgentName().equals(JobConstants.BRIDGING_JOB)) {
                     return;
                 }
                 if(jobsToSave.containsKey(job.getIdentifier())) {

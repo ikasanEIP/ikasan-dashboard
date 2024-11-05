@@ -107,7 +107,7 @@ public class StateChangeMonitorTest {
 
         ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl()
             , null, null, null, null, null
-            ,null, "./target", null, null, null, null, this.scheduledContextService,
+            ,null, null, "./target", null, null, null, null, this.scheduledContextService,
             this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         contextMachine1.init();
@@ -133,7 +133,7 @@ public class StateChangeMonitorTest {
 
         ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, new ScheduledContextInstanceServiceTestImpl()
             , null, null, null, null
-            , null, null, "./target", null, null, null, null, this.scheduledContextService,
+            , null, null, null, "./target", null, null, null, null, this.scheduledContextService,
             this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
         contextMachine2.init();

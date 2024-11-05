@@ -436,6 +436,11 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             contextTerminalJob.setJobName(this.contextTemplate.getName() + "_TERMINAL");
             this.jobSelected(contextTerminalJob);
         });
+        jobTypesSubMenu.addItem(getTranslation("menu-item.bridging-job", UI.getCurrent().getLocale()), event -> {
+            BridgingJob bridgingJob = new BridgingJobImpl();
+            bridgingJob.setJobName(this.contextTemplate.getName() + "_BRIDGING_" + System.currentTimeMillis());
+            this.jobSelected(bridgingJob);
+        });
 
         return newJobMenuBar;
     }

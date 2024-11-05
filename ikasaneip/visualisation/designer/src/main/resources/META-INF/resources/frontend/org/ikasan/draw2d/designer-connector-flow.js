@@ -978,8 +978,9 @@ window.Vaadin.Flow.designerConnector = {
                     if(figure.getUserData() != null &&
                         figure.getUserData().itemType != null &&
                         (figure.getUserData().itemType === 'INTERNAL_EVENT_DRIVEN_JOB' ||
-                        figure.getUserData().itemType === 'QUARTZ_EVENT_DRIVEN_JOB'||
-                        figure.getUserData().itemType === 'FILE_EVENT_DRIVEN_JOB')) {
+                            figure.getUserData().itemType === 'QUARTZ_EVENT_DRIVEN_JOB'||
+                            figure.getUserData().itemType === 'FILE_EVENT_DRIVEN_JOB' ||
+                            figure.getUserData().itemType === 'BRIDGING_JOB')) {
                         console.log("mouse dragged onto " + figure.getUserData().jobName);
                         console.log(cursor_x);
                         console.log(cursor_y);

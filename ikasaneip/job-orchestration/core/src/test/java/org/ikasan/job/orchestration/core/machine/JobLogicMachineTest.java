@@ -63,7 +63,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName2", events.get(0).getAgentName());
@@ -98,7 +98,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName2", events.get(0).getAgentName());
@@ -118,7 +118,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -136,7 +136,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -173,7 +173,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName2", events.get(0).getAgentName());
@@ -207,7 +207,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         // No event raise because the job was not successful.
         Assert.assertEquals(0, events.size());
@@ -241,7 +241,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         // No event raise because the job is starting.
         Assert.assertEquals(0, events.size());
@@ -276,7 +276,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -317,7 +317,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -326,7 +326,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
@@ -369,7 +369,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -382,7 +382,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
@@ -424,7 +424,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -433,7 +433,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -475,7 +475,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
@@ -524,7 +524,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
@@ -570,7 +570,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
@@ -582,7 +582,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -631,7 +631,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -640,7 +640,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName4", events.get(0).getAgentName());
@@ -691,7 +691,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -704,7 +704,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName4", events.get(0).getAgentName());
@@ -755,7 +755,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName4", events.get(0).getAgentName());
@@ -810,7 +810,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName4", events.get(0).getAgentName());
@@ -861,7 +861,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -870,7 +870,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName4", events.get(0).getAgentName());
@@ -881,7 +881,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -948,7 +948,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -957,7 +957,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -966,7 +966,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1035,7 +1035,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1044,7 +1044,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1057,7 +1057,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1127,7 +1127,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1136,7 +1136,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1210,7 +1210,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1223,7 +1223,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1293,7 +1293,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1302,7 +1302,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1313,7 +1313,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1322,7 +1322,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -1407,7 +1407,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1416,7 +1416,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1503,7 +1503,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1516,7 +1516,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1603,7 +1603,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1612,7 +1612,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1699,7 +1699,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1708,7 +1708,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1717,7 +1717,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1728,7 +1728,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -1813,7 +1813,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1822,7 +1822,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1831,7 +1831,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1968,7 +1968,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -1977,7 +1977,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1988,7 +1988,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -2073,7 +2073,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2082,7 +2082,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2091,7 +2091,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -2102,7 +2102,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -2187,7 +2187,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(4, events.size());
 
@@ -2196,7 +2196,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2205,7 +2205,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2214,7 +2214,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2223,7 +2223,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -2324,7 +2324,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2333,7 +2333,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -2344,7 +2344,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2353,7 +2353,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2362,7 +2362,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName6", events.get(0).getAgentName());
@@ -2373,7 +2373,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2382,7 +2382,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName8", events.get(0).getAgentName());
@@ -2393,7 +2393,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2435,7 +2435,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2444,7 +2444,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -2456,7 +2456,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2465,7 +2465,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2474,7 +2474,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName6", events.get(0).getAgentName());
@@ -2486,7 +2486,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2495,7 +2495,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName8", events.get(0).getAgentName());
@@ -2507,7 +2507,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -2552,7 +2552,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ContextInstance child = ContextHelper.getChildContextInstance("Context3", context);
         List<SchedulerJobInitiationEvent> events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, child, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName1", events.get(0).getAgentName());
@@ -2610,7 +2610,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2619,7 +2619,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -2637,7 +2637,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2646,7 +2646,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2655,7 +2655,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName6", events.get(0).getAgentName());
@@ -2677,7 +2677,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2686,7 +2686,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName8", events.get(0).getAgentName());
@@ -2711,7 +2711,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -2734,7 +2734,7 @@ public class JobLogicMachineTest extends AbstractTest {
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
                 , new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName2", events.get(0).getAgentName());
@@ -2743,7 +2743,7 @@ public class JobLogicMachineTest extends AbstractTest {
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
                 , new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName2", events.get(0).getAgentName());
@@ -2752,7 +2752,7 @@ public class JobLogicMachineTest extends AbstractTest {
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
                 , new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName2", events.get(0).getAgentName());
@@ -2776,7 +2776,7 @@ public class JobLogicMachineTest extends AbstractTest {
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
                 , new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName2", events.get(0).getAgentName());
@@ -2785,7 +2785,7 @@ public class JobLogicMachineTest extends AbstractTest {
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), internalEventDrivenJobs
                 , new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
     }
@@ -2819,7 +2819,7 @@ public class JobLogicMachineTest extends AbstractTest {
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, globalEventJobInstances, internalEventDrivenJobs
                 , new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals(JobConstants.GLOBAL_EVENT, events.get(0).getAgentName());
@@ -2832,7 +2832,7 @@ public class JobLogicMachineTest extends AbstractTest {
         events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, globalEventJobInstances, internalEventDrivenJobs
                 , new HashMap<>(), new HashMap<>()
-                , new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
@@ -2886,7 +2886,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         List<SchedulerJobInitiationEvent> events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
 
         // ASSERT JOB 1 STARTING
         Assert.assertEquals(1, events.size());
@@ -2896,7 +2896,7 @@ public class JobLogicMachineTest extends AbstractTest {
         eventInstance = scheduledProcessEventInstance("JOB1", "scheduler-agent", true);
         events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
 
         // AFTER JOB ONE COMPLETE, no EVENTS
         Assert.assertEquals(0, events.size());
@@ -2912,7 +2912,7 @@ public class JobLogicMachineTest extends AbstractTest {
         eventInstance.setJobStarting(false);
         events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("JOB2", events.get(0).getJobName());
@@ -2921,7 +2921,7 @@ public class JobLogicMachineTest extends AbstractTest {
         eventInstance = scheduledProcessEventInstance("JOB2", "scheduler-agent", true);
         events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
 
         Assert.assertEquals(0, events.size());
 
@@ -2936,7 +2936,7 @@ public class JobLogicMachineTest extends AbstractTest {
         eventInstance.setJobStarting(false);
         events = jobLogicMachine
             .getJobInitiationEvents(eventInstance, contextPlan1, null, new HashMap<>(), internalEventDrivenJobs
-                , new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
+                , new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), context.getContextParameters(), contextPlan1, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("JOB1", events.get(0).getJobName());

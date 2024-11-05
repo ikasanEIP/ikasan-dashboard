@@ -262,6 +262,15 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
             positionedDialog.setPosition(position);
             positionedDialog.open();
         }
+        else if(event.getFigure().getUserData().getItemType().equals(JobConstants.BRIDGING_JOB)) {
+            SchedulerJobInstanceRecord jobInstanceRecord = this.loadJob(event.getFigure().getUserData().getIdentifier(), event.getFigure().getUserData().getJobName(),
+                JobConstants.BRIDGING_JOB_INSTANCE);
+            BridgingJobPositionedDialog positionedDialog = new BridgingJobPositionedDialog(jobInstanceRecord, this.logStreamingService, this.moduleMetaDataService,
+                this.schedulerJobInstanceService, this.scheduledContextInstanceService, this.parentContextInstance);
+            PositionedDialog.Position position = new PositionedDialog.Position(event.getFigure().getY(), event.getFigure().getX());
+            positionedDialog.setPosition(position);
+            positionedDialog.open();
+        }
     }
 
     /**
