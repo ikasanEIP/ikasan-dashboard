@@ -134,7 +134,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.schedulerJobService = schedulerJobService;
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
-        this.showDisplayName = showDisplayName;
+        this.showDisplayName = parentContextTemplate.isUseDisplayName();
         this.contextTemplate = contextTemplate;
         this.parentContextTemplate = parentContextTemplate;
     }

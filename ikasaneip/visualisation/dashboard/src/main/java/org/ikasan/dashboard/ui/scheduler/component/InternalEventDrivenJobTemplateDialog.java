@@ -55,12 +55,9 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
     Logger logger = LoggerFactory.getLogger(InternalEventDrivenJobTemplateDialog.class);
 
     private ComboBox<String> agentCb;
-
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
-    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
-
 
     // Fields to capture job execution properties.
     private AceEditor commandLineTa;
@@ -102,8 +99,6 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
 
     private String jobContextErrorMessage;
 
-    private boolean showDisplayName;
-
 
     /**
      * Constructor for InternalEventDrivenJobTemplateDialog.
@@ -135,7 +130,6 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
         this.schedulerJobService = schedulerJobService;
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
-        this.showDisplayName = showDisplayName;
         this.contextTemplate = contextTemplate;
         this.parentContextTemplate = parentContextTemplate;
     }
@@ -209,10 +203,10 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
                         this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
                     }
 
-                    this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.internalEventDrivenJob));
-                    this.jobSynchronisationRequiredListeners.forEach(listener -> listener.jobSynchronisationRequired());
                     this.editMode = EditMode.EDIT;
                     current.access(() -> {
+                        this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.internalEventDrivenJob));
+                        this.jobSynchronisationRequiredListeners.forEach(listener -> listener.jobSynchronisationRequired());
                         progressIndicatorDialog.close();
                         NotificationHelper.showUserNotification(
                             getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
@@ -309,18 +303,8 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(InternalEventDrivenJob::getJobDescription, InternalEventDrivenJob::setJobDescription);
 
-        if(this.showDisplayName) {
-            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
-            this.jobNameAliasTf.setId("jobNameAliasTf");
-            this.jobNameAliasTf.setRequired(false);
-            this.jobNameAliasTf.setEnabled(this.editMode == EditMode.NEW);
-            formBinder.forField(this.jobNameAliasTf)
-                .bind(InternalEventDrivenJob::getDisplayName, InternalEventDrivenJob::setDisplayName);
-            formLayout.add(jobNameAliasTf, jobDescriptionTa);
-        }
-        else {
-            formLayout.add(jobDescriptionTa, 2);
-        }
+        formLayout.add(jobDescriptionTa, 2);
+
 
         ComponentSecurityVisibility.applyEnabledSecurity(this.jobDescriptionTa, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
