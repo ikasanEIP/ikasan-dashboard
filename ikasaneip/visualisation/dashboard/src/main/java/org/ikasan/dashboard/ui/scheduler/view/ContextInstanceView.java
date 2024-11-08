@@ -7,20 +7,15 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.spring.annotation.RouteScope;
 import com.vaadin.flow.spring.annotation.UIScope;
 import jakarta.servlet.http.Cookie;
 import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.internationalisation.IkasanI18NProvider;
 import org.ikasan.dashboard.security.SecurityUtils;
-import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceWidget;
 import org.ikasan.dashboard.ui.util.CookieUtil;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -51,9 +46,6 @@ import javax.annotation.security.PermitAll;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Route(value = "contextInstance", layout = IkasanAppLayout.class)
 @UIScope

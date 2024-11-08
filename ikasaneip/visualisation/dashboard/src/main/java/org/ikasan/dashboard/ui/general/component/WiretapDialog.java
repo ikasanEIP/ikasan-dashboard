@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.ui.general.component;
 
-import com.vaadin.componentfactory.Tooltip;
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -9,16 +7,13 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.StreamResource;
-import org.ikasan.dashboard.ui.scheduler.component.RunningAndRecentlyCompletedJobExecutionDeepLinkView;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.vaadin.olli.FileDownloadWrapper;

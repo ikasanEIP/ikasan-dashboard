@@ -5,7 +5,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.util.IkasanColours;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 public class ContextTemplateStatusDiv extends Div {
     public static final String STATUS_TRANSLATE_PREFIX = "status.";

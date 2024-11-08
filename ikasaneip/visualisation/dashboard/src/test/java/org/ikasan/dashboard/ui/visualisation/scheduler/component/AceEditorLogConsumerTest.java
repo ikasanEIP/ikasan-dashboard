@@ -1,13 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.i18n.I18NProvider;
+import de.f0rce.ace.AceEditor;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -17,9 +12,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.vaadin.flow.component.UI;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import de.f0rce.ace.AceEditor;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 @Ignore

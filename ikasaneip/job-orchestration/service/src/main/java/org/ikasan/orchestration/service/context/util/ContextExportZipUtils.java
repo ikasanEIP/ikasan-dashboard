@@ -92,6 +92,22 @@ public final class ContextExportZipUtils {
             splitSubcontextToSeparateFiles);
     }
 
+    /**
+     * Creates a zip file containing various components related to the given context.
+     *
+     * @param context the ContextTemplate object representing the context to be included in the zip file
+     * @param unmodifiedContextName the unmodified name of the context for file naming purposes
+     * @param downloadName the name under which the zip file will be downloaded
+     * @param workingDirectory the root working directory for storing temporary files
+     * @param schedulerJobService the service for managing scheduler jobs
+     * @param emailNotificationDetailsService the service for managing email notification details
+     * @param emailNotificationContextService the service for managing email notification contexts
+     * @param contextProfileService the service for managing context profiles
+     * @param searchLimit the limit for fetching search results
+     * @param addReplacementTokens flag indicating whether replacement tokens should be added
+     * @param separateSubContextsWhenPersisting flag indicating whether to separate subcontexts when persisting
+     * @return a ByteArrayOutputStream containing the zip file data
+     */
     public static ByteArrayOutputStream createZipFile(ContextTemplate context,
                                                       String unmodifiedContextName,
                                                       String downloadName,
@@ -102,7 +118,7 @@ public final class ContextExportZipUtils {
                                                       ContextProfileService contextProfileService,
                                                       int searchLimit,
                                                       boolean addReplacementTokens,
-                                                      boolean seperateSubcontextsWhenPersisting) {
+                                                      boolean separateSubContextsWhenPersisting) {
         try {
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
@@ -119,7 +135,7 @@ public final class ContextExportZipUtils {
             String contextDir = topLevelDirectory + File.separator + CONTEXT_DIR;
             Path contextDirPath = mkdir(contextDir);
 
-            if (seperateSubcontextsWhenPersisting) {
+            if (separateSubContextsWhenPersisting) {
                 context.setOrdinal(0);
                 writeContextRoots(objectMapper, contextDir, context);
             } else {
@@ -133,6 +149,7 @@ public final class ContextExportZipUtils {
             Path jobsDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR);
             Path jobsFileDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + FILE_DIR);
             Path jobsInternalDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + INTERNAL_DIR);
+            Path jobsInternalTemplateDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + INTERNAL_TEMPLATES_DIR);
             Path jobsQuartzDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + QUARTZ_DIR);
             Path jobsGlobalDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + GLOBAL_JOB_DIR);
             Path notificationDir = Paths.get(topLevelDirectory + File.separator + NOTIFICATION_DIR);
@@ -142,6 +159,7 @@ public final class ContextExportZipUtils {
             Files.createDirectories(jobsDir);
             Files.createDirectories(jobsFileDir);
             Files.createDirectories(jobsInternalDir);
+            Files.createDirectories(jobsInternalTemplateDir);
             Files.createDirectories(jobsQuartzDir);
             Files.createDirectories(jobsGlobalDir);
             Files.createDirectories(notificationDir);
@@ -151,7 +169,7 @@ public final class ContextExportZipUtils {
             // get all the jobs
             int offset = 0;
             SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(unmodifiedContextName, searchLimit, offset);
-            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir
+            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, jobsInternalTemplateDir
                 , results.getResultList().stream().map(schedulerJobRecord -> schedulerJobRecord.getJob()).collect(Collectors.toList())
                 , addReplacementTokens);
 
@@ -160,7 +178,7 @@ public final class ContextExportZipUtils {
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
                 results = schedulerJobService.findByContext(unmodifiedContextName, searchLimit, offset);
-                addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir
+                addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, jobsInternalTemplateDir
                     , results.getResultList().stream().map(schedulerJobRecord -> schedulerJobRecord.getJob()).collect(Collectors.toList())
                     , addReplacementTokens);
             }
@@ -256,6 +274,16 @@ public final class ContextExportZipUtils {
                             splitSubcontextToSeparateFiles);
     }
 
+    /**
+     * Creates a zip file containing the context template and related job files.
+     *
+     * @param context                          The ContextTemplate object to be included in the zip file
+     * @param workingDirectory                 The base directory where the zip file will be created
+     * @param schedulerJobList                 List of SchedulerJob objects to be included in the zip file
+     * @param addReplacementTokens             Flag to indicate whether to add replacement tokens to the context
+     * @param seperateSubcontextsWhenPersisting Flag to indicate whether to separate subcontexts when persisting
+     * @return ByteArrayOutputStream containing the zip file data, or null if an error occurs
+     */
     public static ByteArrayOutputStream createZipFile(ContextTemplate context,
                                                       String workingDirectory,
                                                       List<SchedulerJob> schedulerJobList,
@@ -291,6 +319,7 @@ public final class ContextExportZipUtils {
             Path jobsDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR);
             Path jobsFileDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + FILE_DIR);
             Path jobsInternalDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + INTERNAL_DIR);
+            Path jobsInternalTemplateDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + INTERNAL_TEMPLATES_DIR);
             Path jobsQuartzDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + QUARTZ_DIR);
             Path jobsGlobalDir = Paths.get(topLevelDirectory + File.separator + JOBS_DIR + File.separator + GLOBAL_JOB_DIR);
             Path notificationDir = Paths.get(topLevelDirectory + File.separator + NOTIFICATION_DIR);
@@ -300,13 +329,14 @@ public final class ContextExportZipUtils {
             Files.createDirectories(jobsDir);
             Files.createDirectories(jobsFileDir);
             Files.createDirectories(jobsInternalDir);
+            Files.createDirectories(jobsInternalTemplateDir);
             Files.createDirectories(jobsQuartzDir);
             Files.createDirectories(jobsGlobalDir);
             Files.createDirectories(notificationDir);
             Files.createDirectories(notificationDetailDir);
             Files.createDirectories(profilesDir);
 
-            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir
+            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, jobsInternalTemplateDir
                 , schedulerJobList, addReplacementTokens);
 
             // create the outputstream
@@ -356,12 +386,27 @@ public final class ContextExportZipUtils {
         writeCurrentRoot(objectMapper, currentContextDirectory, currentContext);
     }
 
+    /**
+     * Creates a new context directory under the parent directory using the given ContextTemplate.
+     *
+     * @param parentDirectory The parent directory path where the new context directory will be created.
+     * @param context The ContextTemplate containing information for the new directory.
+     * @return The path of the newly created context directory.
+     * @throws IOException If an I/O error occurs during directory creation.
+     */
     private static String createContextDirectory(String parentDirectory, ContextTemplate context) throws IOException {
         String newDirectory = parentDirectory + File.separator + sanitiseForUseAsFilename(context.getName());
         mkdir(newDirectory);
         return newDirectory;
     }
 
+    /**
+     * Creates a new directory at the specified path if it doesn't already exist.
+     *
+     * @param newDirectory The path of the directory to be created.
+     * @return The Path object representing the newly created directory.
+     * @throws IOException If an I/O error occurs during directory creation.
+     */
     private static Path mkdir(String newDirectory) throws IOException {
         Path contextDir = Paths.get(newDirectory);
         Files.createDirectories(contextDir);
@@ -383,6 +428,14 @@ public final class ContextExportZipUtils {
         Files.write(contextFilePath, template.getBytes());
     }
 
+    /**
+     * Zips the contents of a directory into a ZipOutputStream.
+     *
+     * @param fileToZip the File representing the directory to be zipped
+     * @param fileName the name of the entry in the zip file
+     * @param zipOutputStream the ZipOutputStream to write the zipped data to
+     * @throws IOException if an I/O error occurs during zipping
+     */
     private static void zipDirectory(File fileToZip, String fileName, ZipOutputStream zipOutputStream) throws IOException {
         if (fileToZip.isDirectory()) {
             if (fileName.endsWith("/")) {
@@ -413,7 +466,20 @@ public final class ContextExportZipUtils {
         fis.close();
     }
 
-    private static void addJobFilesToZip(ObjectMapper objectMapper, Path p3, Path p4, Path p5, Path p6,
+    /**
+     * Adds job files to a zip archive.
+     *
+     * @param objectMapper the ObjectMapper to use for object serialization
+     * @param filePath the directory path where the FileEventDrivenJob files will be stored in the zip archive
+     * @param internalPath the directory path where the InternalEventDrivenJob files will be stored in the zip archive
+     * @param quartzPath the directory path where the QuartzScheduleDrivenJob files will be stored in the zip archive
+     * @param globalPath the directory path where the GlobalEventJob files will be stored in the zip archive
+     * @param internalTemplatePath the directory path where the InternalTemplatePath files will be stored in the zip archive
+     * @param results the list of SchedulerJob objects to add to the zip archive
+     * @param addReplacementTokens a boolean indicating whether replacement tokens should be added to the job files
+     * @throws IOException if an I/O error occurs during file creation or writing
+     */
+    private static void addJobFilesToZip(ObjectMapper objectMapper, Path filePath, Path internalPath, Path quartzPath, Path globalPath, Path internalTemplatePath,
                                          List<SchedulerJob> results, boolean addReplacementTokens) throws IOException {
         for (SchedulerJob schedulerJob : results) {
 
@@ -427,16 +493,22 @@ public final class ContextExportZipUtils {
             // sanitise the jobName as this will be used for the filename and that windows do not allow for certain characters
             String jobName = sanitiseForUseAsFilename(schedulerJob.getJobName());
             if (schedulerJob instanceof FileEventDrivenJob) {
-                jobPath = Paths.get(p3 + File.separator + jobName + ".json");
+                jobPath = Paths.get(filePath + File.separator + jobName + ".json");
             }
             else if (schedulerJob instanceof InternalEventDrivenJob) {
-                jobPath = Paths.get(p4 + File.separator + jobName + ".json");
+                if(schedulerJob.isTemplateJob() != null && schedulerJob.isTemplateJob()) {
+                    jobPath = Paths.get(internalTemplatePath + File.separator + jobName + ".json");
+                }
+                else {
+                    jobPath = Paths.get(internalPath + File.separator + jobName + ".json");
+                }
+
             }
             else if (schedulerJob instanceof QuartzScheduleDrivenJob) {
-                jobPath = Paths.get(p5 + File.separator + jobName + ".json");
+                jobPath = Paths.get(quartzPath + File.separator + jobName + ".json");
             }
             else if (schedulerJob instanceof GlobalEventJob) {
-                jobPath = Paths.get(p6 + File.separator + jobName + ".json");
+                jobPath = Paths.get(globalPath + File.separator + jobName + ".json");
             }
             else {
                 LOG.warn("Unknown job type: " + schedulerJob.getClass().getName());
@@ -449,6 +521,14 @@ public final class ContextExportZipUtils {
         }
     }
 
+    /**
+     * Adds notification files to a zip archive.
+     *
+     * @param objectMapper the ObjectMapper to use for object serialization
+     * @param notificationPath the directory where notification files will be stored in the zip archive
+     * @param results the search results containing EmailNotificationContextRecord objects to add to the zip archive
+     * @throws IOException if an I/O error occurs during file creation or writing
+     */
     private static void addNotificationFilesToZip(ObjectMapper objectMapper, Path notificationPath, SearchResults<EmailNotificationContextRecord> results) throws IOException {
         for (EmailNotificationContextRecord record : results.getResultList()) {
             String jsonString = objectMapper.writeValueAsString(record.getEmailNotificationContext());
@@ -463,6 +543,14 @@ public final class ContextExportZipUtils {
         }
     }
 
+    /**
+     * Adds notification detail files to a zip archive.
+     *
+     * @param objectMapper the ObjectMapper to use for object serialization
+     * @param notificationDetailPath the directory where notification detail files will be stored in the zip archive
+     * @param results the search results containing EmailNotificationDetailsRecord objects to add to the zip archive
+     * @throws IOException if an I/O error occurs during file creation or writing
+     */
     private static void addNotificationDetailFilesToZip(ObjectMapper objectMapper, Path notificationDetailPath, SearchResults<EmailNotificationDetailsRecord> results) throws IOException {
         for (EmailNotificationDetailsRecord record : results.getResultList()) {
             String jsonString = objectMapper.writeValueAsString(record.getEmailNotificationDetails());
@@ -477,6 +565,14 @@ public final class ContextExportZipUtils {
         }
     }
 
+    /**
+     * Adds profile files to a zip archive.
+     *
+     * @param objectMapper the ObjectMapper to use for object serialization
+     * @param profilesDir the directory where profile files will be stored in the zip archive
+     * @param results the search results containing ContextProfileRecord objects to add to the zip archive
+     * @throws IOException if an I/O error occurs during file creation or writing
+     */
     private static void addProfilesFilesToZip(ObjectMapper objectMapper, Path profilesDir, SearchResults<ContextProfileRecord> results) throws IOException {
         for (ContextProfileRecord record : results.getResultList()) {
             String jsonString = objectMapper.writeValueAsString(record);
@@ -491,12 +587,24 @@ public final class ContextExportZipUtils {
         }
     }
 
+    /**
+     * Deletes the specified working directory if it exists.
+     *
+     * @param name the name of the directory to delete
+     * @throws IOException if an I/O error occurs
+     */
     private static void deleteWorkingDirectory(String name) throws IOException {
         if (Files.exists(Paths.get(name))) {
             FileUtils.deleteDirectory(new File(name));
         }
     }
 
+    /**
+     * Retrieves the working directory to be used for zipping.
+     *
+     * @param workingDirectory the directory path to check
+     * @return an empty string if the working directory is ".", otherwise the provided working directory
+     */
     private static String getWorkingDirectory(String workingDirectory) {
         if (workingDirectory.equals(".")) {
             return "";

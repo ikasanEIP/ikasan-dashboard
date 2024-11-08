@@ -41,14 +41,17 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
     private ConfigurableFilterDataProvider<ContextParameterHolder, Void, ContextParameterFilter> filteredDataProvider;
 
     private ContextParameterFilter searchFilter = new ContextParameterFilter();
+    boolean canAddRemoveParams = true;
 
     /**
-     * Constructor
+     * Constructs a new ContextParameterDialog with the specified settings.
      *
-     * @param editable
+     * @param editable           boolean value indicating if the dialog is editable
+     * @param canAddRemoveParams boolean value indicating if parameters can be added or removed
      */
-    public ContextParameterDialog(boolean editable) {
+    public ContextParameterDialog(boolean editable, boolean canAddRemoveParams) {
         this.editable = editable;
+        this.canAddRemoveParams = canAddRemoveParams;
         super.showResize(false);
         super.title.setText(getTranslation("label.context-parameters", UI.getCurrent().getLocale()));
         this.contextParameterHolders = new ArrayList<>();
@@ -99,9 +102,9 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
                         contextParameterHolderGrid.getDataProvider().refreshAll();
                     });
 
-                    ComponentSecurityVisibility.applySecurity(remove, SecurityConstants.ALL_AUTHORITY,
-                        SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
-                        SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+                    remove.setVisible(this.editable && this.canAddRemoveParams && ComponentSecurityVisibility.hasAuthorisation(
+                        SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                        SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
                     horizontalLayout.add(remove);
                     horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, remove);
@@ -186,6 +189,7 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
      * @param contextParameters
      */
     public void initParams(List<ContextParameter> contextParameters) {
+        this.canAddRemoveParams = canAddRemoveParams;
         FormLayout formLayout = new FormLayout();
         formLayout.setResponsiveSteps(
             new FormLayout.ResponsiveStep("500px", 15)
@@ -200,7 +204,7 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
 
         Icon addIcon = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("label.add-context-parameter"
             , UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        addIcon.setVisible(this.editable &&
+        addIcon.setVisible(this.editable && this.canAddRemoveParams &&
             ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));

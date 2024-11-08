@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.command;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import org.ikasan.dashboard.internationalisation.IkasanI18NProvider;

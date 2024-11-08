@@ -21,6 +21,9 @@ public class SchedulerJobImpl implements SchedulerJob {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected Map<String, Boolean> heldContexts = new HashMap<>();
     protected int ordinal = -1;
+    protected Boolean templateJob;
+    protected Boolean isTemplateBased;
+    protected String templateName;
 
     @Override
     public String getContextName() {
@@ -133,6 +136,36 @@ public class SchedulerJobImpl implements SchedulerJob {
     @Override
     public void setOrdinal(int ordinal) {
         this.ordinal = ordinal;
+    }
+
+    @Override
+    public Boolean isTemplateJob() {
+        return templateJob;
+    }
+
+    @Override
+    public void setTemplateJob(Boolean templateJob) {
+        this.templateJob = templateJob;
+    }
+
+    @Override
+    public Boolean isTemplateBased() {
+        return isTemplateBased;
+    }
+
+    @Override
+    public void setTemplateBased(Boolean templateBased) {
+        isTemplateBased = templateBased;
+    }
+
+    @Override
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    @Override
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
     }
 
     @Override

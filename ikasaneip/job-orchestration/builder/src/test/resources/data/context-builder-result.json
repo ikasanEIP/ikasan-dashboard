@@ -117,6 +117,7 @@
   "ableToRunConcurrently" : true,
   "useDisplayName" : false,
   "ordinal" : 1,
+  "renderLogicalBoundaries" : true,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

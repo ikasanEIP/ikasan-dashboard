@@ -9,7 +9,6 @@ import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.theme.material.Material;
 
 @CssImport("./styles/ikasan-dialog.css")
 public abstract class AbstractCloseableResizableDialog extends Dialog

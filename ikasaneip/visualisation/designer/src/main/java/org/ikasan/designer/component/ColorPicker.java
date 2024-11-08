@@ -1,7 +1,6 @@
 package org.ikasan.designer.component;
 
 import com.flowingcode.vaadin.addons.fontawesome.FontAwesome;
-import com.helger.commons.math.FactorialHelper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.icon.Icon;

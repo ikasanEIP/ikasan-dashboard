@@ -27,7 +27,6 @@ import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditAggreg
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
 import org.ikasan.scheduled.instance.service.SolrScheduledContextInstanceServiceImpl;
 import org.ikasan.scheduled.instance.service.SolrSchedulerJobInstanceServiceImpl;
 import org.ikasan.scheduled.job.dao.*;
@@ -73,6 +72,7 @@ import org.ikasan.systemevent.service.SolrSystemEventSearchServiceImpl;
 import org.ikasan.systemevent.service.SolrSystemEventServiceImpl;
 import org.ikasan.wiretap.dao.SolrWiretapDao;
 import org.ikasan.wiretap.service.SolrWiretapServiceImpl;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -283,12 +283,14 @@ public class SolrClientAutoConfiguration {
 
     @Bean
     public SchedulerJobService solrSchedulerJobService(SolrFileEventDrivenJobDaoImpl fileEventDrivenJobDao
-        , SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobDao, SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobDao
+        , @Qualifier("internalEventDrivenJobRecordDao") SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobDao, SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobDao
         , SolrGlobalEventJobDaoImpl globalEventJobRecordDao, SolrContextStartJobDaoImpl contextStartJobDao
-        , SolrContextTerminalJobDaoImpl contextTerminalJobDao, SolrSchedulerJobDaoImpl schedulerJobDao) {
+        , SolrContextTerminalJobDaoImpl contextTerminalJobDao, SolrSchedulerJobDaoImpl schedulerJobDao
+        , @Qualifier("internalEventDrivenJobTemplateDao") SolrInternalEventDrivenJobTemplateDaoImpl internalEventDrivenJobTemplateDao) {
         return new SolrSchedulerJobServiceImpl(fileEventDrivenJobDao
-            ,internalEventDrivenJobDao, quartzScheduleDrivenJobDao
-            ,globalEventJobRecordDao, contextStartJobDao, contextTerminalJobDao, schedulerJobDao);
+            , internalEventDrivenJobDao, quartzScheduleDrivenJobDao
+            , globalEventJobRecordDao, contextStartJobDao, contextTerminalJobDao, schedulerJobDao
+            , internalEventDrivenJobTemplateDao);
     }
 
     @Bean
@@ -308,7 +310,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public InternalEventDrivenJobService internalEventDrivenJobService(InternalEventDrivenJobDao internalEventDrivenJobDao) {
+    public InternalEventDrivenJobService internalEventDrivenJobService(@Qualifier("internalEventDrivenJobRecordDao") InternalEventDrivenJobDao internalEventDrivenJobDao) {
         return new SolrInternalEventDrivenJobRecordServiceImpl(internalEventDrivenJobDao);
     }
 
@@ -334,9 +336,20 @@ public class SolrClientAutoConfiguration {
         return dao;
     }
 
-    @Bean
+    @Bean("internalEventDrivenJobRecordDao")
     public SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao() {
         SolrInternalEventDrivenJobDaoImpl dao = new SolrInternalEventDrivenJobDaoImpl();
+        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
+            solrConnectionTimeoutMilli);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
+
+        return dao;
+    }
+
+    @Bean("internalEventDrivenJobTemplateDao")
+    public SolrInternalEventDrivenJobTemplateDaoImpl internalEventDrivenJobTemplateDao() {
+        SolrInternalEventDrivenJobTemplateDaoImpl dao = new SolrInternalEventDrivenJobTemplateDaoImpl();
         dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
             solrConnectionTimeoutMilli);
         dao.setSolrUsername(solrUsername);

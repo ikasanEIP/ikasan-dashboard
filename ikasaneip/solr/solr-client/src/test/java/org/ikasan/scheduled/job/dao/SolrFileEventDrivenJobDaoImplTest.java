@@ -19,7 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.IntStream;
 
-public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
+public class SolrFileEventDrivenJobDaoImplTest extends SolrTestCaseJ4 {
 
     private SolrFileEventDrivenJobDaoImpl dao;
 

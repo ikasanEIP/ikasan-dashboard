@@ -1,10 +1,7 @@
 package org.ikasan.dashboard.ui.search.component;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;

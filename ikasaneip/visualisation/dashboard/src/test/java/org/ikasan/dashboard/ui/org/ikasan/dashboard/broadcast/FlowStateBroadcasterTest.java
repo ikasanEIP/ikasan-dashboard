@@ -2,7 +2,6 @@ package org.ikasan.dashboard.ui.org.ikasan.dashboard.broadcast;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class FlowStateBroadcasterTest
 {

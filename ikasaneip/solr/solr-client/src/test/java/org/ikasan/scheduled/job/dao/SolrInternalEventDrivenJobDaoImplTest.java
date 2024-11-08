@@ -17,8 +17,9 @@ import org.springframework.util.FileSystemUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
-public class SolrInternalEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
+public class SolrInternalEventDrivenJobDaoImplTest extends SolrTestCaseJ4 {
 
     private SolrInternalEventDrivenJobDaoImpl dao;
 
@@ -81,26 +82,38 @@ public class SolrInternalEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 
         }
     }
 
-//    @Test
-//    public void test_find_all() throws Exception {
-//
-//        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
-//        {
-//            init(server);
-//
-//            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl("id"
-//                , "contextName", "context", 1000000L);
-//            this.dao.save(scheduledContextRecord);
-//
-//            scheduledContextRecord = new SolrScheduledContextRecordImpl("id2"
-//                , "contextName", "context", 1000000L);
-//            this.dao.save(scheduledContextRecord);
-//
-//            List<ScheduledContextRecord> found = (List<ScheduledContextRecord>) this.dao.findAll();
-//
-//            Assert.assertEquals(2, found.size());
-//        }
-//    }
+    @Test
+    public void test_find_all() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+            solrInternalEventDrivenJob.setContextName("contextId");
+            SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
+            solrInternalEventDrivenJobRecord.setAgentName("agentName");
+            solrInternalEventDrivenJobRecord.setJobName("jobName");
+            solrInternalEventDrivenJobRecord.setTimestamp(1000000L);
+            solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(solrInternalEventDrivenJob);
+
+            this.dao.save(solrInternalEventDrivenJobRecord);
+
+            solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+            solrInternalEventDrivenJob.setContextName("contextId");
+            solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
+            solrInternalEventDrivenJobRecord.setAgentName("agentName");
+            solrInternalEventDrivenJobRecord.setJobName("jobName2");
+            solrInternalEventDrivenJobRecord.setTimestamp(1000000L);
+            solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(solrInternalEventDrivenJob);
+
+            this.dao.save(solrInternalEventDrivenJobRecord);
+
+            List<InternalEventDrivenJobRecord> found = (List<InternalEventDrivenJobRecord>) this.dao
+                .findAll(1000, 0).getResultList();
+
+            Assert.assertEquals(2, found.size());
+        }
+    }
 
     public static String TEST_HOME() {
         return getFile("solr/ikasan").getParent();

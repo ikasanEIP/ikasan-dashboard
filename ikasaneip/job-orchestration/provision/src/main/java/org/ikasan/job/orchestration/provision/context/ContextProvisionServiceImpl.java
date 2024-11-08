@@ -2,7 +2,6 @@ package org.ikasan.job.orchestration.provision.context;
 
 import com.esotericsoftware.minlog.Log;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
-import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
@@ -33,10 +32,11 @@ import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.withinOperatingWindow;
 
 public class ContextProvisionServiceImpl implements ContextProvisionService {
 
@@ -214,7 +214,8 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                 SchedulerJobWrapper schedulerJobWrapper = new SchedulerJobWrapperImpl();
                 schedulerJobWrapper.setJobs(contextJobs.stream()
                     .filter(schedulerJob -> schedulerJob.getAgentName().equals(agent.getName()) &&
-                        !(schedulerJob instanceof GlobalEventJob)) // Do not provision Global Events as this is not managed by the agent, but through the ContextMachine
+                        !(schedulerJob instanceof GlobalEventJob) && // Do not provision Global Events as this is not managed by the agent, but through the ContextMachine
+                        !(schedulerJob.isTemplateJob() != null && schedulerJob.isTemplateJob() == true)) // Do not provision template jobs as they are not managed by the agent, but through the ContextMachine
                     .collect(Collectors.toList()));
 
                 LOG.info(String.format("Attempting to provision %s jobs on agent[%s]", schedulerJobWrapper.getJobs().size(), agent.getUrl()));

@@ -1,7 +1,6 @@
 package org.ikasan.notification.monitor.mock;
 
 import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
@@ -238,5 +237,25 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     @Override
     public Map<String, InternalEventDrivenJob> getCommandExecutionJobsForContext(String contextName) {
         return null;
+    }
+
+    @Override
+    public void saveInternalEventDrivenJobTemplateRecord(InternalEventDrivenJobRecord internalEventDrivenJobRecord, String modifiedBy) {
+
+    }
+
+    @Override
+    public void saveInternalEventDrivenJobTemplate(InternalEventDrivenJob internalEventDrivenJob, String modifiedBy) {
+
+    }
+
+    @Override
+    public void saveInternalEventDrivenJobTemplateRecords(List internalEventDrivenJobRecord) {
+
+    }
+
+    @Override
+    public void saveInternalEventDrivenJobTemplates(List quartzScheduleDrivenJobs, String actor) {
+
     }
 }

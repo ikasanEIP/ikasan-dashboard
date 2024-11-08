@@ -1,7 +1,5 @@
 package org.ikasan.job.orchestration.context.util;
 
-import java.util.*;
-
 import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfiguration;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
@@ -10,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+
+import java.util.*;
 
 public class SchedulerContextParametersPropertiesProvider extends Properties {
     private final static Logger LOG = LoggerFactory.getLogger(SchedulerContextParametersPropertiesProvider.class);

@@ -484,6 +484,36 @@ public class JobInitiationServiceImplTest {
             public int getOrdinal() {
                 return 0;
             }
+
+            @Override
+            public void setTemplateJob(Boolean isTemplateJob) {
+
+            }
+
+            @Override
+            public Boolean isTemplateJob() {
+                return null;
+            }
+
+            @Override
+            public void setTemplateBased(Boolean isTemplateBased) {
+
+            }
+
+            @Override
+            public Boolean isTemplateBased() {
+                return null;
+            }
+
+            @Override
+            public void setTemplateName(String templateName) {
+
+            }
+
+            @Override
+            public String getTemplateName() {
+                return null;
+            }
         };
     }
 }

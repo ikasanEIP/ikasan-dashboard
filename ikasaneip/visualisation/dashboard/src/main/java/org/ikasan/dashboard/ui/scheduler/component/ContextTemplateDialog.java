@@ -24,7 +24,6 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.general.component.Divider;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
@@ -35,7 +34,6 @@ import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.rest.dashboard.model.user.IkasanPrincipal;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -75,7 +73,6 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private IntegerField contextTtlMinutes;
     private IntegerField contextTtlHours;
     private IntegerField contextTtlDays;
-
     private IntegerField contextVisualisationLevelDistanceIf;
     private IntegerField contextVisualisationNodeDistanceIf;
     private IntegerField jobVisualisationHorizontalSpacingIf;
@@ -84,6 +81,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private IntegerField treeViewExpandLevel;
     private Checkbox isAbleToRunConcurrentlyCb;
     private Checkbox useDisplayNameCb;
+    private Checkbox renderLogicalBoundariesCb;
     private DateTimePicker blackoutWindowStartTime;
     private DateTimePicker blackoutWindowEndTime;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
@@ -162,7 +160,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      */
     private void init() {
         this.blackoutWindowDateTimePairs = new ArrayList<>();
-        this.setHeight("880px");
+        this.setHeight("1200px");
         this.setWidth("98vw");
 
         super.showResize(false);
@@ -215,9 +213,6 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         buttonLayout.getElement().getStyle().set("position", "absolute");
         buttonLayout.getElement().getStyle().set("bottom", "20px");
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, saveButton, cancelButton);
-        Divider divider = new Divider();
-        divider.getStyle().set("background-color", "rgba(0, 0, 0, 0.28)");
-        layout.add(divider);
         layout.add(buttonLayout);
 
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
@@ -356,6 +351,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         binder.forField(this.useDisplayNameCb)
             .bind(ContextTemplate::isUseDisplayName, ContextTemplate::setUseDisplayName);
 
+        this.renderLogicalBoundariesCb = new Checkbox(getTranslation("label.render-logical-boundaries"));
+        this.renderLogicalBoundariesCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.renderLogicalBoundariesCb)
+            .bind(ContextTemplate::isRenderLogicalBoundaries, ContextTemplate::setRenderLogicalBoundaries);
+
         binder.readBean(this.contextTemplate);
 
         this.blackoutWindowStartTime = new DateTimePicker(getTranslation("label.blackout-window-start-date-time", UI.getCurrent().getLocale()));
@@ -439,8 +439,10 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             new FormLayout.ResponsiveStep("500px", 40)
         );
         this.formLayout.setWidth("100%");
+        this.formLayout.setHeightFull();
 
-        VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb, this.useDisplayNameCb);
+        VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
+            , this.useDisplayNameCb, this.renderLogicalBoundariesCb);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");

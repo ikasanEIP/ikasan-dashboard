@@ -5,10 +5,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.data.provider.Query;
-import org.apache.commons.io.IOUtils;
 import org.ikasan.dashboard.ui.scheduler.AbstractSchedulerViewTest;
 import org.ikasan.dashboard.ui.scheduler.component.ScheduledAgentsFilteringGrid;
-import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.module.ModuleType;
 import org.junit.Assert;
@@ -17,13 +15,10 @@ import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 /**

@@ -25,6 +25,7 @@ import org.ikasan.dashboard.ui.scheduler.util.NewSchedulerJobEventBroadcastListe
 import org.ikasan.dashboard.ui.scheduler.util.NewSchedulerJobEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -261,7 +262,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 .setResizable(true)
                 .setSortable(true)
                 .setKey("alias")
-                .setFlexGrow(6);
+                .setFlexGrow(12);
         }
 
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
@@ -286,7 +287,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             .setResizable(true)
             .setSortable(true)
             .setKey("flowName")
-            .setFlexGrow(6);
+            .setFlexGrow(12);
 
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -299,7 +300,37 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             .setResizable(true)
             .setSortable(true)
             .setKey("type")
-            .setFlexGrow(2);
+            .setFlexGrow(4);
+
+        schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+                VerticalLayout verticalLayout = new VerticalLayout();
+
+                if(schedulerJobRecord.getJob().isTemplateBased() != null && schedulerJobRecord.getJob().isTemplateBased()) {
+                    Icon openTemplate = IconDecorator.decorate(new Icon(VaadinIcon.OPEN_BOOK)
+                        , getTranslation("tooltip.open-job-plan-template"), "14pt", "rgba(0, 0, 0, 1.0)");
+                    openTemplate.addClickListener(event -> {
+                        SchedulerJobRecord job = this.schedulerJobService.findByContextNameAndJobName(this.contextTemplate.getName(), schedulerJobRecord.getJob().getTemplateName());
+                        InternalEventDrivenJobTemplateDialog internalEventDrivenJobTemplateDialog
+                            = new InternalEventDrivenJobTemplateDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                            this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate,
+                            this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
+
+                        InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+                        internalEventDrivenJob.setContextName(this.contextTemplate.getName());
+                        internalEventDrivenJobTemplateDialog.setJob((InternalEventDrivenJob) job.getJob(), EditMode.EDIT);
+                        internalEventDrivenJobTemplateDialog.open();
+                    });
+
+                    verticalLayout.add(openTemplate);
+                    verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, openTemplate);
+                }
+                verticalLayout.setWidthFull();
+                return verticalLayout;
+            })).setHeader(getTranslation("table-header.job-template", UI.getCurrent().getLocale()))
+            .setResizable(true)
+            .setSortable(true)
+            .setKey("template")
+            .setFlexGrow(1);
 
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
                 VerticalLayout verticalLayout = new VerticalLayout();
@@ -368,7 +399,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             .setResizable(true)
             .setSortable(true)
             .setKey("childContexts")
-            .setFlexGrow(6);
+            .setFlexGrow(8);
 
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
                 VerticalLayout verticalLayout = new VerticalLayout();
@@ -670,7 +701,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         }))
         .setResizable(true)
         .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
-        .setFlexGrow(2);
+        .setFlexGrow(12);
 
         this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">${item.date}</div>")
@@ -680,17 +711,17 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             .setKey("timestamp")
             .setResizable(true)
             .setSortable(true)
-            .setFlexGrow(2);
+            .setFlexGrow(4);
 
         this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
-            "<div style=\"word-wrap:normal; white-space:normal\">{item.modified}</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">${item.modified}</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
             .setKey("modifiedTimestamp")
             .setResizable(true)
             .setSortable(true)
-            .setFlexGrow(2);
+            .setFlexGrow(4);
 
         this.schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -703,7 +734,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         .setResizable(true)
         .setHeader(getTranslation("table-header.modified-by", UI.getCurrent().getLocale()))
         .setSortable(true)
-        .setFlexGrow(1);
+        .setFlexGrow(2);
         this.schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
                 VerticalLayout labelLayout = new VerticalLayout();
                 SchedulerStatusDiv schedulerStatusDiv = new SchedulerStatusDiv();
@@ -743,7 +774,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         .setHeader(getTranslation("table-header.skip-hold", UI.getCurrent().getLocale()))
         .setSortable(true)
         .setKey("status")
-        .setFlexGrow(1);
+        .setFlexGrow(2);
 
         this.schedulerJobFilteringGrid.addItemDoubleClickListener(event -> {
             if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB)) {
@@ -777,12 +808,27 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
-                    , schedulerJobExecutionEnvironmentLabel, this.contextTemplate.isUseDisplayName());
+                    , this.contextTemplate, this.contextTemplate, schedulerJobExecutionEnvironmentLabel);
                 internalEventDrivenJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 internalEventDrivenJobDialog.open();
 
                 internalEventDrivenJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobFilteringGrid.refresh();
+                    }
+                });
+
+            }
+            else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE)) {
+                InternalEventDrivenJobTemplateDialog internalEventDrivenJobTemplateDialog = new InternalEventDrivenJobTemplateDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
+                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, contextTemplate, contextTemplate
+                    , schedulerJobExecutionEnvironmentLabel);
+
+                internalEventDrivenJobTemplateDialog.setJob(event.getItem(), EditMode.EDIT);
+                internalEventDrivenJobTemplateDialog.open();
+
+                internalEventDrivenJobTemplateDialog.addOpenedChangeListener(openedChangeEvent -> {
                     if(!openedChangeEvent.isOpened()) {
                         this.schedulerJobFilteringGrid.refresh();
                     }

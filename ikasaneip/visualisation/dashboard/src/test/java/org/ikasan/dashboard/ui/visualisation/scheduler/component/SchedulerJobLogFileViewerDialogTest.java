@@ -1,10 +1,10 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.junit.Before;
@@ -12,12 +12,10 @@ import org.junit.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
-import de.f0rce.ace.AceEditor;
-import de.f0rce.ace.enums.AceMode;
-import de.f0rce.ace.enums.AceTheme;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SchedulerJobLogFileViewerDialogTest extends UITest {
 

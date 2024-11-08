@@ -16,7 +16,9 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -31,8 +33,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
-    private Logger logger = LoggerFactory.getLogger(SchedulerJobFilteringGrid.class);
+public class CommandExecutionJobTemplateFilteringGrid extends Grid<SchedulerJobRecord> {
+    private Logger logger = LoggerFactory.getLogger(CommandExecutionJobTemplateFilteringGrid.class);
 
     private SchedulerJobService schedulerJobService;
 
@@ -49,18 +51,14 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
      * Constructor
      *
      * @param schedulerJobService
-     * @param searchFilter
      */
-    public SchedulerJobFilteringGrid(SchedulerJobService schedulerJobService,
-                                     SchedulerJobSearchFilter searchFilter) {
+    public CommandExecutionJobTemplateFilteringGrid(SchedulerJobService schedulerJobService) {
         this.schedulerJobService = schedulerJobService;
         if(this.schedulerJobService ==  null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
         }
-        this.searchFilter = searchFilter;
-        if(this.searchFilter ==  null) {
-            throw new IllegalArgumentException("searchFilter cannot be null!");
-        }
+        this.searchFilter = new SolrSchedulerJobSearchFilterImpl();
+        this.searchFilter.setJobTypeFilter(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE);
     }
 
     /**

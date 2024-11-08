@@ -1,14 +1,11 @@
 package org.ikasan.dashboard.ui.layout;
 
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
 

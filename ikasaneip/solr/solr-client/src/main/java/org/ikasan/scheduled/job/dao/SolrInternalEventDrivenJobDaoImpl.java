@@ -36,23 +36,23 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
         document.addField(TYPE, JobConstants.INTERNAL_EVENT_DRIVEN_JOB);
         try {
             InternalEventDrivenJob job = event.getInternalEventDrivenJob();
-            document.addField(ID, JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_"
+            document.setField(ID, JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_"
                 + event.getJobName() + "_" + job.getContextName());
-            document.addField(PAYLOAD_CONTENT, getInternalEventDrivenJob(job));
-            document.addField(DISPLAY_NAME, job.getDisplayName());
+            document.setField(PAYLOAD_CONTENT, getInternalEventDrivenJob(job));
+            document.setField(DISPLAY_NAME, job.getDisplayName());
             document.setField(TARGET_RESIDING_CONTEXT_ONLY, job.isTargetResidingContextOnly());
             document.setField(PARTICIPATES_IN_LOCK, job.isParticipatesInLock());
-            document.addField(COMPONENT_NAME, job.getContextName());
+            document.setField(COMPONENT_NAME, job.getContextName());
         }
         catch (JsonProcessingException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert InternalEventDrivenJob to string! [%s]", event), e);
         }
 
-        document.addField(MODULE_NAME, event.getAgentName());
-        document.addField(FLOW_NAME, event.getJobName());
-        document.addField(CREATED_DATE_TIME, event.getTimestamp());
-        document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
-        document.addField(MODIFIED_BY, event.getModifiedBy());
+        document.setField(MODULE_NAME, event.getAgentName());
+        document.setField(FLOW_NAME, event.getJobName());
+        document.setField(CREATED_DATE_TIME, event.getTimestamp());
+        document.setField(UPDATED_DATE_TIME, System.currentTimeMillis());
+        document.setField(MODIFIED_BY, event.getModifiedBy());
         document.setField(EXPIRY, DO_NOT_EXPIRE);
         document.setField(HELD, event.isHeld());
         document.setField(SKIPPED, event.isSkipped());

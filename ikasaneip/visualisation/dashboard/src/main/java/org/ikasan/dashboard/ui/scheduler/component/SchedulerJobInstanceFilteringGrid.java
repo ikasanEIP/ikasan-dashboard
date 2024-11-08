@@ -32,13 +32,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstanceRecord> {

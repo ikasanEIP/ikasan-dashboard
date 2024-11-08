@@ -5,12 +5,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.ikasan.scheduled.job.model.SolrContextStartJobImpl;
-import org.ikasan.scheduled.job.model.SolrContextStartJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrContextTerminalJobImpl;
 import org.ikasan.scheduled.job.model.SolrContextTerminalJobRecordImpl;
-import org.ikasan.spec.scheduled.job.model.ContextStartJob;
-import org.ikasan.spec.scheduled.job.model.ContextStartJobRecord;
 import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.scheduled.job.model.ContextTerminalJobRecord;
 import org.junit.After;
@@ -26,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class SolrContextTerminalJobRecordDaoImplTest extends SolrTestCaseJ4 {
+public class SolrContextTerminalJobDaoImplTest extends SolrTestCaseJ4 {
 
     SolrContextTerminalJobDaoImpl dao;
 

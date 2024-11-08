@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
+public class SolrQuartzScheduleEventDrivenJobDaoImplTest extends SolrTestCaseJ4 {
 
     private SolrQuartzScheduleDrivenJobDaoImpl dao;
 

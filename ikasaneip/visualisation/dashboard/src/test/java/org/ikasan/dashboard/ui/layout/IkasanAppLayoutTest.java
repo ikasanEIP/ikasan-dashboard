@@ -6,23 +6,16 @@ import com.vaadin.flow.component.button.Button;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.general.component.AboutIkasanDialog;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
-import org.ikasan.security.model.User;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.solr.service.SolrGeneralServiceImpl;
-import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.rules.TestName;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._click;

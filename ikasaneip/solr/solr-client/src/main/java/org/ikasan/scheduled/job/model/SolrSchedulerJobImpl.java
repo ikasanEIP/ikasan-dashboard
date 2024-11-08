@@ -4,7 +4,6 @@ package org.ikasan.scheduled.job.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.*;
@@ -23,6 +22,9 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     protected Map<String, Boolean> skippedContexts = new HashMap<>();
     protected Map<String, Boolean> heldContexts = new HashMap<>();
     protected int ordinal = -1;
+    protected Boolean templateJob;
+    protected Boolean templateBased;
+    protected String templateName;
 
     @Override
     public String getContextName() {
@@ -143,6 +145,35 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     @Override
     public void setOrdinal(int ordinal) {
         this.ordinal = ordinal;
+    }
+
+    @Override
+    public Boolean isTemplateJob() {
+        return templateJob;
+    }
+
+    @Override
+    public void setTemplateJob(Boolean templateJob) {
+        this.templateJob = templateJob;
+    }
+
+    @Override
+    public Boolean isTemplateBased() {
+        return templateBased;
+    }
+    @Override
+    public void setTemplateBased(Boolean templateBased) {
+        this.templateBased = templateBased;
+    }
+
+    @Override
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    @Override
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
     }
 
     @Override

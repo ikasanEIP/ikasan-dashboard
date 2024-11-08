@@ -34,6 +34,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected Integer contextVisualisationLevelDistance;
     protected Integer contextVisualisationNodeDistance;
     protected Integer visualisationFontSize;
+    protected Boolean renderLogicalBoundaries = true;
 
     @Override
     public String getName() {
@@ -248,6 +249,16 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @Override
     public void setVisualisationFontSize(Integer visualisationFontSize) {
         this.visualisationFontSize = visualisationFontSize;
+    }
+
+    @Override
+    public Boolean isRenderLogicalBoundaries() {
+        return renderLogicalBoundaries;
+    }
+
+    @Override
+    public void setRenderLogicalBoundaries(Boolean renderLogicalBoundaries) {
+        this.renderLogicalBoundaries = renderLogicalBoundaries;
     }
 
     @Override

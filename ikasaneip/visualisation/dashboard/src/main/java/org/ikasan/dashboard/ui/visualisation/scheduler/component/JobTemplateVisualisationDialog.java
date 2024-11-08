@@ -355,6 +355,29 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                 internalEventDrivenJobDialog.addJobSynchronisationRequiredListener(listener));
             internalEventDrivenJobDialog.open();
         });
+        jobTypesSubMenu.addItem(getTranslation("menu-item.from-command-execution-job-template", UI.getCurrent().getLocale()), event -> {
+                CommandExecutionJobTemplateSelectDialog schedulerJobSelectDialog = new CommandExecutionJobTemplateSelectDialog(this.schedulerJobService,
+                    this.rootContextTemplate, "Select Command Execution Job Template", "Select Command Execution Job Template");
+                schedulerJobSelectDialog.open();
+                schedulerJobSelectDialog.addSchedulerJobSelectedListener(schedulerJob -> {
+                    InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                        this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
+
+                    InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+                    internalEventDrivenJob.setContextName(this.contextTemplate.getName());
+                    internalEventDrivenJobDialog.setJob((InternalEventDrivenJob) schedulerJob, EditMode.NEW);
+                    internalEventDrivenJobDialog.addSchedulerJobSelectedListener(this);
+
+                    this.jobSynchronisationRequiredListeners.forEach(listener ->
+                        internalEventDrivenJobDialog.addJobSynchronisationRequiredListener(listener));
+
+                    internalEventDrivenJobDialog.open();
+                });
+            })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
                 this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName());

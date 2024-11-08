@@ -7,9 +7,6 @@ import org.ikasan.dashboard.ui.util.DashboardApplicationContextProvider;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.springframework.boot.info.BuildProperties;
 
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-
 public class AboutIkasanDialog extends AbstractCloseableResizableDialog
 {
 

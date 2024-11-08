@@ -1,7 +1,6 @@
 package org.ikasan.scheduled.instance.model;
 
 import org.ikasan.spec.scheduled.instance.model.ContextTerminalJobInstance;
-import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 
 import java.util.Objects;

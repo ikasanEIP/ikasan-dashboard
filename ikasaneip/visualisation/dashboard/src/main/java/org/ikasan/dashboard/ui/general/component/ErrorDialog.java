@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.ui.general.component;
 
-import com.vaadin.componentfactory.Tooltip;
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;

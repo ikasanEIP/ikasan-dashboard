@@ -7,12 +7,8 @@ import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
 import org.ikasan.scheduled.job.model.SolrBridgingJobImpl;
 import org.ikasan.scheduled.job.model.SolrBridgingJobRecordImpl;
-import org.ikasan.scheduled.job.model.SolrContextStartJobImpl;
-import org.ikasan.scheduled.job.model.SolrContextStartJobRecordImpl;
 import org.ikasan.spec.scheduled.job.model.BridgingJob;
 import org.ikasan.spec.scheduled.job.model.BridgingJobRecord;
-import org.ikasan.spec.scheduled.job.model.ContextStartJob;
-import org.ikasan.spec.scheduled.job.model.ContextStartJobRecord;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class SolrBridgingJobRecordDaoImplTest extends SolrTestCaseJ4 {
+public class SolrBridgingJobDaoImplTest extends SolrTestCaseJ4 {
 
     SolrBridgingJobDaoImpl dao;
 

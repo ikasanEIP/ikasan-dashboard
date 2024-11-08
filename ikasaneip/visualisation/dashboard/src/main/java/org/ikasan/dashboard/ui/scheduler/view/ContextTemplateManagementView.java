@@ -4,7 +4,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
-import com.vaadin.flow.spring.annotation.RouteScope;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
@@ -156,6 +155,8 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
 
     private IkasanAuthentication ikasanAuthentication;
 
+    private boolean isInitialised = false;
+
     /**
      * Constructor
      */
@@ -194,7 +195,10 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         this.contextTemplate = this.scheduledContextService.findByName(this.contextName).getContext();
-        init();
+        if(!isInitialised) {
+            init();
+            isInitialised = true;
+        }
     }
 
     @Override

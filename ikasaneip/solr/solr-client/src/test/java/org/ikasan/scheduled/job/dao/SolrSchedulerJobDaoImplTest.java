@@ -7,6 +7,7 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
 import org.ikasan.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -23,12 +24,13 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
+public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
 
     private SolrSchedulerJobDaoImpl dao;
     private SolrFileEventDrivenJobDaoImpl solrFileEventDrivenJobRecordDao;
     private SolrQuartzScheduleDrivenJobDaoImpl solrQuartzScheduleDrivenJobRecordDao;
     private SolrInternalEventDrivenJobDaoImpl solrInternalEventDrivenJobRecordDao;
+    private SolrInternalEventDrivenJobTemplateDaoImpl solrInternalEventDrivenJobTemplateRecordDao;
     private SolrGlobalEventJobDaoImpl solrGlobalEventJobRecordDao;
 
     private NodeConfig config;
@@ -66,6 +68,8 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
         this.solrQuartzScheduleDrivenJobRecordDao.setSolrClient(server);
         this.solrInternalEventDrivenJobRecordDao = new SolrInternalEventDrivenJobDaoImpl();
         this.solrInternalEventDrivenJobRecordDao.setSolrClient(server);
+        this.solrInternalEventDrivenJobTemplateRecordDao = new SolrInternalEventDrivenJobTemplateDaoImpl();
+        this.solrInternalEventDrivenJobTemplateRecordDao.setSolrClient(server);
         this.solrGlobalEventJobRecordDao = new SolrGlobalEventJobDaoImpl();
         this.solrGlobalEventJobRecordDao.setSolrClient(server);
     }
@@ -226,6 +230,10 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             this.insertInternalEventDrivenRecords("iddi", 1000, "context2Idi");
             this.insertInternalEventDrivenRecords("idddi", 267, "context3Idi");
 
+            this.insertInternalEventDrivenTemplateRecords("idit", 100, "contextIdi");
+            this.insertInternalEventDrivenTemplateRecords("iddit", 1000, "context2Idi");
+            this.insertInternalEventDrivenTemplateRecords("idddit", 267, "context3Idi");
+
             this.insertGlobalEventRecords("idg", 100, "contextIdg");
             this.insertGlobalEventRecords("iddg", 1000, "context2Idg");
             this.insertGlobalEventRecords("idddg", 267, "context3Idg");
@@ -262,14 +270,14 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
 
             solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
 
-            Assert.assertTrue(solrSchedulerJobRecords.getTotalNumberOfResults() == 137);
+            Assert.assertTrue(solrSchedulerJobRecords.getTotalNumberOfResults() == 274);
 
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setSkipped(true);
 
             solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
 
-            Assert.assertTrue(solrSchedulerJobRecords.getTotalNumberOfResults() == 274);
+            Assert.assertTrue(solrSchedulerJobRecords.getTotalNumberOfResults() == 548);
 
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setJobNameFilter("jobName100");
@@ -286,7 +294,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
             List<SolrSchedulerJobRecordImpl> resultList = solrSchedulerJobRecords.getResultList();
 
-            Assert.assertEquals(5460, resultList.size());
+            Assert.assertEquals(6825, resultList.size());
 
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setDisplayNameFilter("displayName");
@@ -294,7 +302,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
             resultList = solrSchedulerJobRecords.getResultList();
 
-            Assert.assertEquals(5468, resultList.size());
+            Assert.assertEquals(6835, resultList.size());
 
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setDisplayNameFilter("displayName100");
@@ -302,7 +310,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
             resultList = solrSchedulerJobRecords.getResultList();
 
-            Assert.assertEquals(8, resultList.size());
+            Assert.assertEquals(10, resultList.size());
 
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setDisplayNameFilter("displayName100");
@@ -311,7 +319,15 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
             resultList = solrSchedulerJobRecords.getResultList();
 
-            Assert.assertEquals(8, resultList.size());
+            Assert.assertEquals(10, resultList.size());
+
+            filter = new SolrSchedulerJobSearchFilterImpl();
+            filter.setJobTypeFilter(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE);
+
+            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            resultList = solrSchedulerJobRecords.getResultList();
+
+            Assert.assertEquals(1367, resultList.size());
         }
     }
 
@@ -378,6 +394,28 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrInternalEventDrivenJobRecord.setSkipped(i%5==0);
 
             this.solrInternalEventDrivenJobRecordDao.save(solrInternalEventDrivenJobRecord);
+        });
+    }
+
+    private void insertInternalEventDrivenTemplateRecords(String idPrefix, int num, String contextId) {
+        IntStream.range(0, num).forEach(i -> {
+            SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+            solrInternalEventDrivenJob.setAgentName("agentName"+i);
+            solrInternalEventDrivenJob.setJobName("jobName"+i);
+            solrInternalEventDrivenJob.setDisplayName("displayName"+i);
+            solrInternalEventDrivenJob.setContextName(contextId);
+            solrInternalEventDrivenJob.setCommandLine("ls -la");
+
+            SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
+            solrInternalEventDrivenJobRecord.setAgentName(idPrefix+"agentName"+i);
+            solrInternalEventDrivenJobRecord.setJobName("jobName"+i);
+            solrInternalEventDrivenJobRecord.setContextName(contextId);
+            solrInternalEventDrivenJobRecord.setTimestamp(1000000L);
+            solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(solrInternalEventDrivenJob);
+            solrInternalEventDrivenJobRecord.setHeld(i%10==0);
+            solrInternalEventDrivenJobRecord.setSkipped(i%5==0);
+
+            this.solrInternalEventDrivenJobTemplateRecordDao.save(solrInternalEventDrivenJobRecord);
         });
     }
 

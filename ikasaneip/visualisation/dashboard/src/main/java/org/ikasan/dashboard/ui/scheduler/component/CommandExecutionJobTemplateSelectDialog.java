@@ -6,11 +6,11 @@ import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
-public class SchedulerJobSelectDialog extends AbstractCloseableResizableDialog {
-    private SchedulerJobSelectGridWidget schedulerJobSelectGridWidget;
+public class CommandExecutionJobTemplateSelectDialog extends AbstractCloseableResizableDialog {
+    private CommandExecutionJobSelectGridWidget schedulerJobSelectGridWidget;
 
-    public SchedulerJobSelectDialog(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, String headerLabel, String bodyLabel) {
-        this.schedulerJobSelectGridWidget = new SchedulerJobSelectGridWidget(schedulerJobService, contextTemplate, this, bodyLabel);
+    public CommandExecutionJobTemplateSelectDialog(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, String headerLabel, String bodyLabel) {
+        this.schedulerJobSelectGridWidget = new CommandExecutionJobSelectGridWidget(schedulerJobService, contextTemplate, this, bodyLabel);
 
         this.setHeight("90vh");
         this.setWidth("90vw");

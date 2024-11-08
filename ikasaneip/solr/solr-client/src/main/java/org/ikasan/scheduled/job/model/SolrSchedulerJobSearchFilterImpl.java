@@ -16,11 +16,13 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
         JOB_TYPE_MAPPINGS.put("Scheduled Job", "quartzScheduleDrivenJob");
         JOB_TYPE_MAPPINGS.put("File Watcher Job", "fileEventDrivenJob");
         JOB_TYPE_MAPPINGS.put("Command Execution Job", "internalEventDrivenJob");
+        JOB_TYPE_MAPPINGS.put("Command Execution Job Template", "internalEventDrivenJobTemplate");
         JOB_TYPE_MAPPINGS.put("Global Event Job", "globalEventJob");
 
         JOB_TYPE_MAPPINGS_INVERTED.put("quartzScheduleDrivenJob", "Scheduled Job");
         JOB_TYPE_MAPPINGS_INVERTED.put("fileEventDrivenJob", "File Watcher Job");
         JOB_TYPE_MAPPINGS_INVERTED.put("internalEventDrivenJob", "Command Execution Job");
+        JOB_TYPE_MAPPINGS_INVERTED.put("internalEventDrivenJobTemplate", "Command Execution Job Template");
         JOB_TYPE_MAPPINGS_INVERTED.put("globalEventJob", "Global Event Job");
     }
 

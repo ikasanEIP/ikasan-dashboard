@@ -3,7 +3,6 @@ package org.ikasan.scheduled.instance.model;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 
 import java.util.ArrayList;
 import java.util.List;

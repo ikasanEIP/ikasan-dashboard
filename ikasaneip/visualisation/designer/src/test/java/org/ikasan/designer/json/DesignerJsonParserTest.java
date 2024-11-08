@@ -1,12 +1,6 @@
 package org.ikasan.designer.json;
 
-import org.apache.commons.io.IOUtils;
-import org.json.JSONArray;
 import org.junit.Ignore;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 @Ignore
 public class DesignerJsonParserTest {

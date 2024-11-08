@@ -1,5 +1,6 @@
 package org.ikasan.quartz;
 
+import jakarta.annotation.PostConstruct;
 import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.spec.scheduler.DashboardJob;
 import org.quartz.*;
@@ -7,7 +8,6 @@ import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.PostConstruct;
 import java.time.ZoneId;
 import java.util.*;
 
