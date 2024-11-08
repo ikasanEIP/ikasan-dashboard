@@ -859,7 +859,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         actions.addItem(getTranslation("button.manage-context-parameters", UI.getCurrent().getLocale()),
                 menuItemClickEvent -> {
-                    ContextParameterDialog contextTemplateDialog = new ContextParameterDialog(true);
+                    ContextParameterDialog contextTemplateDialog = new ContextParameterDialog(true, true);
                     contextTemplateDialog.initParams(this.contextTemplate.getContextParameters());
                     contextTemplateDialog.open();
 
@@ -1097,6 +1097,28 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         MenuItem jobTypeMenuItem = newJobSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
         SubMenu jobTypesSubMenu = jobTypeMenuItem.getSubMenu();
 
+        jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job-template", UI.getCurrent().getLocale()), event -> {
+                InternalEventDrivenJobTemplateDialog internalEventDrivenJobTemplateDialog = new InternalEventDrivenJobTemplateDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
+
+                InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+                internalEventDrivenJob.setContextName(this.contextTemplate.getName());
+
+                internalEventDrivenJobTemplateDialog.setJob(internalEventDrivenJob, EditMode.NEW);
+                internalEventDrivenJobTemplateDialog.addJobSynchronisationRequiredListener(this);
+                internalEventDrivenJobTemplateDialog.open();
+
+                internalEventDrivenJobTemplateDialog.addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobGridWidget.refresh();
+                    }
+                });
+            })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
                     this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
@@ -1112,6 +1134,32 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                     if(!openedChangeEvent.isOpened()) {
                         this.schedulerJobGridWidget.refresh();
                     }
+                });
+            })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
+        jobTypesSubMenu.addItem(getTranslation("menu-item.from-command-execution-job-template", UI.getCurrent().getLocale()), event -> {
+                CommandExecutionJobTemplateSelectDialog schedulerJobSelectDialog = new CommandExecutionJobTemplateSelectDialog(this.schedulerJobService,
+                    this.contextTemplate, "Select Command Execution Job Template", "Select Command Execution Job Template");
+                schedulerJobSelectDialog.open();
+                schedulerJobSelectDialog.addSchedulerJobSelectedListener(schedulerJob -> {
+                    InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                        this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
+
+                    InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+                    internalEventDrivenJob.setContextName(this.contextTemplate.getName());
+                    internalEventDrivenJobDialog.setJob((InternalEventDrivenJob) schedulerJob, EditMode.NEW);
+                    internalEventDrivenJobDialog.addJobSynchronisationRequiredListener(this);
+                    internalEventDrivenJobDialog.open();
+
+                    internalEventDrivenJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                        if(!openedChangeEvent.isOpened()) {
+                            this.schedulerJobGridWidget.refresh();
+                        }
+                    });
                 });
             })
             .getElement()

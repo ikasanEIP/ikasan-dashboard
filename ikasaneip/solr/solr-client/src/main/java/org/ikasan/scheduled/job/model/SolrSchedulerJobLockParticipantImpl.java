@@ -1,9 +1,8 @@
 package org.ikasan.scheduled.job.model;
 
-import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 
-public class SolrSchedulerJobLockParticipantImpl extends SchedulerJobImpl implements SchedulerJobLockParticipant {
+public class SolrSchedulerJobLockParticipantImpl extends SolrSchedulerJobImpl implements SchedulerJobLockParticipant {
     private long lockCount = 1;
 
     @Override

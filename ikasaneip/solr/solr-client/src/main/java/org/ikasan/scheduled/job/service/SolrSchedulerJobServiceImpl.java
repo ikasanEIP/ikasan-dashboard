@@ -26,6 +26,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     private SolrContextStartJobDaoImpl contextStartJobDao;
     private SolrContextTerminalJobDaoImpl contextTerminalJobDao;
     private SolrSchedulerJobDaoImpl schedulerJobRecordDao;
+    private SolrInternalEventDrivenJobTemplateDaoImpl solrInternalEventDrivenJobTemplateDao;
 
     public SolrSchedulerJobServiceImpl(SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao
         , SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao
@@ -33,7 +34,8 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         , SolrGlobalEventJobDaoImpl globalEventJobRecordDao
         , SolrContextStartJobDaoImpl contextStartJobDao
         , SolrContextTerminalJobDaoImpl contextTerminalJobDao
-        , SolrSchedulerJobDaoImpl schedulerJobRecordDao) {
+        , SolrSchedulerJobDaoImpl schedulerJobRecordDao
+        , SolrInternalEventDrivenJobTemplateDaoImpl solrInternalEventDrivenJobTemplateDao) {
         this.fileEventDrivenJobRecordDao = fileEventDrivenJobRecordDao;
         if(this.fileEventDrivenJobRecordDao == null)
         {
@@ -68,6 +70,16 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         if(this.schedulerJobRecordDao == null)
         {
             throw new IllegalArgumentException("schedulerJobRecordDao cannot be null!");
+        }
+        this.schedulerJobRecordDao = schedulerJobRecordDao;
+        if(this.schedulerJobRecordDao == null)
+        {
+            throw new IllegalArgumentException("schedulerJobRecordDao cannot be null!");
+        }
+        this.solrInternalEventDrivenJobTemplateDao = solrInternalEventDrivenJobTemplateDao;
+        if(this.solrInternalEventDrivenJobTemplateDao == null)
+        {
+            throw new IllegalArgumentException("solrInternalEventDrivenJobTemplateDao cannot be null!");
         }
     }
 
@@ -116,13 +128,19 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         if (records != null && !records.isEmpty()) {
             List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
             List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
+            List<InternalEventDrivenJob> internalEventDrivenJobTemplates = new ArrayList<>();
             List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
             List<GlobalEventJob> globalEventJobs = new ArrayList<>();
             List<ContextStartJob> contextStartJobs = new ArrayList<>();
             List<ContextTerminalJob> contextTerminalJobs = new ArrayList<>();
             records.forEach(job -> {
                 if (job instanceof InternalEventDrivenJob) {
-                    internalEventDrivenJobs.add((InternalEventDrivenJob) job);
+                    if(job.isTemplateJob() != null && job.isTemplateJob()) {
+                        internalEventDrivenJobTemplates.add((InternalEventDrivenJob) job);
+                    }
+                    else {
+                        internalEventDrivenJobs.add((InternalEventDrivenJob) job);
+                    }
                 }
                 else if (job instanceof FileEventDrivenJob) {
                     fileEventDrivenJobs.add((FileEventDrivenJob) job);
@@ -143,6 +161,10 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
 
             if (!internalEventDrivenJobs.isEmpty()) {
                 this.saveInternalEventDrivenJobs(internalEventDrivenJobs, actor);
+            }
+
+            if (!internalEventDrivenJobTemplates.isEmpty()) {
+                this.saveInternalEventDrivenJobTemplates(internalEventDrivenJobTemplates, actor);
             }
 
             if (!fileEventDrivenJobs.isEmpty()) {
@@ -195,6 +217,29 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     @Override
     public void saveContextTerminalJobRecord(ContextTerminalJobRecord contextTerminalJobRecord) {
         this.contextTerminalJobDao.save(contextTerminalJobRecord);
+    }
+
+    @Override
+    public void saveInternalEventDrivenJobTemplateRecord(InternalEventDrivenJobRecord internalEventDrivenJobRecord, String modifiedBy) {
+        this.solrInternalEventDrivenJobTemplateDao.save(internalEventDrivenJobRecord);
+    }
+
+    @Override
+    public void saveInternalEventDrivenJobTemplate(InternalEventDrivenJob internalEventDrivenJob, String modifiedBy) {
+        InternalEventDrivenJobRecord internalEventDrivenJobRecord =  this.solrInternalEventDrivenJobTemplateDao
+            .findById(JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + internalEventDrivenJob.getAgentName() + "_"
+                + internalEventDrivenJob.getJobName() + "_" + internalEventDrivenJob.getContextName());
+
+        internalEventDrivenJob.setTemplateJob(true);
+
+        if(internalEventDrivenJobRecord == null) {
+            internalEventDrivenJobRecord = this.internalEventDrivenJobRecord(internalEventDrivenJob, modifiedBy);
+        }
+
+        internalEventDrivenJobRecord.setModifiedBy(modifiedBy);
+        internalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+
+        this.solrInternalEventDrivenJobTemplateDao.save(internalEventDrivenJobRecord);
     }
 
     @Override
@@ -263,6 +308,18 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
+    public void saveInternalEventDrivenJobTemplates(List<InternalEventDrivenJob> quartzScheduleDrivenJobs, String actor) {
+        List<InternalEventDrivenJobRecord> records = new ArrayList<>();
+        quartzScheduleDrivenJobs.forEach(job -> records.add(internalEventDrivenJobRecord(job, actor)));
+        this.saveInternalEventDrivenJobTemplateRecords(records);
+    }
+
+    @Override
+    public void saveInternalEventDrivenJobTemplateRecords(List<InternalEventDrivenJobRecord> internalEventDrivenJobRecord) {
+        this.solrInternalEventDrivenJobTemplateDao.save(internalEventDrivenJobRecord);
+    }
+
+    @Override
     public void saveInternalEventDrivenJobs(List<InternalEventDrivenJob> quartzScheduleDrivenJobs, String actor) {
         List<InternalEventDrivenJobRecord> records = new ArrayList<>();
         quartzScheduleDrivenJobs.forEach(job -> records.add(internalEventDrivenJobRecord(job, actor)));
@@ -278,6 +335,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         solrInternalEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         solrInternalEventDrivenJobRecord.setHeld(!internalEventDrivenJob.getHeldContexts().isEmpty());
         solrInternalEventDrivenJobRecord.setSkipped(!internalEventDrivenJob.getSkippedContexts().isEmpty());
+        solrInternalEventDrivenJobRecord.setModifiedBy(actor);
 
         return solrInternalEventDrivenJobRecord;
     }

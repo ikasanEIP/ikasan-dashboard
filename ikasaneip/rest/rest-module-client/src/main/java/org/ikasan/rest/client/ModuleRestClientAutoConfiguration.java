@@ -1,5 +1,6 @@
 package org.ikasan.rest.client;
 
+import jakarta.annotation.Resource;
 import org.ikasan.spec.metadata.ConfigurationMetaDataProvider;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.scheduled.general.SchedulerService;
@@ -8,8 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-
-import jakarta.annotation.Resource;
 
 /**
  * Module Rest Client configuration required by ikasan dashboard in order to communicate with modules.

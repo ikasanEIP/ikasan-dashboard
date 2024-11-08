@@ -13,7 +13,6 @@ import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;

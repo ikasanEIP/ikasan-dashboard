@@ -1,13 +1,13 @@
 package org.ikasan.notification;
 
-import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
+import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.notification.configuration.EmailNotificationParamsConfiguration;
 import org.ikasan.notification.configuration.EmailNotificationParamsFactory;
 import org.ikasan.notification.factory.NotificationThreadFactory;
 import org.ikasan.notification.monitor.JobRunningTimesMonitorImpl;
-import org.ikasan.notification.monitor.StateChangeMonitorImpl;
 import org.ikasan.notification.monitor.OverdueFileMonitorImpl;
+import org.ikasan.notification.monitor.StateChangeMonitorImpl;
 import org.ikasan.notification.notifier.EmailNotifier;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;

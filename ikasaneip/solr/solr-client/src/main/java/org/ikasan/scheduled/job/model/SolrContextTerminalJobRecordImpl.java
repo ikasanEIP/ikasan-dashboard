@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
-import org.ikasan.spec.scheduled.job.model.ContextStartJob;
-import org.ikasan.spec.scheduled.job.model.ContextStartJobRecord;
 import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.scheduled.job.model.ContextTerminalJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;

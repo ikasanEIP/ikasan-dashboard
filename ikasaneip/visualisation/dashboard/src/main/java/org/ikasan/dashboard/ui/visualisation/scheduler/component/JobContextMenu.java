@@ -85,8 +85,8 @@ public class JobContextMenu extends Dialog {
             else if(job instanceof InternalEventDrivenJob) {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog
                     = new InternalEventDrivenJobDialog(null, scheduledProcessManagementService, configurationRestService,
-                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel,
-                    this.currentInstance.isUseDisplayName());
+                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.rootContextInstance, this.currentInstance,
+                    schedulerJobExecutionEnvironmentLabel);
                 internalEventDrivenJobDialog.setJob((InternalEventDrivenJob)job, EditMode.READONLY);
                 internalEventDrivenJobDialog.open();
             }

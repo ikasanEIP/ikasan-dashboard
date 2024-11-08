@@ -34,6 +34,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
     private SolrContextStartJobDaoImpl solrContextStartJobDao;
     private SolrContextTerminalJobDaoImpl solrContextTerminalJobDao;
     private SolrSchedulerJobDaoImpl schedulerJobRecordDao;
+    private SolrInternalEventDrivenJobTemplateDaoImpl solrInternalEventDrivenJobTemplateDao;
     private Path tmpPath;
     private EmbeddedSolrServer server;
     private SchedulerJobService service;
@@ -74,11 +75,15 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         this.schedulerJobRecordDao = new SolrSchedulerJobDaoImpl();
         this.schedulerJobRecordDao.setSolrClient(server);
 
+        this.solrInternalEventDrivenJobTemplateDao = new SolrInternalEventDrivenJobTemplateDaoImpl();
+        this.solrInternalEventDrivenJobTemplateDao.setSolrClient(server);
+
 
         this.service = new SolrSchedulerJobServiceImpl(
             this.fileEventDrivenJobRecordDao, this.internalEventDrivenJobRecordDao,
             this.quartzScheduleDrivenJobRecordDao, this.globalEventJobRecordDao,
-            this.solrContextStartJobDao, this.solrContextTerminalJobDao, this.schedulerJobRecordDao
+            this.solrContextStartJobDao, this.solrContextTerminalJobDao, this.schedulerJobRecordDao,
+            this.solrInternalEventDrivenJobTemplateDao
         );
     }
 
@@ -450,6 +455,49 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         internalEventDrivenJob.setCommandLine("pwd");
 
         this.service.saveInternalEventDrivenJob(internalEventDrivenJob, "tester2");
+
+        schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobNameInternal");
+        internalEventDrivenJob = (InternalEventDrivenJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(internalEventDrivenJob);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > modifiedTimestamp);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() == timestamp);
+        Assert.assertEquals("tester2", schedulerJobRecord.getModifiedBy());
+        Assert.assertEquals("pwd", internalEventDrivenJob.getCommandLine());
+    }
+
+    @Test
+    public void test_save_internal_event_driven_job_template() {
+        String contextName = "contextName";
+        InternalEventDrivenJob solrInternalEventDrivenJobTemplate = new SolrInternalEventDrivenJobImpl();
+        solrInternalEventDrivenJobTemplate.setAgentName(contextName + "agentName");
+        solrInternalEventDrivenJobTemplate.setJobName(contextName + "jobNameInternal");
+        solrInternalEventDrivenJobTemplate.setIdentifier(solrInternalEventDrivenJobTemplate.getAgentName() + "_" + solrInternalEventDrivenJobTemplate.getJobName());
+        solrInternalEventDrivenJobTemplate.setContextName(contextName);
+        solrInternalEventDrivenJobTemplate.setCommandLine("ls -al");
+        solrInternalEventDrivenJobTemplate.setChildContextNames(List.of("child"));
+
+        this.service.saveInternalEventDrivenJobTemplate(solrInternalEventDrivenJobTemplate, "tester");
+
+        SchedulerJobRecord schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobNameInternal");
+        InternalEventDrivenJob internalEventDrivenJob = (InternalEventDrivenJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(internalEventDrivenJob);
+        long modifiedTimestamp = schedulerJobRecord.getModifiedTimestamp();
+        long timestamp = schedulerJobRecord.getTimestamp();
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(modifiedTimestamp > 0);
+        Assert.assertEquals("tester", schedulerJobRecord.getModifiedBy());
+        Assert.assertEquals("ls -al", internalEventDrivenJob.getCommandLine());
+        Assert.assertEquals(true, internalEventDrivenJob.isTemplateJob());
+
+        internalEventDrivenJob.setCommandLine("pwd");
+
+        this.service.saveInternalEventDrivenJobTemplate(internalEventDrivenJob, "tester2");
 
         schedulerJobRecord = this.service
             .findByContextNameAndJobName("contextName", contextName + "jobNameInternal");

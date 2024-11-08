@@ -59,6 +59,7 @@ public final class ContextImportZipUtils {
                     String contextDirectory = parentDirectory + CONTEXT_DIR + "/";
                     String fileJobsDirectory = parentDirectory + JOBS_DIR + "/" + FILE_DIR + "/";
                     String internalJobsDirectory = parentDirectory + JOBS_DIR + "/" + INTERNAL_DIR + "/";
+                    String internalTemplateJobsDirectory = parentDirectory + JOBS_DIR + "/" + INTERNAL_TEMPLATES_DIR + "/";
                     String quartzJobsDirectory = parentDirectory + JOBS_DIR + "/" + QUARTZ_DIR + "/";
                     String globalJobsDirectory = parentDirectory + JOBS_DIR + "/" + GLOBAL_JOB_DIR + "/"; //TODO WE have to build a test once we know what the Global Job looks like
                     String contextProfileDirectory = parentDirectory + PROFILE_DIR + "/";
@@ -81,6 +82,9 @@ public final class ContextImportZipUtils {
                     } else if (!entry.isDirectory() && entry.getName().startsWith(internalJobsDirectory)
                         && entry.getName().endsWith(".json")) {
                         contextJobs.add((SchedulerJob) getContextArtifact(INTERNAL_DIR, outputStream.toString(), contextService));
+                    } else if (!entry.isDirectory() && entry.getName().startsWith(internalTemplateJobsDirectory)
+                        && entry.getName().endsWith(".json")) {
+                        contextJobs.add((SchedulerJob) getContextArtifact(INTERNAL_TEMPLATES_DIR, outputStream.toString(), contextService));
                     } else if (!entry.isDirectory() && entry.getName().startsWith(quartzJobsDirectory)
                         && entry.getName().endsWith(".json")) {
                         contextJobs.add((SchedulerJob) getContextArtifact(QUARTZ_DIR, outputStream.toString(), contextService));
@@ -100,6 +104,7 @@ public final class ContextImportZipUtils {
                 }
             );
         } catch (Exception e) {
+            e.printStackTrace();
             LOG.warn("Could not read zip file, Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
@@ -165,6 +170,7 @@ public final class ContextImportZipUtils {
                 case FILE_DIR:
                     return service.getFileEventDrivenJob(json);
                 case INTERNAL_DIR:
+                case INTERNAL_TEMPLATES_DIR:
                     return service.getInternalEventDrivenJob(json);
                 case QUARTZ_DIR:
                     return service.getQuartzScheduleDrivenJob(json);

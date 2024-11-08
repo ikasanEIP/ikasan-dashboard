@@ -16,6 +16,7 @@ import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -23,19 +24,17 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SchedulerJobSelectGridWidget extends Div {
+public class CommandExecutionJobSelectGridWidget extends Div {
 
-    private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
+    private CommandExecutionJobTemplateFilteringGrid commandExecutionJobTemplateFilteringGrid;
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
     private Dialog parent;
-
-    private String jobType = null;
 
     private SchedulerJobSearchFilter schedulerJobSearchFilter;
 
     private String jobSelectLabel;
 
-    public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent
+    public CommandExecutionJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent
         , SchedulerJobSearchFilter schedulerJobSearchFilter, String jobSelectLabel) {
         this.schedulerJobSearchFilter = schedulerJobSearchFilter;
         this.parent = parent;
@@ -47,7 +46,7 @@ public class SchedulerJobSelectGridWidget extends Div {
     /**
      * Constructor
      */
-    public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent
+    public CommandExecutionJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent
         , String jobSelectLabel) {
 
         this.parent = parent;
@@ -59,7 +58,7 @@ public class SchedulerJobSelectGridWidget extends Div {
     private void init(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate) {
         this.createGrid(schedulerJobService, contextTemplate);
 
-        this.schedulerJobFilteringGrid.init();
+        this.commandExecutionJobTemplateFilteringGrid.init();
 
         H3 label = new H3(this.jobSelectLabel);
         label.getElement().getStyle().set("margin-top", "10px");
@@ -69,23 +68,23 @@ public class SchedulerJobSelectGridWidget extends Div {
         layout.setMargin(false);
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(label, this.createButtonLayout(), this.schedulerJobFilteringGrid);
+        layout.add(label, this.createButtonLayout(), this.commandExecutionJobTemplateFilteringGrid);
 
         this.add(layout);
         this.setSizeFull();
     }
 
     private void createGrid(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate) {
-        schedulerJobFilteringGrid = new SchedulerJobFilteringGrid(schedulerJobService, schedulerJobSearchFilter);
-        schedulerJobFilteringGrid.getElement().getStyle().set("margin-top", "40px");
-        schedulerJobFilteringGrid.removeAllColumns();
-        schedulerJobFilteringGrid.setVisible(true);
-        schedulerJobFilteringGrid.setWidthFull();
-        schedulerJobFilteringGrid.setHeight("75vh");
-        schedulerJobFilteringGrid.setContextName(contextTemplate.getName());
+        commandExecutionJobTemplateFilteringGrid = new CommandExecutionJobTemplateFilteringGrid(schedulerJobService);
+        commandExecutionJobTemplateFilteringGrid.getElement().getStyle().set("margin-top", "40px");
+        commandExecutionJobTemplateFilteringGrid.removeAllColumns();
+        commandExecutionJobTemplateFilteringGrid.setVisible(true);
+        commandExecutionJobTemplateFilteringGrid.setWidthFull();
+        commandExecutionJobTemplateFilteringGrid.setHeight("75vh");
+        commandExecutionJobTemplateFilteringGrid.setContextName(contextTemplate.getName());
 
 
-        schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+        commandExecutionJobTemplateFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Text text = new Text(schedulerJobRecord.getJobName());
@@ -98,20 +97,7 @@ public class SchedulerJobSelectGridWidget extends Div {
             .setKey("flowName")
             .setFlexGrow(3);
 
-        schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
-
-            Text text = new Text(SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(schedulerJobRecord.getType()));
-
-            horizontalLayout.add(text);
-            return horizontalLayout;
-        })).setHeader(getTranslation("table-header.job-type", UI.getCurrent().getLocale()))
-            .setResizable(true)
-            .setSortable(true)
-            .setKey("type")
-            .setFlexGrow(2);
-
-        this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
+        this.commandExecutionJobTemplateFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
             "<div>${item.date}</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
@@ -121,8 +107,8 @@ public class SchedulerJobSelectGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(2);
 
-        this.schedulerJobFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
-            "<div>${item.modified]]</div>")
+        this.commandExecutionJobTemplateFilteringGrid.addColumn(LitRenderer.<SchedulerJobRecord>of(
+            "<div>${item.modified}</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
@@ -131,7 +117,7 @@ public class SchedulerJobSelectGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(2);
 
-        this.schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+        this.commandExecutionJobTemplateFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Text text = new Text(schedulerJobRecord.getModifiedBy());
@@ -144,21 +130,21 @@ public class SchedulerJobSelectGridWidget extends Div {
         .setSortable(true)
         .setFlexGrow(1);
 
-        this.schedulerJobFilteringGrid.addItemDoubleClickListener(event -> {
-            this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(event.getItem().getJob()));
+        this.commandExecutionJobTemplateFilteringGrid.addItemDoubleClickListener(event -> {
+            this.schedulerJobSelectedListeners.forEach(listener -> {
+                InternalEventDrivenJob internalEventDrivenJob = (InternalEventDrivenJob) event.getItem().getJob();
+                internalEventDrivenJob.setTemplateBased(true);
+                internalEventDrivenJob.setTemplateName(internalEventDrivenJob.getJobName());
+                internalEventDrivenJob.setJobName(null);
+                listener.jobSelected(internalEventDrivenJob);
+            });
             if(parent != null) {
                 parent.close();
             }
         });
 
-        HeaderRow hr = schedulerJobFilteringGrid.appendHeaderRow();
-        this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
-
-        if(this.jobType == null) {
-            this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
-                , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
-        }
-
+        HeaderRow hr = commandExecutionJobTemplateFilteringGrid.appendHeaderRow();
+        this.commandExecutionJobTemplateFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
     }
 
     private HorizontalLayout createButtonLayout() {
@@ -178,7 +164,7 @@ public class SchedulerJobSelectGridWidget extends Div {
         Button refreshJobsButton = new Button(getTranslation("button.refresh", UI.getCurrent().getLocale()), VaadinIcon.REFRESH.create());
         refreshJobsButton.setIconAfterText(true);
 
-        refreshJobsButton.addClickListener(event -> this.schedulerJobFilteringGrid.init());
+        refreshJobsButton.addClickListener(event -> this.commandExecutionJobTemplateFilteringGrid.init());
 
         return refreshJobsButton;
     }

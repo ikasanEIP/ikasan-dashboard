@@ -33,7 +33,6 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -236,8 +235,17 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         quartzDrivenJob.setAgentName("agentName1");
         GlobalEventJob globalEventJob = new GlobalEventJobImpl();
         globalEventJob.setAgentName("agentName1");
+        InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob.setAgentName("agentName1");
+        InternalEventDrivenJob internalEventDrivenJobTemplate = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobTemplate.setAgentName("agentName1");
+        internalEventDrivenJobTemplate.setTemplateJob(true);
+
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
+        contextJobs.add(internalEventDrivenJob);
+        contextJobs.add(internalEventDrivenJobTemplate);
+
         // Does not get provision
         contextJobs.add(globalEventJob);
 

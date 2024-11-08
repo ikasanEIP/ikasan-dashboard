@@ -1,10 +1,5 @@
 package org.ikasan.job.orchestration.context.parameters;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
@@ -14,6 +9,11 @@ import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ContextParametersInstanceServiceImpl implements ContextParametersInstanceService {
 

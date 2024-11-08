@@ -1,10 +1,9 @@
 package org.ikasan.scheduled.job.model;
 
-import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.spec.scheduled.job.model.BridgingJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 
-public class SolrBridgingJobImpl extends SchedulerJobImpl implements BridgingJob {
+public class SolrBridgingJobImpl extends SolrSchedulerJobImpl implements BridgingJob {
 
     public SolrBridgingJobImpl() {
         super();

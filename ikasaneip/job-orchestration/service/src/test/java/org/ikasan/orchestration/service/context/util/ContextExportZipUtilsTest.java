@@ -117,7 +117,7 @@ public class ContextExportZipUtilsTest {
 
         this.assertDirectoryStructure(stream, List.of("downloadName/", "downloadName/context/",
             "downloadName/notification/", "downloadName/profiles/", "downloadName/jobs/", "downloadName/jobs/file/",
-            "downloadName/jobs/internal/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
+            "downloadName/jobs/internal/", "downloadName/jobs/internalTemplate/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
             "downloadName/notification_details/"));
 
         stream = this.resolveZipInputStream(result.toByteArray());
@@ -144,6 +144,11 @@ public class ContextExportZipUtilsTest {
         ContextTemplate contextTemplate = this.getContext(stream, "downloadName/context/downloadName.json");
         Assert.assertNotNull(contextTemplate);
 
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalTemplateJobs = this.getJobs(stream, "downloadName/jobs/internalTemplate/", GlobalEventJob.class);
+        Assert.assertEquals(3, internalTemplateJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
+
         JSONAssert.assertEquals(loadDataFile("/context-with-tokens.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
@@ -166,7 +171,7 @@ public class ContextExportZipUtilsTest {
             "downloadName/context/HelloContext/CONTEXT-195330380/", "downloadName/context/HelloContext/CONTEXT--715116816/",
             "downloadName/context/HelloContext/CONTEXT-1182789416/",
             "downloadName/notification/", "downloadName/profiles/", "downloadName/jobs/", "downloadName/jobs/file/",
-            "downloadName/jobs/internal/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
+            "downloadName/jobs/internal/", "downloadName/jobs/internalTemplate/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
             "downloadName/notification_details/"));
 
         stream = this.resolveZipInputStream(result.toByteArray());
@@ -188,6 +193,11 @@ public class ContextExportZipUtilsTest {
         Map<String, Object> globalJobs = this.getJobs(stream, "downloadName/jobs/global/", GlobalEventJob.class);
         Assert.assertEquals(3, globalJobs.size());
         this.assertJobsWithTokensCorrect(globalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalTemplateJobs = this.getJobs(stream, "downloadName/jobs/internalTemplate/", GlobalEventJob.class);
+        Assert.assertEquals(3, internalTemplateJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
 
         ContextTemplate helloContext = getContextTemplateForFile(result, stream, "downloadName/context/HelloContext.json");
         Assert.assertNotNull(helloContext);
@@ -224,7 +234,7 @@ public class ContextExportZipUtilsTest {
 
         this.assertDirectoryStructure(stream, List.of("downloadName/", "downloadName/context/",
             "downloadName/notification/", "downloadName/profiles/", "downloadName/jobs/", "downloadName/jobs/file/",
-            "downloadName/jobs/internal/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
+            "downloadName/jobs/internal/", "downloadName/jobs/internalTemplate/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
             "downloadName/notification_details/"));
 
         stream = this.resolveZipInputStream(result.toByteArray());
@@ -246,6 +256,11 @@ public class ContextExportZipUtilsTest {
         Map<String, Object> globalJobs = this.getJobs(stream, "downloadName/jobs/global/", GlobalEventJob.class);
         Assert.assertEquals(3, globalJobs.size());
         this.assertJobsWithNoTokensCorrect(globalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalTemplateJobs = this.getJobs(stream, "downloadName/jobs/internalTemplate/", GlobalEventJob.class);
+        Assert.assertEquals(3, internalTemplateJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
 
         stream = this.resolveZipInputStream(result.toByteArray());
         ContextTemplate contextTemplate = this.getContext(stream, "downloadName/context/download");
@@ -273,7 +288,7 @@ public class ContextExportZipUtilsTest {
             "downloadName/context/HelloContext/CONTEXT-195330380/", "downloadName/context/HelloContext/CONTEXT--715116816/",
             "downloadName/context/HelloContext/CONTEXT-1182789416/",
             "downloadName/notification/", "downloadName/profiles/", "downloadName/jobs/", "downloadName/jobs/file/",
-            "downloadName/jobs/internal/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
+            "downloadName/jobs/internal/", "downloadName/jobs/internalTemplate/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
             "downloadName/notification_details/"));
 
         stream = this.resolveZipInputStream(result.toByteArray());
@@ -295,6 +310,11 @@ public class ContextExportZipUtilsTest {
         Map<String, Object> globalJobs = this.getJobs(stream, "downloadName/jobs/global/", GlobalEventJob.class);
         Assert.assertEquals(3, globalJobs.size());
         this.assertJobsWithNoTokensCorrect(globalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalTemplateJobs = this.getJobs(stream, "downloadName/jobs/internalTemplate/", GlobalEventJob.class);
+        Assert.assertEquals(3, internalTemplateJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
 
         ContextTemplate helloContext = getContextTemplateForFile(result, stream, "downloadName/context/HelloContext.json");
         Assert.assertNotNull(helloContext);
@@ -403,118 +423,6 @@ public class ContextExportZipUtilsTest {
         return null;
     }
 
-//    @Test
-//    public void test_with_replacement_tokens() throws Exception {
-//        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
-//        String contextName = "HelloContext";
-//        String jsonContext = this.loadDataFile("/data/context.json");
-//        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
-//
-//        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
-//        record.setContext(context);
-//        record.setContextName(contextName);
-//
-//        doReturn(record).when(scheduledContextService).findByName(contextName);
-//
-//        SearchResultsImpl searchResults = new SearchResultsImpl(createListOfJobRecords(contextName), 0, 100);
-//
-//        doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 50, 0);
-//
-//        //Email Notification
-//        searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
-//        doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
-//
-//        //Email Notification Context
-//        searchResults = new SearchResultsImpl(createListOfEmailNotificationConext(contextName), 0, 100);
-//        doReturn(searchResults).when(emailNotificationContextService).findByContextName(contextName, 50, 0);
-//
-//        //ContextProfile
-//        searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
-//        doReturn(searchResults).when(contextProfileService).findByFilter(any(ContextProfileSearchFilter.class), eq(50), eq(0), eq(null), eq(null));
-//
-//        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/tokens/" + contextName)).andReturn();
-//
-//        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
-//    }
-//
-//    /**
-//     * Windows have some unsafe characters to create files, therefore this test is using the name "Context?Name"
-//     * with a ? which is not allowed to be used in windows
-//     * Will test both the context and the jobs as jobs are created dynamically in the test based on the name of the
-//     * context
-//     * @throws Exception - file the file we are loading into the test
-//     */
-//    @Test
-//    public void testContextWithNotSafeCharacters() throws Exception {
-//        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
-//        String contextName = "Context*Name";
-//        String jsonContext = this.loadDataFile("/data/context.json");
-//        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
-//
-//        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
-//        record.setContext(context);
-//        record.setContextName(contextName);
-//
-//        doReturn(record).when(scheduledContextService).findByName(contextName);
-//
-//        SearchResultsImpl searchResults = new SearchResultsImpl(createListOfJobRecords(contextName), 0, 100);
-//
-//        doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 50, 0);
-//
-//        //Email Notification Details
-//        searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
-//        doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
-//
-//        //Email Notification Context test empty responds from solr
-//        searchResults = new SearchResultsImpl(new ArrayList<EmailNotificationContext>(), 0, 100);
-//        doReturn(searchResults).when(emailNotificationContextService).findByContextName(contextName, 50, 0);
-//
-//        //ContextProfile
-//        searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
-//        doReturn(searchResults).when(contextProfileService).findByFilter(any(ContextProfileSearchFilter.class), eq(50), eq(0), eq(null), eq(null));
-//
-//        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/" + contextName)).andReturn();
-//
-//        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
-//    }
-//
-//    /**
-//     * Setup a Context in the system as HelloContext
-//     * However trying to extract the context, DOESNOTEXIST
-//     * Program should return error 500
-//     * @throws Exception - file the file we are loading into the test
-//     */
-//    @Test
-//    public void testWhenNoContextExist() throws Exception {
-//        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
-//        String contextName = "HelloContext";
-//        String jsonContext = this.loadDataFile("/data/context.json");
-//        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
-//
-//        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
-//        record.setContext(context);
-//        record.setContextName(contextName);
-//
-//        doReturn(record).when(scheduledContextService).findByName(contextName);
-//
-//        SearchResultsImpl searchResults = new SearchResultsImpl(createListOfJobRecords(contextName), 0, 100);
-//
-//        doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 50, 0);
-//
-//        //Email Notification
-//        searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
-//        doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
-//
-//        //ContextProfile
-//        searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
-//        doReturn(searchResults).when(contextProfileService).findByFilter(any(ContextProfileSearchFilter.class), eq(50), eq(0), eq(null), eq(null));
-//
-//        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/DOESNOTEXIST")).andReturn();
-//
-//        // As the context DOESNOTEXIST is not there, return error 500
-//        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), mvcResult.getResponse().getStatus());
-//    }
-
     /**
      * Helper method to create some Jobs based on the context name being tested
      * @param contextName String value
@@ -551,6 +459,20 @@ public class ContextExportZipUtilsTest {
             eventRecord.setJob(solrInternalEventDrivenJob);
             eventRecord.setId(solrInternalEventDrivenJob.getAgentName() + "_" + solrInternalEventDrivenJob.getJobName());
             schedulerJobRecords.add(eventRecord);
+
+            SolrInternalEventDrivenJobImpl solrInternalEventDrivenJobTemplate = new SolrInternalEventDrivenJobImpl();
+            solrInternalEventDrivenJobTemplate.setAgentName(contextName + "agentName" + i);
+            solrInternalEventDrivenJobTemplate.setJobName(contextName + "jobName-cet" + i);
+            solrInternalEventDrivenJobTemplate.setIdentifier(solrInternalEventDrivenJob.getAgentName() + "_" + solrInternalEventDrivenJob.getJobName());
+            solrInternalEventDrivenJobTemplate.setContextName(contextName);
+            solrInternalEventDrivenJobTemplate.setCommandLine("ls -al" + i);
+            solrInternalEventDrivenJobTemplate.setTemplateJob(true);
+
+            TestSchedulerJobRecord templateRecord = new TestSchedulerJobRecord();
+            templateRecord.setType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE);
+            templateRecord.setJob(solrInternalEventDrivenJobTemplate);
+            templateRecord.setId(solrInternalEventDrivenJobTemplate.getAgentName() + "_" + solrInternalEventDrivenJobTemplate.getJobName());
+            schedulerJobRecords.add(templateRecord);
 
             SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
             solrQuartzScheduleDrivenJob.setAgentName(contextName + "agentName" + i);

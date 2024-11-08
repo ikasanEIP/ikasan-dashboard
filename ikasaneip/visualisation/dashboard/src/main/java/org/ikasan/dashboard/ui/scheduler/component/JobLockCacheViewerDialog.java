@@ -2,7 +2,6 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;

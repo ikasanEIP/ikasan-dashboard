@@ -1,17 +1,13 @@
 package org.ikasan.dashboard.ui.general.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -20,17 +16,15 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.server.StreamResource;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.DownloadLogFileService;
-import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
-import org.ikasan.spec.systemevent.SystemEvent;
-import org.ikasan.systemevent.model.SolrSystemEvent;
-import org.ikasan.systemevent.model.SystemEventImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 

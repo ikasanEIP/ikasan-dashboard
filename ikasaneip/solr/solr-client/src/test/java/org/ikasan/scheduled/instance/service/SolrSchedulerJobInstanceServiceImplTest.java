@@ -2,7 +2,6 @@ package org.ikasan.scheduled.instance.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.SolrTestCaseJ4;
@@ -10,11 +9,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.checkerframework.checker.units.qual.C;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
-import org.ikasan.job.orchestration.model.instance.BridgingJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.context.model.SolrContextParameterImpl;
@@ -53,7 +49,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 

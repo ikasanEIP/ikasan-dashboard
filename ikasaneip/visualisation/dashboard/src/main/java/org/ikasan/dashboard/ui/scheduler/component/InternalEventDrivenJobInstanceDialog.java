@@ -689,7 +689,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         Button parametersButton = new Button(getTranslation("button.parameters", UI.getCurrent().getLocale()), new Icon(VaadinIcon.SLIDERS));
         parametersButton.setIconAfterText(true);
         parametersButton.addClickListener(event -> {
-            ContextParameterDialog contextParameterDialog = new ContextParameterDialog(false);
+            ContextParameterDialog contextParameterDialog = new ContextParameterDialog(false,
+                this.internalEventDrivenJobInstance.isTemplateBased() != null && this.internalEventDrivenJobInstance.isTemplateBased() == false);
             contextParameterDialog.initParams(this.internalEventDrivenJobInstance.getContextParameters() == null ? new ArrayList<>() : this.internalEventDrivenJobInstance.getContextParameters());
             contextParameterDialog.open();
 

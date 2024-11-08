@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.listener;
 
-import org.ikasan.spec.scheduled.context.model.Context;
-
 public interface ContextSelectedListener {
 
     /**

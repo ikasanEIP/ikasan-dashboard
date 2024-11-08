@@ -1,17 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
+import com.vaadin.flow.component.button.Button;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -39,7 +28,14 @@ import org.junit.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.vaadin.flow.component.button.Button;
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.util.EnumSet;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.*;
 
 @Ignore // pointless until we reach a point of maturity in the dashboard implementation.
 public class JobContextMenuTest extends UITest {

@@ -95,6 +95,7 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
                 case JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB:
                     return objectMapper.readValue(this.job, SolrQuartzScheduleDrivenJobImpl.class);
                 case JobConstants.INTERNAL_EVENT_DRIVEN_JOB:
+                case JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE:
                     return objectMapper.readValue(this.job, SolrInternalEventDrivenJobImpl.class);
                 case JobConstants.GLOBAL_EVENT_JOB:
                     return objectMapper.readValue(this.job, SolrGlobalEventJobImpl.class);

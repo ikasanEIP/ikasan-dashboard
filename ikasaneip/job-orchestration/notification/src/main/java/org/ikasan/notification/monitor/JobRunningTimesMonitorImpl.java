@@ -2,7 +2,6 @@ package org.ikasan.notification.monitor;
 
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.MonitorType;
-import org.ikasan.notification.exception.StopNotificationRunnerException;
 import org.ikasan.notification.factory.NotificationThreadFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;

@@ -7,7 +7,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
 import org.ikasan.dashboard.ui.administration.component.SystemEventFilteringGrid;
-import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.model.IkasanPrincipal;

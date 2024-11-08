@@ -3,7 +3,6 @@ package org.ikasan.rest.dashboard;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ikasan.rest.dashboard.util.TestBatchInsert;
 import org.ikasan.rest.dashboard.util.TestUserService;
 import org.ikasan.security.model.User;
 import org.junit.Assert;
@@ -28,12 +27,9 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.annotation.Resource;
-
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = UserController.class)

@@ -410,8 +410,10 @@ public abstract class Draw2dAdapterBase {
                 }
             });
 
-            // Now draw the logic groupings abd context boundaries onto the diagram.
-            this.addLogicGroupings(visualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder);
+            if(parentContext.isRenderLogicalBoundaries() == null || parentContext.isRenderLogicalBoundaries()) {
+                // Now draw the logic groupings abd context boundaries onto the diagram.
+                this.addLogicGroupings(visualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder);
+            }
 
             items.addAll(imageOverlay);
             items.addAll(labels);

@@ -6,17 +6,16 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.job.model.SolrContextStartJobRecordImpl;
-import org.ikasan.scheduled.job.model.SolrGlobalEventJobRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.dao.ContextStartJobDao;
-import org.ikasan.spec.scheduled.job.dao.GlobalEventJobDao;
-import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.model.ContextStartJob;
+import org.ikasan.spec.scheduled.job.model.ContextStartJobRecord;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class SolrContextStartJobDaoImpl extends SolrDaoBase<ContextStartJobRecord>

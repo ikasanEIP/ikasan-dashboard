@@ -1,7 +1,6 @@
 package org.ikasan.designer.event;
 
 import org.apache.commons.io.IOUtils;
-import org.ikasan.designer.json.DesignerDynamicImageManager;
 import org.junit.Ignore;
 import org.junit.Test;
 

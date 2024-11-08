@@ -1,7 +1,6 @@
 package org.ikasan.job.orchestration.context.validation;
 
 import java.util.List;
-import java.util.Map;
 
 public class InvalidContextTemplateException extends Exception {
 

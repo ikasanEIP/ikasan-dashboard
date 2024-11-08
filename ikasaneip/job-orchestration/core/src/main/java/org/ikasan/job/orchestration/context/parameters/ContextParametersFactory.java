@@ -1,9 +1,9 @@
 package org.ikasan.job.orchestration.context.parameters;
 
-import java.util.List;
-
 import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+
+import java.util.List;
 
 public class ContextParametersFactory {
 

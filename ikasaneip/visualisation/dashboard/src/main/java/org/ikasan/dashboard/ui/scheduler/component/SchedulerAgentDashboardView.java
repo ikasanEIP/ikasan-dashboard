@@ -9,8 +9,6 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
@@ -24,9 +22,6 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.springframework.beans.factory.annotation.Value;
-
-import javax.annotation.Resource;
 
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")

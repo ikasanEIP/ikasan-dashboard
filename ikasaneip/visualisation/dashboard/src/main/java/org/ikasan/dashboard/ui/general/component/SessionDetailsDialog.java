@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.formlayout.FormLayout;
-
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -9,8 +8,6 @@ import com.vaadin.flow.server.VaadinSession;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.text.SimpleDateFormat;
 
 public class SessionDetailsDialog extends AbstractCloseableResizableDialog
 {

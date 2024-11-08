@@ -1,5 +1,7 @@
 package org.ikasan.rest.dashboard;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,8 +9,6 @@ import org.mockito.Mock;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static org.mockito.Mockito.verify;
