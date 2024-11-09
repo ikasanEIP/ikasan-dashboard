@@ -11,6 +11,7 @@ import org.ikasan.security.service.authentication.CustomAuthenticationProvider;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.ikasan.systemevent.SystemEventAutoConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -29,6 +30,15 @@ import java.util.Properties;
 @Import({SecurityAutoConfiguration.class, SystemEventAutoConfiguration.class})
 public class IkasanSecurityConfiguration
 {
+    @Value("${hibernate.show_sql:false}")
+    private boolean hibernateShowSql;
+
+    @Value("${hibernate.transaction.jta.platform:org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform}")
+    private String hibernateTransactionJtaPlatform;
+
+    @Value("${hibernate.event.merge.entity_copy_observer:allow}")
+    private String hibernateEventMergeEntityCopyObserver;
+
     @Bean
     @Primary
     public UserService userService(UserDao userDao, SecurityService securityService, PasswordEncoder passwordEncoder)
@@ -83,15 +93,15 @@ public class IkasanSecurityConfiguration
         return new AuthenticationProviderFactoryImpl(userService, securityService);
     }
 
-    // todo expose these as external configs
     @Bean
     Properties platformJpaProperties() {
         Properties platformJpaProperties = new Properties();
-        platformJpaProperties.put("hibernate.show_sql", false);
+        platformJpaProperties.put("hibernate.show_sql", hibernateShowSql);
         platformJpaProperties.put("hibernate.hbm2ddl.auto", "none");
         platformJpaProperties.put("hibernate.transaction.jta.platform",
-            "org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform");
-        platformJpaProperties.put("hibernate.event.merge.entity_copy_observer", "allow");
+            hibernateTransactionJtaPlatform);
+        platformJpaProperties.put("hibernate.event.merge.entity_copy_observer",
+            hibernateEventMergeEntityCopyObserver);
 
         return platformJpaProperties;
     }

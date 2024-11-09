@@ -282,7 +282,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         List<IkasanPrincipal> principals = this.securityService.getAllPrincipalsWithRole(role.getName());
 
         List<UserLite> users = this.userService.getUserLites();
-        HashMap<String, UserLite> userMap = new HashMap<String, UserLite>();
+        HashMap<String, UserLite> userMap = new HashMap<>();
 
         for(UserLite user: users)
         {
