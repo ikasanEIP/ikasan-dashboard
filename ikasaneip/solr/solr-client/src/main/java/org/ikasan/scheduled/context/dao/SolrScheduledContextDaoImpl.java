@@ -6,6 +6,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRecord> implements ScheduledContextDao
 {
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     /**
      * Logger for this class
@@ -43,7 +44,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
             document.addField(QUARTZ_SCHEDULED_JOBS_DISABLED, contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext());
         }
         catch (JsonProcessingException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
+            throw new SolrEntityConversionException(String.format("Cannot convert Context to string! [%s]"
                 , scheduledContextRecord.getContext()));
         }
         document.addField(ID, scheduledContextRecord.getContextName() + "-" + SCHEDULED_CONTEXT);
