@@ -6,12 +6,14 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.LitRenderer;
@@ -19,12 +21,11 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.RouteScope;
 import org.ikasan.dashboard.ui.administration.component.NewUserDialog;
 import org.ikasan.dashboard.ui.administration.component.UserManagementDialog;
-import org.ikasan.dashboard.ui.administration.filter.UserFilter;
-import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.security.model.User;
+import org.ikasan.security.model.UserFilter;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventService;
@@ -34,7 +35,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
-import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 @Route(value = "userManagement", layout = IkasanAppLayout.class)
 @RouteScope
@@ -61,12 +63,10 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
     @Resource
     private  DateFormatter dateFormatter;
 
-    private FilteringGrid<User> userGrid;
+    private Grid<User> userGrid;
 
     private DataProvider<User, UserFilter> dataProvider;
     private ConfigurableFilterDataProvider<User,Void,UserFilter> filteredDataProvider;
-
-    private List<User> users;
 
     private UserFilter userFilter = new UserFilter();
 
@@ -103,7 +103,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
             {
                 if(dialogOpenedChangeEvent.isOpened() == false)
                 {
-                    this.updateUsers();
+                    this.dataProvider.refreshAll();
                 }
             });
         });
@@ -127,7 +127,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
         wrapperLayout.add(labelLayout, buttonLayout);
         add(wrapperLayout);
 
-        this.userGrid = new FilteringGrid<>(userFilter);
+        this.userGrid = new Grid<>();
         this.userGrid.setSizeFull();
         this.userGrid.setClassName("my-grid");
 
@@ -137,7 +137,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
             .setSortable(true)
             .setFlexGrow(1);
         this.userGrid.addColumn(User::getFirstName)
-            .setKey("firstname")
+            .setKey("firstName")
             .setHeader(getTranslation("table-header.firstname", UI.getCurrent().getLocale(), null))
             .setSortable(true)
             .setFlexGrow(1);
@@ -158,16 +158,17 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
             "<div style='white-space:normal'>${item.date}</div>")
             .withProperty("date",
                 user -> this.dateFormatter.getFormattedDate(user.getPreviousAccessTimestamp())))
-            .setKey("lastaccess").setHeader(getTranslation("table-header.last-access", UI.getCurrent().getLocale(), null))
+            .setKey("previousAccessTimestamp")
+            .setHeader(getTranslation("table-header.last-access", UI.getCurrent().getLocale(), null))
             .setSortable(true)
             .setWidth("90px");
 
         HeaderRow hr = userGrid.appendHeaderRow();
-        this.userGrid.addGridFiltering(hr, userFilter::setUsernameFilter, "username");
-        this.userGrid.addGridFiltering(hr, userFilter::setNameFilter, "firstname");
-        this.userGrid.addGridFiltering(hr, userFilter::setLastNameFilter, "surname");
-        this.userGrid.addGridFiltering(hr, userFilter::setEmailFilter, "email");
-        this.userGrid.addGridFiltering(hr, userFilter::setDepartmentFilter, "department");
+        this.addGridFiltering(hr, userFilter::setUsernameFilter, "username");
+        this.addGridFiltering(hr, userFilter::setNameFilter, "firstName");
+        this.addGridFiltering(hr, userFilter::setLastNameFilter, "surname");
+        this.addGridFiltering(hr, userFilter::setEmailFilter, "email");
+        this.addGridFiltering(hr, userFilter::setDepartmentFilter, "department");
 
         this.userGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<User>>) userItemDoubleClickEvent ->
         {
@@ -177,26 +178,69 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
             dialog.open();
         });
 
+        dataProvider = DataProvider.fromFilteringCallbacks(query -> {
+            Optional<UserFilter> filter = query.getFilter();
+
+            // The index of the first item to load
+            int offset = query.getOffset();
+
+            // The number of items to load
+            int limit = query.getLimit();
+
+            if(!query.getSortOrders().isEmpty()) {
+                filter.get().setSortColumn(query.getSortOrders().get(0).getSorted());
+                filter.get().setSortOrder(query.getSortOrders().get(0).getDirection().name());
+            }
+            else {
+                filter.get().setSortColumn(null);
+                filter.get().setSortOrder(null);
+            }
+
+            return this.userService.getUsers(filter.get(), limit, offset).stream();
+        }, query -> {
+            Optional<UserFilter> filter = query.getFilter();
+
+            return this.userService.getUserCount(filter.get());
+        });
+
+        filteredDataProvider = dataProvider.withConfigurableFilter();
+        filteredDataProvider.setFilter(this.userFilter);
+
+        this.userGrid.setDataProvider(filteredDataProvider);
+
         add(this.userGrid);
     }
-
-    private void updateUsers()
-    {
-        this.users = this.userService.getUsers();
-
-        this.userGrid.setItems(users);
-    }
-
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_ADMINISTRATION_ADMIN, SecurityConstants.USER_ADMINISTRATION_WRITE,  SecurityConstants.USER_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
             DashboardContextNavigator.navigateToLandingPage();
-            return;
         }
+    }
 
-        updateUsers();
+    /**
+     * Add filtering to a column.
+     *
+     * @param hr
+     * @param setFilter
+     * @param columnKey
+     */
+    public void addGridFiltering(HeaderRow hr, Consumer<String> setFilter, String columnKey)
+    {
+        TextField textField = new TextField();
+        textField.setWidthFull();
+
+        textField.addValueChangeListener(ev->{
+
+            setFilter.accept(ev.getValue());
+
+            if(filteredDataProvider != null) {
+                filteredDataProvider.refreshAll();
+            }
+        });
+
+        hr.getCell(userGrid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
     @Override

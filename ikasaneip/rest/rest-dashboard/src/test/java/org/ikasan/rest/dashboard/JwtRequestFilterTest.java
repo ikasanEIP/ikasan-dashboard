@@ -50,7 +50,7 @@ public class JwtRequestFilterTest
 
     @Before
     public void setup(){
-        uut = new JwtRequestFilter(userService,jwtTokenUtil, securityContextRepository);
+        uut = new JwtRequestFilter(userService,jwtTokenUtil, securityContextRepository, 5);
     }
 
     @After
@@ -94,6 +94,37 @@ public class JwtRequestFilterTest
         verify(userDetails).getAuthorities();
 
         verify(chain).doFilter(request,response);
+
+        verifyNoMoreInteractions(chain,jwtTokenUtil,userService,userDetails,response);
+
+    }
+
+    @Test
+    public void test_rest_call_cache() throws ServletException, IOException
+    {
+
+        when(request.getServletPath()).thenReturn("/rest");
+        when(request.getHeader("Authorization")).thenReturn("Bearer test.token");
+        when(jwtTokenUtil.getUsernameFromToken("test.token")).thenReturn("testUser");
+        when(userService.loadUserByUsername("testUser")).thenReturn(userDetails);
+        when(jwtTokenUtil.validateToken("test.token",userDetails)).thenReturn(true);
+        when(userDetails.getAuthorities()).thenReturn(new ArrayList<>());
+
+        uut.doFilterInternal(request,response,chain);
+
+        // We need to remove the security context in order to force full authentication in the second call.
+        SecurityContextHolder.getContext().setAuthentication(null);
+        uut.doFilterInternal(request,response,chain);
+
+        verify(request, times(2)).getServletPath();
+        verify(request, times(2)).getHeader("Authorization");
+        verify(jwtTokenUtil, times(2)).getUsernameFromToken("test.token");
+        // The user service is only hit once due to the cache!
+        verify(userService, times(1)).loadUserByUsername("testUser");
+        verify(jwtTokenUtil, times(2)).validateToken("test.token",userDetails);
+        verify(userDetails, times(2)).getAuthorities();
+
+        verify(chain, times(2)).doFilter(request,response);
 
         verifyNoMoreInteractions(chain,jwtTokenUtil,userService,userDetails,response);
 
