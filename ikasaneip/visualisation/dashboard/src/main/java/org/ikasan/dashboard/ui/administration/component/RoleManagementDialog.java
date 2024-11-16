@@ -16,8 +16,12 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import org.ikasan.dashboard.ui.administration.filter.*;
+import org.ikasan.dashboard.ui.administration.filter.PolicyFilter;
+import org.ikasan.dashboard.ui.administration.filter.RoleJobPlanFilter;
+import org.ikasan.dashboard.ui.administration.filter.RoleModuleFilter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.TableButton;
@@ -32,9 +36,8 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.systemevent.SystemEventService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 
 public class RoleManagementDialog extends AbstractCloseableResizableDialog
@@ -45,8 +48,12 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     private SystemEventLogger systemEventLogger;
     private UserService userService;
     private ModuleMetaDataService moduleMetadataService;
-    private FilteringGrid<UserLite> userGrid;
-    private FilteringGrid<IkasanPrincipalLite> groupGrid;
+    private Grid<UserLite> userGrid;
+    private DataProvider<UserLite, UserFilter> userDataProvider;
+    private ConfigurableFilterDataProvider<UserLite,Void,UserFilter> userGridFilteredDataProvider;
+    private Grid<IkasanPrincipalLite> groupGrid;
+    private DataProvider<IkasanPrincipalLite, IkasanPrincipalFilter> groupDataProvider;
+    private ConfigurableFilterDataProvider<IkasanPrincipalLite,Void,IkasanPrincipalFilter> groupGridFilteredDataProvider;
     private FilteringGrid<Policy> policyGrid;
     private FilteringGrid<RoleModule> roleModuleGrid;
     private FilteringGrid<RoleJobPlan> roleJobPlanGrid;
@@ -129,8 +136,9 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
 
         VerticalLayout layout = new VerticalLayout(initRoleForm(), accordion);
         layout.setSizeFull();
-        this.setWidth("90vw");
-        this.setHeight("90vh");
+        this.setWidth("98vw");
+        this.setHeight("98vh");
+        this.content.setHeight("100%");
         this.content.add(layout);
     }
 
@@ -212,9 +220,9 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     {
         H3 associatedUsersLabel = new H3(getTranslation("label.role-associated-users", UI.getCurrent().getLocale(), null));
 
-        UserLiteFilter userLiteFilter = new UserLiteFilter();
+        UserFilter userFilter = new UserFilter();
 
-        this.userGrid = new FilteringGrid<>(userLiteFilter);
+        this.userGrid = new Grid<>();
 
         userGrid.setClassName("my-userGrid");
         userGrid.addColumn(UserLite::getUsername).setKey("username").setHeader(getTranslation("table-header.username", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(2);
@@ -250,20 +258,50 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         })).setFlexGrow(1);
 
         HeaderRow hr = userGrid.appendHeaderRow();
-        this.userGrid.addGridFiltering(hr, userLiteFilter::setUsernameFilter, "username");
-        this.userGrid.addGridFiltering(hr, userLiteFilter::setNameFilter, "firstname");
-        this.userGrid.addGridFiltering(hr, userLiteFilter::setLastNameFilter, "surname");
-        this.userGrid.addGridFiltering(hr, userLiteFilter::setEmailFilter, "email");
-        this.userGrid.addGridFiltering(hr, userLiteFilter::setDepartmentFilter, "department");
+        this.addGridFiltering(this.userGrid, hr, userFilter::setUsernameFilter, "username");
+        this.addGridFiltering(this.userGrid, hr, userFilter::setNameFilter, "firstname");
+        this.addGridFiltering(this.userGrid, hr, userFilter::setLastNameFilter, "surname");
+        this.addGridFiltering(this.userGrid, hr, userFilter::setEmailFilter, "email");
+        this.addGridFiltering(this.userGrid, hr, userFilter::setDepartmentFilter, "department");
 
         Button addUser = new Button(getTranslation("button.add-user", UI.getCurrent().getLocale(), null));
         addUser.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
-            SelectUserForRoleDialog dialog = new SelectUserForRoleDialog(this.role, this.userService, this.getAssociatedUsers(),
+            SelectUserForRoleDialog dialog = new SelectUserForRoleDialog(this.role, this.userService,
                 this.securityService, this.systemEventLogger, this.userGrid);
 
             dialog.open();
         });
+
+        userDataProvider = DataProvider.fromFilteringCallbacks(query -> {
+            Optional<UserFilter> filter = query.getFilter();
+
+            // The index of the first item to load
+            int offset = query.getOffset();
+
+            // The number of items to load
+            int limit = query.getLimit();
+
+            if(!query.getSortOrders().isEmpty()) {
+                filter.get().setSortColumn(query.getSortOrders().get(0).getSorted());
+                filter.get().setSortOrder(query.getSortOrders().get(0).getDirection().name());
+            }
+            else {
+                filter.get().setSortColumn(null);
+                filter.get().setSortOrder(null);
+            }
+
+            return this.userService.getUsersWithRole(this.role.getName(), filter.get(), limit, offset).stream();
+        }, query -> {
+            Optional<UserFilter> filter = query.getFilter();
+
+            return this.userService.getUsersWithRoleCount(role.getName(), filter.get());
+        });
+
+        userGridFilteredDataProvider = userDataProvider.withConfigurableFilter();
+        userGridFilteredDataProvider.setFilter(userFilter);
+
+        this.userGrid.setDataProvider(userGridFilteredDataProvider);
 
         userGrid.setSizeFull();
 
@@ -273,45 +311,11 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     }
 
     /**
-     * Helper method to get the associated users.
-     *
-     * @return users associated with the role.
-     */
-    private List<UserLite> getAssociatedUsers()
-    {
-        List<IkasanPrincipal> principals = this.securityService.getAllPrincipalsWithRole(role.getName());
-
-        List<UserLite> users = this.userService.getUserLites();
-        HashMap<String, UserLite> userMap = new HashMap<>();
-
-        for(UserLite user: users)
-        {
-            userMap.put(user.getUsername(), user);
-        }
-
-        users = new ArrayList<>();
-        for(IkasanPrincipal principal: principals)
-        {
-            if(principal.getType().equals("user"))
-            {
-                UserLite user = userMap.get(principal.getName());
-
-                if(user != null)
-                {
-                    users.add(user);
-                }
-            }
-        }
-
-        return users;
-    }
-
-    /**
      * Helper method to update the associated users grid.
      */
     private void updateAssociatedUsersGrid()
     {
-        this.userGrid.setItems(this.getAssociatedUsers());
+        this.userGrid.getDataProvider().refreshAll();
     }
 
     /**
@@ -323,9 +327,10 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     {
         H3 associatedGroupsLabel = new H3(getTranslation("label.role-associated-groups", UI.getCurrent().getLocale(), null));
 
-        GroupFilter groupFilter = new GroupFilter();
+        IkasanPrincipalFilter groupFilter = new IkasanPrincipalFilter();
+        groupFilter.setTypeFilter("application");
 
-        groupGrid = new FilteringGrid<>(groupFilter);
+        groupGrid = new Grid<>();
         groupGrid.setClassName("my-userGrid");
         groupGrid.addColumn(IkasanPrincipalLite::getName).setKey("name").setHeader(getTranslation("table-header.group-name", UI.getCurrent().getLocale(), null)).setSortable(true);
         groupGrid.addColumn(IkasanPrincipalLite::getDescription).setKey("description").setHeader(getTranslation("table-header.group-description", UI.getCurrent().getLocale(), null)).setSortable(true);
@@ -357,13 +362,13 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         })).setFlexGrow(1);
 
         HeaderRow hr = groupGrid.appendHeaderRow();
-        this.groupGrid.addGridFiltering(hr, groupFilter::setNameFilter, "name");
-        this.groupGrid.addGridFiltering(hr, groupFilter::setDescriptionFilter, "description");
+        this.addGridFiltering(this.groupGrid, hr, groupFilter::setNameFilter, "name");
+        this.addGridFiltering(this.groupGrid, hr, groupFilter::setDescriptionFilter, "description");
 
         Button addGroup = new Button(getTranslation("button.add-group", UI.getCurrent().getLocale(), null));
         addGroup.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
-            SelectGroupForRoleDialog dialog = new SelectGroupForRoleDialog(this.role, getAssociatedGroups()
+            SelectGroupForRoleDialog dialog = new SelectGroupForRoleDialog(this.role
                 , this.securityService, this.systemEventLogger, this.groupGrid);
             dialog.addOpenedChangeListener((ComponentEventListener<OpenedChangeEvent>) dialogOpenedChangeEvent ->
             {
@@ -376,45 +381,61 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
             dialog.open();
         });
 
-        groupGrid.setSizeFull();
+        groupDataProvider = DataProvider.fromFilteringCallbacks(query -> {
+            Optional<IkasanPrincipalFilter> filter = query.getFilter();
 
-        this.updateAssociatedGroupsGrid();
+            // The index of the first item to load
+            int offset = query.getOffset();
+
+            // The number of items to load
+            int limit = query.getLimit();
+
+            if(!query.getSortOrders().isEmpty()) {
+                filter.get().setSortColumn(query.getSortOrders().get(0).getSorted());
+                filter.get().setSortOrder(query.getSortOrders().get(0).getDirection().name());
+            }
+            else {
+                filter.get().setSortColumn(null);
+                filter.get().setSortOrder(null);
+            }
+
+            return this.securityService.getAllPrincipalsWithRole(this.role.getName(), filter.get(), limit, offset).stream();
+        }, query -> {
+            Optional<IkasanPrincipalFilter> filter = query.getFilter();
+
+            return this.securityService.getPrincipalsWithRoleCount(role.getName(), filter.get());
+        });
+
+        groupGridFilteredDataProvider = groupDataProvider.withConfigurableFilter();
+        groupGridFilteredDataProvider.setFilter(groupFilter);
+
+        this.groupGrid.setDataProvider(groupGridFilteredDataProvider);
+
+        groupGrid.setSizeFull();
 
         return this.layoutAssociatedEntityComponents(groupGrid, addGroup, associatedGroupsLabel);
     }
 
+
     /**
-     * Helper method to get the associated groups.
+     * Adds grid filtering functionality to a specified HeaderRow in a grid for a given column key
      *
-     * @return list of associated groups
+     * @param hr the HeaderRow in which the filtering component will be added
+     * @param setFilter a Consumer function to set the filter value
+     * @param columnKey the key of the column in the grid to which the filter applies
      */
-    private List<IkasanPrincipalLite> getAssociatedGroups()
+    public void addGridFiltering(Grid grid, HeaderRow hr, Consumer<String> setFilter, String columnKey)
     {
-        List<IkasanPrincipal> principals = this.securityService.getAllPrincipalsWithRole(role.getName());
+        TextField textField = new TextField();
+        textField.setWidthFull();
 
-        List<IkasanPrincipalLite> principalLites = this.securityService.getAllPrincipalLites();
-        HashMap<String, IkasanPrincipalLite> principalMap = new HashMap<String, IkasanPrincipalLite>();
+        textField.addValueChangeListener(ev->{
 
-        for(IkasanPrincipalLite principalLite: principalLites)
-        {
-            principalMap.put(principalLite.getName(), principalLite);
-        }
+            setFilter.accept(ev.getValue());
+            grid.getDataProvider().refreshAll();
+        });
 
-        principalLites = new ArrayList<>();
-        for(IkasanPrincipal principal: principals)
-        {
-            if(principal.getType().equals("application"))
-            {
-                IkasanPrincipalLite ikasanPrincipalLite = principalMap.get(principal.getName());
-
-                if(ikasanPrincipalLite != null)
-                {
-                    principalLites.add(ikasanPrincipalLite);
-                }
-            }
-        }
-
-        return principalLites;
+        hr.getCell(grid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
     /**
@@ -422,7 +443,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
      */
     private void updateAssociatedGroupsGrid()
     {
-        this.groupGrid.setItems(this.getAssociatedGroups());
+        this.groupGrid.getDataProvider().refreshAll();
     }
 
     /**
@@ -457,7 +478,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, grid);
         layout.setWidth("100%");
-        layout.setHeight("400px");
+        layout.setHeight("600px");
         return layout;
     }
 

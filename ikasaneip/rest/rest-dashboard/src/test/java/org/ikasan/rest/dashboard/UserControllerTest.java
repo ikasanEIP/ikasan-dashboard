@@ -53,6 +53,7 @@ public class UserControllerTest extends  AbstractRestMvcTest
     @Before
     public void setUp()
     {
+        userService.reset();
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
@@ -84,6 +85,56 @@ public class UserControllerTest extends  AbstractRestMvcTest
             .getRoles().stream().findFirst().get().getRoleModules().size());
         Assert.assertEquals(3, user.getPrincipals().stream().findFirst().get()
             .getRoles().stream().findFirst().get().getRoleJobPlans().size());
+    }
+
+    @Test
+    public void test_get_user_success_cache() throws Exception
+    {
+        String uri = "/rest/user";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", "mockuser");
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)
+            .contentType(MediaType.APPLICATION_JSON_VALUE).params(params)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+
+        ObjectMapper objectMapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        User user = objectMapper.readValue(content, User.class);
+
+        Assert.assertEquals(2, user.getPrincipals().size());
+        Assert.assertEquals(3, user.getPrincipals().stream().findFirst().get()
+            .getRoles().size());
+        Assert.assertEquals(3, user.getPrincipals().stream().findFirst().get()
+            .getRoles().stream().findFirst().get().getRoleModules().size());
+        Assert.assertEquals(3, user.getPrincipals().stream().findFirst().get()
+            .getRoles().stream().findFirst().get().getRoleJobPlans().size());
+
+        // Call the service the second time to exercise the cache!
+        mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)
+        .contentType(MediaType.APPLICATION_JSON_VALUE).params(params)).andReturn();
+
+        status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+        content = mvcResult.getResponse().getContentAsString();
+
+        user = objectMapper.readValue(content, User.class);
+
+        Assert.assertEquals(2, user.getPrincipals().size());
+        Assert.assertEquals(3, user.getPrincipals().stream().findFirst().get()
+            .getRoles().size());
+        Assert.assertEquals(3, user.getPrincipals().stream().findFirst().get()
+            .getRoles().stream().findFirst().get().getRoleModules().size());
+        Assert.assertEquals(3, user.getPrincipals().stream().findFirst().get()
+            .getRoles().stream().findFirst().get().getRoleJobPlans().size());
+
+        // Now confirm the user service was only hit once as the second call hit the cache!
+        Assert.assertEquals(1, this.userService.getNumCallsLoadUserByUsername());
     }
 
     @Test

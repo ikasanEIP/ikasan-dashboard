@@ -131,7 +131,8 @@ public class UserManagementDialog extends AbstractCloseableResizableDialog
         subjects.add(SystemEventConstants.DASHBOARD_LOGOUT_CONSTANTS);
         subjects.add(SystemEventConstants.DASHBOARD_SESSION_EXPIRED_CONSTANTS);
 
-        List<SystemEvent> events = this.systemEventService.listSystemEvents(subjects, user.getUsername(), null, null);
+        List<SystemEvent> events = this.systemEventService.listSystemEvents(subjects, user.getUsername()
+            , null, null);
         dashboardActivityGrid.setItems(events);
 
         Button dummy = new Button("button");
@@ -187,7 +188,8 @@ public class UserManagementDialog extends AbstractCloseableResizableDialog
         addRoleButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
             IkasanPrincipal principal = securityService.findPrincipalByName(this.user.getUsername());
-            SelectRoleDialog dialog = new SelectRoleDialog(principal, this.securityService, this.systemEventLogger, this.roleGrid);
+            SelectRoleDialog dialog = new
+                SelectRoleDialog(principal, this.securityService, this.systemEventLogger, this.roleGrid);
 
             dialog.open();
         });

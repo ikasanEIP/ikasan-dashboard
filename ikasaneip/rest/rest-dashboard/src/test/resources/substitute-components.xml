@@ -48,6 +48,10 @@
 
     <bean id="userService" class="org.ikasan.rest.dashboard.util.TestUserService" />
 
+    <bean id="userServiceUserCacheTimeoutSeconds" class="java.lang.Integer" >
+        <constructor-arg type="java.lang.String" value="5"/>
+    </bean>
+
     <bean id="contextParametersInstanceService" class="org.ikasan.rest.dashboard.util.TestContextParametersInstanceService" />
 
 </beans>

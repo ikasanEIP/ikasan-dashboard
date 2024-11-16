@@ -10,11 +10,57 @@ import java.util.List;
 import java.util.Set;
 
 public class TestUserService implements UserService {
+
+    private int numCallsLoadUserByUsername = 0;
+
+    public void reset() {
+        numCallsLoadUserByUsername = 0;
+    }
+
+    public int getNumCallsLoadUserByUsername() {
+        return numCallsLoadUserByUsername;
+    }
+
     @Override
     public List<User> getUsers() {
         return List.of(this.createUser("username1"),
             this.createUser("username2"),
             this.createUser("username3"));
+    }
+
+    @Override
+    public List<UserLite> getUsersWithRole(String roleName, UserFilter userFilter, int limit, int offset) {
+        return null;
+    }
+
+    @Override
+    public int getUsersWithRoleCount(String roleName, UserFilter userFilter) {
+        return 0;
+    }
+
+    @Override
+    public List<UserLite> getUsersWithoutRole(String roleName, UserFilter userFilter, int limit, int offset) {
+        return null;
+    }
+
+    @Override
+    public int getUsersWithoutRoleCount(String roleName, UserFilter userFilter) {
+        return 0;
+    }
+
+    @Override
+    public int getUserCount(UserFilter userFilter) {
+        return 0;
+    }
+
+    @Override
+    public List<User> getUsers(UserFilter userFilter, int limit, int offset) {
+        return null;
+    }
+
+    @Override
+    public List<UserLite> getUserLites(int limit, int offset) {
+        return null;
     }
 
     @Override
@@ -29,6 +75,7 @@ public class TestUserService implements UserService {
 
     @Override
     public User loadUserByUsername(String s) throws UsernameNotFoundException, DataAccessException {
+        this.numCallsLoadUserByUsername++;
         return this.createUser("username");
     }
 
