@@ -70,6 +70,12 @@ public class IkasanRestAutoConfiguration
     @Value("${scheduled.job.context.queue.directory:.}")
     private String queueDir;
 
+    @Value("${jwt.request.filter.user.cache.timeout.minutes:300}")
+    private int jwtRequestFilterUserCacheTimeoutSeconds;
+
+    @Value("${user.service.user.cache.timeout.minutes:300}")
+    private int userServiceUserCacheTimeoutSeconds;
+
     @Resource(name="errorOccurrenceBatchInsert")
     private BatchInsert errorOccurrenceBatchInsert;
 
@@ -165,7 +171,7 @@ public class IkasanRestAutoConfiguration
     @Bean
     public UserController userController(UserService userService)
     {
-        return new UserController(userService);
+        return new UserController(userService, this.userServiceUserCacheTimeoutSeconds);
     }
 
     @Bean
@@ -206,7 +212,8 @@ public class IkasanRestAutoConfiguration
     @Bean
     public JwtRequestFilter jwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil
         , @Lazy SecurityContextRepository securityContextRepository) {
-        return new JwtRequestFilter(userService, jwtTokenUtil, securityContextRepository);
+        return new JwtRequestFilter(userService, jwtTokenUtil
+            , securityContextRepository, jwtRequestFilterUserCacheTimeoutSeconds);
     }
 
     @Bean

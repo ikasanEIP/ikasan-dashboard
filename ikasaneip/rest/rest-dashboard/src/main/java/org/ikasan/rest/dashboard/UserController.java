@@ -40,6 +40,8 @@
  */
 package org.ikasan.rest.dashboard;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.ikasan.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.rest.dashboard.model.user.*;
 import org.ikasan.security.model.User;
@@ -56,6 +58,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -70,13 +73,19 @@ public class UserController
 
     private UserService userService;
 
-    public UserController(UserService userService)
+    Cache<String, User> cache;
+
+    public UserController(UserService userService, int userServiceUserCacheTimeoutSeconds)
     {
         this.userService = userService;
         if (this.userService == null)
         {
             throw new IllegalArgumentException("userService cannot be null!");
         }
+
+        cache = CacheBuilder.newBuilder()
+        .expireAfterAccess(userServiceUserCacheTimeoutSeconds, TimeUnit.SECONDS)
+        .build();
     }
 
     @RequestMapping(method = RequestMethod.GET,
@@ -86,7 +95,13 @@ public class UserController
     {
         try
         {
-            User user = this.userService.loadUserByUsername(username);
+            User user = this.cache.getIfPresent(username);
+
+            if(user == null) {
+                user = this.userService.loadUserByUsername(username);
+                cache.put(username, user);
+            }
+
             if (user == null)
             {
                 return new ResponseEntity(new ErrorDto("User [" + username + "] not found."), HttpStatus.NOT_FOUND);

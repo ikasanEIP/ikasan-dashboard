@@ -2,47 +2,42 @@ package org.ikasan.dashboard.ui.administration.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.ListDataProvider;
-import org.ikasan.dashboard.ui.administration.filter.GroupFilter;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
+import com.vaadin.flow.data.provider.DataProvider;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.security.model.IkasanPrincipal;
+import org.ikasan.security.model.IkasanPrincipalFilter;
 import org.ikasan.security.model.IkasanPrincipalLite;
 import org.ikasan.security.model.Role;
-import org.ikasan.security.model.UserLite;
 import org.ikasan.security.service.SecurityService;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
 {
     private Role role;
     private SecurityService securityService;
     private SystemEventLogger systemEventLogger;
-    private List<IkasanPrincipalLite> associatedGroups;
-    private FilteringGrid<IkasanPrincipalLite> ikasanPrincipalLiteFilteringGrid;
+    private Grid<IkasanPrincipalLite> ikasanPrincipalLiteFilteringGrid;
+    private DataProvider<IkasanPrincipalLite, IkasanPrincipalFilter> groupDataProvider;
+    private ConfigurableFilterDataProvider<IkasanPrincipalLite,Void,IkasanPrincipalFilter> groupGridFilteredDataProvider;
 
-    public SelectGroupForRoleDialog(Role role, List<IkasanPrincipalLite> associatedGroups, SecurityService securityService
-        , SystemEventLogger systemEventLogger, FilteringGrid<IkasanPrincipalLite> ikasanPrincipalLiteFilteringGrid)
+    public SelectGroupForRoleDialog(Role role, SecurityService securityService
+        , SystemEventLogger systemEventLogger, Grid<IkasanPrincipalLite> ikasanPrincipalLiteFilteringGrid)
     {
         this.role = role;
         if(this.role == null)
         {
             throw new IllegalArgumentException("role cannot be null!");
-        }
-        this.associatedGroups = associatedGroups;
-        if(this.associatedGroups == null)
-        {
-            throw new IllegalArgumentException("associatedGroups cannot be null!");
         }
         this.securityService = securityService;
         if(this.securityService == null)
@@ -68,18 +63,11 @@ public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
         super.title.setText(getTranslation("label.select-group", UI.getCurrent().getLocale()));
         H3 selectGroupLabel = new H3(getTranslation("label.select-group", UI.getCurrent().getLocale()));
 
-        List<IkasanPrincipalLite> principals = this.securityService.getAllPrincipalLites();
-        principals.removeAll(associatedGroups);
-
-        GroupFilter groupFilter = new GroupFilter();
+        IkasanPrincipalFilter groupFilter = new IkasanPrincipalFilter();
+        groupFilter.setTypeFilter("application");
         
-        FilteringGrid<IkasanPrincipalLite> groupGrid = new FilteringGrid<>(groupFilter);
-        groupGrid.setSizeFull();
+        Grid<IkasanPrincipalLite> groupGrid = new Grid<>();
         groupGrid.setClassName("my-grid");
-
-        groupGrid.setItems(principals.stream()
-            .filter(principal -> principal.getType() != null && principal.getType().equals("application"))
-            .collect(Collectors.toList()));
 
         groupGrid.addColumn(IkasanPrincipalLite::getName)
             .setHeader(getTranslation("table-header.group-name", UI.getCurrent().getLocale(), null))
@@ -103,21 +91,45 @@ public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
 
                 this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_PRINCIPAL_ROLE_CHANGED_CONSTANTS, action, null);
 
-                Collection<IkasanPrincipalLite> items = this.ikasanPrincipalLiteFilteringGrid.getItems();
-                items.add(ikasanPrincipalLiteItemDoubleClickEvent.getItem());
-
-                this.ikasanPrincipalLiteFilteringGrid.setItems(items);
                 this.ikasanPrincipalLiteFilteringGrid.getDataProvider().refreshAll();
-
-                groupGrid.getItems().remove(ikasanPrincipalLiteItemDoubleClickEvent.getItem());
                 groupGrid.getDataProvider().refreshAll();
         });
 
         HeaderRow hr = groupGrid.appendHeaderRow();
-        groupGrid.addGridFiltering(hr, groupFilter::setNameFilter, "name");
-        groupGrid.addGridFiltering(hr, groupFilter::setDescriptionFilter, "description");
+        addGridFiltering(groupGrid, hr, groupFilter::setNameFilter, "name");
+        addGridFiltering(groupGrid, hr, groupFilter::setDescriptionFilter, "description");
 
         groupGrid.setSizeFull();
+
+        groupDataProvider = DataProvider.fromFilteringCallbacks(query -> {
+            Optional<IkasanPrincipalFilter> filter = query.getFilter();
+
+            // The index of the first item to load
+            int offset = query.getOffset();
+
+            // The number of items to load
+            int limit = query.getLimit();
+
+            if(!query.getSortOrders().isEmpty()) {
+                filter.get().setSortColumn(query.getSortOrders().get(0).getSorted());
+                filter.get().setSortOrder(query.getSortOrders().get(0).getDirection().name());
+            }
+            else {
+                filter.get().setSortColumn(null);
+                filter.get().setSortOrder(null);
+            }
+
+            return this.securityService.getAllPrincipalsWithoutRole(this.role.getName(), filter.get(), limit, offset).stream();
+        }, query -> {
+            Optional<IkasanPrincipalFilter> filter = query.getFilter();
+
+            return this.securityService.getPrincipalsWithoutRoleCount(role.getName(), filter.get());
+        });
+
+        groupGridFilteredDataProvider = groupDataProvider.withConfigurableFilter();
+        groupGridFilteredDataProvider.setFilter(groupFilter);
+
+        groupGrid.setDataProvider(groupGridFilteredDataProvider);
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
@@ -126,5 +138,29 @@ public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
         this.content.add(layout);
         super.setWidth("1200px");
         super.setHeight("700px");
+    }
+
+    /**
+     * Add filtering to a column.
+     *
+     * @param hr
+     * @param setFilter
+     * @param columnKey
+     */
+    public void addGridFiltering(Grid grid, HeaderRow hr, Consumer<String> setFilter, String columnKey)
+    {
+        TextField textField = new TextField();
+        textField.setWidthFull();
+
+        textField.addValueChangeListener(ev->{
+
+            setFilter.accept(ev.getValue());
+
+            if(groupGridFilteredDataProvider != null) {
+                groupGridFilteredDataProvider.refreshAll();
+            }
+        });
+
+        hr.getCell(grid.getColumnByKey(columnKey)).setComponent(textField);
     }
 }

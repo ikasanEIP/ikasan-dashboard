@@ -2,23 +2,26 @@ package org.ikasan.dashboard.ui.administration.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import org.ikasan.dashboard.ui.administration.filter.UserLiteFilter;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
+import com.vaadin.flow.data.provider.DataProvider;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.security.model.IkasanPrincipal;
 import org.ikasan.security.model.Role;
+import org.ikasan.security.model.UserFilter;
 import org.ikasan.security.model.UserLite;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
 {
@@ -26,11 +29,12 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
     private SecurityService securityService;
     private SystemEventLogger systemEventLogger;
     private UserService userService;
-    private List<UserLite> associatedUsers;
-    private FilteringGrid<UserLite> userLiteFilteringGrid;
+    private Grid<UserLite> userLiteFilteringGrid;
+    private DataProvider<UserLite, UserFilter> userDataProvider;
+    private ConfigurableFilterDataProvider<UserLite,Void,UserFilter> userGridFilteredDataProvider;
 
-    public SelectUserForRoleDialog(Role role, UserService userService, List<UserLite> associatedUsers, SecurityService securityService
-        , SystemEventLogger systemEventLogger, FilteringGrid<UserLite> userLiteFilteringGrid)
+    public SelectUserForRoleDialog(Role role, UserService userService, SecurityService securityService
+        , SystemEventLogger systemEventLogger, Grid<UserLite> userLiteFilteringGrid)
     {
         this.role = role;
         if(this.role == null)
@@ -41,11 +45,6 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
         if(this.userService == null)
         {
             throw new IllegalArgumentException("userService cannot be null!");
-        }
-        this.associatedUsers = associatedUsers;
-        if(this.associatedUsers == null)
-        {
-            throw new IllegalArgumentException("associatedUsers cannot be null!");
         }
         this.securityService = securityService;
         if(this.securityService == null)
@@ -71,14 +70,9 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
         super.title.setText(getTranslation("label.select-user", UI.getCurrent().getLocale()));
         H3 selectUserLabel = new H3(getTranslation("label.select-user", UI.getCurrent().getLocale()));
 
-        List<UserLite> usersList = this.userService.getUserLites();
-        usersList.removeAll(associatedUsers);
+        UserFilter userFilter = new UserFilter();
 
-        UserLiteFilter userFilter = new UserLiteFilter();
-
-        FilteringGrid<UserLite> userGrid = new FilteringGrid<>(userFilter);
-        userGrid.setItems(usersList);
-        userGrid.setSizeFull();
+        Grid<UserLite> userGrid = new Grid<>();
 
         userGrid.addColumn(UserLite::getUsername)
             .setKey("username")
@@ -86,7 +80,7 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
             .setSortable(true)
             .setFlexGrow(2);
         userGrid.addColumn(UserLite::getFirstName)
-            .setKey("firstname")
+            .setKey("firstName")
             .setHeader(getTranslation("table-header.firstname", UI.getCurrent().getLocale(), null))
             .setSortable(true)
             .setFlexGrow(2);
@@ -118,23 +112,47 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
 
             this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_PRINCIPAL_ROLE_CHANGED_CONSTANTS, action, null);
 
-            userGrid.getItems().remove(userLiteItemDoubleClickEvent.getItem());
             userGrid.getDataProvider().refreshAll();
-
-            Collection<UserLite> items = this.userLiteFilteringGrid.getItems();
-            items.add(userLiteItemDoubleClickEvent.getItem());
-
-            this.userLiteFilteringGrid.setItems(items);
             this.userLiteFilteringGrid.getDataProvider().refreshAll();
         });
 
         HeaderRow hr = userGrid.appendHeaderRow();
-        userGrid.addGridFiltering(hr, userFilter::setUsernameFilter, "username");
-        userGrid.addGridFiltering(hr, userFilter::setNameFilter, "firstname");
-        userGrid.addGridFiltering(hr, userFilter::setLastNameFilter, "surname");
-        userGrid.addGridFiltering(hr, userFilter::setEmailFilter, "email");
-        userGrid.addGridFiltering(hr, userFilter::setDepartmentFilter, "department");
+        this.addGridFiltering(userGrid, hr, userFilter::setUsernameFilter, "username");
+        this.addGridFiltering(userGrid, hr, userFilter::setNameFilter, "firstName");
+        this.addGridFiltering(userGrid, hr, userFilter::setLastNameFilter, "surname");
+        this.addGridFiltering(userGrid, hr, userFilter::setEmailFilter, "email");
+        this.addGridFiltering(userGrid, hr, userFilter::setDepartmentFilter, "department");
 
+        userDataProvider = DataProvider.fromFilteringCallbacks(query -> {
+            Optional<UserFilter> filter = query.getFilter();
+
+            // The index of the first item to load
+            int offset = query.getOffset();
+
+            // The number of items to load
+            int limit = query.getLimit();
+
+            if(filter.isPresent() && !query.getSortOrders().isEmpty()) {
+                filter.get().setSortColumn(query.getSortOrders().get(0).getSorted());
+                filter.get().setSortOrder(query.getSortOrders().get(0).getDirection().name());
+            }
+            else if (filter.isPresent()){
+                filter.get().setSortColumn(null);
+                filter.get().setSortOrder(null);
+            }
+
+            return this.userService.getUsersWithoutRole(this.role.getName(), filter.isPresent() ? filter.get() :  new UserFilter()
+                , limit, offset).stream();
+        }, query -> {
+            Optional<UserFilter> filter = query.getFilter();
+
+            return this.userService.getUsersWithoutRoleCount(role.getName(), filter.isPresent() ? filter.get() :  new UserFilter());
+        });
+
+        userGridFilteredDataProvider = userDataProvider.withConfigurableFilter();
+        userGridFilteredDataProvider.setFilter(userFilter);
+
+        userGrid.setDataProvider(userGridFilteredDataProvider);
 
         userGrid.setSizeFull();
 
@@ -145,5 +163,29 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
         super.content.add(layout);
         super.setWidth("1200px");
         super.setHeight("700px");
+    }
+
+    /**
+     * Add filtering to a column.
+     *
+     * @param hr
+     * @param setFilter
+     * @param columnKey
+     */
+    public void addGridFiltering(Grid grid, HeaderRow hr, Consumer<String> setFilter, String columnKey)
+    {
+        TextField textField = new TextField();
+        textField.setWidthFull();
+
+        textField.addValueChangeListener(ev->{
+
+            setFilter.accept(ev.getValue());
+
+            if(this.userGridFilteredDataProvider != null) {
+                this.userGridFilteredDataProvider.refreshAll();
+            }
+        });
+
+        hr.getCell(grid.getColumnByKey(columnKey)).setComponent(textField);
     }
 }

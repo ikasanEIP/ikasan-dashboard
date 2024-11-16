@@ -1,5 +1,7 @@
 package org.ikasan.rest.dashboard;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,6 +17,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class JwtRequestFilter extends OncePerRequestFilter
 {
@@ -24,11 +27,17 @@ public class JwtRequestFilter extends OncePerRequestFilter
 
     private SecurityContextRepository securityContextRepository;
 
-    public JwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil, SecurityContextRepository securityContextRepository)
+    private Cache<String, UserDetails> cache;
+
+    public JwtRequestFilter(UserService userService, JwtTokenUtil jwtTokenUtil
+        , SecurityContextRepository securityContextRepository, int userCacheTimeoutSeconds)
     {
         this.userService = userService;
         this.jwtTokenUtil = jwtTokenUtil;
-        this.securityContextRepository =securityContextRepository;
+        this.securityContextRepository = securityContextRepository;
+        this.cache = CacheBuilder.newBuilder()
+            .expireAfterAccess(userCacheTimeoutSeconds, TimeUnit.SECONDS)
+            .build();
     }
 
     @Override
@@ -48,13 +57,19 @@ public class JwtRequestFilter extends OncePerRequestFilter
                 try
                 {
                     String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+
                     // Once we get the token validate it.
                     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null)
                     {
-                        UserDetails userDetails = this.userService.loadUserByUsername(username);
+                        UserDetails userDetails = cache.getIfPresent(username);
+
+                        if(userDetails == null) {
+                            userDetails = this.userService.loadUserByUsername(username);
+                            cache.put(username, userDetails);
+                        }
                         // if token is valid configure Spring Security to manually set
                         // authentication
-                        if (userDetails!=null && jwtTokenUtil.validateToken(jwtToken, userDetails))
+                        if (jwtTokenUtil.validateToken(jwtToken, userDetails))
                         {
                             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
