@@ -1,0 +1,276 @@
+{
+  "contexts" : [ {
+    "scheduledJobs" : [ {
+      "agentName" : "BRIDGING_JOB",
+      "jobName" : "test1_BRIDGING_1730711810204",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "BRIDGING_JOB-test1_BRIDGING_1730711810204"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "blah2",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-blah2"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "blah1",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-blah1"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "blah4",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-blah4"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "blah3",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-blah3"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "blah5",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-blah5"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "blah-blah",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-blah-blah"
+    }, {
+      "agentName" : "BRIDGING_JOB",
+      "jobName" : "test1_BRIDGING_1730720779184",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "BRIDGING_JOB-test1_BRIDGING_1730720779184"
+    }, {
+      "agentName" : "CONTEXT_TERMINAL_JOB",
+      "jobName" : "test1_TERMINAL",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "CONTEXT_TERMINAL_JOB-test1_TERMINAL"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "visaul",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-visaul"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "test",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-test"
+    }, {
+      "agentName" : "BRIDGING_JOB",
+      "jobName" : "test1_BRIDGING_1730699885554",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "BRIDGING_JOB-test1_BRIDGING_1730699885554"
+    }, {
+      "agentName" : "BRIDGING_JOB",
+      "jobName" : "test1_TERMINAL_1730694933465",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "BRIDGING_JOB-test1_TERMINAL_1730694933465"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "new-job",
+      "startupControlType" : "AUTOMATIC",
+      "ordinal" : -1,
+      "identifier" : "scheduler-agent-new-job"
+    } ],
+    "name" : "test1",
+    "description" : "test",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "BRIDGING_JOB-test1_BRIDGING_1730711810204",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-blah4"
+        }, {
+          "identifier" : "scheduler-agent-blah3"
+        }, {
+          "identifier" : "scheduler-agent-blah5"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "BRIDGING_JOB-test1_BRIDGING_1730699885554",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-blah2"
+        }, {
+          "identifier" : "scheduler-agent-blah1"
+        }, {
+          "identifier" : "scheduler-agent-blah-blah"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "BRIDGING_JOB-test1_BRIDGING_1730720779184",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "BRIDGING_JOB-test1_BRIDGING_1730711810204"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-new-job",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "BRIDGING_JOB-test1_BRIDGING_1730720779184"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "CONTEXT_TERMINAL_JOB-test1_TERMINAL",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-visaul"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "BRIDGING_JOB-test1_TERMINAL_1730694933465",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-test"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-blah-blah",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "BRIDGING_JOB-test1_TERMINAL_1730694933465"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-blah1",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "BRIDGING_JOB-test1_TERMINAL_1730694933465"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-blah2",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "BRIDGING_JOB-test1_TERMINAL_1730694933465"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-blah4",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "BRIDGING_JOB-test1_BRIDGING_1730699885554"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-blah5",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "BRIDGING_JOB-test1_BRIDGING_1730699885554"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-blah3",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "BRIDGING_JOB-test1_BRIDGING_1730699885554"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-visaul",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-new-job"
+        } ]
+      }
+    } ],
+    "contextTtlMilliseconds" : 0,
+    "treeViewExpandLevel" : 1,
+    "ableToRunConcurrently" : true,
+    "useDisplayName" : false,
+    "ordinal" : 0,
+    "renderLogicalBoundaries" : true,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  } ],
+  "scheduledJobs" : [ {
+    "agentName" : "CONTEXT_TERMINAL_JOB",
+    "jobName" : "test-bug_TERMINAL",
+    "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
+    "identifier" : "CONTEXT_TERMINAL_JOB-test-bug_TERMINAL"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "blah-blah",
+    "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
+    "identifier" : "scheduler-agent-blah-blah"
+  }, {
+    "agentName" : "BRIDGING_JOB",
+    "jobName" : "test-bug_TERMINAL_1730694063496",
+    "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
+    "identifier" : "BRIDGING_JOB-test-bug_TERMINAL_1730694063496"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "my-file-watcher",
+    "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
+    "identifier" : "scheduler-agent-my-file-watcher"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "cmd1",
+    "startupControlType" : "AUTOMATIC",
+    "ordinal" : -1,
+    "identifier" : "scheduler-agent-cmd1"
+  } ],
+  "name" : "test-bug",
+  "description" : "test",
+  "timezone" : "Asia/Aden",
+  "jobDependencies" : [ {
+    "jobIdentifier" : "scheduler-agent-cmd1",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-my-file-watcher"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "CONTEXT_TERMINAL_JOB-test-bug_TERMINAL",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-blah-blah"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-blah-blah",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "BRIDGING_JOB-test-bug_TERMINAL_1730694063496"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "BRIDGING_JOB-test-bug_TERMINAL_1730694063496",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-cmd1"
+      } ]
+    }
+  } ],
+  "timeWindowStart" : "0 0 0 ? * * *",
+  "contextTtlMilliseconds" : 82800000,
+  "treeViewExpandLevel" : 1,
+  "ableToRunConcurrently" : true,
+  "useDisplayName" : true,
+  "ordinal" : 0,
+  "jobVisualisationVerticalSpacing" : 60,
+  "jobVisualisationHorizontalSpacing" : 350,
+  "contextVisualisationLevelDistance" : 75,
+  "contextVisualisationNodeDistance" : 150,
+  "visualisationFontSize" : 14,
+  "renderLogicalBoundaries" : true,
+  "disabled" : false,
+  "quartzScheduleDrivenJobsDisabledForContext" : false
+}
