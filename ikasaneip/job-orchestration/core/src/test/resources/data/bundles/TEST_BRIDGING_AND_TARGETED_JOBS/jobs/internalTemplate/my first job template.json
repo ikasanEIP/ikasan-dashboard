@@ -1,0 +1,27 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "my first job template",
+  "jobDescription" : "test",
+  "contextName" : "test-bug",
+  "startupControlType" : "AUTOMATIC",
+  "ordinal" : -1,
+  "templateJob" : true,
+  "commandLine" : "cccccc",
+  "minExecutionTime" : -1,
+  "maxExecutionTime" : -1,
+  "contextParameters" : [ {
+    "name" : "another-new",
+    "defaultValue" : "test"
+  }, {
+    "name" : "new-param",
+    "defaultValue" : "new-value-again-and-again-blah-dah"
+  }, {
+    "name" : "test",
+    "defaultValue" : "test"
+  } ],
+  "targetResidingContextOnly" : false,
+  "participatesInLock" : false,
+  "jobRepeatable" : false,
+  "killed" : false,
+  "identifier" : "scheduler-agent-my first job template"
+}

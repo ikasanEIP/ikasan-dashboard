@@ -571,6 +571,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
         SchedulerJobStateChangeEventBroadcaster.register(this);
     }
