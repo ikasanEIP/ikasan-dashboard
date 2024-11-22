@@ -1,0 +1,17 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "blah-blah",
+  "jobDescription" : "test",
+  "contextName" : "test-bug",
+  "childContextNames" : [ "test-bug", "test1" ],
+  "startupControlType" : "AUTOMATIC",
+  "ordinal" : -1,
+  "commandLine" : "ls -la\nsleep 10s",
+  "minExecutionTime" : -1,
+  "maxExecutionTime" : -1,
+  "targetResidingContextOnly" : true,
+  "participatesInLock" : false,
+  "jobRepeatable" : false,
+  "killed" : false,
+  "identifier" : "scheduler-agent-blah-blah"
+}

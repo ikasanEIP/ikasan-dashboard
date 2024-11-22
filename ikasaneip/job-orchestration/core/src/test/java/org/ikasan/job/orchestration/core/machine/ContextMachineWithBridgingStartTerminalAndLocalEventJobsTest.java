@@ -14,6 +14,7 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -706,5 +707,115 @@ public class ContextMachineWithBridgingStartTerminalAndLocalEventJobsTest extend
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 6", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 7", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 8", InstanceStatus.COMPLETE);
+    }
+
+    @Test
+    public void test_context_with_bridging_job_and_targeted_job() throws IOException {
+        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // modify the context descriptor to add GRP1 for the environment group
+        String contextJson = loadDataFile("/data/bundles/TEST_BRIDGING_AND_TARGETED_JOBS/" +
+            "context/test-bug.json");
+
+        ContextTemplate context = this.contextService.getContextTemplate(contextJson);
+        ContextInstance contextInstance = this.contextService.getContextInstance(contextJson);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap = this.loadInternalEventDrivenJobInstanceMap
+            (contextInstance, "./src/test/resources/data/bundles/TEST_BRIDGING_AND_TARGETED_JOBS/jobs/internal",
+                "/data/bundles/TEST_BRIDGING_AND_TARGETED_JOBS/jobs/internal");
+
+
+        Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap = loadContextTerminalJobInstanceMap(context, contextInstance);
+        Map<String, ContextStartJobInstance> contextStartJobInstanceMap = loadContextStartJobInstanceMap(context, contextInstance);
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = loadLocalEventJobInstanceMap(context, contextInstance);
+        Map<String, BridgingJobInstance> bridgingJobInstanceMap = loadBridgingJobInstanceMap(context, contextInstance);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobInstanceMap, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, bridgingJobInstanceMap, this.queueDir
+            , new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+        ReflectionTestUtils.setField(contextMachine, "inboundQueue", inboundQueue);
+
+        ContextMachineCache.instance().put(contextMachine);
+
+        this.assertContextStatus(contextMachine, "test-bug", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "test1", InstanceStatus.WAITING);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("cmd1",
+            "scheduler-agent", false);
+        eventInstance.setJobStarting(true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("cmd1",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance(events.get(0).getJobName(),
+            events.get(0).getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance(events.get(0).getJobName(),
+            events.get(0).getAgentName(), true);
+        eventInstance.getInternalEventDrivenJob().setTargetResidingContextOnly(true);
+        eventInstance.getInternalEventDrivenJob().setChildContextName("test-bug");
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        // Assert that the targeted job in its first instance has run.
+        this.assertJobStatus(contextMachine, "test-bug",
+            "scheduler-agent-blah-blah", InstanceStatus.COMPLETE);
+
+        // but is still waiting in the test1 context
+        this.assertJobStatus(contextMachine, "test1",
+            "scheduler-agent-blah-blah", InstanceStatus.WAITING);
+
+        eventInstance = scheduledProcessEventInstance("test",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance(events.get(0).getJobName(),
+            events.get(0).getAgentName(), true);
+
+        // the targeted job blah-blah will be executed as part of the group of 3 jobs below.
+        List<SchedulerJobInitiationEvent> raisedEvents = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(3, raisedEvents.size());
+
+        eventInstance = scheduledProcessEventInstance(raisedEvents.get(0).getJobName(),
+            raisedEvents.get(0).getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance(raisedEvents.get(1).getJobName(),
+            raisedEvents.get(1).getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance(raisedEvents.get(2).getJobName(),
+            raisedEvents.get(2).getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        // Assert that the targeted job in its first instance has run.
+        this.assertJobStatus(contextMachine, "test-bug",
+            "scheduler-agent-blah-blah", InstanceStatus.COMPLETE);
+
+        // and that the instance in test1 context is complete too
+        this.assertJobStatus(contextMachine, "test1",
+            "scheduler-agent-blah-blah", InstanceStatus.COMPLETE);
     }
 }

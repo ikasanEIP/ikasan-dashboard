@@ -1,0 +1,17 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "gggggg",
+  "jobDescription" : "test",
+  "contextName" : "test-bug",
+  "startupControlType" : "AUTOMATIC",
+  "ordinal" : -1,
+  "templateName" : "my first job template",
+  "commandLine" : "ls -la\nsleep -10\npwd",
+  "minExecutionTime" : -1,
+  "maxExecutionTime" : -1,
+  "targetResidingContextOnly" : false,
+  "participatesInLock" : false,
+  "jobRepeatable" : false,
+  "killed" : false,
+  "identifier" : "scheduler-agent-gggggg"
+}
