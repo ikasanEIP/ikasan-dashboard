@@ -20,6 +20,7 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.ikasan.spec.search.SearchResults;
 
 import java.io.IOException;
@@ -30,21 +31,53 @@ import java.util.stream.Collectors;
 
 public class ContextSchedulerVisualisation extends SchedulerVisualisation {
 
+    /**
+     * Constructs a ContextSchedulerVisualisation object with the provided parameters.
+     *
+     * @param dynamicImagePath the dynamic image path
+     * @param moduleMetaDataService service for module metadata
+     * @param scheduledProcessManagementService service for scheduled process management
+     * @param configurationRestService configuration REST service
+     * @param moduleControlRestService module control REST service
+     * @param metaDataRestService metadata REST service
+     * @param systemEventLogger logger for system events
+     * @param schedulerJobService job scheduler service
+     * @param logStreamingService streaming service for log data
+     * @param jobInitiationService service for job initiation
+     * @param contextProfileService context profile service
+     * @param userService user service
+     * @param securityService security service
+     * @param jobProvisionService job provision service
+     * @param scheduledContextService service for scheduled contexts
+     * @param contextVisualisationLayoutService service for context visualisation layout
+     * @param schedulerJobExecutionEnvironmentLabel map of scheduler job execution environment labels
+     * @param jobVisualisationVerticalSpacing vertical spacing for job visualisation
+     * @param jobVisualisationHorizontalSpacing horizontal spacing for job visualisation
+     * @param contextVisualisationLevelDistance distance between context visualisation levels
+     * @param contextVisualisationNodeDistance distance between context visualisation nodes
+     */
     public ContextSchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService
         , ScheduledProcessManagementService scheduledProcessManagementService, ConfigurationService configurationRestService
         , ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger
         , SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, JobInitiationService jobInitiationService
         , ContextProfileService contextProfileService, UserService userService, SecurityService securityService
-        , JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService
+        , JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService, ContextVisualisationLayoutService contextVisualisationLayoutService
         , Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing
-        , double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+        , double contextVisualisationLevelDistance, double contextVisualisationNodeDistance, boolean showPrettyFormattedDiagram) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService
             , moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService
-            , schedulerJobExecutionEnvironmentLabel, jobVisualisationHorizontalSpacing, jobVisualisationHorizontalSpacing
-            , contextVisualisationLevelDistance, contextVisualisationNodeDistance);
+            , contextVisualisationLayoutService, schedulerJobExecutionEnvironmentLabel, jobVisualisationVerticalSpacing
+            , jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance
+            , showPrettyFormattedDiagram);
     }
 
+    /**
+     * Initializes the DesignerCanvas with the specified UI object.
+     *
+     * @param ui the UI object used for initialization
+     * @throws IOException if an I/O error occurs
+     */
     protected void init(UI ui) throws IOException {
         if(!initialised && contextTemplate != null) {
 

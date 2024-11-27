@@ -19,6 +19,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -66,7 +67,8 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
 
         String result = adapter.adaptJobs(contextTemplate, child,
             schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)),
-            schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2)));
+            schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))
+            , new HashMap<>());
 
         JSONAssert.assertEquals(loadDataFile("/data/contexts/results/context-with-2-jobs-in-or-at-start-result.json"), result, new CustomComparator(JSONCompareMode.STRICT,
             new Customization("[*].id", (o1, o2) -> true), new Customization("[*].ports[*].id", (o1, o2) -> true),new Customization("[*].composite", (o1, o2) -> true)));

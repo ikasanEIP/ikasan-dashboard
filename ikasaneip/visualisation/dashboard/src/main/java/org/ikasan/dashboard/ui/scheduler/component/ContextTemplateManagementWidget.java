@@ -73,6 +73,7 @@ import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,6 +125,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private GlobalEventService globalEventService;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextVisualisationLayoutService contextVisualisationLayoutService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -206,7 +208,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                            Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
                                            ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
-                                           SpringCloudConfigRefreshService springCloudConfigRefreshService, boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple,
+                                           SpringCloudConfigRefreshService springCloudConfigRefreshService, ContextVisualisationLayoutService contextVisualisationLayoutService,
+                                           boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple,
                                            double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextService = scheduledContextService;
@@ -310,6 +313,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.springCloudConfigRefreshService = springCloudConfigRefreshService;
         if (this.springCloudConfigRefreshService == null) {
             throw new IllegalArgumentException("springCloudConfigRefreshService cannot be null!");
+        }
+        this.contextVisualisationLayoutService = contextVisualisationLayoutService;
+        if (this.contextVisualisationLayoutService == null) {
+            throw new IllegalArgumentException("contextVisualisationLayoutService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -605,11 +612,12 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.schedulerVisualisationDiv.setMargin(false);
         this.schedulerVisualisationDiv.setPadding(false);
 
+        // todo need to sort out setting the pretty format from the context
         this.schedulerVisualisation = new ContextSchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
-            , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
-            , this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
+            , this.contextVisualisationLayoutService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
+            , this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, true);
         this.schedulerVisualisation.addJobSynchronisationRequiredListener(this);
         this.schedulerVisualisation.setWidthFull();
 
@@ -745,7 +753,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate,
-            this.jobInitiationService, this.jobProvisionService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextService,
+            this.jobInitiationService, this.jobProvisionService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextService, this.contextVisualisationLayoutService,
             this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
             this.contextVisualisationNodeDistance);
         this.schedulerJobGridWidget.setWidthFull();
@@ -893,7 +901,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             menuItemClickEvent -> {
                 JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
+                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService, this.contextVisualisationLayoutService,
                     this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
                     this.contextVisualisationNodeDistance);
                 jobLockManagementDialog.open();

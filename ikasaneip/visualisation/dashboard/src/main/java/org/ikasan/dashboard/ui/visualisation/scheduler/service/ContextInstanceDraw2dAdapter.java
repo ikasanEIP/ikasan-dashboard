@@ -44,9 +44,10 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
     }
 
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
-        , Map<String, SchedulerJob> schedulerJobsMapByIdentifier) {
+        , Map<String, SchedulerJob> schedulerJobsMapByIdentifier, Map<String, Image> schedulerJobsImageMap) {
 
-            ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, schedulerJobsMapByIdentifier);
+            ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs
+                , schedulerJobsMapByIdentifier, schedulerJobsImageMap);
             this.addStatusRectangles(items, context, parentContext);
 
             items.forEach(item -> {

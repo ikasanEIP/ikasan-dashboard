@@ -46,9 +46,10 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
     }
 
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
-        , Map<String, SchedulerJob> schedulerJobsMapByIdentifier) {
+        , Map<String, SchedulerJob> schedulerJobsMapByIdentifier, Map<String, Image> schedulerJobsImageMap) {
             try {
-                ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, schedulerJobsMapByIdentifier);
+                ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs
+                    , schedulerJobsMapByIdentifier, schedulerJobsImageMap);
 
                 return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
             }
