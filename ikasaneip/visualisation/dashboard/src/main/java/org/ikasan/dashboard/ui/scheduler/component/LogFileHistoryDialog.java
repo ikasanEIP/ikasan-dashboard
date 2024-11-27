@@ -235,14 +235,19 @@ public class LogFileHistoryDialog extends AbstractCloseableResizableDialog imple
                 verticalLayout.setWidth("100%");
                 verticalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-                Button downloadLogFileButton = new Button("Log File", VaadinIcon.FILE_PROCESS.create());
+                Button downloadLogFileButton = new Button(getTranslation("button.log-file"), VaadinIcon.FILE_PROCESS.create());
 
                 verticalLayout.add(downloadLogFileButton);
                 verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadLogFileButton);
 
-                downloadLogFileButton.addClickListener(event ->
-                    this.streamLog(logFile.getValue().getStartEvent().getResultOutput()));
-
+                downloadLogFileButton.addClickListener(event -> {
+                    if(logFile.getValue().getStartEvent() != null) {
+                        this.streamLog(logFile.getValue().getStartEvent().getResultOutput());
+                    }
+                    if(logFile.getValue().getEndEvent() != null) {
+                        this.streamLog(logFile.getValue().getEndEvent().getResultOutput());
+                    }
+                });
                 return verticalLayout;
             })).setFlexGrow(1).setKey("log-file")
             .setResizable(true);
@@ -251,13 +256,19 @@ public class LogFileHistoryDialog extends AbstractCloseableResizableDialog imple
                 verticalLayout.setWidth("100%");
                 verticalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-                Button downloadLogFileButton = new Button("Error Log File", VaadinIcon.FILE_REMOVE.create());
+                Button downloadLogFileButton = new Button(getTranslation("button.error-log-file"), VaadinIcon.FILE_REMOVE.create());
 
                 verticalLayout.add(downloadLogFileButton);
                 verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadLogFileButton);
 
-                downloadLogFileButton.addClickListener(event ->
-                    this.streamLog(logFile.getValue().getStartEvent().getResultError()));
+                downloadLogFileButton.addClickListener(event -> {
+                    if(logFile.getValue().getStartEvent() != null) {
+                        this.streamLog(logFile.getValue().getStartEvent().getResultError());
+                    }
+                    if(logFile.getValue().getEndEvent() != null) {
+                        this.streamLog(logFile.getValue().getEndEvent().getResultError());
+                    }
+                });
 
                 return verticalLayout;
             })).setFlexGrow(1).setKey("error-log-file")
