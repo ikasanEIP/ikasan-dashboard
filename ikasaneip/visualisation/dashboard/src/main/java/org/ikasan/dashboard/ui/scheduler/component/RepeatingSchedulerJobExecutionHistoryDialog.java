@@ -425,6 +425,7 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
         SchedulerJobStateChangeEventBroadcaster.register(this);
@@ -433,6 +434,7 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
         this.ui = null;
 
         SchedulerJobStateChangeEventBroadcaster.unregister(this);
