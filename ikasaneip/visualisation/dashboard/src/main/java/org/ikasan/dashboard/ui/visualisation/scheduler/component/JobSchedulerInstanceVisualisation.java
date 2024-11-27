@@ -114,7 +114,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
                     jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
                 this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextInstance, this.contextInstance, schedulerJobs
-                    , this.getSchedulerJobsForContextInstance(this.parentContextInstance.getId())));
+                    , this.getSchedulerJobsForContextInstance(this.parentContextInstance.getId()), new HashMap<>()));
             }
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);

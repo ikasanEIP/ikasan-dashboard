@@ -65,6 +65,7 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -102,6 +103,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private SubMenu activeContextSubMenu;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
+    private ContextVisualisationLayoutService contextVisualisationLayoutService;
     private UI ui;
     private boolean removeTrailingPlanNameContextAfterUnderscore;
     private int jobPlanIntervalMultiple;
@@ -148,7 +150,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                  Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService,
-                                 ContextInstanceSchedulerService contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService,
+                                 ContextInstanceSchedulerService contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService, ContextVisualisationLayoutService contextVisualisationLayoutService,
                                  boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                  double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
@@ -215,6 +217,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         this.securityService = securityService;
         if (this.securityService == null) {
             throw new IllegalArgumentException("securityService cannot be null!");
+        }
+        this.contextVisualisationLayoutService = contextVisualisationLayoutService;
+        if (this.contextVisualisationLayoutService == null) {
+            throw new IllegalArgumentException("contextVisualisationLayoutService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -408,7 +414,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
                     , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                     , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
-                    , this.contextInstanceSchedulerService, this.springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple
+                    , this.contextInstanceSchedulerService, this.springCloudConfigRefreshService, this.contextVisualisationLayoutService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple
                     , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance
                 );
                 contextTemplateManagementDialog.open();

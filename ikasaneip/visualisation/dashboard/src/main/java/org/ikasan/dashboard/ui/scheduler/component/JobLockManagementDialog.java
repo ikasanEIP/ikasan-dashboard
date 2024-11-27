@@ -47,6 +47,7 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -76,6 +77,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
     private SecurityService securityService;
     private JobProvisionService jobProvisionService;
     private ScheduledContextService scheduledContextService;
+    private ContextVisualisationLayoutService contextVisualisationLayoutService;
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private ComboBox<JobLock> comboBox;
     private Grid<SchedulerJob> grid;
@@ -104,6 +106,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                                    ContextProfileService contextProfileService, UserService userService, SecurityService securityService,
                                    JobProvisionService jobProvisionService,
                                    ScheduledContextService scheduledContextService,
+                                   ContextVisualisationLayoutService contextVisualisationLayoutService,
                                    Map<String, String> schedulerJobExecutionEnvironmentLabel,
                                    double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                    double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
@@ -180,6 +183,11 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+
+        this.contextVisualisationLayoutService = contextVisualisationLayoutService;
+        if(this.contextVisualisationLayoutService == null) {
+            throw new IllegalArgumentException("contextVisualisationLayoutService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -281,11 +289,12 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                             contextButton.setIcon(visualisation);
                             contextButton.addClickListener(event -> {
                                 try {
+                                    // todo sort out set pretty print from context
                                     JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
                                         configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
-                                        jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService,
+                                        jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService, this.contextVisualisationLayoutService,
                                         schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
-                                        this.contextVisualisationNodeDistance);
+                                        this.contextVisualisationNodeDistance, true);
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
                                     jobTemplateVisualisationDialog.open();
                                 } catch (Exception e) {

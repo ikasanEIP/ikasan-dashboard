@@ -43,6 +43,8 @@ import org.ikasan.scheduled.notification.service.SolrEmailNotificationDetailsSer
 import org.ikasan.scheduled.notification.service.SolrNotificationSendAuditServiceImpl;
 import org.ikasan.scheduled.profile.dao.SolrContextProfileDaoImpl;
 import org.ikasan.scheduled.profile.service.SolrContextProfileServiceImpl;
+import org.ikasan.scheduled.visualisation.dao.SolrContextVisualisationLayoutDaoImpl;
+import org.ikasan.scheduled.visualisation.service.SolrContextVisualisationLayoutServiceImpl;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.exclusion.ExclusionEvent;
@@ -64,6 +66,7 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextSe
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.ikasan.spec.wiretap.WiretapEvent;
@@ -126,6 +129,18 @@ public class SolrClientAutoConfiguration {
 
     @Value("${ikasan.enterprise.scheduler.use.legacy.job.status.count:false}")
     private boolean useLegacyJobStatusCount = false;
+
+    @Bean
+    public ContextVisualisationLayoutService contextVisualisationLayoutService() {
+        SolrContextVisualisationLayoutDaoImpl solrContextVisualisationLayoutDao
+            = new SolrContextVisualisationLayoutDaoImpl();
+        solrContextVisualisationLayoutDao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
+            solrConnectionTimeoutMilli);
+        solrContextVisualisationLayoutDao.setSolrUsername(solrUsername);
+        solrContextVisualisationLayoutDao.setSolrPassword(solrPassword);
+
+        return new SolrContextVisualisationLayoutServiceImpl(solrContextVisualisationLayoutDao);
+    }
 
     @Bean
     public JobLockCacheService jobLockCacheService() {

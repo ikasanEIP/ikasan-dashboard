@@ -1,5 +1,6 @@
 package org.ikasan.scheduled.visualisation.service;
 
+import org.ikasan.scheduled.visualisation.dao.SolrContextVisualisationLayoutDaoImpl;
 import org.ikasan.spec.scheduled.visualisation.dao.ContextVisualisationLayoutDao;
 import org.ikasan.spec.scheduled.visualisation.model.ContextVisualisationLayoutRecord;
 import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
@@ -7,15 +8,20 @@ import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayou
 import java.util.List;
 
 public class SolrContextVisualisationLayoutServiceImpl implements ContextVisualisationLayoutService {
-    private ContextVisualisationLayoutDao contextVisualisationLayoutDao;
+    private SolrContextVisualisationLayoutDaoImpl contextVisualisationLayoutDao;
 
     /**
      * Constructs a new SolrContextVisualisationLayoutServiceImpl with the specified ContextVisualisationLayoutDao.
      *
      * @param contextVisualisationLayoutDao the data access object for context visualisation layout
      */
-    public SolrContextVisualisationLayoutServiceImpl(ContextVisualisationLayoutDao contextVisualisationLayoutDao) {
+    public SolrContextVisualisationLayoutServiceImpl(SolrContextVisualisationLayoutDaoImpl contextVisualisationLayoutDao) {
         this.contextVisualisationLayoutDao = contextVisualisationLayoutDao;
+    }
+
+    @Override
+    public void save(ContextVisualisationLayoutRecord contextVisualisationLayoutRecord) {
+        this.contextVisualisationLayoutDao.save(contextVisualisationLayoutRecord);
     }
 
     @Override
