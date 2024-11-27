@@ -87,7 +87,8 @@ public abstract class Draw2dAdapterBase {
      * @param schedulerJobsMap
      * @return
      */
-    protected ArrayList<Object> _adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs, Map<String, SchedulerJob> schedulerJobsMap) {
+    protected ArrayList<Object> _adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs,
+                                           Map<String, SchedulerJob> schedulerJobsMap, Map<String, Image> schedulerJobsImageMap) {
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
             this.setDiagramVisualisationLayoutConfiguration(parentContext);
             // Determine if any jobs are initiated from a previous or are responsible for initiating a job in a
@@ -317,8 +318,16 @@ public abstract class Draw2dAdapterBase {
                         GroupBuilder groupBuilder = new GroupBuilder();
                         Group group = groupBuilder.build();
 
-                        ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
-                        ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
+                        if(schedulerJobsImageMap.containsKey(((Item) item).getId())) {
+                            Image image = schedulerJobsImageMap.get(((Item) item).getId());
+
+                            ((PositionedItem) item).setX(image.getX());
+                            ((PositionedItem) item).setY(image.getY());
+                        }
+                        else {
+                            ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
+                            ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
+                        }
 
                         double positionedItemCentre = ((PositionedItem) item).getX() + 50;
 
@@ -412,7 +421,7 @@ public abstract class Draw2dAdapterBase {
 
             if(parentContext.isRenderLogicalBoundaries() == null || parentContext.isRenderLogicalBoundaries()) {
                 // Now draw the logic groupings abd context boundaries onto the diagram.
-                this.addLogicGroupings(visualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder);
+                this.addLogicGroupings(visualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder, schedulerJobsImageMap);
             }
 
             items.addAll(imageOverlay);
@@ -1121,9 +1130,10 @@ public abstract class Draw2dAdapterBase {
      * @param cellMap
      * @param diagramBuilder
      */
-    protected void addLogicGroupings(VisualisationLogicalGrouping visualisationLogicalGrouping, ArrayList<Object> imageOverlay, Map<String, mxCell> cellMap, DiagramBuilder diagramBuilder) {
+    protected void addLogicGroupings(VisualisationLogicalGrouping visualisationLogicalGrouping, ArrayList<Object> imageOverlay
+        , Map<String, mxCell> cellMap, DiagramBuilder diagramBuilder, Map<String, Image> schedulerJobsImageMap) {
         visualisationLogicalGrouping.getNestedGrouping().forEach(nestedVisualisationLogicalGrouping -> {
-            this.addLogicGroupings(nestedVisualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder);
+            this.addLogicGroupings(nestedVisualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder, schedulerJobsImageMap);
 
             if(nestedVisualisationLogicalGrouping.getJobIdentifiers().size() > 1 || (!nestedVisualisationLogicalGrouping.getNestedGrouping().isEmpty())) {
                 AtomicReference<Double> xMinExtent = new AtomicReference<>();
@@ -1135,7 +1145,7 @@ public abstract class Draw2dAdapterBase {
                 AtomicReference<Double> yMaxExtent = new AtomicReference<>();
                 yMaxExtent.set(-1.0);
 
-                this.calculateExtents(nestedVisualisationLogicalGrouping, xMinExtent, xMaxExtent, yMinExtent, yMaxExtent, cellMap);
+                this.calculateExtents(nestedVisualisationLogicalGrouping, xMinExtent, xMaxExtent, yMinExtent, yMaxExtent, cellMap, schedulerJobsImageMap);
 
                 if(xMinExtent.get() == -1.0
                     && xMaxExtent.get() == -1.0
@@ -1187,12 +1197,17 @@ public abstract class Draw2dAdapterBase {
      * @param cellMap
      */
     protected void calculateExtents(VisualisationLogicalGrouping visualisationLogicalGrouping, AtomicReference<Double> xMinExtent, AtomicReference<Double> xMaxExtent,
-                                    AtomicReference<Double> yMinExtent, AtomicReference<Double> yMaxExtent, Map<String, mxCell> cellMap) {
+                                    AtomicReference<Double> yMinExtent, AtomicReference<Double> yMaxExtent, Map<String, mxCell> cellMap, Map<String, Image> schedulerJobsImageMap) {
         visualisationLogicalGrouping.getNestedGrouping().forEach(nestedVisualisationLogicalGrouping -> {
-            this.calculateExtents(nestedVisualisationLogicalGrouping, xMinExtent, xMaxExtent, yMinExtent, yMaxExtent, cellMap);
+            this.calculateExtents(nestedVisualisationLogicalGrouping, xMinExtent, xMaxExtent, yMinExtent, yMaxExtent, cellMap, schedulerJobsImageMap);
 
             nestedVisualisationLogicalGrouping.getJobIdentifiers().forEach(id -> {
                 mxCell cell = cellMap.get(id);
+
+                if(schedulerJobsImageMap.containsKey(id)) {
+                    cell.getGeometry().setX(schedulerJobsImageMap.get(id).getX()-600);
+                    cell.getGeometry().setY(schedulerJobsImageMap.get(id).getY()-600);
+                }
 
                 if (xMinExtent.get() == -1) xMinExtent.set(cell.getGeometry().getX() + 600);
                 else if (xMinExtent.get() > cell.getGeometry().getX() + 600) {
@@ -1224,6 +1239,12 @@ public abstract class Draw2dAdapterBase {
         visualisationLogicalGrouping.getJobIdentifiers().forEach(id -> {
             mxCell cell = cellMap.get(id);
             if(cell == null) return;
+
+            if(schedulerJobsImageMap.containsKey(id)) {
+                cell.getGeometry().setX(schedulerJobsImageMap.get(id).getX()-600);
+                cell.getGeometry().setY(schedulerJobsImageMap.get(id).getY()-600);
+            }
+
             if (xMinExtent.get() == -1) xMinExtent.set(cell.getGeometry().getX() + 600);
             else if (xMinExtent.get() > cell.getGeometry().getX() + 600) {
                 xMinExtent.set(cell.getGeometry().getX() + 600);

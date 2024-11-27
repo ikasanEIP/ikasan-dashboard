@@ -36,6 +36,8 @@ import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.visualisation.model.SolrContextVisualisationLayoutImpl;
+import org.ikasan.scheduled.visualisation.model.SolrContextVisualisationLayoutRecordImpl;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -53,6 +55,9 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.scheduled.visualisation.model.ContextVisualisationLayout;
+import org.ikasan.spec.scheduled.visualisation.model.ContextVisualisationLayoutRecord;
+import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -91,6 +96,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected SecurityService securityService;
     protected JobProvisionService jobProvisionService;
     protected ScheduledContextService scheduledContextService;
+    protected ContextVisualisationLayoutService contextVisualisationLayoutService;
 
     protected ScheduledContextViewRecord scheduledContextViewRecord;
 
@@ -112,15 +118,18 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
 
+    protected boolean showPrettyFormattedDiagram;
+
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                  UserService userService, SecurityService securityService, JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService,
+                                  UserService userService, SecurityService securityService, JobProvisionService jobProvisionService,
+                                  ScheduledContextService scheduledContextService, ContextVisualisationLayoutService contextVisualisationLayoutService,
                                   Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
-                                  double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+                                  double contextVisualisationLevelDistance, double contextVisualisationNodeDistance, boolean showPrettyFormattedDiagram) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -197,12 +206,19 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
+        this.contextVisualisationLayoutService = contextVisualisationLayoutService;
+        if(this.contextVisualisationLayoutService == null) {
+            throw new IllegalArgumentException("contextVisualisationLayoutService cannot be null!");
+        }
+
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
 
         this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
         this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
         this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
         this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
+
+        this.showPrettyFormattedDiagram = showPrettyFormattedDiagram;
 
         this.adapter = new ContextTemplateDraw2dAdapter(jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing,
             contextVisualisationLevelDistance, contextVisualisationNodeDistance);
@@ -344,8 +360,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
                 this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
-                this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
-                this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
+                this.contextVisualisationLayoutService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing,
+                this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.showPrettyFormattedDiagram);
             this.jobSynchronisationRequiredListeners.forEach(listener
                 -> jobTemplateVisualisationDialog.addJobSynchronisationRequiredListener(listener));
             jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
@@ -367,8 +383,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
                 this.contextProfileService, this.userService, this.securityService, this.jobProvisionService,
-                this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing,
-                this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
+                this.scheduledContextService, this.contextVisualisationLayoutService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing,
+                this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.showPrettyFormattedDiagram);
             contextTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
             contextTemplateVisualisationDialog.open();
 
@@ -632,6 +648,23 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             scheduledContextRecord.setContext(this.parentContextTemplate);
             this.scheduledContextService.save(scheduledContextRecord);
             logger.info("Saved context! " + stopWatch.getTime());
+
+            ContextVisualisationLayoutRecord contextVisualisationLayoutRecord = this.contextVisualisationLayoutService
+                .findByParentContextAndContext(this.parentContextTemplate.getName(), this.contextTemplate.getName());
+            if(contextVisualisationLayoutRecord == null) {
+                contextVisualisationLayoutRecord = new SolrContextVisualisationLayoutRecordImpl();
+                contextVisualisationLayoutRecord.setParentContext(this.parentContextTemplate.getName());
+                contextVisualisationLayoutRecord.setContext(this.contextTemplate.getName());
+                contextVisualisationLayoutRecord.setContextVisualisationLayout(new SolrContextVisualisationLayoutImpl());
+                contextVisualisationLayoutRecord.setTimestamp(System.currentTimeMillis());
+            }
+
+            ContextVisualisationLayout contextVisualisationLayout = contextVisualisationLayoutRecord.getContextVisualisationLayout();
+            contextVisualisationLayout.setLayoutJson(payload);
+            contextVisualisationLayoutRecord.setContextVisualisationLayout(contextVisualisationLayout);
+            contextVisualisationLayoutRecord.setModifiedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+
+            this.contextVisualisationLayoutService.save(contextVisualisationLayoutRecord);
 
             try {
                 this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_SAVED, String.format("Job Plan Saved. Parent Job Plan [%s]. Name of Saved Job Plan [%s].\nBefore\n[%s]\nAfter\n[%s]"

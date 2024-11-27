@@ -29,6 +29,7 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextSe
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -138,6 +139,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Resource
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
+    @Resource
+    private ContextVisualisationLayoutService contextVisualisationLayoutService;
+
     @Value("${job.visualisation.vertical.spacing:120}")
     protected double jobVisualisationVerticalSpacing;
     @Value("${job.visualisation.horizontal.spacing:400}")
@@ -184,8 +188,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
                 , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                 , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                 , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
-                , this.contextInstanceSchedulerService, springCloudConfigRefreshService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple
-                , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
+                , this.contextInstanceSchedulerService, springCloudConfigRefreshService, this.contextVisualisationLayoutService, this.removeTrailingPlanNameContextAfterUnderscore
+                , this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance
+                , this.contextVisualisationNodeDistance);
 
             this.getElement().getStyle().set("padding-top", "0px");
             this.add(this.contextTemplateManagementWidget);

@@ -40,6 +40,7 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -158,9 +159,10 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
-
     @Resource
     private ContextParametersInstanceService contextParametersInstanceService;
+    @Resource
+    private ContextVisualisationLayoutService contextVisualisationLayoutService;
 
     @Value("${scheduler.provision.jobs.on.upload:true}")
     private boolean uploadProvisionJobs;
@@ -220,8 +222,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
             this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
-            this.contextInstanceSchedulerService, this.contextParametersInstanceService, removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing,
-            this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationLevelDistance);
+            this.contextInstanceSchedulerService, this.contextParametersInstanceService, this.contextVisualisationLayoutService, removeTrailingPlanNameContextAfterUnderscore,
+            this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationLevelDistance);
         this.contextTemplateWidget.setVisible(false);
 
 

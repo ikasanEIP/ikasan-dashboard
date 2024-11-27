@@ -6,10 +6,12 @@ import org.ikasan.dashboard.ui.scheduler.component.SelectContextDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dAdapterBase;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dCanvasJsonHelper;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemSingleClickEvent;
 import org.ikasan.designer.event.FigureDeleteEvent;
+import org.ikasan.designer.model.Image;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.builder.context.ContextTemplateBuilder;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -30,6 +32,8 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.scheduled.visualisation.model.ContextVisualisationLayoutRecord;
+import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.ikasan.spec.search.SearchResults;
 
 import java.io.IOException;
@@ -45,12 +49,14 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                      SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, JobInitiationService jobInitiationService,
                                      ContextProfileService contextProfileService, UserService userService, SecurityService securityService, JobProvisionService jobProvisionService,
-                                     ScheduledContextService scheduledContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
-                                     double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+                                     ContextVisualisationLayoutService contextVisualisationLayoutService, ScheduledContextService scheduledContextService,
+                                     Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                     double contextVisualisationLevelDistance, double contextVisualisationNodeDistance, boolean showPrettyFormattedDiagram) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService
             , metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, jobInitiationService, contextProfileService
-            , userService, securityService, jobProvisionService, scheduledContextService, schedulerJobExecutionEnvironmentLabel
-            ,  jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
+            , userService, securityService, jobProvisionService, scheduledContextService, contextVisualisationLayoutService, schedulerJobExecutionEnvironmentLabel
+            , jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance
+            , showPrettyFormattedDiagram);
     }
 
     protected void init(UI ui) throws IOException {
@@ -251,7 +257,17 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
             .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
 
         ContextTemplateDraw2dAdapter contextTemplateDraw2dAdapter = new ContextTemplateDraw2dAdapter();
+        ContextVisualisationLayoutRecord contextVisualisationLayoutRecord = this.contextVisualisationLayoutService.findByParentContextAndContext
+            (this.parentContextTemplate.getName(), this.contextTemplate.getName());
+
+        Map<String, Image> schedulerJobImageMap = new HashMap<>();
+        if(contextVisualisationLayoutRecord != null && !this.showPrettyFormattedDiagram) {
+            schedulerJobImageMap = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson
+                (contextVisualisationLayoutRecord.getContextVisualisationLayout().getLayoutJson());
+        }
+
         this.designerCanvas.setCanvasJson(contextTemplateDraw2dAdapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
-            schedulerJobs.values().stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))));
+            schedulerJobs.values().stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2)),
+            schedulerJobImageMap));
     }
 }
