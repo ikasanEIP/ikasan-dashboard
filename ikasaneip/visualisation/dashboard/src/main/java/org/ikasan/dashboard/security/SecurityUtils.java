@@ -3,6 +3,7 @@ package org.ikasan.dashboard.security;
 
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.shared.ApplicationConstants;
+import org.ikasan.dashboard.cache.ModuleMetadataCache;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -13,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -81,6 +83,11 @@ public final class SecurityUtils {
             authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ) ||
             authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE) ||
             authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN)){
+
+            results.addAll(ModuleMetadataCache.instance().getModuleMetadata().stream()
+                .map(moduleMetaData -> moduleMetaData.getName())
+                .collect(Collectors.toList()));
+
             return results;
         }
 
