@@ -9,7 +9,7 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -50,7 +50,6 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
@@ -87,8 +86,6 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
     private ScheduledContextService scheduledContextService;
 
     private LogStreamingService logStreamingService;
-
-    private ContextVisualisationLayoutService contextVisualisationLayoutService;
 
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
@@ -128,7 +125,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, ContextTemplate contextTemplate, JobInitiationService jobInitiationService,
                                   JobProvisionService jobProvisionService, ContextProfileService contextProfileService, UserService userService,
-                                  SecurityService securityService, ScheduledContextService scheduledContextService, ContextVisualisationLayoutService contextVisualisationLayoutService,
+                                  SecurityService securityService, ScheduledContextService scheduledContextService,
                                   Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                   double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
@@ -196,10 +193,6 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         if (this.logStreamingService == null) {
             throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
-        this.contextVisualisationLayoutService = contextVisualisationLayoutService;
-        if (this.contextVisualisationLayoutService == null) {
-            throw new IllegalArgumentException("contextVisualisationLayoutService cannot be null!");
-        }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
 
@@ -257,10 +250,10 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                     HorizontalLayout horizontalLayout = new HorizontalLayout();
 
                     if (schedulerJobRecord.getDisplayName() != null && !schedulerJobRecord.getDisplayName().isEmpty()) {
-                        Label displayNameLabel = new Label(schedulerJobRecord.getDisplayName());
+                        NativeLabel displayNameLabel = new NativeLabel(schedulerJobRecord.getDisplayName());
                         horizontalLayout.add(displayNameLabel);
                     } else {
-                        Label displayNameLabel = new Label(getTranslation("label.not-defined", UI.getCurrent().getLocale()));
+                        NativeLabel displayNameLabel = new NativeLabel(getTranslation("label.not-defined", UI.getCurrent().getLocale()));
                         horizontalLayout.add(displayNameLabel);
                     }
 
@@ -275,7 +268,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Label jobNameLabel = new Label(schedulerJobRecord.getJobName());
+            NativeLabel jobNameLabel = new NativeLabel(schedulerJobRecord.getJobName());
 
             horizontalLayout.add(jobNameLabel);
 
@@ -356,12 +349,11 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             contextButton.setIcon(visualisation);
                             contextButton.addClickListener(event -> {
                                 try {
-                                    // todo sort out set pretty print from context
                                     JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
                                         configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
-                                        jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService, this.contextVisualisationLayoutService,
+                                        jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService,
                                         schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
-                                        this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, true);
+                                        this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.contextTemplate.isUseAutoLayout());
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
                                     jobTemplateVisualisationDialog.open();
                                 } catch (Exception e) {
@@ -437,7 +429,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                                 JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
                                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
                                     this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
-                                    this.contextVisualisationLayoutService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
+                                    this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
                                     this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
                                 jobLockManagementDialog.setJobLock(lockName.get());
                                 jobLockManagementDialog.open();

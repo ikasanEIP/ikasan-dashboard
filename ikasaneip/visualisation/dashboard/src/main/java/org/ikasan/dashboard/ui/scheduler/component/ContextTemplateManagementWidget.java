@@ -73,7 +73,6 @@ import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,7 +124,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private GlobalEventService globalEventService;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
-    private ContextVisualisationLayoutService contextVisualisationLayoutService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -151,11 +149,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private ComboBox<String> searchCb;
     private Checkbox isAbleToRunConcurrentlyCb;
     private Checkbox useDisplayNameCb;
+    private Checkbox renderLogicalBoundariesCb;
+    private Checkbox useAutoformattingCb;
     private UI ui;
-
     private boolean removeTrailingPlanNameContextAfterUnderscore;
     private int jobPlanIntervalMultiple;
-
     private List<ContextError> contextErrors;
     private List<ContextError> contextWarnings;
 
@@ -208,7 +206,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                            Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
                                            ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
-                                           SpringCloudConfigRefreshService springCloudConfigRefreshService, ContextVisualisationLayoutService contextVisualisationLayoutService,
+                                           SpringCloudConfigRefreshService springCloudConfigRefreshService,
                                            boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple,
                                            double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
@@ -313,10 +311,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.springCloudConfigRefreshService = springCloudConfigRefreshService;
         if (this.springCloudConfigRefreshService == null) {
             throw new IllegalArgumentException("springCloudConfigRefreshService cannot be null!");
-        }
-        this.contextVisualisationLayoutService = contextVisualisationLayoutService;
-        if (this.contextVisualisationLayoutService == null) {
-            throw new IllegalArgumentException("contextVisualisationLayoutService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -427,6 +421,18 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             .bind(ContextTemplate::isUseDisplayName, ContextTemplate::setUseDisplayName);
         this.useDisplayNameCb.setEnabled(false);
 
+        this.renderLogicalBoundariesCb = new Checkbox(getTranslation("label.render-logical-boundaries"));
+        this.renderLogicalBoundariesCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.renderLogicalBoundariesCb)
+            .bind(ContextTemplate::isRenderLogicalBoundaries, ContextTemplate::setRenderLogicalBoundaries);
+        this.renderLogicalBoundariesCb.setEnabled(false);
+
+        this.useAutoformattingCb = new Checkbox(getTranslation("label.use-auto-formatting"));
+        this.useAutoformattingCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.useAutoformattingCb)
+            .bind(ContextTemplate::isUseAutoLayout, ContextTemplate::setUseAutoLayout);
+        this.useAutoformattingCb.setEnabled(false);
+
         this.initialiseBlackoutWindowGrid();
         this.populateBlackoutWindowPairs(contextTemplate);
 
@@ -465,7 +471,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         labelLayout.add(contextTemplateManagementLabel);
         headerLayout.add(labelLayout, createButtonLayout());
 
-        VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb, this.useDisplayNameCb);
+        VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
+            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");
@@ -477,14 +484,14 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
             , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, cbLayout
             , this.descriptionTa, this.blackoutWindowsGrid);
-        this.formLayout.setColspan(this.contextNameTf, 12);
-        this.formLayout.setColspan(this.startWindowCronExpressionTf, 6);
+        this.formLayout.setColspan(this.contextNameTf, 11);
+        this.formLayout.setColspan(this.startWindowCronExpressionTf, 5);
         this.formLayout.setColspan(this.contextTtlDays, 3);
         this.formLayout.setColspan(this.contextTtlHours, 3);
         this.formLayout.setColspan(this.contextTtlMinutes, 3);
         this.formLayout.setColspan(this.timezoneCb, 5);
         this.formLayout.setColspan(this.treeViewExpandLevel, 4);
-        this.formLayout.setColspan(cbLayout, 4);
+        this.formLayout.setColspan(cbLayout, 6);
         this.formLayout.setColspan(this.descriptionTa, 12);
         this.formLayout.setColspan(blackoutWindowsGrid, 25);
 
@@ -616,7 +623,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.schedulerVisualisation = new ContextSchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
-            , this.contextVisualisationLayoutService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
+            , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
             , this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, true);
         this.schedulerVisualisation.addJobSynchronisationRequiredListener(this);
         this.schedulerVisualisation.setWidthFull();
@@ -753,7 +760,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate,
-            this.jobInitiationService, this.jobProvisionService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextService, this.contextVisualisationLayoutService,
+            this.jobInitiationService, this.jobProvisionService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextService,
             this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
             this.contextVisualisationNodeDistance);
         this.schedulerJobGridWidget.setWidthFull();
@@ -901,7 +908,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             menuItemClickEvent -> {
                 JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService, this.contextVisualisationLayoutService,
+                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
                     this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
                     this.contextVisualisationNodeDistance);
                 jobLockManagementDialog.open();

@@ -23,7 +23,6 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +61,6 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
     private SchedulerVisualisation schedulerVisualisation;
 
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
-    private ContextVisualisationLayoutService contextVisualisationLayoutService;
 
     private double jobVisualisationVerticalSpacing;
     private double jobVisualisationHorizontalSpacing;
@@ -77,8 +75,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                                               LogStreamingService logStreamingService,
                                               JobInitiationService jobInitiationService, ContextProfileService contextProfileService, UserService userService,
                                               SecurityService securityService, JobProvisionService jobProvisionService,
-                                              ScheduledContextService scheduledContextService, ContextVisualisationLayoutService contextVisualisationLayoutService,
-                                              Map<String, String> schedulerJobExecutionEnvironmentLabel,
+                                              ScheduledContextService scheduledContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel,
                                               double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
                                               double contextVisualisationNodeDistance, boolean showPrettyFormat) {
         this.setHeight("98vh");
@@ -154,11 +151,6 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
-        this.contextVisualisationLayoutService = contextVisualisationLayoutService;
-        if(this.contextVisualisationLayoutService == null) {
-            throw new IllegalArgumentException("contextVisualisationLayoutService cannot be null!");
-        }
-
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
         this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
@@ -179,7 +171,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
 
         this.schedulerVisualisation = new ContextSchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-            this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService, this.contextVisualisationLayoutService,
+            this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
             this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
             this.contextVisualisationNodeDistance, this.showPrettyFormat);
 
@@ -213,7 +205,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                                     = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                                     , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
-                                    , this.contextVisualisationLayoutService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
+                                    , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
                                     , this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, showPrettyFormat);
 
                                 contextTemplateVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate);

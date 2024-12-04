@@ -20,6 +20,7 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.job.orchestration.model.job.LocalEventJobImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrLocalEventJobImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -49,52 +50,26 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
     private Button saveButton;
     private Button cancelButton;
 
-
-    private ScheduledProcessManagementService scheduledProcessManagementService;
-    private ConfigurationService configurationRestService;
-    private ModuleMetaData agent;
-    private ModuleControlService moduleControlRestService;
-    private MetaDataService metaDataRestService;
     private LocalEventJob localEventJob;
     private Binder<LocalEventJob> formBinder;
     private EditMode editMode = EditMode.NEW;
     private FormLayout formLayout;
     private boolean enabled = true;
-    private boolean showDisplayName;
     private SystemEventLogger systemEventLogger;
-    private SchedulerJobService schedulerJobService;
-    private SchedulerJobRecord schedulerJobRecord;
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
 
 
     /**
      * Constructor
      *
-     * @param agent
-     * @param scheduledProcessManagementService
-     * @param configurationRestService
-     * @param moduleControlRestService
-     * @param metaDataRestService
      * @param systemEventLogger
      */
-    public LocalEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
-                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                               SchedulerJobService schedulerJobService, boolean showDisplayName) {
+    public LocalEventJobDialog(SystemEventLogger systemEventLogger) {
         super.showResize(false);
         super.title.setText(getTranslation("header.local-event-job", UI.getCurrent().getLocale()));
 
-        this.agent = agent;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        this.configurationRestService = configurationRestService;
-        this.moduleControlRestService = moduleControlRestService;
-        this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
-        this.schedulerJobService = schedulerJobService;
-        this.showDisplayName = showDisplayName;
-
-        this.localEventJob = new SolrLocalEventJobImpl();
-
+        this.localEventJob = new LocalEventJobImpl();
 
         this.formBinder = new Binder<>(LocalEventJob.class);
 
@@ -126,7 +101,8 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
                 this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
             }
             else if (this.editMode == EditMode.EDIT) {
-                String action = String.format("Quartz local event job edited. \nBefore [%s]\nAfter [%s].", this.schedulerJobRecord.getJob(),
+                // todo need to sort out action
+                String action = String.format("Local event job edited. \nBefore [%s]\nAfter [%s].", this.localEventJob,
                     this.localEventJob);
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
             }
@@ -190,22 +166,7 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(LocalEventJob::getJobDescription, LocalEventJob::setJobDescription);
-        if(this.showDisplayName) {
-            this.jobNameAliasTf = new TextField(getTranslation("label.job-name-alias", UI.getCurrent().getLocale()));
-            this.jobNameAliasTf.setId("jobNameAliasTf");
-            this.jobNameAliasTf.setRequired(false);
-            this.jobNameAliasTf.setEnabled(this.editMode == EditMode.NEW &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
-                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
-                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
-            formBinder.forField(this.jobNameAliasTf)
-                .bind(LocalEventJob::getDisplayName, LocalEventJob::setDisplayName);
-            formLayout.add(jobNameAliasTf, jobDescriptionTa);
-        }
-        else {
-            formLayout.add(jobDescriptionTa, 2);
-        }
-
+        formLayout.add(jobDescriptionTa, 2);
 
         return formLayout;
     }
