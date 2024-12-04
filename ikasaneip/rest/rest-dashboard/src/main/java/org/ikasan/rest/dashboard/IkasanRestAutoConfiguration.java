@@ -70,10 +70,10 @@ public class IkasanRestAutoConfiguration
     @Value("${scheduled.job.context.queue.directory:.}")
     private String queueDir;
 
-    @Value("${jwt.request.filter.user.cache.timeout.minutes:300}")
+    @Value("${jwt.request.filter.user.cache.timeout.seconds:300}")
     private int jwtRequestFilterUserCacheTimeoutSeconds;
 
-    @Value("${user.service.user.cache.timeout.minutes:300}")
+    @Value("${user.service.user.cache.timeout.seconds:300}")
     private int userServiceUserCacheTimeoutSeconds;
 
     @Resource(name="errorOccurrenceBatchInsert")
