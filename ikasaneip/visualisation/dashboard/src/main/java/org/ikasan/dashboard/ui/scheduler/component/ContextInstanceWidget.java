@@ -129,7 +129,8 @@ public class ContextInstanceWidget extends VerticalLayout
     private TextField timezoneTf;
     private Checkbox isAbleToRunConcurrentlyCb;
     private Checkbox useDisplayNameCb;
-
+    private Checkbox renderLogicalBoundariesCb;
+    private Checkbox useAutoformattingCb;
     private CollapsableLayout contextInstanceDetailsCollapsableLayout;
 
     private Button holdContextButton;
@@ -399,6 +400,17 @@ public class ContextInstanceWidget extends VerticalLayout
             .bind(ContextInstance::isUseDisplayName, ContextInstance::setUseDisplayName);
         this.useDisplayNameCb.setEnabled(false);
 
+        this.renderLogicalBoundariesCb = new Checkbox(getTranslation("label.render-logical-boundaries"));
+        this.renderLogicalBoundariesCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.renderLogicalBoundariesCb)
+            .bind(ContextInstance::isRenderLogicalBoundaries, ContextInstance::setRenderLogicalBoundaries);
+        this.renderLogicalBoundariesCb.setEnabled(false);
+
+        this.useAutoformattingCb = new Checkbox(getTranslation("label.use-auto-formatting"));
+        this.useAutoformattingCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.useAutoformattingCb)
+            .bind(ContextInstance::isUseAutoLayout, ContextInstance::setUseAutoLayout);
+        this.useAutoformattingCb.setEnabled(false);
 
 
         this.timezoneTf = new TextField(getTranslation("label.timezone", UI.getCurrent().getLocale()));
@@ -469,19 +481,20 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.formLayout.setWidth("100%");
 
-        VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb, this.useDisplayNameCb);
+        VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
+            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");
 
-        this.formLayout.add(this.contextInstanceId, 7);
+        this.formLayout.add(this.contextInstanceId, 6);
         this.formLayout.add(this.startWindowCronExpressionTf, 4);
         this.formLayout.add(this.contextTtlDays, 2);
         this.formLayout.add(this.contextTtlHours, 2);
         this.formLayout.add(this.contextTtlMinutes, 2);
         this.formLayout.add(this.timezoneTf, 3);
-        this.formLayout.add(cbLayout, 2);
-        this.formLayout.add(this.descriptionTa, 7);
+        this.formLayout.add(cbLayout, 3);
+        this.formLayout.add(this.descriptionTa, 6);
         this.formLayout.add(this.startTimeTf, 4);
         this.formLayout.add(this.projectedEndTimeTf, 4);
         this.formLayout.add(this.endTimeTf, 4);

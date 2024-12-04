@@ -5,7 +5,6 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.SelectContextDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateDraw2dAdapter;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dAdapterBase;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dCanvasJsonHelper;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
@@ -23,7 +22,6 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -32,8 +30,6 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.scheduled.visualisation.model.ContextVisualisationLayoutRecord;
-import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.ikasan.spec.search.SearchResults;
 
 import java.io.IOException;
@@ -49,12 +45,12 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                      SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, JobInitiationService jobInitiationService,
                                      ContextProfileService contextProfileService, UserService userService, SecurityService securityService, JobProvisionService jobProvisionService,
-                                     ContextVisualisationLayoutService contextVisualisationLayoutService, ScheduledContextService scheduledContextService,
+                                     ScheduledContextService scheduledContextService,
                                      Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                      double contextVisualisationLevelDistance, double contextVisualisationNodeDistance, boolean showPrettyFormattedDiagram) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService
             , metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, jobInitiationService, contextProfileService
-            , userService, securityService, jobProvisionService, scheduledContextService, contextVisualisationLayoutService, schedulerJobExecutionEnvironmentLabel
+            , userService, securityService, jobProvisionService, scheduledContextService, schedulerJobExecutionEnvironmentLabel
             , jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance
             , showPrettyFormattedDiagram);
     }
@@ -85,7 +81,7 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
     }
 
     private void initialiseCanvas() throws IOException {
-        this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit, ui, true);
+        this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID(), this.dynamicImagePath, !this.edit, ui, true);
         this.designerCanvas.addCanvasInitialisedListener(this);
 
         this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
@@ -257,13 +253,13 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
             .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)));
 
         ContextTemplateDraw2dAdapter contextTemplateDraw2dAdapter = new ContextTemplateDraw2dAdapter();
-        ContextVisualisationLayoutRecord contextVisualisationLayoutRecord = this.contextVisualisationLayoutService.findByParentContextAndContext
-            (this.parentContextTemplate.getName(), this.contextTemplate.getName());
 
         Map<String, Image> schedulerJobImageMap = new HashMap<>();
-        if(contextVisualisationLayoutRecord != null && !this.showPrettyFormattedDiagram) {
+        if(this.contextTemplate.getUserGeneratedLayout() != null
+            && !this.contextTemplate.getUserGeneratedLayout().isEmpty()
+            && !this.showPrettyFormattedDiagram) {
             schedulerJobImageMap = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson
-                (contextVisualisationLayoutRecord.getContextVisualisationLayout().getLayoutJson());
+                (this.contextTemplate.getUserGeneratedLayout());
         }
 
         this.designerCanvas.setCanvasJson(contextTemplateDraw2dAdapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,

@@ -118,6 +118,7 @@
   "useDisplayName" : false,
   "ordinal" : 1,
   "renderLogicalBoundaries" : true,
+  "useAutoLayout" : true,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

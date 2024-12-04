@@ -82,6 +82,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private Checkbox isAbleToRunConcurrentlyCb;
     private Checkbox useDisplayNameCb;
     private Checkbox renderLogicalBoundariesCb;
+    private Checkbox useAutoformattingCb;
     private DateTimePicker blackoutWindowStartTime;
     private DateTimePicker blackoutWindowEndTime;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
@@ -356,6 +357,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         binder.forField(this.renderLogicalBoundariesCb)
             .bind(ContextTemplate::isRenderLogicalBoundaries, ContextTemplate::setRenderLogicalBoundaries);
 
+        this.useAutoformattingCb = new Checkbox(getTranslation("label.use-auto-formatting"));
+        this.useAutoformattingCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.useAutoformattingCb)
+            .bind(ContextTemplate::isUseAutoLayout, ContextTemplate::setUseAutoLayout);
+
         binder.readBean(this.contextTemplate);
 
         this.blackoutWindowStartTime = new DateTimePicker(getTranslation("label.blackout-window-start-date-time", UI.getCurrent().getLocale()));
@@ -442,7 +448,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.formLayout.setHeightFull();
 
         VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
-            , this.useDisplayNameCb, this.renderLogicalBoundariesCb);
+            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");
@@ -453,15 +459,15 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             , this.jobVisualisationVerticalSpacingIf, this.jobVisualisationHorizontalSpacingIf
             , this.fontSize, this.blackoutWindowsGrid, addDateTimePairButton);
 
-        this.formLayout.setColspan(this.contextNameTf, 12);
-        this.formLayout.setColspan(this.startWindowCronExpressionTf, 6);
+        this.formLayout.setColspan(this.contextNameTf, 11);
+        this.formLayout.setColspan(this.startWindowCronExpressionTf, 5);
         this.formLayout.setColspan(this.contextTtlDays, 3);
         this.formLayout.setColspan(this.contextTtlHours, 3);
         this.formLayout.setColspan(this.contextTtlMinutes, 3);
         this.formLayout.setColspan(this.timezoneCb, 5);
         this.formLayout.setColspan(this.treeViewExpandLevel, 4);
-        this.formLayout.setColspan(cbLayout, 3);
-        this.formLayout.setColspan(this.descriptionTa, 12);
+        this.formLayout.setColspan(cbLayout, 6);
+        this.formLayout.setColspan(this.descriptionTa, 11);
         this.formLayout.setColspan(this.contextVisualisationLevelDistanceIf, 5);
         this.formLayout.setColspan(this.contextVisualisationNodeDistanceIf, 5);
         this.formLayout.setColspan(this.jobVisualisationHorizontalSpacingIf, 5);
