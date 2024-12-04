@@ -1537,6 +1537,7 @@ public class ContextHelper {
         if(contextTemplate.getName().equals(updated.getName())) {
             contextTemplate.setJobDependencies(updated.getJobDependencies());
             contextTemplate.setScheduledJobs(updated.getScheduledJobs());
+            contextTemplate.setUserGeneratedLayout(updated.getUserGeneratedLayout());
             return;
         }
 
@@ -1810,6 +1811,33 @@ public class ContextHelper {
 
         if(context.getContexts() != null && !context.getContexts().isEmpty()) {
             context.getContexts().forEach(child -> getContextsWhereJobFilterMatchResides(results, (Context) child, jobNameFilter));
+        }
+    }
+
+
+    public static List<String> getContextsWhereJobNameMatchResides(Context context, String jobName) {
+        List<String> results = new ArrayList<>();
+        getContextsWhereJobNameMatchResides(results, context, jobName);
+        return results.stream().distinct().collect(Collectors.toList());
+    }
+
+
+    private static void getContextsWhereJobNameMatchResides(List<String> results, Context context, String jobName) {
+        if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
+            context.getScheduledJobs().forEach(job -> {
+                if(((SchedulerJob)job).getJobName() != null && ((SchedulerJob)job).getJobName().equals(jobName)) {
+                    results.add(context.getName());
+                }
+                else if(((SchedulerJob)job).getDisplayName() != null
+                    && ((SchedulerJob)job).getDisplayName().equals(jobName)) {
+                    results.add(context.getName());
+                }
+            });
+        }
+
+
+        if(context.getContexts() != null && !context.getContexts().isEmpty()) {
+            context.getContexts().forEach(child -> getContextsWhereJobNameMatchResides(results, (Context) child, jobName));
         }
     }
 

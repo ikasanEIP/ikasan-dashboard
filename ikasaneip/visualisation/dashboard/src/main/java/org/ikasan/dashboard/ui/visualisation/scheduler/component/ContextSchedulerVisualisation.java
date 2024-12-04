@@ -12,22 +12,14 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
-import org.ikasan.spec.search.SearchResults;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class ContextSchedulerVisualisation extends SchedulerVisualisation {
 
@@ -49,7 +41,6 @@ public class ContextSchedulerVisualisation extends SchedulerVisualisation {
      * @param securityService security service
      * @param jobProvisionService job provision service
      * @param scheduledContextService service for scheduled contexts
-     * @param contextVisualisationLayoutService service for context visualisation layout
      * @param schedulerJobExecutionEnvironmentLabel map of scheduler job execution environment labels
      * @param jobVisualisationVerticalSpacing vertical spacing for job visualisation
      * @param jobVisualisationHorizontalSpacing horizontal spacing for job visualisation
@@ -61,13 +52,13 @@ public class ContextSchedulerVisualisation extends SchedulerVisualisation {
         , ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger
         , SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, JobInitiationService jobInitiationService
         , ContextProfileService contextProfileService, UserService userService, SecurityService securityService
-        , JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService, ContextVisualisationLayoutService contextVisualisationLayoutService
+        , JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService
         , Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing
         , double contextVisualisationLevelDistance, double contextVisualisationNodeDistance, boolean showPrettyFormattedDiagram) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService
             , moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService
-            , contextVisualisationLayoutService, schedulerJobExecutionEnvironmentLabel, jobVisualisationVerticalSpacing
+            , schedulerJobExecutionEnvironmentLabel, jobVisualisationVerticalSpacing
             , jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance
             , showPrettyFormattedDiagram);
     }

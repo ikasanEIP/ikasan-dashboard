@@ -79,19 +79,23 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
             solrContextTemplate.setName("contextName");
             solrContextTemplate.setJobLocks(List.of(new SolrJobLockImpl()));
+            solrContextTemplate.setUserGeneratedLayout("user generated layout");
+            solrContextTemplate.setUseAutoLayout(false);
             solrContextTemplate.setDisabled(false);
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
             scheduledContextRecord.setContextName("contextName");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
 
-            this.scheduledContextService.save(scheduledContextRecord);
+            this.dao.save(scheduledContextRecord);
 
-            ScheduledContextRecord found = this.scheduledContextService.findById("contextName");
+            ScheduledContextRecord found = this.dao.findById("contextName");
 
             Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
             Assert.assertEquals("contextName", found.getContext().getName());
+            Assert.assertEquals("user generated layout", found.getContext().getUserGeneratedLayout());
+            Assert.assertEquals(false, found.getContext().isUseAutoLayout());
             Assert.assertEquals(false, found.isDisabled());
             Assert.assertEquals(false, found.isQuartzScheduleDrivenJobsDisabledForContext());
             Assert.assertEquals(false, found.getContext().isDisabled());
@@ -100,14 +104,18 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             ContextTemplate contextTemplate = found.getContext();
             contextTemplate.setDisabled(true);
             contextTemplate.setQuartzScheduleDrivenJobsDisabledForContext(true);
+            contextTemplate.setUserGeneratedLayout("updated user generated layout");
+            contextTemplate.setUseAutoLayout(true);
             scheduledContextRecord.setContext(contextTemplate);
-            this.scheduledContextService.save(scheduledContextRecord);
+            this.dao.save(scheduledContextRecord);
 
-            found = this.scheduledContextService.findById("contextName");
+            found = this.dao.findById("contextName");
 
             Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
             Assert.assertEquals("contextName", found.getContext().getName());
+            Assert.assertEquals("updated user generated layout", found.getContext().getUserGeneratedLayout());
+            Assert.assertEquals(true, found.getContext().isUseAutoLayout());
             Assert.assertEquals(true, found.isDisabled());
             Assert.assertEquals(true, found.isQuartzScheduleDrivenJobsDisabledForContext());
             Assert.assertEquals(true, found.getContext().isDisabled());

@@ -13,7 +13,6 @@ import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.server.VaadinSession;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
@@ -40,7 +39,6 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.scheduled.visualisation.service.ContextVisualisationLayoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +72,6 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
     private SecurityService securityService;
     private JobProvisionService jobProvisionService;
     private ScheduledContextService scheduledContextService;
-    private ContextVisualisationLayoutService contextVisualisationLayoutService;
 
     private ContextService contextService = new ContextService();
 
@@ -97,7 +94,6 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                                           JobInitiationService jobInitiationService,
                                           ContextProfileService contextProfileService, UserService userService, SecurityService securityService,
                                           JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService,
-                                          ContextVisualisationLayoutService contextVisualisationLayoutService,
                                           Map<String, String> schedulerJobExecutionEnvironmentLabel,
                                           double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                           double contextVisualisationLevelDistance, double contextVisualisationNodeDistance,
@@ -175,11 +171,6 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
-        this.contextVisualisationLayoutService = contextVisualisationLayoutService;
-        if(this.contextVisualisationLayoutService == null) {
-            throw new IllegalArgumentException("contextVisualisationLayoutService cannot be null!");
-        }
-
         this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
         this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
         this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
@@ -206,9 +197,9 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         this.schedulerVisualisation = new JobSchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
             this.logStreamingService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
-            this.jobProvisionService, this.contextVisualisationLayoutService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing,
+            this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing,
             this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.showPrettyFormat);
-        this.schedulerVisualisation.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate, this, this.showPrettyFormat);
+        this.schedulerVisualisation.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate, this, true);
         this.jobSynchronisationRequiredListeners.forEach(listener ->
             this.schedulerVisualisation.addJobSynchronisationRequiredListener(listener));
 
@@ -223,17 +214,25 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
             ContextTemplate parentContextInstance = contextService.getParent(this.rootContextTemplate, this.contextTemplate);
 
-            Checkbox showFormattedCheck = new Checkbox("Pretty layout");
+            Checkbox showFormattedCheck = new Checkbox(getTranslation("label.show-auto-layout"));
             showFormattedCheck.setValue(this.showPrettyFormat);
             showFormattedCheck.addClickListener(event -> {
-                if (this.contextTemplate != null) {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader("Change Formatting");
+                confirmDialog.setText("You are about to change the formatting. Any unsaved changes will be lost. Are you sure you'd like to proceed?");
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+                confirmDialog.addCancelListener(cancelEvent -> showFormattedCheck.setValue(!showFormattedCheck.getValue()));
+                confirmDialog.addConfirmListener(confirmEvent -> {
                     try {
                         this.close();
                         JobTemplateVisualisationDialog contextTemplateVisualisationDialog
                             = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
                             , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                             , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
-                            , this.contextVisualisationLayoutService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
+                            , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
                             , this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, showFormattedCheck.getValue());
 
                         contextTemplateVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate);
@@ -242,7 +241,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                     catch (IOException e) {
                         e.printStackTrace();
                     }
-                }
+                });
             });
             buttonLayout.add(showFormattedCheck);
             buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.BASELINE, showFormattedCheck);
@@ -262,7 +261,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                                     = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                                     , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
-                                    , this.contextVisualisationLayoutService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
+                                    , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
                                     , this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.showPrettyFormat);
 
                                 contextTemplateVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate);
@@ -334,6 +333,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
             saveButton.addClickListener(buttonClickEvent -> {
                 this.schedulerVisualisation.save();
+                this.contextTemplate = schedulerVisualisation.getContextTemplate();
             });
 
             ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,
@@ -358,7 +358,22 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
         SubMenu addJobSubMenu = jobMenu.getSubMenu();
         MenuItem newJobMenuItem = addJobSubMenu.addItem(getTranslation("menu-item.new-job", UI.getCurrent().getLocale()));
-        addJobSubMenu.addItem(getTranslation("menu-item.existing-job", UI.getCurrent().getLocale()), menuItemClickEvent -> {
+        MenuItem existingMenu = addJobSubMenu.addItem(getTranslation("menu-item.existing-job", UI.getCurrent().getLocale()));
+        SubMenu existingJobSubMenu = existingMenu.getSubMenu();
+
+        existingJobSubMenu.addItem(getTranslation("menu-item.local-event-job", UI.getCurrent().getLocale()), menuItemClickEvent -> {
+            LocalEventJobSelectDialog localEventJobSelectDialog = new LocalEventJobSelectDialog(this.rootContextTemplate);
+            localEventJobSelectDialog.open();
+            localEventJobSelectDialog.addSchedulerJobSelectedListener(this);
+
+            localEventJobSelectDialog.addOpenedChangeListener(event -> {
+                if(!event.isOpened()) {
+                    localEventJobSelectDialog.removeSchedulerJobSelectedListener(this);
+                }
+            });
+        });
+
+        existingJobSubMenu.addItem(getTranslation("menu-item.other", UI.getCurrent().getLocale()), menuItemClickEvent -> {
             SchedulerJobSelectDialog schedulerJobSelectDialog = new SchedulerJobSelectDialog(this.schedulerJobService, this.rootContextTemplate,
                 getTranslation("label.select-job", UI.getCurrent().getLocale()), getTranslation("label.select-job", UI.getCurrent().getLocale()));
 
@@ -454,9 +469,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             globalEventJobDialog.open();
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.local-event-job", UI.getCurrent().getLocale()), event -> {
-            LocalEventJobDialog localEventJobDialog = new LocalEventJobDialog(null, this.scheduledProcessManagementService,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                this.schedulerJobService, this.contextTemplate.isUseDisplayName());
+            LocalEventJobDialog localEventJobDialog = new LocalEventJobDialog(systemEventLogger);
 
             localEventJobDialog.addSchedulerJobSelectedListener(this);
 

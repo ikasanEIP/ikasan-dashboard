@@ -96,12 +96,9 @@ public class ContextTemplateValidator {
 
         contextTemplatesJobSet.removeAll(jobTemplatesSet);
 
-        Map<String, SchedulerJob> schedulerJobsFromContext = contextTemplate.getAllSchedulerJobs().stream()
-            .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (first, second) -> first));
-
         if(!contextTemplatesJobSet.isEmpty()) {
             contextTemplatesJobSet.forEach(jobName -> {
-                List<String> contexts = ContextHelper.getContextsWhereJobFilterMatchResides(contextTemplate, jobName);
+                List<String> contexts = ContextHelper.getContextsWhereJobNameMatchResides(contextTemplate, jobName);
 
                 contexts.forEach(contextName -> {
                     ContextTemplate child = ContextHelper.getChildContextTemplate(contextName, contextTemplate);
