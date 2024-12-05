@@ -328,7 +328,6 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 return verticalLayout;
             })).setHeader(getTranslation("table-header.job-template", UI.getCurrent().getLocale()))
             .setResizable(true)
-            .setSortable(true)
             .setKey("template")
             .setFlexGrow(1);
 

@@ -3,6 +3,8 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.designer.model.Image;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Draw2dCanvasJsonHelper {
+
+    static Logger logger = LoggerFactory.getLogger(Draw2dCanvasJsonHelper.class);
 
     private static ObjectMapper OBJECT_MAPPER;
 
@@ -36,8 +40,8 @@ public class Draw2dCanvasJsonHelper {
                     if (!image.getPath().contains("repeating.png")) schedulerJobs.put(image.getId(), image);
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logger.info("Could not get job images from canvas JSON. Will revert to auto-layout for rendering the context diagram.");
         }
 
         return schedulerJobs;

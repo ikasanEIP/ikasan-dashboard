@@ -1,0 +1,17 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "blah4",
+  "jobDescription" : "test",
+  "contextName" : "test-bug",
+  "childContextNames" : [ "test1" ],
+  "startupControlType" : "AUTOMATIC",
+  "ordinal" : -1,
+  "commandLine" : "ls -la",
+  "minExecutionTime" : -1,
+  "maxExecutionTime" : -1,
+  "targetResidingContextOnly" : false,
+  "participatesInLock" : false,
+  "jobRepeatable" : false,
+  "killed" : false,
+  "identifier" : "scheduler-agent-blah4"
+}
