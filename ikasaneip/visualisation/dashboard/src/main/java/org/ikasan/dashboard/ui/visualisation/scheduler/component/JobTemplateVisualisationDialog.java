@@ -529,8 +529,6 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
     @Override
     public void jobSelected(SchedulerJob schedulerJob) {
-        logger.info(schedulerJob.getIdentifier());
-
         if(this.contextTemplate.getScheduledJobs()
             .stream()
             .filter(job -> job.getIdentifier().equals(schedulerJob.getIdentifier()))

@@ -16,6 +16,7 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.security.model.IkasanPrincipal;
 import org.ikasan.security.model.Role;
 import org.ikasan.security.service.SecurityService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Set;
@@ -90,7 +91,8 @@ public class SelectRoleDialog extends AbstractCloseableResizableDialog
                 action = String.format("Role [%s] added to group [%s].", roleItemDoubleClickEvent.getItem().getName(), principal.getName());
             }
 
-            this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_PRINCIPAL_ROLE_CHANGED_CONSTANTS, action, principal.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_PRINCIPAL_ROLE_CHANGED_CONSTANTS, action
+                , SecurityContextHolder.getContext().getAuthentication().getName());
 
             this.roleGrid.getItems().add(roleItemDoubleClickEvent.getItem());
             this.roleGrid.getDataProvider().refreshAll();
