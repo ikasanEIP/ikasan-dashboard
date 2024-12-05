@@ -93,6 +93,21 @@ public class ContextHelperTest {
     }
 
     @Test
+    public void test_get_local_event_jobs_from_context() throws IOException, JSONException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/test-plan-with-local-event-jobs.json"));
+
+        List<LocalEventJob> localEventJobs = ContextHelper.getLocalEventJobsFromContext(contextTemplate);
+
+        Assert.assertNotNull(localEventJobs);
+        Assert.assertEquals(4, localEventJobs.size());
+        Assert.assertEquals("test-local", localEventJobs.get(0).getJobName());
+        Assert.assertEquals("test", localEventJobs.get(1).getJobName());
+        Assert.assertEquals("jjj", localEventJobs.get(2).getJobName());
+        Assert.assertEquals("local", localEventJobs.get(3).getJobName());
+    }
+
+    @Test
     public void test_context_template_token_replacement_with_job_locks() throws IOException, JSONException {
         ContextTemplate contextTemplate = this.contextService
             .getContextTemplate(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));

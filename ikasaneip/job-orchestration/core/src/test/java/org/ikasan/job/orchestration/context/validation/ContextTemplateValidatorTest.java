@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.SerializationUtils;
 import org.ikasan.job.orchestration.core.AbstractTest;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -190,6 +192,40 @@ public class ContextTemplateValidatorTest extends AbstractTest {
 
         schedulerJobs.addAll(loadQuartzDrivenJobs("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/quartz",
             "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/quartz"));
+
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+        try {
+            validator.validateJobs(context, schedulerJobs);
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.fail("Should not throw an exception!");
+        }
+    }
+
+    @Test
+    public void test_context_validation_with_job_names_that_are_substrings_of_other_jobs() throws IOException {
+        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // modify the context descriptor to add GRP1 for the environment group
+        String contextJson = loadDataFile("/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/" +
+            "context/test-bug.json");
+
+        ContextService contextService = new ContextService();
+        ContextTemplate context = contextService.getContextTemplate(contextJson);
+
+        List<SchedulerJob> schedulerJobs = loadInternalEventDrivenJobs
+            ("./src/test/resources/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/jobs/internal",
+                "/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/jobs/internal");
+
+        schedulerJobs.addAll(loadQuartzDrivenJobs("./src/test/resources/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/jobs/quartz",
+            "/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/jobs/quartz"));
+
+        schedulerJobs.addAll(loadFileWatcherJobs("./src/test/resources/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/jobs/file",
+            "/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/jobs/file"));
+
+        schedulerJobs.addAll(loadGlobalEventJobs("./src/test/resources/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/jobs/global",
+            "/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/jobs/global"));
 
         ContextTemplateValidator validator = new ContextTemplateValidator();
         try {
@@ -403,6 +439,48 @@ public class ContextTemplateValidatorTest extends AbstractTest {
                 throw new RuntimeException(e);
             }
             return quartzScheduleDrivenJob;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Loads the quartz-driven jobs from the specified directory.
+     *
+     * @param directory The directory where the job files are located.
+     * @param jobsBase The base path for the job files.
+     * @return A list of quartz-driven jobs.
+     * @throws IOException If an I/O error occurs while loading the jobs.
+     */
+    public List<SchedulerJob> loadFileWatcherJobs(String directory, String jobsBase) throws IOException {
+        return Files.list(Path.of(directory)).map(path -> {
+            FileEventDrivenJobImpl fileEventDrivenJob;
+            try {
+                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
+                fileEventDrivenJob = objectMapper.readValue(jobJson, FileEventDrivenJobImpl.class);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return fileEventDrivenJob;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Loads the quartz-driven jobs from the specified directory.
+     *
+     * @param directory The directory where the job files are located.
+     * @param jobsBase The base path for the job files.
+     * @return A list of quartz-driven jobs.
+     * @throws IOException If an I/O error occurs while loading the jobs.
+     */
+    public List<SchedulerJob> loadGlobalEventJobs(String directory, String jobsBase) throws IOException {
+        return Files.list(Path.of(directory)).map(path -> {
+            GlobalEventJobImpl globalEventJob;
+            try {
+                String jobJson = loadDataFile(jobsBase + FileSystems.getDefault().getSeparator() + path.toFile().getName());
+                globalEventJob = objectMapper.readValue(jobJson, GlobalEventJobImpl.class);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return globalEventJob;
         }).collect(Collectors.toList());
     }
 }

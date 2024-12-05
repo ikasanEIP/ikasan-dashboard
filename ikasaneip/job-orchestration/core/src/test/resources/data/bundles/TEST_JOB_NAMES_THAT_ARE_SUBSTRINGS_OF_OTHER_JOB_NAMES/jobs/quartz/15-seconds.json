@@ -1,0 +1,16 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "15-seconds",
+  "jobDescription" : "test",
+  "contextName" : "test-bug",
+  "startupControlType" : "AUTOMATIC",
+  "ordinal" : -1,
+  "cronExpression" : "0/15 * * ? * * *",
+  "ignoreMisfire" : true,
+  "eager" : false,
+  "maxEagerCallbacks" : 0,
+  "persistentRecovery" : true,
+  "recoveryTolerance" : 1800000,
+  "dropEventOnBlackout" : false,
+  "identifier" : "scheduler-agent-15-seconds"
+}
