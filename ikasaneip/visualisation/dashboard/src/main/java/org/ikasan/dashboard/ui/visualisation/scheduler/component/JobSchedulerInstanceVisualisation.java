@@ -6,12 +6,14 @@ import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dCanvasJsonHelper;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.PositionedDialog;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemSingleClickEvent;
 import org.ikasan.designer.event.JobMouseOverEvent;
 import org.ikasan.designer.event.JobMouseOverListener;
+import org.ikasan.designer.model.Image;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -113,8 +115,16 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
                 ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter(jobVisualisationVerticalSpacing,
                     jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
+                Map<String, Image> schedulerJobImageMap = new HashMap<>();
+                if(this.contextInstance.getUserGeneratedLayout() != null
+                    && !this.contextInstance.getUserGeneratedLayout().isEmpty()
+                    && !this.parentContextInstance.isUseAutoLayout()) {
+                    schedulerJobImageMap = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson
+                        (this.contextInstance.getUserGeneratedLayout());
+                }
+
                 this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextInstance, this.contextInstance, schedulerJobs
-                    , this.getSchedulerJobsForContextInstance(this.parentContextInstance.getId()), new HashMap<>()));
+                    , this.getSchedulerJobsForContextInstance(this.parentContextInstance.getId()), schedulerJobImageMap));
             }
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
