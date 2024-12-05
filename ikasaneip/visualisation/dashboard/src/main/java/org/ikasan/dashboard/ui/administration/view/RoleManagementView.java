@@ -133,7 +133,7 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
                 securityService.deleteRole(dbRole);
 
                 this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_ROLE_DELETED
-                    , "New role " + role.getName() + " added.", null);
+                    , "New role " + role.getName() + " removed.", null);
 
                 this.updateRoles();
             });

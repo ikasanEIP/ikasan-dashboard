@@ -138,8 +138,9 @@ public class LocalEventJobSelectDialog extends AbstractCloseableResizableDialog 
         this.localEventJobGrid.addItemDoubleClickListener(event -> {
             this.schedulerJobSelectedListeners.forEach(listener -> {
                 listener.jobSelected(event.getItem());
-                this.close();
             });
+
+            this.close();
         });
     }
 
