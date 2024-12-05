@@ -443,11 +443,11 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     /**
-     * Loads the quartz-driven jobs from the specified directory.
+     * Loads the file watcher jobs from the specified directory.
      *
      * @param directory The directory where the job files are located.
      * @param jobsBase The base path for the job files.
-     * @return A list of quartz-driven jobs.
+     * @return A list of file watcher jobs.
      * @throws IOException If an I/O error occurs while loading the jobs.
      */
     public List<SchedulerJob> loadFileWatcherJobs(String directory, String jobsBase) throws IOException {
@@ -464,11 +464,11 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     /**
-     * Loads the quartz-driven jobs from the specified directory.
+     * Loads the global event jobs from the specified directory.
      *
      * @param directory The directory where the job files are located.
      * @param jobsBase The base path for the job files.
-     * @return A list of quartz-driven jobs.
+     * @return A list of global event jobs.
      * @throws IOException If an I/O error occurs while loading the jobs.
      */
     public List<SchedulerJob> loadGlobalEventJobs(String directory, String jobsBase) throws IOException {
