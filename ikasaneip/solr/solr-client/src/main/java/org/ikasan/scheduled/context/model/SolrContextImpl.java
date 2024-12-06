@@ -35,7 +35,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected Integer contextVisualisationNodeDistance;
     protected Integer visualisationFontSize;
     protected Boolean renderLogicalBoundaries = true;
-    protected Boolean useAutoLayout;
+    protected Boolean useAutoLayout = true;
     protected String userGeneratedLayout;
 
     @Override
