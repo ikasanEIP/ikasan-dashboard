@@ -11,7 +11,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -230,7 +230,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
      * @return
      */
     private TimeComponent getEverySecondStartingAt() {
-        Label label = new Label(getTranslation("time-component.every"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every"
             , UI.getCurrent().getLocale()));
         List<String> seconds = new ArrayList<>();
         IntStream.range(1, 60).forEach(i -> seconds.add(Integer.toString(i)));
@@ -268,7 +268,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
             this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
-        Label label2 = new Label(getTranslation("time-component.seconds-starting-at"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.seconds-starting-at"
             , UI.getCurrent().getLocale()));
 
         layout.add(label, secondSelect, label2, secondStartSelect);
@@ -284,7 +284,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
      * @return
      */
     private TimeComponent getEverySecondBetween() {
-        Label label = new Label(getTranslation("time-component.every-second-between-second"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every-second-between-second"
             , UI.getCurrent().getLocale()));
         List<String> secondsStart = new ArrayList<>();
         IntStream.range(0, 60).forEach(i -> secondsStart.add(Integer.toString(i)));
@@ -326,7 +326,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
             this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
-        Label label2 = new Label(getTranslation("time-component.and-second"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.and-second"
             , UI.getCurrent().getLocale()));
 
         layout.add(label, secondsStartSelect, label2, secondsEndSelect);
@@ -448,7 +448,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
      * @return
      */
     private TimeComponent getEveryMinuteStartingAt() {
-        Label label = new Label(getTranslation("time-component.every"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every"
             , UI.getCurrent().getLocale()));
         List<String> minutes = new ArrayList<>();
         IntStream.range(1, 60).forEach(i -> minutes.add(Integer.toString(i)));
@@ -462,7 +462,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         minuteStartSelect.setEnabled(true);
         minuteStartSelect.setItems(minutesStart);
 
-        Label label2 = new Label(getTranslation("time-component.minutes-starting-at"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.minutes-starting-at"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -501,11 +501,11 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
      * @return
      */
     private TimeComponent getEveryMinuteBetween() {
-        Label label = new Label(getTranslation("time-component.every-minute-between-minute"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every-minute-between-minute"
             , UI.getCurrent().getLocale()));
         List<String> minutesStart = new ArrayList<>();
 
-        Label label2 = new Label(getTranslation("time-component.and-minute"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.and-minute"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -669,7 +669,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
      * @return
      */
     private TimeComponent getEveryHourStartingAt() {
-        Label label = new Label(getTranslation("time-component.every"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every"
             , UI.getCurrent().getLocale()));
         List<String> hours = new ArrayList<>();
         IntStream.range(1, 25).forEach(i -> hours.add(Integer.toString(i)));
@@ -686,7 +686,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         hoursStartSelect.setItems(hoursStart);
         hoursStartSelect.setValue("0");
 
-        Label label2 = new Label(getTranslation("time-component.hours-starting-at"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.hours-starting-at"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -725,7 +725,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
      * @return
      */
     private TimeComponent getEveryHourBetween() {
-        Label label = new Label(getTranslation("time-component.every-hour-between-hour"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every-hour-between-hour"
             , UI.getCurrent().getLocale()));
         List<String> hours = new ArrayList<>();
         IntStream.range(0, 24).forEach(i -> hours.add(Integer.toString(i)));
@@ -740,7 +740,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         hoursEndSelect.setItems(hours);
         hoursEndSelect.setValue("0");
 
-        Label label2 = new Label(getTranslation("time-component.and-hour"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.and-hour"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -821,7 +821,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         TimeComponent specificDay = this.getSpecificDay();
         TimeComponent specificDayOfWeek = this.getSpecificDayOfWeek();
         TimeComponent lastDayOfMonth = this.getLastDayOfMonth();
-        TimeComponent lastWeekDayOfMonth = this.getLastWeekOfMonth();
+        TimeComponent lastWeekDayOfMonth = this.getLastWeekDayOfMonth();
+        TimeComponent firstWeekDayOfMonth = this.getFirstWeekDayOfMonth();
         TimeComponent lastDaySelectOfMonth = this.getLastDaySelectOfMonth();
         TimeComponent specificNthDayOfMonth = this.getSpecificNthDayOfMonth();
 
@@ -832,6 +833,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
             , specificDayOfWeek
             , specificNthDayOfMonth
             , lastDayOfMonth
+            , firstWeekDayOfMonth
             , lastWeekDayOfMonth
             , lastDaySelectOfMonth));
         radioGroup.setValue(everyDay);
@@ -877,6 +879,10 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
             radioGroup.setValue(lastWeekDayOfMonth);
             layout.add(radioGroup, lastWeekDayOfMonth.getComponent());
         }
+        else if(this.dayOfMonthPart.equals("1W") && this.dayOfWeekPart.equals("?")) {
+            radioGroup.setValue(firstWeekDayOfMonth);
+            layout.add(radioGroup, firstWeekDayOfMonth.getComponent());
+        }
         else if(this.dayOfMonthPart.equals("?") && this.dayOfWeekPart.contains("L")) {
             radioGroup.setValue(lastDaySelectOfMonth);
             layout.add(radioGroup, lastDaySelectOfMonth.getComponent());
@@ -914,7 +920,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     }
 
     private TimeComponent getEveryDayStartingOnDay() {
-        Label label = new Label(getTranslation("time-component.every"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every"
             , UI.getCurrent().getLocale()));
         List<String> days = new ArrayList<>();
         IntStream.range(1, 8).forEach(i -> days.add(Integer.toString(i)));
@@ -937,7 +943,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         dayStartSelect.setItems(dayStart);
         dayStartSelect.setValue("Sunday");
 
-        Label label2 = new Label(getTranslation("time-component.days-starting-on"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.days-starting-on"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -971,7 +977,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     }
 
     private TimeComponent getEveryDayStartingOnCalendarDay() {
-        Label label = new Label(getTranslation("time-component.every"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every"
             , UI.getCurrent().getLocale()));
         List<String> days = new ArrayList<>();
         IntStream.range(1, 8).forEach(i -> days.add(Integer.toString(i)));
@@ -989,7 +995,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         dayStartSelect.setItems(dayStart);
         dayStartSelect.setValue("1st");
 
-        Label label2 = new Label(getTranslation("time-component.days-starting-on-the"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.days-starting-on-the"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -1104,7 +1110,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         radioGroup.setValue(this.numToDayOfWeek(tokens[0]));
 
         layout.addComponent(radioGroup);
-        layout.addComponent(new Label(" of the month."));
+        layout.addComponent(new NativeLabel(" of the month."));
 
 
         instanceNumCb.addValueChangeListener(event -> {
@@ -1176,10 +1182,19 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         return timeComponent;
     }
 
-    private TimeComponent getLastWeekOfMonth() {
+    private TimeComponent getLastWeekDayOfMonth() {
         TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.last-weekday-of-the-month"
             , UI.getCurrent().getLocale()), new Div());
         timeComponent.setValue("LW");
+
+        return timeComponent;
+    }
+
+
+    private TimeComponent getFirstWeekDayOfMonth() {
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.first-weekday-of-the-month"
+            , UI.getCurrent().getLocale()), new Div());
+        timeComponent.setValue("1W");
 
         return timeComponent;
     }
@@ -1198,9 +1213,9 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         daySelect.setEnabled(true);
         daySelect.setItems(dayStart);
 
-        Label start = new Label(getTranslation("time-component.on-the-last"
+        NativeLabel start = new NativeLabel(getTranslation("time-component.on-the-last"
             , UI.getCurrent().getLocale()));
-        Label end = new Label(getTranslation("time-component.of-the-month"
+        NativeLabel end = new NativeLabel(getTranslation("time-component.of-the-month"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -1296,7 +1311,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
      * @return
      */
     private TimeComponent getEveryMonthStartingFrom() {
-        Label label = new Label(getTranslation("time-component.every"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every"
             , UI.getCurrent().getLocale()));
         List<String> monthsNum = new ArrayList<>();
         IntStream.range(1, 13).forEach(i -> monthsNum.add(Integer.toString(i)));
@@ -1311,7 +1326,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         monthStartSelect.setItems(monthStart);
         monthStartSelect.setValue("JAN");
 
-        Label label2 = new Label(getTranslation("time-component.month-starting-from"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.month-starting-from"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -1391,7 +1406,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
      * @return
      */
     private TimeComponent getEveryMonthBetween() {
-        Label label = new Label(getTranslation("time-component.every-month-between"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every-month-between"
             , UI.getCurrent().getLocale()));
         List<String> months = List.of("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
         Select<String> monthStartSelect = new Select<>();
@@ -1405,7 +1420,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         monthEndSelect.setItems(months);
         monthEndSelect.setValue("JAN");
 
-        Label label2 = new Label(getTranslation("time-component.and-month"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.and-month"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -1511,7 +1526,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         // Get the current year
         int currentYear = new DateTime().getYear();
 
-        Label label = new Label(getTranslation("time-component.every"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every"
             , UI.getCurrent().getLocale()));
         List<String> yearNum = new ArrayList<>();
         IntStream.range(1, 11).forEach(i -> yearNum.add(Integer.toString(i)));
@@ -1527,7 +1542,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         yearStartSelect.setItems(yearStart);
         yearStartSelect.setValue(currentYear + "");
 
-        Label label2 = new Label(getTranslation("time-component.year-starting-from"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.year-starting-from"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -1614,7 +1629,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         // Get the current year
         int currentYear = new DateTime().getYear();
 
-        Label label = new Label(getTranslation("time-component.every-year-between"
+        NativeLabel label = new NativeLabel(getTranslation("time-component.every-year-between"
             , UI.getCurrent().getLocale()));
         List<String> year = new ArrayList<>();
         IntStream.range(currentYear, currentYear + 100).forEach(i -> year.add(Integer.toString(i)));
@@ -1629,7 +1644,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         yearEndSelect.setItems(year);
         yearEndSelect.setValue(currentYear + "");
 
-        Label label2 = new Label(getTranslation("time-component.and-year"
+        NativeLabel label2 = new NativeLabel(getTranslation("time-component.and-year"
             , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
