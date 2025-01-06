@@ -6,14 +6,19 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
+import org.ikasan.dashboard.ui.scheduler.listener.ContextOpenedListener;
+import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
@@ -29,7 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDialog implements ContextInstanceStateChangeEventBroadcastListener {
+public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDialog
+    implements ContextInstanceStateChangeEventBroadcastListener, ContextOpenedListener, ContextSelectedListener {
 
     private Logger logger = LoggerFactory.getLogger(JobInstanceVisualisationDialog.class);
 
@@ -180,8 +186,8 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
             , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService
             , this.globalEventService, this.scheduledContextInstanceService, this.jobVisualisationVerticalSpacing
             , this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
-//        this.splitContextInstanceVisualisation.addContextOpenListener(this);
-//        this.splitContextInstanceVisualisation.addContextSelectedListener(this);
+        this.jobVisualisation.addContextOpenListener(this);
+        this.jobVisualisation.addContextSelectedListener(this);
         this.jobVisualisation.setWidthFull();
         this.jobVisualisation.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance, null);
         this.jobVisualisation.setHeight("100%");
@@ -217,5 +223,32 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
                 });
             }
         }
+    }
+
+    @Override
+    public void contextOpened(Context context) {
+        try {
+            this.close();
+            logger.info("context " + context);
+            if(ContextMachineCache.instance().containsInstanceIdentifier(this.rootContextInstance.getId())) {
+                this.rootContextInstance = ContextMachineCache.instance().getByContextInstanceId(this.rootContextInstance.getId()).getContext();
+            }
+            ContextInstance child = ContextHelper.getChildContextInstance(context.getName(), this.rootContextInstance);
+            JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
+                configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
+                , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService
+                , this.scheduledContextInstanceService, contextProfileService, globalEventService, this.jobVisualisationVerticalSpacing
+                , this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
+            jobInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextInstance, child);
+            jobInstanceVisualisationDialog.open();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void contextSelected(String contextName) {
+        logger.info("contextName " + contextName);
     }
 }

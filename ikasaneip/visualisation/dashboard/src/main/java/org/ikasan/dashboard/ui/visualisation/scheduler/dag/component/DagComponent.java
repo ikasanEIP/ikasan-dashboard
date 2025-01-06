@@ -9,10 +9,12 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
+import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobSchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -25,6 +27,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
@@ -85,7 +88,6 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
                         double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance,
                         ContextInstance parentContextInstance) {
         this.dagJson = dagData;
-        this.dagJson = dagJson;
         if(this.dagJson == null) {
             throw new IllegalArgumentException("dagJson cannot be null!");
         }
@@ -189,15 +191,14 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
         super.onAttach(attachEvent);
 
         initConnector();
-        this.styleNode();
 
         this.ui = attachEvent.getUI();
 
         ContextInstanceStateChangeEventBroadcaster.register(this);
     }
 
-    public void styleNode() {
-        this.getElement().callJsFunction("styleNode", "start");
+    public void styleNode(String nodeId, String colour) {
+        this.getElement().callJsFunction("styleNode", nodeId, colour);
     }
 
     public void zoom(double scale) {
@@ -211,8 +212,19 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
     }
 
     @ClientCallable
+    public String getStatusColour(String contextName) {
+        ContextInstance contextInstance = ContextHelper.getChildContextInstance(contextName, this.parentContextInstance);
+        if(contextInstance != null) {
+            return this.getStatusColour(contextInstance.getStatus());
+        }
+
+        return IkasanColours.SCHEDULER_WAITING;
+    }
+
+    @ClientCallable
     public void openDiagram(String contextId) {
         try {
+            this.refreshContextInstance();
             ContextInstance child = ContextHelper.getChildContextInstance(contextId, this.parentContextInstance);
             JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
                 configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
@@ -237,9 +249,34 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if (event.getContextInstance() != null &&
-            event.getContextInstance().getId().equals(this.parentContextInstance.getId())) {
-            this.parentContextInstance = event.getContextInstance();
+        this.refreshContextInstance();
+        ContextInstance child = ContextHelper.getChildContextInstance(event.getContextInstance().getName()
+            , this.parentContextInstance);
+        child.setStatus(event.getNewStatus());
+        this.styleNode(event.getContextInstance().getName()
+            , this.getStatusColour(event.getNewStatus()));
+    }
+
+    private void refreshContextInstance() {
+        if (ContextMachineCache.instance().containsInstanceIdentifier(this.parentContextInstance.getId())) {
+            this.parentContextInstance = ContextMachineCache.instance().getByContextInstanceId(this.parentContextInstance.getId()).getContext();
         }
+    }
+
+    private String getStatusColour(InstanceStatus status) {
+        if(status == null || status.equals(InstanceStatus.WAITING)) {
+            return IkasanColours.SCHEDULER_WAITING;
+        }
+        else if(status.equals(InstanceStatus.RUNNING)) {
+            return IkasanColours.SCHEDULER_RUNNING;
+        }
+        else if(status.equals(InstanceStatus.COMPLETE)) {
+            return IkasanColours.SCHEDULER_COMPLETE;
+        }
+        else if(status.equals(InstanceStatus.ERROR)) {
+            return IkasanColours.SCHEDULER_ERROR;
+        }
+
+        return IkasanColours.SCHEDULER_WAITING;
     }
 }

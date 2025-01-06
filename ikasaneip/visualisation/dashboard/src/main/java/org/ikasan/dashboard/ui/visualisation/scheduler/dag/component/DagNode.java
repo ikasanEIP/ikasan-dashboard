@@ -1,5 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.dag.component;
 
+import org.ikasan.dashboard.ui.util.IkasanColours;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+
 public class DagNode {
     private String id;
     private String[] dependencies;
