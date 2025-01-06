@@ -1,9 +1,11 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 
+import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.visualisation.scheduler.dag.component.DagNode;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,10 +59,11 @@ public class ContextTemplateToDagConverter {
      * @param parent the parent context
      * @return the converted DagNode object
      */
-    private DagNode convert(Context context, Context previous, Context parent) {
+    private DagNode convert(ContextInstance context, Context previous, Context parent) {
         DagNode dagNode = new DagNode();
         dagNode.setId(context.getName());
         dagNode.setCollapse(true);
+        dagNode.setData(this.getStatusColour(context.getStatus()));
         if(previous != null && parent != null) {
             List<Context> transitions = ContextHelper.transitionsFromContext(context, parent.getContexts());
             List<String> transitionNames = transitions.stream()
@@ -74,5 +77,22 @@ public class ContextTemplateToDagConverter {
         if(parent != null && !parent.getName().equals(context.getName()))dagNode.setParentId(parent.getName());
 
         return dagNode;
+    }
+
+    public String getStatusColour(InstanceStatus status) {
+        if(status == null || status.equals(InstanceStatus.WAITING)) {
+            return IkasanColours.SCHEDULER_WAITING;
+        }
+        else if(status.equals(InstanceStatus.RUNNING)) {
+            return IkasanColours.SCHEDULER_RUNNING;
+        }
+        else if(status.equals(InstanceStatus.COMPLETE)) {
+            return IkasanColours.SCHEDULER_COMPLETE;
+        }
+        else if(status.equals(InstanceStatus.ERROR)) {
+            return IkasanColours.SCHEDULER_ERROR;
+        }
+
+        return IkasanColours.SCHEDULER_WAITING;
     }
 }

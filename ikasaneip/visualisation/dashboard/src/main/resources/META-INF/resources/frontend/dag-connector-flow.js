@@ -31,10 +31,19 @@ export class DagConnector extends LitElement {
         console.log("constructor called!");
     }
 
-    styleNode(id) {
+    styleNode(id, colour) {
         if(this.niceDag) {
+            debugger;
             let element = this.niceDag.getElementByNodeId(id);
-            element.attributeStyleMap.set("background", "green");
+            if(element) {
+                let container = element.children.namedItem("container");
+                if(container) {
+                    let statusElement = container.children.namedItem(id + "_status");
+                    console.log("Element ID " + id +"_status " + colour);
+                    statusElement.style.backgroundColor = colour;
+                    this.niceDag.findNodeById(id).data = colour;
+                }
+            }
         }
     }
 
@@ -51,7 +60,7 @@ export class DagConnector extends LitElement {
             };
             this.niceDag = NiceDag.init(args, false);
 
-            debugger;
+            // debugger;
             console.log("Attempting to render: " + this.dagNodes);
             this.niceDag = this.niceDag.withNodes(JSON.parse(this.dagNodes));
 
@@ -161,22 +170,26 @@ export class DagConnector extends LitElement {
         // });
     }
 
-    renderNode(node, element) {
+    async renderNode(node, element) {
         if(!element) return;
         console.log("rendering node " + node.id);
         const newDiv = document.createElement('div');
+        newDiv.id = "container";
         newDiv.setAttribute("style", this.ikasanDagNodeStyle);
         newDiv.setAttribute("title", node.id);
-        // this.styleNode(node.id);
 
         if(node.children?.length > 0 && !node.collapse) {
-            newDiv.appendChild(this.groupControl(node));
+            let child = await this.groupControl(node);
+            newDiv.appendChild(child);
         }
         else {
-            newDiv.appendChild(this.nodeControl(node));
+            let child = await this.nodeControl(node);
+            newDiv.appendChild(child);
         }
 
         element.appendChild(newDiv);
+        let colour = await this.getStatusColour(node.id);
+        this.styleNode(node.id, colour);
     }
 
     zoom(scale) {
@@ -212,7 +225,7 @@ export class DagConnector extends LitElement {
         })
         dagJsonModel = dagJsonModel.substring(0, dagJsonModel.length - 1);
         dagJsonModel = dagJsonModel + "]";
-        debugger;
+        // debugger;
         console.log("sending data " + dagJsonModel);
         this.$server.setDag(dagJsonModel);
     }
@@ -229,8 +242,9 @@ export class DagConnector extends LitElement {
         });
     }
 
-    groupControl(node) {
+    async groupControl(node) {
         const groupControlDiv = document.createElement('div');
+        groupControlDiv.id = node.id + "_status";
         render(html`<div>
                 <span style="margin-left: 6px; font-size: 8pt; word-break: break-all; width: 95%;">${node.data?.label || node.id}</span>
                 <button style="padding: 0; border: none; background: none; cursor: pointer;" @click="${(e) => this.$server.openDiagram(node.id)}">
@@ -241,7 +255,10 @@ export class DagConnector extends LitElement {
                 </button>
             </div>`, groupControlDiv);
 
-        groupControlDiv.attributeStyleMap.set("background", "rgb(102,187,106)");
+        // debugger;
+        groupControlDiv.attributeStyleMap.set("border-radius", "10px 10px 0 0");
+        let colour = await this.getStatusColour(node.id);
+        this.styleNode(node.id, colour);
         return groupControlDiv;
     }
 
@@ -257,9 +274,9 @@ export class DagConnector extends LitElement {
         }
     }
 
-    nodeControl(node) {
+    async nodeControl(node) {
         const nodeControlDiv = document.createElement('div');
-
+        nodeControlDiv.id = node.id + "_status";
         if (node.children?.length > 0) {
             render(html`
                 <div>
@@ -283,8 +300,16 @@ export class DagConnector extends LitElement {
                 </div>`, nodeControlDiv);
         }
 
-        nodeControlDiv.attributeStyleMap.set("background", "rgb(102,187,106)");
+        // debugger;
+        nodeControlDiv.attributeStyleMap.set("border-radius", "10px 10px 0 0");
+        let colour = await this.getStatusColour(node.id);
+        this.styleNode(node.id, colour);
         return nodeControlDiv;
+    }
+
+    async getStatusColour(id) {
+        let colour = await this.$server.getStatusColour(id);
+        return colour;
     }
 
     expandNode(id) {
