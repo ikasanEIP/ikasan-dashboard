@@ -2,6 +2,9 @@ import NiceDag from '@ebay/nice-dag-core';
 import {LitElement, html, css, render} from 'lit';
 import Fontawesome from 'lit-fontawesome';
 
+/**
+ * Class representing a connector for a Directed Acyclic Graph (DAG).
+ */
 export class DagConnector extends LitElement {
 
     static get properties() {
@@ -23,6 +26,11 @@ export class DagConnector extends LitElement {
     container = null;
     isZooming = true;
 
+    /**
+     * Constructor for creating a new instance of MyClass.
+     *
+     * @return {void}
+     */
     constructor() {
         super();
         this.container = document.createElement("div");
@@ -31,6 +39,14 @@ export class DagConnector extends LitElement {
         console.log("constructor called!");
     }
 
+    /**
+     * Styles the node with the specified ID using the provided color.
+     *
+     * @param {string} id - The ID of the node to style.
+     * @param {string} colour - The color to apply to the node.
+     *
+     * @return {void} - This method does not return anything.
+     */
     styleNode(id, colour) {
         if(this.niceDag) {
             debugger;
@@ -47,6 +63,12 @@ export class DagConnector extends LitElement {
         }
     }
 
+    /**
+     * Renders the NiceDag chart on the specified container element. If the chart has not been initialized yet,
+     * it initializes the chart with the provided configuration and renders it.
+     *
+     * @return {HTMLElement} The container element on which the NiceDag chart is rendered.
+     */
     render() {
         let ikasanMinimapContainer = document.getElementById("ikasanMinimapContainer");
 
@@ -110,16 +132,33 @@ export class DagConnector extends LitElement {
         this.niceDag.setScale(this.scale);
     }
 
+    /**
+     * Adds a zoom listener to the element.
+     *
+     * @return {void}
+     */
     addZoomListener() {
         this.addEventListener("wheel", this.handleZoom);
         this.isZooming = true;
     }
 
+    /**
+     * Removes the event listener used for zoom functionality.
+     *
+     * @return {void}
+     */
     removeZoomListener() {
         this.removeEventListener("wheel", this.handleZoom);
         this.isZooming=false;
     }
 
+    /**
+     * Executes tasks when the element is connected to the DOM.
+     * Be sure to call the super.connectedCallback() before using this method.
+     * Sets 'now' property to the current timestamp and initiates an interval to ensure scroll visibility.
+     *
+     * @return {void}
+     */
     connectedCallback() {
         // be sure to call the super
         super.connectedCallback();
@@ -127,11 +166,22 @@ export class DagConnector extends LitElement {
         this.interval = window.setInterval(this.ensureScrollVisible, 250, this);
     }
 
+    /**
+     * Perform cleanup operations when the element is disconnected from the DOM.
+     * Clears the interval previously set by the element.
+     *
+     * @return {void}
+     */
     disconnectedCallback() {
         super.disconnectedCallback();
         window.clearInterval(this.interval);
     }
 
+    /**
+     * Ensure that the content within the container is visible by adjusting the scroll position.
+     * @param {Element} container - The container element to ensure visibility of content within.
+     * @return {void}
+     */
     ensureScrollVisible(container) {
         // Vertical scroll bar
         console.log("ensureScrollVisible " + container);
@@ -153,23 +203,14 @@ export class DagConnector extends LitElement {
         }
     }
 
-    firstUpdated(changedProperties) {
-        // document.getElementById("my-dag-chart").addEventListener("wheel", (event) => {
-        //     debugger;
-        //     event.preventDefault();
-        //
-        //     let scale = this.niceDag.getScale();
-        //     if(event.deltaY > 0) {
-        //         scale = scale * 1.02;
-        //     }
-        //     else {
-        //         scale = scale * 0.98;
-        //     }
-        //
-        //     this.zoom(scale);
-        // });
-    }
-
+    /**
+     * Renders a node on a given HTML element, including child nodes if available.
+     *
+     * @param {Object} node - The node object to be rendered, containing an 'id', 'children', and 'collapse' properties.
+     * @param {HTMLElement} element - The HTML element on which the node will be rendered.
+     *
+     * @return {Promise<void>} - A Promise that resolves once the node and its children are successfully rendered on the element.
+     */
     async renderNode(node, element) {
         if(!element) return;
         console.log("rendering node " + node.id);
@@ -192,10 +233,21 @@ export class DagConnector extends LitElement {
         this.styleNode(node.id, colour);
     }
 
+    /**
+     * Sets the scale of the niceDag.
+     *
+     * @param {number} scale - The scale value to set.
+     * @return {void}
+     */
     zoom(scale) {
         this.niceDag.setScale(scale);
     }
 
+    /**
+     * Logs the change of the DAG, retrieves all nodes, and sends the updated DAG model to the server.
+     *
+     * @return {void}
+     */
     onChange() {
         console.log("the dag has changed! " + this.niceDag);
         let nodes = this.niceDag.getAllNodes(true);
@@ -204,32 +256,32 @@ export class DagConnector extends LitElement {
         nodes.forEach((node) => {
             console.log("the dag has changed! node " + node);
             console.log("the dag has changed! node " + node.parentId);
-            //if(!node.parentId) {
-                console.log("adding node " + node.id);
-                if(node.children) {
-                    this.setChildCollapseStatus(node.children);
-                }
-                dagJsonModel = dagJsonModel + JSON.stringify(
-                    {
-                        "id": node.id,
-                        "dependencies": node.dependencies,
-                        "data": node.data,
-                        "collapse": node.collapse,
-                        "children": node.children,
-                        "parentId": node.parentId
-                    }) + ",";
-            // }
-            // else {
-            //     console.log("skipping node " + node.id + " with collapse " + node.collapse);
-            // }
+            console.log("adding node " + node.id);
+            if(node.children) {
+                this.setChildCollapseStatus(node.children);
+            }
+            dagJsonModel = dagJsonModel + JSON.stringify(
+                {
+                    "id": node.id,
+                    "dependencies": node.dependencies,
+                    "data": node.data,
+                    "collapse": node.collapse,
+                    "children": node.children,
+                    "parentId": node.parentId
+                }) + ",";
         })
         dagJsonModel = dagJsonModel.substring(0, dagJsonModel.length - 1);
         dagJsonModel = dagJsonModel + "]";
-        // debugger;
         console.log("sending data " + dagJsonModel);
         this.$server.setDag(dagJsonModel);
     }
 
+    /**
+     * Set the collapse status for a given list of nodes and their children.
+     *
+     * @param {Array<Object>} nodes - The list of nodes to set collapse status for.
+     * @return {void}
+     */
     setChildCollapseStatus(nodes) {
         nodes.forEach((node) => {
             let n = this.niceDag.findNodeById(node.id);
@@ -242,6 +294,12 @@ export class DagConnector extends LitElement {
         });
     }
 
+    /**
+     * Controls the display and actions of a group node in the diagram.
+     *
+     * @param {Object} node - The node object representing the group to control.
+     * @return {Promise} - A Promise that resolves with the created group control element.
+     */
     async groupControl(node) {
         const groupControlDiv = document.createElement('div');
         groupControlDiv.id = node.id + "_status";
@@ -262,6 +320,12 @@ export class DagConnector extends LitElement {
         return groupControlDiv;
     }
 
+    /**
+     * Shrinks the node with the specified ID.
+     *
+     * @param {string} id - The ID of the node to be shrunk.
+     * @return {void}
+     */
     shrinkNode(id) {
         console.log("shrinking node " + id);
         let node = this.niceDag.findNodeById(id);
@@ -274,6 +338,12 @@ export class DagConnector extends LitElement {
         }
     }
 
+    /**
+     * Controls the display of a node in the UI.
+     *
+     * @param {Object} node - The node object to be displayed.
+     * @return {Promise} - A Promise that resolves to the HTML element representing the node control.
+     */
     async nodeControl(node) {
         const nodeControlDiv = document.createElement('div');
         nodeControlDiv.id = node.id + "_status";
@@ -307,11 +377,24 @@ export class DagConnector extends LitElement {
         return nodeControlDiv;
     }
 
+    /**
+     * Get the status colour based on the provided ID.
+     *
+     * @param {number} id The ID used to determine the status colour.
+     *
+     * @return {Promise<string>} A promise that resolves to the status colour string.
+     */
     async getStatusColour(id) {
         let colour = await this.$server.getStatusColour(id);
         return colour;
     }
 
+    /**
+     * Expands a node in the tree structure based on the provided node ID.
+     *
+     * @param {string} id - The ID of the node to be expanded.
+     * @return {void}
+     */
     expandNode(id) {
         console.log("expanding node " + id);
         let parentNode = this.niceDag.findNodeById(id);
@@ -322,7 +405,6 @@ export class DagConnector extends LitElement {
                 i.remove();
             }
 
-            // if(parentNode.collapse==true)
             parentNode.expand();
             let element = this.niceDag.getElementByNodeId(parentNode.id);
             console.log("expanding node " + element);
@@ -337,6 +419,12 @@ export class DagConnector extends LitElement {
         }
     }
 
+    /**
+     * Renders children nodes recursively.
+     *
+     * @param {Array} children - The array of child nodes to render
+     * @return {void}
+     */
     renderChildren(children) {
         children.forEach((node) => {
             this.renderNode(node, this.niceDag.getElementByNodeId(node.id));
@@ -349,15 +437,8 @@ export class DagConnector extends LitElement {
 
 const NODE_WIDTH = 300;
 const NODE_HEIGHT = 170;
-const CIRCLE_W_H = 30;
 
 const getNodeSize = node => {
-    // if (node.id === 'start' || node.id === 'end' || node.joint) {
-    //     return {
-    //         width: CIRCLE_W_H,
-    //         height: CIRCLE_W_H,
-    //     };
-    // }
     return {
         width: NODE_WIDTH,
         height: NODE_HEIGHT,
