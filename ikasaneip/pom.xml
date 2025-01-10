@@ -376,7 +376,7 @@
         <version.big.queue>1.0.0</version.big.queue>
         <version.logback>1.4.14</version.logback>
         <ikasan.core.version>4.0.4</ikasan.core.version>
-        <version.spring.webflux>6.1.13</version.spring.webflux>
+        <version.spring.webflux>6.1.14</version.spring.webflux>
         <version.reactor.test>3.4.10</version.reactor.test>
         <version.reactor.netty.http>1.0.39</version.reactor.netty.http>
         <version.okhttp3>3.7.0</version.okhttp3>
