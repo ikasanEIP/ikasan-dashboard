@@ -643,7 +643,7 @@ public class ContextInstanceWidget extends VerticalLayout
      */
     private void initialiseTabs() {
         this.visualisationTab = new Tab(getTranslation("tab.visualisation", UI.getCurrent().getLocale()));
-        this.dagTab = new Tab("DAG");
+        this.dagTab = new Tab(getTranslation("tab.dag-view", UI.getCurrent().getLocale()));
         this.treeTab = new Tab(getTranslation("tab.tree", UI.getCurrent().getLocale()));
         this.rawContextTab = new Tab(getTranslation("tab.json-raw-format", UI.getCurrent().getLocale()));
         this.jobsTab = new Tab(getTranslation("tab.job-instances", UI.getCurrent().getLocale()));
