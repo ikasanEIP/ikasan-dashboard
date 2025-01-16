@@ -14,8 +14,6 @@ import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.IOException;
@@ -36,13 +34,11 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
     @Before
     public void setup()
     {
-        Logger rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-//        rootLogger.setLevel(Level.WARN);
+//        Logger rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+////        rootLogger.setLevel(Level.WARN);
 
         config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
-
-
     }
 
     private void init(EmbeddedSolrServer server) throws IOException, SolrServerException
@@ -59,8 +55,6 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
     @Test
     @DirtiesContext
     public void test_search_scheduled_job_fail() throws Exception {
-
-
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {
             init(server);

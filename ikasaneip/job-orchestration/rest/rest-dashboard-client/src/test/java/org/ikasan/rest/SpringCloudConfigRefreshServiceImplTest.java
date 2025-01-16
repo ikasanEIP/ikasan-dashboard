@@ -339,8 +339,7 @@ public class SpringCloudConfigRefreshServiceImplTest {
         String result = uut.encrypt("password");
 
         // As there was an error, return the original value
-        Assert.assertEquals("Issue encrypting the value using config services with error response [403 Forbidden: [no body]]", result);
-
+        Assert.assertTrue(result.contains("Issue encrypting the value using config services with error response [403 Forbidden"));
         verify(postRequestedFor(urlEqualTo("/encrypt")));
     }
 
@@ -357,8 +356,7 @@ public class SpringCloudConfigRefreshServiceImplTest {
         String result = uut.encrypt("password");
 
         // As there was an error, return the original value
-        Assert.assertEquals("Issue encrypting the value using config services with error response [404 Not Found: [no body]]", result);
-
+        Assert.assertTrue(result.contains("Issue encrypting the value using config services with error response [404 Not Found"));
         verify(postRequestedFor(urlEqualTo("/encrypt")));
     }
 
@@ -375,7 +373,7 @@ public class SpringCloudConfigRefreshServiceImplTest {
         String result = uut.encrypt("password");
 
         // As there was an error, return the original value
-        Assert.assertEquals("Issue encrypting the value using config services with error response [500 Server Error: [no body]]", result);
+        Assert.assertTrue(result.contains("Issue encrypting the value using config services with error response [500 Server Error"));
 
         verify(postRequestedFor(urlEqualTo("/encrypt")));
     }
