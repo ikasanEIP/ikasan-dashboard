@@ -260,15 +260,15 @@
         <version.kryo>4.0.2</version.kryo>
         <version.kryo.cli>5.0.3</version.kryo.cli>  <!-- currently only using latest version for CLI/shell -->
         <version.ow2.asm>7.1</version.ow2.asm>
-        <version.org.springframework>6.1.14</version.org.springframework>
+        <version.org.springframework>6.2.1</version.org.springframework>
         <version.org.springframework.security>6.2.8</version.org.springframework.security>
         <version.org.springframework.ldap>3.2.8</version.org.springframework.ldap>
         <version.org.springframework.ldap.ldif>2.3.2.RELEASE</version.org.springframework.ldap.ldif>
         <version.org.springframework.webflow>3.0.0</version.org.springframework.webflow>
-        <version.org.springframework.data>3.2.0</version.org.springframework.data>
-        <version.spring.cloud.config.client>4.1.0</version.spring.cloud.config.client>
+        <version.org.springframework.data>3.4.1</version.org.springframework.data>
+        <version.spring.cloud.config.client>4.2.0</version.spring.cloud.config.client>
         <version.org.springframework.webflow-spring-js>2.4.8.RELEASE</version.org.springframework.webflow-spring-js>
-        <version.org.springboot>3.2.7</version.org.springboot>
+        <version.org.springboot>3.4.1</version.org.springboot>
         <version.org.springframework.shell>2.0.1.RELEASE</version.org.springframework.shell>
         <version.io.springfox.swagger>2.9.2</version.io.springfox.swagger>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
@@ -354,7 +354,7 @@
         <version.wiremock>3.0.3</version.wiremock>
         <version.org.apache.solr>9.5.0</version.org.apache.solr>
         <version.org.apache.httpcomponents>4.5.13</version.org.apache.httpcomponents>
-        <version.org.apache.httpcomponents5>5.3</version.org.apache.httpcomponents5>
+        <version.org.apache.httpcomponents5>5.4.1</version.org.apache.httpcomponents5>
         <version.vtd.xml>2.13.4</version.vtd.xml>
         <version.json.assert>1.5.0</version.json.assert>
         <version.org.junit.jupiter>5.10.2</version.org.junit.jupiter>
@@ -374,8 +374,8 @@
         <version.font-awesome-iron-iconset>5.2.2</version.font-awesome-iron-iconset>
         <version.ace.editor>3.4.2</version.ace.editor>
         <version.big.queue>1.0.0</version.big.queue>
-        <version.logback>1.4.14</version.logback>
-        <ikasan.core.version>4.0.4</ikasan.core.version>
+        <version.logback>1.5.13</version.logback>
+        <ikasan.core.version>4.0.5-SNAPSHOT</ikasan.core.version>
         <version.spring.webflux>6.1.14</version.spring.webflux>
         <version.reactor.test>3.4.10</version.reactor.test>
         <version.reactor.netty.http>1.0.39</version.reactor.netty.http>

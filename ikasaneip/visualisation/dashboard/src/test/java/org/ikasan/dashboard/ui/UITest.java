@@ -24,8 +24,6 @@ import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -108,9 +106,6 @@ public abstract class UITest
 
     @Before
     public void setup() throws IOException {
-        Logger rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-//        rootLogger.setLevel(Level.WARN);
-
         this.setup_general_expectations();
         this.setup_expectations();
 
