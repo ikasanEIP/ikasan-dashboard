@@ -39,6 +39,12 @@ public class IkasanSecurityConfiguration
     @Value("${hibernate.event.merge.entity_copy_observer:allow}")
     private String hibernateEventMergeEntityCopyObserver;
 
+    @Value("${com.sun.jndi.ldap.connect.timeout.milliseconds:60000}")
+    private int ldapConnectTimeoutMilliseconds;
+
+    @Value("${com.sun.jndi.ldap.read.timeout.milliseconds:60000}")
+    private int ldapReadTimeoutMilliseconds;
+
     @Bean
     @Primary
     public UserService userService(UserDao userDao, SecurityService securityService, PasswordEncoder passwordEncoder)
@@ -84,7 +90,8 @@ public class IkasanSecurityConfiguration
     @Bean
     public LdapService ldapService(SecurityDao securityDao, UserDao userDao, PasswordEncoder passwordEncoder)
     {
-        return new LdapServiceImpl(securityDao, userDao, passwordEncoder);
+        return new LdapServiceImpl(securityDao, userDao, passwordEncoder
+            , this.ldapReadTimeoutMilliseconds, this.ldapConnectTimeoutMilliseconds);
     }
 
     @Bean
