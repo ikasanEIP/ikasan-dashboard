@@ -76,6 +76,18 @@ public class ContextHelper {
      */
     private static void _addContextTemplateReplacementTokens(ContextTemplate contextTemplate) {
         if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+            Optional<SchedulerJob> jobOptional = contextTemplate.getScheduledJobs().stream()
+                .filter(schedulerJob ->
+                    !schedulerJob.getAgentName().equals(JobConstants.GLOBAL_EVENT) &&
+                        !schedulerJob.getAgentName().equals(JobConstants.CONTEXT_START_JOB) &&
+                        !schedulerJob.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) &&
+                        !schedulerJob.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) &&
+                        !schedulerJob.getAgentName().equals(JobConstants.BRIDGING_JOB))
+                .findFirst();
+            if(contextTemplate.getUserGeneratedLayout() != null && jobOptional.isPresent()) {
+                contextTemplate.setUserGeneratedLayout(contextTemplate.getUserGeneratedLayout()
+                    .replaceAll(jobOptional.get().getAgentName(), AGENT_NAME_REPLACEMENT));
+            }
             contextTemplate.getScheduledJobs().forEach(schedulerJob -> {
                 if(contextTemplate.getJobDependencies() != null) {
                     contextTemplate.getJobDependencies().forEach(jobDependency -> {

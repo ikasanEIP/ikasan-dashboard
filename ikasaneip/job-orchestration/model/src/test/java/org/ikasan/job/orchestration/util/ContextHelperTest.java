@@ -54,6 +54,19 @@ public class ContextHelperTest {
     }
 
     @Test
+    public void test_context_template_token_replacement_with_user_generate_layout() throws IOException, JSONException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/job-plan-with-user-generated-layout.json"));
+
+        contextHelper.setUseUnderscoreSeparatedContextNameConvention(true);
+        ContextHelper.addContextTemplateReplacementTokens(contextTemplate);
+
+        Assert.assertNotNull(contextTemplate);
+        JSONAssert.assertEquals(loadDataFile("/data/job-plan-with-user-generated-layout-with-tokens.json")
+            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+    }
+
+    @Test
     public void test_context_template_token_replacement_with_start_terminal_local_event_jobs() throws IOException, JSONException {
         ContextTemplate contextTemplate = this.contextService
             .getContextTemplate(loadDataFile("/data/job-plan-with-start-terminal-local-event-jobs.json"));
