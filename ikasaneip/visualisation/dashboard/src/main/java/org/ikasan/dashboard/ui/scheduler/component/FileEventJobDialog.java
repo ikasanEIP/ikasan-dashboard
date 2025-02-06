@@ -31,6 +31,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -85,6 +86,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private SystemEventLogger systemEventLogger;
 
     private SchedulerJobService schedulerJobService;
+    private ContextTemplate contextTemplate;
 
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
     private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
@@ -103,7 +105,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     public FileEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                              SchedulerJobService schedulerJobService, boolean showDisplayName) {
+                              SchedulerJobService schedulerJobService, boolean showDisplayName, ContextTemplate contextTemplate) {
         super.showResize(false);
         super.title.setText(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
 
@@ -115,6 +117,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobService = schedulerJobService;
         this.showDisplayName = showDisplayName;
+        this.contextTemplate = contextTemplate;
 
         this.fileEventDrivenJob = new SolrFileEventDrivenJobImpl();
 
@@ -324,7 +327,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.slaCronExpressionTf.setSuffixComponent(builderIconSlaCronExpression);
         this.slaCronExpressionTf.setId("slaCronExpressionTf");
         formBinder.forField(this.slaCronExpressionTf)
-            .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
+            .withValidator(value -> value == null || value.isEmpty() || CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
             .bind(FileEventDrivenJob::getSlaCronExpression, FileEventDrivenJob::setSlaCronExpression);
         formLayout.add(slaCronExpressionTf);
 
@@ -375,6 +378,18 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             }
 
             formBinder.writeBean(solrFileEventDrivenJob);
+
+            if(this.editMode.equals(EditMode.NEW) || this.editMode.equals(EditMode.CLONE) || this.editMode.equals(EditMode.FROM_TEMPLATE)) {
+                if(this.schedulerJobService.findByContextNameAndJobName
+                    (fileEventDrivenJob.getContextName(), fileEventDrivenJob.getJobName()) != null ||
+                    (this.contextTemplate != null && this.contextTemplate.getScheduledJobs().stream()
+                        .filter(job -> fileEventDrivenJob.getJobName().equals(job.getJobName()))
+                        .findFirst().isPresent())) {
+                    isValid.set(false);
+                    this.jobNameTf.setErrorMessage(getTranslation("error.job-name-exists", UI.getCurrent().getLocale()));
+                    this.jobNameTf.setInvalid(true);
+                }
+            }
 
             if(!isValid.get()){
                 return false;

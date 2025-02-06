@@ -779,7 +779,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB)) {
                 FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, this.contextTemplate.isUseDisplayName());
+                    , schedulerJobService, this.contextTemplate.isUseDisplayName(), this.contextTemplate);
                 fileEventJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 fileEventJobDialog.open();
@@ -793,7 +793,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             else if(event.getItem().getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB)) {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
-                    , this.contextTemplate.isUseDisplayName());
+                    , this.contextTemplate.isUseDisplayName(), this.contextTemplate);
                 quartzDrivenScheduledJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 quartzDrivenScheduledJobDialog.open();

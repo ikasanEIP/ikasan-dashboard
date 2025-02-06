@@ -28,6 +28,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.LocalEventJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -45,7 +46,6 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
-    private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private Button saveButton;
     private Button cancelButton;
@@ -56,6 +56,9 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
     private FormLayout formLayout;
     private boolean enabled = true;
     private SystemEventLogger systemEventLogger;
+    private SchedulerJobService schedulerJobService;
+    private ContextTemplate parentContext;
+    private ContextTemplate contextTemplate;
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
 
 
@@ -64,11 +67,15 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
      *
      * @param systemEventLogger
      */
-    public LocalEventJobDialog(SystemEventLogger systemEventLogger) {
+    public LocalEventJobDialog(SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                               ContextTemplate parentContext, ContextTemplate contextTemplate) {
         super.showResize(false);
         super.title.setText(getTranslation("header.local-event-job", UI.getCurrent().getLocale()));
 
         this.systemEventLogger = systemEventLogger;
+        this.schedulerJobService = schedulerJobService;
+        this.parentContext = parentContext;
+        this.contextTemplate = contextTemplate;
         this.localEventJob = new LocalEventJobImpl();
 
         this.formBinder = new Binder<>(LocalEventJob.class);
@@ -183,6 +190,18 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
             AtomicBoolean isValid = new AtomicBoolean(true);
             formBinder.writeBean(localEventJob);
 
+            if(this.editMode.equals(EditMode.NEW) || this.editMode.equals(EditMode.CLONE) || this.editMode.equals(EditMode.FROM_TEMPLATE)) {
+                if(this.schedulerJobService.findByContextNameAndJobName
+                    (this.parentContext.getName(), localEventJob.getJobName()) != null ||
+                    this.contextTemplate.getScheduledJobs().stream()
+                        .filter(job -> localEventJob.getJobName().equals(job.getJobName()))
+                        .findFirst().isPresent()) {
+                    isValid.set(false);
+                    this.jobNameTf.setErrorMessage(getTranslation("error.job-name-exists", UI.getCurrent().getLocale()));
+                    this.jobNameTf.setInvalid(true);
+                }
+            }
+
             if(!isValid.get()){
                 return false;
             }
@@ -199,7 +218,7 @@ public class LocalEventJobDialog extends AbstractCloseableResizableDialog {
     /**
      * Creates or updates a scheduled job.
      *
-     * @param localEventJob The GlobalEventJob to be created or updated.
+     * @param localEventJob The LocalEventJob to be created or updated.
      * @param authentication The IkasanAuthentication object used for authorization.
      */
     public void createOrUpdateScheduledJob(LocalEventJob localEventJob, IkasanAuthentication authentication) {
