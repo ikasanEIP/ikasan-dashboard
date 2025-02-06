@@ -1184,7 +1184,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
                 FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName());
+                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(),
+                    this.contextTemplate);
 
                 FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
                 fileEventDrivenJob.setContextName(contextTemplate.getName());
@@ -1208,7 +1209,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
-                    this.contextTemplate.isUseDisplayName());
+                    this.contextTemplate.isUseDisplayName(), this.contextTemplate);
 
                 QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
                 quartzScheduleDrivenJob.setContextName(this.contextTemplate.getName());

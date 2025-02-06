@@ -430,7 +430,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName());
+                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(),
+                this.contextTemplate);
             fileEventJobDialog.addSchedulerJobSelectedListener(this);
 
             FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
@@ -444,7 +445,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
             QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
-                this.contextTemplate.isUseDisplayName());
+                this.contextTemplate.isUseDisplayName(), this.contextTemplate);
             quartzDrivenScheduledJobDialog.addSchedulerJobSelectedListener(this);
 
             QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
@@ -469,7 +470,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             globalEventJobDialog.open();
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.local-event-job", UI.getCurrent().getLocale()), event -> {
-            LocalEventJobDialog localEventJobDialog = new LocalEventJobDialog(systemEventLogger);
+            LocalEventJobDialog localEventJobDialog = new LocalEventJobDialog(this.systemEventLogger
+                , this.schedulerJobService, this.rootContextTemplate, this.contextTemplate);
 
             localEventJobDialog.addSchedulerJobSelectedListener(this);
 

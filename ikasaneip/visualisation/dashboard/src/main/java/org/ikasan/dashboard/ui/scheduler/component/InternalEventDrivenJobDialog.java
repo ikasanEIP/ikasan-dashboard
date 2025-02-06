@@ -38,6 +38,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
@@ -494,9 +495,12 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
             formBinder.writeBean(internalEventDrivenJob);
 
-            if(this.editMode.equals(EditMode.NEW)) {
+            if(this.editMode.equals(EditMode.NEW) || this.editMode.equals(EditMode.CLONE) || this.editMode.equals(EditMode.FROM_TEMPLATE)) {
                 if(this.schedulerJobService.findByContextNameAndJobName
-                    (this.parentContextTemplate.getName(), internalEventDrivenJob.getJobName()) != null) {
+                    (this.parentContextTemplate.getName(), internalEventDrivenJob.getJobName()) != null ||
+                    (this.contextTemplate != null && this.contextTemplate.getScheduledJobs().stream()
+                        .filter(job -> internalEventDrivenJob.getJobName().equals(((SchedulerJob)job).getJobName()))
+                        .findFirst().isPresent())) {
                     isValid.set(false);
                     this.jobNameTf.setErrorMessage(getTranslation("error.job-name-exists", UI.getCurrent().getLocale()));
                     this.jobNameTf.setInvalid(true);
@@ -520,9 +524,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
      *
      * @param internalEventDrivenJob the InternalEventDrivenJob object to be created or updated
      * @param authentication the IkasanAuthentication object for authorization
-     * @throws JsonProcessingException if there is an issue with JSON processing
      */
-    public void createOrUpdateScheduledJob(InternalEventDrivenJob internalEventDrivenJob, IkasanAuthentication authentication) throws JsonProcessingException {
+    private void createOrUpdateScheduledJob(InternalEventDrivenJob internalEventDrivenJob, IkasanAuthentication authentication) {
         internalEventDrivenJob.setCommandLine(this.commandLineTa.getValue());
         internalEventDrivenJob.setIdentifier(internalEventDrivenJob.getAgentName()+"-"+internalEventDrivenJob.getJobName());
 

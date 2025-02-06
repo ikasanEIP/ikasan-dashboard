@@ -23,6 +23,7 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrGlobalEventJobImpl;
 import org.ikasan.scheduled.job.model.SolrGlobalEventJobRecordImpl;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -31,6 +32,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +41,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.ikasan.spec.search.SearchResults;
 
 public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
 
@@ -222,6 +225,17 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
             formBinder.writeBean(globalEventJob);
+
+            if(this.editMode.equals(EditMode.NEW) || this.editMode.equals(EditMode.CLONE) || this.editMode.equals(EditMode.FROM_TEMPLATE)) {
+                SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+                filter.setJobNameFilter(globalEventJob.getJobName());
+                SearchResults searchResults = this.schedulerJobService.findByFilter(filter, 1, 0, null, null);
+                if(searchResults != null && searchResults.getTotalNumberOfResults() > 0 ) {
+                    isValid.set(false);
+                    this.jobNameTf.setErrorMessage(getTranslation("error.global-event-job-name-exists", UI.getCurrent().getLocale()));
+                    this.jobNameTf.setInvalid(true);
+                }
+            }
 
             if(!isValid.get()){
                 return false;
