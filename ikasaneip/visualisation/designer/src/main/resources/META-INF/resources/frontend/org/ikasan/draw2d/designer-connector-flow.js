@@ -200,8 +200,6 @@ window.Vaadin.Flow.designerConnector = {
 
             let command = new draw2d.command.CommandAdd(_this, icon, x, y);
             _this.getCommandStack().execute(command);
-
-            designer.$connector.designer.scrollTo(top, left);
         }
 
         designer.$connector.addConnection = function (connectionAttributes) {
