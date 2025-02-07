@@ -192,32 +192,16 @@ window.Vaadin.Flow.designerConnector = {
                 }
             });
 
-            let xCoords = [];
-            let yCoords = [];
-            _this.getFigures().each(function (i, f) {
-                let b = f.getBoundingBox();
-                xCoords.push(b.x, b.x + b.w);
-                yCoords.push(b.y, b.y + b.h);
-            });
-
-            if(xCoords.length === 0) {
-                xCoords = [100, 200]
-            }
-
-            if(yCoords.length === 0) {
-                yCoords = [100, 200]
-            }
-
-            let minX = Math.min.apply(Math, xCoords);
-            let minY = Math.min.apply(Math, yCoords);
-            let x = (Math.max.apply(Math, xCoords) + minX);
-            let y = (Math.max.apply(Math, yCoords) + minY) / 2;
+            let x = (_this.getScrollLeft() * _this.getZoom()) + (1000 * _this.getZoom());
+            let y = (_this.getScrollTop() * _this.getZoom()) + (500 * _this.getZoom());
 
             icon.setX(x);
             icon.setY(y);
 
             let command = new draw2d.command.CommandAdd(_this, icon, x, y);
             _this.getCommandStack().execute(command);
+
+            designer.$connector.designer.scrollTo(top, left);
         }
 
         designer.$connector.addConnection = function (connectionAttributes) {
