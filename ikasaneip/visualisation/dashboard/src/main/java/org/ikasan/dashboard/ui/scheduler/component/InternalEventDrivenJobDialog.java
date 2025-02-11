@@ -302,6 +302,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
+            .withValidator(jobName -> !jobName.contains(" "), getTranslation("error.job-name-cannot-contain-whitespace", UI.getCurrent().getLocale()))
             .bind(InternalEventDrivenJob::getJobName, InternalEventDrivenJob::setJobName);
         formLayout.add(jobNameTf);
 

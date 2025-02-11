@@ -227,6 +227,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
+            .withValidator(jobName -> !jobName.contains(" "), getTranslation("error.job-name-cannot-contain-whitespace", UI.getCurrent().getLocale()))
             .bind(QuartzScheduleDrivenJob::getJobName, QuartzScheduleDrivenJob::setJobName);
         formLayout.add(jobNameTf);
 
