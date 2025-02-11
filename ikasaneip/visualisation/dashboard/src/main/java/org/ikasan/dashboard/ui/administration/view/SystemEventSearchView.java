@@ -151,13 +151,17 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             HorizontalLayout horizontalLayout = new HorizontalLayout();
             horizontalLayout.setWidth("100%");
             horizontalLayout.setJustifyContentMode(JustifyContentMode.START);
-            if(ikasanSolrDocument.getAction() != null && ! ikasanSolrDocument.getAction().isEmpty()) {
-                horizontalLayout.add(ikasanSolrDocument.getAction());
+            if(ikasanSolrDocument.getAction() != null && !ikasanSolrDocument.getAction().isEmpty()) {
+                String action = ikasanSolrDocument.getAction();
+                horizontalLayout.add(action.length() > 200 ? action.substring(0, 200) + "..." : action);
             }
             else {
                 try {
-                    horizontalLayout.add(objectMapper.readValue(((SolrSystemEvent)ikasanSolrDocument).getPayload()
-                        , SystemEventImpl.class).getAction());
+                    String action = objectMapper.readValue(((SolrSystemEvent)ikasanSolrDocument).getPayload()
+                        , SystemEventImpl.class).getAction();
+                    if(action != null) {
+                        horizontalLayout.add(action.length() > 200 ? action.substring(0, 200) + "..." : action);
+                    }
                 } catch (JsonProcessingException e) {
                     // Not much we can do if the event is not valid json.
                 }
