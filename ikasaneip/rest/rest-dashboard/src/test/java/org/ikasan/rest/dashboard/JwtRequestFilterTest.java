@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
@@ -59,6 +60,7 @@ public class JwtRequestFilterTest
     }
 
     @Test
+    @DirtiesContext
     public void test_login_page() throws ServletException, IOException
     {
 
@@ -74,6 +76,7 @@ public class JwtRequestFilterTest
     }
 
     @Test
+    @DirtiesContext
     public void test_rest_call() throws ServletException, IOException
     {
 
@@ -100,8 +103,8 @@ public class JwtRequestFilterTest
     }
 
     @Test
-    public void test_rest_call_cache() throws ServletException, IOException
-    {
+    @DirtiesContext
+    public void test_rest_call_cache() throws ServletException, IOException {
 
         when(request.getServletPath()).thenReturn("/rest");
         when(request.getHeader("Authorization")).thenReturn("Bearer test.token");
@@ -127,10 +130,46 @@ public class JwtRequestFilterTest
         verify(chain, times(2)).doFilter(request,response);
 
         verifyNoMoreInteractions(chain,jwtTokenUtil,userService,userDetails,response);
-
     }
 
     @Test
+    @DirtiesContext
+    public void test_rest_call_cache_expires() throws ServletException, IOException, InterruptedException {
+        when(request.getServletPath()).thenReturn("/rest");
+        when(request.getHeader("Authorization")).thenReturn("Bearer test.token");
+        when(jwtTokenUtil.getUsernameFromToken("test.token")).thenReturn("testUser");
+        when(userService.loadUserByUsername("testUser")).thenReturn(userDetails);
+        when(jwtTokenUtil.validateToken("test.token",userDetails)).thenReturn(true);
+        when(userDetails.getAuthorities()).thenReturn(new ArrayList<>());
+
+        uut.doFilterInternal(request,response,chain);
+
+        Thread.sleep(1000);
+        uut.doFilterInternal(request,response,chain);
+
+        // Cache should have expired here and the user to be re-added to the cache
+        Thread.sleep(4100);
+        uut.doFilterInternal(request,response,chain);
+
+        // We need to remove the security context in order to force full authentication in the second call.
+        SecurityContextHolder.getContext().setAuthentication(null);
+        uut.doFilterInternal(request,response,chain);
+
+        verify(request, times(4)).getServletPath();
+        verify(request, times(4)).getHeader("Authorization");
+        verify(jwtTokenUtil, times(4)).getUsernameFromToken("test.token");
+        // The user service is hit twice now due to the cached user expiring!
+        verify(userService, times(2)).loadUserByUsername("testUser");
+        verify(jwtTokenUtil, times(2)).validateToken("test.token",userDetails);
+        verify(userDetails, times(2)).getAuthorities();
+
+        verify(chain, times(4)).doFilter(request,response);
+
+        verifyNoMoreInteractions(chain,jwtTokenUtil,userService,userDetails,response);
+    }
+
+    @Test
+    @DirtiesContext
     public void test_rest_call_when_validate_token_is_false() throws ServletException, IOException
     {
 
@@ -155,6 +194,7 @@ public class JwtRequestFilterTest
     }
 
     @Test
+    @DirtiesContext
     public void test_rest_call_when_userService_returns_null() throws ServletException, IOException
     {
 
@@ -170,14 +210,13 @@ public class JwtRequestFilterTest
         verify(jwtTokenUtil).getUsernameFromToken("test.token");
         verify(userService).loadUserByUsername("testUser");
 
-
         verify(chain).doFilter(request,response);
 
         verifyNoMoreInteractions(chain,jwtTokenUtil,userService,userDetails,response);
-
     }
 
     @Test
+    @DirtiesContext
     public void test_rest_call_when_Authorization_does_not_have_bearer() throws ServletException, IOException
     {
 
@@ -196,6 +235,7 @@ public class JwtRequestFilterTest
     }
 
     @Test
+    @DirtiesContext
     public void test_rest_call_when_jwt_throws_ExpiredJwtException() throws ServletException, IOException
     {
 
@@ -215,6 +255,7 @@ public class JwtRequestFilterTest
     }
 
     @Test
+    @DirtiesContext
     public void test_rest_call_when_jwt_throws_IllegalArgumentException() throws ServletException, IOException
     {
 
