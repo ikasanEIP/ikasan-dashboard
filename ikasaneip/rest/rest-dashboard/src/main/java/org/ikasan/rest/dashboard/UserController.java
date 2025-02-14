@@ -84,7 +84,7 @@ public class UserController
         }
 
         cache = CacheBuilder.newBuilder()
-        .expireAfterAccess(userServiceUserCacheTimeoutSeconds, TimeUnit.SECONDS)
+        .expireAfterWrite(userServiceUserCacheTimeoutSeconds, TimeUnit.SECONDS)
         .build();
     }
 

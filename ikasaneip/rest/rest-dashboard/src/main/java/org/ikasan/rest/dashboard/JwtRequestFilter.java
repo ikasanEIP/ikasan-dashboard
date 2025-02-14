@@ -36,7 +36,7 @@ public class JwtRequestFilter extends OncePerRequestFilter
         this.jwtTokenUtil = jwtTokenUtil;
         this.securityContextRepository = securityContextRepository;
         this.cache = CacheBuilder.newBuilder()
-            .expireAfterAccess(userCacheTimeoutSeconds, TimeUnit.SECONDS)
+            .expireAfterWrite(userCacheTimeoutSeconds, TimeUnit.SECONDS)
             .build();
     }
 
@@ -65,11 +65,16 @@ public class JwtRequestFilter extends OncePerRequestFilter
 
                         if(userDetails == null) {
                             userDetails = this.userService.loadUserByUsername(username);
-                            cache.put(username, userDetails);
+                            if(userDetails!=null) {
+                                cache.put(username, userDetails);
+                            }
+                            else {
+                                logger.info(String.format("Could not load user details for user [%s]!", username));
+                            }
                         }
                         // if token is valid configure Spring Security to manually set
                         // authentication
-                        if (jwtTokenUtil.validateToken(jwtToken, userDetails))
+                        if (userDetails != null && jwtTokenUtil.validateToken(jwtToken, userDetails))
                         {
                             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
