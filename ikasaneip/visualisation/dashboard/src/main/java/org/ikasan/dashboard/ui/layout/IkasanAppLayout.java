@@ -23,10 +23,7 @@ import org.ikasan.dashboard.ui.general.component.AboutIkasanDialog;
 import org.ikasan.dashboard.ui.general.component.SessionDetailsDialog;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.dashboard.ui.search.view.SearchView;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.view.BusinessStreamDesignerView;
 import org.ikasan.dashboard.ui.visualisation.view.GraphView;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -46,8 +43,17 @@ public class IkasanAppLayout extends AppLayout {
     @Value("${banner.text.message:}")
     private String bannerTextMessage;
 
-    @Value("${banner.text.color:}")
+    @Value("${banner.border.colour:}")
+    private String bannerBorderColour;
+
+    @Value("${banner.border.weight:1}")
+    private String bannerBorderWeight;
+
+    @Value("${banner.text.color:#{T(org.ikasan.dashboard.ui.util.IkasanColours).IKASAN_ORANGE}}")
     private String bannerTextColor;
+
+    @Value("${banner.background.color:}")
+    private String bannerBackgroundColor;
 
     @Value("${is.ikasan.enterprise.scheduler.instance:true}")
     private boolean isIkasanEnterpriseSchedulerInstance;
@@ -123,6 +129,14 @@ public class IkasanAppLayout extends AppLayout {
 
         this.environmentButton = new Button(bannerTextMessage);
         this.environmentButton.setId("environmentButton");
+        if(this.bannerBorderColour != null && !this.bannerBorderColour.isEmpty()) {
+            this.environmentButton.getStyle().setBorder(this.bannerBorderWeight
+                + "px solid " + this.bannerBorderColour);
+        }
+        this.environmentButton.getStyle().setColor(this.bannerTextColor);
+        if(this.bannerBackgroundColor != null && !this.bannerBackgroundColor.isEmpty()) {
+            this.environmentButton.getStyle().setBackground(this.bannerBackgroundColor);
+        }
         this.environmentButton.addClickListener(buttonClickEvent -> {
             SessionDetailsDialog sessionDetailsDialog = new SessionDetailsDialog();
             sessionDetailsDialog.open();
