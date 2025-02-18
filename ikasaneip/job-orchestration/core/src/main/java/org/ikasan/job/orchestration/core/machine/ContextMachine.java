@@ -1628,6 +1628,8 @@ public class ContextMachine {
 
             // Confirm that all jobs outside logical constructs are complete.
             jobsOutsideLogicConstructs.entrySet().forEach(entry -> {
+                if(((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.COMPLETE)) return;
+
                 if (!((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.COMPLETE)
                     && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED)
                     && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)

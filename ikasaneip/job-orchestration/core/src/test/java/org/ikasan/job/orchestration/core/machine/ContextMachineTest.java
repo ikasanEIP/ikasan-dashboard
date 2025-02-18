@@ -5578,6 +5578,150 @@ public class ContextMachineTest extends AbstractTest {
 
     }
 
+    @Test
+    public void test_context_with_final_parallel_jobs_that_has_error_job_reset_confirm_context_complete() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/job-plan-with-parallel-jobs-in-end.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/job-plan-with-parallel-jobs-in-end.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
+        jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
+        jobLockCache.addLocks(context.getAllNestedJobLocks());
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        List<SchedulerJobInitiationEvent> initiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "test", null
+                ,"scheduler-agent", "" +
+                    "scheduled", true);
+        Assert.assertEquals(2, initiationEvents.size());
+
+        this.assertContextStatus(contextMachine, "test", InstanceStatus.RUNNING);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-scheduled", InstanceStatus.COMPLETE);
+
+        Assert.assertEquals("demo-3", initiationEvents.get(0).getJobName());
+        Assert.assertEquals("demo1", initiationEvents.get(1).getJobName());
+
+        initiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "test", null
+                ,"scheduler-agent", "" +
+                    "demo1", true);
+
+        Assert.assertEquals(0, initiationEvents.size());
+
+        initiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "test", null
+                ,"scheduler-agent", "" +
+                    "demo-3", true);
+
+        this.assertContextStatus(contextMachine, "test", InstanceStatus.RUNNING);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-scheduled", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo1", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-3", InstanceStatus.COMPLETE);
+
+        Assert.assertEquals(1, initiationEvents.size());
+
+        Assert.assertEquals("demo-4", initiationEvents.get(0).getJobName());
+
+        initiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "test", null
+                ,"scheduler-agent", "" +
+                    "demo-4", true);
+
+        this.assertContextStatus(contextMachine, "test", InstanceStatus.RUNNING);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-scheduled", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo1", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-3", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-4", InstanceStatus.COMPLETE);
+
+        Assert.assertEquals(1, initiationEvents.size());
+
+        Assert.assertEquals("demo-6", initiationEvents.get(0).getJobName());
+
+        initiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "test", null
+                ,"scheduler-agent", "" +
+                    "demo-6", true);
+
+        this.assertContextStatus(contextMachine, "test", InstanceStatus.RUNNING);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-scheduled", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo1", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-3", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-4", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-6", InstanceStatus.COMPLETE);
+
+        Assert.assertEquals(2, initiationEvents.size());
+
+        Assert.assertEquals("demo2", initiationEvents.get(0).getJobName());
+        Assert.assertEquals("demo-7", initiationEvents.get(1).getJobName());
+
+        initiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "test", null
+                ,"scheduler-agent", "" +
+                    "demo2", true);
+
+        this.assertContextStatus(contextMachine, "test", InstanceStatus.RUNNING);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-scheduled", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo1", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-3", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-4", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-6", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo2", InstanceStatus.COMPLETE);
+
+        Assert.assertEquals(0, initiationEvents.size());
+
+        // demo-7 job has an error
+        initiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "test", null
+                ,"scheduler-agent", "" +
+                    "demo-7", false);
+
+        // Confirm statuses are reflected correctly
+        this.assertContextStatus(contextMachine, "test", InstanceStatus.ERROR);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-scheduled", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo1", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-3", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-4", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-6", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo2", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-7", InstanceStatus.ERROR);
+
+        Assert.assertEquals(0, initiationEvents.size());
+
+        // Reset the failed job.
+        contextMachine.resetJob("scheduler-agent-demo-7", "test");
+
+        // Confirm that the job plan is now in a running state and the errored job is now waiting.
+        this.assertContextStatus(contextMachine, "test", InstanceStatus.RUNNING);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-scheduled", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo1", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-3", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-4", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-6", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo2", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-7", InstanceStatus.WAITING);
+
+        // Now successfully run the final job in the plans.
+        this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "test", null
+                ,"scheduler-agent", "" +
+                    "demo-7", true);
+
+        // Confirm the job plan is complete and all jobs within it.
+        this.assertContextStatus(contextMachine, "test", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-scheduled", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo1", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-3", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-4", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-6", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo2", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine, "test", "scheduler-agent-demo-7", InstanceStatus.COMPLETE);
+    }
+
     @Test(expected = ContextMachineException.class)
     public void test_context_machine_reset_job_exception_due_to_job_not_complete_or_error_or_waiting() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
