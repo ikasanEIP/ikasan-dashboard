@@ -430,7 +430,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         parametersButton.setIconAfterText(true);
         parametersButton.addClickListener(event -> {
             ContextParameterDialog contextParameterDialog = new ContextParameterDialog(true,
-                this.internalEventDrivenJob.isTemplateBased() != null && this.internalEventDrivenJob.isTemplateBased() == false);
+                this.internalEventDrivenJob.isTemplateBased() == null || (this.internalEventDrivenJob.isTemplateBased() != null && this.internalEventDrivenJob.isTemplateBased() == false));
             contextParameterDialog.initParams(this.internalEventDrivenJob.getContextParameters() == null ? new ArrayList<>() : this.internalEventDrivenJob.getContextParameters());
             contextParameterDialog.open();
 
