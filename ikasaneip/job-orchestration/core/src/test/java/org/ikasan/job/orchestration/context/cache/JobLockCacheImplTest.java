@@ -1388,6 +1388,32 @@ public class JobLockCacheImplTest {
     }
 
     @Test
+    public void add_job_lock_with_no_associated_jobs() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        JobLock jobLock1 = makeJobLock("TEST-LOCK-1", 0, 1);
+        JobLock jobLock2 = makeJobLock("TEST-LOCK-1", 0, 1, "New");
+        jlc.addLocks(List.of(jobLock1, jobLock2));
+
+        JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
+
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
+            = jobLockCacheData.getJobLocksByIdentifier();
+
+        assertEquals(0, jobLocksByIdentifier.size());
+
+        ConcurrentHashMap<String, JobLockHolder> jobLocksByName
+            = jobLockCacheData.getJobLocksByLockName();
+
+        assertEquals(1, jobLocksByName.size());
+
+        JobLockHolder jobLockHolder = jobLocksByName.get("TEST-LOCK-1");
+
+        Assert.assertNotNull(jobLockHolder);
+        Assert.assertEquals(0, jobLockHolder.getSchedulerJobs().size());
+    }
+
+    @Test
     public void shouldNotNPEAddNewJobs_AddLocks_ToJobLockCache() {
         JobLockCache jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);

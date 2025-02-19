@@ -81,14 +81,18 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
                 jobLockHolder.setLockName(jobLock.getName());
                 jobLockHolder.setLockCount(jobLock.getLockCount());
                 jobLockHolder.setExclusiveJobLock(jobLock.isExclusiveJobLock());
-                for (Map.Entry<String, List<SchedulerJobLockParticipant>> entry : jobLock.getJobs().entrySet()) {
-                    jobLockHolder.addSchedulerJobs(entry.getKey(), entry.getValue());
+                if(jobLock.getJobs() != null) {
+                    for (Map.Entry<String, List<SchedulerJobLockParticipant>> entry : jobLock.getJobs().entrySet()) {
+                        jobLockHolder.addSchedulerJobs(entry.getKey(), entry.getValue());
+                    }
                 }
             } else {
-                for (Map.Entry<String, List<SchedulerJobLockParticipant>> entry : jobLock.getJobs().entrySet()) {
-                    jobLockHolder.setLockCount(jobLock.getLockCount());
-                    jobLockHolder.setExclusiveJobLock(jobLock.isExclusiveJobLock());
-                    jobLockHolder.addSchedulerJobs(entry.getKey(), entry.getValue());
+                if(jobLock.getJobs() != null) {
+                    for (Map.Entry<String, List<SchedulerJobLockParticipant>> entry : jobLock.getJobs().entrySet()) {
+                        jobLockHolder.setLockCount(jobLock.getLockCount());
+                        jobLockHolder.setExclusiveJobLock(jobLock.isExclusiveJobLock());
+                        jobLockHolder.addSchedulerJobs(entry.getKey(), entry.getValue());
+                    }
                 }
             }
             this.jobLockCacheData.getJobLocksByLockName().put(jobLock.getName(), jobLockHolder);
