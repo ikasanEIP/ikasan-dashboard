@@ -86,14 +86,14 @@ public class JobContextMenu extends Dialog {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog
                     = new InternalEventDrivenJobDialog(null, scheduledProcessManagementService, configurationRestService,
                     moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.rootContextInstance, this.currentInstance,
-                    schedulerJobExecutionEnvironmentLabel);
+                    schedulerJobExecutionEnvironmentLabel, true);
                 internalEventDrivenJobDialog.setJob((InternalEventDrivenJob)job, EditMode.READONLY);
                 internalEventDrivenJobDialog.open();
             }
             else if(job instanceof FileEventDrivenJob) {
                 FileEventJobDialog fileEventJobDialog
                     = new FileEventJobDialog(null, scheduledProcessManagementService, configurationRestService,
-                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.currentInstance.isUseDisplayName(), null);
+                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.currentInstance.isUseDisplayName(), null, false);
                 fileEventJobDialog.setJob((FileEventDrivenJob) job, EditMode.READONLY);
                 fileEventJobDialog.open();
             }
@@ -101,7 +101,7 @@ public class JobContextMenu extends Dialog {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog
                     = new QuartzDrivenScheduledJobDialog(null, scheduledProcessManagementService, configurationRestService,
                     moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.currentInstance.isUseDisplayName(),
-                    null);
+                    null, false);
                 quartzDrivenScheduledJobDialog.setJob((QuartzScheduleDrivenJob) job, EditMode.READONLY);
                 quartzDrivenScheduledJobDialog.open();
             }

@@ -104,6 +104,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
     private boolean showDisplayName;
 
+    private boolean validateJobUniquenessAgainstContextJobs;
+
 
     /**
      * Constructor for InternalEventDrivenJobDialog class.
@@ -122,7 +124,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     public InternalEventDrivenJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                         MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                        Context parentContextTemplate, Context contextTemplate, Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                        Context parentContextTemplate, Context contextTemplate, Map<String, String> schedulerJobExecutionEnvironmentLabel,
+                                        boolean validateJobUniquenessAgainstContextJobs) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job", UI.getCurrent().getLocale()));
 
@@ -138,6 +141,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.showDisplayName = parentContextTemplate.isUseDisplayName();
         this.contextTemplate = contextTemplate;
         this.parentContextTemplate = parentContextTemplate;
+        this.validateJobUniquenessAgainstContextJobs = validateJobUniquenessAgainstContextJobs;
     }
 
     /**
@@ -499,7 +503,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             if(this.editMode.equals(EditMode.NEW) || this.editMode.equals(EditMode.CLONE) || this.editMode.equals(EditMode.FROM_TEMPLATE)) {
                 if(this.schedulerJobService.findByContextNameAndJobName
                     (this.parentContextTemplate.getName(), internalEventDrivenJob.getJobName()) != null ||
-                    (this.contextTemplate != null && this.contextTemplate.getScheduledJobs().stream()
+                    (this.validateJobUniquenessAgainstContextJobs && this.contextTemplate != null && this.contextTemplate.getScheduledJobs().stream()
                         .filter(job -> internalEventDrivenJob.getJobName().equals(((SchedulerJob)job).getJobName()))
                         .findFirst().isPresent())) {
                     isValid.set(false);

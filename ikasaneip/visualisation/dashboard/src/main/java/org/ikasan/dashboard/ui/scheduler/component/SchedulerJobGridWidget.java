@@ -337,8 +337,9 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 verticalLayout.setSpacing(false);
                 verticalLayout.setPadding(false);
 
-                if(schedulerJobRecord.getJob() != null && schedulerJobRecord.getJob().getChildContextNames() != null) {
-                    schedulerJobRecord.getJob().getChildContextNames().forEach(context -> {
+                if(schedulerJobRecord.getJob() != null) {
+                    List<String> childContextNames = ContextHelper.getContextsWhereJobNameMatchResides(this.contextTemplate, schedulerJobRecord.getJobName());
+                    childContextNames.forEach(context -> {
                         if(ContextHelper.getChildContext(context, this.contextTemplate) != null) {
                             Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
                             Button contextButton = new Button(context);
@@ -396,7 +397,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 return verticalLayout;
             })).setHeader(getTranslation("table-header.residing-contexts", UI.getCurrent().getLocale()))
             .setResizable(true)
-            .setSortable(true)
+            .setSortable(false)
             .setKey("childContexts")
             .setFlexGrow(8);
 
@@ -477,23 +478,33 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
             Icon delete = IconDecorator.decorate(new Icon(VaadinIcon.TRASH), getTranslation("tooltip.delete-job-template", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                ConfirmDialog confirmDialog = new ConfirmDialog();
-                confirmDialog.setCancelable(true);
-                confirmDialog.setHeader(getTranslation("confirm-dialog.delete-job-template-header", UI.getCurrent().getLocale()));
-                confirmDialog.setText(getTranslation("confirm-dialog.delete-job-template-body", UI.getCurrent().getLocale()));
-                confirmDialog.setConfirmText(getTranslation("button.ok"));
-                confirmDialog.setCancelText(getTranslation("button.cancel"));
-                confirmDialog.addConfirmListener(event -> {
-                    // todo only delete jobs that no longer belong to the context.
-                    this.schedulerJobService.delete(schedulerJobRecord);
-                    this.schedulerJobFilteringGrid.refresh();
+                if(!ContextHelper.getContextsWhereJobFilterMatchResides(this.contextTemplate, schedulerJobRecord.getJobName()).isEmpty()) {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setCancelable(false);
+                    confirmDialog.setHeader(getTranslation("confirm-dialog.delete-job-template-header", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm-dialog.cannot-delete-job-template-body", UI.getCurrent().getLocale()));
+                    confirmDialog.setConfirmText(getTranslation("button.ok"));
 
-                    String action = String.format("Scheduled Job Deleted[%s], Parent Job Plan[%s]."
-                        , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
-                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_DELETED, action, authentication.getName());
-                });
+                    confirmDialog.open();
+                }
+                else {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setCancelable(true);
+                    confirmDialog.setHeader(getTranslation("confirm-dialog.delete-job-template-header", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm-dialog.delete-job-template-body", UI.getCurrent().getLocale()));
+                    confirmDialog.setConfirmText(getTranslation("button.ok"));
+                    confirmDialog.setCancelText(getTranslation("button.cancel"));
+                    confirmDialog.addConfirmListener(event -> {
+                        this.schedulerJobService.delete(schedulerJobRecord);
+                        this.schedulerJobFilteringGrid.refresh();
 
-                confirmDialog.open();
+                        String action = String.format("Scheduled Job Deleted[%s], Parent Job Plan[%s]."
+                            , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
+                        this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_DELETED, action, authentication.getName());
+                    });
+
+                    confirmDialog.open();
+                }
             });
 
             ComponentSecurityVisibility.applySecurity(delete, SecurityConstants.ALL_AUTHORITY,
@@ -779,7 +790,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB)) {
                 FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, this.contextTemplate.isUseDisplayName(), this.contextTemplate);
+                    , schedulerJobService, this.contextTemplate.isUseDisplayName(), this.contextTemplate, false);
                 fileEventJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 fileEventJobDialog.open();
@@ -793,7 +804,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             else if(event.getItem().getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB)) {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
-                    , this.contextTemplate.isUseDisplayName(), this.contextTemplate);
+                    , this.contextTemplate.isUseDisplayName(), this.contextTemplate, true);
                 quartzDrivenScheduledJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 quartzDrivenScheduledJobDialog.open();
@@ -807,7 +818,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
-                    , this.contextTemplate, this.contextTemplate, schedulerJobExecutionEnvironmentLabel);
+                    , this.contextTemplate, this.contextTemplate, schedulerJobExecutionEnvironmentLabel, true);
                 internalEventDrivenJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 internalEventDrivenJobDialog.open();

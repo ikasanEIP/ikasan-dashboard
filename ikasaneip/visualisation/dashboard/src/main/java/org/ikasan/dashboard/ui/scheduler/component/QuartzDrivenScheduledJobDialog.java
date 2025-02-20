@@ -90,6 +90,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
     private ContextTemplate contextTemplate;
 
+    private boolean validateJobUniquenessAgainstContextJobs;
 
     /**
      * Constructor
@@ -104,7 +105,8 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     public QuartzDrivenScheduledJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                                          SchedulerJobService schedulerJobService, boolean showDisplayName, ContextTemplate contextTemplate) {
+                                          SchedulerJobService schedulerJobService, boolean showDisplayName, ContextTemplate contextTemplate,
+                                          boolean validateJobUniquenessAgainstContextJobs) {
         super.showResize(false);
         super.title.setText(getTranslation("label.scheduled-job", UI.getCurrent().getLocale()));
 
@@ -117,6 +119,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.schedulerJobService = schedulerJobService;
         this.showDisplayName = showDisplayName;
         this.contextTemplate = contextTemplate;
+        this.validateJobUniquenessAgainstContextJobs = validateJobUniquenessAgainstContextJobs;
 
         this.quartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
 
@@ -340,7 +343,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             if(this.editMode.equals(EditMode.NEW) || this.editMode.equals(EditMode.CLONE) || this.editMode.equals(EditMode.FROM_TEMPLATE)) {
                 if(this.schedulerJobService.findByContextNameAndJobName
                     (quartzScheduleDrivenJob.getContextName(), quartzScheduleDrivenJob.getJobName()) != null ||
-                    (this.contextTemplate != null && this.contextTemplate.getScheduledJobs().stream()
+                    (this.validateJobUniquenessAgainstContextJobs && this.contextTemplate != null && this.contextTemplate.getScheduledJobs().stream()
                         .filter(job -> quartzScheduleDrivenJob.getJobName().equals(job.getJobName()))
                         .findFirst().isPresent())) {
                     isValid.set(false);

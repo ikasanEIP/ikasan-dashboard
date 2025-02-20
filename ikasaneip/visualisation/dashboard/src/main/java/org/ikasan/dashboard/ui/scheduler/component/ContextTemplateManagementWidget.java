@@ -829,6 +829,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         MenuBar actionsMenuBar = new MenuBar();
         actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
+        Button validateJobPlanButton = new Button("Validate Job Plan");
+        validateJobPlanButton.addClickListener(event -> this.validate(true));
+
         this.errorsButton = new Button(getTranslation("button.errors", UI.getCurrent().getLocale()), VaadinIcon.BAN.create());
         this.errorsButton.getElement().setAttribute("title", getTranslation("tooltip.job-plan-errors", UI.getCurrent().getLocale()));
         this.errorsButton.setIconAfterText(true);
@@ -848,10 +851,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             jobPlanWarningsDialog.open();
         });
 
-        buttonLayout.add(this.errorsButton, this.warningsButton);
+        buttonLayout.add(validateJobPlanButton, this.errorsButton, this.warningsButton);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, this.errorsButton, this.warningsButton);
 
-        this.validate();
+        this.validate(false);
 
 
         MenuItem actionsMenuItem = this.createIconItem(actionsMenuBar, VaadinIcon.MENU, getTranslation("label.actions", UI.getCurrent().getLocale()));
@@ -1136,7 +1139,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
+                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate,
+                    this.schedulerJobExecutionEnvironmentLabel, false);
 
                 InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
                 internalEventDrivenJob.setContextName(this.contextTemplate.getName());
@@ -1162,7 +1166,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 schedulerJobSelectDialog.open();
                 schedulerJobSelectDialog.addSchedulerJobSelectedListener(schedulerJob -> {
                     InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                        this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
+                        this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate,
+                        this.schedulerJobExecutionEnvironmentLabel, false);
 
                     InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
                     internalEventDrivenJob.setContextName(this.contextTemplate.getName());
@@ -1185,7 +1190,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
                 FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
                     this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(),
-                    this.contextTemplate);
+                    this.contextTemplate, false);
 
                 FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
                 fileEventDrivenJob.setContextName(contextTemplate.getName());
@@ -1209,7 +1214,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
-                    this.contextTemplate.isUseDisplayName(), this.contextTemplate);
+                    this.contextTemplate.isUseDisplayName(), this.contextTemplate, false);
 
                 QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
                 quartzScheduleDrivenJob.setContextName(this.contextTemplate.getName());
@@ -1338,7 +1343,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         }
     }
 
-    private void validate() {
+    private void validate(boolean withUserNotification) {
         SearchResults<SchedulerJobRecord> schedulerJobRecords = (SearchResults<SchedulerJobRecord>)this.schedulerJobService
             .findByContext(this.contextTemplate.getName(), -1, -1);
 
@@ -1375,6 +1380,21 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         else {
             this.warningsButton.setVisible(true);
         }
+
+        if(withUserNotification) {
+            if(!this.contextErrors.isEmpty() && !this.contextWarnings.isEmpty()) {
+                NotificationHelper.showErrorNotification(getTranslation("error.job-plan-contains-errors-and-warnings"));
+            }
+            else if(!this.contextErrors.isEmpty()) {
+                NotificationHelper.showErrorNotification(getTranslation("error.job-plan-contains-errors"));
+            }
+            else if(!this.contextWarnings.isEmpty()) {
+                NotificationHelper.showUserNotification(getTranslation("notification.job-plan-contains-warnings"));
+            }
+            else {
+                NotificationHelper.showUserNotification(getTranslation("notification.job-plan-is-valid"));
+            }
+        }
     }
 
     @Override
@@ -1397,7 +1417,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             this.contextTemplate = contextTemplate;
             if (this.ui.isAttached()) {
                 this.ui.access(() -> {
-                    this.validate();
+                    this.validate(false);
                     this.binder.readBean(contextTemplate);
 
                     this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));

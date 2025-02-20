@@ -91,6 +91,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
     private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
 
+    private boolean validateJobUniquenessAgainstContextJobs;
 
     /**
      * Constructor
@@ -105,7 +106,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     public FileEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                              SchedulerJobService schedulerJobService, boolean showDisplayName, ContextTemplate contextTemplate) {
+                              SchedulerJobService schedulerJobService, boolean showDisplayName, ContextTemplate contextTemplate,
+                              boolean validateJobUniquenessAgainstContextJobs) {
         super.showResize(false);
         super.title.setText(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
 
@@ -118,6 +120,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.schedulerJobService = schedulerJobService;
         this.showDisplayName = showDisplayName;
         this.contextTemplate = contextTemplate;
+        this.validateJobUniquenessAgainstContextJobs = validateJobUniquenessAgainstContextJobs;
 
         this.fileEventDrivenJob = new SolrFileEventDrivenJobImpl();
 
@@ -383,7 +386,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             if(this.editMode.equals(EditMode.NEW) || this.editMode.equals(EditMode.CLONE) || this.editMode.equals(EditMode.FROM_TEMPLATE)) {
                 if(this.schedulerJobService.findByContextNameAndJobName
                     (fileEventDrivenJob.getContextName(), fileEventDrivenJob.getJobName()) != null ||
-                    (this.contextTemplate != null && this.contextTemplate.getScheduledJobs().stream()
+                    (this.validateJobUniquenessAgainstContextJobs && this.contextTemplate != null && this.contextTemplate.getScheduledJobs().stream()
                         .filter(job -> fileEventDrivenJob.getJobName().equals(job.getJobName()))
                         .findFirst().isPresent())) {
                     isValid.set(false);

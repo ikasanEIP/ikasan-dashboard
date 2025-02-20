@@ -428,7 +428,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
-                , this.parentContextTemplate, this.contextTemplate, schedulerJobExecutionEnvironmentLabel);
+                , this.parentContextTemplate, this.contextTemplate, schedulerJobExecutionEnvironmentLabel, true);
 
             internalEventDrivenJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             this.jobSynchronisationRequiredListeners.forEach(listener ->
@@ -438,7 +438,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         else if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName()), this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService
-                , this.contextTemplate.isUseDisplayName(), this.getContextTemplate());
+                , this.contextTemplate.isUseDisplayName(), this.getContextTemplate(), true);
             fileEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             this.jobSynchronisationRequiredListeners.forEach(listener ->
                 fileEventJobDialog.addJobSynchronisationRequiredListener(listener));
@@ -447,7 +447,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         else if(schedulerJobRecord.getJob() instanceof QuartzScheduleDrivenJob){
             QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
-                , systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(), this.getContextTemplate());
+                , systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(), this.getContextTemplate(), true);
             quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             this.jobSynchronisationRequiredListeners.forEach(listener ->
                 quartzDrivenScheduledJobDialog.addJobSynchronisationRequiredListener(listener));
