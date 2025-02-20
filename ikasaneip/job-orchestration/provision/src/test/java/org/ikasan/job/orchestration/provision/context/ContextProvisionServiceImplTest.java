@@ -417,6 +417,85 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
     }
 
     @Test
+    public void should_upload_provision_jobs_and_create_context_with_empty_job_lock() {
+        ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
+        String contextName = "ContextName";
+        contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
+        contextTemplate.setName(contextName);
+
+        List<SchedulerJob> contextJobs = new ArrayList<>();
+        FileEventDrivenJob fileJobRecord = new FileEventDrivenJobImpl();
+        fileJobRecord.setAgentName("agentName1");
+        QuartzScheduleDrivenJob quartzDrivenJob = new QuartzScheduleDrivenJobImpl();
+        quartzDrivenJob.setAgentName("agentName1");
+        InternalEventDrivenJob internalEventDrivenJob1 = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob1.setJobName("jobName1");
+        internalEventDrivenJob1.setAgentName("agentName1");
+        internalEventDrivenJob1.setIdentifier("agentName1-jobName1");
+        InternalEventDrivenJob internalEventDrivenJob2 = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob2.setJobName("jobName2");
+        internalEventDrivenJob2.setAgentName("agentName1");
+        internalEventDrivenJob2.setIdentifier("agentName1-jobName2");
+        contextJobs.add(fileJobRecord);
+        contextJobs.add(quartzDrivenJob);
+        contextJobs.add(internalEventDrivenJob1);
+        contextJobs.add(internalEventDrivenJob2);
+
+        SchedulerJobLockParticipant lockParticipant1 = new SchedulerJobLockParticipantImpl();
+        lockParticipant1.setJobName("jobName1");
+        lockParticipant1.setAgentName("agentName1");
+        lockParticipant1.setIdentifier("agentName1-jobName1");
+
+        // A job lock without any jobs...
+        JobLock jobLock = new JobLockImpl();
+        jobLock.setName("testLock");
+
+        contextTemplate.setJobLocks(List.of(jobLock));
+
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
+        when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, new ArrayList<>());
+        service.provisionContext(contextBundle);
+
+        verify(schedulerJobService).deleteByContextName(contextName);
+        verify(contextProfileService).deleteByContextName(contextName);
+        verify(emailNotificationDetailsService).deleteByContextName(contextName);
+        verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(schedulerJobService).save(contextJobs, "system");
+
+        ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
+        verify(scheduledContextService).save(contextCaptor.capture());
+        ScheduledContextRecord actualContextRecord = contextCaptor.getValue();
+        assertEquals(contextName, actualContextRecord.getContextName());
+        assertNull(null, actualContextRecord.getId());
+        assertNotNull(actualContextRecord.getContext());
+        assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
+        contextJobs.forEach(job -> {
+            if(job instanceof InternalEventDrivenJob) {
+                if(job.getJobName().equals("jobName1")) {
+                    assertFalse(((InternalEventDrivenJob) job).isParticipatesInLock());
+                }
+                else if(job.getJobName().equals("jobName2")) {
+                    assertFalse(((InternalEventDrivenJob) job).isParticipatesInLock());
+                }
+            }
+        });
+
+        verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
+        verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+
+        verifyNoMoreInteractions(
+            scheduledContextService, moduleMetadataService, schedulerJobService,
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
+    }
+
+    @Test
     public void should_upload_provision_jobs_and_create_context_with_context_profiles() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
