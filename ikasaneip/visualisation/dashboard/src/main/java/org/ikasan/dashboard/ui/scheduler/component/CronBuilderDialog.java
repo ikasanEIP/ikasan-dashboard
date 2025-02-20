@@ -1580,7 +1580,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         int currentYear = new DateTime().getYear();
 
         List<Checkbox> year = new ArrayList<>();
-        IntStream.range(currentYear, currentYear + 100).forEach(i -> year.add(new Checkbox(Integer.toString(i))));
+        // Quartz only supports years up until 2099
+        IntStream.range(currentYear, 2100).forEach(i -> year.add(new Checkbox(Integer.toString(i))));
 
         GridLayout layout = new GridLayout(10, 10);
 
