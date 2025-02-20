@@ -829,7 +829,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         MenuBar actionsMenuBar = new MenuBar();
         actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        Button validateJobPlanButton = new Button("Validate Job Plan");
+        Button validateJobPlanButton = new Button(getTranslation("button.validate-job-plan"));
         validateJobPlanButton.addClickListener(event -> this.validate(true));
 
         this.errorsButton = new Button(getTranslation("button.errors", UI.getCurrent().getLocale()), VaadinIcon.BAN.create());
@@ -852,7 +852,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         });
 
         buttonLayout.add(validateJobPlanButton, this.errorsButton, this.warningsButton);
-        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, this.errorsButton, this.warningsButton);
+        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, validateJobPlanButton, this.errorsButton, this.warningsButton);
 
         this.validate(false);
 

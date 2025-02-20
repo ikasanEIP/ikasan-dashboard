@@ -487,6 +487,10 @@ public final class ContextExportZipUtils {
                 ContextHelper.addSchedulerJobReplacementTokens(schedulerJob);
             }
 
+            // We do not want to export the child context names, as these are automatically populated
+            // when a job plan is imported.
+            schedulerJob.setChildContextNames(null);
+
             String jobAsString = objectMapper.writeValueAsString(schedulerJob);
             Path jobPath = null;
 
