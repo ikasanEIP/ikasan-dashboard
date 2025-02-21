@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.scheduler.service;
 import org.ikasan.dashboard.AbstractTest;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dCanvasJsonHelper;
 import org.ikasan.designer.model.Image;
+import org.ikasan.designer.model.Rectangle;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.junit.Assert;
@@ -48,6 +49,17 @@ public class Draw2dCanvasJsonHelperTest extends AbstractTest {
         Assert.assertEquals(734.76, imageMap.get("scheduler-agent-cmd1").getY(), 0);
         Assert.assertEquals("scheduler-agent-cmd1"
             , imageMap.get("scheduler-agent-cmd1").getId());
+    }
+
+    @Test
+    public void test_get_logical_groupings_success() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/contexts/test-plan-with-layout-and-logical-grouping.json"));
+
+        Map<String, Rectangle> rectangleMap = Draw2dCanvasJsonHelper
+            .getLogicalBoundariesFromCanvasJson(contextTemplate.getUserGeneratedLayout());
+
+        Assert.assertEquals(1, rectangleMap.size());
     }
 
     @Test

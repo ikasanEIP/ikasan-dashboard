@@ -72,7 +72,7 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
         String result = adapter.adaptJobs(contextTemplate, child,
             schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)),
             schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))
-            , new HashMap<>());
+            , new HashMap<>(), null);
 
         JSONAssert.assertEquals(loadDataFile("/data/contexts/results/context-with-2-jobs-in-or-at-start-result.json"), result, new CustomComparator(JSONCompareMode.STRICT,
             new Customization("[*].id", (o1, o2) -> true), new Customization("[*].ports[*].id", (o1, o2) -> true),new Customization("[*].composite", (o1, o2) -> true)));
@@ -108,7 +108,7 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
         String result = adapter.adaptJobs(contextTemplate, child,
             schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)),
             schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))
-            , imageMap);
+            , imageMap, null);
 
         imageMap = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson(result);
 
@@ -197,7 +197,7 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
         String result = adapter.adaptJobs(contextTemplate, child,
             schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)),
             schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))
-            , new HashMap<>());
+            , new HashMap<>(), null);
 
         Map<String, Image> imageMap = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson(result);
 

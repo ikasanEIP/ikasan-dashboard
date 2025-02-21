@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ikasan.designer.builder.*;
 import org.ikasan.designer.model.Image;
 import org.ikasan.designer.model.PositionedItem;
+import org.ikasan.designer.model.Rectangle;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -46,10 +47,10 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
     }
 
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
-        , Map<String, SchedulerJob> schedulerJobsMapByIdentifier, Map<String, Image> schedulerJobsImageMap) {
+        , Map<String, SchedulerJob> schedulerJobsMapByIdentifier, Map<String, Image> schedulerJobsImageMap, Map<String, Rectangle> logicalBoundaries) {
             try {
                 ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs
-                    , schedulerJobsMapByIdentifier, schedulerJobsImageMap);
+                    , schedulerJobsMapByIdentifier, schedulerJobsImageMap, logicalBoundaries);
 
                 return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
             }

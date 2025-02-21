@@ -11,6 +11,7 @@ import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemSingleClickEvent;
 import org.ikasan.designer.event.FigureDeleteEvent;
 import org.ikasan.designer.model.Image;
+import org.ikasan.designer.model.Rectangle;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.builder.context.ContextTemplateBuilder;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -255,15 +256,18 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
         ContextTemplateDraw2dAdapter contextTemplateDraw2dAdapter = new ContextTemplateDraw2dAdapter();
 
         Map<String, Image> schedulerJobImageMap = new HashMap<>();
+        Map<String, Rectangle> logicalBoundaries = null;
         if(this.contextTemplate.getUserGeneratedLayout() != null
             && !this.contextTemplate.getUserGeneratedLayout().isEmpty()
             && !this.showPrettyFormattedDiagram) {
             schedulerJobImageMap = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson
                 (this.contextTemplate.getUserGeneratedLayout());
+            logicalBoundaries = Draw2dCanvasJsonHelper.getLogicalBoundariesFromCanvasJson
+                (this.contextTemplate.getUserGeneratedLayout());
         }
 
         this.designerCanvas.setCanvasJson(contextTemplateDraw2dAdapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
             schedulerJobs.values().stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2)),
-            schedulerJobImageMap));
+            schedulerJobImageMap, logicalBoundaries));
     }
 }

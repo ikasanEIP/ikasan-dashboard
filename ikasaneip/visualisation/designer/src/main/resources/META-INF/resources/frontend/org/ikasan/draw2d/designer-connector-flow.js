@@ -30,7 +30,7 @@ window.Vaadin.Flow.designerConnector = {
         let cursor_y = -1;
         document.onmousemove = function(event)
         {
-            debugger;
+
             console.log(event);
             cursor_x = event.pageX;
             cursor_y = event.pageY;
@@ -46,7 +46,7 @@ window.Vaadin.Flow.designerConnector = {
                 }
             });
             $("#"+canvasName).on("mousemove", function(event) {
-                debugger;
+
                 console.log(event);
                 cursor_x = event.pageX;
                 cursor_y = event.pageY;
@@ -125,7 +125,7 @@ window.Vaadin.Flow.designerConnector = {
         });
 
         designer.$connecIconNoCoordinates = function (identifier, image, h, w, isClickable) {
-            debugger;
+
             let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
 
             let inputLocator  = new draw2d.layout.locator.InputPortLocator();
@@ -163,7 +163,7 @@ window.Vaadin.Flow.designerConnector = {
             let attributes = JSON.parse(image);
             let icon = new draw2d.shape.basic.Image(attributes);
 
-            debugger;
+
             console.log(icon);
 
             attributes.ports.forEach(function (port, index) {
@@ -211,7 +211,7 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.addIconNoCoordinates = function (identifier, image, h, w, isClickable) {
-            debugger;
+
             let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
 
             let inputLocator  = new draw2d.layout.locator.InputPortLocator();
@@ -281,7 +281,7 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.zoom = function(event) {
-            debugger;
+
             event.preventDefault();
 
             if(event.deltaY > 0) {
@@ -305,7 +305,6 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.ungroup = function () {
-            debugger;
             _this.getCommandStack().execute(new draw2d.command.CommandUngroup(_this, _this.getSelection()))
         }
 
@@ -350,10 +349,14 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.addBoundaryStyled = function (id, h, w, dashArray, colour, stroke) {
+            let _x = (_this.getScrollLeft() * _this.getZoom()) + (1000 * _this.getZoom());
+            let _y = (_this.getScrollTop() * _this.getZoom()) + (500 * _this.getZoom());
+
+            debugger;
             let boundary =  new draw2d.shape.basic.Rectangle({
                 bgColor:"rgba(255,255,255,0)",
-                x: x,
-                y: y,
+                x: _x,
+                y: _y,
                 width: w,
                 height: h,
                 radius: 10,
@@ -366,7 +369,7 @@ window.Vaadin.Flow.designerConnector = {
                 draggable:true
             });
 
-            let command = new draw2d.command.CommandAdd(_this, boundary, x, y);
+            let command = new draw2d.command.CommandAdd(_this, boundary, _x, _y);
             _this.getCommandStack().execute(command);
 
             _this.getFigure(id).toBack();
@@ -395,7 +398,7 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.designer.on("dblclick", function(emitter, event){
-            debugger;
+
             let figure = event.figure;
             let figureLite = new FigureLite(figure.id, $(':hover').last().offset().left, $(':hover').last().offset().top, figure.getWidth()
                 , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
@@ -404,7 +407,7 @@ window.Vaadin.Flow.designerConnector = {
         });
 
         designer.$connector.designer.on("click", function(emitter, event){
-            debugger;
+
             let figure = event.figure;
             let figureLite = new FigureLite(figure.id, $(':hover').last().offset().left, $(':hover').last().offset().top, figure.getWidth()
                 , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
@@ -415,7 +418,7 @@ window.Vaadin.Flow.designerConnector = {
 
         designer.$connector.designer.on("contextmenu", function(emitter, event){
             let figure = event.figure;
-            debugger;
+
             let figureLite = new FigureLite(figure.id, $(':hover').last().offset().left, $(':hover').last().offset().top, figure.getWidth()
                 , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
             let element = document.getElementById(canvasName);
@@ -495,11 +498,11 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.setFont = function (font) {
-            debugger;
+
             _this.getFigures().each((i, figure)=>{
-                debugger;
+
                 if(figure.isSelected()) {
-                    debugger;
+
                     // figure.setDashArray(pattern);
 
                     let command = new draw2d.command.CommandAttr(figure, {fontFamily:font});
@@ -509,11 +512,11 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.setFontSize = function (fontSize) {
-            debugger;
+
             _this.getFigures().each((i, figure)=>{
-                debugger;
+
                 if(figure.isSelected()) {
-                    debugger;
+
 
                     let command = new draw2d.command.CommandAttr(figure, {fontSize:fontSize});
                     _this.getCommandStack().execute(command);
@@ -536,7 +539,7 @@ window.Vaadin.Flow.designerConnector = {
 
         designer.$connector.addLabelToFigure = function (figureIdentifier, labelString) {
             let _figure = null;
-            debugger;
+
             _this.getFigures().each((i, figure)=>{
                 if(figure.id === figureIdentifier) {
                     _figure = figure;
@@ -586,7 +589,7 @@ window.Vaadin.Flow.designerConnector = {
 
         designer.$connector.addLabelToFigureWithFontSize = function (figureIdentifier, labelString, fontSize) {
             let _figure = null;
-            debugger;
+
             _this.getFigures().each((i, figure)=>{
                 if(figure.id === figureIdentifier) {
                     _figure = figure;
@@ -636,7 +639,7 @@ window.Vaadin.Flow.designerConnector = {
 
         designer.$connector.addImageToFigure = function (figureIdentifier, iconIdentifier, image, h, w) {
             let _figure = null;
-            debugger;
+
             _this.getFigures().each((i, figure)=>{
                 if(figure.id === figureIdentifier) {
                     _figure = figure;
@@ -662,7 +665,7 @@ window.Vaadin.Flow.designerConnector = {
 
         designer.$connector.addTriangleToFigure = function (figureIdentifier, h, w, backgroundColour) {
             let _figure = null;
-            debugger;
+
             _this.getFigures().each((i, figure)=>{
                 if(figure.id === figureIdentifier) {
                     _figure = figure;
@@ -692,7 +695,7 @@ window.Vaadin.Flow.designerConnector = {
          */
         designer.$connector.addBoundaryToFigure = function (figureIdentifier, itemIdentifier, h, w,
                                                             lineFormat, backgroundColor, scrollToFigure) {
-            debugger;
+
             let _figure = null;
             _this.getFigures().each((i, figure)=>{
                 if(figure.id === figureIdentifier) {
@@ -762,9 +765,9 @@ window.Vaadin.Flow.designerConnector = {
 
 
         designer.$connector.setBackgroundColor = function (color) {
-            debugger;
+
             _this.getSelection().each((i, figure)=>{
-                debugger;
+
                 if(figure.NAME === 'draw2d.Connection') {
                     figure.setColor(color);
 
@@ -796,9 +799,9 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.setLineType = function (pattern) {
-            debugger;
+
             _this.getSelection().each((i, figure)=>{
-                debugger;
+
                 // figure.setDashArray(pattern);
 
                 let command = new draw2d.command.CommandAttr(figure, {dasharray:pattern});
@@ -808,7 +811,7 @@ window.Vaadin.Flow.designerConnector = {
 
         designer.$connector.setTargetDecorator = function (decorator) {
             _this.getSelection().each((i, figure)=>{
-                debugger;
+
                 if(figure.NAME === 'draw2d.Connection') {
                     if(decorator === "ARROW"){
                         let arrow = new draw2d.decoration.connection.ArrowDecorator();
@@ -826,7 +829,7 @@ window.Vaadin.Flow.designerConnector = {
 
         designer.$connector.setSourceDecorator = function (decorator) {
             _this.getSelection().each((i, figure)=>{
-                debugger;
+
                 if(figure.NAME === 'draw2d.Connection') {
                     if(decorator === "ARROW"){
                         let arrow = new draw2d.decoration.connection.ArrowDecorator();
@@ -844,29 +847,29 @@ window.Vaadin.Flow.designerConnector = {
 
 
         designer.$connector.setRadius = function (radius) {
-            debugger;
+
             _this.getFigures().each((i, figure)=>{
-                debugger;
+
                 if(figure.isSelected()) {
-                    debugger;
+
                     figure.setRadius(radius);
                 }
             });
         }
 
         designer.$connector.setStroke = function (width) {
-            debugger;
+
             _this.getFigures().each((i, figure)=>{
-                debugger;
+
                 if(figure.isSelected()) {
-                    debugger;
+
                     figure.setStroke(width);
                 }
             });
         }
 
         designer.$connector.exportJson = function () {
-            debugger;
+
             let writer = new draw2d.io.json.Writer();
             let result = null;
             writer.marshal(designer.$connector.designer, function(json){
@@ -942,10 +945,10 @@ window.Vaadin.Flow.designerConnector = {
             let figures = reader.unmarshal(designer.$connector.designer, jsonDocument);
             console.log("after unmarshal " + performance.now());
 
-            debugger;
+
 
             figures.each((i, figure) => {
-                debugger;
+
                 if (figure.NAME === 'draw2d.shape.basic.Image' || figure.NAME === 'draw2d.shape.composite.Group') {
                     console.log("to front " + figure.NAME + " " + figure.id);
                     figure.setKeepAspectRatio(true);
@@ -1022,7 +1025,7 @@ window.Vaadin.Flow.designerConnector = {
             let element = document.getElementById(canvasName);
 
             designer.$connector.designer.getCommandStack().addEventListener(function(e){
-                debugger;
+
                 if(e.getCommand().getLabel() === "Connect Ports" && e.action === "POST_EXECUTE") {
                     element.$server.connectorEvent(JSON.stringify(new ConnectionEvent(exportJsonLocal(), "CONNECTOR_ADDED", e.getCommand().source.parent.getId(), e.getCommand().source.parent.getUserData(),
                         e.getCommand().target.parent.getId(), e.getCommand().target.parent.getUserData())));
@@ -1088,12 +1091,12 @@ window.Vaadin.Flow.designerConnector = {
                 scrollLeftFactor = designer.$connector.designer.getScrollLeft() + (designer.$connector.designer.getScrollLeft() - designer.$connector.designer.getScrollLeft() * factor)  * ((factor) ** 6);
             }
 
-            debugger;
+
             designer.$connector.designer.scrollTo(scrollTopFactor, scrollLeftFactor);
         }
 
          function exportJsonLocal() {
-            debugger;
+
             let writer = new draw2d.io.json.Writer();
             let result = null;
             writer.marshal(designer.$connector.designer, function(json){
@@ -1104,11 +1107,11 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.manageClickableItems = function () {
-            debugger;
+
             let _figures = _this.getFigures();
             _figures.each((i, figure)=>{
                 if(figure.NAME === 'draw2d.shape.basic.Image') {
-                    debugger;
+
                     if(figure.getId().startsWith("FLOW")) {
                         figure.shape.attr({"cursor": "pointer"});
                     }
@@ -1132,7 +1135,7 @@ window.Vaadin.Flow.designerConnector = {
         let pngResult = null;
 
         designer.$connector.exportPng = function () {
-            debugger;
+
             let xCoords = [];
             let yCoords = [];
             designer.$connector.designer.getFigures().each(function(i,f){
@@ -1149,32 +1152,6 @@ window.Vaadin.Flow.designerConnector = {
             writer.marshal(designer.$connector.designer,function(png){
                 $("#preview").attr("src",png);
             }, new draw2d.geo.Rectangle(minX - 15,minY - 15,width + 30,height + 30));
-
-            // let croppedCanvas = document.createElement('canvas');
-            //
-            // let scaleFactor = 5;
-            //
-            // croppedCanvas.width = width * scaleFactor;
-            // croppedCanvas.height = height * scaleFactor;
-            // croppedCanvas.getContext("2d").scale(scaleFactor, scaleFactor);
-            //
-            // const canvas = document.getElementById('canvas-wrapper');
-            // croppedCanvas.getContext("2d").drawImage(canvas.getContext("2d"), minX, minY, width, height, 0, 0, width, height);
-            //
-            // // let dataUrl = croppedCanvas.toDataURL("image/png", 1);
-            // // var base64Image = dataUrl.replace("data:image/png;base64,", "");
-            //
-            // if(window.navigator.msSaveBlob) {
-            //     window.navigator.msSaveBlob(croppedCanvas.msToBlob(), "canvas.png")
-            // }
-            // else {
-            //     const a = document.createElement("a");
-            //     document.body.appendChild(a);
-            //     a.href = croppedCanvas.toDataURL("image/png", 1);
-            //     a.download = 'canvas.jpg';
-            //     a.click();
-            //     document.body.removeChild(a);
-            // }
         }
 
         designer.$connector.getPng = function () {
@@ -1182,7 +1159,7 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.setReadOnly = function (readonly) {
-            debugger;
+
             if(readonly === true){
                 designer.$connector.designer.uninstallEditPolicy( new draw2d.policy.canvas.FadeoutDecorationPolicy());
                 designer.$connector.designer.uninstallEditPolicy( new draw2d.policy.canvas.SnapToGeometryEditPolicy());
@@ -1209,7 +1186,7 @@ window.Vaadin.Flow.designerConnector = {
             // We just dump the current canvas document into the IMG
             //
             designer.$connector.designer.getCommandStack().addEventListener(function(e){
-                debugger;
+
                 // let element = document.getElementById(canvasName);
                 // element.$server.stackEvent(JSON.stringify(e));
                 if(e.isPostChangeEvent()){

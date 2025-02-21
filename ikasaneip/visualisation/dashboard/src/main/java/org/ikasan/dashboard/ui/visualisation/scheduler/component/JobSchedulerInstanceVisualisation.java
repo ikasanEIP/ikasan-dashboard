@@ -14,6 +14,7 @@ import org.ikasan.designer.event.CanvasItemSingleClickEvent;
 import org.ikasan.designer.event.JobMouseOverEvent;
 import org.ikasan.designer.event.JobMouseOverListener;
 import org.ikasan.designer.model.Image;
+import org.ikasan.designer.model.Rectangle;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -116,15 +117,18 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
                     jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
                 Map<String, Image> schedulerJobImageMap = new HashMap<>();
+                Map<String, Rectangle> logicalBoundaries = null;
                 if(this.contextInstance.getUserGeneratedLayout() != null
                     && !this.contextInstance.getUserGeneratedLayout().isEmpty()
                     && !this.parentContextInstance.isUseAutoLayout()) {
                     schedulerJobImageMap = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson
                         (this.contextInstance.getUserGeneratedLayout());
+                    logicalBoundaries = Draw2dCanvasJsonHelper.getLogicalBoundariesFromCanvasJson
+                        (this.contextInstance.getUserGeneratedLayout());
                 }
 
                 this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextInstance, this.contextInstance, schedulerJobs
-                    , this.getSchedulerJobsForContextInstance(this.parentContextInstance.getId()), schedulerJobImageMap));
+                    , this.getSchedulerJobsForContextInstance(this.parentContextInstance.getId()), schedulerJobImageMap, logicalBoundaries));
             }
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);

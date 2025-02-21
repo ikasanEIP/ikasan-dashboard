@@ -2,7 +2,9 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ikasan.designer.builder.RectangleBuilder;
 import org.ikasan.designer.model.Image;
+import org.ikasan.designer.model.Rectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,4 +48,30 @@ public class Draw2dCanvasJsonHelper {
 
         return schedulerJobs;
     }
+
+    /**
+     * Retrieves scheduler job images from the provided canvas JSON.
+     *
+     * @param canvasJson JSON representing the canvas containing scheduler job images
+     * @return A map containing scheduler job images with image id as key and Image object as value
+     */
+    public static Map<String, Rectangle> getLogicalBoundariesFromCanvasJson(String canvasJson) {
+        Map<String, Rectangle> logicalBoundaries = new HashMap<>();
+
+        try {
+            List<LinkedHashMap> values = OBJECT_MAPPER.readValue(canvasJson, List.class);
+
+            for (LinkedHashMap value : values) {
+                if (value.get("type").equals("draw2d.shape.basic.Rectangle")) {
+                    Rectangle image = OBJECT_MAPPER.readValue(OBJECT_MAPPER.writeValueAsBytes(value), Rectangle.class);
+                    logicalBoundaries.put(image.getId(), image);
+                }
+            }
+        } catch (Exception e) {
+            logger.info("Could not get logical boundaries from canvas JSON. Will revert to auto-layout for rendering the context diagram.");
+        }
+
+        return logicalBoundaries.size() == 0 ? null : logicalBoundaries;
+    }
+
 }

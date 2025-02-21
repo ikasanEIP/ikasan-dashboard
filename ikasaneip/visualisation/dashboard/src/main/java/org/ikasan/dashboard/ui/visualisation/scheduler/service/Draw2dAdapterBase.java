@@ -88,7 +88,8 @@ public abstract class Draw2dAdapterBase {
      * @return
      */
     protected ArrayList<Object> _adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs,
-                                           Map<String, SchedulerJob> schedulerJobsMap, Map<String, Image> schedulerJobsImageMap) {
+                                           Map<String, SchedulerJob> schedulerJobsMap, Map<String, Image> schedulerJobsImageMap,
+                                           Map<String, Rectangle> logicalBoundaries) {
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
             this.setDiagramVisualisationLayoutConfiguration(parentContext);
             // Determine if any jobs are initiated from a previous or are responsible for initiating a job in a
@@ -421,7 +422,12 @@ public abstract class Draw2dAdapterBase {
 
             if(parentContext.isRenderLogicalBoundaries() == null || parentContext.isRenderLogicalBoundaries()) {
                 // Now draw the logic groupings abd context boundaries onto the diagram.
-                this.addLogicGroupings(visualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder, schedulerJobsImageMap);
+                if(logicalBoundaries != null) {
+                    imageOverlay.addAll(logicalBoundaries.values());
+                }
+                else {
+                    this.addLogicGroupings(visualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder, schedulerJobsImageMap);
+                }
             }
 
             items.addAll(imageOverlay);
