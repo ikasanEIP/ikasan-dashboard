@@ -100,6 +100,8 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                         , current.getLocale()), this.selectionItems.size()), null);
                 }
 
+                IkasanAuthentication ikasanAuthentication = (IkasanAuthentication)SecurityContextHolder.getContext().getAuthentication();
+
                 Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ReplayEventSubmission"));
                 executor.execute(() -> {
                     try
@@ -127,7 +129,8 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
 
                                 try {
                                     result = this.replayRestService.replay(replayDialogDto.getTargetServer(), replayDialogDto.getAuthenticationUser(),
-                                        replayDialogDto.getPassword(), document.getModuleName(), document.getFlowName(), document.getPayloadRaw());
+                                        replayDialogDto.getPassword(), document.getModuleName(), document.getFlowName(), document.getPayloadRaw(),
+                                        ikasanAuthentication.getName());
                                     replayReport.append(String.format("Event id [%s] successfully replayed to [%s]", document.getEventId(), replayDialogDto.getTargetServer())).append("\r\n");
                                 }
                                 catch (ReplayFailException e) {
@@ -162,7 +165,8 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
 
                                         try {
                                             result = this.replayRestService.replay(replayDialogDto.getTargetServer(), replayDialogDto.getAuthenticationUser(),
-                                                replayDialogDto.getPassword(), document.getModuleName(), document.getFlowName(), document.getPayloadRaw());
+                                                replayDialogDto.getPassword(), document.getModuleName(), document.getFlowName(), document.getPayloadRaw(),
+                                                ikasanAuthentication.getName());
                                             replayReport.append(String.format("Event id [%s] successfully replayed to [%s]", document.getEventId(), replayDialogDto.getTargetServer())).append("\r\n");
                                         }
                                         catch (ReplayFailException e) {
