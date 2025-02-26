@@ -55,7 +55,7 @@ public class ResubmissionRestServiceImplTest
                 containing(
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"errorUri\":\"testErrorURI\",\"action\":\"resubmit\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(200)));
-        boolean result = uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "username");
+        boolean result = uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "testUser");
         assertEquals(true, result);
     }
 
@@ -68,7 +68,7 @@ public class ResubmissionRestServiceImplTest
                 containing(
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"errorUri\":\"testErrorURI\",\"action\":\"resubmit\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(400)));
-        boolean result = uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "username");
+        boolean result = uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "testUser");
         assertEquals(false, result);
     }
 
@@ -81,7 +81,7 @@ public class ResubmissionRestServiceImplTest
                 containing(
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"errorUri\":\"testErrorURI\",\"action\":\"resubmit\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(404)));
-        boolean result = uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "username");
+        boolean result = uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "testUser");
         assertEquals(false, result);
     }
 
@@ -97,7 +97,7 @@ public class ResubmissionRestServiceImplTest
                                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                                     .withStatus(500)
                                ));
-        boolean result = uut.resubmit(contexBaseUrl,"test Module Name","flow Test","resubmit","testErrorURI", "username");
+        boolean result = uut.resubmit(contexBaseUrl,"test Module Name","flow Test","resubmit","testErrorURI", "testUser");
         assertEquals(false, result);
 
 
@@ -128,6 +128,6 @@ public class ResubmissionRestServiceImplTest
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"errorUri\":\"testErrorURI\",\"action\":\"resubmit\",\"userName\":\"testUser\"}"))
             .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(200).withFixedDelay(2000)));
 
-        Assert.assertFalse(uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "username"));
+        Assert.assertFalse(uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "testUser"));
     }
 }
