@@ -20,12 +20,14 @@ import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.rest.client.ReplayFailException;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayAuditEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
@@ -138,6 +140,8 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                     progressIndicatorDialog.open(current.getTranslation("message.replaying-event"
                         , UI.getCurrent().getLocale()), null);
 
+                    IkasanAuthentication ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+
                     Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ReplayDialog"));
                     executor.execute(() -> {
                         try
@@ -150,7 +154,8 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
                             try {
                                 result = this.replayRestService.replay(replayDialogDto.getTargetServer(), replayDialogDto.getAuthenticationUser(),
-                                    replayDialogDto.getPassword(), this.replayEvent.getModuleName(), this.replayEvent.getFlowName(), this.replayEvent.getPayloadRaw());
+                                    replayDialogDto.getPassword(), this.replayEvent.getModuleName(), this.replayEvent.getFlowName(),
+                                    this.replayEvent.getPayloadRaw(), ikasanAuthentication.getName());
                             }
                             catch (ReplayFailException e) {
                                 errorMessage = e.getMessage();

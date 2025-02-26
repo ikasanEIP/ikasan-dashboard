@@ -33,9 +33,9 @@ public class ReplayRestServiceImpl implements ReplayService
 
     @Override
     public boolean replay(String contextUrl, String username, String password, String moduleName, String flowName,
-                          byte[] event)
+                          byte[] event, String actor)
     {
-        ReplayRequestDto dto = new ReplayRequestDto(moduleName, flowName, event, username);
+        ReplayRequestDto dto = new ReplayRequestDto(moduleName, flowName, event, actor);
         HttpHeaders headers = createHttpHeaders(username, password);
         HttpEntity entity = new HttpEntity(dto, headers);
         String url = contextUrl + REPLAY_URL;
