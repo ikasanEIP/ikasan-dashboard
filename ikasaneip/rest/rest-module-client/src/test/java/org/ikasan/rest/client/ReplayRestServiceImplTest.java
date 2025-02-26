@@ -52,7 +52,7 @@ public class ReplayRestServiceImplTest
                 containing(
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(200)));
-        boolean result = uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes());
+        boolean result = uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes(), "actor");
         assertEquals(true, result);
     }
 
@@ -65,7 +65,7 @@ public class ReplayRestServiceImplTest
                 containing(
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(400)));
-       uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes());
+       uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes(), "actor");
     }
 
     @Test(expected = ReplayFailException.class)
@@ -77,7 +77,7 @@ public class ReplayRestServiceImplTest
                 containing(
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(404)));
-        uut.replay(contexBaseUrl,  null, null,"test Module Name", "flow Test", "resubmit".getBytes());
+        uut.replay(contexBaseUrl,  null, null,"test Module Name", "flow Test", "resubmit".getBytes(), "actor");
     }
 
     @Test(expected = ReplayFailException.class)
@@ -92,7 +92,7 @@ public class ReplayRestServiceImplTest
                                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                                     .withStatus(500)
                                ));
-        uut.replay(contexBaseUrl, null, null,"test Module Name","flow Test","resubmit".getBytes());
+        uut.replay(contexBaseUrl, null, null,"test Module Name","flow Test","resubmit".getBytes(), "actor");
     }
 
     @Test(expected = ReplayFailException.class)
@@ -117,6 +117,6 @@ public class ReplayRestServiceImplTest
                     "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\",\"userName\":\"testUser\"}"))
             .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(200).withFixedDelay(2000)));
 
-        uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes());
+        uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes(), "actor");
     }
 }
