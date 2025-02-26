@@ -219,7 +219,7 @@ public class ModuleControlRestServiceImplTest
                 .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                 .withStatus(200)
             ));
-        boolean result = uut.changeFlowState(contexBaseUrl,"test Module Name","flow Test","start", "username");
+        boolean result = uut.changeFlowState(contexBaseUrl,"test Module Name","flow Test","start", "testUser");
         assertEquals(true, result);
     }
 
@@ -235,7 +235,7 @@ public class ModuleControlRestServiceImplTest
                 .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                 .withStatus(400)
             ));
-        boolean result = uut.changeFlowState(contexBaseUrl,"test Module Name","flow Test","T", "username");
+        boolean result = uut.changeFlowState(contexBaseUrl,"test Module Name","flow Test","T", "testUser");
         assertEquals(false, result);
     }
 
@@ -251,7 +251,7 @@ public class ModuleControlRestServiceImplTest
                                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                                     .withStatus(200)
                                ));
-        boolean result = uut.changeFlowStartupType(contexBaseUrl,"test Module Name","flow Test","automatic",null, "username");
+        boolean result = uut.changeFlowStartupType(contexBaseUrl,"test Module Name","flow Test","automatic",null, "testUser");
         assertEquals(true, result);
     }
 

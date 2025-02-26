@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._click;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -115,7 +116,7 @@ public class HospitalViewTest extends UITest {
             .thenReturn("http://dashboard.com:9090");
 
         Mockito.when(this.resubmissionRestService.resubmit(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()
-                , Mockito.anyString(), Mockito.anyString(), "username"))
+                , Mockito.anyString(), Mockito.anyString(), eq("username")))
             .thenReturn(true);
 
         UI.getCurrent().navigate("exclusion/12345");
@@ -171,7 +172,7 @@ public class HospitalViewTest extends UITest {
             .thenReturn("http://dashboard.com:9090");
 
         Mockito.when(this.resubmissionRestService.resubmit(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()
-                , Mockito.anyString(), Mockito.anyString(), "username"))
+                , Mockito.anyString(), Mockito.anyString(), eq("username")))
             .thenReturn(true);
 
         UI.getCurrent().navigate("exclusion/12345");
