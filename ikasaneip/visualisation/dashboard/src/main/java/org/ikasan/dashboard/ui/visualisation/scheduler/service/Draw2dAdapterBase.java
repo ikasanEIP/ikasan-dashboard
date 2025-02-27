@@ -691,7 +691,8 @@ public abstract class Draw2dAdapterBase {
                 if(and.getLogicalGrouping() != null) {
                     manageLogicalGroupings(context, jobIdentifier, and.getLogicalGrouping(), diagramBuilder, graph);
                 }
-                else if(context.getScheduledJobsMap().containsKey(and.getIdentifier())
+                else if(and.getIdentifier() != null
+                    && context.getScheduledJobsMap().containsKey(and.getIdentifier())
                     && context.getScheduledJobsMap().containsKey(jobIdentifier)
                     && (!((SchedulerJob)context.getScheduledJobsMap().get(jobIdentifier))
                         .getAgentName().equals(JobConstants.CONTEXT_START_JOB))
@@ -710,7 +711,7 @@ public abstract class Draw2dAdapterBase {
                 if(or.getLogicalGrouping() != null) {
                     manageLogicalGroupings(context, jobIdentifier, or.getLogicalGrouping(), diagramBuilder, graph);
                 }
-                else {
+                else if (or.getIdentifier() != null){
                     graph.addEdge(or.getIdentifier(), jobIdentifier);
 
                     this.addConnection(or.getIdentifier(), CONNECTOR_RIGHT_HYBRID_SOURCE

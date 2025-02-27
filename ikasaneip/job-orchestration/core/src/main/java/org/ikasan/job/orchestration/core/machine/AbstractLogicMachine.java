@@ -27,7 +27,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                         and.set(false);
                     }
                 }
-                else {
+                else if(operator.getIdentifier() != null){
                     STATEFUL_ENTITY statefulEntity = statefulEntityMap.get(operator.getIdentifier());
                     if (statefulEntity == null) {
                         throw new ContextMachineException(String.format("Could not locate stateful entity[%s] when trying to assess logical group and[%s]",
@@ -64,7 +64,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                         or.set(true);
                     }
                 }
-                else {
+                else if(operator.getIdentifier() != null){
                     STATEFUL_ENTITY statefulEntity = statefulEntityMap.get(operator.getIdentifier());
                     if (statefulEntity == null) {
                         throw new ContextMachineException(String.format("Could not locate stateful entity[%s] when trying to assess logical group or[%s]",
@@ -101,7 +101,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                         not.set(true);
                     }
                 }
-                else {
+                else if(operator.getIdentifier() != null){
                     STATEFUL_ENTITY statefulEntity = statefulEntityMap.get(operator.getIdentifier());
                     if (statefulEntity == null) {
                         throw new ContextMachineException(String.format("Could not locate stateful entity[%s] when trying to assess logical group or[%s]",
