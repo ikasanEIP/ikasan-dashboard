@@ -19,6 +19,7 @@ public class ContextTemplateBuilder {
     protected List<ContextParameter> contextParameters = new ArrayList<>();
     protected List<SchedulerJob> scheduledJobs = new ArrayList<>();
     protected String timeWindowStartCronExpression;
+    protected boolean customWeekDayOfMonth = false;
     protected long contextTtlMilliseconds;
     protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
     protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
@@ -151,6 +152,11 @@ public class ContextTemplateBuilder {
      */
     public ContextTemplateBuilder withTimeWindowStartCronExpression(String timeWindowStartCronExpression) {
         this.timeWindowStartCronExpression = timeWindowStartCronExpression;
+        return this;
+    }
+
+    public ContextTemplateBuilder withCustomWeekDayOfMonth(boolean customWeekDayOfMonth) {
+        this.customWeekDayOfMonth = customWeekDayOfMonth;
         return this;
     }
 
@@ -356,6 +362,7 @@ public class ContextTemplateBuilder {
         contextTemplate.setDescription(this.description);
         contextTemplate.setTimezone(this.timezone);
         contextTemplate.setTimeWindowStart(this.timeWindowStartCronExpression);
+        contextTemplate.setCustomWeekDayOfMonth(this.customWeekDayOfMonth);
         contextTemplate.setContextTtlMilliseconds(this.contextTtlMilliseconds);
         contextTemplate.setContextDependencies(this.contextDependencies);
         contextTemplate.setContexts(ContextTemplateUtils.setOrdinalsInContextTemplates(this.contexts));

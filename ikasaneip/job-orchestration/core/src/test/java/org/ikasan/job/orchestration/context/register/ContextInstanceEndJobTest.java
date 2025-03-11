@@ -23,7 +23,7 @@ public class ContextInstanceEndJobTest {
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
     @Mock
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
     private ContextInstanceEndJob contextInstanceEndJob;
 

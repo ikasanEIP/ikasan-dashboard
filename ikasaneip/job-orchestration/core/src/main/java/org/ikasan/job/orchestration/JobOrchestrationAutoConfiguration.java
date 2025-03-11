@@ -5,8 +5,9 @@ import org.ikasan.job.orchestration.configuration.JobContextParamsSetupFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
+import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.integration.StartupApplicationListener;
 import org.ikasan.job.orchestration.integration.StartupCompleteApplicationListener;
 import org.ikasan.job.orchestration.integration.module.InboundModuleFactory;
@@ -107,12 +108,13 @@ public class JobOrchestrationAutoConfiguration implements ApplicationListener<Co
 
     @Bean
     @DependsOn("contextInstanceRecoveryManager")
-    public ContextInstanceSchedulerService contextInstanceSchedulerService(@Lazy ContextInstanceRegistrationService contextInstanceRegistrationService
-        , ScheduledContextService scheduledContextService) {
-        return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler(),
+    public ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService(@Lazy ContextInstanceRegistrationService contextInstanceRegistrationService
+        , ScheduledContextService scheduledContextService, TimeService timeService) {
+        return new ContextInstanceSchedulerServiceImpl(SchedulerFactory.getInstance().getScheduler(),
             CachingScheduledJobFactory.getInstance(),
             scheduledContextService,
             contextInstanceRegistrationService,
+            timeService,
             this.isContextLifeCycleActive,
             this.isIkasanEnterpriseSchedulerInstance);
     }

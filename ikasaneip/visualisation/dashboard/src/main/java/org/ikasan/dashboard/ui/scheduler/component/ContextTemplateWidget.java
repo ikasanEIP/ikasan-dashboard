@@ -31,7 +31,7 @@ import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
@@ -92,7 +92,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private JobUtilsService jobUtilsService;
     private SchedulerJobService schedulerJobService;
     private GlobalEventService globalEventService;
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     private ContextParametersInstanceService contextParametersInstanceService;
     private SystemEventLogger systemEventLogger;
     private String zipWorkingDirectory;
@@ -148,7 +148,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                  Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService,
-                                 ContextInstanceSchedulerService contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService,
+                                 ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService,
                                  boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                  double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
@@ -449,7 +449,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                             }
                             this.schedulerJobService.deleteByContextName(scheduledContextRecord.getContextName());
                             this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
-                            this.contextInstanceRegistrationService.deRegisterByName(scheduledContextRecord.getContextName());
+                            this.contextInstanceRegistrationService.deRegisterByName(scheduledContextRecord.getContextName()
+                                , this.contextInstanceSchedulerService);
                             this.emailNotificationDetailsService.deleteByContextName(scheduledContextRecord.getContextName());
                             this.emailNotificationContextService.deleteByContextName(scheduledContextRecord.getContextName());
 
@@ -909,7 +910,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 this.jobProvisionService.provisionJobs(this.getSchedulerJobForContext(contextTemplate.getName())
                                     , this.authentication.getName());
                                 this.scheduledContextService.save(refreshedScheduledContextRecord);
-                                this.contextInstanceSchedulerService.registerStartJobAndTrigger(contextTemplate.getName(), contextTemplate.getTimeWindowStart(),
+                                this.contextInstanceSchedulerService.registerStartJobAndTrigger(contextTemplate,
                                     contextTemplate.getTimezone());
                                 contextTemplateFilteringGrid.getDataProvider().refreshAll();
                                 this.updateActiveContextMenu();
@@ -1061,7 +1062,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         String contextInstanceId = null;
         try {
             contextInstanceId = this.contextInstanceRegistrationService.register(scheduledContextRecord.getContextName(),
-                contextParameterInstances);
+                contextParameterInstances, this.contextInstanceSchedulerService);
             systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_CREATED, String.format("Job Plan Name [%s] - New Instance Manually Created [%s]"
                 , scheduledContextRecord.getContextName(), contextInstanceId), this.authentication.getName());
         }

@@ -59,6 +59,7 @@
         <module>rest</module>
         <module>service</module>
         <module>notification</module>
+        <module>test</module>
     </modules>
 
 </project>

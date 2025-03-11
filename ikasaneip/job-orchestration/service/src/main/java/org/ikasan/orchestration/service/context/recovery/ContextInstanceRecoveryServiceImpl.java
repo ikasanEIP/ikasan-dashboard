@@ -41,7 +41,7 @@
 package org.ikasan.orchestration.service.context.recovery;
 
 import com.esotericsoftware.minlog.Log;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
@@ -81,6 +81,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
 
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
 
+    private final ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
+
     private boolean isIkasanEnterpriseSchedulerInstance;
 
 
@@ -117,7 +119,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                               ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                               SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                               JobLockCacheInitialisationService jobLockCacheInitialisationService,
-                                              ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                              ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                               TimeService timeService,
                                               ContextInstanceRegistrationService contextInstanceRegistrationService,
                                               JobUtilsService jobUtilsService,
@@ -135,13 +137,17 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService,
             timeService,
             jobUtilsService);
 
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         if (this.contextInstanceRegistrationService == null) {
             throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
+        }
+
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if (this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
 
         this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
@@ -192,7 +198,23 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                     List<ContextInstance> future = new ArrayList<>();
 
                     for (ContextInstance contextInstance : prepared) {
-                        if (contextInstance.getStartTime() < System.currentTimeMillis()) {
+                        if(contextInstance.isCustomWeekDayOfMonth() &&
+                            contextInstance.getStartTime() < System.currentTimeMillis()) {
+                            executor.execute(() -> {
+                                try {
+                                    initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, true, null);
+
+                                    contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+                                        , contextInstance.getTimezone(), contextInstance.getId());
+
+                                    super.prepareFutureContextInstance(context.getName());
+                                } catch (Exception e) {
+                                    LOG.error(String.format("Got error back filling context [%s] with custom cron schedule [%s]. Error: %s"
+                                        , scheduledContextRecord.getContextName(), scheduledContextRecord.getContext().getTimeWindowStart(), e));
+                                }
+                            });
+                        }
+                        else if (contextInstance.getStartTime() < System.currentTimeMillis()) {
                             super.removeContextInstance(contextInstance.getId());
                             if(contextNameToInstances.containsKey(contextInstance.getName())) {
                                 contextNameToInstances.get(contextInstance.getName()).remove(contextInstance);

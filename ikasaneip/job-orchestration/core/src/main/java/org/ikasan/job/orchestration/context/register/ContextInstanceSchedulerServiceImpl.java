@@ -1,9 +1,13 @@
 package org.ikasan.job.orchestration.context.register;
 
+import org.ikasan.job.orchestration.context.util.CustomWeekdayOfMonthHelper;
+import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.quartz.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceSchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.search.SearchResults;
 import org.quartz.JobDetail;
@@ -15,21 +19,41 @@ import javax.annotation.PostConstruct;
 
 import static org.ikasan.job.orchestration.context.register.ContextInstanceEndJob.END_JOB_EXTENSION;
 
-public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerService {
+/**
+ * ContextInstanceSchedulerServiceImpl is a concrete implementation of ContextInstanceSchedulerService interface
+ * and extends AbstractDashboardSchedulerService. It is responsible for managing and scheduling context instances.
+ * It provides functionality to register jobs to start and destroy context instances based on provided configurations.
+ * The class requires a Scheduler, ScheduledJobFactory, ScheduledContextService, ContextInstanceRegistrationService,
+ * TimeService, isContextLifeCycleActive flag, and isIkasanEnterpriseSchedulerInstance flag for initialization.
+ */
+public class ContextInstanceSchedulerServiceImpl extends AbstractDashboardSchedulerService implements ContextInstanceSchedulerService {
     /**
      * Logger for this class
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceSchedulerService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceSchedulerServiceImpl.class);
     private final ScheduledContextService scheduledContextService;
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
+    private final TimeService timeService;
     private final boolean isContextLifeCycleActive;
-    private boolean isIkasanEnterpriseSchedulerInstance;
+    private final boolean isIkasanEnterpriseSchedulerInstance;
 
-    public ContextInstanceSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory,
-                                           ScheduledContextService scheduledContextService,
-                                           ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                           boolean isContextLifeCycleActive,
-                                           boolean isIkasanEnterpriseSchedulerInstance) {
+    /**
+     * Constructor for the ContextInstanceSchedulerServiceImpl class.
+     *
+     * @param scheduler                          the scheduler to be used
+     * @param scheduledJobFactory                the factory for creating scheduled jobs
+     * @param scheduledContextService            the service for managing scheduled contexts
+     * @param contextInstanceRegistrationService the service for registering context instances
+     * @param timeService                        the service for time-related operations
+     * @param isContextLifeCycleActive           flag indicating if the context lifecycle is active
+     * @param isIkasanEnterpriseSchedulerInstance flag indicating if it's an Ikasan enterprise scheduler instance
+     */
+    public ContextInstanceSchedulerServiceImpl(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory,
+                                               ScheduledContextService scheduledContextService,
+                                               ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                               TimeService timeService,
+                                               boolean isContextLifeCycleActive,
+                                               boolean isIkasanEnterpriseSchedulerInstance) {
 
         super(scheduler, scheduledJobFactory);
         this.scheduledContextService = scheduledContextService;
@@ -39,7 +63,12 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
 
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         if (this.contextInstanceRegistrationService == null) {
-            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+            throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
+        }
+
+        this.timeService = timeService;
+        if (this.timeService == null) {
+            throw new IllegalArgumentException("timeService cannot be null!");
         }
 
         this.isContextLifeCycleActive = isContextLifeCycleActive;
@@ -48,17 +77,17 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
 
     /**
      * Once the beans are created, interrogate the data source for the saved Schedule Details
-     * Kick off a start trigger for each contextName
+     * Kick off a start trigger for each contextTemplate
      */
     @PostConstruct
     public void registerJobs() {
-        LOG.info("ContextInstanceSchedulerService Registering Jobs!");
+        LOG.info("ContextInstanceSchedulerServiceImpl Registering Jobs!");
         if (!isIkasanEnterpriseSchedulerInstance) {
-            LOG.info("ContextInstanceSchedulerService not running as dashboard is not configured as scheduler instance");
+            LOG.info("ContextInstanceSchedulerServiceImpl not running as dashboard is not configured as scheduler instance");
             return;
         }
         if (!isContextLifeCycleActive) {
-            LOG.info("ContextInstanceSchedulerService not running as usePostConstructs is false");
+            LOG.info("ContextInstanceSchedulerServiceImpl not running as usePostConstructs is false");
             return;
         }
 
@@ -67,8 +96,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
                 (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
 
             for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
-                registerStartJobAndTrigger( scheduledContextRecord.getContextName(),
-                                            scheduledContextRecord.getContext().getTimeWindowStart(),
+                registerStartJobAndTrigger( scheduledContextRecord.getContext(),
                                             scheduledContextRecord.getContext().getTimezone());
             }
 
@@ -82,13 +110,13 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
      * This is the job for the start of context.
      * Note that we don't register the destroy job yet, we wait till the job actually fires so we can pass
      * the correct contextID to the destroy job.
-     * @param contextName to start
-     * @param cronExpressionToTriggerJob to start at
+     * @param contextTemplate to start
      * @param timezone for the tme window
      */
-    public void registerStartJobAndTrigger(String contextName, String cronExpressionToTriggerJob, String timezone) {
+    public void registerStartJobAndTrigger(ContextTemplate contextTemplate, String timezone) {
         final ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(
-            contextName, cronExpressionToTriggerJob, timezone, contextInstanceRegistrationService);
+            contextTemplate.getName(), CustomWeekdayOfMonthHelper.determineContextStartCron(contextTemplate, this.timeService.getLocalDateNow())
+            , timezone, contextInstanceRegistrationService, this, contextTemplate);
         final JobDetail jobDetail = scheduledJobFactory.createJobDetail(job, ContextInstanceRegisterJob.class, job.getJobName(), CONTEXT_START_GROUP);
 
         // Overwrite if already in map
@@ -96,7 +124,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
         LOG.info(String.format("Registering context instance job [%s]", jobDetail.getKey().getName()));
         try {
-            this.contextInstanceRegistrationService.prepareFutureContextInstance(contextName);
+            this.contextInstanceRegistrationService.prepareFutureContextInstance(contextTemplate.getName());
             this.addJob(jobDetail);
         } catch (RuntimeException e) {
             //TODO alert that we were not able to re-schedule the start up job

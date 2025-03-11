@@ -37,7 +37,7 @@ import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcast
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.context.validation.ContextError;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
@@ -123,7 +123,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private LogStreamingService logStreamingService;
     private GlobalEventService globalEventService;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -205,7 +205,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            UserService userService, SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory,
                                            EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                            Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
-                                           ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                           ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                            SpringCloudConfigRefreshService springCloudConfigRefreshService,
                                            boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple,
                                            double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {

@@ -1,7 +1,7 @@
 package org.ikasan.job.orchestration.provision.context;
 
 import org.ikasan.job.orchestration.AbstractTest;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
@@ -67,7 +67,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
     @Mock
     private EmailNotificationContextService emailNotificationContextService;
     @Mock
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
     @Mock
     private SecurityService securityService;
@@ -144,7 +144,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
 
         verify(schedulerJobService).save(contextJobs, "system");
 
@@ -197,7 +197,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -263,7 +263,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -314,7 +314,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -386,7 +386,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -465,7 +465,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -529,7 +529,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
 
@@ -574,7 +574,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -631,7 +631,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
         verify(emailNotificationDetailsService).saveEmailNotificationDetails(emailNotificationDetails);
@@ -695,7 +695,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
         verify(emailNotificationDetailsService).saveEmailNotificationDetails(emailNotificationDetails);
@@ -755,7 +755,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
         verify(emailNotificationContextService).saveEmailNotificationContext(emailNotificationContext);
@@ -803,7 +803,7 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(anyString());
         verify(emailNotificationDetailsService).deleteByContextName(anyString());
         verify(emailNotificationContextService).deleteByContextName(anyString());
-        verify(contextInstanceRegistrationService).deRegisterByName(anyString());
+        verify(contextInstanceRegistrationService).deRegisterByName(anyString(), any());
         verify(schedulerJobService).save(schedulerJobs, "system");
         verify(emailNotificationContextService).saveEmailNotificationContext(emailNotificationContext);
 

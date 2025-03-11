@@ -2496,6 +2496,13 @@
             </dependency>
 
             <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-inline</artifactId>
+                <version>${version.org.mockito}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.powermock</groupId>
                 <artifactId>powermock-module-junit4-legacy</artifactId>
                 <version>${version.powermock}</version>

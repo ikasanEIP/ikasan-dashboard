@@ -21,11 +21,11 @@ public class ContextInstanceEndJob implements DashboardJob {
     private final String cronExpressionEndTime;
     private String timezone;
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
-    private final ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private final ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
     public ContextInstanceEndJob(String jobName, String cronExpressionEndTime, String timezone
         , ContextInstanceRegistrationService contextInstanceRegistrationService
-        , ContextInstanceSchedulerService contextInstanceSchedulerService) {
+        , ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService) {
 
         this.jobName = jobName;
         if (this.jobName == null) {
