@@ -16,7 +16,7 @@ import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceWidget;
 import org.ikasan.dashboard.ui.util.CookieUtil;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -112,7 +112,7 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
     @Resource
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
     @Value("${job.visualisation.vertical.spacing:120}")
     protected double jobVisualisationVerticalSpacing;

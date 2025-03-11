@@ -10,7 +10,7 @@ import org.ikasan.dashboard.Application;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -65,7 +65,7 @@ public abstract class UITest
     protected ContextInstanceRecoveryManager contextInstanceRecoveryManager;
 
     @MockBean
-    protected ContextInstanceSchedulerService contextInstanceSchedulerService;
+    protected ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
     public abstract void setup_expectations() throws IOException;
 

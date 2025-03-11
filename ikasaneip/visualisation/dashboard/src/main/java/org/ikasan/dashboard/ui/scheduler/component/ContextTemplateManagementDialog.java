@@ -4,7 +4,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -29,6 +29,43 @@ import java.util.Map;
 public class ContextTemplateManagementDialog extends AbstractCloseableResizableDialog {
     private ContextTemplateManagementWidget contextTemplateManagementWidget;
 
+    /**
+     * Constructor for ContextTemplateManagementDialog class.
+     *
+     * @param scheduledContextService The service for scheduled context.
+     * @param scheduledContextInstanceService The service for scheduled context instances.
+     * @param dynamicImagePath The path for dynamic images.
+     * @param moduleMetaDataService The service for module metadata.
+     * @param scheduledProcessManagementService The service for scheduled process management.
+     * @param configurationRestService The configuration service.
+     * @param moduleControlRestService The module control service.
+     * @param metaDataRestService The metadata service.
+     * @param systemEventLogger The system event logger service.
+     * @param schedulerJobService The scheduler job service.
+     * @param logStreamingService The log streaming service.
+     * @param contextTemplate The context template.
+     * @param schedulerJobInstanceService The scheduler job instance service.
+     * @param jobInitiationService The job initiation service.
+     * @param contextProfileService The context profile service.
+     * @param jobProvisionService The job provision service.
+     * @param userService The user service.
+     * @param securityService The security service.
+     * @param jobUtilsService The job utilities service.
+     * @param zipWorkingDirectory The working directory for ZIP files.
+     * @param emailNotificationDetailsService The service for email notification details.
+     * @param emailNotificationContextService The service context for email notification.
+     * @param schedulerJobExecutionEnvironmentLabel The labels for scheduler job execution environment.
+     * @param globalEventService The global event service.
+     * @param contextInstanceRegistrationService The service for context instance registration.
+     * @param contextInstanceSchedulerService The service for context instance scheduler.
+     * @param springCloudConfigRefreshService The service for Spring Cloud configuration refresh.
+     * @param removeTrailingPlanNameContextAfterUnderscore Boolean to remove trailing plan name context after underscore.
+     * @param jobPlanIntervalMultiple The job plan interval multiple.
+     * @param jobVisualisationVerticalSpacing The vertical spacing for job visualization.
+     * @param jobVisualisationHorizontalSpacing The horizontal spacing for job visualization.
+     * @param contextVisualisationLevelDistance The level distance for context visualization.
+     * @param contextVisualisationNodeDistance The node distance for context visualization.
+     */
     public ContextTemplateManagementDialog(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
@@ -36,7 +73,7 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                            SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory, EmailNotificationDetailsService emailNotificationDetailsService,
                                            EmailNotificationContextService emailNotificationContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
-                                           ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService, SpringCloudConfigRefreshService springCloudConfigRefreshService,
+                                           ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, SpringCloudConfigRefreshService springCloudConfigRefreshService,
                                            boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                            double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath

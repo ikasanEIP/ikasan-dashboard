@@ -1,6 +1,6 @@
 package org.ikasan.job.orchestration.provision;
 
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.provision.context.ContextProvisionServiceImpl;
 import org.ikasan.job.orchestration.provision.job.JobProvisionServiceImpl;
 import org.ikasan.security.service.SecurityService;
@@ -43,7 +43,7 @@ public class JobOrchestrationProvisionAutoConfiguration {
         ContextProfileService contextProfileService,
         EmailNotificationDetailsService emailNotificationDetailsService,
         EmailNotificationContextService emailNotificationContextService,
-        ContextInstanceSchedulerService contextInstanceSchedulerService,
+        ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
         SecurityService securityService) {
 
         return new ContextProvisionServiceImpl(

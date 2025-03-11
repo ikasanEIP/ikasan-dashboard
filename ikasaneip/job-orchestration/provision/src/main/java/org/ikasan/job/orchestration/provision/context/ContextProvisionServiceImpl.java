@@ -1,7 +1,7 @@
 package org.ikasan.job.orchestration.provision.context;
 
 import com.esotericsoftware.minlog.Log;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
@@ -51,7 +51,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     private final EmailNotificationDetailsService emailNotificationDetailsService;
     private final EmailNotificationContextService emailNotificationContextService;
     private final boolean uploadProvisionJobs;
-    private final ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private final ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     private int jobPlanIntervalMultiple;
     private SecurityService securityService;
 
@@ -64,7 +64,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                                        EmailNotificationDetailsService emailNotificationDetailsService,
                                        EmailNotificationContextService emailNotificationContextService,
                                        boolean uploadProvisionJobs,
-                                       ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                       ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                        int jobPlanIntervalMultiple,
                                        SecurityService securityService) {
 
@@ -134,7 +134,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             this.deleteEmailNotificationDetailsByContext(jobPlanName);
             this.deleteEmailNotificationContextByContext(jobPlanName);
             // delete any running context instances since this may be a re-import over an existing context.
-            contextInstanceRegistrationService.deRegisterByName(jobPlanName);
+            contextInstanceRegistrationService.deRegisterByName(jobPlanName, this.contextInstanceSchedulerService);
 
             // set job participates in lock flag on relevant jobs
             this.setJobsParticipateInJobLock(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
@@ -170,7 +170,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             }
 
             // Even though the next start job may be tomorrow, the trigger must be setup
-            contextInstanceSchedulerService.registerStartJobAndTrigger(jobPlanName, contextBundle.getContextTemplate().getTimeWindowStart(),
+            contextInstanceSchedulerService.registerStartJobAndTrigger(contextBundle.getContextTemplate(),
                 contextBundle.getContextTemplate().getTimezone());
 
         } catch (Exception e) {

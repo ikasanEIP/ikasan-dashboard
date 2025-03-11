@@ -3,7 +3,7 @@ package org.ikasan.orchestration.service.context.recovery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
@@ -46,7 +46,6 @@ import java.util.Map;
 
 import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -86,7 +85,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
     JobLockCacheInitialisationServiceImpl jobLockCacheInitialisationService;
 
     @Mock
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     @Mock
     private TimeService timeService;
 

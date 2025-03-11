@@ -43,25 +43,30 @@ package org.ikasan.orchestration.service.context.register;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.context.util.CronUtils;
+import org.ikasan.job.orchestration.context.util.CustomWeekdayOfMonthHelper;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
-import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceSchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.instance.service.*;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
@@ -70,9 +75,7 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.systemevent.SystemEventService;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
@@ -95,7 +98,6 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                                   JobLockCacheInitialisationService jobLockCacheInitialisationService,
-                                                  ContextInstanceSchedulerService contextInstanceSchedulerService,
                                                   TimeService timeService,
                                                   ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
                                                   SystemEventService systemEventService,
@@ -114,7 +116,6 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService,
             timeService,
             jobUtilsService);
 
@@ -136,7 +137,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
      * @param contextName / plan for which we need to deregister.
      */
     @Override
-    public void deRegisterByName(String contextName) {
+    public void deRegisterByName(String contextName, ContextInstanceSchedulerService contextInstanceSchedulerService) {
         for(ContextMachine contextMachine : ContextMachineCache.instance().getAllByContextName(contextName)) {
             deRegisterById(contextMachine.getContext().getId());
         }
@@ -209,7 +210,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
     }
 
     @Override
-    public void reSchedule(String contextName) {
+    public void reSchedule(String contextName, ContextInstanceSchedulerService contextInstanceSchedulerService) {
         if(!isIkasanEnterpriseSchedulerInstance) {
             LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance registration will occur");
             return;
@@ -233,16 +234,28 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             contextInstances.forEach(contextInstance -> this.deRegisterById(contextInstance.getId()));
 
             // Now remove the previous schedule associated with the context
-            super.contextInstanceSchedulerService.removeJob(contextName);
+            contextInstanceSchedulerService.removeJob(contextName);
 
             // Now set up the new schedule.
-            super.contextInstanceSchedulerService.registerStartJobAndTrigger(scheduledContextRecord.getContextName(),
-                scheduledContextRecord.getContext().getTimeWindowStart(), scheduledContextRecord.getContext().getTimezone());
+            contextInstanceSchedulerService.registerStartJobAndTrigger(scheduledContextRecord.getContext(),
+                scheduledContextRecord.getContext().getTimezone());
+
+            List<ContextInstance> preparedInstances = this.findPrepared(contextName);
+
+            for (ContextInstance preparedInstance : preparedInstances) {
+                if (preparedInstance.getStartTime() == CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow
+                        (CustomWeekdayOfMonthHelper.determineContextStartCron(scheduledContextRecord.getContext(), this.timeService.getLocalDateNow())
+                                , scheduledContextRecord.getContext().getBlackoutWindowCronExpressions(), scheduledContextRecord.getContext().getBlackoutWindowDateTimeRanges()
+                                , scheduledContextRecord.getContext().getTimezone()))
+                // We already have a prepare instance and do not need to create another
+                return;
+            }
 
             byte[] scheduledContextRecordContext = objectMapper.writeValueAsBytes(scheduledContextRecord.getContext());
 
             ContextInstanceImpl preparedFutureContextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
-            preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(scheduledContextRecord.getContext().getTimeWindowStart()
+            preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow
+                (CustomWeekdayOfMonthHelper.determineContextStartCron(scheduledContextRecord.getContext(), this.timeService.getLocalDateNow())
                 , scheduledContextRecord.getContext().getBlackoutWindowCronExpressions(), scheduledContextRecord.getContext().getBlackoutWindowDateTimeRanges()
                 , scheduledContextRecord.getContext().getTimezone()));
             this.saveContextInstance(preparedFutureContextInstance, InstanceStatus.PREPARED);
@@ -273,7 +286,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
      * @return the context instance ID if a new context instance was created, null otherwise.
      */
     @Override
-    public void register(String contextName) {
+    public void register(String contextName, ContextInstanceSchedulerService contextInstanceSchedulerService) {
         if(!isIkasanEnterpriseSchedulerInstance) {
             LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance registration will occur");
             return;
@@ -348,7 +361,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
      * @return the context instance ID if a new context instance was created, null otherwise.
      */
     @Override
-    public String register(String contextName, List<ContextParameterInstance> contextParameterInstances) {
+    public String register(String contextName, List<ContextParameterInstance> contextParameterInstances, ContextInstanceSchedulerService contextInstanceSchedulerService) {
         if(!isIkasanEnterpriseSchedulerInstance) {
             LOG.warn("This instance of the dashboard is not configured to run as a scheduler, therefore no job plan instance registration will occur");
             return null;
@@ -426,7 +439,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         if (now.getTime() > contextInstance.getProjectedEndTime()) {
 
             // Get the long representation of the next start time, minus 1 minute. This time will be the latest possible time that can be used to end the job instance.
-            long nextStartTimeMinusOneMinute = CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(contextInstance.getTimeWindowStart()
+            long nextStartTimeMinusOneMinute = CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow
+                (CustomWeekdayOfMonthHelper.determineContextStartCron(contextInstance, this.timeService.getLocalDateNow())
                 , contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getBlackoutWindowDateTimeRanges()
                 , contextInstance.getTimezone()) - (60 * 1000);
 

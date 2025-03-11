@@ -43,7 +43,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceState
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -121,7 +121,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private GlobalEventService globalEventService;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     private TextField contextInstanceId;
     private TextField contextNameTf;
     private TextArea descriptionTa;
@@ -211,7 +211,7 @@ public class ContextInstanceWidget extends VerticalLayout
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
                                  String selectedTab, String jobStatus, String jobName, GlobalEventService globalEventService,
-                                 ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                 ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                  double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService,
@@ -250,7 +250,7 @@ public class ContextInstanceWidget extends VerticalLayout
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                 GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                 GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                  double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;

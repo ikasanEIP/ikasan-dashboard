@@ -11,7 +11,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceDashboardWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -118,7 +118,7 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
     @Resource
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     @Resource
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
     @Value("${job.visualisation.vertical.spacing:120}")
     protected double jobVisualisationVerticalSpacing;

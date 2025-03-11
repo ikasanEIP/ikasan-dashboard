@@ -3,8 +3,8 @@ package org.ikasan.orchestration.service.context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.context.util.CronUtils;
+import org.ikasan.job.orchestration.context.util.CustomWeekdayOfMonthHelper;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
@@ -63,7 +63,6 @@ public abstract class ContextInstanceServiceBase {
     protected final JobLockCacheInitialisationService jobLockCacheInitialisationService;
     protected final ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
     protected final SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
-    protected final ContextInstanceSchedulerService contextInstanceSchedulerService;
     protected final TimeService timeService;
     protected final JobUtilsService jobUtilsService;
 
@@ -87,7 +86,6 @@ public abstract class ContextInstanceServiceBase {
      * @param contextInstanceStateChangeEventBroadcaster  the broadcaster for context instance state change events (must not be null)
      * @param schedulerJobStateChangeEventBroadcaster     the broadcaster for scheduler job state change events (must not be null)
      * @param jobLockCacheInitialisationService           the service for initializing job lock cache (must not be null)
-     * @param contextInstanceSchedulerService             the service for scheduling context instances (must not be null)
      * @param timeService                                 the service for providing current time (must not be null)
      * @param jobUtilsService                             the service for utility operations on jobs (must not be null)
      * @throws IllegalArgumentException                  if any of the parameters is null
@@ -105,7 +103,6 @@ public abstract class ContextInstanceServiceBase {
                                       ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                       SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                       JobLockCacheInitialisationService jobLockCacheInitialisationService,
-                                      ContextInstanceSchedulerService contextInstanceSchedulerService,
                                       TimeService timeService,
                                       JobUtilsService jobUtilsService) {
         this.queueDirectory = queueDirectory;
@@ -159,10 +156,6 @@ public abstract class ContextInstanceServiceBase {
         this.jobLockCacheInitialisationService = jobLockCacheInitialisationService;
         if (this.jobLockCacheInitialisationService == null) {
             throw new IllegalArgumentException("jobLockCacheInitialisationService cannot be null!");
-        }
-        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
-        if (this.contextInstanceSchedulerService == null) {
-            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
         this.timeService = timeService;
         if (this.timeService == null) {
@@ -322,7 +315,8 @@ public abstract class ContextInstanceServiceBase {
 
         if (isInitialContextInstantiation) {
             instance.setStartTime(System.currentTimeMillis());
-            instance.setProjectedEndTime(CronUtils.getEpochMilliOfPreviousFireTime(instance.getTimeWindowStart())+instance.getContextTtlMilliseconds());
+            long startMilliEpoch = CronUtils.getEpochMilliOfPreviousFireTime(instance.getTimeWindowStart());
+            instance.setProjectedEndTime(startMilliEpoch+instance.getContextTtlMilliseconds());
             this.saveContextInstance(instance, InstanceStatus.WAITING);
         }
 
@@ -456,8 +450,10 @@ public abstract class ContextInstanceServiceBase {
             List<ContextInstance> contextInstances = this.findPrepared(context.getName());
 
             ContextInstanceImpl preparedFutureContextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
-            preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(context.getTimeWindowStart()
-                , context.getBlackoutWindowCronExpressions(), context.getBlackoutWindowDateTimeRanges(), context.getTimezone()));
+            preparedFutureContextInstance.setStartTime(CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow
+                (CustomWeekdayOfMonthHelper.determineContextStartCron(context, this.timeService.getLocalDateNow())
+                    , context.getBlackoutWindowCronExpressions(), context.getBlackoutWindowDateTimeRanges(), context.getTimezone()));
+            preparedFutureContextInstance.setTimeWindowStart(CustomWeekdayOfMonthHelper.determineContextStartCron(context, this.timeService.getLocalDateNow()));
 
             AtomicBoolean preparedInstanceExists = new AtomicBoolean(false);
 
@@ -556,22 +552,6 @@ public abstract class ContextInstanceServiceBase {
         filter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
 
         return this.getFilteredCommandExecutionJobs(filter);
-    }
-
-    /**
-     * Retrieves a list of running command execution jobs for a given context instance ID.
-     *
-     * @param contextInstanceId The ID of the context instance.
-     * @return A list of InternalEventDrivenJobInstance objects representing the running command execution jobs.
-     */
-    protected List<InternalEventDrivenJobInstance> getRunningCommandExecutionJobs(String contextInstanceId) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(contextInstanceId);
-        filter.setStatus(InstanceStatus.RUNNING.name());
-
-        return this.getFilteredCommandExecutionJobs(filter).values().stream()
-            .distinct()
-            .collect(Collectors.toList());
     }
 
     /**
