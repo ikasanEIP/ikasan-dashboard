@@ -28,7 +28,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
@@ -66,7 +66,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private SchedulerJobService schedulerJobService;
     private SystemEventLogger systemEventLogger;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -108,7 +108,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      * @param editName
      */
     public ContextTemplateDialog(ScheduledContextService scheduledContextService, SchedulerJobService schedulerJobService, ContextInstanceRegistrationService contextInstanceRegistrationService
-        , ContextInstanceSchedulerService contextInstanceSchedulerService,  SystemEventLogger systemEventLogger, String title, boolean editName, int jobPlanIntervalMultiple
+        , ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, SystemEventLogger systemEventLogger, String title, boolean editName, int jobPlanIntervalMultiple
         , double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance
         , UserService userService, SecurityService securityService) {
         this.scheduledContextService = scheduledContextService;
@@ -260,7 +260,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
         Icon startWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         startWindowCronBuilderIcon.addClickListener(event -> {
-            CronBuilderDialog dialog = new CronBuilderDialog();
+            CronBuilderDialog dialog = new JobPlanCronBuilderDialog(this.contextTemplate);
             dialog.init(this.startWindowCronExpressionTf.getValue());
             dialog.open();
 
@@ -695,7 +695,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             this.scheduledContextService.save(this.scheduledContextRecord);
 
             if(!this.contextTemplate.isDisabled() &&
-                (!beforeModification.getTimeWindowStart().equals(this.contextTemplate.getTimeWindowStart()) ||
+                    (!beforeModification.getTimeWindowStart().equals(this.contextTemplate.getTimeWindowStart()) ||
+                    (this.contextTemplate.isCustomWeekDayOfMonth()) ||
                     (beforeModification.getBlackoutWindowCronExpressions() != null && this.contextTemplate.getBlackoutWindowCronExpressions() != null &&
                     !beforeModification.getBlackoutWindowCronExpressions().equals(this.contextTemplate.getBlackoutWindowCronExpressions())) ||
                     (beforeModification.getBlackoutWindowCronExpressions() != null && this.contextTemplate.getBlackoutWindowCronExpressions() == null) ||
@@ -704,7 +705,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
                     !beforeModification.getBlackoutWindowDateTimeRanges().equals(this.contextTemplate.getBlackoutWindowDateTimeRanges()))) ||
                     (beforeModification.getBlackoutWindowDateTimeRanges() != null && this.contextTemplate.getBlackoutWindowDateTimeRanges() == null) ||
                     (beforeModification.getBlackoutWindowDateTimeRanges() == null && this.contextTemplate.getBlackoutWindowDateTimeRanges() != null)) {
-                this.contextInstanceRegistrationService.reSchedule(this.contextTemplate.getName());
+                this.contextInstanceRegistrationService.reSchedule(this.contextTemplate.getName(), this.contextInstanceSchedulerService);
             }
 
             ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);

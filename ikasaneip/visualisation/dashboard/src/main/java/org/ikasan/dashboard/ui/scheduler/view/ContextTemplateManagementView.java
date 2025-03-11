@@ -9,7 +9,7 @@ import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateManagementWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -130,7 +130,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
     @Resource
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
     @Resource
     private GlobalEventService globalEventService;

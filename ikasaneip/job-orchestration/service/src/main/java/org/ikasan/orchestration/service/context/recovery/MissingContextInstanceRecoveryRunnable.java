@@ -1,6 +1,6 @@
 package org.ikasan.orchestration.service.context.recovery;
 
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
@@ -30,6 +30,29 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
 
     private final ScheduledContextRecord scheduledContextRecord;
 
+    private final ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
+
+    /**
+     * Runnable implementation for recovering missing context instances.
+     *
+     * @param queueDirectory the directory where queue is located
+     * @param scheduledContextInstanceService service for scheduled context instances
+     * @param jobInitiationService service for job initiation
+     * @param moduleMetadataService service for module metadata
+     * @param internalEventDrivenJobService service for internal event-driven jobs
+     * @param contextParametersInstanceService service for context parameters instances
+     * @param contextInstancePublicationService service for context instance publication
+     * @param jobLockCacheService service for job lock cache
+     * @param scheduledContextService service for scheduled context
+     * @param scheduledContextRecord the record of the scheduled context
+     * @param schedulerJobInstanceService service for scheduler job instances
+     * @param contextInstanceStateChangeEventBroadcaster broadcaster for context instance state change events
+     * @param schedulerJobStateChangeEventBroadcaster broadcaster for scheduler job state change events
+     * @param jobLockCacheInitialisationService service for job lock cache initialization
+     * @param contextInstanceSchedulerService service for context instance scheduling
+     * @param timeService service for handling time-related operations
+     * @param jobUtilsService service for job utilities
+     */
     public MissingContextInstanceRecoveryRunnable(String queueDirectory,
                                                   ScheduledContextInstanceService scheduledContextInstanceService,
                                                   JobInitiationService jobInitiationService,
@@ -44,7 +67,7 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
                                                   ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                                   JobLockCacheInitialisationService jobLockCacheInitialisationService,
-                                                  ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                                  ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                                   TimeService timeService,
                                                   JobUtilsService jobUtilsService) {
         super(queueDirectory,
@@ -59,9 +82,13 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService,
             timeService,
             jobUtilsService);
+
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if (this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
+        }
 
         this.scheduledContextRecord = scheduledContextRecord;
     }
@@ -74,7 +101,6 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             ContextInstanceImpl contextInstance = this.objectMapper
                 .readValue(this.objectMapper.writeValueAsBytes(this.scheduledContextRecord.getContext()), ContextInstanceImpl.class);
             Date now = timeService.getDateNow();
-            // @todo check with mick where the cron expressions are entered
             if(!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                 && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(),now)) {
                 initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, true,null);

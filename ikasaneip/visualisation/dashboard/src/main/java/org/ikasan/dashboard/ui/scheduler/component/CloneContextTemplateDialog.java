@@ -198,7 +198,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
 
         Icon startWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         startWindowCronBuilderIcon.addClickListener(event -> {
-            CronBuilderDialog dialog = new CronBuilderDialog();
+            CronBuilderDialog dialog = new JobPlanCronBuilderDialog(this.contextTemplate);
             dialog.init(this.startWindowCronExpressionTf.getValue());
             dialog.open();
 

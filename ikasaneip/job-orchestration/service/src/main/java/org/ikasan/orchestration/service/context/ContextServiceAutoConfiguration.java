@@ -1,6 +1,6 @@
 package org.ikasan.orchestration.service.context;
 
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecoveryServiceImpl;
 import org.ikasan.orchestration.service.context.register.ContextInstanceRegistrationServiceImpl;
@@ -25,11 +25,9 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Lazy;
 
 @Configuration
 public class ContextServiceAutoConfiguration {
@@ -64,7 +62,7 @@ public class ContextServiceAutoConfiguration {
         ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
         SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
         JobLockCacheInitialisationService jobLockCacheInitialisationService,
-        ContextInstanceSchedulerService contextInstanceSchedulerService,
+        ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
         TimeService timeService,
         ContextInstanceRegistrationService contextInstanceRegistrationService,
         JobUtilsService jobUtilsService) {
@@ -104,7 +102,6 @@ public class ContextServiceAutoConfiguration {
         ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
         SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
         JobLockCacheInitialisationService jobLockCacheInitialisationService,
-        @Lazy ContextInstanceSchedulerService contextInstanceSchedulerService,
         TimeService timeService,
         ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
         SystemEventService systemEventService,
@@ -123,7 +120,6 @@ public class ContextServiceAutoConfiguration {
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService,
             timeService,
             contextInstanceSavedEventBroadcaster,
             systemEventService,

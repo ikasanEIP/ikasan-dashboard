@@ -118,7 +118,7 @@ public class DayOfWeekJobDialog extends AbstractCloseableResizableDialog {
         helpButton.setHeight("32px");
 
         helpButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-            DayOfWeekJobHelpDialog dayOfWeekJobHelpDialog = new DayOfWeekJobHelpDialog();
+            HelpDialog dayOfWeekJobHelpDialog = new HelpDialog(getTranslation("help.day-of-week-job-help", UI.getCurrent().getLocale()));
             dayOfWeekJobHelpDialog.open();
         });
 

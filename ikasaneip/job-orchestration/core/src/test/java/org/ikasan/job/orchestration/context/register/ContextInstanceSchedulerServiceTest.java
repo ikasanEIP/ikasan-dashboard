@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.context.register;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.scheduler.ScheduledJobFactory;
@@ -46,12 +47,12 @@ public class ContextInstanceSchedulerServiceTest {
     @Mock
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
     @Before
     public void setUp() {
-        contextInstanceSchedulerService = new ContextInstanceSchedulerService(scheduler, scheduledJobFactory,
-            scheduledContextService, contextInstanceRegistrationService, true, true);
+        contextInstanceSchedulerService = new ContextInstanceSchedulerServiceImpl(scheduler, scheduledJobFactory,
+            scheduledContextService, contextInstanceRegistrationService, new TimeService(), true, true);
         ContextMachineCache.instance().resetAllCache();
     }
 
@@ -151,10 +152,8 @@ public class ContextInstanceSchedulerServiceTest {
                 context.setName(CONTEXT_NAME + i);
                 if (outsideOfOperatingWindow) {
                     context.setTimeWindowStart("59 59 23 ? * * *");
-//                    context.setTimeWindowEnd("59 59 23 ? * * *");
-                } else {
+               } else {
                     context.setTimeWindowStart("* * 0 ? * * *");
-//                    context.setTimeWindowEnd("* * 23 ? * * *");
                 }
                 record.setContext(context);
                 results.add(record);

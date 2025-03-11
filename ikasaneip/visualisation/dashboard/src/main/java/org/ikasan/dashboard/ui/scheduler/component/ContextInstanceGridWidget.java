@@ -17,7 +17,7 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -57,7 +57,7 @@ public class ContextInstanceGridWidget extends Div {
     private ScheduledContextService scheduledContextService;
     private GlobalEventService globalEventService;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
 
     /**
@@ -81,13 +81,13 @@ public class ContextInstanceGridWidget extends Div {
      * @param scheduledContextService
      */
     public ContextInstanceGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                 LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
-                                 JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobUtilsService jobUtilsService,
-                                 ScheduledContextService scheduledContextService, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                 ContextInstanceSchedulerService contextInstanceSchedulerService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
-                                 double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+                                     ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                     MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                     LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
+                                     JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobUtilsService jobUtilsService,
+                                     ScheduledContextService scheduledContextService, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                     ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                     double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {

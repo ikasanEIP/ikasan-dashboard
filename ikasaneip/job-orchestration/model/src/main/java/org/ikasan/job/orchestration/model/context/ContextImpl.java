@@ -30,6 +30,7 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>();
     protected String timeWindowStart;
+    protected boolean customWeekDayOfMonth = false;
     protected long contextTtlMilliseconds;
     protected String environmentGroup;
     protected boolean isQuartzScheduleDrivenJobsDisabledForContext;
@@ -139,6 +140,16 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setTimeWindowStart(String timeWindowStart) {
         this.timeWindowStart = timeWindowStart;
+    }
+
+    @Override
+    public boolean isCustomWeekDayOfMonth() {
+        return customWeekDayOfMonth;
+    }
+
+    @Override
+    public void setCustomWeekDayOfMonth(boolean customWeekDayOfMonth) {
+        this.customWeekDayOfMonth = customWeekDayOfMonth;
     }
 
     @Override

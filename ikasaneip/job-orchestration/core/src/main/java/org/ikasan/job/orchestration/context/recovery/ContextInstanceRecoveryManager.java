@@ -27,7 +27,7 @@ public class ContextInstanceRecoveryManager {
 
 //    @PostConstruct
     public void recoverContextInstances() {
-        // NOTE: This executes before ContextInstanceSchedulerService
+        // NOTE: This executes before ContextInstanceSchedulerServiceImpl
         logger.info("Recovering context instances!");
         if (!isIkasanEnterpriseSchedulerInstance) {
             logger.info("ContextInstanceRecoveryManager not running as an Ikasan Enterprise Scheduler instance");

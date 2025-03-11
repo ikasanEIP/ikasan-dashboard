@@ -523,6 +523,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
      * Helper method to save the underlying cache record to the persistent store.
      */
     private void saveJobLockCacheRecord() {
+        if(this.jobLockCacheService == null) return;
         if(this.jobLockCacheRecord == null) {
             this.jobLockCacheRecord = new JobLockCacheRecordImpl();
         }
