@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -27,6 +26,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.validator.StringToDefaultLongConverter;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
+import org.ikasan.dashboard.ui.scheduler.util.ControlCharacterUtils;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -467,8 +467,34 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
+        Button useWindowsControlCharactersButton = new Button(getTranslation("button.windows-format", UI.getCurrent().getLocale()));
+        useWindowsControlCharactersButton.addClickListener(event -> {
+            this.commandLineTa.setValue(ControlCharacterUtils.format(this.commandLineTa.getValue()
+                , ControlCharacterUtils.ControlCharacter.WINDOWS));
+        });
+
+        ComponentSecurityVisibility.applyEnabledSecurity(useWindowsControlCharactersButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
+        Button useUnixControlCharactersButton = new Button(getTranslation("button.unix-format", UI.getCurrent().getLocale()));
+        useUnixControlCharactersButton.addClickListener(event -> {
+            this.commandLineTa.setValue(ControlCharacterUtils.format(this.commandLineTa.getValue()
+                , ControlCharacterUtils.ControlCharacter.UNIX));
+        });
+
+        ComponentSecurityVisibility.applyEnabledSecurity(useUnixControlCharactersButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
+        Checkbox displayControlCharacters = new Checkbox(getTranslation("label.display-control-characters"));
+        displayControlCharacters.addValueChangeListener(event
+            -> this.commandLineTa.setShowInvisibles(event.getValue()));
+
         HorizontalLayout horizontalLayout = new HorizontalLayout();
-        horizontalLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton);
+        horizontalLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton
+            , useWindowsControlCharactersButton, useUnixControlCharactersButton, displayControlCharacters);
+        horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, displayControlCharacters);
 
         VerticalLayout newButtonLayout = new VerticalLayout();
         newButtonLayout.setWidth("100%");

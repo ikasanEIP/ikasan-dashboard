@@ -13,7 +13,7 @@ import org.ikasan.dashboard.ui.general.component.FilteringGridTest;
 import org.ikasan.dashboard.ui.general.component.HospitalViewTest;
 import org.ikasan.dashboard.ui.general.component.SearchResultTest;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayoutTest;
-import org.ikasan.dashboard.ui.org.ikasan.dashboard.broadcast.FlowStateBroadcasterTest;
+import org.ikasan.dashboard.ui.broadcast.FlowStateBroadcasterTest;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceDashboardWidgetTest;
 import org.ikasan.dashboard.ui.scheduler.service.CanvasJsonToContextTemplateAdapterTest;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerViewTest;

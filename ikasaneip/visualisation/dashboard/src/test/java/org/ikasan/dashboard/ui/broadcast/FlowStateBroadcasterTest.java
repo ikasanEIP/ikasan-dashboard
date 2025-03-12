@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.org.ikasan.dashboard.broadcast;
+package org.ikasan.dashboard.ui.broadcast;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
