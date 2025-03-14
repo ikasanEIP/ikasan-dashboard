@@ -151,6 +151,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private Checkbox useDisplayNameCb;
     private Checkbox renderLogicalBoundariesCb;
     private Checkbox useAutoformattingCb;
+    private Checkbox delayJobSynchronisationUntilNextInstanceCb;
     private UI ui;
     private boolean removeTrailingPlanNameContextAfterUnderscore;
     private int jobPlanIntervalMultiple;
@@ -433,6 +434,13 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             .bind(ContextTemplate::isUseAutoLayout, ContextTemplate::setUseAutoLayout);
         this.useAutoformattingCb.setEnabled(false);
 
+        this.delayJobSynchronisationUntilNextInstanceCb = new Checkbox(getTranslation("label.delay-agent-synchronisation"));
+        this.delayJobSynchronisationUntilNextInstanceCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.delayJobSynchronisationUntilNextInstanceCb)
+            .bind(ContextTemplate::isDelayAgentSynchronisationUntilNextInstance
+                , ContextTemplate::setDelayAgentSynchronisationUntilNextInstance);
+        this.delayJobSynchronisationUntilNextInstanceCb.setEnabled(false);
+
         this.initialiseBlackoutWindowGrid();
         this.populateBlackoutWindowPairs(contextTemplate);
 
@@ -472,7 +480,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         headerLayout.add(labelLayout, createButtonLayout());
 
         VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
-            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb);
+            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb
+            , this.delayJobSynchronisationUntilNextInstanceCb);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");

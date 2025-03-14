@@ -36,8 +36,10 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.junit.After;
@@ -118,6 +120,10 @@ public class ContextInstanceRegistrationServiceImplTest {
 
     @Mock
     private InternalEventDrivenJobInstance mockInternalEventDrivenJobInstance;
+    @Mock
+    private JobProvisionService jobProvisionService;
+    @Mock
+    private SchedulerJobService schedulerJobService;
 
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
 
@@ -152,6 +158,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             true);
         ContextMachineCache.instance().resetAllCache();
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
@@ -183,6 +191,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -210,6 +220,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -236,6 +248,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             false);
 
         registrationService.register("contextName", this.contextInstanceSchedulerService);
@@ -250,6 +264,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
     }
@@ -274,6 +290,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             false);
 
         registrationService.register("contextName", List.of(), this.contextInstanceSchedulerService);
@@ -288,6 +306,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
     }
@@ -312,6 +332,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             false);
 
         registrationService.deRegisterById("contextId");
@@ -326,6 +348,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
     }
@@ -350,6 +374,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             false);
 
         registrationService.deRegisterByName("contextName", this.contextInstanceSchedulerService);
@@ -364,6 +390,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
     }
@@ -388,6 +416,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             false);
 
         registrationService.deregisterManually("contextId");
@@ -402,6 +432,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
     }
@@ -426,6 +458,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             false);
 
         registrationService.reSchedule("contextName", this.contextInstanceSchedulerService);
@@ -440,6 +474,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
     }
@@ -500,6 +536,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -575,6 +613,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -688,6 +728,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -775,6 +817,129 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
+            schedulerJobStateChangeEventBroadcaster
+        );
+
+        List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
+        assertNotNull(contextMachines);
+        assertEquals(2, contextMachines.size());
+
+        contextMachines.forEach(contextMachine -> {
+            if(contextMachine.getContext().getStatus().equals(InstanceStatus.WAITING)) {
+                SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+                    = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+                assertNotNull(schedulerJobInitiationEventRaisedListener);
+
+                List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+                    = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+                assertNotNull(contextInstanceStateChangeEventListeners);
+                assertEquals(1, contextInstanceStateChangeEventListeners.size());
+
+                JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+                assertNotNull(jobLogicMachine);
+                List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+                    = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+                assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+                assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+            }
+            else if(contextMachine.getContext().getStatus().equals(InstanceStatus.PREPARED)) {
+                SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+                    = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+                assertNull(schedulerJobInitiationEventRaisedListener);
+
+                List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+                    = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+                assertNotNull(contextInstanceStateChangeEventListeners);
+                assertEquals(0, contextInstanceStateChangeEventListeners.size());
+
+                JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+                assertNotNull(jobLogicMachine);
+                List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+                    = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+                assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+                assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+            }
+        });
+    }
+
+    @Test
+    public void register_with_agents_requires_agent_synchronisation() throws Exception {
+        // set up
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+
+        // Set flags so that jobs will be synchronised with the agent.
+        context.setDelayAgentSynchronisationUntilNextInstance(true);
+        context.setRequiresAgentSynchronisation(true);
+
+        record.setContext(context);
+        record.setContextName(contextName);
+        when(scheduledContextService.findById(contextName)).thenReturn(record);
+
+        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
+
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+        when(this.schedulerJobService.findByContext(anyString(), anyInt(), anyInt()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
+
+        List<ContextParameterInstance> params = TestUtils.createParams();
+
+        ContextInstanceImpl contextInstance = this.objectMapper
+            .readValue(this.objectMapper.writeValueAsBytes(record.getContext()), ContextInstanceImpl.class);
+        contextInstance.setContextParameters(params);
+
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+
+        // execute
+        contextInstanceRegistrationService.register(contextName, this.contextInstanceSchedulerService);
+
+        // verify
+        verify(scheduledContextService, times(3)).findById(contextName);
+        verify(scheduledContextService, times(1)).save(any());
+        verify(schedulerJobService, times(1)).findByContext(anyString(), anyInt(), anyInt());
+        verify(jobProvisionService, times(1)).provisionJobs(any(), anyString());
+        verify(moduleMetadataService, times(2)).find(any(), any(), eq(-1), eq(-1));
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
+        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
+        verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            jobLockCacheService,
+            contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -885,6 +1050,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -1004,6 +1171,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -1099,6 +1268,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -1225,6 +1396,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             systemEventService
         );
 
@@ -1325,6 +1498,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             systemEventService
         );
 
@@ -1452,6 +1627,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             systemEventService
         );
 
@@ -1567,6 +1744,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -1664,6 +1843,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -1778,6 +1959,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -1875,6 +2058,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -1994,6 +2179,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2097,6 +2284,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2187,6 +2376,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2239,6 +2430,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2299,6 +2492,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2370,6 +2565,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2430,6 +2627,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2494,6 +2693,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2569,6 +2770,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2609,6 +2812,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2646,6 +2851,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2717,6 +2924,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2802,6 +3011,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2842,6 +3053,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2891,6 +3104,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -2972,6 +3187,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster,
             mockInternalEventDrivenJobInstance,
             jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             mockSchedulerJobInstanceService
         );
 
@@ -3052,6 +3269,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster,
             mockInternalEventDrivenJobInstance,
             jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             mockSchedulerJobInstanceService
         );
 
@@ -3130,6 +3349,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster,
             mockInternalEventDrivenJobInstance,
             jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             mockSchedulerJobInstanceService
         );
 
@@ -3166,6 +3387,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -3219,6 +3442,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -3298,6 +3523,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -3388,6 +3615,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -3417,6 +3646,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             false);
 
 
@@ -3434,6 +3665,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -3480,6 +3713,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -3578,6 +3813,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -3697,6 +3934,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -3818,6 +4057,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 
@@ -3939,6 +4180,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
         );
 

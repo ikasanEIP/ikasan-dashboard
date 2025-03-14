@@ -285,6 +285,68 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
     }
 
     @Test
+    public void should_upload_not_provision_jobs_due_to_delay_job_synchronisation_and_create_context() {
+        ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
+        String contextName = "ContextName";
+        contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
+        contextTemplate.setName(contextName);
+        contextTemplate.setRequiresAgentSynchronisation(true);
+        contextTemplate.setDelayAgentSynchronisationUntilNextInstance(true);
+
+        List<SchedulerJob> contextJobs = new ArrayList<>();
+        FileEventDrivenJob fileJobRecord = new FileEventDrivenJobImpl();
+        fileJobRecord.setAgentName("agentName1");
+        QuartzScheduleDrivenJob quartzDrivenJob = new QuartzScheduleDrivenJobImpl();
+        quartzDrivenJob.setAgentName("agentName1");
+        GlobalEventJob globalEventJob = new GlobalEventJobImpl();
+        globalEventJob.setAgentName("agentName1");
+        InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob.setAgentName("agentName1");
+        InternalEventDrivenJob internalEventDrivenJobTemplate = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobTemplate.setAgentName("agentName1");
+        internalEventDrivenJobTemplate.setTemplateJob(true);
+
+        contextJobs.add(fileJobRecord);
+        contextJobs.add(quartzDrivenJob);
+        contextJobs.add(internalEventDrivenJob);
+        contextJobs.add(internalEventDrivenJobTemplate);
+
+        // Does not get provision
+        contextJobs.add(globalEventJob);
+
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
+
+        List<String> roleList = List.of("role1", "role2");
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
+        service.provisionContext(contextBundle);
+
+        verify(schedulerJobService).deleteByContextName(contextName);
+        verify(contextProfileService).deleteByContextName(contextName);
+        verify(emailNotificationDetailsService).deleteByContextName(contextName);
+        verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
+        verify(schedulerJobService).save(contextJobs, "system");
+
+        ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
+        verify(scheduledContextService).save(contextCaptor.capture());
+        ScheduledContextRecord actualContextRecord = contextCaptor.getValue();
+        assertEquals(contextName, actualContextRecord.getContextName());
+        assertNull(null, actualContextRecord.getId());
+        assertNotNull(actualContextRecord.getContext());
+        assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
+
+        verifyNoMoreInteractions(
+            scheduledContextService, moduleMetadataService, schedulerJobService,
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
+    }
+
+    @Test
     public void should_upload_provision_jobs_and_create_context_with_timezone() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";

@@ -11,11 +11,10 @@ import org.ikasan.spec.search.SearchResults;
 public class ScheduledContextRecordTestSearchResults<ANY> implements SearchResults<ScheduledContextRecord> {
 
     public static final String CONTEXT_NAME = "ContextName";
-
     private final int number;
     private final boolean outsideOfOperatingWindow;
-
     private boolean disabled = false;
+    private boolean requiresSynchronisation = false;
 
     public ScheduledContextRecordTestSearchResults(int number, boolean outsideOfOperatingWindow) {
         this.number = number;
@@ -28,6 +27,14 @@ public class ScheduledContextRecordTestSearchResults<ANY> implements SearchResul
         this.disabled = disabled;
     }
 
+    public ScheduledContextRecordTestSearchResults(int number, boolean outsideOfOperatingWindow, boolean disabled,
+                                                   boolean requiresSynchronisation) {
+        this.number = number;
+        this.outsideOfOperatingWindow = outsideOfOperatingWindow;
+        this.disabled = disabled;
+        this.requiresSynchronisation = requiresSynchronisation;
+    }
+
     @Override
     public List<ScheduledContextRecord> getResultList() {
         List<ScheduledContextRecord> results = new ArrayList<>();
@@ -38,6 +45,8 @@ public class ScheduledContextRecordTestSearchResults<ANY> implements SearchResul
             ContextTemplateImpl context = new ContextTemplateImpl();
             context.setDisabled(this.disabled);
             context.setName(CONTEXT_NAME + i);
+            context.setDelayAgentSynchronisationUntilNextInstance(this.requiresSynchronisation);
+            context.setRequiresAgentSynchronisation(this.requiresSynchronisation);
             if (outsideOfOperatingWindow) {
                 context.setTimeWindowStart("59 59 23 ? * * *");
                 context.setContextTtlMilliseconds(1L);
