@@ -17,7 +17,6 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
-@ImportResource({ "classpath:test-datasource-conf.xml" })
 @Import(value = {ConfigurationServiceAutoConfiguration.class})
 public class TestConfiguration
 {

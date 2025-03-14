@@ -83,6 +83,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private Checkbox useDisplayNameCb;
     private Checkbox renderLogicalBoundariesCb;
     private Checkbox useAutoformattingCb;
+    private Checkbox delayJobSynchronisationUntilNextInstanceCb;
     private DateTimePicker blackoutWindowStartTime;
     private DateTimePicker blackoutWindowEndTime;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
@@ -362,6 +363,12 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         binder.forField(this.useAutoformattingCb)
             .bind(ContextTemplate::isUseAutoLayout, ContextTemplate::setUseAutoLayout);
 
+        this.delayJobSynchronisationUntilNextInstanceCb = new Checkbox(getTranslation("label.delay-agent-synchronisation"));
+        this.delayJobSynchronisationUntilNextInstanceCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.delayJobSynchronisationUntilNextInstanceCb)
+            .bind(ContextTemplate::isDelayAgentSynchronisationUntilNextInstance
+                , ContextTemplate::setDelayAgentSynchronisationUntilNextInstance);
+
         binder.readBean(this.contextTemplate);
 
         this.blackoutWindowStartTime = new DateTimePicker(getTranslation("label.blackout-window-start-date-time", UI.getCurrent().getLocale()));
@@ -448,7 +455,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.formLayout.setHeightFull();
 
         VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
-            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb);
+            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb
+            , this.delayJobSynchronisationUntilNextInstanceCb);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");

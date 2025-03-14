@@ -160,7 +160,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             if(contextBundle.getEmailNotificationContext() != null) {
                 this.saveEmailNotificationContext(contextBundle.getEmailNotificationContext());
             }
-            if (this.uploadProvisionJobs) {
+            if (this.uploadProvisionJobs && !contextBundle.getContextTemplate().isDelayAgentSynchronisationUntilNextInstance()) {
                 provisionJobs(contextBundle.getSchedulerJobs());
             }
 
@@ -240,7 +240,13 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     }
 
     private void saveContext(ContextTemplate contextTemplate) {
-        // overwrite the existing context service regardless whether it exists
+        // As the context has been provisioned, we need to mark the plan
+        // as requiring synchronisation with the agent next time the job
+        // plan starts.
+        if(contextTemplate.isDelayAgentSynchronisationUntilNextInstance()) {
+            contextTemplate.setRequiresAgentSynchronisation(true);
+        }
+        // overwrite the existing context regardless whether it exists
         ScheduledContextRecord scheduledContextRecord = new ScheduledContextRecordImpl();
         scheduledContextRecord.setContextName(contextTemplate.getName());
         scheduledContextRecord.setContext(contextTemplate);

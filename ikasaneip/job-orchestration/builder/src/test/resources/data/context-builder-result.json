@@ -4,57 +4,57 @@
     "jobName" : "Job1",
     "startupControlType" : "AUTOMATIC",
     "ordinal" : -1,
-    "jobDescription" : "Job1 Description",
-    "identifier" : "AgentName-Job1"
+    "identifier" : "AgentName-Job1",
+    "jobDescription" : "Job1 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job2",
     "startupControlType" : "AUTOMATIC",
     "ordinal" : -1,
-    "jobDescription" : "Job2 Description",
-    "identifier" : "AgentName-Job2"
+    "identifier" : "AgentName-Job2",
+    "jobDescription" : "Job2 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job3",
     "startupControlType" : "AUTOMATIC",
     "ordinal" : -1,
-    "jobDescription" : "Job3 Description",
-    "identifier" : "AgentName-Job3"
+    "identifier" : "AgentName-Job3",
+    "jobDescription" : "Job3 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job4",
     "startupControlType" : "AUTOMATIC",
     "ordinal" : -1,
-    "jobDescription" : "Job4 Description",
-    "identifier" : "AgentName-Job4"
+    "identifier" : "AgentName-Job4",
+    "jobDescription" : "Job4 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job5",
     "startupControlType" : "AUTOMATIC",
     "ordinal" : -1,
-    "jobDescription" : "Job5 Description",
-    "identifier" : "AgentName-Job5"
+    "identifier" : "AgentName-Job5",
+    "jobDescription" : "Job5 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job6",
     "startupControlType" : "AUTOMATIC",
     "ordinal" : -1,
-    "jobDescription" : "Job6 Description",
-    "identifier" : "AgentName-Job6"
+    "identifier" : "AgentName-Job6",
+    "jobDescription" : "Job6 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job7",
     "startupControlType" : "AUTOMATIC",
     "ordinal" : -1,
-    "jobDescription" : "Job7 Description",
-    "identifier" : "AgentName-Job7"
+    "identifier" : "AgentName-Job7",
+    "jobDescription" : "Job7 Description"
   }, {
     "agentName" : "AgentName",
     "jobName" : "Job8",
     "startupControlType" : "AUTOMATIC",
     "ordinal" : -1,
-    "jobDescription" : "Job8 Description",
-    "identifier" : "AgentName-Job8"
+    "identifier" : "AgentName-Job8",
+    "jobDescription" : "Job8 Description"
   } ],
   "name" : "Context Template Name",
   "description" : "Context Template Description",
@@ -121,5 +121,7 @@
   "renderLogicalBoundaries" : true,
   "useAutoLayout" : true,
   "disabled" : false,
+  "delayAgentSynchronisationUntilNextInstance" : false,
+  "requiresAgentSynchronisation" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

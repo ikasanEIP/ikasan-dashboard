@@ -20,8 +20,10 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,7 +67,9 @@ public class ContextServiceAutoConfiguration {
         ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
         TimeService timeService,
         ContextInstanceRegistrationService contextInstanceRegistrationService,
-        JobUtilsService jobUtilsService) {
+        JobUtilsService jobUtilsService,
+        JobProvisionService jobProvisionService,
+        SchedulerJobService schedulerJobService) {
 
         return new ContextInstanceRecoveryServiceImpl(queueDirectory,
             scheduledContextInstanceService,
@@ -84,6 +88,8 @@ public class ContextServiceAutoConfiguration {
             timeService,
             contextInstanceRegistrationService,
             jobUtilsService,
+            jobProvisionService,
+            schedulerJobService,
             this.isIkasanEnterpriseSchedulerInstance
         );
     }
@@ -105,7 +111,9 @@ public class ContextServiceAutoConfiguration {
         TimeService timeService,
         ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
         SystemEventService systemEventService,
-        JobUtilsService jobUtilsService) {
+        JobUtilsService jobUtilsService,
+        JobProvisionService jobProvisionService,
+        SchedulerJobService schedulerJobService) {
 
         return new ContextInstanceRegistrationServiceImpl(queueDirectory,
             scheduledContextInstanceService,
@@ -124,6 +132,8 @@ public class ContextServiceAutoConfiguration {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             jobUtilsService,
+            jobProvisionService,
+            schedulerJobService,
             this.isIkasanEnterpriseSchedulerInstance
         );
     }

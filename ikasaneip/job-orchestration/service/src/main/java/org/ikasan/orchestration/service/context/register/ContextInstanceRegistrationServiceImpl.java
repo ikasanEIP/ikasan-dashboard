@@ -67,15 +67,21 @@ import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationServ
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventService;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
@@ -102,6 +108,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
                                                   SystemEventService systemEventService,
                                                   JobUtilsService jobUtilsService,
+                                                  JobProvisionService jobProvisionService,
+                                                  SchedulerJobService schedulerJobService,
                                                   boolean isIkasanEnterpriseSchedulerInstance) {
         super(queueDirectory,
             scheduledContextInstanceService,
@@ -117,7 +125,9 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            jobUtilsService);
+            jobUtilsService,
+            jobProvisionService,
+            schedulerJobService);
 
         this.contextInstanceSavedEventBroadcaster = contextInstanceSavedEventBroadcaster;
         if (this.contextInstanceSavedEventBroadcaster == null) {

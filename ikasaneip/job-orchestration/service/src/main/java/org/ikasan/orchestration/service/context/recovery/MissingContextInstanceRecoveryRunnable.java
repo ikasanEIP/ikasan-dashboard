@@ -18,8 +18,10 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +71,9 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
                                                   JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                                   ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                                   TimeService timeService,
-                                                  JobUtilsService jobUtilsService) {
+                                                  JobUtilsService jobUtilsService,
+                                                  JobProvisionService jobProvisionService,
+                                                  SchedulerJobService schedulerJobService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService, moduleMetadataService,
@@ -83,7 +87,9 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            jobUtilsService);
+            jobUtilsService,
+            jobProvisionService,
+            schedulerJobService);
 
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
         if (this.contextInstanceSchedulerService == null) {

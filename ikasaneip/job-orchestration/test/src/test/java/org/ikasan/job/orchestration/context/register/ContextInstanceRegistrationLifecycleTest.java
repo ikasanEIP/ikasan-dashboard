@@ -28,8 +28,10 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.scheduler.DashboardJob;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventService;
@@ -114,6 +116,10 @@ public class ContextInstanceRegistrationLifecycleTest {
     private JobExecutionContext jobExecutionContext;
     @Mock
     private JobDetail endJobDetail;
+    @Mock
+    private JobProvisionService jobProvisionService;
+    @Mock
+    private SchedulerJobService schedulerJobService;
 
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
@@ -142,6 +148,8 @@ public class ContextInstanceRegistrationLifecycleTest {
             contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             true);
 
         contextInstanceSchedulerService = new ContextInstanceSchedulerServiceImpl(scheduler, scheduledJobFactory,

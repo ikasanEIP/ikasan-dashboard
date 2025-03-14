@@ -31,11 +31,15 @@ import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroad
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +65,8 @@ public abstract class ContextInstanceServiceBase {
     protected final ScheduledContextService scheduledContextService;
     protected final SchedulerJobInstanceService schedulerJobInstanceService;
     protected final JobLockCacheInitialisationService jobLockCacheInitialisationService;
+    protected final JobProvisionService jobProvisionService;
+    protected final SchedulerJobService schedulerJobService;
     protected final ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
     protected final SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
     protected final TimeService timeService;
@@ -70,25 +76,27 @@ public abstract class ContextInstanceServiceBase {
 
 
 
+
     /**
-     * Constructs a ContextInstanceServiceBase object with the provided parameters.
+     * Constructor for initializing ContextInstanceServiceBase with required dependencies.
      *
-     * @param queueDirectory                              the directory where the job queue is located (must not be null)
-     * @param scheduledContextInstanceService            the service for managing scheduled context instances (must not be null)
-     * @param jobInitiationService                        the service for initiating jobs (must not be null)
-     * @param moduleMetadataService                       the service for accessing module metadata (must not be null)
-     * @param internalEventDrivenJobService               the service for managing internal event driven jobs (must not be null)
-     * @param contextParametersInstanceService            the service for managing context parameters instances (must not be null)
-     * @param contextInstancePublicationService           the service for publishing context parameters updates (must not be null)
-     * @param jobLockCacheService                         the service for managing job lock cache (must not be null)
-     * @param scheduledContextService                     the service for managing scheduled contexts (must not be null)
-     * @param schedulerJobInstanceService                 the service for managing scheduler job instances (must not be null)
-     * @param contextInstanceStateChangeEventBroadcaster  the broadcaster for context instance state change events (must not be null)
-     * @param schedulerJobStateChangeEventBroadcaster     the broadcaster for scheduler job state change events (must not be null)
-     * @param jobLockCacheInitialisationService           the service for initializing job lock cache (must not be null)
-     * @param timeService                                 the service for providing current time (must not be null)
-     * @param jobUtilsService                             the service for utility operations on jobs (must not be null)
-     * @throws IllegalArgumentException                  if any of the parameters is null
+     * @param queueDirectory                           The directory for queue
+     * @param scheduledContextInstanceService          The service for scheduled context instances
+     * @param jobInitiationService                     The service for job initiation
+     * @param moduleMetadataService                    The service for module metadata
+     * @param internalEventDrivenJobService            The service for internal event-driven jobs
+     * @param contextParametersInstanceService         The service for context parameters instances
+     * @param contextInstancePublicationService        The service for context instance publication
+     * @param jobLockCacheService                      The service for job lock cache
+     * @param scheduledContextService                  The service for scheduled context
+     * @param schedulerJobInstanceService               The service for scheduler job instances
+     * @param contextInstanceStateChangeEventBroadcaster The broadcaster for context instance state change events
+     * @param schedulerJobStateChangeEventBroadcaster  The broadcaster for scheduler job state change events
+     * @param jobLockCacheInitialisationService        The service for initializing job lock cache
+     * @param timeService                              The service for time
+     * @param jobUtilsService                          The service for job utilities
+     * @param jobProvisionService                      The service for job provision
+     * @param schedulerJobService                      The service for scheduler jobs
      */
     public ContextInstanceServiceBase(String queueDirectory,
                                       ScheduledContextInstanceService scheduledContextInstanceService,
@@ -104,7 +112,9 @@ public abstract class ContextInstanceServiceBase {
                                       SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                       JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                       TimeService timeService,
-                                      JobUtilsService jobUtilsService) {
+                                      JobUtilsService jobUtilsService,
+                                      JobProvisionService jobProvisionService,
+                                      SchedulerJobService schedulerJobService) {
         this.queueDirectory = queueDirectory;
         if (this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
@@ -165,6 +175,14 @@ public abstract class ContextInstanceServiceBase {
         if (this.jobUtilsService == null) {
             throw new IllegalArgumentException("jobUtilsService cannot be null!");
         }
+        this.jobProvisionService = jobProvisionService;
+        if (this.jobProvisionService == null) {
+            throw new IllegalArgumentException("jobProvisionService cannot be null!");
+        }
+        this.schedulerJobService = schedulerJobService;
+        if (this.schedulerJobService == null) {
+            throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
 
         this.objectMapper = ObjectMapperFactory.newInstance();
     }
@@ -194,6 +212,19 @@ public abstract class ContextInstanceServiceBase {
     }
 
     /**
+     * Saves the provided ContextTemplate by updating the corresponding ScheduledContextRecord in the database.
+     *
+     * @param contextTemplate The ContextTemplate object to be saved
+     */
+    protected void saveContextTemplate(ContextTemplate contextTemplate) {
+        ScheduledContextRecord contextRecord = this.scheduledContextService.findById(contextTemplate.getName());
+        contextRecord.setContext(contextTemplate);
+        contextRecord.setModifiedTimestamp(System.currentTimeMillis());
+        contextRecord.setModifiedBy("system");
+        this.scheduledContextService.save(contextRecord);
+    }
+
+    /**
      * Initializes the context machine for a given context and instance.
      *
      * @param context                    The context template.
@@ -205,6 +236,16 @@ public abstract class ContextInstanceServiceBase {
      */
     protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance
         , boolean initialiseJobs, boolean isInitialContextInstantiation, List<ContextParameterInstance> contextParameterInstances) throws Exception {
+        // We may need to synchronise the jobs on the agent. This is likely due to the fact that the agent has been
+        // redeployed.
+        if(context.isDelayAgentSynchronisationUntilNextInstance()
+            && context.isRequiresAgentSynchronisation()
+            && isInitialContextInstantiation) {
+            this.provisionJobs(context);
+            context.setRequiresAgentSynchronisation(false);
+            this.saveContextTemplate(context);
+        }
+
         if(initialiseJobs) {
             SchedulerJobInstancesInitialisationParameters parameters
                 = new SchedulerJobInstancesInitialisationParametersImpl(false);
@@ -472,6 +513,21 @@ public abstract class ContextInstanceServiceBase {
             LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Provision scheduler jobs for the given context.
+     *
+     * @param contextTemplate The context template to provision jobs for.
+     */
+    protected void provisionJobs(ContextTemplate contextTemplate) {
+        SearchResults<SchedulerJobRecord> jobRecords = this.schedulerJobService.findByContext(contextTemplate.getName(), -1, -1);
+
+        List<SchedulerJob> schedulerJobs = jobRecords.getResultList().stream()
+            .map(record -> record.getJob())
+            .collect(Collectors.toList());
+
+        this.jobProvisionService.provisionJobs(schedulerJobs, "system");
     }
 
     /**

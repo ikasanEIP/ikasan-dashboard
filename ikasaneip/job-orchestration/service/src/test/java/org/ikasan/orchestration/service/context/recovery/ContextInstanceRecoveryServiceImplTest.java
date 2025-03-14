@@ -38,8 +38,10 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.Before;
@@ -112,9 +114,12 @@ public class ContextInstanceRecoveryServiceImplTest {
 
     @Mock
     private TimeService timeService;
-
     @Mock
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+    @Mock
+    private JobProvisionService jobProvisionService;
+    @Mock
+    private SchedulerJobService schedulerJobService;
 
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -148,6 +153,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             timeService,
             contextInstanceRegistrationService,
             this.jobUtilsService,
+            this.jobProvisionService,
+            this.schedulerJobService,
             true
         );
 
@@ -197,6 +204,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             executor,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService,
             timeService
             );
 
@@ -259,7 +268,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             scheduledContextService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService
             );
 
         // ensure prepared context in cache
@@ -309,7 +320,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             scheduledContextService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService
         );
 
         // ensure cache is empty
@@ -372,7 +385,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             executor,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            timeService
+            timeService,
+            this.jobProvisionService,
+            this.schedulerJobService
             );
 
         // ensure prepared context in cache
@@ -430,7 +445,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             scheduledContextService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService
             );
 
         // ensure prepared context in cache
@@ -522,8 +539,123 @@ public class ContextInstanceRecoveryServiceImplTest {
             executor,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            timeService
+            timeService,
+            this.jobProvisionService,
+            this.schedulerJobService
             );
+
+        assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName1").size());
+        assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName2").size());
+        assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName3").size());
+
+        assertEquals(3, ContextMachineCache.instance().contextNames().size());
+        assertEquals(6, ContextMachineCache.instance().contextInstanceIdentifiers().size());
+
+        AtomicInteger preparedCount = new AtomicInteger();
+        AtomicInteger waitingCount = new AtomicInteger();
+        ContextMachineCache.instance().contextInstanceIdentifiers().forEach(id -> {
+            if(ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(WAITING)) {
+                verifyContextMachineById(id);
+                waitingCount.getAndIncrement();
+            }
+            else if(ContextMachineCache.instance().getByContextInstanceId(id).getContext().getStatus().equals(PREPARED)) {
+                preparedCount.getAndIncrement();
+            }
+        });
+
+        assertEquals(3, preparedCount.get());
+        assertEquals(3, waitingCount.get());
+    }
+
+    @Test
+    public void should_create_context_machine_with_agents_all_inside_operating_window_requires_agent_synchronisation() throws Exception {
+        // ensure no contexts
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+
+        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+
+        ScheduledContextInstanceRecordImpl prepared1 = new ScheduledContextInstanceRecordImpl();
+        ContextInstance contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
+        contextInstance.setStartTime(System.currentTimeMillis() + 100000L);
+        contextInstance.setName("ContextName1");
+        contextInstance.setStatus(PREPARED);
+        prepared1.setContextInstance(contextInstance);
+        prepared1.setContextName("ContextName1");
+        prepared1.setStartTime(System.currentTimeMillis() + 100000L);
+
+        ScheduledContextInstanceRecordImpl prepared2 = new ScheduledContextInstanceRecordImpl();
+        contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
+        contextInstance.setStartTime(System.currentTimeMillis() + 100000L);
+        contextInstance.setName("ContextName2");
+        contextInstance.setStatus(PREPARED);
+        prepared2.setContextInstance(contextInstance);
+        prepared2.setContextName("ContextName2");
+        prepared2.setStartTime(System.currentTimeMillis() + 100000L);
+
+        ScheduledContextInstanceRecordImpl prepared3 = new ScheduledContextInstanceRecordImpl();
+        contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
+        contextInstance.setStartTime(System.currentTimeMillis() + 100000L);
+        contextInstance.setName("ContextName3");
+        contextInstance.setStatus(PREPARED);
+        prepared3.setContextInstance(contextInstance);
+        prepared3.setContextName("ContextName3");
+        prepared3.setStartTime(System.currentTimeMillis() + 100000L);
+
+        when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(prepared1, prepared2, prepared3), 1, 1));
+
+
+        ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
+
+        // Set the context to require a delayed synchronisation.
+        ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(3, false, false, true);
+        when(scheduledContextService.findAll()).thenReturn(contextResults);
+
+        InternalEventDrivenJobTestSearchResults internalJobResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalJobResults.getResultList());
+        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults = new GlobalEventJobTestSearchResults(1);
+        schedulerJobInstanceService.save(globalEventJobRecordSearchResults.getResultList());
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
+
+        // execute
+        contextInstanceRecoveryServiceImpl.recoverInstances();
+
+        // verify
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
+        verify(scheduledContextService).findAll();
+        verify(contextParametersInstanceService, times(12)).populateContextParameters();
+        verify(contextParametersInstanceService, times(12)).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(moduleMetadataService, times(22)).find(any(), any(), eq(-1), eq(-1));
+        verify(timeService).getDateNow();
+        verify(scheduledContextInstanceService, times(12)).save(any(ScheduledContextInstanceRecord.class));
+        verify(contextInstancePublicationService, times(36)).publish(any(String.class), any(ContextInstance.class));
+        verify(contextInstancePublicationService, times(3)).removeAll(anyString());
+        verify(scheduledContextInstanceService, times(3)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
+
+        verifyNoMoreInteractions(scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            jobLockCacheService,
+            scheduledContextService,
+            executor,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster,
+            timeService,
+            this.jobProvisionService,
+            this.schedulerJobService
+        );
 
         assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName1").size());
         assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName2").size());
@@ -632,7 +764,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             executor,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            timeService
+            timeService,
+            this.jobProvisionService,
+            this.schedulerJobService
         );
 
         assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName1").size());
@@ -742,7 +876,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             executor,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            timeService
+            timeService,
+            this.jobProvisionService,
+            this.schedulerJobService
         );
 
         assertEquals(2, ContextMachineCache.instance().getAllByContextName("ContextName1").size());
@@ -832,7 +968,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             executor,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            timeService
+            timeService,
+            this.jobProvisionService,
+            this.schedulerJobService
             );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName("ContextName1");
@@ -886,7 +1024,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             scheduledContextService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            this.jobProvisionService,
+            this.schedulerJobService
             );
 
         // ensure no contexts
