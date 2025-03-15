@@ -38,6 +38,10 @@ public class QuartzTimeWindowChecker {
         ZonedDateTime nextExecutionStart = getNextExecution(startTimeCronExpression, referenceZDateTime);
         ZonedDateTime previousExecutionStart = getPreviousExecution(startTimeCronExpression, referenceZDateTime);
 
+        if(nextExecutionStart == null || previousExecutionStart == null) {
+            return false;
+        }
+
         String endTimeCronExpressionFromPrevious = CronUtils.buildCronFromOriginalWithMillisecondOffset(previousExecutionStart.toEpochSecond()*1000
             , contextTtl, timezone);
         String endTimeCronExpressionFromNext = CronUtils.buildCronFromOriginalWithMillisecondOffset(nextExecutionStart.toEpochSecond()*1000

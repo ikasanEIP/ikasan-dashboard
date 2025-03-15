@@ -23,6 +23,15 @@ public class QuartzTimeWindowCheckerTest {
     private static final String AT_14_32_00 = "0 32 14 ? * * *";
     private static final String AT_14_35_00 = "0 35 14 ? * * *";
 
+    private static final String AT_12_MIDDAY = "0 0 12 * * ? *";
+    private static final String AT_EVERY_SECOND_FORMAT1 = "* * * * * ? *";
+    private static final String AT_EVERY_SECOND_FORMAT2 = "* * * ? * * *";
+
+    private static final Long FIRST_SECOND_OF_2099 = 4070908801000L;
+    private static final Long FIRST_SECOND_OF_2024 = 1704067201000L;
+    private static final Long FIRST_SECOND_OF_2023 = 1672531201000L;
+    private static final Long FIRST_SECOND_OF_2022 = 1640995201000L;
+
     private final ZoneId LONDON = ZoneId.of("Europe/London");
     private final ZoneId AUSTRALIA = ZoneId.of("Australia/Sydney");
 
@@ -136,6 +145,22 @@ public class QuartzTimeWindowCheckerTest {
     }
 
     @Test
+    public void is_not_within_operating_window_as_plan_set_to_long_time_in_future() throws ParseException {
+        SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
+
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "59 59 23 31 12 ? 2099", 0L, myDate.parse("2022-05-18T11:59:59")), is(false));
+    }
+
+    @Test
+    public void is_not_within_operating_window_as_plan_set_to_long_time_in_past() throws ParseException {
+        SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
+
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "59 59 23 31 12 ? 1971", 0L, myDate.parse("2022-05-18T11:59:59")), is(false));
+    }
+
+    @Test
     public void is_within_operating_window_every_second_all_day() throws ParseException {
         SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
@@ -193,9 +218,6 @@ public class QuartzTimeWindowCheckerTest {
         assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "* * ? * * *", 10000L, myDate.parse("1970-01-18T05:59:59")), is(true));
     }
 
-    private static final String AT_12_MIDDAY = "0 0 12 * * ? *";
-    private static final String AT_EVERY_SECOND_FORMAT1 = "* * * * * ? *";
-    private static final String AT_EVERY_SECOND_FORMAT2 = "* * * ? * * *";
     @Test
     public void test_cron_blackout_window_any_valid_cron_blackout_in_list_returns_true() throws ParseException {
         SimpleDateFormat myDateLondon = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -230,10 +252,6 @@ public class QuartzTimeWindowCheckerTest {
         assertThat(QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(cronExpressions, LONDON.toString(), myDateLondon.parse("1970-01-18T14:30:00")), is(false));
     }
 
-    private static final Long FIRST_SECOND_OF_2099 = 4070908801000L;
-    private static final Long FIRST_SECOND_OF_2024 = 1704067201000L;
-    private static final Long FIRST_SECOND_OF_2023 = 1672531201000L;
-    private static final Long FIRST_SECOND_OF_2022 = 1640995201000L;
     @Test
     public void test_blackout_ranges_any_within_window_returns_true() {
         Timestamp now = Timestamp.valueOf(LocalDateTime.of(2022, 1, 1, 0, 1, 0, 0));
