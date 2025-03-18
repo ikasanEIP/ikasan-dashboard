@@ -133,8 +133,11 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             // delete the email notification associated to the context
             this.deleteEmailNotificationDetailsByContext(jobPlanName);
             this.deleteEmailNotificationContextByContext(jobPlanName);
-            // delete any running context instances since this may be a re-import over an existing context.
-            contextInstanceRegistrationService.deRegisterByName(jobPlanName, this.contextInstanceSchedulerService);
+
+            if(!contextBundle.getContextTemplate().isDelayAgentSynchronisationUntilNextInstance()) {
+                // delete any running context instances since this may be a re-import over an existing context.
+                contextInstanceRegistrationService.deRegisterByName(jobPlanName, this.contextInstanceSchedulerService);
+            }
 
             // set job participates in lock flag on relevant jobs
             this.setJobsParticipateInJobLock(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());

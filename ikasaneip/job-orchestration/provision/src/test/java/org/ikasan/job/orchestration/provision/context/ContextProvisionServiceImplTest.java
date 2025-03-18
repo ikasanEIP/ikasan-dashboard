@@ -327,7 +327,6 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
