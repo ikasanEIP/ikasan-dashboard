@@ -1429,6 +1429,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                     this.validate(false);
                     this.binder.readBean(contextTemplate);
 
+                    this.contextTtlDays.setValue(ContextDurationUtils.getDays(this.contextTemplate.getContextTtlMilliseconds()));
+                    this.contextTtlHours.setValue(ContextDurationUtils.getHours(this.contextTemplate.getContextTtlMilliseconds()));
+                    this.contextTtlMinutes.setValue(ContextDurationUtils.getMinutes(this.contextTemplate.getContextTtlMilliseconds()));
+
                     this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
                     this.blackoutWindowDateTimePairs.clear();
                     this.populateBlackoutWindowPairs(contextTemplate);

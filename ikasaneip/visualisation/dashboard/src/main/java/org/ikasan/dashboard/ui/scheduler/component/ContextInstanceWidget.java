@@ -387,15 +387,15 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.contextTtlDays = new IntegerField(getTranslation("label.duration-days", UI.getCurrent().getLocale()));
         this.contextTtlDays.getElement().getThemeList().add("always-float-label");
-        this.contextTtlDays.setValue(ContextDurationUtils.getDays(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlDays.setValue(ContextDurationUtils.getDays(this.contextInstance.getContextTtlMilliseconds()));
         this.contextTtlDays.setEnabled(false);
         this.contextTtlHours = new IntegerField(getTranslation("label.duration-hours", UI.getCurrent().getLocale()));
         this.contextTtlHours.getElement().getThemeList().add("always-float-label");
-        this.contextTtlHours.setValue(ContextDurationUtils.getHours(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlHours.setValue(ContextDurationUtils.getHours(this.contextInstance.getContextTtlMilliseconds()));
         this.contextTtlHours.setEnabled(false);
         this.contextTtlMinutes = new IntegerField(getTranslation("label.duration-minutes", UI.getCurrent().getLocale()));
         this.contextTtlMinutes.getElement().getThemeList().add("always-float-label");
-        this.contextTtlMinutes.setValue(ContextDurationUtils.getMinutes(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlMinutes.setValue(ContextDurationUtils.getMinutes(this.contextInstance.getContextTtlMilliseconds()));
         this.contextTtlMinutes.setEnabled(false);
 
         this.isAbleToRunConcurrentlyCb = new Checkbox(getTranslation("label.concurrent", UI.getCurrent().getLocale()));
@@ -472,7 +472,7 @@ public class ContextInstanceWidget extends VerticalLayout
         headerLayout.setPadding(false);
         H4 contextInstanceManagementLabel
             = new H4(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale()))
-                + " - " + this.contextTemplate.getName());
+                + " - " + this.contextInstance.getName());
         contextInstanceManagementLabel.getElement().getStyle().set("margin-top", "10px");
         HorizontalLayout labelLayout = new HorizontalLayout();
         labelLayout.setWidth("100%");
@@ -693,32 +693,6 @@ public class ContextInstanceWidget extends VerticalLayout
                             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService, this.schedulerJobInstanceService,
                             this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService, this.globalEventService,
                             this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance, this.contextInstance);
-
-//                        this.ikasanMinimapContainer = new Div();
-//                        this.ikasanMinimapContainer.setWidth("400px");
-//                        this.ikasanMinimapContainer.setHeight("200px");
-//                        this.ikasanMinimapContainer.getStyle().set("border", "1px solid black");
-//                        this.ikasanMinimapContainer.setId("ikasanMinimapContainer");
-
-                        AtomicReference<Double> scale = new AtomicReference<>((double) 1);
-
-//                        Icon zoomIn = VaadinIcon.PLUS.create();
-//                        zoomIn.addClickListener(iconClickEvent -> {
-//                            if(scale.get() < 1) {
-//                                scale.updateAndGet(v -> Double.valueOf (v + .1));
-//                                this.dagComponent.zoom(scale.get());
-//                            }
-//                        });
-//                        Icon zoomOut = VaadinIcon.MINUS.create();
-//                        zoomOut.addClickListener(iconClickEvent -> {
-//                            if(scale.get() > 0) {
-//                                scale.updateAndGet(v -> Double.valueOf (v - .1));
-//                                this.dagComponent.zoom(scale.get());
-//                            }
-//                        });
-//
-//                        HorizontalLayout zoomButtons = new HorizontalLayout(zoomIn, zoomOut);
-//                        zoomButtons.setWidth("100%");
 
                         this.add(dagComponent);
                     } catch (JsonProcessingException e) {
