@@ -39,6 +39,10 @@ public class LdapDirectorySynchronisationJobTest {
             will(returnValue("ldap repo"));
             oneOf(ldapService).synchronize(authenticationMethod);
             oneOf(authenticationMethod).setLastSynchronised(with(any(Date.class)));
+            oneOf(authenticationMethod).getId();
+            will(returnValue(1L));
+            oneOf(securityService).getAuthenticationMethod(1L);
+            will(returnValue(authenticationMethod));
             oneOf(securityService).saveOrUpdateAuthenticationMethod(authenticationMethod);
             oneOf(authenticationMethod).getName();
             will(returnValue("ldap repo"));
