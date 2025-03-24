@@ -54,6 +54,10 @@ public class LdapDirectorySynchronisationJob implements DashboardJob {
         try {
             logger.info("Running ldap synchronisation " + authenticationMethod.getName());
             this.ldapService.synchronize(authenticationMethod);
+            // refresh the authentication method to make sure we are not saving
+            // any stale values.
+            this.authenticationMethod = this.securityService
+                .getAuthenticationMethod(this.authenticationMethod.getId());
             this.authenticationMethod.setLastSynchronised(new Date());
             this.securityService.saveOrUpdateAuthenticationMethod(authenticationMethod);
             logger.info("Finished running ldap synchronisation " + authenticationMethod.getName());
