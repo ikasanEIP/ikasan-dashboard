@@ -16,6 +16,10 @@ import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -29,13 +33,12 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ContextProvisionServiceImpl implements ContextProvisionService {
@@ -52,6 +55,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     private final EmailNotificationContextService emailNotificationContextService;
     private final boolean uploadProvisionJobs;
     private final ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
+    private final ScheduledContextInstanceService scheduledContextInstanceService;
     private int jobPlanIntervalMultiple;
     private SecurityService securityService;
 
@@ -65,6 +69,7 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                                        EmailNotificationContextService emailNotificationContextService,
                                        boolean uploadProvisionJobs,
                                        ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
+                                       ScheduledContextInstanceService scheduledContextInstanceService,
                                        int jobPlanIntervalMultiple,
                                        SecurityService securityService) {
 
@@ -107,6 +112,11 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
         if (this.contextInstanceSchedulerService == null) {
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
+        }
+
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
+        if (this.scheduledContextInstanceService == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
         }
 
         this.jobPlanIntervalMultiple = jobPlanIntervalMultiple;
@@ -163,8 +173,16 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             if(contextBundle.getEmailNotificationContext() != null) {
                 this.saveEmailNotificationContext(contextBundle.getEmailNotificationContext());
             }
+
             if (this.uploadProvisionJobs && !contextBundle.getContextTemplate().isDelayAgentSynchronisationUntilNextInstance()) {
                 provisionJobs(contextBundle.getSchedulerJobs());
+            }
+
+            if(contextBundle.getContextTemplate().isDelayAgentSynchronisationUntilNextInstance()) {
+                // Any prepared instance have become redundant and will be recreated to
+                // reflect the newly provisioned context template (job plan) in the registerStartJobAndTrigger
+                // method below.
+                this.removePrepared(contextBundle.getContextTemplate().getName());
             }
 
             if(!contextBundle.getRoles().isEmpty()) {
@@ -201,6 +219,26 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             throw new RuntimeException("The job plan cron expression and duration are not within an acceptable tolerance" +
                 ". The job plan is therefore considered invalid!");
         }
+    }
+
+
+    /**
+     * Removes all prepared context instances with the given contextName.
+     * This method searches for prepared context instances with the provided contextName,
+     * and then deletes them by their contextInstanceId.
+     *
+     * @param contextName the name of the context for which prepared instances should be removed
+     */
+    protected void removePrepared(String contextName) {
+        ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStatus(InstanceStatus.PREPARED.name());
+        filter.setContextInstanceNames(Collections.singletonList(contextName));
+
+        SearchResults<ScheduledContextInstanceRecord> results = this.scheduledContextInstanceService
+            .getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        results.getResultList().forEach(scheduledContextInstanceRecord ->
+            this.scheduledContextInstanceService.deleteById(scheduledContextInstanceRecord.getContextInstanceId()));
     }
 
 
