@@ -7,6 +7,7 @@ import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
@@ -21,6 +22,7 @@ import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -68,6 +70,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
     private EmailNotificationContextService emailNotificationContextService;
     @Mock
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
+    @Mock
+    private ScheduledContextInstanceService scheduledContextInstanceService;
 
     @Mock
     private SecurityService securityService;
@@ -79,7 +83,8 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         service = new ContextProvisionServiceImpl(
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService,
-            emailNotificationContextService, true, contextInstanceSchedulerService, 3, securityService);
+            emailNotificationContextService, true, contextInstanceSchedulerService, this.scheduledContextInstanceService
+            , 3, securityService);
     }
 
     @Test(expected = RuntimeException.class)
@@ -293,6 +298,10 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         contextTemplate.setName(contextName);
         contextTemplate.setRequiresAgentSynchronisation(true);
         contextTemplate.setDelayAgentSynchronisationUntilNextInstance(true);
+
+        when(this.scheduledContextInstanceService
+            .getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), any(), any()))
+            .thenReturn(new SearchResultsImpl<>(List.of(), 0, 0));
 
         List<SchedulerJob> contextJobs = new ArrayList<>();
         FileEventDrivenJob fileJobRecord = new FileEventDrivenJobImpl();
