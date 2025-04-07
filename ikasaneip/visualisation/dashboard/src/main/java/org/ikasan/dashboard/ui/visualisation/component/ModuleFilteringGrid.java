@@ -155,7 +155,8 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
 
         if(filter.getModuleNameFilter() != null && !filter.getModuleNameFilter().isEmpty()) {
             moduleNames.clear();
-            if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
+            if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
+                && !this.canAccessAllModules(authentication)) {
                 accessibleModules.stream().forEach(accessibleModule -> {
                     if(accessibleModule.toLowerCase().contains(filter.getModuleNameFilter().toLowerCase())) {
                         moduleNames.add(accessibleModule);
