@@ -201,9 +201,8 @@ public class ContextInstanceRegistrationLifecycleTest {
         when(this.endJobDetail.getKey()).thenReturn(new JobKey(contextTemplate.getName()));
         mockStatic.when(() -> AbstractDashboardSchedulerService.showAllTriggers(scheduler)).thenReturn("triggers");
 
-        // We will pivot off the current time being 1st March 2025 - 14:15:00
-        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2025, 3, 1, 14, 15, 0));
-
+        // We will pivot off the current time being 1st March 2099 - 14:15:00
+        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2099, 3, 1, 14, 15, 0));
         createJobDetailAndSetStub(contextTemplate.getName(), CONTEXT_START_GROUP);
         when(scheduler.scheduleJob(any(), any())).thenReturn(new Date());
 
@@ -219,12 +218,12 @@ public class ContextInstanceRegistrationLifecycleTest {
         assertNotNull(dashboardJobDetailsMap);
         assertEquals(1, dashboardJobDetailsMap.size());
 
-        // Confirm the the job has been scheduled to run at 4th March 2025 - 14:17:00. 1st and 2nd of March 2025 are Saturday and Sunday so we
-        // expect the job plan to be started on the 4th March 2025.
-        assertEquals("0 17 14 4 3 ? 2025", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
+        // Confirm the the job has been scheduled to run at 4th March 2099 - 14:17:00. 1st and 2nd of March 2099 are Saturday and Sunday so we
+        // expect the job plan to be started on the 4th March 2099.
+        assertEquals("0 17 14 3 3 ? 2099", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
 
-        // Now wee will pivot off the current time being 4th March 2025 - 14:17:00 which is when the quartz job fires
-        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2025, 3, 4, 14,17, 0));
+        // Now wee will pivot off the current time being 4th March 2099 - 14:17:00 which is when the quartz job fires
+        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2099, 3, 4, 14,17, 0));
 
         // The act of executing the job will also schedule the job plan to run on the 2nd weekday of the next month.
         dashboardJobsMap.get("context start.CONTEXT-1436221681").execute(this.jobExecutionContext);
@@ -244,8 +243,8 @@ public class ContextInstanceRegistrationLifecycleTest {
         verify(scheduledContextService, times(1)).findAll();
         verify(scheduledContextService, times(4)).findById(anyString());
         verify(scheduledContextInstanceService, times(4)).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
-        verify(schedulerJobInstanceService, times(21)).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
-        verify(moduleMetadataService, times(3)).find(any(), any(), anyInt(), anyInt());
+        verify(schedulerJobInstanceService, times(28)).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
+        verify(moduleMetadataService, times(4)).find(any(), any(), anyInt(), anyInt());
 
         mockStatic.verify(() -> AbstractDashboardSchedulerService.showAllTriggers(scheduler),(times(2)));
 
@@ -258,8 +257,8 @@ public class ContextInstanceRegistrationLifecycleTest {
         assertNotNull(dashboardJobDetailsMap);
         assertEquals(2, dashboardJobDetailsMap.size());
 
-        // Confirm the the job has been scheduled to run at 2nd April 2025 - 14:17:00.
-        assertEquals("0 17 14 2 4 ? 2025", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
+        // Confirm the the job has been scheduled to run at 2nd April 2099 - 14:17:00.
+        assertEquals("0 17 14 2 4 ? 2099", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
         verifyNoMoreInteractions(scheduler, scheduledJobFactory, scheduledContextService);
     }
 
@@ -301,8 +300,8 @@ public class ContextInstanceRegistrationLifecycleTest {
         when(this.endJobDetail.getKey()).thenReturn(new JobKey(contextTemplate.getName()));
         mockStatic.when(() -> AbstractDashboardSchedulerService.showAllTriggers(scheduler)).thenReturn("triggers");
 
-        // We will pivot off the current time being 4th March 2025 - 14:25:00
-        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2025, 3, 4, 14, 25, 0));
+        // We will pivot off the current time being 4th March 2099 - 14:25:00
+        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2099, 3, 4, 14, 25, 0));
 
         createJobDetailAndSetStub(contextTemplate.getName(), CONTEXT_START_GROUP);
         when(scheduler.scheduleJob(any(), any())).thenReturn(new Date());
@@ -319,12 +318,12 @@ public class ContextInstanceRegistrationLifecycleTest {
         assertNotNull(dashboardJobDetailsMap);
         assertEquals(1, dashboardJobDetailsMap.size());
 
-        // Confirm the the job has been scheduled to run at 4th March 2025 - 14:17:00. 1st and 2nd of March 2025 are Saturday and Sunday so we
-        // expect the job plan to be started on the 4th March 2025.
-        assertEquals("0 17 14 2 4 ? 2025", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
+        // Confirm the the job has been scheduled to run at 4th March 2099 - 14:17:00. 1st and 2nd of March 2099 are Saturday and Sunday so we
+        // expect the job plan to be started on the 4th March 2099.
+        assertEquals("0 17 14 2 4 ? 2099", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
 
-        // Now wee will pivot off the current time being 2nd April 2025 - 14:17:00 which is when the quartz job fires
-        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2025, 4, 2, 14,17, 0));
+        // Now wee will pivot off the current time being 2nd April 2099 - 14:17:00 which is when the quartz job fires
+        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2099, 4, 2, 14,17, 0));
 
         // The act of executing the job will also schedule the job plan to run on the 2nd weekday of the next month.
         dashboardJobsMap.get("context start.CONTEXT-1436221681").execute(this.jobExecutionContext);
@@ -358,8 +357,8 @@ public class ContextInstanceRegistrationLifecycleTest {
         assertNotNull(dashboardJobDetailsMap);
         assertEquals(2, dashboardJobDetailsMap.size());
 
-        // Confirm the the job has been scheduled to run at 2nd May 2025 - 14:17:00.
-        assertEquals("0 17 14 2 5 ? 2025", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
+        // Confirm the the job has been scheduled to run at 2nd May 2099 - 14:17:00.
+        assertEquals("0 17 14 4 5 ? 2099", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
         verifyNoMoreInteractions(scheduler, scheduledJobFactory, scheduledContextService);
     }
 
