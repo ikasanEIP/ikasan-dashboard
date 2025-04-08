@@ -100,27 +100,7 @@ public class SolrContextTerminalJobDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    public void test_find_by_context() throws Exception {
-
-        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
-        {
-            init(server);
-
-            this.insertRecords("id", 100, "contextId");
-            this.insertRecords("idd", 1000, "context2Id");
-            this.insertRecords("iddd", 267, "context3Id");
-
-            Assert.assertEquals(10, this.dao.findByContext("contextId", 10, 0).getResultList().size());
-            Assert.assertEquals(100, this.dao.findByContext("contextId", 10, 0).getTotalNumberOfResults());
-            Assert.assertEquals(100, this.dao.findByContext("context2Id", 100, 0).getResultList().size());
-            Assert.assertEquals(1000, this.dao.findByContext("context2Id", 10, 0).getTotalNumberOfResults());
-            Assert.assertEquals(50, this.dao.findByContext("context3Id", 50, 0).getResultList().size());
-            Assert.assertEquals(267, this.dao.findByContext("context3Id", 10, 0).getTotalNumberOfResults());
-        }
-    }
-
-    @Test
-    public void test_find_by_context_save_as_list() throws Exception {
+    public void test_find_by_context_save() throws Exception {
 
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {
@@ -141,23 +121,6 @@ public class SolrContextTerminalJobDaoImplTest extends SolrTestCaseJ4 {
 
     @Test
     public void test_find_all() throws Exception {
-
-        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
-            init(server);
-
-            this.insertRecords("id", 100, "contextId");
-            this.insertRecords("idd", 1000, "context2Id");
-            this.insertRecords("iddd", 267, "context3Id");
-
-            Assert.assertEquals(10, this.dao.findAll(10, 0).getResultList().size());
-            Assert.assertEquals(1367, this.dao.findAll( 10, 0).getTotalNumberOfResults());
-            Assert.assertEquals(100, this.dao.findAll(100, 0).getResultList().size());
-            Assert.assertEquals(1367, this.dao.findAll( 10, 0).getTotalNumberOfResults());
-        }
-    }
-
-    @Test
-    public void test_find_all_save_as_list() throws Exception {
 
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);
@@ -191,6 +154,7 @@ public class SolrContextTerminalJobDaoImplTest extends SolrTestCaseJ4 {
             this.dao.save(solrContextTerminalJobRecord);
         });
     }
+
 
     private void insertRecordsAsList(String idPrefix, int num, String contextId) {
         List<ContextTerminalJobRecord> records = new ArrayList<>();

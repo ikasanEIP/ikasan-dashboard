@@ -23,6 +23,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 /**
@@ -104,6 +106,7 @@ public class SolrSystemEventDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
+            List<SystemEvent> systemEvents = new ArrayList<>();
             IntStream.range(0, 1000).forEach(i -> {
                 SolrSystemEvent systemEvent = new SolrSystemEvent();
                 systemEvent.setModuleName("moduleName"+i);
@@ -113,8 +116,10 @@ public class SolrSystemEventDaoTest extends SolrTestCaseJ4
                 systemEvent.setSubject("the subject "+i);
                 systemEvent.setAction("the action "+i);
 
-                dao.save(systemEvent);
+                systemEvents.add(systemEvent);
             });
+
+            dao.save(systemEvents);
 
             SystemEventSearchFilter filter = new SolrSystemEventSearchFilter();
             filter.setAction("action");

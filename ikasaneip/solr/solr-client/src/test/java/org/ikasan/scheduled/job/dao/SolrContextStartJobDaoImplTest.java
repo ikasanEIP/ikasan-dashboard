@@ -106,9 +106,9 @@ public class SolrContextStartJobDaoImplTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            this.insertRecords("id", 100, "contextId");
-            this.insertRecords("idd", 1000, "context2Id");
-            this.insertRecords("iddd", 267, "context3Id");
+            this.insertRecordsAsList("id", 100, "contextId");
+            this.insertRecordsAsList("idd", 1000, "context2Id");
+            this.insertRecordsAsList("iddd", 267, "context3Id");
 
             Assert.assertEquals(10, this.dao.findByContext("contextId", 10, 0).getResultList().size());
             Assert.assertEquals(100, this.dao.findByContext("contextId", 10, 0).getTotalNumberOfResults());
@@ -145,9 +145,9 @@ public class SolrContextStartJobDaoImplTest extends SolrTestCaseJ4 {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);
 
-            this.insertRecords("id", 100, "contextId");
-            this.insertRecords("idd", 1000, "context2Id");
-            this.insertRecords("iddd", 267, "context3Id");
+            this.insertRecordsAsList("id", 100, "contextId");
+            this.insertRecordsAsList("idd", 1000, "context2Id");
+            this.insertRecordsAsList("iddd", 267, "context3Id");
 
             Assert.assertEquals(10, this.dao.findAll(10, 0).getResultList().size());
             Assert.assertEquals(1367, this.dao.findAll( 10, 0).getTotalNumberOfResults());

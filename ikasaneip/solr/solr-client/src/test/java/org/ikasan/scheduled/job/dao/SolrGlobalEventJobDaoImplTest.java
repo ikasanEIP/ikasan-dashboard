@@ -17,6 +17,8 @@ import org.springframework.util.FileSystemUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class SolrGlobalEventJobDaoImplTest extends SolrTestCaseJ4 {
@@ -113,6 +115,7 @@ public class SolrGlobalEventJobDaoImplTest extends SolrTestCaseJ4 {
     }
 
     private void insertRecords(String idPrefix, int num, String contextId) {
+        List<GlobalEventJobRecord> recordList = new ArrayList<>();
         IntStream.range(0, num).forEach(i -> {
             SolrGlobalEventJobImpl solrGlobalEventJob = new SolrGlobalEventJobImpl();
             solrGlobalEventJob.setAgentName(idPrefix+"agentName"+i);
@@ -126,9 +129,10 @@ public class SolrGlobalEventJobDaoImplTest extends SolrTestCaseJ4 {
             solrGlobalEventJobRecord.setTimestamp(1000000L);
             solrGlobalEventJobRecord.setGlobalEventJob(solrGlobalEventJob);
 
-
-            this.dao.save(solrGlobalEventJobRecord);
+            recordList.add(solrGlobalEventJobRecord);
         });
+
+        this.dao.save(recordList);
     }
     public static String TEST_HOME() {
         return getFile("solr/ikasan").getParent();
