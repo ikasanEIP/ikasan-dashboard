@@ -17,6 +17,8 @@ import org.springframework.util.FileSystemUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class SolrFileEventDrivenJobDaoImplTest extends SolrTestCaseJ4 {
@@ -114,6 +116,7 @@ public class SolrFileEventDrivenJobDaoImplTest extends SolrTestCaseJ4 {
 
 
     private void insertRecords(String idPrefix, int num, String contextId) {
+        List<FileEventDrivenJobRecord> recordList = new ArrayList<>();
         IntStream.range(0, num).forEach(i -> {
             SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
             solrFileEventDrivenJob.setAgentName(idPrefix+"agentName"+i);
@@ -129,9 +132,10 @@ public class SolrFileEventDrivenJobDaoImplTest extends SolrTestCaseJ4 {
             solrFileEventDrivenJobRecord.setTimestamp(1000000L);
             solrFileEventDrivenJobRecord.setFileEventDrivenJob(solrFileEventDrivenJob);
 
-
-            this.dao.save(solrFileEventDrivenJobRecord);
+            recordList.add(solrFileEventDrivenJobRecord);
         });
+
+        this.dao.save(recordList);
     }
     public static String TEST_HOME() {
         return getFile("solr/ikasan").getParent();
