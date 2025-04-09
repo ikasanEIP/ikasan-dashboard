@@ -3,6 +3,7 @@ package org.ikasan.job.orchestration.core.machine;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.awaitility.Awaitility;
+import org.checkerframework.checker.units.qual.A;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
@@ -55,6 +56,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.creatBridgingMap;
 import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.createInternalJobsMap;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -6030,6 +6032,141 @@ public class ContextMachineTest extends AbstractTest {
         Assert.assertEquals(1, events.size());
 
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-status-2.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void test_repeating_jobs_with_bridging_job_connecting_success_not_target_residing_context_only() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/repeating-job-with-bridging.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/repeating-job-with-bridging.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        internalEventDrivenJobs.values().forEach(job -> {
+            job.setJobRepeatable(true);
+            job.setTargetResidingContextOnly(false);
+        });
+
+        Map<String, BridgingJobInstance> bridgingJobInstanceMap = creatBridgingMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), bridgingJobInstanceMap, this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+            "scheduler-agent", true, true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName5",
+            "BRIDGING_JOB", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("BE_MHI_EMIR_PFO_2", events.get(0).getJobName());
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO_2",
+            "scheduler-agent", true, true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+
+        // Now repeat the cron job a few times
+        eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+            "scheduler-agent", true, true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        // Bridging job repeats
+        eventInstance = scheduledProcessEventInstance("jobName5",
+            "BRIDGING_JOB", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("BE_MHI_EMIR_PFO_2", events.get(0).getJobName());
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO_2",
+            "scheduler-agent", true, true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-with-bridging-job-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+            "scheduler-agent", true, true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        // Bridging job repeats
+        eventInstance = scheduledProcessEventInstance("jobName5",
+            "BRIDGING_JOB", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("BE_MHI_EMIR_PFO_2", events.get(0).getJobName());
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO_2",
+            "scheduler-agent", true, true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-with-bridging-job-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("SIMPLE_ME_ScheduledJob_06:01:00",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO",
+            "scheduler-agent", true, true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        // Bridging job repeats
+        eventInstance = scheduledProcessEventInstance("jobName5",
+            "BRIDGING_JOB", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("BE_MHI_EMIR_PFO_2", events.get(0).getJobName());
+
+        eventInstance = scheduledProcessEventInstance("BE_MHI_EMIR_PFO_2",
+            "scheduler-agent", true, true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/repeating-job-with-bridging-job-status.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
     }
 

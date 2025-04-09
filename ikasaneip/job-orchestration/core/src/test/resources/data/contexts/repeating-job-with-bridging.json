@@ -1,0 +1,68 @@
+{
+  "name": "REPEATING_JOB",
+  "description": "Context Template Description",
+  "contexts": [
+    {
+      "name": "SIMPLE_ME",
+      "jobDependencies": [
+        {
+          "jobIdentifier": "scheduler-agent-BE_MHI_EMIR_PFO",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "BRIDGING_JOB-jobName5",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "scheduler-agent-BE_MHI_EMIR_PFO"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "scheduler-agent-BE_MHI_EMIR_PFO_2",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "BRIDGING_JOB-jobName5"
+              }
+            ]
+          }
+        }
+      ],
+      "scheduledJobs": [
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "BE_MHI_EMIR_PFO",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-BE_MHI_EMIR_PFO"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "SIMPLE_ME_ScheduledJob_06:01:00",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+        },
+        {
+          "identifier": "BRIDGING_JOB-jobName5",
+          "agentName": "BRIDGING_JOB",
+          "jobName": "jobName5"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "BE_MHI_EMIR_PFO_2",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-BE_MHI_EMIR_PFO_2"
+        }
+      ]
+    }
+  ],
+  "timeWindowStart": "0 0 1 ? * * *",
+  "timeWindowEnd": "0 0 23 ? * * *"
+}

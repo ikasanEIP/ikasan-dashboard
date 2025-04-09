@@ -255,14 +255,21 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                             schedulerJobInitiationEvents.add(event);
                         }
                     }
-                    else if (!jobInstance.isInitiationEventRaised() && bridgingJobInstance != null) {
-                        if(markAsRaised) jobInstance.setInitiationEventRaised(true);
+                    else if (bridgingJobInstance != null) {
+                        // if the event that is the catalyst for initiating the bridging job is an internal event driven job
+                        // and it is a repeating job the the bridging job will always be initiated.
+                        if ((scheduledProcessEvent.getInternalEventDrivenJob() != null
+                            && scheduledProcessEvent.getInternalEventDrivenJob().isJobRepeatable()) ||
+                            // if the bridging job has yet to be initiated it will be initiated.
+                            !jobInstance.isInitiationEventRaised()) {
+                            if (markAsRaised) jobInstance.setInitiationEventRaised(true);
 
-                        SchedulerJobInitiationEvent event = createBridgingJobInitiationEvent(bridgingJobInstance
-                            , dryRunParameters, parentContextInstance, scheduledProcessEvent);
+                            SchedulerJobInitiationEvent event = createBridgingJobInitiationEvent(bridgingJobInstance
+                                , dryRunParameters, parentContextInstance, scheduledProcessEvent);
 
-                        if (event != null) {
-                            schedulerJobInitiationEvents.add(event);
+                            if (event != null) {
+                                schedulerJobInitiationEvents.add(event);
+                            }
                         }
                     }
                     else if ((!jobInstance.isInitiationEventRaised()
