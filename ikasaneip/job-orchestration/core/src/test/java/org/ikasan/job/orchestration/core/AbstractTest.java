@@ -89,6 +89,21 @@ public class AbstractTest
      */
     protected ContextualisedScheduledProcessEventImpl scheduledProcessEventInstance(String jobName, String agentName
         , boolean isSuccessful) {
+        return this.scheduledProcessEventInstance(jobName, agentName, isSuccessful, false);
+    }
+
+
+    /**
+     * Creates a contextualized scheduled process event instance with the provided parameters.
+     *
+     * @param jobName the name of the job
+     * @param agentName the name of the agent
+     * @param isSuccessful true if the job was executed successfully, false otherwise
+     * @param isRepeating true if the job is repeating, false otherwise
+     * @return a ContextualizedScheduledProcessEventImpl instance representing the scheduled process event
+     */
+    protected ContextualisedScheduledProcessEventImpl scheduledProcessEventInstance(String jobName, String agentName
+        , boolean isSuccessful, boolean isRepeating) {
         ContextualisedScheduledProcessEventImpl eventInstance = new ContextualisedScheduledProcessEventImpl();
         eventInstance.setJobName(jobName);
         eventInstance.setAgentName(agentName);
@@ -96,6 +111,7 @@ public class AbstractTest
 
         InternalEventDrivenJobInstanceImpl internalEventDrivenJob = new InternalEventDrivenJobInstanceImpl();
         internalEventDrivenJob.setIdentifier(agentName + "-" + jobName);
+        internalEventDrivenJob.setJobRepeatable(isRepeating);
 
         eventInstance.setInternalEventDrivenJob(internalEventDrivenJob);
 
