@@ -354,7 +354,7 @@
         <version.wiremock>3.0.3</version.wiremock>
         <version.org.apache.solr>9.8.1</version.org.apache.solr>
         <version.org.apache.httpcomponents>4.5.13</version.org.apache.httpcomponents>
-        <version.org.apache.httpcomponents5>5.4.1</version.org.apache.httpcomponents5>
+        <version.org.apache.httpcomponents5>5.4.3</version.org.apache.httpcomponents5>
         <version.vtd.xml>2.13.4</version.vtd.xml>
         <version.json.assert>1.5.0</version.json.assert>
         <version.org.junit.jupiter>5.10.2</version.org.junit.jupiter>
