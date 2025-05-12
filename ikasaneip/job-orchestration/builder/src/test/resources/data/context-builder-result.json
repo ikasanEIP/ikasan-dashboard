@@ -120,6 +120,7 @@
   "ordinal" : 1,
   "renderLogicalBoundaries" : true,
   "useAutoLayout" : true,
+  "endJobPlanUponCompletion" : false,
   "disabled" : false,
   "delayAgentSynchronisationUntilNextInstance" : false,
   "requiresAgentSynchronisation" : false,

@@ -9,8 +9,9 @@ public class ContextInstanceStateChangeEventBroadcasterImpl implements ContextIn
     @Override
     public void register(ContextInstanceStateChangeEventBroadcastListener listener) {
         // should not register listeners via this interface
-        throw new UnsupportedOperationException("ContextInstanceStateChangeEventBroadcastListener listeners should not" +
-            " be registered via this method");
+//        throw new UnsupportedOperationException("ContextInstanceStateChangeEventBroadcastListener listeners should not" +
+//            " be registered via this method");
+        org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster.register(listener);
     }
 
     @Override

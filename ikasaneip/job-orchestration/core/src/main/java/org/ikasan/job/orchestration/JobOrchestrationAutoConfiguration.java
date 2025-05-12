@@ -108,7 +108,7 @@ public class JobOrchestrationAutoConfiguration implements ApplicationListener<Co
 
     @Bean
     @DependsOn("contextInstanceRecoveryManager")
-    public ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService(@Lazy ContextInstanceRegistrationService contextInstanceRegistrationService
+    public ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService(@Lazy @Qualifier("contextInstanceRegistrationService") ContextInstanceRegistrationService contextInstanceRegistrationService
         , ScheduledContextService scheduledContextService, TimeService timeService) {
         return new ContextInstanceSchedulerServiceImpl(SchedulerFactory.getInstance().getScheduler(),
             CachingScheduledJobFactory.getInstance(),

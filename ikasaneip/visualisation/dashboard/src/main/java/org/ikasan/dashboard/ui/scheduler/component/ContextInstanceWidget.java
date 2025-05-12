@@ -137,6 +137,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private Checkbox useDisplayNameCb;
     private Checkbox renderLogicalBoundariesCb;
     private Checkbox useAutoformattingCb;
+    private Checkbox endJobPlanWhenComplete;
     private CollapsableLayout contextInstanceDetailsCollapsableLayout;
 
     private Button holdContextButton;
@@ -422,6 +423,12 @@ public class ContextInstanceWidget extends VerticalLayout
             .bind(ContextInstance::isUseAutoLayout, ContextInstance::setUseAutoLayout);
         this.useAutoformattingCb.setEnabled(false);
 
+        this.endJobPlanWhenComplete = new Checkbox(getTranslation("label.end-job-plan-when-complete", UI.getCurrent().getLocale()));
+        this.endJobPlanWhenComplete.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.endJobPlanWhenComplete)
+            .bind(ContextInstance::isEndJobPlanUponCompletion, ContextInstance::setEndJobPlanUponCompletion);
+        this.endJobPlanWhenComplete.setEnabled(false);
+
 
         this.timezoneTf = new TextField(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         this.timezoneTf.getElement().getThemeList().add("always-float-label");
@@ -492,7 +499,8 @@ public class ContextInstanceWidget extends VerticalLayout
         this.formLayout.setWidth("100%");
 
         VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
-            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb);
+            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb
+            , this.endJobPlanWhenComplete);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");

@@ -38,6 +38,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected Boolean renderLogicalBoundaries = true;
     protected Boolean useAutoLayout = true;
     protected String userGeneratedLayout;
+    protected Boolean endJobPlanUponCompletion = false;
 
     @Override
     public String getName() {
@@ -292,6 +293,16 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @Override
     public void setUserGeneratedLayout(String userGeneratedLayout) {
         this.userGeneratedLayout = userGeneratedLayout;
+    }
+
+    @Override
+    public boolean isEndJobPlanUponCompletion() {
+        return this.endJobPlanUponCompletion;
+    }
+
+    @Override
+    public void setEndJobPlanUponCompletion(boolean endJobPlanUponCompletion) {
+        this.endJobPlanUponCompletion = endJobPlanUponCompletion;
     }
 
     @Override

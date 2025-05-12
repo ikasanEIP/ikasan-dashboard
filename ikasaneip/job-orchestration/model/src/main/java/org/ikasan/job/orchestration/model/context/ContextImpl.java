@@ -46,6 +46,7 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected Boolean renderLogicalBoundaries = true;
     protected Boolean useAutoLayout = true;
     protected String userGeneratedLayout;
+    protected Boolean endJobPlanUponCompletion = false;
 
     @Override
     public String getName() {
@@ -300,6 +301,16 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setUserGeneratedLayout(String userGeneratedLayout) {
         this.userGeneratedLayout = userGeneratedLayout;
+    }
+
+    @Override
+    public boolean isEndJobPlanUponCompletion() {
+        return this.endJobPlanUponCompletion;
+    }
+
+    @Override
+    public void setEndJobPlanUponCompletion(boolean endJobPlanUponCompletion) {
+        this.endJobPlanUponCompletion = endJobPlanUponCompletion;
     }
 
     @Override
