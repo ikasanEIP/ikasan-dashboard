@@ -152,6 +152,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private Checkbox renderLogicalBoundariesCb;
     private Checkbox useAutoformattingCb;
     private Checkbox delayJobSynchronisationUntilNextInstanceCb;
+    private Checkbox endJobPlanWhenComplete;
     private UI ui;
     private boolean removeTrailingPlanNameContextAfterUnderscore;
     private int jobPlanIntervalMultiple;
@@ -441,6 +442,12 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 , ContextTemplate::setDelayAgentSynchronisationUntilNextInstance);
         this.delayJobSynchronisationUntilNextInstanceCb.setEnabled(false);
 
+        this.endJobPlanWhenComplete = new Checkbox(getTranslation("label.end-job-plan-when-complete", UI.getCurrent().getLocale()));
+        this.endJobPlanWhenComplete.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.endJobPlanWhenComplete)
+            .bind(ContextTemplate::isEndJobPlanUponCompletion, ContextTemplate::setEndJobPlanUponCompletion);
+        this.endJobPlanWhenComplete.setEnabled(false);
+
         this.initialiseBlackoutWindowGrid();
         this.populateBlackoutWindowPairs(contextTemplate);
 
@@ -481,7 +488,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
             , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb
-            , this.delayJobSynchronisationUntilNextInstanceCb);
+            , this.delayJobSynchronisationUntilNextInstanceCb, this.endJobPlanWhenComplete);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");

@@ -40,7 +40,7 @@ public class JobOrchestrationProvisionAutoConfiguration {
         @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
         SchedulerJobService schedulerJobService,
         JobProvisionModuleService jobProvisionModuleRestService,
-        ContextInstanceRegistrationService contextInstanceRegistrationService,
+        @Qualifier("contextInstanceRegistrationService") ContextInstanceRegistrationService contextInstanceRegistrationService,
         ContextProfileService contextProfileService,
         EmailNotificationDetailsService emailNotificationDetailsService,
         EmailNotificationContextService emailNotificationContextService,

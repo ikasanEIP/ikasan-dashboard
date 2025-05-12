@@ -84,6 +84,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private Checkbox renderLogicalBoundariesCb;
     private Checkbox useAutoformattingCb;
     private Checkbox delayJobSynchronisationUntilNextInstanceCb;
+
+    private Checkbox endJobPlanWhenComplete;
     private DateTimePicker blackoutWindowStartTime;
     private DateTimePicker blackoutWindowEndTime;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
@@ -369,6 +371,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             .bind(ContextTemplate::isDelayAgentSynchronisationUntilNextInstance
                 , ContextTemplate::setDelayAgentSynchronisationUntilNextInstance);
 
+        this.endJobPlanWhenComplete = new Checkbox(getTranslation("label.end-job-plan-when-complete", UI.getCurrent().getLocale()));
+        this.endJobPlanWhenComplete.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.endJobPlanWhenComplete)
+            .bind(ContextTemplate::isEndJobPlanUponCompletion, ContextTemplate::setEndJobPlanUponCompletion);
+
         binder.readBean(this.contextTemplate);
 
         this.blackoutWindowStartTime = new DateTimePicker(getTranslation("label.blackout-window-start-date-time", UI.getCurrent().getLocale()));
@@ -456,7 +463,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
         VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
             , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb
-            , this.delayJobSynchronisationUntilNextInstanceCb);
+            , this.delayJobSynchronisationUntilNextInstanceCb, this.endJobPlanWhenComplete);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");

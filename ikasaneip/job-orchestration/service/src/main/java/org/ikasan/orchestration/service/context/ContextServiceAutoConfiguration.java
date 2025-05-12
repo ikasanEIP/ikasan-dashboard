@@ -2,6 +2,7 @@ package org.ikasan.orchestration.service.context;
 
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.TimeService;
+import org.ikasan.orchestration.service.context.lifecycle.ContextInstanceEndServiceImpl;
 import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecoveryServiceImpl;
 import org.ikasan.orchestration.service.context.register.ContextInstanceRegistrationServiceImpl;
 import org.ikasan.orchestration.service.context.reset.ContextResetServiceImpl;
@@ -9,6 +10,7 @@ import org.ikasan.orchestration.service.context.status.ContextStatusServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceSchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
@@ -45,7 +47,8 @@ public class ContextServiceAutoConfiguration {
         return new JobLockCacheInitialisationServiceImpl(jobLockCacheService);
     }
 
-    @Bean TimeService timeService() {
+    @Bean
+    TimeService timeService() {
         return new TimeService();
     }
 
@@ -66,7 +69,7 @@ public class ContextServiceAutoConfiguration {
         JobLockCacheInitialisationService jobLockCacheInitialisationService,
         ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
         TimeService timeService,
-        ContextInstanceRegistrationService contextInstanceRegistrationService,
+        @Qualifier("contextInstanceRegistrationService") ContextInstanceRegistrationService contextInstanceRegistrationService,
         JobUtilsService jobUtilsService,
         JobProvisionService jobProvisionService,
         SchedulerJobService schedulerJobService) {
@@ -94,7 +97,7 @@ public class ContextServiceAutoConfiguration {
         );
     }
 
-    @Bean
+    @Bean("contextInstanceRegistrationService")
     public ContextInstanceRegistrationService contextInstanceRegistrationService(
         ScheduledContextInstanceService scheduledContextInstanceService,
         JobInitiationService jobInitiationService,
@@ -134,6 +137,52 @@ public class ContextServiceAutoConfiguration {
             jobUtilsService,
             jobProvisionService,
             schedulerJobService,
+            this.isIkasanEnterpriseSchedulerInstance
+        );
+    }
+
+    @Bean("contextInstanceEndService")
+    public ContextInstanceEndServiceImpl contextInstanceEndService(
+        ScheduledContextInstanceService scheduledContextInstanceService,
+        JobInitiationService jobInitiationService,
+        @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
+        InternalEventDrivenJobService internalEventDrivenJobService,
+        ContextParametersInstanceService contextParametersInstanceService,
+        ContextInstancePublicationService contextInstancePublicationService,
+        JobLockCacheService jobLockCacheService,
+        ScheduledContextService scheduledContextService,
+        SchedulerJobInstanceService schedulerJobInstanceService,
+        ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
+        SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
+        JobLockCacheInitialisationService jobLockCacheInitialisationService,
+        TimeService timeService,
+        ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
+        SystemEventService systemEventService,
+        JobUtilsService jobUtilsService,
+        JobProvisionService jobProvisionService,
+        SchedulerJobService schedulerJobService,
+        ContextInstanceSchedulerService contextInstanceSchedulerService) {
+
+        return new ContextInstanceEndServiceImpl(queueDirectory,
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            jobLockCacheService,
+            scheduledContextService,
+            schedulerJobInstanceService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster,
+            jobLockCacheInitialisationService,
+            timeService,
+            contextInstanceSavedEventBroadcaster,
+            systemEventService,
+            jobUtilsService,
+            jobProvisionService,
+            schedulerJobService,
+            contextInstanceSchedulerService,
             this.isIkasanEnterpriseSchedulerInstance
         );
     }
