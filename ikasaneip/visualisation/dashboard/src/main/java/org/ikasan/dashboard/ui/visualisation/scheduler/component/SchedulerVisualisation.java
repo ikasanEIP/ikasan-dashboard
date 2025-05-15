@@ -485,29 +485,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         this.designerCanvas.manageClickableItems();
     }
 
-//    @Override
-//    public void connectorEvent(ConnectorEvent connectorEvent) {
-//        logger.debug("Connector event - " + connectorEvent.getEventType());
-//        if(connectorEvent.getEventType().equals("CONNECTOR_ADDED")) {
-//            if(connectorEvent.getSourceUserData() != null && connectorEvent.getSourceUserData().getItemType() != null
-//                && connectorEvent.getSourceUserData().getItemType().equals(UserData.CONTEXT)
-//                && connectorEvent.getTargetUserData() != null && connectorEvent.getTargetUserData().getItemType() != null
-//                && connectorEvent.getTargetUserData().getItemType().equals(UserData.CONTEXT)) {
-//                ContextTemplate childContextTemplate = ContextHelper.getChildContextTemplate(connectorEvent.getTargetUserData().getContextName()
-//                    , this.parentContextTemplate);
-//                ContextHelper.removeChildContextTemplate(connectorEvent.getTargetUserData().getContextName(), this.parentContextTemplate);
-//
-//                ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(connectorEvent.getSourceUserData().getContextName(), this.parentContextTemplate);
-//
-//                contextTemplate.getContexts().add(childContextTemplate);
-//                contextTemplate.getContextsMap().put(childContextTemplate.getName(),childContextTemplate);
-//
-//                this._save();
-//                this.saveRequired = true;
-//            }
-//        }
-//    }
-
     @Override
     public void figureDeleted(FigureDeleteEvent figureDeleteEvent) {
         if(figureDeleteEvent.getFigure().getUserData().getItemType().equals(UserData.CONTEXT)) {
@@ -542,39 +519,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     public void canvasUpdated(CanvasUpdatedEvent canvasUpdatedEvent) {
         logger.debug("Canvas updated! " + canvasUpdatedEvent.getCanvasJson());
     }
-
-//    @Override
-//    public void newContext(ContextTemplate context) {
-//        if(ContextHelper.getChildContextTemplate(context.getName(), this.parentContextTemplate) != null) {
-//            ConfirmDialog errorDialog = new ConfirmDialog();
-//            errorDialog.setHeader(getTranslation("error-dialog-header.cannot-add-context", UI.getCurrent().getLocale()));
-//            errorDialog.setWidth("500px");
-//
-//            StringBuffer message = new StringBuffer();
-//            message.append("<p style=\"color:red\">" + getTranslation("error-dialog-body.cannot-add-context", UI.getCurrent().getLocale()) +
-//                "</p>");
-//            errorDialog.setText(new Html("<div>"+message.toString()+"</div>"));
-//            errorDialog.setConfirmText(getTranslation("button.ok"));
-//            errorDialog.setCancelText(getTranslation("button.cancel"));
-//            errorDialog.open();
-//            return;
-//        }
-//
-//        this.contextTemplate = ContextHelper.getChildContextTemplate(this.contextTemplate.getName(), this.parentContextTemplate);
-//        this.contextTemplate.getContexts().add(context);
-//        this.contextTemplate.getContextsMap().put(context.getName(), context);
-//
-//        this.designerCanvas.addImageFigure(adapter.adaptChildContext(context));
-//        this.designerCanvas.addLabelToFigure(context.getName(), context.getName());
-//        this.designerCanvas.manageClickableItems();
-//
-//        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.parentContextTemplate.getName());
-//        scheduledContextRecord.setContext(parentContextTemplate);
-//        this.scheduledContextService.save(scheduledContextRecord);
-//
-//        this.systemEventLogger.logEvent(SystemEventConstants.CHILD_JOB_PLAN_ADDED_TO_JOB_PLAN, String.format("Child job plan [%s], has been added to job plan [%s]"
-//                , context.getName(), parentContextTemplate.getName()), this.authentication.getName());
-//    }
 
     protected void _save() {
         ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.parentContextTemplate.getName());
