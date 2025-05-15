@@ -68,6 +68,7 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -112,6 +113,7 @@ public class ContextInstanceDashboardWidget extends Div
     private GlobalEventService globalEventService;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
+    private SystemEventSearchService systemEventSearchService;
     private TextField contextNameTf = new TextField();
     private TextField contextInstanceIdTf = new TextField();
 
@@ -190,7 +192,7 @@ public class ContextInstanceDashboardWidget extends Div
                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                           JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen, GlobalEventService globalEventService,
                                           ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
-                                          double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                          SystemEventSearchService systemEventSearchService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                           double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -268,6 +270,10 @@ public class ContextInstanceDashboardWidget extends Div
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
         if (this.contextInstanceSchedulerService == null) {
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
+        }
+        this.systemEventSearchService = systemEventSearchService;
+        if (this.systemEventSearchService == null) {
+            throw new IllegalArgumentException("systemEventSearchService cannot be null!");
         }
 
         this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
@@ -1183,7 +1189,7 @@ public class ContextInstanceDashboardWidget extends Div
         ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService, contextInstance, contextTemplate,
             this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, contextInstanceWidgetTab, status.name(), this.globalEventService,
-            this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+            this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventSearchService , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
             this.contextVisualisationNodeDistance);
 
         contextInstanceDialog.open();

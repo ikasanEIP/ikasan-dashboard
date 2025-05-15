@@ -9,23 +9,11 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.VaadinService;
-import org.apache.solr.client.solrj.util.ClientUtils;
-import org.ikasan.dashboard.security.SecurityUtils;
-import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.search.component.filter.SearchFilter;
-import org.ikasan.dashboard.ui.util.SearchConstants;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.search.SearchResults;
-import org.ikasan.spec.solr.SolrGeneralService;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
@@ -33,9 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class SystemEventFilteringGrid extends Grid<SystemEvent>
 {
@@ -162,8 +150,6 @@ public class SystemEventFilteringGrid extends Grid<SystemEvent>
         else {
             searchFilter.setSearchTerm(null);
         }
-
-        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         dataProvider = DataProvider.fromFilteringCallbacks(query ->
         {

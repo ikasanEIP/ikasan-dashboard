@@ -23,6 +23,7 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextSe
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 
 import java.util.Map;
 
@@ -74,13 +75,13 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
                                            SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory, EmailNotificationDetailsService emailNotificationDetailsService,
                                            EmailNotificationContextService emailNotificationContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
                                            ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, SpringCloudConfigRefreshService springCloudConfigRefreshService,
-                                           boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                           SystemEventSearchService systemEventSearchService, boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                            double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobProvisionService
             , userService, securityService, jobUtilsService, zipWorkingDirectory, emailNotificationDetailsService, emailNotificationContextService, schedulerJobExecutionEnvironmentLabel, globalEventService
-            , contextInstanceRegistrationService, contextInstanceSchedulerService, springCloudConfigRefreshService, removeTrailingPlanNameContextAfterUnderscore, jobPlanIntervalMultiple
+            , contextInstanceRegistrationService, contextInstanceSchedulerService, springCloudConfigRefreshService, systemEventSearchService, removeTrailingPlanNameContextAfterUnderscore, jobPlanIntervalMultiple
             , jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
         this.setHeight("95vh");

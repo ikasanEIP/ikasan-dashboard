@@ -48,7 +48,11 @@ public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJo
         document.addField(COMPONENT_NAME, event.getFileEventDrivenJob().getContextName());
         document.addField(CREATED_DATE_TIME, event.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
-        document.addField(MODIFIED_BY, event.getModifiedBy());
+        // only update modified by field if populated.
+        if(event.getModifiedBy() != null &&
+            !event.getModifiedBy().isEmpty()) {
+            document.addField(MODIFIED_BY, event.getModifiedBy());
+        }
         document.setField(EXPIRY, DO_NOT_EXPIRE);
 
         logger.debug(String.format("Converted scheduled process event to SolrDocument[%s]", document));

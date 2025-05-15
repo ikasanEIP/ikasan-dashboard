@@ -74,6 +74,7 @@ import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -124,6 +125,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private GlobalEventService globalEventService;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
+    private SystemEventSearchService systemEventSearchService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -208,7 +210,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
                                            Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
                                            ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
-                                           SpringCloudConfigRefreshService springCloudConfigRefreshService,
+                                           SpringCloudConfigRefreshService springCloudConfigRefreshService, SystemEventSearchService systemEventSearchService,
                                            boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple,
                                            double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
@@ -313,6 +315,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.springCloudConfigRefreshService = springCloudConfigRefreshService;
         if (this.springCloudConfigRefreshService == null) {
             throw new IllegalArgumentException("springCloudConfigRefreshService cannot be null!");
+        }
+
+        this.scheduledContextService = scheduledContextService;
+        if (this.scheduledContextService == null) {
+            throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -747,7 +754,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                                      LogStreamingService logStreamingService, JobInitiationService jobInitiationService) {
         this.contextInstanceGridWidget = new ContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate, this.schedulerJobInstanceService,
-            jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.contextInstanceSchedulerService,
+            jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventSearchService,
             this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
         this.contextInstanceGridWidget.setWidthFull();
         this.contextInstanceGridWidget.setHeight("75vh");

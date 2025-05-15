@@ -52,7 +52,11 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
         document.setField(FLOW_NAME, event.getJobName());
         document.setField(CREATED_DATE_TIME, event.getTimestamp());
         document.setField(UPDATED_DATE_TIME, System.currentTimeMillis());
-        document.setField(MODIFIED_BY, event.getModifiedBy());
+        // only update modified by field if populated.
+        if(event.getModifiedBy() != null &&
+            !event.getModifiedBy().isEmpty()) {
+            document.addField(MODIFIED_BY, event.getModifiedBy());
+        }
         document.setField(EXPIRY, DO_NOT_EXPIRE);
         document.setField(HELD, event.isHeld());
         document.setField(SKIPPED, event.isSkipped());

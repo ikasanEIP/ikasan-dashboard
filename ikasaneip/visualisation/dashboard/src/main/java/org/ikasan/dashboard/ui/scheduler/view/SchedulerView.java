@@ -40,6 +40,7 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,7 +156,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private GlobalEventService globalEventService;
-
+    @Resource
+    private SystemEventSearchService systemEventSearchService;
     @Resource
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     @Resource
@@ -202,7 +204,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             , this.systemEventLogger, this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
             "", this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService,
             this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.downloadLogFileService, this.contextInstanceSchedulerService,
-            this.jobProvisionService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationNodeDistance);
+            this.jobProvisionService, this.systemEventSearchService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationNodeDistance);
 
         this.schedulerAgentDashboardView.addClassName("styled");
         this.schedulerAgentDashboardView.setSizeFull();
@@ -219,7 +221,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
             this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
-            this.contextInstanceSchedulerService, this.contextParametersInstanceService, removeTrailingPlanNameContextAfterUnderscore,
+            this.contextInstanceSchedulerService, this.contextParametersInstanceService, this.systemEventSearchService, removeTrailingPlanNameContextAfterUnderscore,
             this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationLevelDistance);
         this.contextTemplateWidget.setVisible(false);
 
