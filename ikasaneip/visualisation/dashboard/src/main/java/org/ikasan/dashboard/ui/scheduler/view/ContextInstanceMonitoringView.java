@@ -31,6 +31,7 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -119,6 +120,8 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     @Resource
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
+    @Resource
+    private SystemEventSearchService systemEventSearchService;
 
     @Value("${job.visualisation.vertical.spacing:120}")
     protected double jobVisualisationVerticalSpacing;
@@ -151,7 +154,7 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
             this.schedulerJobInstanceService, this.scheduledContextInstanceService, "",
             this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
             this.jobUtilsService, this.scheduledContextService, true, this.globalEventService,
-            this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.jobVisualisationVerticalSpacing,
+            this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventSearchService, this.jobVisualisationVerticalSpacing,
             this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
 
         this.getElement().getStyle().set("padding-top", "0px");

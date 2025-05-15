@@ -22,6 +22,7 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
@@ -50,6 +51,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     private DownloadLogFileService downloadLogFileService;
     private JobProvisionService jobProvisionService;
+    private SystemEventSearchService systemEventSearchService;
 
     private double jobVisualisationVerticalSpacing;
     private double jobVisualisationHorizontalSpacing;
@@ -80,7 +82,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                                        JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
                                        GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                        DownloadLogFileService downloadLogFileService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, JobProvisionService jobProvisionService,
-                                       double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
+                                       SystemEventSearchService systemEventSearchService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
                                        double contextVisualisationNodeDistance) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -108,6 +110,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
         this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
         this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
+        this.systemEventSearchService = systemEventSearchService;
 
         board = new Board();
         board.addClassName("styled");
@@ -128,7 +131,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                 , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
                 this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
                 this.jobUtilsService, this.scheduledContextService, false, this.globalEventService, this.contextInstanceRegistrationService,
-                this.contextInstanceSchedulerService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+                this.contextInstanceSchedulerService, this.systemEventSearchService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
                 this.contextVisualisationNodeDistance));
 
             initialised = true;

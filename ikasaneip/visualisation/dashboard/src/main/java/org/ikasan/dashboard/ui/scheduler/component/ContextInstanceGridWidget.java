@@ -39,6 +39,7 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Arrays;
@@ -58,6 +59,7 @@ public class ContextInstanceGridWidget extends Div {
     private GlobalEventService globalEventService;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
+    private SystemEventSearchService systemEventSearchService;
 
 
     /**
@@ -86,7 +88,7 @@ public class ContextInstanceGridWidget extends Div {
                                      LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
                                      JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobUtilsService jobUtilsService,
                                      ScheduledContextService scheduledContextService, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                     ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                     ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, SystemEventSearchService systemEventSearchService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                      double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -124,6 +126,10 @@ public class ContextInstanceGridWidget extends Div {
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
         if (this.contextInstanceSchedulerService == null) {
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
+        }
+        this.systemEventSearchService = systemEventSearchService;
+        if (this.systemEventSearchService == null) {
+            throw new IllegalArgumentException("systemEventSearchService cannot be null!");
         }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -206,7 +212,7 @@ public class ContextInstanceGridWidget extends Div {
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextInstanceRecord.getContextInstance(), this.contextTemplate, schedulerJobInstanceService
                     , this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService
-                    , this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing,
+                    , this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventSearchService, jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing,
                     contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
                 contextInstanceDialog.open();

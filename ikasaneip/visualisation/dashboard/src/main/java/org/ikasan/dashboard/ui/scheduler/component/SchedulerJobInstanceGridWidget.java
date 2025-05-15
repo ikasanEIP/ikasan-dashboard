@@ -17,6 +17,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.server.StreamResource;
+import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
@@ -51,6 +52,10 @@ import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.*;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventSearchFilter;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
+import org.ikasan.systemevent.model.SolrSystemEventSearchFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -94,6 +99,7 @@ public class SchedulerJobInstanceGridWidget extends Div
     private double jobVisualisationHorizontalSpacing;
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
+    private SystemEventSearchService systemEventSearchService;
 
     /**
      * Constructor
@@ -120,7 +126,7 @@ public class SchedulerJobInstanceGridWidget extends Div
                                           LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, ConfigurationService configurationService,
                                           MetaDataService metaDataService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String jobStatus, String jobName,
-                                          ContextProfileService contextProfileService, GlobalEventService globalEventService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
+                                          ContextProfileService contextProfileService, GlobalEventService globalEventService, SystemEventSearchService systemEventSearchService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                           double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -186,6 +192,10 @@ public class SchedulerJobInstanceGridWidget extends Div
         this.globalEventService = globalEventService;
         if(this.globalEventService ==  null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
+        this.systemEventSearchService = systemEventSearchService;
+        if(this.systemEventSearchService ==  null) {
+            throw new IllegalArgumentException("systemEventSearchService cannot be null!");
         }
 
         this.localEventService = new LocalEventServiceImpl();
@@ -868,8 +878,21 @@ public class SchedulerJobInstanceGridWidget extends Div
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
 
                 if(schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
-                    Text text = new Text(schedulerJobInstanceRecord.getManuallySubmittedBy());
-                    horizontalLayout.add(text);
+                    Button manuallySubmittedBy = new Button(schedulerJobInstanceRecord.getManuallySubmittedBy());
+                    horizontalLayout.add(manuallySubmittedBy);
+
+                    manuallySubmittedBy.addClickListener(event -> {
+                        SolrSystemEventSearchFilter searchFilter = new SolrSystemEventSearchFilter();
+                        searchFilter.setSubject(SystemEventConstants.SCHEDULED_JOB_SUBMITTED);
+                        searchFilter.setActor(schedulerJobInstanceRecord.getManuallySubmittedBy());
+                        searchFilter.setSearchTerm(schedulerJobInstanceRecord.getJobName());
+                        searchFilter.setAction(schedulerJobInstanceRecord.getContextInstanceId());
+                        SearchResults<SystemEvent> searchResults = this.systemEventSearchService
+                            .findByFilter(searchFilter, -1, -1, null, null);
+
+                        SystemEventDialog systemEventDialog = new SystemEventDialog(DateFormatter.instance());
+                        systemEventDialog.populate(searchResults.getResultList().get(0));
+                    });
                 }
 
                 return horizontalLayout;

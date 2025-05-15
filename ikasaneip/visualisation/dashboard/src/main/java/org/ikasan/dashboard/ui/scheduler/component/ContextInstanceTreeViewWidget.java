@@ -25,6 +25,7 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import org.apache.commons.lang3.time.StopWatch;
+import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
@@ -63,6 +64,9 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.LocalEventService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.systemevent.SystemEvent;
+import org.ikasan.spec.systemevent.SystemEventSearchService;
+import org.ikasan.systemevent.model.SolrSystemEventSearchFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -109,6 +113,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private JobInitiationService jobInitiationService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
+    private SystemEventSearchService systemEventSearchService;
     private ContextInstance contextInstance;
     private Map<ComponentKey, Image> jobImageMap;
     private Map<ComponentKey, Map<String, Icon>> schedulerJobIconMap;
@@ -119,7 +124,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private Map<ComponentKey, SchedulerStatusFreeTextDiv> schedulerStatusFreeTextDivMap;
     private Map<ComponentKey, Div> startTimes;
     private Map<ComponentKey, Div> endTimes;
-    private Map<ComponentKey, Div> manuallySubmittedBy;
+    private Map<ComponentKey, Button> manuallySubmittedBy;
     private TreeGrid<Object> grid;
     private CronParser parser;
     private CronDescriptor descriptor;
@@ -157,7 +162,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                          SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                         ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService,
+                                         ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService, SystemEventSearchService systemEventSearchService,
                                          double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         super(moduleMetaDataService, systemEventLogger, logStreamingService, contextInstance,
              schedulerJobInstanceService);
@@ -220,6 +225,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.globalEventService = globalEventService;
         if (this.globalEventService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
+        this.systemEventSearchService = systemEventSearchService;
+        if (this.systemEventSearchService == null) {
+            throw new IllegalArgumentException("systemEventSearchService cannot be null!");
         }
 
         this.localEventService = new LocalEventServiceImpl();
@@ -863,10 +872,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             , schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName());
 
                     if(schedulerJobInstanceRecord != null) {
-                        Div label = new Div();
-                        label.getElement().getStyle().set("word-wrap", "normal");
-                        label.getElement().getStyle().set("white-space", "normal");
-
+                        Button manuallySubmittedBy = new Button();
                         ComponentKey key;
 
                         if (value instanceof SchedulerJobInstance) {
@@ -878,12 +884,25 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                         }
 
-                        this.manuallySubmittedBy.put(key, label);
-
-                        horizontalLayout.add(label);
+                        this.manuallySubmittedBy.put(key, manuallySubmittedBy);
 
                         if (schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
-                            label.setText(schedulerJobInstanceRecord.getManuallySubmittedBy());
+                            manuallySubmittedBy.setText(schedulerJobInstanceRecord.getManuallySubmittedBy());
+                            horizontalLayout.add(manuallySubmittedBy);
+                            if(schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
+                                manuallySubmittedBy.addClickListener(event -> {
+                                    SolrSystemEventSearchFilter searchFilter = new SolrSystemEventSearchFilter();
+                                    searchFilter.setSubject(SystemEventConstants.SCHEDULED_JOB_SUBMITTED);
+                                    searchFilter.setActor(schedulerJobInstanceRecord.getManuallySubmittedBy());
+                                    searchFilter.setSearchTerm(schedulerJobInstanceRecord.getJobName());
+                                    searchFilter.setAction(schedulerJobInstanceRecord.getContextInstanceId());
+                                    SearchResults<SystemEvent> searchResults = this.systemEventSearchService
+                                        .findByFilter(searchFilter, -1, -1, null, null);
+
+                                    SystemEventDialog systemEventDialog = new SystemEventDialog(DateFormatter.instance());
+                                    systemEventDialog.populate(searchResults.getResultList().get(0));
+                                });
+                            }
                         }
                     }
                 }

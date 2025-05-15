@@ -52,7 +52,11 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         document.addField(COMPONENT_NAME, scheduledContextInstanceRecord.getContextInstance().getId());
         document.addField(CREATED_DATE_TIME, scheduledContextInstanceRecord.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
-        document.addField(MODIFIED_BY, scheduledContextInstanceRecord.getModifiedBy());
+        // only update modified by field if populated.
+        if(scheduledContextInstanceRecord.getModifiedBy() != null &&
+            !scheduledContextInstanceRecord.getModifiedBy().isEmpty()) {
+            document.addField(MODIFIED_BY, scheduledContextInstanceRecord.getModifiedBy());
+        }
         document.setField(EXPIRY, expiry);
         document.setField(START_TIME, scheduledContextInstanceRecord.getContextInstance().getStartTime());
         document.setField(END_TIME, scheduledContextInstanceRecord.getContextInstance().getEndTime());
