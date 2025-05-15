@@ -890,8 +890,10 @@ public class SchedulerJobInstanceGridWidget extends Div
                         SearchResults<SystemEvent> searchResults = this.systemEventSearchService
                             .findByFilter(searchFilter, -1, -1, null, null);
 
-                        SystemEventDialog systemEventDialog = new SystemEventDialog(DateFormatter.instance());
-                        systemEventDialog.populate(searchResults.getResultList().get(0));
+                        if(searchResults.getTotalNumberOfResults() > 0) {
+                            SystemEventDialog systemEventDialog = new SystemEventDialog(DateFormatter.instance());
+                            systemEventDialog.populate(searchResults.getResultList().get(0));
+                        }
                     });
                 }
 
