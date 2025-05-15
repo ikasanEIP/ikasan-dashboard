@@ -8,6 +8,9 @@ import org.ikasan.designer.model.*;
 import org.ikasan.job.orchestration.builder.context.ContextTemplateBuilder;
 import org.ikasan.job.orchestration.builder.context.JobDependencyBuilder;
 import org.ikasan.job.orchestration.builder.context.LogicalGroupingBuilder;
+import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
@@ -93,6 +96,101 @@ public class CanvasJsonToContextTemplateAdapter {
         }
 
         return false;
+    }
+
+    /**
+     * Adapts the parent context template with the provided canvas JSON data
+     *
+     * @param contextTemplate The original context template to adapt
+     * @param canvasJson The JSON data for the canvas
+     * @return The adapted context template
+     */
+    public ContextTemplate adaptParentContextTemplate(ContextTemplate contextTemplate, String canvasJson) {
+        Tree<Image> sortedTree = this.adaptParentView(contextTemplate.getName(), canvasJson);
+
+        Map<String, Context> contexts = ContextHelper.getAllContexts(contextTemplate);
+        this.setOrdinalsOnContexts(contexts, sortedTree.getRoot());
+
+        return contextTemplate;
+    }
+
+    /**
+     * Sets ordinals on Context objects based on the order of branches in a TreeNode.
+     *
+     * @param contexts a Map containing context names as keys and corresponding Context objects as values
+     * @param treeNode a TreeNode representing the tree structure with Image data in the branches
+     */
+    private void setOrdinalsOnContexts(Map<String, Context> contexts, TreeNode<Image> treeNode) {
+        for (int i=0; i<treeNode.getBranches().size(); i++) {
+            contexts.get(treeNode.getBranches().get(i)
+                .getData().getUserData().getContextName()).setOrdinal(i);
+
+            setOrdinalsOnContexts(contexts, treeNode.getBranches().get(i));
+        }
+    }
+
+    /**
+     * Adapts the given contextName and canvasJson to a ContextTemplate object.
+     *
+     * @param contextName  the name of the context
+     * @param canvasJson   the canvas JSON representing the context
+     * @return the ContextTemplate object
+     * @throws CanvasJsonToContextTemplateAdapterException if there is an error while adapting the canvas JSON
+     */
+    protected Tree<Image> adaptParentView(String contextName, String canvasJson) {
+        Map<String, Image> contexts = new HashMap<>();
+        Map<String, List<Connection>> connections = new HashMap<>();
+
+        try {
+            List<LinkedHashMap> values = objectMapper.readValue(canvasJson, List.class);
+
+            for (LinkedHashMap value : values) {
+                if (value.get("type").equals("draw2d.shape.basic.Image")) {
+                    Image image = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Image.class);
+                    if(!image.getPath().contains("repeating.png"))contexts.put(image.getId(), image);
+                }
+                else if (value.get("type").equals("draw2d.Connection")) {
+                    Connection connection = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Connection.class);
+
+                    if(!connections.containsKey(connection.getSource().getNode())) {
+                        connections.put(connection.getSource().getNode(), new ArrayList<>());
+                    }
+
+                    connections.get(connection.getSource().getNode()).add(connection);
+                }
+            }
+
+            Connection parentConnection = connections.get(contextName).get(0);
+            TreeNode<Image> parent = new TreeNode<>(contexts.get(parentConnection.getSource().getNode()));
+            Tree<Image> contextTree  = new Tree<>(parent);
+
+            this.buildContextTree(parent, contexts, connections);
+
+            return contextTree;
+        }
+        catch (Exception e) {
+            throw new CanvasJsonToContextTemplateAdapterException(e);
+        }
+    }
+
+
+    /**
+     * Builds a context tree starting from the provided TreeNode and recursively adds branches based on the connections.
+     *
+     * @param treeNode     the initial TreeNode representing the context
+     * @param contexts     a map of context names to Image objects
+     * @param connections  a map of context names to lists of Connection objects
+     */
+    private void buildContextTree(TreeNode<Image> treeNode, Map<String, Image> contexts, Map<String, List<Connection>> connections) {
+        if(connections.get(treeNode.getData().getUserData().getContextName()) == null) return;
+        connections.get(treeNode.getData().getUserData().getContextName()).forEach(target -> {
+            TreeNode<Image> child = new TreeNode<>(contexts.get(target.getTarget().getNode()));
+            if(child != null) {
+                treeNode.addBranch(child);
+                this.buildContextTree(child, contexts, connections);
+                treeNode.getBranches().sort((a, b) -> a.getData().getX() < b.getData().getX() ? -1 : 1);
+            }
+        });
     }
 
     /**

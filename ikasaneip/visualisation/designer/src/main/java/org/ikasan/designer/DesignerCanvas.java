@@ -49,6 +49,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private List<CanvasUpdatedListener> canvasUpdatedListeners = new ArrayList<>();
     private List<FigureUndoDeleteEventListener> figureUndoDeleteEventListeners = new ArrayList<>();
     private List<FigureDeleteEventListener> figureDeleteEventListeners = new ArrayList<>();
+    private List<FigureMovedEventListener> figureMovedEventListeners = new ArrayList<>();
     private List<JobMouseOverListener> jobMouseOverListeners = new ArrayList<>();
     private SaveFunction saveFunction;
     private SaveAsFunction saveAsFunction;
@@ -748,6 +749,21 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.figureDeleteEventListeners.add(listener);
     }
 
+
+    /**
+     * Adds a FigureMovedEventListener to the list of event listeners.
+     *
+     * @param listener the FigureMovedEventListener to be added
+     */
+    public void addFigureMovedEventListeners(FigureMovedEventListener listener) {
+        this.figureMovedEventListeners.add(listener);
+    }
+
+    /**
+     * Adds a JobMouseOverListener to the list of listeners for mouse-over events in the job interface.
+     *
+     * @param jobMouseOverListener the listener to be added
+     */
     public void addJobMouseOverEventListener(JobMouseOverListener jobMouseOverListener) {
         this.jobMouseOverListeners.add(jobMouseOverListener);
     }
@@ -861,6 +877,19 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
             FigureDeleteEvent figureDeleteEvent = new FigureDeleteEvent(figureObj);
             this.figureDeleteEventListeners.forEach(listener -> listener.figureDeleted(figureDeleteEvent));
+        }
+        catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    @ClientCallable
+    private void figureMoved(String figure){
+        try {
+            Figure figureObj = mapper.readValue(figure, Figure.class);
+
+            FigureMovedEvent figureDeleteEvent = new FigureMovedEvent(figureObj);
+            this.figureMovedEventListeners.forEach(listener -> listener.figureMoved(figureDeleteEvent));
         }
         catch (Exception e) {
             logger.error(e.getMessage(), e);

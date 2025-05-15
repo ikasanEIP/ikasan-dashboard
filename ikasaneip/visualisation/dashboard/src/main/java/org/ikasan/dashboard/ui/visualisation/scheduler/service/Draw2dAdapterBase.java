@@ -502,6 +502,7 @@ public abstract class Draw2dAdapterBase {
         // We simply recursively work our way through the context
         // and all nested contexts and render them into the diagram.
         if(context.getContexts() != null) {
+            context.getContexts().sort((a, b) -> ((Context)a).getOrdinal() < ((Context)b).getOrdinal() ? -1 : 1);
             context.getContexts().forEach(c -> {
                 graph.addVertex(((Context) c).getName());
                 graph.addEdge(context.getName(), ((Context) c).getName());
@@ -615,6 +616,7 @@ public abstract class Draw2dAdapterBase {
                                  DiagramBuilder diagramBuilder, Map<String, Context> contextInstanceMap) {
 
         if(context.getContexts() != null && !context.getContexts().isEmpty()) {
+            context.getContexts().sort((a, b) -> ((Context)a).getOrdinal() < ((Context)b).getOrdinal() ? -1 : 1);
             context.getContexts().forEach(c -> {
                 contextInstanceMap.put(((Context)c).getName(), (Context)c);
                 graph.addVertex(((Context)c).getName());

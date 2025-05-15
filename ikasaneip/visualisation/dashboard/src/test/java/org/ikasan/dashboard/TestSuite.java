@@ -15,7 +15,7 @@ import org.ikasan.dashboard.ui.general.component.SearchResultTest;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayoutTest;
 import org.ikasan.dashboard.ui.broadcast.FlowStateBroadcasterTest;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceDashboardWidgetTest;
-import org.ikasan.dashboard.ui.scheduler.service.CanvasJsonToContextTemplateAdapterTest;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.CanvasJsonToContextTemplateAdapterTest;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerViewTest;
 import org.ikasan.dashboard.ui.search.component.SearchFormTest;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGridTest;

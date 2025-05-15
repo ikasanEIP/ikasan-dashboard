@@ -78,6 +78,13 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
         }
     }
 
+    /**
+     * Adapts a child context to a JSON representation in the draw2d format.
+     *
+     * @param context The child context to be adapted.
+     * @return The JSON representation of the child context.
+     * @throws Draw2dAdapterException If an exception occurs during the adaptation process.
+     */
     public String adaptChildContext(Context context) {
         try {
             Image childContext = diagramBuilder.getImageBuilder()
@@ -102,6 +109,13 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
         }
     }
 
+    /**
+     * Adapt a given Context object to a JSON representation in the draw2d format.
+     *
+     * @param context The Context object to be adapted.
+     * @return A JSON representation of the Context object.
+     * @throws Draw2dAdapterException If an exception occurs during the adaptation process.
+     */
     public String adaptJobPlanContext(Context context) {
         try {
             Image childContext = diagramBuilder.getImageBuilder()
@@ -126,6 +140,13 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
         }
     }
 
+    /**
+     * Adapts a SchedulerJob into a JSON representation for use in visual representation.
+     *
+     * @param schedulerJob The SchedulerJob to be adapted.
+     * @return JSON representation of the SchedulerJob.
+     * @throws Draw2dAdapterException If an error occurs during the adaptation.
+     */
     public String adaptJob(SchedulerJob schedulerJob) {
         String image = getJobImage(schedulerJob);
 

@@ -1,8 +1,11 @@
-package org.ikasan.dashboard.ui.scheduler.service;
+package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.dashboard.AbstractTest;
+import org.ikasan.dashboard.ui.visualisation.scheduler.model.Tree;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.CanvasJsonToContextTemplateAdapter;
+import org.ikasan.designer.model.Image;
+import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.junit.Test;
@@ -78,5 +81,27 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
         String expected = loadDataFile("/data/contexts/DEMO-WITH_UPPER_CASE.json");
 
         JSONAssert.assertEquals(expected, objectMapper.writeValueAsString(contextTemplate), false);
+    }
+
+    @Test
+    public void test_sample_parent_context() throws IOException {
+        String canvasJson = loadDataFile("/data/contexts/parent-context-draw2d.json");
+        String contextJson = loadDataFile("/data/contexts/parent-context.json");
+
+        ContextTemplate contextTemplate = new ContextService().getContextTemplate(contextJson);
+        CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
+        contextTemplate = adapter.adaptParentContextTemplate(contextTemplate, canvasJson);
+
+        String result = loadDataFile("/data/contexts/results/parent-context-with-ordinal.json");
+
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
+
+        canvasJson = loadDataFile("/data/contexts/parent-context-draw2d-context-moved.json");
+
+        contextTemplate = adapter.adaptParentContextTemplate(contextTemplate, canvasJson);
+
+        result = loadDataFile("/data/contexts/results/parent-context-with-ordinal-context-moved.json");
+
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
     }
 }
