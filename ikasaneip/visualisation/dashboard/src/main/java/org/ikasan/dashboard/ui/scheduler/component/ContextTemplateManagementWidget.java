@@ -684,7 +684,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             addContextButton.addClickListener(event -> {
                 AddChildContextDialog addChildContextDialog = new AddChildContextDialog();
                 addChildContextDialog.open();
-                addChildContextDialog.addNewContextListener(this.schedulerVisualisation);
+                addChildContextDialog.addNewContextListener((ContextSchedulerVisualisation)this.schedulerVisualisation);
             });
 
             ComponentSecurityVisibility.applySecurity(addContextButton, SecurityConstants.ALL_AUTHORITY,

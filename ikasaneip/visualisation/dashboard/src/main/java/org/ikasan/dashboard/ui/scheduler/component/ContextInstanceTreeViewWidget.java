@@ -2099,6 +2099,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     if(item instanceof ContextInstance) {
                         if (((ContextInstance)item).getContexts() != null
                             && !((ContextInstance)item).getContexts().isEmpty()) {
+                            ((ContextInstance)item).getContexts().sort((a, b) -> a.getOrdinal() < b.getOrdinal() ? -1 : 1);
                             children.addAll(((ContextInstance)item).getContexts().stream()
                                 .map(instance -> (Object) instance)
                                 .collect(Collectors.toList()));
@@ -2160,10 +2161,12 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             if (((ContextInstance) node).getContexts() != null
                 && !((ContextInstance) node).getContexts().isEmpty()) {
                 if (filter != null && filter.isPresent() && filter.get().getJobName().isEmpty()) {
+                    ((ContextInstance)node).getContexts().sort((a, b) -> a.getOrdinal() < b.getOrdinal() ? -1 : 1);
                     children.addAll(((ContextInstance) node).getContexts().stream()
                         .map(instance -> (Object) instance)
                         .collect(Collectors.toList()));
                 } else {
+                    ((ContextInstance)node).getContexts().sort((a, b) -> a.getOrdinal() < b.getOrdinal() ? -1 : 1);
                     children.addAll(((ContextInstance) node).getContexts().stream()
                         .filter(instance -> (instance.getName().toLowerCase().contains(filter.get().getJobName().toLowerCase())))
                         .map(instance -> (Object) instance)

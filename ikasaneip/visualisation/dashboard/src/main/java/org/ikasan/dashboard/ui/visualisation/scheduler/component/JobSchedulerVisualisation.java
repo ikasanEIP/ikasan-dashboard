@@ -87,7 +87,6 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
 
         this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
         this.designerCanvas.addCanvasItemRightClickEventListener(this);
-        this.designerCanvas.addConnectorEventListener(this);
         this.designerCanvas.addCanvasUpdatedListener(this);
         this.designerCanvas.addFigureDeleteEventListeners(this);
         this.designerCanvas.addFigureUndoDeleteEventListeners(this);
