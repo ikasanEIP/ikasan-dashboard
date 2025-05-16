@@ -322,6 +322,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
+        this.systemEventSearchService = systemEventSearchService;
+        if (this.systemEventSearchService == null) {
+            throw new IllegalArgumentException("systemEventSearchService cannot be null!");
+        }
+
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.removeTrailingPlanNameContextAfterUnderscore = removeTrailingPlanNameContextAfterUnderscore;
         this.jobPlanIntervalMultiple = jobPlanIntervalMultiple;
