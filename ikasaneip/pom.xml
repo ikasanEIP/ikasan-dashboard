@@ -260,7 +260,7 @@
         <version.kryo>4.0.2</version.kryo>
         <version.kryo.cli>5.0.3</version.kryo.cli>  <!-- currently only using latest version for CLI/shell -->
         <version.ow2.asm>7.1</version.ow2.asm>
-        <version.org.springframework>6.2.4</version.org.springframework>
+        <version.org.springframework>6.2.6</version.org.springframework>
         <version.org.springframework.security>6.2.8</version.org.springframework.security>
         <version.org.springframework.ldap>3.2.8</version.org.springframework.ldap>
         <version.org.springframework.ldap.ldif>2.3.2.RELEASE</version.org.springframework.ldap.ldif>
@@ -268,7 +268,7 @@
         <version.org.springframework.data>3.4.1</version.org.springframework.data>
         <version.spring.cloud.config.client>4.2.0</version.spring.cloud.config.client>
         <version.org.springframework.webflow-spring-js>2.4.8.RELEASE</version.org.springframework.webflow-spring-js>
-        <version.org.springboot>3.4.3</version.org.springboot>
+        <version.org.springboot>3.4.5</version.org.springboot>
         <version.org.springframework.shell>2.0.1.RELEASE</version.org.springframework.shell>
         <version.io.springfox.swagger>2.9.2</version.io.springfox.swagger>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
