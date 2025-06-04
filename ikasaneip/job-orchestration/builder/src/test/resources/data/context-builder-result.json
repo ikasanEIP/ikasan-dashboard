@@ -112,11 +112,15 @@
     "defaultValue" : "value"
   } ],
   "timeWindowStart" : "* * 6 ? * * *",
+  "customWeekDayOfMonth" : false,
   "contextTtlMilliseconds" : 100000,
   "treeViewExpandLevel" : 3,
   "ableToRunConcurrently" : true,
   "useDisplayName" : false,
   "ordinal" : 1,
+  "renderLogicalBoundaries" : true,
+  "useAutoLayout" : true,
+  "endJobPlanUponCompletion" : false,
   "disabled" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }
