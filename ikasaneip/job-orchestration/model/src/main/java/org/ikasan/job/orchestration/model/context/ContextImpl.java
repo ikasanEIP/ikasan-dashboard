@@ -30,6 +30,7 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>();
     protected String timeWindowStart;
+    protected boolean customWeekDayOfMonth = false;
     protected long contextTtlMilliseconds;
     protected String environmentGroup;
     protected boolean isQuartzScheduleDrivenJobsDisabledForContext;
@@ -42,6 +43,10 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected Integer contextVisualisationLevelDistance;
     protected Integer contextVisualisationNodeDistance;
     protected Integer visualisationFontSize;
+    protected Boolean renderLogicalBoundaries = true;
+    protected Boolean useAutoLayout = true;
+    protected String userGeneratedLayout;
+    protected Boolean endJobPlanUponCompletion = false;
 
     @Override
     public String getName() {
@@ -136,6 +141,16 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setTimeWindowStart(String timeWindowStart) {
         this.timeWindowStart = timeWindowStart;
+    }
+
+    @Override
+    public boolean isCustomWeekDayOfMonth() {
+        return customWeekDayOfMonth;
+    }
+
+    @Override
+    public void setCustomWeekDayOfMonth(boolean customWeekDayOfMonth) {
+        this.customWeekDayOfMonth = customWeekDayOfMonth;
     }
 
     @Override
@@ -256,6 +271,46 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setVisualisationFontSize(Integer visualisationFontSize) {
         this.visualisationFontSize = visualisationFontSize;
+    }
+
+    @Override
+    public Boolean isRenderLogicalBoundaries() {
+        return renderLogicalBoundaries;
+    }
+
+    @Override
+    public void setRenderLogicalBoundaries(Boolean renderLogicalBoundaries) {
+        this.renderLogicalBoundaries = renderLogicalBoundaries;
+    }
+
+    @Override
+    public Boolean isUseAutoLayout() {
+        return useAutoLayout;
+    }
+
+    @Override
+    public void setUseAutoLayout(Boolean useAutoLayout) {
+        this.useAutoLayout = useAutoLayout;
+    }
+
+    @Override
+    public String getUserGeneratedLayout() {
+        return userGeneratedLayout;
+    }
+
+    @Override
+    public void setUserGeneratedLayout(String userGeneratedLayout) {
+        this.userGeneratedLayout = userGeneratedLayout;
+    }
+
+    @Override
+    public boolean isEndJobPlanUponCompletion() {
+        return this.endJobPlanUponCompletion;
+    }
+
+    @Override
+    public void setEndJobPlanUponCompletion(boolean endJobPlanUponCompletion) {
+        this.endJobPlanUponCompletion = endJobPlanUponCompletion;
     }
 
     @Override
