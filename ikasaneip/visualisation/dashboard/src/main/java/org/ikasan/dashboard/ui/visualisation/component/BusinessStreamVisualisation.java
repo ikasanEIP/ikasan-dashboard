@@ -5,6 +5,7 @@ import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -22,6 +23,7 @@ import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.visualisation.adapter.service.BusinessStreamHighLevelViewAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
@@ -95,6 +97,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
     private int maxDownloadBytes;
     private UI ui;
 
+    private BusinessStreamHighLevelViewAdapter businessStreamHighLevelViewAdapter;
+
     public BusinessStreamVisualisation(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService, TriggerService triggerRestService
         , ModuleMetaDataService moduleMetaDataService
@@ -166,6 +170,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
             throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
+        this.businessStreamHighLevelViewAdapter = new BusinessStreamHighLevelViewAdapter();
         this.maxDownloadBytes = maxDownloadBytes;
         this.setMargin(false);
         this.setSpacing(false);
@@ -190,6 +195,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
             this.designerCanvas = new DesignerCanvas("business-stream-viewport-"+UUID.randomUUID().toString(), this.dynamicImagePath, true, UI.getCurrent(), false);
             this.designerCanvas.setCanvasJson(businessStreamMetaData.getJson());
+//            this.designerCanvas.setCanvasJson(this.businessStreamHighLevelViewAdapter.adaptView(businessStreamMetaData.getJson()));
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
 
@@ -233,6 +239,25 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         actions.add(download, downloadTooltip);
         download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             this.exportPng();
+        });
+
+        Checkbox highLevelViewCb = new Checkbox("High Level View");
+        actions.add(highLevelViewCb);
+        highLevelViewCb.setValue(true);
+        highLevelViewCb.addValueChangeListener(event -> {
+            try {
+                if (event.getValue()) {
+                    this.designerCanvas.setCanvasJson(this.businessStreamHighLevelViewAdapter.adaptView(businessStreamMetaData.getJson()));
+                }
+                else {
+                    this.designerCanvas.setCanvasJson(businessStreamMetaData.getJson());
+                    this.redraw();
+                }
+                this.designerCanvas.importJson();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
         });
 
         return actions;

@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.actions;
 
 import com.vaadin.flow.component.html.Image;
+import org.ikasan.dashboard.ui.visualisation.adapter.service.BusinessStreamHighLevelViewAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamOpenDialog;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.function.OpenFunction;
@@ -8,11 +9,16 @@ import org.ikasan.designer.json.DesignerDynamicImageManager;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class BusinessStreamOpenFunction implements OpenFunction {
+
+    Logger logger = LoggerFactory.getLogger(BusinessStreamOpenFunction.class);
+
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
     private BusinessStreamMetaData businessStreamMetaData;
     private DesignerDynamicImageManager designerDynamicImageManager;
@@ -60,7 +66,15 @@ public class BusinessStreamOpenFunction implements OpenFunction {
                     String json = this.designerDynamicImageManager
                         .parse(businessStreamOpenDialog.getBusinessStreamMetaData().getJson());
 
+//                    BusinessStreamHighLevelViewAdapter adapter = new BusinessStreamHighLevelViewAdapter();
+
                     designerCanvas.setCanvasJson(json);
+
+//                    String highLevelJson = adapter.adaptView(json);
+//
+//                    logger.info(highLevelJson);
+//
+//                    designerCanvas.setCanvasJson(highLevelJson);
                 }
                 catch (IOException e) {
                     e.printStackTrace();
