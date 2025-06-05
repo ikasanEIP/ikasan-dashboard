@@ -19,6 +19,8 @@ public class ContextTemplateBuilder {
     protected List<ContextParameter> contextParameters = new ArrayList<>();
     protected List<SchedulerJob> scheduledJobs = new ArrayList<>();
     protected String timeWindowStartCronExpression;
+    protected boolean customWeekDayOfMonth = false;
+    private boolean delayAgentSynchronisationUntilNextInstance = false;
     protected long contextTtlMilliseconds;
     protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
     protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
@@ -151,6 +153,23 @@ public class ContextTemplateBuilder {
      */
     public ContextTemplateBuilder withTimeWindowStartCronExpression(String timeWindowStartCronExpression) {
         this.timeWindowStartCronExpression = timeWindowStartCronExpression;
+        return this;
+    }
+
+    public ContextTemplateBuilder withCustomWeekDayOfMonth(boolean customWeekDayOfMonth) {
+        this.customWeekDayOfMonth = customWeekDayOfMonth;
+        return this;
+    }
+
+    /**
+     * Sets whether to delay agent synchronisation until the next instance for the context template.
+     *
+     * @param delayAgentSynchronisationUntilNextInstance true to delay agent synchronisation until next instance, false otherwise
+     * @return the updated ContextTemplateBuilder object
+     */
+    public ContextTemplateBuilder withDelayAgentSynchronisationUntilNextInstance
+    (boolean delayAgentSynchronisationUntilNextInstance) {
+        this.delayAgentSynchronisationUntilNextInstance = delayAgentSynchronisationUntilNextInstance;
         return this;
     }
 
@@ -356,6 +375,7 @@ public class ContextTemplateBuilder {
         contextTemplate.setDescription(this.description);
         contextTemplate.setTimezone(this.timezone);
         contextTemplate.setTimeWindowStart(this.timeWindowStartCronExpression);
+        contextTemplate.setCustomWeekDayOfMonth(this.customWeekDayOfMonth);
         contextTemplate.setContextTtlMilliseconds(this.contextTtlMilliseconds);
         contextTemplate.setContextDependencies(this.contextDependencies);
         contextTemplate.setContexts(ContextTemplateUtils.setOrdinalsInContextTemplates(this.contexts));
@@ -369,6 +389,7 @@ public class ContextTemplateBuilder {
         contextTemplate.setAbleToRunConcurrently(this.ableToRunConcurrently);
         contextTemplate.setUseDisplayName(this.useDisplayName);
         contextTemplate.setOrdinal(this.ordinal);
+        contextTemplate.setDelayAgentSynchronisationUntilNextInstance(this.delayAgentSynchronisationUntilNextInstance);
         return contextTemplate;
     }
 
