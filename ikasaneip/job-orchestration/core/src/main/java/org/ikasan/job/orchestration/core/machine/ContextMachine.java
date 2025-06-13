@@ -819,6 +819,8 @@ public class ContextMachine {
             schedulerJobInstanceRecord.setSchedulerJobInstance(dbInstance);
             this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
+            this.recursivelySetContextStatus(this.contextInstance, true);
+            this.setContextStatus(contextInstance, true);
             this.saveContext();
             logger.info(String.format("Successfully set skip flag to [%s] on job[%s]. Context[%s], Child Context[%s], Context Instance[%s]."
                 , skipFlag, schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName(), this.contextInstance.getId()));
@@ -1628,7 +1630,9 @@ public class ContextMachine {
 
             // Confirm that all jobs outside logical constructs are complete.
             jobsOutsideLogicConstructs.entrySet().forEach(entry -> {
-                if(((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.COMPLETE)) return;
+                if(((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.COMPLETE) ||
+                    ((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED) ||
+                    ((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) return;
 
                 if (!((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.COMPLETE)
                     && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED)

@@ -15,7 +15,9 @@ public class ContextStateHelper extends AbstractLogicMachine<SchedulerJobInstanc
         if(contextInstance.getJobDependencies() != null) {
             contextInstance.getJobDependencies().forEach(jobDependency -> {
                 if (jobDependency.getLogicalGrouping() != null) {
-                    allLogicSatisfied.set(determineNestedLogic(jobDependency.getLogicalGrouping(), statefulEntityMap));
+                    if(allLogicSatisfied.get()) {
+                        allLogicSatisfied.set(determineNestedLogic(jobDependency.getLogicalGrouping(), statefulEntityMap));
+                    }
                 }
             });
         }

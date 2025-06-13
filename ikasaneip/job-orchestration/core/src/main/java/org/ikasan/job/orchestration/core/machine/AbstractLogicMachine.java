@@ -35,6 +35,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                     }
 
                     if (!statefulEntity.getStatus().equals(InstanceStatus.COMPLETE) &&
+                        !statefulEntity.getStatus().equals(InstanceStatus.SKIPPED) &&
                         !statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE) &&
                         !(statefulEntity.getStatus().equals(InstanceStatus.ERROR)
                             && statefulEntity.isErrorAcknowledged() != null
