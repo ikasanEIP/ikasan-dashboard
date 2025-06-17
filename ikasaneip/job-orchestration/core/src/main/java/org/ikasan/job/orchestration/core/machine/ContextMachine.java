@@ -1615,6 +1615,9 @@ public class ContextMachine {
      * @param contextInstance
      */
     private void setContextStatus(ContextInstance contextInstance, boolean broadcastStateChange) {
+        // Status does not change once the instance is ENDED
+        if(contextInstance.getStatus().equals(InstanceStatus.ENDED)) return;
+
         AtomicBoolean allJobsComplete = new AtomicBoolean(true);
         AtomicBoolean allLogicSatisfied = new AtomicBoolean(true);
         AtomicBoolean anyRunningOrCompletedOrQueuedJobs = new AtomicBoolean(false);
