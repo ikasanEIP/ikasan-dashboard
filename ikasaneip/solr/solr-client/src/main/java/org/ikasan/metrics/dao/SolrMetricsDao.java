@@ -52,6 +52,7 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
         document.addField(TYPE, METRIC_ENTITY_TYPE);
         document.addField(MODULE_NAME, flowInvocationMetric.getModuleName());
         document.addField(FLOW_NAME, flowInvocationMetric.getFlowName());
+        flowInvocationMetric.setHarvestedDateTime(System.currentTimeMillis());
 
         try {
             document.addField(PAYLOAD_CONTENT, this.mapper.writeValueAsString(flowInvocationMetric));
