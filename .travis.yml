@@ -11,7 +11,10 @@ cache:
     - $HOME/apache-maven-3.8.6
 ## export GPG details
 before_install:
-  #  - echo -e "machine github.com\n  login $GITHUB_USER\n  password $GITHUB_PASSWORD" > $HOME/.netrc
+  - echo use-agent >> ~/.gnupg/gpg.conf
+  - echo pinentry-mode loopback >> ~/.gnupg/gpg.conf
+  - echo allow-loopback-pinentry >> ~/.gnupg/gpg-agent.conf
+  - echo RELOADAGENT | gpg-connect-agent
   - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --batch --import --no-tty --batch --yes
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --batch --import-ownertrust
   - nvm install 18.0.0
