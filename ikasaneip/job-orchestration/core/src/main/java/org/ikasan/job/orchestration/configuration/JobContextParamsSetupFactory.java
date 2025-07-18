@@ -37,7 +37,7 @@ public class JobContextParamsSetupFactory {
      * Usage:
      * job.context.mapping.config.repo.environment=appPattern1,appPattern2
      */
-    @Value("#{'${job.context.mapping.config.repo.environment}'.split(',')}")
+    @Value("#{'${job.context.mapping.config.repo.environment:empty}'.split(',')}")
     private List<String> jobContextMappingConfigRepoEnvironment;
     
     @Value("${spring.config.server.url:}")

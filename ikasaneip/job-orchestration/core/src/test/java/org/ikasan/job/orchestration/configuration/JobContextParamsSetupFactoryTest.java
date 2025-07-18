@@ -40,7 +40,6 @@ public class JobContextParamsSetupFactoryTest {
     public void testJobContextMappingConfigRepoEnvironment() {
 
         List<String> values = (List<String>) ReflectionTestUtils.getField(jobContextParamsSetupFactory, "jobContextMappingConfigRepoEnvironment");
-        System.out.println(values);
         Assert.assertEquals(values.size(), 3);
         Assert.assertEquals(values.get(0), "one");
         Assert.assertEquals(values.get(1), "two");
