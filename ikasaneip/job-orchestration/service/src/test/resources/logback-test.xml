@@ -19,7 +19,7 @@
     <!-- wiremock has per endpoint servlet logging -->
     <logger name="/" level="WARN"/>
 
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="CONSOLE"/>
     </root>
 
