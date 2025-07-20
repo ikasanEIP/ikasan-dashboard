@@ -302,7 +302,7 @@
         <version.commons-io>2.16.1</version.commons-io>
         <version.commons-dbcp2>2.7.0</version.commons-dbcp2>
         <version.commons-lang>2.6</version.commons-lang>
-        <version.commons-lang3>3.9</version.commons-lang3>
+        <version.commons-lang3>3.18.0</version.commons-lang3>
         <version.commons-logging>1.2</version.commons-logging>
         <version.commons-beanutils>1.11.0</version.commons-beanutils>
         <version.commons-text>1.11.0</version.commons-text>

@@ -2557,11 +2557,11 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals("agentName1", events.get(0).getAgentName());
         Assert.assertEquals("jobName1", events.get(0).getJobName());
         Assert.assertEquals(3, events.get(0).getContextParameters().size());
-        Assert.assertEquals("ContextParameterInstanceImpl[value=String3,name=test3,defaultValue=String3]"
+        Assert.assertEquals("ContextParameterInstanceImpl[value=String3,defaultValue=String3,name=test3]"
             , events.get(0).getContextParameters().get(0).toString());
-        Assert.assertEquals("ContextParameterInstanceImpl[value=String4,name=test4,defaultValue=String4]"
+        Assert.assertEquals("ContextParameterInstanceImpl[value=String4,defaultValue=String4,name=test4]"
             , events.get(0).getContextParameters().get(1).toString());
-        Assert.assertEquals("ContextParameterInstanceImpl[value=String5,name=test5,defaultValue=String5]"
+        Assert.assertEquals("ContextParameterInstanceImpl[value=String5,defaultValue=String5,name=test5]"
             , events.get(0).getContextParameters().get(2).toString());
     }
 
