@@ -2,19 +2,34 @@ package org.ikasan.orchestration.service.context;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
+import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.JobLockCache;
+import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
+import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.awaitility.Awaitility.with;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JobLockCacheInitialisationServiceImplTest {
@@ -23,6 +38,7 @@ public class JobLockCacheInitialisationServiceImplTest {
     JobLockCacheService jobLockCacheService;
 
     private String jsonContext;
+    private String jsonContextWithSameJobLocks;
     private String jsonContext2;
     private String jsonContextJobsAddedToLocks;
     private String jsonContextJobsRemovedFromLocks;
@@ -32,11 +48,18 @@ public class JobLockCacheInitialisationServiceImplTest {
     @Before
     public void setUp() throws IOException {
         jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+        jsonContextWithSameJobLocks = new String(new ClassPathResource("context-wtih-same-job-locks.json").getInputStream().readAllBytes());
         jsonContext2 = new String(new ClassPathResource("context2.json").getInputStream().readAllBytes());
         jsonContextJobsAddedToLocks = new String(new ClassPathResource("context-jobs-added-to-locks.json").getInputStream().readAllBytes());
         jsonContextJobsRemovedFromLocks = new String(new ClassPathResource("context-jobs-removed-from-locks.json").getInputStream().readAllBytes());
 
         this.contextService = new ContextService();
+    }
+
+    @After
+    public void teardown() {
+        JobLockCacheImpl.instance().setJobLockCacheService(null);
+        Mockito.clearAllCaches();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -50,6 +73,53 @@ public class JobLockCacheInitialisationServiceImplTest {
 
         JobLockCacheInitialisationService service = new JobLockCacheInitialisationServiceImpl(this.jobLockCacheService);
         service.initialiseJobLockCache(context, true);
+
+        this.assertOriginalJobLockCache();
+    }
+
+    @Test
+    public void initialise_job_lock_cache_success_different_threads_job_locks_shared_across_contexts() throws JsonProcessingException, InterruptedException {
+        ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
+        ContextTemplate contextWithSameLocks = this.contextService.getContextTemplate(jsonContextWithSameJobLocks);
+
+        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "jobLockCacheService", null);
+
+        JobLockCacheInitialisationService service = new JobLockCacheInitialisationServiceImpl(this.jobLockCacheService);
+
+        JobLockCacheRecord jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
+        when(this.jobLockCacheService.get()).thenReturn(jobLockCacheRecord);
+
+        AtomicBoolean contextOneInitComplete = new AtomicBoolean(false);
+        Executors.newSingleThreadExecutor().execute(() -> {
+            for(int i=0; i<100; i++) {
+                service.initialiseJobLockCache(context, true);
+            }
+            contextOneInitComplete.set(true);
+        });
+
+        AtomicBoolean contextTwoInitComplete = new AtomicBoolean(false);
+        Executors.newSingleThreadExecutor().execute(() -> {
+            for(int i=0; i<100; i++) {
+                service.initialiseJobLockCache(contextWithSameLocks, true);
+            }
+            contextTwoInitComplete.set(true);
+        });
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                Assert.assertTrue(contextOneInitComplete.get() && contextTwoInitComplete.get());
+            });
+
+        this.assertTwoContextsSameJobsJobLockCache();
+
+        service.removeJobLocksFromCache(contextWithSameLocks);
+
+        verify(this.jobLockCacheService, times(200)).get();
+        verify(this.jobLockCacheService, times(1001)).save(any(JobLockCacheRecord.class));
+
+        verifyNoMoreInteractions(this.jobLockCacheService);
 
         this.assertOriginalJobLockCache();
     }
@@ -208,6 +278,52 @@ public class JobLockCacheInitialisationServiceImplTest {
         Assert.assertEquals(1, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK").getSchedulerJobs().get("context1").size());
         Assert.assertEquals("97656185", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK").getSchedulerJobs().get("context1").get(0).getJobName());
         Assert.assertEquals(1, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK").getSchedulerJobs().get("context2").size());
+        Assert.assertEquals("97656185", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK").getSchedulerJobs().get("context2").get(0).getJobName());
+    }
+
+    private void assertTwoContextsSameJobsJobLockCache() {
+        Assert.assertNotNull(JobLockCacheImpl.instance().getJobLockCacheData());
+        Assert.assertNotNull(JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName());
+        Assert.assertNotNull(JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByIdentifier());
+
+        Assert.assertNotNull(JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK"));
+        Assert.assertEquals(5, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().size());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context1").size());
+        Assert.assertEquals("1164721449", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context1").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context2").size());
+        Assert.assertEquals("1164721449", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context2").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context3").size());
+        Assert.assertEquals("1164721449", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context3").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context4").size());
+        Assert.assertEquals("1164721449", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context4").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context5").size());
+        Assert.assertEquals("1164721449", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_BB_LK").getSchedulerJobs().get("context5").get(0).getJobName());
+
+        Assert.assertNotNull(JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK"));
+        Assert.assertEquals(5, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().size());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context1").size());
+        Assert.assertEquals("-505061472", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context1").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context2").size());
+        Assert.assertEquals("744167903", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context2").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context3").size());
+        Assert.assertEquals("1226061027", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context3").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context4").size());
+        Assert.assertEquals("-213937305", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context4").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context5").size());
+        Assert.assertEquals("1651431039", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_PriceConsolidation_LK").getSchedulerJobs().get("context5").get(0).getJobName());
+
+        Assert.assertNotNull(JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_CDW_LK"));
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_CDW_LK").getSchedulerJobs().size());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_CDW_LK").getSchedulerJobs().get("context1").size());
+        Assert.assertEquals("-131863702", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_CDW_LK").getSchedulerJobs().get("context1").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_CDW_LK").getSchedulerJobs().get("context2").size());
+        Assert.assertEquals("-131863702", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_CDW_LK").getSchedulerJobs().get("context2").get(0).getJobName());
+
+        Assert.assertNotNull(JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK"));
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK").getSchedulerJobs().size());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK").getSchedulerJobs().get("context1").size());
+        Assert.assertEquals("97656185", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK").getSchedulerJobs().get("context1").get(0).getJobName());
+        Assert.assertEquals(2, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK").getSchedulerJobs().get("context2").size());
         Assert.assertEquals("97656185", JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().get("AC_DEV4.AC_ANVIL_LK").getSchedulerJobs().get("context2").get(0).getJobName());
     }
 
