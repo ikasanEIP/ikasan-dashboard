@@ -372,8 +372,10 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
             this.jobLockCacheData.getJobLocksByLockName().entrySet().forEach(lockHolder -> {
                 lockHolder.getValue().getSchedulerJobs().entrySet().forEach(entry -> {
                     entry.getValue().forEach(job -> {
-                        LOGGER.debug(String.format("Removing job[%s], in context[%s] from lock: [%s]"
-                            , job.getJobName(), entry.getKey(), lockHolder.getKey()));
+                        if(job.getContextName().equals(context.getName())) {
+                            LOGGER.debug(String.format("Removing job[%s], in context[%s], child[%s] from lock: [%s]"
+                                , job.getJobName(), context.getName(), entry.getKey(), lockHolder.getKey()));
+                        }
                     });
                 });
                 lockHolder.getValue().removeSchedulerJobsForContext(context);

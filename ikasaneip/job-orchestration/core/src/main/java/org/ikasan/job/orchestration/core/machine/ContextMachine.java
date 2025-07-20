@@ -256,6 +256,8 @@ public class ContextMachine {
             ContextService contextService = new ContextService();
             this.context = scheduledContextService.findByName(contextName).getContext();
 
+            this.jobLockCacheInitialisationService.removeJobLocksFromCache(this.context);
+
             ContextInstance previousContextInstance = SerializationUtils.clone(this.contextInstance);
 
             this.contextInstance = contextService.getContextInstance(contextService.getContextTemplateString(this.context));
@@ -356,15 +358,14 @@ public class ContextMachine {
             stopWatch.reset();
             stopWatch.start();
 
-            // Initialise the job lock cache for the new instance
-            this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
-
             this.contextInstance.setStartTime(System.currentTimeMillis());
             this.contextInstance.setProjectedEndTime(CronUtils.getEpochMilliOfPreviousFireTime(this.contextInstance.getTimeWindowStart()) + this.contextInstance.getContextTtlMilliseconds());
 
             this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl
                 (previousContextInstance.getId(), previousContextInstance, previousContextInstance.getStatus(), InstanceStatus.ENDED));
 
+            // Initialise the job lock cache for the new instance
+            this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
             this.saveContext();
 
             stopWatch.stop();
