@@ -164,6 +164,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             this.jobSynchronisationRequiredListeners.forEach(listener -> listener.jobSynchronisationRequired());
             NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved"
                 , UI.getCurrent().getLocale()));
+            this.close();
         });
 
         ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,
