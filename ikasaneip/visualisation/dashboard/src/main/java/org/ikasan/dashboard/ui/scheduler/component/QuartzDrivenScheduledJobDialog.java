@@ -169,6 +169,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             }
 
             NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
+            this.close();
         });
 
         ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,

@@ -196,6 +196,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             this.jobSynchronisationRequiredListeners.forEach(listener -> listener.jobSynchronisationRequired());
             this.editMode = EditMode.EDIT;
             NotificationHelper.showUserNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
+            this.close();
         });
 
         ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,
