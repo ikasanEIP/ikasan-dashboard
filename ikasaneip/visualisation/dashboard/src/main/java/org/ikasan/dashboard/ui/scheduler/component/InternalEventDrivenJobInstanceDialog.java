@@ -1221,6 +1221,18 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.acknowledgedButton.setVisible(false);
             this.acknowledgedIcon.setVisible(false);
         }
+        else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.LOCK_QUEUED)) {
+            this.killButton.setVisible(false);
+            this.submitButton.setVisible(false);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+            this.resetButton.setVisible(false);
+            this.submitDownstreamJobsButton.setVisible(false);
+            this.acknowledgedButton.setVisible(false);
+            this.acknowledgedIcon.setVisible(false);
+        }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
             this.killButton.setVisible(false);
             this.submitButton.setVisible(false);
