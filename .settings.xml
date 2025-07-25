@@ -42,7 +42,7 @@
             <repositories>
                 <repository>
                     <id>ikasaneip-snapshots</id>
-                    <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
+                    <url>https://central.sonatype.com/repository/maven-snapshots/</url>
                     <releases>
                         <enabled>false</enabled>
                     </releases>
