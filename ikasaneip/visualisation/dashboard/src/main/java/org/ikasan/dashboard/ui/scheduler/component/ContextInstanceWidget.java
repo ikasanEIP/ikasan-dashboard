@@ -29,6 +29,7 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.command.HoldAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.command.ReleaseAllCommandExecutionJobsForContextInstanceCommand;
 import org.ikasan.dashboard.ui.scheduler.service.AggregateStatusCollector;
@@ -68,11 +69,14 @@ import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroad
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +84,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
@@ -1041,18 +1048,35 @@ public class ContextInstanceWidget extends VerticalLayout
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                try {
-                    this.contextInstanceRegistrationService.deregisterManually(this.contextInstance.getId());
+                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                dialog.open(getTranslation("progress-dialog.manually-end-job-plan-instance-header", UI.getCurrent().getLocale()),
+                    getTranslation("progress-dialog.manually-end-job-plan-instance-body", UI.getCurrent().getLocale()));
 
-                    this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_ENDED, String.format("Job Plan Name[%s], Job Plan Instance Identifier[%s]"
-                        , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                    NotificationHelper.showUserNotification(getTranslation("notification.job-plan-ended-successfully", UI.getCurrent().getLocale()));
-                    ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-ended-error", UI.getCurrent().getLocale()));
-                }
+                final UI current = UI.getCurrent();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateManagementWidget"));
+                executor.execute(() -> {
+                    boolean success = true;
+                    try {
+                        this.contextInstanceRegistrationService.deregisterManually(this.contextInstance.getId());
+
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_ENDED, String.format("Job Plan Name[%s], Job Plan Instance Identifier[%s]"
+                            , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                        ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        success = false;
+                        dialog.close();
+                        current.access(() -> NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-ended-error", UI.getCurrent().getLocale())));
+                    }
+
+                    if(success) {
+                        current.access(() -> {
+                            dialog.close();
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-plan-ended-successfully", UI.getCurrent().getLocale()));
+                        });
+                    }
+                });
             });
         });
 

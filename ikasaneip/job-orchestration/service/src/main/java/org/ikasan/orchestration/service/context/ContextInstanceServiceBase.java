@@ -71,8 +71,8 @@ public abstract class ContextInstanceServiceBase {
     protected final SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
     protected final TimeService timeService;
     protected final JobUtilsService jobUtilsService;
-
     protected final ObjectMapper objectMapper;
+    protected int contextMachineExecutorWaitTimeoutSeconds = -1;
 
 
 
@@ -185,6 +185,15 @@ public abstract class ContextInstanceServiceBase {
         }
 
         this.objectMapper = ObjectMapperFactory.newInstance();
+    }
+
+    /**
+     * Sets the wait timeout duration in seconds for the context machine executor.
+     *
+     * @param contextMachineExecutorWaitTimeoutSeconds the timeout duration in seconds
+     */
+    public void setContextMachineExecutorWaitTimeoutSeconds(int contextMachineExecutorWaitTimeoutSeconds) {
+        this.contextMachineExecutorWaitTimeoutSeconds = contextMachineExecutorWaitTimeoutSeconds;
     }
 
     /**
@@ -326,6 +335,7 @@ public abstract class ContextInstanceServiceBase {
             moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService,
             this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService,
             this.contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.setExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
         contextMachine.init();
 
         // We add the listener to write initiation events to the agents.
@@ -454,7 +464,7 @@ public abstract class ContextInstanceServiceBase {
             internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, bridgingJobInstanceMap, queueDirectory, agents,
             moduleMetadataService, null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
-
+        contextMachine.setExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
         // We add a listener to update scheduler job instances when a state change occurs.
         contextMachine.addSchedulerJobStateChangeEventListener(event ->
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
