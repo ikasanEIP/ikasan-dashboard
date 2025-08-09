@@ -205,10 +205,14 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         LOG.info(String.format("De registering context Instance ID [%s], plan name [%s]", contextInstanceId, contextMachine.getContext().getName()));
 
         removeAgentInstances(instance);
+        contextMachine.releaseQueuedJobs();
         contextMachine.killRunningJobs();
         instance.setEndTime(System.currentTimeMillis());
         saveContextInstance(instance, InstanceStatus.ENDED);
-        super.jobLockCacheInitialisationService.removeJobLocksFromCache(instance);
+        if(ContextMachineCache.instance().getAllByContextName(instance.getName()).size() == 1) {
+            super.jobLockCacheInitialisationService.removeJobLocksFromCache(instance);
+        }
+
         ContextMachineCache.instance().remove(contextMachine);
         this.contextInstanceSavedEventBroadcaster.broadcast(instance);
         try {

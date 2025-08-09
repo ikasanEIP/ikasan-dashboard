@@ -1,7 +1,9 @@
 package org.ikasan.orchestration.service.context;
 
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;

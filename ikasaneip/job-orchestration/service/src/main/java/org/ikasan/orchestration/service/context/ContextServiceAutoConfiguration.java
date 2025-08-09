@@ -42,6 +42,9 @@ public class ContextServiceAutoConfiguration {
     @Value("${is.ikasan.enterprise.scheduler.instance:true}")
     private boolean isIkasanEnterpriseSchedulerInstance;
 
+    @Value("${context.machine.executor.wait.timeout.seconds:30}")
+    private int contextMachineExecutorWaitTimeoutSeconds;
+
     @Bean
     public JobLockCacheInitialisationService jobLockCacheInitialisationService(JobLockCacheService jobLockCacheService) {
         return new JobLockCacheInitialisationServiceImpl(jobLockCacheService);
@@ -74,7 +77,7 @@ public class ContextServiceAutoConfiguration {
         JobProvisionService jobProvisionService,
         SchedulerJobService schedulerJobService) {
 
-        return new ContextInstanceRecoveryServiceImpl(queueDirectory,
+        ContextInstanceRecoveryServiceImpl contextInstanceRecoveryService =  new ContextInstanceRecoveryServiceImpl(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
             moduleMetadataService,
@@ -95,6 +98,8 @@ public class ContextServiceAutoConfiguration {
             schedulerJobService,
             this.isIkasanEnterpriseSchedulerInstance
         );
+        contextInstanceRecoveryService.setContextMachineExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
+        return contextInstanceRecoveryService;
     }
 
     @Bean("contextInstanceRegistrationService")
@@ -118,7 +123,7 @@ public class ContextServiceAutoConfiguration {
         JobProvisionService jobProvisionService,
         SchedulerJobService schedulerJobService) {
 
-        return new ContextInstanceRegistrationServiceImpl(queueDirectory,
+        ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService =  new ContextInstanceRegistrationServiceImpl(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
             moduleMetadataService,
@@ -139,6 +144,9 @@ public class ContextServiceAutoConfiguration {
             schedulerJobService,
             this.isIkasanEnterpriseSchedulerInstance
         );
+        contextInstanceRegistrationService.setContextMachineExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
+
+        return contextInstanceRegistrationService;
     }
 
     @Bean("contextInstanceEndService")
@@ -163,7 +171,7 @@ public class ContextServiceAutoConfiguration {
         SchedulerJobService schedulerJobService,
         ContextInstanceSchedulerService contextInstanceSchedulerService) {
 
-        return new ContextInstanceEndServiceImpl(queueDirectory,
+        ContextInstanceEndServiceImpl contextInstanceEndService =  new ContextInstanceEndServiceImpl(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
             moduleMetadataService,
@@ -185,6 +193,9 @@ public class ContextServiceAutoConfiguration {
             contextInstanceSchedulerService,
             this.isIkasanEnterpriseSchedulerInstance
         );
+        contextInstanceEndService.setContextMachineExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
+
+        return contextInstanceEndService;
     }
 
     @Bean

@@ -15,6 +15,8 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiatio
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
@@ -303,6 +305,35 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
                 saveJobLockCacheRecord();
                 this.publishJobLockCacheEvent(jobLockHolder.getLockName(), event.getInternalEventDrivenJob().getIdentifier()
                     , event.getInternalEventDrivenJob().getChildContextName(), JobLockCacheEvent.EventType.JOB_ADDED_TO_JOB_LOCK_QUEUE);
+            }
+        }
+    }
+
+    @Override
+    public synchronized void removeQueuedSchedulerJob(SchedulerJobInstance schedulerJobInstance) {
+        if (schedulerJobInstance != null) {
+            if(this.jobLockCacheData.getJobLocksByIdentifier().containsKey(schedulerJobInstance.getIdentifier())) {
+                JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByLockName()
+                    .get(this.jobLockCacheData.getJobLocksByIdentifier().get(schedulerJobInstance.getIdentifier()));
+                if (jobLockHolder != null) {
+                    if (jobLockHolder.isExclusiveJobLock()) {
+                        this.jobLockCacheData.getExclusiveLockSchedulerJobInitiationEventWaitQueue().removeIf(record
+                            -> record.getSchedulerJobInitiationEvent().getContextInstanceId().equals(schedulerJobInstance.getContextInstanceId())
+                            && schedulerJobInstance.getStatus().equals(InstanceStatus.LOCK_QUEUED));
+                    } else {
+                        jobLockHolder.getSchedulerJobInitiationEventWaitQueue().removeIf(record
+                            -> record.getSchedulerJobInitiationEvent().getContextInstanceId().equals(schedulerJobInstance.getContextInstanceId())
+                            && schedulerJobInstance.getStatus().equals(InstanceStatus.LOCK_QUEUED));
+                    }
+
+                    if (schedulerJobInstance.getStatus().equals(InstanceStatus.RUNNING)) {
+                        jobLockHolder.removeLockHolder(schedulerJobInstance.getIdentifier() + CONTEXT_ID + schedulerJobInstance.getContextName());
+                    }
+
+                    saveJobLockCacheRecord();
+                    this.publishJobLockCacheEvent(jobLockHolder.getLockName(), schedulerJobInstance.getIdentifier()
+                        , schedulerJobInstance.getChildContextName(), JobLockCacheEvent.EventType.JOB_REMOVED_FROM_JOB_LOCK_QUEUE);
+                }
             }
         }
     }

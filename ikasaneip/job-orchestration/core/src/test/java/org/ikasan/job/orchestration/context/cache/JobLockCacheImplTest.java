@@ -7,6 +7,7 @@ import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
@@ -15,7 +16,9 @@ import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
@@ -126,6 +129,99 @@ public class JobLockCacheImplTest {
         assertNull(jobLocksByLockName.get("TEST-LOCK"));
         assertNull(jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0"));
         assertNull(jobLocksByIdentifier.get("AgentName1-TEST-LOCK-JobName1"));
+    }
+
+    @Test
+    public void test_remove_running_lock_holder() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3), makeJobLock("TEST-LOCK-1", 2, 2)));
+
+        SchedulerJobInitiationEventImpl schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+        schedulerJobInitiationEvent.setJobName("JobName0");
+        schedulerJobInitiationEvent.setContextInstanceId("contextInstanceId");
+        InternalEventDrivenJobInstance internalEventDrivenJob = new InternalEventDrivenJobInstanceImpl();
+        internalEventDrivenJob.setJobName("name");
+        internalEventDrivenJob.setContextName("contextName");
+        internalEventDrivenJob.setContextInstanceId("contextInstanceId");
+        internalEventDrivenJob.setIdentifier("identifier");
+        schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
+
+        jlc.lock("AgentName0-TEST-LOCK-JobName0", "contextName");
+        Assert.assertTrue(jlc.hasLock("AgentName0-TEST-LOCK-JobName0", "contextName"));
+
+        SchedulerJobInstance schedulerJobInstance = new SchedulerJobInstanceImpl();
+        schedulerJobInstance.setJobName("JobName0");
+        schedulerJobInstance.setAgentName("AgentName0");
+        schedulerJobInstance.setIdentifier("AgentName0-TEST-LOCK-JobName0");
+        schedulerJobInstance.setContextInstanceId("contextInstanceId");
+        schedulerJobInstance.setContextName("contextName");
+        schedulerJobInstance.setStatus(InstanceStatus.RUNNING);
+
+        jlc.removeQueuedSchedulerJob(schedulerJobInstance);
+
+        Assert.assertFalse(jlc.hasLock("AgentName0-TEST-LOCK-JobName0", "contextName"));
+        Assert.assertNull(jlc.pollSchedulerJobInitiationEventWaitQueue("AgentName0-TEST-LOCK-JobName0", "contextName"));
+    }
+
+    @Test
+    public void test_remove_queued_event() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3), makeJobLock("TEST-LOCK-1", 2, 2)));
+
+        SchedulerJobInitiationEventImpl schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+        schedulerJobInitiationEvent.setJobName("JobName0");
+        schedulerJobInitiationEvent.setContextInstanceId("contextInstanceId");
+        InternalEventDrivenJobInstance internalEventDrivenJob = new InternalEventDrivenJobInstanceImpl();
+        internalEventDrivenJob.setJobName("name");
+        internalEventDrivenJob.setContextName("context");
+        internalEventDrivenJob.setContextInstanceId("contextInstanceId");
+        internalEventDrivenJob.setIdentifier("identifier");
+        schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
+
+        jlc.addQueuedSchedulerJobInitiationEvent("AgentName0-TEST-LOCK-JobName0", "contextName", schedulerJobInitiationEvent);
+
+        SchedulerJobInstance schedulerJobInstance = new SchedulerJobInstanceImpl();
+        schedulerJobInstance.setJobName("JobName0");
+        schedulerJobInstance.setAgentName("AgentName0");
+        schedulerJobInstance.setIdentifier("AgentName0-TEST-LOCK-JobName0");
+        schedulerJobInstance.setContextInstanceId("contextInstanceId");
+        schedulerJobInstance.setStatus(InstanceStatus.LOCK_QUEUED);
+
+        jlc.removeQueuedSchedulerJob(schedulerJobInstance);
+
+        Assert.assertNull(jlc.pollSchedulerJobInitiationEventWaitQueue("AgentName0-TEST-LOCK-JobName0", "contextName"));
+    }
+
+    @Test
+    public void test_remove_queued_event_exclusive_lock() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        jlc.addLocks(List.of(makeExclusiveJobLock("TEST-LOCK", 3, 3), makeExclusiveJobLock("TEST-LOCK-1", 2, 2)));
+
+        SchedulerJobInitiationEventImpl schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+        schedulerJobInitiationEvent.setJobName("JobName0");
+        schedulerJobInitiationEvent.setContextInstanceId("contextInstanceId");
+        InternalEventDrivenJobInstance internalEventDrivenJob = new InternalEventDrivenJobInstanceImpl();
+        internalEventDrivenJob.setJobName("name");
+        internalEventDrivenJob.setContextName("context");
+        internalEventDrivenJob.setContextInstanceId("contextInstanceId");
+        internalEventDrivenJob.setIdentifier("identifier");
+        schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
+
+        jlc.addQueuedSchedulerJobInitiationEvent("AgentName0-TEST-LOCK-JobName0", "contextName", schedulerJobInitiationEvent);
+
+        SchedulerJobInstance schedulerJobInstance = new SchedulerJobInstanceImpl();
+        schedulerJobInstance.setJobName("JobName0");
+        schedulerJobInstance.setAgentName("AgentName0");
+        schedulerJobInstance.setIdentifier("AgentName0-TEST-LOCK-JobName0");
+        schedulerJobInstance.setContextInstanceId("contextInstanceId");
+        schedulerJobInstance.setStatus(InstanceStatus.LOCK_QUEUED);
+
+        jlc.removeQueuedSchedulerJob(schedulerJobInstance);
+
+        Assert.assertTrue(jlc.pollSchedulerJobInitiationEventWaitQueue("AgentName0-TEST-LOCK-JobName0", "contextName").isEmpty());
     }
 
     @Test
@@ -1588,6 +1684,13 @@ public class JobLockCacheImplTest {
 
     private Map<String, SchedulerJob> listToMap(List<SchedulerJob> schedulerJobs) {
         return schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
+    }
+
+    private JobLock makeExclusiveJobLock(String jobLockName, int count, int jobLockCount) {
+        JobLock jobLock =  makeJobLock(jobLockName, count, jobLockCount, null);
+        jobLock.setExclusiveJobLock(true);
+
+        return jobLock;
     }
 
     private JobLock makeJobLock(String jobLockName, int count, int jobLockCount) {

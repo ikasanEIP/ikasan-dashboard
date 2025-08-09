@@ -14,6 +14,7 @@ import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
@@ -62,6 +63,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -110,13 +112,12 @@ public class ContextMachine {
     private ModuleMetaDataService moduleMetaDataService;
     private String queueDir;
     private JobLockCache jobLockCache;
-
     private OutboundQueueMessageRunner outboundQueueMessageRunner;
-
     private InboundQueueMessageRunner inboundQueueMessageRunner;
     private ContextStateHelper contextStateHelper;
     private JobUtilsService jobUtilsService;
     private boolean tornDown = false;
+    private int executorWaitTimeoutSeconds = 30;
 
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, GlobalEventJobInstance> globalEventJobInstanceMap,
@@ -228,6 +229,17 @@ public class ContextMachine {
     }
 
     /**
+     * Sets the wait timeout in seconds for the executor.
+     *
+     * @param executorWaitTimeoutSeconds the wait timeout value in seconds to be set
+     */
+    public void setExecutorWaitTimeoutSeconds(int executorWaitTimeoutSeconds) {
+        if(executorWaitTimeoutSeconds > 0) {
+            this.executorWaitTimeoutSeconds = executorWaitTimeoutSeconds;
+        }
+    }
+
+    /**
      * Helper method to reset the context instance held by the context machine.
      *
      * @throws JsonProcessingException
@@ -247,6 +259,7 @@ public class ContextMachine {
             stopWatch.reset();
 
             stopWatch.start();
+            this.releaseQueuedJobs();
             this.killRunningJobs();
             this.teardownBigQueue();
             stopWatch.stop();
@@ -256,7 +269,9 @@ public class ContextMachine {
             ContextService contextService = new ContextService();
             this.context = scheduledContextService.findByName(contextName).getContext();
 
-            this.jobLockCacheInitialisationService.removeJobLocksFromCache(this.context);
+            if(ContextMachineCache.instance().getAllByContextName(this.context.getName()).size() == 1) {
+                this.jobLockCacheInitialisationService.removeJobLocksFromCache(this.context);
+            }
 
             ContextInstance previousContextInstance = SerializationUtils.clone(this.contextInstance);
 
@@ -459,18 +474,17 @@ public class ContextMachine {
 
             this.saveContext();
 
+            this.awaitTerminationAfterShutdown(this.contextExecutor);
+            this.awaitTerminationAfterShutdown(this.jobLogicMachine.getExecutor());
+            this.awaitTerminationAfterShutdown(this.schedulerInitiatorEventRaisedListenerExecutor);
+            this.awaitTerminationAfterShutdown(this.statusListenerExecutor);
+
             if (this.inboundQueue != null) {
                 this.inboundQueueMessageRunner.stop();
-                this.inboundQueue.close();
             }
             if (this.outboundQueue != null) {
                 this.outboundQueueMessageRunner.stop();
-                this.outboundQueue.close();
             }
-
-            this.statusListenerExecutor.shutdownNow();
-            this.contextExecutor.shutdownNow();
-            this.schedulerInitiatorEventRaisedListenerExecutor.shutdownNow();
 
             if (contextInstanceStateChangeEventListeners != null) {
                 contextInstanceStateChangeEventListeners.clear();
@@ -495,7 +509,6 @@ public class ContextMachine {
             this.inboundListenableFuture = null;
             this.outboundListenableFuture = null;
 
-            this.jobLogicMachine.getExecutor().shutdownNow(); // remove the executor threads on this Job Logic Machine
             this.jobLogicMachine = null;
 
             BigQueueManagementService bigQueueManagementService =
@@ -523,6 +536,18 @@ public class ContextMachine {
             this.statusConverter = null;
         } catch (Exception e) {
             logger.warn(String.format("Could not tear down context machine: Error [%s]", e.getMessage()));
+        }
+    }
+
+    private void awaitTerminationAfterShutdown(ExecutorService threadPool) {
+        threadPool.shutdown();
+        try {
+            if (!threadPool.awaitTermination(this.executorWaitTimeoutSeconds, TimeUnit.SECONDS)) {
+                threadPool.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            threadPool.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -1124,6 +1149,18 @@ public class ContextMachine {
         if(schedulerJobInstance != null) {
             schedulerJobInstance.setErrorAcknowledged(true);
         }
+    }
+
+    public void releaseQueuedJobs() {
+        List<SchedulerJobInstance> runningJobs = this.contextInstance.getAllSchedulerJobInstances().stream()
+            .filter(internalEventDrivenJobInstance -> internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.LOCK_QUEUED) ||
+                internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.RUNNING))
+            .collect(Collectors.toList());
+
+        runningJobs.forEach(job -> {
+            job.setContextInstanceId(this.contextInstance.getId());
+            JobLockCacheImpl.instance().removeQueuedSchedulerJob(job);
+        });
     }
 
     /**
