@@ -269,7 +269,9 @@ public class ContextMachine {
             ContextService contextService = new ContextService();
             this.context = scheduledContextService.findByName(contextName).getContext();
 
-            if(ContextMachineCache.instance().getAllByContextName(this.context.getName()).size() == 1) {
+            if(ContextMachineCache.instance().getAllByContextName(this.context.getName()).stream()
+                .filter(cm -> !cm.getContext().getStatus().equals(InstanceStatus.PREPARED))
+                .collect(Collectors.toList()).size() == 1) {
                 this.jobLockCacheInitialisationService.removeJobLocksFromCache(this.context);
             }
 
@@ -948,7 +950,8 @@ public class ContextMachine {
             if (schedulerJobInstance != null) {
                 if (!schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE) &&
                     !schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR) &&
-                    !schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
+                    !schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING) &&
+                    !schedulerJobInstance.getStatus().equals(InstanceStatus.LOCK_QUEUED)) {
                     throw new ContextMachineException(String.format("Attempting to reset job[%s], " +
                             "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be reset."
                         , schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), this.contextInstance.getId(), schedulerJobInstance.getStatus()));
@@ -1846,7 +1849,9 @@ public class ContextMachine {
 
     private void getSchedulerJobs(ContextInstance contextInstance, String jobIdentifier, List<SchedulerJobInstance> results) {
         if(contextInstance.getScheduledJobsMap() != null && contextInstance.getScheduledJobsMap().containsKey(jobIdentifier)) {
-            results.add(contextInstance.getScheduledJobsMap().get(jobIdentifier));
+            SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobIdentifier);
+            jobInstance.setContextInstanceId(this.contextInstance.getId());
+            results.add(jobInstance);
         }
 
         if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {

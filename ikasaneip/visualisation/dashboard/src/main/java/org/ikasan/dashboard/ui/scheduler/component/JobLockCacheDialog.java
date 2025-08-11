@@ -5,23 +5,30 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.IkasanColours;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceSplitVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.JobLockCacheEventBroadcaster;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -33,6 +40,7 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiatio
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -43,6 +51,7 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 import java.util.*;
@@ -342,13 +351,46 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                     .findFirst().isPresent())) {
                                 Button queuedJobButton = new Button(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
                                     .getInternalEventDrivenJob().getJobName());
+
                                 queuedJobButton.setIcon(VaadinIcon.SITEMAP.create());
                                 queuedJobButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_LOCK_QUEUED);
                                 queuedJobButton.getElement().getStyle().set("color", IkasanColours.WHITE);
                                 queuedJobButton.getElement().getStyle().set("margin-bottom", "5px");
                                 queuedJobButton.getElement().setAttribute("title", contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
                                     .getInternalEventDrivenJob().getChildContextName());
-                                verticalLayout.add(queuedJobButton);
+
+                                Button removeQueuedJobButton = new Button(getTranslation("button.job-lock-cache-remove", UI.getCurrent().getLocale()));
+                                removeQueuedJobButton.setIcon(VaadinIcon.TRASH.create());
+                                removeQueuedJobButton.getElement().getStyle().set("margin-bottom", "5px");
+                                removeQueuedJobButton.getElement().setAttribute("title", getTranslation("tooltip.job-lock-cache-remove", UI.getCurrent().getLocale()));
+                                removeQueuedJobButton.addClickListener(event -> {
+                                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                                    confirmDialog.setHeader(getTranslation("confirm-dialog.job-lock-cache-remove-header", UI.getCurrent().getLocale()));
+                                    confirmDialog.setText(getTranslation("confirm-dialog.job-lock-cache-remove-text", UI.getCurrent().getLocale()));
+                                    confirmDialog.setCancelable(true);
+                                    confirmDialog.open();
+
+                                    confirmDialog.addConfirmListener(confirmEvent -> {
+                                        SchedulerJobInstance schedulerJobInstance = contextualisedSchedulerJobInitiationEvent
+                                            .getSchedulerJobInitiationEvent().getInternalEventDrivenJob();
+                                        schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
+                                        JobLockCacheImpl.instance().removeQueuedSchedulerJob(schedulerJobInstance);
+                                        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                                            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                                            contextMachine.resetJob(schedulerJobInstance.getIdentifier(),
+                                                schedulerJobInstance.getChildContextName());
+                                        }
+                                    });
+                                });
+
+                                ComponentSecurityVisibility.applySecurity((IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication(), removeQueuedJobButton,
+                                    SecurityConstants.ALL_AUTHORITY,
+                                    SecurityConstants.SCHEDULER_ADMIN,
+                                    SecurityConstants.SCHEDULER_ALL_ADMIN);
+
+                                HorizontalLayout buttonLayout = new HorizontalLayout();
+                                buttonLayout.add(queuedJobButton, removeQueuedJobButton);
+                                verticalLayout.add(buttonLayout);
 
                                 queuedJobButton.addClickListener(event -> {
                                     try {

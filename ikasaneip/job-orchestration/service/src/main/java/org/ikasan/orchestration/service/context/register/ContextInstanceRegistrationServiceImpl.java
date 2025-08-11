@@ -209,7 +209,9 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         contextMachine.killRunningJobs();
         instance.setEndTime(System.currentTimeMillis());
         saveContextInstance(instance, InstanceStatus.ENDED);
-        if(ContextMachineCache.instance().getAllByContextName(instance.getName()).size() == 1) {
+        if(ContextMachineCache.instance().getAllByContextName(instance.getName()).stream()
+            .filter(cm -> !cm.getContext().getStatus().equals(InstanceStatus.PREPARED))
+            .collect(Collectors.toList()).size() == 1) {
             super.jobLockCacheInitialisationService.removeJobLocksFromCache(instance);
         }
 
