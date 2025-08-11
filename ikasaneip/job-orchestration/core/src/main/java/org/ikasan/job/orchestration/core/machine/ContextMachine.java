@@ -847,9 +847,11 @@ public class ContextMachine {
             schedulerJobInstanceRecord.setSchedulerJobInstance(dbInstance);
             this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
-            this.recursivelySetContextStatus(this.contextInstance, true);
-            this.setContextStatus(contextInstance, true);
-            this.saveContext();
+            if(!this.contextInstance.getStatus().equals(InstanceStatus.PREPARED)) {
+                this.recursivelySetContextStatus(this.contextInstance, true);
+                this.setContextStatus(contextInstance, true);
+                this.saveContext();
+            }
             logger.info(String.format("Successfully set skip flag to [%s] on job[%s]. Context[%s], Child Context[%s], Context Instance[%s]."
                 , skipFlag, schedulerJobInstance.getIdentifier(), this.contextInstance.getName(), schedulerJobInstance.getChildContextName(), this.contextInstance.getId()));
 
@@ -1008,10 +1010,12 @@ public class ContextMachine {
         });
 
         if(!jobs.isEmpty()) {
-            this.recursivelySetContextStatus(this.contextInstance, true);
-            this.contextInstance.setStatus(InstanceStatus.WAITING);
-            this.setContextStatus(this.contextInstance, true);
-            this.saveContext();
+            if (!this.contextInstance.getStatus().equals(InstanceStatus.PREPARED)) {
+                this.recursivelySetContextStatus(this.contextInstance, true);
+                this.contextInstance.setStatus(InstanceStatus.WAITING);
+                this.setContextStatus(this.contextInstance, true);
+                this.saveContext();
+            }
         }
     }
 
