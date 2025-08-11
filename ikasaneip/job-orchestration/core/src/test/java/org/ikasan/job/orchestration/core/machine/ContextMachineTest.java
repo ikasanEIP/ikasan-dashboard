@@ -1099,6 +1099,49 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    public void test_context_machine_skip_and_enable_jobs_prepared_context_remains_prepared() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.setStatus(InstanceStatus.PREPARED);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context3", true);
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context3", false);
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        Assert.assertTrue("Instance status is PREPARED!" ,contextMachine.getContext().getStatus().equals(InstanceStatus.PREPARED));
+    }
+
+    @Test
     public void test_context_machine_full_nested_context_skip_and_enable_jobs_that_are_already_complete_in_child_context() throws IOException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
