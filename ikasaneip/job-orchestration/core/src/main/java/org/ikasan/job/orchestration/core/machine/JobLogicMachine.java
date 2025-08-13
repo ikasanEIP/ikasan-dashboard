@@ -36,6 +36,14 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     private JobLockCache jobLockCache;
     private ContextParametersInstanceService contextParametersInstanceService;
 
+    /**
+     * Constructor for JobLogicMachine class.
+     *
+     * @param agents A map containing agent names as keys and ModuleMetaData objects as values.
+     * @param moduleMetaDataService Service for handling module metadata.
+     * @param jobLockCache Cache for managing job locks.
+     * @param contextParametersInstanceService Service for managing context parameters instances.
+     */
     public JobLogicMachine(Map<String, ModuleMetaData> agents, ModuleMetaDataService moduleMetaDataService, JobLockCache jobLockCache, ContextParametersInstanceService contextParametersInstanceService) {
         this.agents = agents;
         this.moduleMetaDataService = moduleMetaDataService;
@@ -300,7 +308,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @param schedulerJobInitiationEvents
      * @return
      */
-    private List<SchedulerJobInitiationEvent> manageJobLocks(ContextualisedScheduledProcessEvent scheduledProcessEvent, ContextInstance contextInstance
+    private synchronized List<SchedulerJobInitiationEvent> manageJobLocks(ContextualisedScheduledProcessEvent scheduledProcessEvent, ContextInstance contextInstance
             ,ContextInstance parentContextInstance, List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents, MutableBoolean lockRaised) {
         List<SchedulerJobInitiationEvent> finalSchedulerJobInitiationEvents = new ArrayList<>();
 
@@ -343,13 +351,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 this.jobLockCache.doesJobParticipateInLock(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName())) {
                 logger.info("Job participates in lock {}", event.getInternalEventDrivenJob());
 
+
                 // Now that we have determined that a job participates in a lock, we determine if the lock it participates in
                 // is already locked.
-                if(this.jobLockCache.locked(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName())) {
+                if (this.jobLockCache.locked(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName())) {
                     this.addQueuedSchedulerJobInitiationEvent(contextInstance, parentContextInstance, event.getInternalEventDrivenJob().getIdentifier()
                         , event);
-                }
-                else {
+                } else {
                     // Otherwise the job takes a lock and adds the initiation event to the finalSchedulerJobInitiationEvents so that
                     // the initiation event will be sent to the relevant agent.
                     this.jobLockCache.lock(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName());
@@ -675,6 +683,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         return schedulerJobInitiationEvent;
     }
 
+    /**
+     * Replaces the value of a ContextParameterInstance if the value is not set or is empty.
+     *
+     * @param contextName the name of the context
+     * @param instance the ContextParameterInstance to check and potentially replace its value
+     * @return the updated ContextParameterInstance with the value replaced if necessary
+     */
     private ContextParameterInstance replaceParamIfNotSet(String contextName, ContextParameterInstance instance) {
         if(instance.getValue() == null || instance.getValue().isEmpty()) {
             String replacementForContextParamName = contextParametersInstanceService.getContextParameterValue(contextName, instance.getName());
@@ -713,14 +728,16 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         return result && this.assessBaseLogic(logicalGrouping, schedulerJobInstancesMap);
     }
 
+
+
     /**
-     * This method is used to determine if a job is already complete.
+     * Checks if a specific job instance is already complete.
      *
-     * @param contextInstance
-     * @param agentName
-     * @param jobName
-     * @param childContextIds
-     * @return
+     * @param contextInstance The context instance containing the scheduled jobs and contexts
+     * @param agentName The name of the agent associated with the job
+     * @param jobName The name of the job
+     * @param childContextIds The list of child context IDs
+     * @return true if the job instance is already complete, false otherwise
      */
     private boolean isAlreadyComplete(ContextInstance contextInstance, String agentName, String jobName, List<String> childContextIds) {
         if(contextInstance.getScheduledJobsMap() != null && !contextInstance.getScheduledJobsMap().isEmpty()) {
