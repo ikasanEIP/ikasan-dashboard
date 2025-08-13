@@ -1,15 +1,12 @@
 package org.ikasan.job.orchestration.context.cache;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
+import org.ikasan.job.orchestration.AbstractJobLockCacheTest;
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
-import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
@@ -19,7 +16,6 @@ import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
@@ -41,8 +37,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.awaitility.Awaitility.with;
@@ -50,17 +44,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JobLockCacheImplTest {
+public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobLockCacheImplTest.class);
-
-    @Mock
-    private JobLockCacheService jobLockCacheService;
-
-    @After
-    public void tearDown() {
-        JobLockCacheImpl.instance().reset();
-    }
 
     @Test
     public void shouldCallSaveWhenAddingLocksOrLockHolderIsAddedOrRemoved() {
@@ -174,8 +160,9 @@ public class JobLockCacheImplTest {
         schedulerJobInitiationEvent.setJobName("JobName0");
         schedulerJobInitiationEvent.setContextInstanceId("contextInstanceId");
         InternalEventDrivenJobInstance internalEventDrivenJob = new InternalEventDrivenJobInstanceImpl();
-        internalEventDrivenJob.setJobName("name");
+        internalEventDrivenJob.setJobName("JobName0");
         internalEventDrivenJob.setContextName("context");
+        internalEventDrivenJob.setChildContextName("child");
         internalEventDrivenJob.setContextInstanceId("contextInstanceId");
         internalEventDrivenJob.setIdentifier("identifier");
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
@@ -186,6 +173,8 @@ public class JobLockCacheImplTest {
         schedulerJobInstance.setJobName("JobName0");
         schedulerJobInstance.setAgentName("AgentName0");
         schedulerJobInstance.setIdentifier("AgentName0-TEST-LOCK-JobName0");
+        schedulerJobInstance.setContextName("context");
+        schedulerJobInstance.setChildContextName("child");
         schedulerJobInstance.setContextInstanceId("contextInstanceId");
         schedulerJobInstance.setStatus(InstanceStatus.LOCK_QUEUED);
 
@@ -204,8 +193,9 @@ public class JobLockCacheImplTest {
         schedulerJobInitiationEvent.setJobName("JobName0");
         schedulerJobInitiationEvent.setContextInstanceId("contextInstanceId");
         InternalEventDrivenJobInstance internalEventDrivenJob = new InternalEventDrivenJobInstanceImpl();
-        internalEventDrivenJob.setJobName("name");
-        internalEventDrivenJob.setContextName("context");
+        internalEventDrivenJob.setJobName("JobName0");
+        internalEventDrivenJob.setContextName("contextName");
+        internalEventDrivenJob.setChildContextName("childContextName");
         internalEventDrivenJob.setContextInstanceId("contextInstanceId");
         internalEventDrivenJob.setIdentifier("identifier");
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
@@ -214,6 +204,8 @@ public class JobLockCacheImplTest {
 
         SchedulerJobInstance schedulerJobInstance = new SchedulerJobInstanceImpl();
         schedulerJobInstance.setJobName("JobName0");
+        schedulerJobInstance.setContextName("contextName");
+        schedulerJobInstance.setChildContextName("childContextName");
         schedulerJobInstance.setAgentName("AgentName0");
         schedulerJobInstance.setIdentifier("AgentName0-TEST-LOCK-JobName0");
         schedulerJobInstance.setContextInstanceId("contextInstanceId");
@@ -1669,55 +1661,4 @@ public class JobLockCacheImplTest {
         assertEquals("AgentName1New-TEST-LOCK-1-JobName1New", schedulerJob.getIdentifier());
         assertEquals(schedulerJob.getAgentName() + "-" + schedulerJob.getJobName(), schedulerJob.getIdentifier());
     }
-
-    private void validate(List<SchedulerJob> schedulerJobs, String jobLockName) {
-        Map<String, SchedulerJob> jobMap = this.listToMap(schedulerJobs);
-        for (int i = 0; i < schedulerJobs.size(); i++) {
-            SchedulerJob schedulerJob = jobMap.get(jobLockName + "-" + "JobName" + i);
-            assertEquals(jobLockName + "-" + "JobName" + i, schedulerJob.getJobName());
-            assertEquals("AgentName" + i, schedulerJob.getAgentName());
-            assertEquals("Job" + i + " Description", schedulerJob.getJobDescription());
-            assertEquals("AgentName" + i + "-" + jobLockName + "-" + "JobName" + i, schedulerJob.getIdentifier());
-            assertEquals(schedulerJob.getAgentName() + "-" + schedulerJob.getJobName(), schedulerJob.getIdentifier());
-        }
-    }
-
-    private Map<String, SchedulerJob> listToMap(List<SchedulerJob> schedulerJobs) {
-        return schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
-    }
-
-    private JobLock makeExclusiveJobLock(String jobLockName, int count, int jobLockCount) {
-        JobLock jobLock =  makeJobLock(jobLockName, count, jobLockCount, null);
-        jobLock.setExclusiveJobLock(true);
-
-        return jobLock;
-    }
-
-    private JobLock makeJobLock(String jobLockName, int count, int jobLockCount) {
-        return makeJobLock(jobLockName, count, jobLockCount, null);
-    }
-
-    private JobLock makeJobLock(String jobLockName, int count, int jobLockCount, String newOrNot) {
-        JobLockBuilder jobLockBuilder = new JobLockBuilder();
-        jobLockBuilder.withLockName(jobLockName);
-        jobLockBuilder.withLockCount(jobLockCount);
-        for (int i = 0; i < count; i++) {
-            SchedulerJobLockParticipant job = makeSchedulerJobLockParticipant(i, newOrNot, jobLockName, 1);
-            job.setContextName(UUID.randomUUID().toString());
-            jobLockBuilder.withJob("contextName"+i, job);
-        }
-        return jobLockBuilder.build().get(0);
-    }
-
-    private SchedulerJobLockParticipant makeSchedulerJobLockParticipant(int count, String newOrNot, String jobLockName, int lockCount) {
-        String extra = newOrNot == null ? "" : newOrNot;
-        SchedulerJobLockParticipant job = new SchedulerJobLockParticipantImpl();
-        job.setAgentName("AgentName" + count + extra);
-        job.setJobName(jobLockName + "-" + "JobName" + count + extra);
-        job.setIdentifier(job.getAgentName() + "-" + job.getJobName());
-        job.setJobDescription("Job" + count + extra + " Description");
-        job.setLockCount(lockCount);
-        return job;
-    }
-
 }

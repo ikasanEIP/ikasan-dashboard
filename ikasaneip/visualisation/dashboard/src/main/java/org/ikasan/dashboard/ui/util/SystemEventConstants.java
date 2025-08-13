@@ -100,6 +100,8 @@ public class SystemEventConstants
     public static final String JOB_PLAN_ENABLED = "Job plan enabled";
     public static final String JOB_PLAN_DISABLED = "Job plan disabled";
     public static final String JOB_ERROR_ACKNOWLEDGED = "Job error acknowledged";
+    public static final String LOCKED_JOB_RELEASE = "Locked Job Released";
+    public static final String QUEUED_JOB_DEQUEUED = "Queued Job Dequeued";
 
     public static List<String> getSystemEventConstants() {
         List<String> constantValues = Arrays.stream(SystemEventConstants.class.getDeclaredFields())

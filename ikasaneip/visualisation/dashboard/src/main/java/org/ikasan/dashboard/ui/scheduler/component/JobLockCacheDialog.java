@@ -17,15 +17,14 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.IkasanColours;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceSplitVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.JobLockCacheEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.service.JobLockCacheManagementServiceImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -48,6 +47,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheManagementService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +55,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -73,8 +75,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
     private ScheduledContextService scheduledContextService;
     private JobUtilsService jobUtilsService;
     private GlobalEventService globalEventService;
-
     private ScheduledContextInstanceService scheduledContextInstanceService;
+    private JobLockCacheManagementService jobLockCacheManagementService;
     private ContextProfileService contextProfileService;
     private Grid<JobLockHolder> grid;
     TextField filterTf = new TextField();
@@ -85,23 +87,29 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
 
+
     /**
-     * Constructor
+     * Constructs a new JobLockCacheDialog with the provided dependencies and settings.
      *
-     * @param contextInstance
-     * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
-     * @param configurationRestService
-     * @param moduleControlRestService
-     * @param metaDataRestService
-     * @param systemEventLogger
-     * @param schedulerJobInstanceService
-     * @param logStreamingService
-     * @param jobInitiationService
-     * @param scheduledContextService
-     * @param jobUtilsService
-     * @param scheduledContextInstanceService
-     * @param contextProfileService
+     * @param contextInstance the context instance to be used
+     * @param moduleMetaDataService the module metadata service to be used
+     * @param scheduledProcessManagementService the scheduled process management service to be used
+     * @param configurationRestService the configuration REST service to be used
+     * @param moduleControlRestService the module control REST service to be used
+     * @param metaDataRestService the metadata REST service to be used
+     * @param systemEventLogger the system event logger to be used
+     * @param schedulerJobInstanceService the scheduler job instance service to be used
+     * @param logStreamingService the log streaming service to be used
+     * @param jobInitiationService the job initiation service to be used
+     * @param scheduledContextService the scheduled context service to be used
+     * @param jobUtilsService the job utils service to be used
+     * @param scheduledContextInstanceService the scheduled context instance service to be used
+     * @param contextProfileService the context profile service to be used
+     * @param globalEventService the global event service to be used
+     * @param jobVisualisationVerticalSpacing the vertical spacing for job visualization
+     * @param jobVisualisationHorizontalSpacing the horizontal spacing for job visualization
+     * @param contextVisualisationLevelDistance the distance between context visualization levels
+     * @param contextVisualisationNodeDistance the distance between context visualization nodes
      */
     public JobLockCacheDialog(ContextInstance contextInstance, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -186,6 +194,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
+        this.jobLockCacheManagementService = new JobLockCacheManagementServiceImpl();
+
         this.jobVisualisationVerticalSpacing = jobVisualisationVerticalSpacing;
         this.jobVisualisationHorizontalSpacing = jobVisualisationHorizontalSpacing;
         this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
@@ -194,12 +204,37 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
         this.init();
     }
 
+
     /**
-     * Initialise the component.
+     * Initialize the Job Lock dialog.
+     * Retrieves the current user's authentication details using Spring Security.
+     * Sets the width and height of the dialog to occupy 95% of the viewport width and 90% of the viewport height.
+     * Creates a VerticalLayout for organizing components.
+     * Constructs a Grid with columns to display lock information.
+     * Populates the columns with lock name, lock count, current lock holders, and lock actions.
+     * - Lock name column displays the name of the lock.
+     * - Lock count column displays the count of locks or exclusive status.
+     * - Current lock holders column displays details of the current lock holders and their associated actions.
+     * - Lock actions column provides options to release a locked job.
+     * Security permissions are applied to the lock release action based on the user's authorities.
+     *
+     * @see IkasanAuthentication
+     * @see SecurityContextHolder
+     * @see Grid
+     * @see VerticalLayout
+     * @see ComponentRenderer
+     * @see Text
+     * @see Button
+     * @see ConfirmDialog
+     * @see ProgressIndicatorDialog
+     * @see Executor
+     * @see Executors
+     * @return void
      */
     private void init() {
-        this.setWidth("90vw");
-        this.setHeight("80vh");
+        IkasanAuthentication ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        this.setWidth("95vw");
+        this.setHeight("90vh");
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
@@ -208,6 +243,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
         grid.addColumn(JobLockHolder::getLockName)
             .setHeader(getTranslation("table-header.lock-name", UI.getCurrent().getLocale()))
             .setKey("lockName")
+            .setResizable(true)
             .setFlexGrow(4);
         grid.addColumn(new ComponentRenderer<>(
             jobLockHolder -> {
@@ -227,6 +263,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
             }))
             .setHeader(getTranslation("table-header.lock-count", UI.getCurrent().getLocale()))
             .setKey("lockCount")
+            .setResizable(true)
             .setFlexGrow(1);
         grid.addColumn(new ComponentRenderer<>(
                 jobLockHolder -> {
@@ -287,9 +324,59 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                             lockHolderButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RUNNING);
                             lockHolderButton.getElement().getStyle().set("color", IkasanColours.WHITE);
                             lockHolderButton.getElement().getStyle().set("margin-bottom", "5px");
-                            lockHolderButton.getElement().setAttribute("title", contextName);
+                            lockHolderButton.getElement().setAttribute("title",
+                            getTranslation("label.context-name")+": "+ job.getContextName() +
+                                "\n"+getTranslation("label.child-context-name")+": " + contextName);
                             lockHolderButton.setIcon(VaadinIcon.SITEMAP.create());
-                            verticalLayout.add(lockHolderButton);
+
+                            Button releaseLockedJobButton = new Button(getTranslation("button.job-lock-cache-release", UI.getCurrent().getLocale()));
+                            releaseLockedJobButton.setIcon(VaadinIcon.HANDS_UP.create());
+                            releaseLockedJobButton.getElement().getStyle().set("margin-bottom", "5px");
+                            releaseLockedJobButton.getElement().setAttribute("title", getTranslation("tooltip.job-lock-cache-release", UI.getCurrent().getLocale()));
+                            releaseLockedJobButton.addClickListener(event -> {
+                                ConfirmDialog confirmDialog = new ConfirmDialog();
+                                confirmDialog.setHeader(getTranslation("confirm-dialog.job-lock-cache-release-header", UI.getCurrent().getLocale()));
+                                confirmDialog.setText(getTranslation("confirm-dialog.job-lock-cache-release-text", UI.getCurrent().getLocale()));
+                                confirmDialog.setCancelable(true);
+                                confirmDialog.open();
+
+                                confirmDialog.addConfirmListener(confirmEvent -> {
+                                    ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
+
+                                    progressIndicatorDialog.open(getTranslation("message.releasing-locked-scheduler-job-header")
+                                        , getTranslation("message.releasing-locked-scheduler-job-test"));
+
+                                    Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("JobLockCacheDialog"));
+                                    executor.execute(() -> {
+                                        boolean error = false;
+                                        try {
+                                            this.jobLockCacheManagementService.releaseLockedJob(job.getIdentifier(), contextName);
+                                            systemEventLogger.logEvent(SystemEventConstants.LOCKED_JOB_RELEASE
+                                                , String.format("Released lock on job [%s] job plan [%s], child context [%s]."
+                                                    , job.getJobName(), job.getContextName(), contextName), ikasanAuthentication.getName());
+                                        } catch (Exception e) {
+                                            error = true;
+                                            ui.access(() -> NotificationHelper.showErrorNotification((String.format(getTranslation("error.unable-to-release-jocked-job"), job.getJobName()))));
+                                        }
+
+                                        if (!error) {
+                                            ui.access(() -> NotificationHelper.showUserNotification(String.format(getTranslation("message.locked-job-successfully-released"), job.getJobName())));
+                                        }
+                                        progressIndicatorDialog.close();
+                                    });
+                                });
+                            });
+
+                            ComponentSecurityVisibility.applySecurity(ikasanAuthentication, releaseLockedJobButton,
+                                SecurityConstants.ALL_AUTHORITY,
+                                SecurityConstants.SCHEDULER_ADMIN,
+                                SecurityConstants.SCHEDULER_ALL_ADMIN);
+
+                            HorizontalLayout buttonLayout = new HorizontalLayout();
+                            buttonLayout.add(lockHolderButton, releaseLockedJobButton);
+                            releaseLockedJobButton.getElement().getStyle().set("position", "absolute");
+                            releaseLockedJobButton.getElement().getStyle().set("right", "30px");
+                            verticalLayout.add(buttonLayout);
 
                             lockHolderButton.addClickListener(event -> {
                                 try {
@@ -315,6 +402,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                 }
             ))
             .setHeader(getTranslation("table-header.current-lock-holders", UI.getCurrent().getLocale()))
+            .setResizable(true)
             .setFlexGrow(8);
         grid.addColumn(new ComponentRenderer<>(
                 jobLockHolder -> {
@@ -356,8 +444,13 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                 queuedJobButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_LOCK_QUEUED);
                                 queuedJobButton.getElement().getStyle().set("color", IkasanColours.WHITE);
                                 queuedJobButton.getElement().getStyle().set("margin-bottom", "5px");
-                                queuedJobButton.getElement().setAttribute("title", contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
-                                    .getInternalEventDrivenJob().getChildContextName());
+                                queuedJobButton.getElement().setAttribute("title",
+                                    getTranslation("label.context-name")+": "+ contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
+                                        .getInternalEventDrivenJob().getContextName() +
+                                    "\n"+getTranslation("label.child-context-name")+": " + contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
+                                    .getInternalEventDrivenJob().getChildContextName() +
+                                    "\n"+getTranslation("label.context-instance-id")+": " + contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
+                                        .getContextInstanceId());
 
                                 Button removeQueuedJobButton = new Button(getTranslation("button.job-lock-cache-remove", UI.getCurrent().getLocale()));
                                 removeQueuedJobButton.setIcon(VaadinIcon.TRASH.create());
@@ -371,25 +464,37 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                     confirmDialog.open();
 
                                     confirmDialog.addConfirmListener(confirmEvent -> {
-                                        SchedulerJobInstance schedulerJobInstance = contextualisedSchedulerJobInitiationEvent
-                                            .getSchedulerJobInitiationEvent().getInternalEventDrivenJob();
-                                        schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
-                                        JobLockCacheImpl.instance().removeQueuedSchedulerJob(schedulerJobInstance);
-                                        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                                            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
-                                            contextMachine.resetJob(schedulerJobInstance.getIdentifier(),
-                                                schedulerJobInstance.getChildContextName());
-                                        }
+                                        ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
+
+                                        progressIndicatorDialog.open(getTranslation("message.removing-queued-scheduler-job-header")
+                                            , getTranslation("message.removing-queued-scheduler-job-test"));
+
+                                        Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("JobLockCacheDialog"));
+                                        executor.execute(() -> {
+                                            this.jobLockCacheManagementService.removeQueuedSchedulerJobInitiationEvent(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent());
+
+                                            ui.access(() -> NotificationHelper.showUserNotification(String.format(getTranslation("message.queued-job-successfully-removed-from-job-lock-queue")
+                                                , contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getJobName())));
+                                            systemEventLogger.logEvent(SystemEventConstants.QUEUED_JOB_DEQUEUED
+                                                , String.format("Removed job [%s] from job lock wait queue for job plan [%s], job plan instance id [%s]."
+                                                    , contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getJobName()
+                                                    , contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextName()
+                                                    , contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getContextInstanceId()), ikasanAuthentication.getName());
+                                            progressIndicatorDialog.close();
+                                        });
                                     });
                                 });
 
-                                ComponentSecurityVisibility.applySecurity((IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication(), removeQueuedJobButton,
+                                ComponentSecurityVisibility.applySecurity(ikasanAuthentication, removeQueuedJobButton,
                                     SecurityConstants.ALL_AUTHORITY,
                                     SecurityConstants.SCHEDULER_ADMIN,
                                     SecurityConstants.SCHEDULER_ALL_ADMIN);
 
                                 HorizontalLayout buttonLayout = new HorizontalLayout();
                                 buttonLayout.add(queuedJobButton, removeQueuedJobButton);
+                                removeQueuedJobButton.getElement().getStyle().set("position", "absolute");
+                                removeQueuedJobButton.getElement().getStyle().set("right", "30px");
+
                                 verticalLayout.add(buttonLayout);
 
                                 queuedJobButton.addClickListener(event -> {
@@ -404,7 +509,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                         jobTemplateVisualisationDialog.open();
                                     } catch (IOException e) {
                                         e.printStackTrace();
-                                        NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation", UI.getCurrent().getLocale()));
+                                        ui.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation", UI.getCurrent().getLocale())));
                                     }
                                 });
                             }
@@ -423,16 +528,30 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                 }
             ))
             .setHeader(getTranslation("table-header.queued-jobs-waiting-for-lock", UI.getCurrent().getLocale()))
+            .setResizable(true)
             .setFlexGrow(8);
 
         grid.setWidthFull();
-        layout.add(grid);
 
         this.populateGrid(null);
 
         HeaderRow hr = grid.appendHeaderRow();
         this.addGridFiltering(hr, "lockName");
 
+        Button refreshButton = new Button(getTranslation("button.refresh"));
+        refreshButton.setIcon(VaadinIcon.REFRESH.create());
+        layout.add(refreshButton);
+        refreshButton.getElement().getStyle().set("position", "absolute");
+        refreshButton.getElement().getStyle().set("right", "30px");
+        refreshButton.getElement().getStyle().set("top", "40px");
+        refreshButton.addClickListener(buttonClickEvent -> {
+            this.populateGrid(this.filterTf.getValue());
+        });
+
+        HorizontalLayout buttonLayout = new HorizontalLayout(refreshButton);
+        buttonLayout.setWidthFull();
+
+        layout.add(buttonLayout, grid);
 
         super.content.add(layout);
         super.title.setText(getTranslation("label.job-locks", UI.getCurrent().getLocale()));
@@ -441,11 +560,12 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
         super.setResizable(false);
     }
 
+
     /**
-     * Add filtering to the grid.
+     * Add grid filtering functionality to a specified header row and column key.
      *
-     * @param hr
-     * @param columnKey
+     * @param hr The header row to add the filter component to
+     * @param columnKey The key of the column to filter
      */
     public void addGridFiltering(HeaderRow hr, String columnKey) {
         Icon filterIcon = VaadinIcon.FILTER.create();
@@ -461,10 +581,11 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
     }
 
 
+
     /**
-     * Populate the grid.
+     * Populates the grid with job locks based on the provided filter.
      *
-     * @param filter
+     * @param filter the filter to apply to job locks. If null or empty, all job locks will be considered.
      */
     private void populateGrid(String filter) {
         List<JobLockHolder> jobLocks = JobLockCacheImpl.instance().getJobLockCacheData()

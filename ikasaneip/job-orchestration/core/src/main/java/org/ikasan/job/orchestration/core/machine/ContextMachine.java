@@ -119,6 +119,29 @@ public class ContextMachine {
     private boolean tornDown = false;
     private int executorWaitTimeoutSeconds = 30;
 
+    /**
+     * Initializes a new instance of ContextMachine with the provided parameters.
+     * @param context The context template to be used.
+     * @param contextInstance The context instance to be used.
+     * @param scheduledContextInstanceService The service for scheduled context instances.
+     * @param globalEventJobInstanceMap A map containing global event job instances.
+     * @param quartzScheduleDrivenJobInstanceMap A map containing Quartz schedule driven job instances.
+     * @param internalEventDrivenJobInstances A map containing internal event driven job instances.
+     * @param contextStartJobInstanceMap A map containing context start job instances.
+     * @param contextTerminalJobInstanceMap A map containing context terminal job instances.
+     * @param localEventJobInstanceMap A map containing local event job instances.
+     * @param bridgingJobInstanceMap A map containing bridging job instances.
+     * @param queueDir The directory for the job queue.
+     * @param agents A map containing module metadata for agents.
+     * @param moduleMetaDataService The service for module metadata.
+     * @param jobLockCache The cache for job locks.
+     * @param contextParametersInstanceService The service for context parameters instances.
+     * @param scheduledContextService The service for scheduled contexts.
+     * @param schedulerJobInstanceService The service for scheduler job instances.
+     * @param jobLockCacheInitialisationService The service for initializing job lock cache.
+     * @param contextInstancePublicationService The service for context instance publication.
+     * @param jobUtilsService The service for job utilities.
+     */
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, GlobalEventJobInstance> globalEventJobInstanceMap,
                           Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap,
@@ -185,9 +208,15 @@ public class ContextMachine {
         this.contextStateHelper = new ContextStateHelper();
     }
 
+
+
     /**
+     * Initialize the queues and setup listeners for inbound and outbound messages.
+     * This method sets up the inbound and outbound queues using the provided queue directory,
+     * creates listeners for both queues, and initializes other required context for the messaging system.
+     * It also sets a default number of attempts and maximum wait time for processing messages.
      *
-     * @throws IOException
+     * @throws IOException if there are errors during initialization of the queues
      */
     public void init() throws IOException {
         String inboundQueueName = getInboundQueueName();
@@ -203,27 +232,57 @@ public class ContextMachine {
         this.maxWait = 10000L;
     }
 
+    /**
+     * Registers the current instance to notification monitors for monitoring.
+     * This method will start monitoring the specified instance using MonitorManagement.
+     */
     public void registerToNotificationMonitors() {
         MonitorManagement.startMonitoring(this);
     }
 
+    /**
+     * Unregisters the current instance from the notification monitors.
+     * This method logs an info message about stopping the monitoring for the context and instanceId.
+     * It then calls MonitorManagement to stop monitoring for the current instance.
+     */
     public void unregisterToNotificationMonitors() {
         logger.info("Call to stop monitoring for the context {} and instanceId {}", this.contextInstance.getName(), this.contextInstance.getId());
         MonitorManagement.stopMonitoring(this);
     }
 
+    /**
+     * This method returns the name of the outbound queue based on the context instance ID.
+     * The outbound queue name is constructed by appending "-outbound-" followed by the context instance ID and "-queue".
+     *
+     * @return The name of the outbound queue.
+     */
     public String getOutboundQueueName() {
         return "outbound-" + this.contextInstance.getId() + "-queue";
     }
 
+    /**
+     * Retrieves the name of the inbound queue for the current context instance.
+     *
+     * @return The name of the inbound queue in the format "inbound-{contextId}-queue".
+     */
     public String getInboundQueueName() {
         return "inbound-" + this.contextInstance.getId() + "-queue";
     }
 
+    /**
+     * Retrieve the inbound queue associated with this object.
+     *
+     * @return The inbound queue.
+     */
     public IBigQueue getInboundQueue() {
         return this.inboundQueue;
     }
 
+    /**
+     * Retrieves the outbound queue stored in the current instance.
+     *
+     * @return The outbound queue associated with the current instance.
+     */
     public IBigQueue getOutboundQueue() {
         return this.outboundQueue;
     }
@@ -541,6 +600,12 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Waits for the provided ExecutorService to terminate after shutdown. If termination
+     * does not occur within the specified time, forcefully shuts down the ExecutorService.
+     *
+     * @param threadPool the ExecutorService to wait for termination
+     */
     private void awaitTerminationAfterShutdown(ExecutorService threadPool) {
         threadPool.shutdown();
         try {
@@ -553,18 +618,23 @@ public class ContextMachine {
         }
     }
 
+
     /**
+     * Sets a listener for events raised when a job is initiated in the scheduler.
      *
-     * @param listener
+     * @param listener the SchedulerJobInitiationEventRaisedListener to be set as the listener
      */
     public void setSchedulerJobInitiationEventRaisedListener(SchedulerJobInitiationEventRaisedListener listener) {
         this.schedulerJobInitiationEventRaisedListener = listener;
     }
 
+
+
     /**
+     * Receives an event message and enqueues it to the inbound queue if the context machine is not torn down.
      *
-     * @param bigQueueMessage
-     * @return
+     * @param bigQueueMessage the event message to be enqueued
+     * @throws IOException if an I/O error occurs
      */
     public void eventReceived(String bigQueueMessage) throws IOException {
         // If the context machine is torn down we ignore the message.
@@ -576,6 +646,11 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Raises an event by converting the given ContextualisedScheduledProcessEvent to a JSON string and enqueuing it in the inbound queue
+     * @param contextualisedScheduledProcessEvent the event to be raised
+     * @throws IOException if an I/O error occurs while processing the event
+     */
     public void raiseEvent(ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent) throws IOException {
         BigQueueMessageBuilder<String> bigQueueMessageBuilder = new BigQueueMessageBuilder();
         bigQueueMessageBuilder.withMessage(this.objectMapper.writeValueAsString(contextualisedScheduledProcessEvent))
@@ -635,44 +710,52 @@ public class ContextMachine {
         return this.statusConverter.convert(this.contextInstance);
     }
 
+
     /**
-     * Get the context by name.
+     * Retrieves a ContextInstance object based on the provided context name.
      *
-     * @param contextName
-     * @return
+     * @param contextName the name of the context to retrieve
+     * @return the ContextInstance object corresponding to the provided context name
      */
     public ContextInstance getContext(String contextName) {
         return this.getContextInstanceByName(contextName, this.contextInstance);
     }
 
+
     /**
-     * Get the context by name.
+     * Retrieves the context instance associated with this object.
      *
-     * @return
+     * @return The context instance.
      */
     public ContextInstance getContext() {
         return this.contextInstance;
     }
 
+
     /**
+     * Adds a listener to receive events when the state of a scheduler job changes.
      *
-     * @param listener
+     * @param listener The listener to be added
      */
     public void addSchedulerJobStateChangeEventListener(SchedulerJobInstanceStateChangeEventListener listener) {
         this.jobLogicMachine.addSchedulerJobStateChangeEventListener(listener);
     }
 
+
     /**
+     * Removes a SchedulerJobInstanceStateChangeEventListener from the list of listeners.
      *
-     * @param listener
+     * @param listener the SchedulerJobInstanceStateChangeEventListener to be removed
      */
     public void removeSchedulerJobStateChangeEventListener(SchedulerJobInstanceStateChangeEventListener listener) {
         this.jobLogicMachine.removeSchedulerJobStateChangeEventListener(listener);
     }
 
+
     /**
+     * Adds a listener to be notified of changes in the state of the context instance.
      *
-     * @param listener
+     * @param listener the ContextInstanceStateChangeEventListener to be added
      */
     public void addContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventListener listener) {
         if(!contextInstanceStateChangeEventListeners.contains(listener)) {
@@ -680,9 +763,11 @@ public class ContextMachine {
         }
     }
 
+
     /**
+     * Removes the specified ContextInstanceStateChangeEventListener from the list of listeners.
      *
-     * @param listener
+     * @param listener the ContextInstanceStateChangeEventListener to be removed
      */
     public void removeContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventListener listener) {
         if(contextInstanceStateChangeEventListeners.contains(listener)) {
@@ -690,17 +775,22 @@ public class ContextMachine {
         }
     }
 
+
+
     /**
+     * Sets the DryRunParameters for performing a dry run.
      *
-     * @param dryRunParameters
+     * @param dryRunParameters the DryRunParameters to be set
      */
     public void setDryRunParameters(DryRunParameters dryRunParameters) {
         this.dryRunParameters = dryRunParameters;
     }
 
+
     /**
+     * Checks if the method is being executed in a dry run mode.
      *
-     * @return
+     * @return true if the method is being executed in dry run mode, false otherwise.
      */
     public boolean isDryRun() {
         return this.dryRunParameters != null;
@@ -738,6 +828,11 @@ public class ContextMachine {
         this.saveContext();
     }
 
+
+    /**
+     * Sets a flag in the context instance indicating that the context should continue running until manually ended.
+     * This method will save the context after updating the flag.
+     */
     public void runContextUntilManuallyEnded() {
         this.contextInstance.setRunContextUntilManuallyEnded(true);
         this.saveContext();
@@ -769,11 +864,12 @@ public class ContextMachine {
         }
     }
 
+
     /**
-     * Method to set a job as skipped for all jobs under a context.
+     * Skips specified jobs within the given child context.
      *
-     * @param childContextName
-     * @param skipFlag
+     * @param childContextName The name of the child context containing the jobs to skip
+     * @param skipFlag A boolean flag indicating whether to skip the jobs (true) or not (false)
      */
     public void skipJobs(String childContextName,  boolean skipFlag) {
         Map<String, SchedulerJobInstance> schedulerJobInstanceMap
@@ -866,11 +962,15 @@ public class ContextMachine {
         });
     }
 
+
     /**
-     * Helper method to hold a job.
+     * Holds a job identified by jobIdentifier in the specified childContextName.
+     * If the job has a specific target residing context, it will only be held for that context.
+     * Otherwise, it will be held for all instances in the current context.
      *
-     * @param jobIdentifier
-     * @param childContextName
+     * @param jobIdentifier the identifier of the job to be held
+     * @param childContextName the name of the child context where the job should be held
+     * @throws ContextMachineException if the specified job cannot be found in the context or its nested contexts
      */
     public void holdJob(String jobIdentifier, String childContextName) {
         SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
@@ -927,6 +1027,12 @@ public class ContextMachine {
     }
 
 
+    /**
+     * Resets the specified job identified by jobIdentifier within the given child context.
+     *
+     * @param jobIdentifier The unique identifier of the job to reset.
+     * @param childContextName The name of the child context within which the job resides.
+     */
     public void resetJob(String jobIdentifier, String childContextName) {
         SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
         if(schedulerJobInstance != null) {
@@ -946,6 +1052,11 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Reset the status of the provided list of SchedulerJobInstance objects.
+     *
+     * @param jobs List of SchedulerJobInstance objects to reset
+     */
     private void _resetJob(List<SchedulerJobInstance> jobs) {
         jobs.forEach(schedulerJobInstance -> {
             if(schedulerJobInstance.getChildContextName() == null) return;
@@ -1019,6 +1130,13 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Releases a job identified by jobIdentifier for a specific child context.
+     * If the job is targeting a specific context, it will only be released for that context.
+     *
+     * @param jobIdentifier The identifier of the job to be released.
+     * @param childContextName The name of the child context for which the job is being released.
+     */
     public void releaseJob(String jobIdentifier, String childContextName) {
         SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
         if(schedulerJobInstance != null) {
@@ -1038,9 +1156,11 @@ public class ContextMachine {
         }
     }
 
+
     /**
+     * Releases the provided list of SchedulerJobInstance objects.
      *
-     * @param jobs
+     * @param jobs List of SchedulerJobInstance objects to be released
      */
     private void _releaseJob(List<SchedulerJobInstance> jobs) {
         jobs.forEach(schedulerJobInstance -> {
@@ -1158,6 +1278,11 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Releases all queued and running jobs associated with the current context instance.
+     * Jobs that are in status LOCK_QUEUED or RUNNING will be released by setting the context instance ID
+     * and removing them from the JobLockCacheImpl.
+     */
     public void releaseQueuedJobs() {
         List<SchedulerJobInstance> runningJobs = this.contextInstance.getAllSchedulerJobInstances().stream()
             .filter(internalEventDrivenJobInstance -> internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.LOCK_QUEUED) ||
@@ -1500,6 +1625,14 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Adds the final bridging events to the list based on the provided SchedulerJobInitiationEvent,
+     * ContextualisedScheduledProcessEvent, and a list of final events.
+     *
+     * @param event The SchedulerJobInitiationEvent to be added to the final events
+     * @param scheduledProcessEvent The ContextualisedScheduledProcessEvent associated with the event
+     * @param finalEvents The list of final events to which the event will be added if applicable
+     */
     private void addFinalBridgingEvents(SchedulerJobInitiationEvent event, ContextualisedScheduledProcessEvent scheduledProcessEvent,
                                      List<SchedulerJobInitiationEvent> finalEvents) {
         BridgingJobInstance bridgingJobInstance = null;
@@ -1620,12 +1753,13 @@ public class ContextMachine {
         }
     }
 
+
     /**
-     * Helper method to recursively get a ContextInstance by its name.
+     * Retrieves the ContextInstance with the given name from the hierarchy of given ContextInstance.
      *
-     * @param contextName
-     * @param contextInstance
-     * @return
+     * @param contextName the name of the ContextInstance to retrieve
+     * @param contextInstance the root ContextInstance from which to start the search
+     * @return the ContextInstance with the specified name, or null if not found
      */
     private ContextInstance getContextInstanceByName(String contextName, ContextInstance contextInstance) {
         if(contextInstance.getName().equals(contextName)) {
@@ -1645,6 +1779,12 @@ public class ContextMachine {
         return null;
     }
 
+    /**
+     * Recursively sets the status of the given ContextInstance and its child contexts.
+     *
+     * @param contextInstance the ContextInstance for which to set the status
+     * @param broadcastStateChange a boolean indicating whether to broadcast the state change
+     */
     private void recursivelySetContextStatus(ContextInstance contextInstance, boolean broadcastStateChange) {
         if(contextInstance.getContexts() != null) {
             contextInstance.getContexts().forEach(context -> {
@@ -1654,10 +1794,12 @@ public class ContextMachine {
         }
     }
 
+
     /**
-     * Helper method to set the context status.
+     * Sets the status of the given context instance based on various criteria and conditions.
      *
-     * @param contextInstance
+     * @param contextInstance The context instance for which the status needs to be set
+     * @param broadcastStateChange Flag indicating whether to broadcast state change event
      */
     private void setContextStatus(ContextInstance contextInstance, boolean broadcastStateChange) {
         // Status does not change once the instance is ENDED
@@ -1792,6 +1934,11 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Adds a queued scheduler job initiation event to the current context instance.
+     *
+     * @param event the SchedulerJobInitiationEvent to be added
+     */
     public void addQueuedSchedulerJobInitiationEvent(SchedulerJobInitiationEvent event) {
         ContextInstance childContextInstance = ContextHelper.getChildContextInstance(event.getInternalEventDrivenJob().getChildContextName()
             , this.contextInstance);
@@ -1804,6 +1951,12 @@ public class ContextMachine {
         this.saveContext();
     }
 
+    /**
+     * Issues a context instance state change event if the previous status is different from the new status.
+     * This method logs the event and notifies all context instance state change event listeners in a separate thread.
+     *
+     * @param event the ContextInstanceStateChangeEvent containing information about the event
+     */
     private void issueContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent event) {
         if(!event.getPreviousStatus().equals(event.getNewStatus())) {
             logger.debug("Issuing context instance state change event: " + event.getContextInstance().getName() + " " + event.getNewStatus());
@@ -1812,6 +1965,10 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Saves the context instance by creating a new record of ScheduledContextInstanceRecord and
+     * populating it with relevant information before saving it using the scheduledContextInstanceService.
+     */
     public void saveContext() {
         ScheduledContextInstanceRecord scheduledContextInstanceRecord
             = new ScheduledContextInstanceRecordImpl();
@@ -1823,6 +1980,14 @@ public class ContextMachine {
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
     }
 
+    /**
+     * Retrieves the SchedulerJobInstance with the given job identifier from the specified child context within the provided context instance.
+     *
+     * @param contextInstance The context instance to search for the SchedulerJobInstance.
+     * @param childContextName The name of the child context to search within.
+     * @param jobIdentifier The identifier of the SchedulerJobInstance to retrieve.
+     * @return The SchedulerJobInstance with the specified job identifier in the child context, or null if not found.
+     */
     private SchedulerJobInstance getSchedulerJob(ContextInstance contextInstance, String childContextName, String jobIdentifier) {
         if(contextInstance.getScheduledJobsMap() != null && contextInstance.getScheduledJobsMap().containsKey(jobIdentifier)
             && contextInstance.getName().equals(childContextName)) {
@@ -1843,6 +2008,13 @@ public class ContextMachine {
         return null;
     }
 
+    /**
+     * Retrieves a list of SchedulerJobInstance objects based on the given ContextInstance and job identifier.
+     *
+     * @param contextInstance The ContextInstance object for which scheduler jobs will be retrieved
+     * @param jobIdentifier The identifier of the job to filter results by
+     * @return A list of SchedulerJobInstance objects matching the given criteria
+     */
     private List<SchedulerJobInstance> getSchedulerJobs(ContextInstance contextInstance, String jobIdentifier) {
         List<SchedulerJobInstance> results = new ArrayList<>();
 
@@ -1851,6 +2023,13 @@ public class ContextMachine {
         return results;
     }
 
+    /**
+     * Retrieves all scheduler jobs with the specified job identifier within the given context instance and its child contexts recursively.
+     *
+     * @param contextInstance the context instance to search for scheduler jobs
+     * @param jobIdentifier the identifier of the scheduler job to retrieve
+     * @param results the list to store the found SchedulerJobInstance objects
+     */
     private void getSchedulerJobs(ContextInstance contextInstance, String jobIdentifier, List<SchedulerJobInstance> results) {
         if(contextInstance.getScheduledJobsMap() != null && contextInstance.getScheduledJobsMap().containsKey(jobIdentifier)) {
             SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobIdentifier);
@@ -1960,6 +2139,12 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Broadcasts a local event to all active contexts available in the ContextMachineCache for a given environment group.
+     *
+     * @param schedulerJobInitiationEvent The SchedulerJobInitiationEvent to broadcast
+     * @throws IOException if an I/O error occurs while processing the event
+     */
     public void broadcastLocalEvent(SchedulerJobInitiationEvent schedulerJobInitiationEvent) throws IOException {
         /* This block of code will Orchestrate when the event is a Global Event. This will create a
          * ContextualisedScheduledProcessEvent for the global event and send it to all active Contexts available in the
@@ -2048,6 +2233,18 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * This class represents a Runnable implementation for processing inbound queue messages.
+     * It runs in a separate thread and processes incoming messages from an inbound queue.
+     * The class provides methods to start and stop the message processing.
+     *
+     * When the run method is executed, it checks if the class is running and proceeds to process the next message in the inbound queue.
+     * It deserializes the message, processes the event, and enqueues any necessary outgoing messages to the outbound queue.
+     * In case of exceptions during message processing, appropriate error handling is performed.
+     *
+     * The stop method is used to gracefully stop the message processing by setting the running flag to false.
+     * The start method is used to resume the message processing by setting the running flag to true.
+     */
     protected class InboundQueueMessageRunner implements Runnable {
         private final AtomicBoolean running = new AtomicBoolean(true);
 
@@ -2077,17 +2274,7 @@ public class ContextMachine {
                 for(SchedulerJobInitiationEvent schedulerJobInitiationEvent: schedulerJobInitiationEvents) {
 
                     if (schedulerJobInitiationEvent.getInternalEventDrivenJob() != null) {
-                        BigQueueMessage<SchedulerJobInitiationEvent> outgoingBigQueueMessage
-                            = new BigQueueMessageBuilder<SchedulerJobInitiationEvent>().withMessage(schedulerJobInitiationEvent)
-                            .withMessageProperties(
-                                Map.of("contextName", schedulerJobInitiationEvent.getContextName(),
-                                    "contextInstanceId", schedulerJobInitiationEvent.getContextInstanceId()))
-                            .build();
-
-                        String serialised = objectMapper.writeValueAsString(outgoingBigQueueMessage);
-                        logger.debug("Enqueue job initiation event: " + serialised);
-                        outboundQueue.enqueue(serialised.getBytes());
-                        logger.debug("Outbound queue size: " + outboundQueue.size());
+                        publishJobInitiationEvent(schedulerJobInitiationEvent);
                     } else {
                         if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.GLOBAL_EVENT)) {
                             broadcastGlobalEvents(schedulerJobInitiationEvent, false, false);
@@ -2144,6 +2331,36 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Publishes the SchedulerJobInitiationEvent to the outbound queue after serializing and enqueuing it.
+     * This method creates a BigQueueMessage using the provided SchedulerJobInitiationEvent, adds message properties,
+     * serializes the message, logs the event, enqueues the serialized message to the outbound queue, and logs the
+     * size of the outbound queue.
+     *
+     * @param schedulerJobInitiationEvent The SchedulerJobInitiationEvent to be published.
+     * @throws IOException if an error occurs during serialization or enqueuing of the event.
+     */
+    public void publishJobInitiationEvent(SchedulerJobInitiationEvent schedulerJobInitiationEvent) throws IOException {
+        BigQueueMessage<SchedulerJobInitiationEvent> outgoingBigQueueMessage
+            = new BigQueueMessageBuilder<SchedulerJobInitiationEvent>().withMessage(schedulerJobInitiationEvent)
+            .withMessageProperties(
+                Map.of("contextName", schedulerJobInitiationEvent.getContextName(),
+                    "contextInstanceId", schedulerJobInitiationEvent.getContextInstanceId()))
+            .build();
+
+        String serialised = objectMapper.writeValueAsString(outgoingBigQueueMessage);
+        logger.debug("Enqueue job initiation event: " + serialised);
+        outboundQueue.enqueue(serialised.getBytes());
+        logger.debug("Outbound queue size: " + outboundQueue.size());
+    }
+
+
+    /**
+     * This class represents a Runnable task to process messages from an outbound queue. It implements the Runnable interface
+     * and provides methods to start and stop the processing of messages. The run method dequeues messages from the outbound
+     * queue, processes them, and triggers an event listener to handle the message. If an error occurs during processing,
+     * the message is re-enqueued with exponential back-off retries.
+     */
     protected class OutboundQueueMessageRunner implements Runnable {
         private final AtomicBoolean running = new AtomicBoolean(true);
 
@@ -2226,6 +2443,12 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Sets up an inbound listener to listen for new messages in the inbound queue.
+     * Creates a new InboundQueueMessageRunner and adds it as a listener to the inboundListenableFuture.
+     * Uses the contextExecutor provided to execute the listener on a specific context.
+     * If an exception occurs, a warning log is generated indicating the failure to add the inbound listener.
+     */
     private void addInboundListener() {
         try {
             inboundListenableFuture = this.inboundQueue.peekAsync();
@@ -2237,16 +2460,31 @@ public class ContextMachine {
         }
     }
 
+    /**
+     * Sets up an outbound listener by peeking into the outbound queue asynchronously, initializing an
+     * OutboundQueueMessageRunner, and adding the runner as a listener to the outboundListenableFuture.
+     * This method is protected and intended for internal use within the class or its subclasses.
+     */
     protected void addOutboundListener() {
         outboundListenableFuture = outboundQueue.peekAsync();
         this.outboundQueueMessageRunner = new OutboundQueueMessageRunner();
         outboundListenableFuture.addListener(outboundQueueMessageRunner, schedulerInitiatorEventRaisedListenerExecutor);
     }
 
+    /**
+     * Retrieves a map of GlobalEventJobInstance objects.
+     *
+     * @return a Map with String keys representing job instance names and GlobalEventJobInstance values
+     */
     protected Map<String, GlobalEventJobInstance> getGlobalEventJobInstanceMap() {
         return globalEventJobInstanceMap;
     }
 
+    /**
+     * Retrieves a map containing the internal event-driven job instances.
+     *
+     * @return A mapping of String keys to InternalEventDrivenJobInstance values representing the internal event-driven job instances.
+     */
     public Map<String, InternalEventDrivenJobInstance> getInternalEventDrivenJobInstancesMap() {
         return internalEventDrivenJobInstances;
     }
