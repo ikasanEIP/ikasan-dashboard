@@ -1206,7 +1206,8 @@ public class ContextMachine {
             }
             else {
                 if(schedulerJobInstance != null) {
-                    if(schedulerJobInstance.getStatus().equals(InstanceStatus.RUNNING)) return;
+                    if(schedulerJobInstance.getStatus().equals(InstanceStatus.RUNNING)
+                        || (schedulerJobInstance.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) && schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE))) return;
                     if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD) && !schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
                         throw new ContextMachineException(String.format("Attempting to release job[%s], " +
                                 "in context[%s], childContext[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be released."
@@ -1500,8 +1501,17 @@ public class ContextMachine {
                 } else {
                     finalEvents.add(event);
                 }
-            }
-            else {
+            } else if (scheduledProcessEvent.getChildContextNames() != null && scheduledProcessEvent.getChildContextNames().size() == 1 &&
+                this.localEventJobInstanceMap.containsKey(event.getAgentName() + "-" + event.getJobName() + "-" + scheduledProcessEvent.getChildContextNames().get(0)) &&
+                this.getSchedulerJob(contextInstance, scheduledProcessEvent.getChildContextNames().get(0).toString(),
+                event.getAgentName() + "-" + event.getJobName()) != null &&
+                this.getSchedulerJob(contextInstance, scheduledProcessEvent.getChildContextNames().get(0).toString(),
+                    event.getAgentName() + "-" + event.getJobName()).isHeld()) {
+                SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, scheduledProcessEvent.getChildContextNames().get(0).toString(),
+                    event.getAgentName() + "-" + event.getJobName());
+                this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier()
+                    + "_" + schedulerJobInstance.getChildContextName(), event);
+            } else {
                 this.addFinalGlobalEvents(event, scheduledProcessEvent, finalEvents);
                 this.addFinalContextStartEvents(event,scheduledProcessEvent, finalEvents);
                 this.addFinalContextTerminalEvents(event, scheduledProcessEvent, finalEvents);
@@ -2383,7 +2393,12 @@ public class ContextMachine {
                 SchedulerJobInitiationEvent schedulerJobInitiationEvent
                     = objectMapper.readValue(messageAsString, SchedulerJobInitiationEventImpl.class);
 
-                if(schedulerJobInitiationEventRaisedListener != null) {
+                // If the initiation event is a local job we simply broadcast that locally
+                if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                    broadcastLocalEvent(schedulerJobInitiationEvent);
+                }
+                // otherwise we delegate to the event raised listeners
+                else if(schedulerJobInitiationEventRaisedListener != null) {
                     schedulerJobInitiationEventRaisedListener.onSchedulerJobInitiationEventRaised(schedulerJobInitiationEvent);
                 }
 
