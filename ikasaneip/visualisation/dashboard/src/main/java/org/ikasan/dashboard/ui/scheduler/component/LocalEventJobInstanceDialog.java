@@ -56,6 +56,8 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
     private Icon viewRawJobButton;
     private Icon viewProcessExecutionButton;
 
+    private Button holdButton;
+    private Button releaseButton;
     private Button submitButton;
     private Button skipButton;
     private Button enableButton;
@@ -135,6 +137,56 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
         this.statusDiv.setStatus(this.schedulerJobInstanceRecord.getStatus());
 
         formLayout.add(this.statusDiv, 2);
+
+        this.holdButton = new Button(getTranslation("button.hold", UI.getCurrent().getLocale()), new Icon(VaadinIcon.HAND));
+        this.holdButton.setIconAfterText(true);
+
+        this.holdButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.hold-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.hold-job", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                if(this.holdJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.ON_HOLD);
+                    this.localEventJobInstance.setStatus(InstanceStatus.ON_HOLD);
+                    this.setButtonVisibility();
+                }
+            });
+        });
+
+        this.releaseButton = new Button(getTranslation("button.release", UI.getCurrent().getLocale()), new Icon(VaadinIcon.HANDS_UP));
+        this.releaseButton.setIconAfterText(true);
+
+        this.releaseButton.addClickListener(event -> {
+            if(!canPerformAction()) {
+                return;
+            }
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.release-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.release-job", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(getTranslation("button.ok"));
+            confirmDialog.setCancelText(getTranslation("button.cancel"));
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                if(this.releaseJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.WAITING);
+                    this.localEventJobInstance.setStatus(InstanceStatus.WAITING);
+                    this.setButtonVisibility();
+                }
+            });
+        });
 
         this.skipButton = new Button(getTranslation("button.skip", UI.getCurrent().getLocale()), new Icon(VaadinIcon.BAN));
         this.skipButton.setIconAfterText(true);
@@ -227,7 +279,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
         });
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(this.skipButton, this.enableButton, this.submitButton);
+        actionsLayout.add(this.holdButton, this.releaseButton, this.skipButton, this.enableButton, this.submitButton);
         actionsLayout.setMargin(false);
 
         VerticalLayout actionsButtonLayout = new VerticalLayout();
@@ -479,6 +531,68 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
     }
 
     /**
+     * Method to hold a job in the system.
+     *
+     * @return true if the job was successfully put on hold, false otherwise
+     */
+    private boolean holdJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-held", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.holdJob(this.localEventJobInstance.getIdentifier(), this.localEventJobInstance.getChildContextName());
+            this.updateJobState(this.localEventJobInstance, InstanceStatus.ON_HOLD);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Held[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , this.localEventJobInstance.getAgentName(), localEventJobInstance.getJobName(), true, localEventJobInstance.getContextName()
+                , localEventJobInstance.getContextInstanceId()), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.held-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Release the job instance handled by this method.
+     *
+     * @return true if the job was successfully released, false otherwise
+     */
+    private boolean releaseJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-released", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.releaseJob(this.localEventJobInstance.getIdentifier(), this.localEventJobInstance.getChildContextName());
+            this.updateJobState(this.localEventJobInstance, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Released[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , this.localEventJobInstance.getAgentName(), this.localEventJobInstance.getJobName(), true, this.localEventJobInstance.getContextName()
+                , this.localEventJobInstance.getContextInstanceId()), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.released-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Helper method to update a jobs state and persist it before broadcasting the state change.
      *
      * @param localEventJobInstance
@@ -516,11 +630,15 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
             this.submitButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
         }
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
             this.submitButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
         }
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
             this.submitButton.setVisible(true &&
@@ -531,12 +649,22 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                 ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            this.holdButton.setVisible(true &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            this.releaseButton.setVisible(false);
             this.enableButton.setVisible(false);
         }
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
             this.submitButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(true &&
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         }
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.SKIPPED) ||
             this.localEventJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
@@ -547,11 +675,15 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                 ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
         }
         else if(this.localEventJobInstance.getStatus().equals(InstanceStatus.COMPLETE)) {
             this.submitButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
         }
     }
 
@@ -594,6 +726,7 @@ public class LocalEventJobInstanceDialog extends AbstractCloseableResizableDialo
                 this.ui.access(() -> {
                     this.localEventJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                     this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    this.setButtonVisibility();
 
                     if(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null) {
                         ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent =

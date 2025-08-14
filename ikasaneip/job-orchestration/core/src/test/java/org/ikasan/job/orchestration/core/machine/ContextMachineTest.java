@@ -19,6 +19,7 @@ import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEv
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.GlobalEventJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.LocalEventJobInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.QuartzScheduleDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -56,8 +57,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.creatBridgingMap;
-import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.createInternalJobsMap;
+import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -1023,6 +1023,135 @@ public class ContextMachineTest extends AbstractTest {
 
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RELEASED);
+    }
+
+    @Test
+    public void test_context_machine_hold_release_success_local_event_job() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new LocalEventJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/context-with-local-jobs.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/context-with-local-jobs.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        // Hold the local event job
+        contextMachine.holdJob("LOCAL_EVENT_JOB-local-hold", "local-event-start");
+
+        // the local event job that has been placed on hold resides in 2 contexts and is expected to be held in both.
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-start is held"
+            , ContextHelper.getChildContextInstance("local-event-start", contextMachine.getContext())
+            .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").isHeld());
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-start has a status of ON_HOLD"
+            , ContextHelper.getChildContextInstance("local-event-start", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").getStatus().equals(InstanceStatus.ON_HOLD));
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-end is held"
+            , ContextHelper.getChildContextInstance("local-event-end", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").isHeld());
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-end has a status of ON_HOLD"
+            , ContextHelper.getChildContextInstance("local-event-end", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").getStatus().equals(InstanceStatus.ON_HOLD));
+
+        // Now release the local event job
+        contextMachine.releaseJob("LOCAL_EVENT_JOB-local-hold", "local-event-start");
+
+        // the local event job that has been placed on hold resides in 2 contexts and is expected to be released in both and
+        // in a WAITING state.
+        Assert.assertFalse("LOCAL_EVENT_JOB-local-hold in context local-event-start is NOT held"
+            , ContextHelper.getChildContextInstance("local-event-start", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").isHeld());
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-start has a status of WAITING"
+            , ContextHelper.getChildContextInstance("local-event-start", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").getStatus().equals(InstanceStatus.WAITING));
+        Assert.assertFalse("LOCAL_EVENT_JOB-local-hold in context local-event-end is NOT held"
+            , ContextHelper.getChildContextInstance("local-event-end", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").isHeld());
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-end has a status of WAITING"
+            , ContextHelper.getChildContextInstance("local-event-end", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").getStatus().equals(InstanceStatus.WAITING));
+    }
+
+    @Test
+    public void test_context_machine_hold_job_catalyst_event_release_success_local_event_job() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new LocalEventJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/context-with-local-jobs.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/context-with-local-jobs.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = creatLocalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), localEventJobInstanceMap, new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        // Hold the local event job
+        contextMachine.holdJob("LOCAL_EVENT_JOB-local-hold", "local-event-start");
+
+        AtomicReference<String> jobName = new AtomicReference<>();
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> jobName.set(event.getJobName()));
+
+        // the local event job that has been placed on hold resides in 2 contexts and is expected to be held in both.
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-start is held"
+            , ContextHelper.getChildContextInstance("local-event-start", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").isHeld());
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-start has a status of ON_HOLD"
+            , ContextHelper.getChildContextInstance("local-event-start", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").getStatus().equals(InstanceStatus.ON_HOLD));
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-end is held"
+            , ContextHelper.getChildContextInstance("local-event-end", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").isHeld());
+        Assert.assertTrue("LOCAL_EVENT_JOB-local-hold in context local-event-end has a status of ON_HOLD"
+            , ContextHelper.getChildContextInstance("local-event-end", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").getStatus().equals(InstanceStatus.ON_HOLD));
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("fw-local",
+            "scheduler-agent", true);
+        eventInstance.setChildContextNames(List.of("local-event-start"));
+        eventInstance.setJobStarting(false);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        // Now release the local event job
+        contextMachine.releaseJob("LOCAL_EVENT_JOB-local-hold", "local-event-start");
+
+        // the local event job that has been placed on hold resides in 2 contexts and is expected to be released in both and
+        // in a COMPLETE state due to the upstream event having run.
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() ->
+            !ContextHelper.getChildContextInstance("local-event-start", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").isHeld());
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() ->
+            ContextHelper.getChildContextInstance("local-event-start", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").getStatus().equals(InstanceStatus.COMPLETE));
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() ->
+            !ContextHelper.getChildContextInstance("local-event-end", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").isHeld());
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() ->
+            ContextHelper.getChildContextInstance("local-event-end", contextMachine.getContext())
+                .getScheduledJobsMap().get("LOCAL_EVENT_JOB-local-hold").getStatus().equals(InstanceStatus.COMPLETE));
+
+
+        // Make sure the downstream job is initialised which indicates an event was raised to tell it to run!
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() ->
+            jobName.get().equals("fw-hold"));
     }
 
     @Test
