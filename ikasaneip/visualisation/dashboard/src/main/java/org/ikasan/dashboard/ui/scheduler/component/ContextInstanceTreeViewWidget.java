@@ -2059,7 +2059,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
         logger.debug("received SchedulerJobInstanceStateChangeEvent event: " + event.getSchedulerJobInstance().getJobName());
-        if(event.getContextInstance().getId().equals(this.contextInstance.getId())) {
+        if(event.getSchedulerJobInstance().getContextInstanceId().equals(this.contextInstance.getId())) {
             manageJobStatusStateChangeEvent(this.ui, event);
             manageContextStatusIndicators(this.ui);
         }
