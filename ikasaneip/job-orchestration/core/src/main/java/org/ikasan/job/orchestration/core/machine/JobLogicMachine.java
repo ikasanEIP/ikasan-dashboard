@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.core.machine;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
@@ -384,7 +385,10 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      */
     protected void addQueuedSchedulerJobInitiationEvent(ContextInstance contextInstance, ContextInstance parentContextInstance
         , String jobIdentifier, SchedulerJobInitiationEvent event) {
-        logger.info("Locked {}", event.getInternalEventDrivenJob());
+        logger.info("Add queued scheduler job {}", event.getInternalEventDrivenJob());
+        if(this.jobLockCache == null) {
+            this.jobLockCache = JobLockCacheImpl.instance();
+        }
         // If already locked, we add the job to the queued jobs, as the lock is held by another job.
         this.jobLockCache.addQueuedSchedulerJobInitiationEvent(jobIdentifier, contextInstance.getName(), event);
 
