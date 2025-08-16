@@ -29,6 +29,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toMap;
+
 // todo extensive tests need to be written here
 public class ContextHelperTest {
 
@@ -265,7 +267,8 @@ public class ContextHelperTest {
 
         ContextHelper.enrichJobs(contextInstance);
 
-        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true));
+        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true).entrySet().stream()
+            .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
 
         AggregateContextInstanceStatus aggregateContextInstanceStatus
             = ContextHelper.getAggregateContextInstanceStatus(contextInstance);
@@ -330,7 +333,8 @@ public class ContextHelperTest {
 
         ContextHelper.enrichJobs(contextInstance);
 
-        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true));
+        ContextHelper.holdAllJobs(contextInstance, createInternalJobsInstancesMap(contextTemplate, true).entrySet().stream()
+            .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
 
         AggregateContextInstanceStatus aggregateContextInstanceStatus
             = ContextHelper.getAggregateContextInstanceStatus(contextInstance);
