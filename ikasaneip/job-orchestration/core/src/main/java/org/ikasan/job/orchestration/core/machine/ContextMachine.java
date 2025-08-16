@@ -910,8 +910,11 @@ public class ContextMachine {
      */
     private void _skipJob(List<SchedulerJobInstance> jobs,  boolean skipFlag, boolean ignoreException) {
         jobs.forEach(schedulerJobInstance -> {
-            if(((!schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING) && (!schedulerJobInstance.getStatus().equals(InstanceStatus.RELEASED))) && skipFlag)
-                || (!schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED) && !skipFlag)) {
+            if(((!schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING)
+                && (!schedulerJobInstance.getStatus().equals(InstanceStatus.RELEASED))) && skipFlag)
+                || (!schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED)
+                && !schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)
+                && !skipFlag)) {
                 if(!ignoreException) {
                     throw new ContextMachineException(String.format("Attempting to set skip flag to [%s] on job[%s], " +
                             "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot have the skip flag set."

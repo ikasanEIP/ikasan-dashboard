@@ -1177,7 +1177,47 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_full_nested_context_skip_jobs_in_child_context_tat_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
+    public void test_context_machine_full_nested_enable_jobs_that_are_already_skipped_complete_in_child_context() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            job.setStatus(InstanceStatus.SKIPPED_COMPLETE);
+        });
+
+        contextMachine.skipJobs("Context3", true);
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.SKIPPED_COMPLETE, job.getStatus());
+        });
+
+        contextMachine.skipJobs("Context3", false);
+
+        context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_skip_jobs_in_child_context_that_has_nested_children_contexts() throws IOException, InvalidContextTemplateException {
         when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
             .thenReturn(this.schedulerJobInstanceRecord);
         when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
