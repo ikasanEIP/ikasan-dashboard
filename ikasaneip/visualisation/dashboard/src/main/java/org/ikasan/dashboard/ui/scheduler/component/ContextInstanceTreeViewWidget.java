@@ -42,6 +42,7 @@ import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.local.LocalEventServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.scheduled.instance.service.SolrSchedulerJobInstanceServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -1063,7 +1064,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             Icon visualisationIcon = this.createContextVisualisationIcon(contextInstance);
             horizontalLayout.add(visualisationIcon);
 
-            ComponentSecurityVisibility.applySecurity(visualisationIcon, SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.applySecurity(this.authentication, visualisationIcon, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
         }
@@ -1112,8 +1113,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                             , schedulerJobInstanceRecord.getChildContextName());
                                     }
                                 });
-                                ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).saveContext();
-
+                                ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                                contextMachine.saveContext();
+                                ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
                                 this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]"
                                     ,this.contextInstance.getName() , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
                             }
@@ -1140,7 +1142,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         horizontalLayout.add(hold);
 
-        ComponentSecurityVisibility.applySecurity(hold, SecurityConstants.ALL_AUTHORITY,
+        ComponentSecurityVisibility.applySecurity(this.authentication, hold, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
@@ -1206,9 +1208,12 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     });
                 });
             }
+            else {
+                NotificationHelper.showUserNotification("There are no jobs to release!");
+            }
         });
 
-        ComponentSecurityVisibility.applySecurity(release, SecurityConstants.ALL_AUTHORITY,
+        ComponentSecurityVisibility.applySecurity(this.authentication, release, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
@@ -1262,7 +1267,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             });
         });
 
-        ComponentSecurityVisibility.applySecurity(skip, SecurityConstants.ALL_AUTHORITY,
+        ComponentSecurityVisibility.applySecurity(this.authentication, skip, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
@@ -1316,7 +1321,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             });
         });
 
-        ComponentSecurityVisibility.applySecurity(enable, SecurityConstants.ALL_AUTHORITY,
+        ComponentSecurityVisibility.applySecurity(this.authentication, enable, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
@@ -1906,7 +1911,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             } else {
                 skip.setVisible(false);
-
             }
         }
 

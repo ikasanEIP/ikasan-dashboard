@@ -16,6 +16,7 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEven
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
 public class HoldAllCommandExecutionJobsForContextInstanceCommand {
     private ContextInstance contextInstance;
     private SchedulerJobInstanceService schedulerJobInstanceService;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
     private SystemEventLogger systemEventLogger;
     private IkasanAuthentication ikasanAuthentication;
 
@@ -68,8 +70,6 @@ public class HoldAllCommandExecutionJobsForContextInstanceCommand {
 
                     this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
                         , contextMachine.getContext().getName(), contextMachine.getContext().getId()), this.ikasanAuthentication.getName());
-
-                    ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
                 } catch (Exception e) {
                     e.printStackTrace();
                     error = true;

@@ -68,6 +68,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toMap;
 import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_INSTANCE_ID;
 
 public class ContextMachine {
@@ -355,35 +356,37 @@ public class ContextMachine {
             this.internalEventDrivenJobInstances  = schedulerJobInstances.stream()
                 .filter(job -> job instanceof InternalEventDrivenJobInstance)
                 .map(job -> (InternalEventDrivenJobInstance)job)
-                .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+                .collect(toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
 
             this.globalEventJobInstanceMap  = schedulerJobInstances.stream()
                 .filter(job -> job instanceof GlobalEventJobInstance)
                 .map(job -> (GlobalEventJobInstance)job)
-                .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+                .collect(toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
 
             this.contextStartJobInstanceMap  = schedulerJobInstances.stream()
                 .filter(job -> job instanceof ContextStartJobInstance)
                 .map(job -> (ContextStartJobInstance)job)
-                .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+                .collect(toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
 
             this.contextTerminalJobInstanceMap  = schedulerJobInstances.stream()
                 .filter(job -> job instanceof ContextTerminalJobInstance)
                 .map(job -> (ContextTerminalJobInstance)job)
-                .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+                .collect(toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
 
             this.localEventJobInstanceMap  = schedulerJobInstances.stream()
                 .filter(job -> job instanceof LocalEventJobInstance)
                 .map(job -> (LocalEventJobInstance)job)
-                .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+                .collect(toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
 
             this.bridgingJobInstanceMap  = schedulerJobInstances.stream()
                 .filter(job -> job instanceof BridgingJobInstance)
                 .map(job -> (BridgingJobInstance)job)
-                .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+                .collect(toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
 
             if(holdCommandJobs) {
-                ContextHelper.holdAllJobs(this.contextInstance, this.internalEventDrivenJobInstances);
+                ContextHelper.holdAllJobs(this.contextInstance, this.internalEventDrivenJobInstances.entrySet()
+                    .stream()
+                    .collect(toMap(Map.Entry::getKey, e -> e.getValue())));
             }
 
             this.internalEventDrivenJobInstances.entrySet().forEach(job -> {
@@ -1149,7 +1152,7 @@ public class ContextMachine {
                 this._releaseJob(List.of(schedulerJobInstance));
             } else {
                 List<SchedulerJobInstance> jobInstances = this.getSchedulerJobs(this.contextInstance, jobIdentifier);
-                this._releaseJob(jobInstances);
+                this._releaseJob(jobInstances.stream().filter(job -> job.isHeld()).collect(Collectors.toList()));
             }
         }
         else {
@@ -1421,18 +1424,18 @@ public class ContextMachine {
                 }
 
                 if(schedulerJobInstance == null) {
-                    for (Map.Entry<String, BridgingJobInstance> contextTerminalJobInstanceEntry : bridgingJobInstanceMap.entrySet()) {
-                        if (StringUtils.equals(contextTerminalJobInstanceEntry.getValue().getJobName(), event.getJobName())) {
-                            schedulerJobInstance = contextTerminalJobInstanceEntry.getValue();
+                    for (Map.Entry<String, BridgingJobInstance> bridgingJobInstanceEntry : bridgingJobInstanceMap.entrySet()) {
+                        if (StringUtils.equals(bridgingJobInstanceEntry.getValue().getJobName(), event.getJobName())) {
+                            schedulerJobInstance = bridgingJobInstanceEntry.getValue();
                             break;
                         }
                     }
                 }
 
                 if(schedulerJobInstance == null) {
-                    for (Map.Entry<String, LocalEventJobInstance> contextTerminalJobInstanceEntry : localEventJobInstanceMap.entrySet()) {
-                        if (StringUtils.equals(contextTerminalJobInstanceEntry.getValue().getJobName(), event.getJobName())) {
-                            schedulerJobInstance = contextTerminalJobInstanceEntry.getValue();
+                    for (Map.Entry<String, LocalEventJobInstance> localEventJobInstanceEntry : localEventJobInstanceMap.entrySet()) {
+                        if (StringUtils.equals(localEventJobInstanceEntry.getValue().getJobName(), event.getJobName())) {
+                            schedulerJobInstance = localEventJobInstanceEntry.getValue();
                             break;
                         }
                     }
@@ -1851,14 +1854,14 @@ public class ContextMachine {
             // Confirm that all logical constructs have been satisfied. We do not want to include
             // jobs whose execution originated from outside the context.
             Map<String, SchedulerJobInstance> deepCopy = contextInstance.getScheduledJobsMap().entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey(), e -> SerializationUtils.clone(e.getValue())));
+                .collect(toMap(e -> e.getKey(), e -> SerializationUtils.clone(e.getValue())));
             deepCopy.values().forEach(schedulerJobInstance -> {
                 if(this.internalEventDrivenJobInstances != null) {
                     List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobsFromOutsideContext(this.contextInstance, schedulerJobInstance.getJobName(), contextInstance.getName()
                         , this.internalEventDrivenJobInstances.entrySet()
                             .stream()
                             .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+                            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
                     if (!precedingJobs.isEmpty()) schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
                 }
@@ -1876,7 +1879,7 @@ public class ContextMachine {
                         , this.internalEventDrivenJobInstances.entrySet()
                             .stream()
                             .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+                            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
                     if (!contextTransitions.isEmpty()) return;
                 }

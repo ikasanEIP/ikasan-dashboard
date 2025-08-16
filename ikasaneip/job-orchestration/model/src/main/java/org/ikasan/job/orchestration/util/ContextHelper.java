@@ -1677,10 +1677,10 @@ public class ContextHelper {
      * Holds all jobs in the provided context by setting their state to "hold".
      *
      * @param context The context instance where the jobs are held.
-     * @param internalEventDrivenJobInstanceMap A map of internal event-driven job instances to be held.
+     * @param schedulerJobInstanceMap A map of internal event-driven job instances to be held.
      */
-    public static void holdAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
-        _holdAllJobs(context, internalEventDrivenJobInstanceMap);
+    public static void holdAllJobs(ContextInstance context, Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
+        _holdAllJobs(context, schedulerJobInstanceMap);
     }
 
     /**
@@ -1688,12 +1688,12 @@ public class ContextHelper {
      * Additionally, it sets the child contexts of these jobs as held, and updates their status to ON_HOLD.
      *
      * @param context The ContextInstance object to hold the jobs.
-     * @param internalEventDrivenJobInstanceMap A map containing the instances of InternalEventDrivenJobInstance objects, with their identifiers as keys.
+     * @param schedulerJobInstanceMap A map containing the instances of InternalEventDrivenJobInstance objects, with their identifiers as keys.
      */
-    private static void _holdAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
+    private static void _holdAllJobs(ContextInstance context, Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
         if(context.getScheduledJobs() != null) {
             context.getScheduledJobs().forEach(job -> {
-                if(internalEventDrivenJobInstanceMap.containsKey(job.getIdentifier() + "-" + job.getChildContextName())
+                if(schedulerJobInstanceMap.containsKey(job.getIdentifier() + "-" + job.getChildContextName())
                     && (job.getStatus().equals(InstanceStatus.WAITING) || job.getStatus().equals(InstanceStatus.RELEASED))) {
                     if (job.getChildContextNames() != null) {
                         Map<String, Boolean> heldMap = new HashMap<>();
@@ -1709,7 +1709,7 @@ public class ContextHelper {
         }
 
         if(context.getContexts() != null) {
-            context.getContexts().forEach(c -> _holdAllJobs(c, internalEventDrivenJobInstanceMap));
+            context.getContexts().forEach(c -> _holdAllJobs(c, schedulerJobInstanceMap));
         }
     }
 
@@ -1749,22 +1749,22 @@ public class ContextHelper {
      * Releases all the jobs associated with the given context instance.
      *
      * @param context The context instance for which the jobs need to be released.
-     * @param internalEventDrivenJobInstanceMap The map containing the internal event driven job instances associated with the context.
+     * @param schedulerJobInstanceMap The map containing the internal event driven job instances associated with the context.
      */
-    public static void releaseAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
-        _releaseAllJobs(context, internalEventDrivenJobInstanceMap);
+    public static void releaseAllJobs(ContextInstance context, Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
+        _releaseAllJobs(context, schedulerJobInstanceMap);
     }
 
     /**
      * Releases all the jobs in the given context and its child contexts that are on hold.
      *
      * @param context                      the context instance containing the jobs
-     * @param internalEventDrivenJobInstanceMap the map of internal event-driven job instances
+     * @param schedulerJobInstanceMap the map of internal event-driven job instances
      */
-    private static void _releaseAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
+    private static void _releaseAllJobs(ContextInstance context, Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
         if(context.getScheduledJobs() != null) {
             context.getScheduledJobs().stream()
-                .filter(job -> internalEventDrivenJobInstanceMap.containsKey(job.getIdentifier()+job.getChildContextName())
+                .filter(job -> schedulerJobInstanceMap.containsKey(job.getIdentifier()+job.getChildContextName())
                     && job.getStatus().equals(InstanceStatus.ON_HOLD))
                 .forEach(job -> {
                     Map<String, Boolean> heldMap = new HashMap<>();
@@ -1775,7 +1775,7 @@ public class ContextHelper {
         }
 
         if(context.getContexts() != null) {
-            context.getContexts().forEach(c -> _holdAllJobs((ContextInstance) c, internalEventDrivenJobInstanceMap));
+            context.getContexts().forEach(c -> _holdAllJobs((ContextInstance) c, schedulerJobInstanceMap));
         }
     }
 
