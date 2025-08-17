@@ -1061,6 +1061,41 @@ public class ContextMachine {
         jobs.forEach(schedulerJobInstance -> {
             if(schedulerJobInstance.getChildContextName() == null) return;
             if (schedulerJobInstance != null) {
+
+                if(this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {
+                    ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
+                    contextualisedScheduledProcessEvent.setContextInstanceId(this.contextInstance.getId());
+                    contextualisedScheduledProcessEvent.setJobName(schedulerJobInstance.getJobName());
+                    contextualisedScheduledProcessEvent.setAgentName(schedulerJobInstance.getAgentName());
+                    contextualisedScheduledProcessEvent.setChildContextNames(schedulerJobInstance.getChildContextNames());
+                    contextualisedScheduledProcessEvent.setContextName(schedulerJobInstance.getContextName());
+                    contextualisedScheduledProcessEvent.setInternalEventDrivenJob(this.internalEventDrivenJobInstances
+                        .get(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName()));
+                    contextualisedScheduledProcessEvent.setJobStarting(false);
+                    contextualisedScheduledProcessEvent.setSuccessful(true);
+
+                    ContextInstance childContextInstance = ContextHelper.getChildContextInstance(schedulerJobInstance.getChildContextName(), contextInstance);
+
+                    // Delegate to the job logic machine to determine which events would run if the contextualisedScheduledProcessEvent was raised.
+                    List<SchedulerJobInitiationEvent> eventsBeforeReset = jobLogicMachine.getJobInitiationEvents(contextualisedScheduledProcessEvent
+                        , childContextInstance, this.dryRunParameters, this.globalEventJobInstanceMap, this.internalEventDrivenJobInstances
+                        , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.localEventJobInstanceMap, this.bridgingJobInstanceMap
+                        , this.contextInstance.getContextParameters(), this.contextInstance, new MutableBoolean(false), false);
+
+                    // Now remove the raised events from the held jobs as we do not want them to run anymore due to the upstream
+                    // dependency being reset.
+                    eventsBeforeReset.forEach(event -> {
+                        event.getChildContextNames().forEach(child -> {
+                            if(this.contextInstance.getHeldJobs().containsKey(event.getAgentName() + "-" + event.getJobName() + "_" + child)) {
+                                logger.info(String.format("Removing held job [%s] in job plan [%s] with id [%s] in child context [%s]," +
+                                    " due to scheduler job [%s] being reset!", event.getJobName(), contextInstance.getName(), contextInstance.getId()
+                                    , child, schedulerJobInstance.getJobName()));
+                                this.contextInstance.getHeldJobs().remove(event.getAgentName() + "-" + event.getJobName() + "_" + child);
+                            }
+                        });
+                    });
+                }
+
                 if (!schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE) &&
                     !schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR) &&
                     !schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING) &&
@@ -1073,7 +1108,6 @@ public class ContextMachine {
                 schedulerJobInstance.setStatus(InstanceStatus.WAITING);
                 schedulerJobInstance.setInitiationEventRaised(false);
                 schedulerJobInstance.setErrorAcknowledged(false);
-
 
                 this.saveContext();
                 logger.info(String.format("Successfully reset job[%s]. Context[%s], Context Instance[%s]."
@@ -1196,6 +1230,7 @@ public class ContextMachine {
 
                 InstanceStatus previousState = schedulerJobInstance.getStatus();
                 schedulerJobInstance.setHeld(false);
+                schedulerJobInstance.setInitiationEventRaised(false);
                 schedulerJobInstance.setStatus(InstanceStatus.WAITING);
                 schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
                 this.saveContext();
@@ -1216,6 +1251,7 @@ public class ContextMachine {
                     InstanceStatus previousState = schedulerJobInstance.getStatus();
                     schedulerJobInstance.setHeld(false);
                     schedulerJobInstance.setStatus(InstanceStatus.WAITING);
+                    schedulerJobInstance.setInitiationEventRaised(false);
                     schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
                     this.saveContext();
                     logger.info(String.format("Successfully released job[%s]. Context[%s], ChildContext[%s], Context Instance[%s]."

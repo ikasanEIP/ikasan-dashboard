@@ -345,14 +345,14 @@ public class ContextHelper {
             .distinct()
             .filter(schedulerJob -> schedulerJob.getAgentName().equals(JobConstants.BRIDGING_JOB))
             .map(schedulerJob -> {
-                BridgingJob contextStartJob = new BridgingJobImpl();
-                contextStartJob.setContextName(schedulerJob.getContextName());
-                contextStartJob.setJobName(schedulerJob.getJobName());
-                contextStartJob.setAgentName(schedulerJob.getAgentName());
-                contextStartJob.setChildContextNames(context.getAllContextNamesWhereJobResides(schedulerJob.getIdentifier()));
-                contextStartJob.setOrdinal(Integer.MIN_VALUE);
+                BridgingJob bridgingJob = new BridgingJobImpl();
+                bridgingJob.setContextName(schedulerJob.getContextName());
+                bridgingJob.setJobName(schedulerJob.getJobName());
+                bridgingJob.setAgentName(schedulerJob.getAgentName());
+                bridgingJob.setChildContextNames(context.getAllContextNamesWhereJobResides(schedulerJob.getIdentifier()));
+                bridgingJob.setOrdinal(Integer.MIN_VALUE);
 
-                return contextStartJob;
+                return bridgingJob;
             })
             .collect(Collectors.toList());
     }
