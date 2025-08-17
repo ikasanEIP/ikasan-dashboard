@@ -37,6 +37,9 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
@@ -54,16 +57,16 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
     public static final String ROUTE = "login";
 
     @Resource
-    private AuthenticationService authenticationService;
+    private transient AuthenticationService authenticationService;
 
     @Resource
-    private UserService userService;
+    private transient UserService userService;
 
     @Resource
-    private SystemEventLogger systemEventLogger;
+    private transient SystemEventLogger systemEventLogger;
 
     @Resource
-    private SecurityContextRepository securityContextRepository;
+    private transient SecurityContextRepository securityContextRepository;
 
     @Value("${banner.text.message:}")
     private String bannerTextMessage;

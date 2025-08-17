@@ -38,7 +38,7 @@ import javax.annotation.Resource;
 @CssImport(value = "./styles/dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
 public class IkasanAppLayout extends AppLayout {
     @Resource
-    private SystemEventLogger systemEventLogger;
+    private transient SystemEventLogger systemEventLogger;
 
     @Value("${banner.text.message:}")
     private String bannerTextMessage;
