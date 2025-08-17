@@ -281,7 +281,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                             }
                         }
                     }
-                    else if ((!jobInstance.isInitiationEventRaised()
+                    else if (jobInstance.getStatus().equals(InstanceStatus.ON_HOLD) ||
+                        (!jobInstance.isInitiationEventRaised()
                             && !jobInstance.getStatus().equals(InstanceStatus.COMPLETE)
                             && !jobInstance.getStatus().equals(InstanceStatus.ERROR)) ||
                         (internalEventDrivenJob != null
