@@ -3,7 +3,6 @@ package org.ikasan.job.orchestration.core.machine;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.awaitility.Awaitility;
-import org.checkerframework.checker.units.qual.A;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
@@ -6475,6 +6474,8 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
+        ContextHelper.enrichJobs(contextInstance);
+
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
@@ -6559,6 +6560,128 @@ public class ContextMachineTest extends AbstractTest {
         // And the context into a RUNNING state
         status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
+    }
+
+    @Test
+    public void test_context_machine_held_and_released_local_event_job() throws IOException, InvalidContextTemplateException {
+        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new LocalEventJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/context-with-local-jobs.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/context-with-local-jobs.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = creatLocalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), localEventJobInstanceMap, new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        // Hold the local event job
+        contextMachine.holdJob("LOCAL_EVENT_JOB-local-hold", "local-event-start");
+
+        this.assertJobStatus(contextMachine, "local-event-start", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.ON_HOLD);
+        this.assertJobStatus(contextMachine, "local-event-end", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.ON_HOLD);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("fw-local",
+            "scheduler-agent", true);
+        eventInstance.setChildContextNames(List.of("local-event-start"));
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        contextMachine.releaseJob("LOCAL_EVENT_JOB-local-hold", "local-event-start");
+
+        this.assertJobStatus(contextMachine, "local-event-start", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.WAITING);
+        this.assertJobStatus(contextMachine, "local-event-end", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.WAITING);
+
+        // As local event has sent an event onto the outbound big queue.
+        Assert.assertEquals(1, contextMachine.getOutboundQueue().size());
+
+        // Double check the message on the outbound queue is correct and is local-hold.
+        byte[] localEvent = contextMachine.getOutboundQueue().peek();
+
+        BigQueueMessage<SchedulerJobInitiationEvent> outgoingBigQueueMessage = objectMapperTest.readValue(localEvent, BigQueueMessageImpl.class);
+        String outgoingBigQueueMessageAsString = new String(objectMapperTest.writeValueAsBytes(outgoingBigQueueMessage.getMessage()));
+        SchedulerJobInitiationEvent schedulerJobInitiationEvent
+            = objectMapperTest.readValue(outgoingBigQueueMessageAsString, SchedulerJobInitiationEventImpl.class);
+        Assert.assertEquals("local-hold", schedulerJobInitiationEvent.getJobName());
+        Assert.assertEquals(JobConstants.LOCAL_EVENT_JOB, schedulerJobInitiationEvent.getAgentName());
+
+        // As we have the messages on the outbound big queue, re-enable the outbound queue.
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(null);
+
+        // Process the released job.
+        eventInstance = scheduledProcessEventInstance("local-hold",
+            JobConstants.LOCAL_EVENT_JOB, true);
+        eventInstance.setChildContextNames(List.of("local-event-start", "local-event-end"));
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        // Confirm the local jobs are complete
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            this.assertJobStatus(contextMachine, "local-event-start", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.COMPLETE);
+            this.assertJobStatus(contextMachine, "local-event-end", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.COMPLETE);
+        });
+    }
+
+    @Test
+    public void test_context_machine_reset_preceding_job_to_held_local_event_job() throws IOException, InvalidContextTemplateException {
+        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new LocalEventJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/context-with-local-jobs.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/context-with-local-jobs.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, LocalEventJobInstance> localEventJobInstanceMap = creatLocalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), localEventJobInstanceMap, new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        // Hold the local event job
+        contextMachine.holdJob("LOCAL_EVENT_JOB-local-hold", "local-event-start");
+
+        this.assertJobStatus(contextMachine, "local-event-start", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.ON_HOLD);
+        this.assertJobStatus(contextMachine, "local-event-end", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.ON_HOLD);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("fw-local",
+            "scheduler-agent", true);
+        eventInstance.setChildContextNames(List.of("local-event-start"));
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        contextMachine.resetJob("scheduler-agent-fw-local", "local-event-start");
+        contextMachine.releaseJob("LOCAL_EVENT_JOB-local-hold", "local-event-start");
+
+        this.assertJobStatus(contextMachine, "local-event-start", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.WAITING);
+        this.assertJobStatus(contextMachine, "local-event-end", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.WAITING);
+
+        // Nothing sent to big queue as the job previous to the local event was reset.
+        Assert.assertEquals(0, contextMachine.getOutboundQueue().size());
     }
 
     @Test
