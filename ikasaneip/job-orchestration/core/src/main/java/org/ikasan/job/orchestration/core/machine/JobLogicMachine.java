@@ -494,19 +494,19 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 .collect(Collectors.toList()));
         }
 
-        schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
+        if(internalEventDrivenJob != null) {
+            schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
-        if(internalEventDrivenJob.isTargetResidingContextOnly() && !internalEventDrivenJob.isJobRepeatable()) {
-            if(this.isAlreadyComplete(parentContextInstance, schedulerJobInstance.getAgentName()
-                , schedulerJobInstance.getJobName(), scheduledProcessEvent.getChildContextNames())) {
-                schedulerJobInitiationEvent.setChildContextNames(List.of(contextInstance.getName()));
+            if (internalEventDrivenJob.isTargetResidingContextOnly() && !internalEventDrivenJob.isJobRepeatable()) {
+                if (this.isAlreadyComplete(parentContextInstance, schedulerJobInstance.getAgentName()
+                    , schedulerJobInstance.getJobName(), scheduledProcessEvent.getChildContextNames())) {
+                    schedulerJobInitiationEvent.setChildContextNames(List.of(contextInstance.getName()));
+                } else {
+                    schedulerJobInitiationEvent.setChildContextNames(scheduledProcessEvent.getChildContextNames());
+                }
+            } else {
+                schedulerJobInitiationEvent.setChildContextNames(internalEventDrivenJob.getChildContextNames());
             }
-            else {
-                schedulerJobInitiationEvent.setChildContextNames(scheduledProcessEvent.getChildContextNames());
-            }
-        }
-        else {
-            schedulerJobInitiationEvent.setChildContextNames(internalEventDrivenJob.getChildContextNames());
         }
 
         if(this.agents.containsKey(schedulerJobInstance.getAgentName())) {

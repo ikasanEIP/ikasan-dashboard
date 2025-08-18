@@ -1073,7 +1073,8 @@ public class ContextMachine {
                     contextualisedScheduledProcessEvent.setContextInstanceId(this.contextInstance.getId());
                     contextualisedScheduledProcessEvent.setJobName(schedulerJobInstance.getJobName());
                     contextualisedScheduledProcessEvent.setAgentName(schedulerJobInstance.getAgentName());
-                    contextualisedScheduledProcessEvent.setChildContextNames(schedulerJobInstance.getChildContextNames());
+                    contextualisedScheduledProcessEvent.setChildContextNames(this.internalEventDrivenJobInstances
+                        .get(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName()).getChildContextNames());
                     contextualisedScheduledProcessEvent.setContextName(schedulerJobInstance.getContextName());
                     contextualisedScheduledProcessEvent.setInternalEventDrivenJob(this.internalEventDrivenJobInstances
                         .get(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName()));
@@ -1082,8 +1083,6 @@ public class ContextMachine {
 
                     ContextInstance childContextInstance = ContextHelper.getChildContextInstance(schedulerJobInstance.getChildContextName(), contextInstance);
 
-                    InstanceStatus instanceStatus = schedulerJobInstance.getStatus();
-
                     List<SchedulerJobInitiationEvent> eventsBeforeReset = new ArrayList<>();
                     // Delegate to the job logic machine to determine which events would run if the contextualisedScheduledProcessEvent was raised.
                     jobLogicMachine.getScheduledJobInitiationEventsThatCanBeRaised(contextualisedScheduledProcessEvent
@@ -1091,20 +1090,31 @@ public class ContextMachine {
                         , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.localEventJobInstanceMap, this.bridgingJobInstanceMap
                         , this.contextInstance.getContextParameters(), this.contextInstance, eventsBeforeReset, false);
 
-                    // The call to get initiation events may mutate the job status so need to return to original state.
-                    schedulerJobInstance.setStatus(instanceStatus);
-
                     // Now remove the raised events from the held jobs as we do not want them to run anymore due to the upstream
                     // dependency being reset.
                     eventsBeforeReset.forEach(event -> {
-                        event.getChildContextNames().forEach(child -> {
-                            if(this.contextInstance.getHeldJobs().containsKey(event.getAgentName() + "-" + event.getJobName() + "_" + child)) {
-                                logger.info(String.format("Removing held job [%s] in job plan [%s] with id [%s] in child context [%s]," +
-                                    " due to scheduler job [%s] being reset!", event.getJobName(), contextInstance.getName(), contextInstance.getId()
-                                    , child, schedulerJobInstance.getJobName()));
-                                this.contextInstance.getHeldJobs().remove(event.getAgentName() + "-" + event.getJobName() + "_" + child);
-                            }
-                        });
+                        if(event.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                            // if the initiation event is for a local event job, we remove any held jobs for all
+                            // child contexts in the plan that the local event job may exist in.
+                            ContextHelper.getAllContexts(this.contextInstance).keySet().forEach(contextName -> {
+                                if (this.contextInstance.getHeldJobs().containsKey(event.getAgentName() + "-" + event.getJobName() + "_" + contextName)) {
+                                    logger.info(String.format("Removing held job [%s] in job plan [%s] with id [%s] in child context [%s]," +
+                                            " due to scheduler job [%s] being reset!", event.getJobName(), contextInstance.getName(), contextInstance.getId()
+                                        , contextName, schedulerJobInstance.getJobName()));
+                                    this.contextInstance.getHeldJobs().remove(event.getAgentName() + "-" + event.getJobName() + "_" + contextName);
+                                }
+                            });
+                        }
+                        else if(event.getChildContextNames() != null) {
+                            event.getChildContextNames().forEach(child -> {
+                                if (this.contextInstance.getHeldJobs().containsKey(event.getAgentName() + "-" + event.getJobName() + "_" + child)) {
+                                    logger.info(String.format("Removing held job [%s] in job plan [%s] with id [%s] in child context [%s]," +
+                                            " due to scheduler job [%s] being reset!", event.getJobName(), contextInstance.getName(), contextInstance.getId()
+                                        , child, schedulerJobInstance.getJobName()));
+                                    this.contextInstance.getHeldJobs().remove(event.getAgentName() + "-" + event.getJobName() + "_" + child);
+                                }
+                            });
+                        }
                     });
                 }
 
