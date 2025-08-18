@@ -1082,11 +1082,17 @@ public class ContextMachine {
 
                     ContextInstance childContextInstance = ContextHelper.getChildContextInstance(schedulerJobInstance.getChildContextName(), contextInstance);
 
+                    InstanceStatus instanceStatus = schedulerJobInstance.getStatus();
+
+                    List<SchedulerJobInitiationEvent> eventsBeforeReset = new ArrayList<>();
                     // Delegate to the job logic machine to determine which events would run if the contextualisedScheduledProcessEvent was raised.
-                    List<SchedulerJobInitiationEvent> eventsBeforeReset = jobLogicMachine.getJobInitiationEvents(contextualisedScheduledProcessEvent
+                    jobLogicMachine.getScheduledJobInitiationEventsThatCanBeRaised(contextualisedScheduledProcessEvent
                         , childContextInstance, this.dryRunParameters, this.globalEventJobInstanceMap, this.internalEventDrivenJobInstances
                         , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.localEventJobInstanceMap, this.bridgingJobInstanceMap
-                        , this.contextInstance.getContextParameters(), this.contextInstance, new MutableBoolean(false), false);
+                        , this.contextInstance.getContextParameters(), this.contextInstance, eventsBeforeReset, false);
+
+                    // The call to get initiation events may mutate the job status so need to return to original state.
+                    schedulerJobInstance.setStatus(instanceStatus);
 
                     // Now remove the raised events from the held jobs as we do not want them to run anymore due to the upstream
                     // dependency being reset.
