@@ -180,7 +180,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @param schedulerJobInitiationEvents
      * @param markAsRaised
      */
-    private void getScheduledJobInitiationEventsThatCanBeRaised(ContextualisedScheduledProcessEvent scheduledProcessEvent,
+    protected void getScheduledJobInitiationEventsThatCanBeRaised(ContextualisedScheduledProcessEvent scheduledProcessEvent,
                                                                 ContextInstance contextInstance,
                                                                 DryRunParameters dryRunParameters,
                                                                 Map<String, GlobalEventJobInstance> globalEventJobInstanceMap,
