@@ -44,6 +44,10 @@ public class SolrFileEventDrivenJobInstanceImpl extends SolrQuartzScheduleDriven
     /** sla for file availability **/
     private String slaCronExpression;
 
+    private boolean isDynamic;
+    private String filePathSpel;
+    private String filenameSpel;
+
     @Override
     public String getFilePath() {
         return filePath;
@@ -172,6 +176,36 @@ public class SolrFileEventDrivenJobInstanceImpl extends SolrQuartzScheduleDriven
     @Override
     public void setSlaCronExpression(String slaCronExpression) {
         this.slaCronExpression = slaCronExpression;
+    }
+
+    @Override
+    public boolean isDynamic() {
+        return isDynamic;
+    }
+
+    @Override
+    public void setDynamic(boolean dynamic) {
+        isDynamic = dynamic;
+    }
+
+    @Override
+    public String getFilePathSpel() {
+        return filePathSpel;
+    }
+
+    @Override
+    public void setFilePathSpel(String filePathSpel) {
+        this.filePathSpel = filePathSpel;
+    }
+
+    @Override
+    public String getFilenameSpel() {
+        return filenameSpel;
+    }
+
+    @Override
+    public void setFilenameSpel(String filenameSpel) {
+        this.filenameSpel = filenameSpel;
     }
 
     @Override

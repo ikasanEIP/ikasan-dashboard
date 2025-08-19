@@ -42,6 +42,10 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
     /** sla for file availability **/
     private String slaCronExpression;
 
+    private boolean isDynamic;
+    private String filePathSpel;
+    private String filenameSpel;
+
     @Override
     public String getFilePath() {
         return this.filePath;
@@ -173,6 +177,36 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
     }
 
     @Override
+    public boolean isDynamic() {
+        return isDynamic;
+    }
+
+    @Override
+    public void setDynamic(boolean dynamic) {
+        isDynamic = dynamic;
+    }
+
+    @Override
+    public String getFilePathSpel() {
+        return filePathSpel;
+    }
+
+    @Override
+    public void setFilePathSpel(String filePathSpel) {
+        this.filePathSpel = filePathSpel;
+    }
+
+    @Override
+    public String getFilenameSpel() {
+        return filenameSpel;
+    }
+
+    @Override
+    public void setFilenameSpel(String filenameSpel) {
+        this.filenameSpel = filenameSpel;
+    }
+
+    @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("SolrFileEventDrivenJobImpl{");
         sb.append("filePath='").append(filePath).append('\'');
@@ -192,10 +226,20 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
         sb.append(", jobIdentifier='").append(jobIdentifier).append('\'');
         sb.append(", agentName='").append(agentName).append('\'');
         sb.append(", jobName='").append(jobName).append('\'');
-        sb.append(", jobDescription='").append(jobDescription).append('\'');
         sb.append(", contextId='").append(contextName).append('\'');
+        sb.append(", isDynamic=").append(isDynamic);
+        sb.append(", filePathSpel=").append(filePathSpel);
+        sb.append(", filenameSpel=").append(filenameSpel);
+
+        if(childContextNames != null) {
+            sb.append(", childContextIds=[ ");
+            childContextNames.forEach(id -> sb.append("[").append(id).append("] "));
+        }
+        else {
+            sb.append(", childContextIds='").append(this.childContextNames).append('\'');
+        }
+        sb.append("], description='").append(this.jobDescription).append('\'');
         sb.append(", startupControlType='").append(startupControlType).append('\'');
-        sb.append(", minFileAgeSeconds='").append(minFileAgeSeconds).append('\'');
         sb.append('}');
         return sb.toString();
     }
