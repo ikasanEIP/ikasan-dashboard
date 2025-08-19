@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
@@ -40,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -211,7 +213,22 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
 
         // Fields to capture schedule job properties.
         H3 scheduleDetailsLabel = new H3(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
-        formLayout.add(scheduleDetailsLabel, 2);
+        formLayout.add(scheduleDetailsLabel);
+
+        Checkbox isDynamicCheckbox = new Checkbox("Is Dynamic");
+        formLayout.add(isDynamicCheckbox);
+        isDynamicCheckbox.addValueChangeListener(event -> {
+            if(event.getValue()) {
+                this.setHeight("1200px");
+                this.setWidth("95vw");
+            }
+            else {
+                this.setHeight("800px");
+                this.setWidth("95vw");
+            }
+        });
+//        isDynamicCheckbox.getStyle().set("position", "absolute");
+//        isDynamicCheckbox.getStyle().set("right", "10px");
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
