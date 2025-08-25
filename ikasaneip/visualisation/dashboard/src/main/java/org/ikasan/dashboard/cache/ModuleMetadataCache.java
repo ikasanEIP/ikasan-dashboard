@@ -14,6 +14,7 @@ public class ModuleMetadataCache {
     private Cache<String, List<ModuleMetaData>> moduleMetadataCache;
     private static ModuleMetadataCache instance;
     private ModuleMetaDataService moduleMetaDataService;
+    private int cacheExpirySeconds;
 
     /**
      * ModuleMetadataCache is a private class used to cache module metadata.
@@ -28,6 +29,7 @@ public class ModuleMetadataCache {
      */
     private ModuleMetadataCache(ModuleMetaDataService moduleMetaDataService, int cacheExpirySeconds) {
         this.moduleMetaDataService = moduleMetaDataService;
+        this.cacheExpirySeconds = cacheExpirySeconds;
          this.moduleMetadataCache = Caffeine.newBuilder()
             .maximumSize(1)
             .expireAfterWrite(cacheExpirySeconds, TimeUnit.SECONDS)
@@ -71,5 +73,14 @@ public class ModuleMetadataCache {
      */
     public List<ModuleMetaData> getModuleMetadata() {
         return this.moduleMetadataCache.get(KEY, k -> moduleMetaDataService.findAll());
+    }
+
+    /**
+     * Resets the ModuleMetadataCache by setting the singleton instance to null and
+     * reinitializing it with the provided ModuleMetaDataService and cache expiry seconds.
+     */
+    public void reset() {
+        instance = null;
+        init(this.moduleMetaDataService, this.cacheExpirySeconds);
     }
 }
