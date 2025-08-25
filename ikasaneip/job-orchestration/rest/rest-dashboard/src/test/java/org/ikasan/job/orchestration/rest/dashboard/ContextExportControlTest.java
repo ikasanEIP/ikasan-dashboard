@@ -31,8 +31,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -61,19 +61,19 @@ public class ContextExportControlTest extends AbstractRestMvcTest {
     @Autowired
     WebApplicationContext webApplicationContext;
 
-    @MockBean
+    @MockitoBean
     private ScheduledContextService scheduledContextService;
 
-    @MockBean
+    @MockitoBean
     private SchedulerJobService schedulerJobService;
 
-    @MockBean
+    @MockitoBean
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
-    @MockBean
+    @MockitoBean
     private EmailNotificationContextService emailNotificationContextService;
 
-    @MockBean
+    @MockitoBean
     private ContextProfileService contextProfileService;
 
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();

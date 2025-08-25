@@ -2,15 +2,20 @@ package org.ikasan.dashboard.ui.scheduler;
 
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.rest.dashboard.model.metadata.module.ModuleMetaDataImpl;
+import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
+import org.ikasan.scheduled.job.service.SolrSchedulerJobServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -20,7 +25,12 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.search.SearchResults;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -31,13 +41,36 @@ public abstract class AbstractSchedulerViewTest extends UITest {
 
     @Resource
     protected ModuleMetaDataService moduleMetadataService;
-    @MockBean
+    @MockitoBean
     protected  SchedulerJobInstanceService schedulerJobInstanceService;
-    @MockBean
+    @MockitoBean
     protected ScheduledContextInstanceService scheduledContextInstanceService;
-    @MockBean
+    @MockitoBean
     protected ScheduledContextService scheduledContextService;
+    @MockitoBean
+    protected SchedulerJobService schedulerJobService;
+    @MockitoBean
+    protected ContextProfileService contextProfileService;
+    @MockitoBean
+    protected ScheduledProcessManagementService scheduledProcessManagementService;
 
+
+    protected SearchResults<SchedulerJobRecord> getSchedulerJobs() {
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(List.of(), 0, 0);
+        return searchResults;
+    }
+
+    protected SearchResults<ContextProfileRecord> getContextProfiles() {
+        SearchResults<ContextProfileRecord> searchResults = new SearchResultsImpl<>(List.of(), 0, 0);
+        return searchResults;
+    }
+
+    /**
+     * Retrieves a list of ScheduledContextInstanceRecord instances with the specified count.
+     *
+     * @param count The number of ScheduledContextInstanceRecord instances to retrieve
+     * @return List of ScheduledContextInstanceRecord instances containing the retrieved records
+     */
     protected List<ScheduledContextInstanceRecord> getScheduledContextInstanceRecords(int count) {
         List<ScheduledContextInstanceRecord> scheduledContextInstanceRecords
             = new ArrayList<>();
@@ -69,6 +102,12 @@ public abstract class AbstractSchedulerViewTest extends UITest {
         return scheduledContextInstanceRecords;
     }
 
+    /**
+     * Retrieves a list of scheduled context records with the specified count.
+     *
+     * @param count The number of scheduled context records to retrieve
+     * @return List of ScheduledContextRecord instances containing the retrieved records
+     */
     protected List<ScheduledContextRecord> getScheduledContextRecords(int count) {
         List<ScheduledContextRecord> scheduledContextInstanceRecords
             = new ArrayList<>();
@@ -79,10 +118,21 @@ public abstract class AbstractSchedulerViewTest extends UITest {
             scheduledContextInstanceRecord.setTimestamp(100000000L);
             scheduledContextInstanceRecord.setModifiedTimestamp(110000000L);
 
-            ContextTemplate contextInstance =  new ContextTemplateImpl();
-            contextInstance.setDescription("Description"+i);
-            contextInstance.setName("contextName"+i);
-            scheduledContextInstanceRecord.setContext(contextInstance);
+            ContextTemplate contextTemplate =  new ContextTemplateImpl();
+            contextTemplate.setDescription("Description"+i);
+            contextTemplate.setName("contextName"+i);
+
+            ContextParameterImpl filenameContextParam = new ContextParameterImpl();
+            filenameContextParam.setName("filename_replacement");
+            filenameContextParam.setDefaultValue("replacement");
+
+            ContextParameterImpl filePathContextParam = new ContextParameterImpl();
+            filePathContextParam.setName("filepath_replacement");
+            filePathContextParam.setDefaultValue("replacement");
+
+            contextTemplate.setContextParameters(List.of(filePathContextParam, filenameContextParam));
+
+            scheduledContextInstanceRecord.setContext(contextTemplate);
 
             scheduledContextInstanceRecords.add(scheduledContextInstanceRecord);
         }
@@ -90,6 +140,14 @@ public abstract class AbstractSchedulerViewTest extends UITest {
         return scheduledContextInstanceRecords;
     }
 
+    /**
+     * Retrieves a ScheduledContextInstanceRecord with the specified id. If the context instance exists in the
+     * ContextMachineCache, it will be retrieved. Otherwise, a new ContextInstance will be created with the
+     * provided id.
+     *
+     * @param id The id of the scheduled context instance
+     * @return List of ScheduledContextInstanceRecord containing the retrieved or newly created context instance
+     */
     protected List<ScheduledContextInstanceRecord> getScheduledContextInstanceRecordWithId(int id) {
         List<ScheduledContextInstanceRecord> scheduledContextInstanceRecords
             = new ArrayList<>();
@@ -120,6 +178,11 @@ public abstract class AbstractSchedulerViewTest extends UITest {
         return scheduledContextInstanceRecords;
     }
 
+    /**
+     * Retrieves a list of aggregate context instance statuses.
+     *
+     * @return List of ContextInstanceAggregateJobStatus representing the aggregate statuses of context instances
+     */
     protected List<ContextInstanceAggregateJobStatus> getAggregateContextInstanceStatuses() {
         ContextInstanceAggregateJobStatus aggregateContextInstanceStatus = new SolrContextInstanceAggregateJobStatusImpl("contextInstanceId",
             "contextName", Map.of(InstanceStatus.WAITING.name(), 1, InstanceStatus.RUNNING.name(), 5, InstanceStatus.COMPLETE.name(), 15,
@@ -130,6 +193,12 @@ public abstract class AbstractSchedulerViewTest extends UITest {
         return List.of(aggregateContextInstanceStatus);
     }
 
+    /**
+     * Retrieves a list of agents based on the specified size.
+     *
+     * @param size The number of agents to retrieve
+     * @return ModuleMetadataSearchResults object containing the list of agents with their details
+     */
     protected ModuleMetadataSearchResults getAgents(int size) {
         List<ModuleMetaData> moduleMetaDataList = new ArrayList<>();
         for (int i=0; i<size; i++) {

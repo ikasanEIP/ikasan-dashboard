@@ -38,6 +38,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,22 +57,22 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
     @Rule
     public TestName testName = new TestName();
 
-    @MockBean
+    @MockitoBean
     protected IkasanPrincipal ikasanPrincipal;
 
-    @MockBean
+    @MockitoBean
     protected Role role;
 
-    @MockBean
+    @MockitoBean
     protected RoleJobPlan roleJobPlan;
 
-    @MockBean
+    @MockitoBean
     ContextParametersInstanceService contextParametersInstanceService;
 
-    @MockBean
+    @MockitoBean
     JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
-    @MockBean
+    @MockitoBean
     JobUtilsService jobUtilsService;
 
     @Autowired
@@ -177,6 +178,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         Mockito.when(this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull()))
             .thenReturn(new SearchResultsImpl<>(new ArrayList<>(), 0, 0));
+
+        Mockito.when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
+                eq(0),eq(0), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(new SearchResultsImpl<>(this.getScheduledContextInstanceRecords(5), 5, 0));
+
     }
 
     private void setupSecurityExpectations() {

@@ -6,17 +6,16 @@ import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
-import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,11 +28,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ContextProvisionController.class)
@@ -46,7 +41,7 @@ public class ContextProvisionControllerTest {
     @Autowired
     WebApplicationContext webApplicationContext;
 
-    @MockBean
+    @MockitoBean
     private ContextProvisionService contextProvisionService;
 
     @Autowired

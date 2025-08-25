@@ -21,6 +21,7 @@
     <fieldType name="string" class="solr.StrField"/>
     <fieldType name="plongs" class="solr.TrieLongField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
     <fieldType name="binary" class="solr.BinaryField"/>
+    <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
     <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100" multiValued="true">
         <analyzer type="index">
             <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -35,7 +36,9 @@
         </analyzer>
     </fieldType>
 
-    <field name="componentName" type="text_general" multiValued="false" stored="true"/>
+    <field name="text" type="text_general" indexed="true" stored="false" multiValued="true"/>
+
+    <field name="componentName" type="strings" multiValued="false" stored="true"/>
     <field name="errorDetail" type="text_general" multiValued="false" stored="true"/>
     <field name="errorMessage" type="text_general" multiValued="false" stored="true"/>
     <field name="errorUri" type="strings" multiValued="false" stored="true"/>
@@ -50,6 +53,28 @@
     <field name="payloadRaw" type="binary" multiValued="false" indexed="false" stored="true"/>
     <field name="relatedEventId" type="strings" multiValued="false" stored="true"/>
     <field name="timestamp" type="plongs" multiValued="false" stored="true"/>
+    <field name="modifiedTimestamp" type="plongs" multiValued="false" stored="true"/>
     <field name="type" type="strings" multiValued="false" stored="true"/>
-
+    <field name="status" type="strings" multiValued="false" stored="true"/>
+    <field name="modifiedBy" type="strings" multiValued="false" stored="true"/>
+    <field name="childContextName" type="strings" multiValued="false" stored="true"/>
+    <field name="accessGroups" type="strings" multiValued="false" stored="true"/>
+    <field name="accessUsers" type="strings" multiValued="false" stored="true"/>
+    <field name="held" type="boolean" indexed="true" stored="true"/>
+    <field name="skipped" type="boolean" indexed="true" stored="true"/>
+    <field name="targetResidingContextOnly" type="boolean" indexed="true" stored="true"/>
+    <field name="participatesInLock" type="boolean" indexed="true" stored="true"/>
+    <field name="disabled" type="boolean" indexed="true" stored="true"/>
+    <field name="quartzScheduledJobsDisabled" type="boolean" indexed="true" stored="true"/>
+    <field name="manuallySubmittedBy" type="strings" multiValued="false" stored="true"/>
+    <field name="startTime" type="plongs" multiValued="false" stored="true"/>
+    <field name="endTime" type="plongs" multiValued="false" stored="true"/>
+    <field name="actor" type="text_general" multiValued="false" stored="true"/>
+    <field name="systemEventSubject" type="text_general" multiValued="false" stored="true"/>
+    <field name="systemEventAction" type="text_general" multiValued="false" stored="true"/>
+    <field name="hospitalEventAction" type="text_general" multiValued="false" stored="true"/>
+    <field name="displayName" type="text_general" multiValued="false" stored="true"/>
+    <field name="containsRepeatingJobs" type="boolean" indexed="true" stored="true"/>
+    <field name="isRepeatingJob" type="boolean" indexed="true" stored="true"/>
+    <field name="jobType" type="text_general" multiValued="false" stored="true"/>
 </schema>

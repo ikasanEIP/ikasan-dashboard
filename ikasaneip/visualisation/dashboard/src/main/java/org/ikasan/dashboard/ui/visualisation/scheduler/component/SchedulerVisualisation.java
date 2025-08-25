@@ -438,7 +438,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         else if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName()), this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService
-                , this.contextTemplate.isUseDisplayName(), this.getContextTemplate(), true);
+                , this.contextTemplate.isUseDisplayName(), this.parentContextTemplate, this.getContextTemplate(), true);
             fileEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             this.jobSynchronisationRequiredListeners.forEach(listener ->
                 fileEventJobDialog.addJobSynchronisationRequiredListener(listener));

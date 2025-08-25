@@ -27,12 +27,13 @@ public class JobProvisionServiceImpl implements JobProvisionService {
     private JobProvisionModuleService jobProvisionModuleRestService;
     private ModuleMetaDataService moduleMetaDataService;
 
+
     /**
-     * Constructor
+     * Constructor for JobProvisionServiceImpl class.
      *
-     * @param schedulerJobService
-     * @param moduleMetaDataService
-     * @param jobProvisionModuleService
+     * @param schedulerJobService The service for managing scheduler jobs
+     * @param moduleMetaDataService The service for handling module metadata
+     * @param jobProvisionModuleService The service for provisioning job modules
      */
     public JobProvisionServiceImpl(SchedulerJobService schedulerJobService, ModuleMetaDataService moduleMetaDataService,
                                    JobProvisionModuleService jobProvisionModuleService) {
@@ -189,12 +190,25 @@ public class JobProvisionServiceImpl implements JobProvisionService {
             , contextName, uniqueAgentNames.size(), System.currentTimeMillis()-now));
     }
 
+    /**
+     * Get the list of SchedulerJobs associated with a specific agent.
+     *
+     * @param agentName The name of the agent to filter by
+     * @param jobs The list of all SchedulerJobs to filter from
+     * @return A list of SchedulerJobs that are associated with the specified agent
+     */
     private List<SchedulerJob> getJobsForAgent(String agentName, List<SchedulerJob> jobs) {
         return this.convertJobs(jobs.stream()
             .filter(schedulerJob -> schedulerJob.getAgentName().equals(agentName))
             .collect(Collectors.toList()));
     }
 
+    /**
+     * Converts a list of SchedulerJob objects into a list of specific job implementation objects depending on the type of the input job.
+     *
+     * @param jobs The list of SchedulerJob objects to be converted
+     * @return A list of specific job implementation objects based on the type of the input SchedulerJob objects
+     */
     private List<SchedulerJob> convertJobs(List<SchedulerJob> jobs) {
         return jobs.stream()
             .map(job -> {
@@ -255,6 +269,9 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                     fileEventDrivenJob.setRecoveryTolerance(((FileEventDrivenJob) job).getRecoveryTolerance());
                     fileEventDrivenJob.setStartupControlType(job.getStartupControlType());
                     fileEventDrivenJob.setJobName(job.getJobName());
+                    fileEventDrivenJob.setDynamic(((FileEventDrivenJob) job).isDynamic());
+                    fileEventDrivenJob.setFilenameSpel(((FileEventDrivenJob) job).getFilenameSpel());
+                    fileEventDrivenJob.setFilePathSpel(((FileEventDrivenJob) job).getFilePathSpel());
 
                     return fileEventDrivenJob;
                 } else if (job instanceof GlobalEventJob) {
@@ -293,6 +310,12 @@ public class JobProvisionServiceImpl implements JobProvisionService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Persists the given list of SchedulerJobs based on their type.
+     *
+     * @param jobs The list of SchedulerJobs to persist
+     * @param actor The actor performing the persistence operation
+     */
     private void persistJobs(List<SchedulerJob> jobs, String actor) {
         Set<String> contextNames = jobs.stream().map(SchedulerJob::getContextName).collect(Collectors.toSet());
         for (String contextName : contextNames) {
@@ -335,6 +358,12 @@ public class JobProvisionServiceImpl implements JobProvisionService {
         }
     }
 
+    /**
+     * Retrieves a list of unique agent names from the provided list of SchedulerJob objects.
+     *
+     * @param jobs The list of SchedulerJob objects to extract unique agent names from
+     * @return A list of unique agent names present in the provided SchedulerJob objects
+     */
     private List<String> getUniqueAgentNames(List<SchedulerJob> jobs) {
         ArrayList<String> uniqueAgentNames = new ArrayList();
         jobs.forEach(schedulerJob -> {

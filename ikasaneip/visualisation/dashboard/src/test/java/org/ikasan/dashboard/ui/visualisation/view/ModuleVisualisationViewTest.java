@@ -12,6 +12,7 @@ import org.ikasan.vaadin.visjs.network.NetworkDiagram;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,10 +29,10 @@ public class ModuleVisualisationViewTest extends UITest
     public static final String BAD_XML = "/data/graph/bad.xml";
 
 
-    @MockBean
+    @MockitoBean
     private ConfigurationMetaDataService configurationMetadataService;
 
-    @MockBean
+    @MockitoBean
     private ConfigurationService configurationRestService;
 
     @Override

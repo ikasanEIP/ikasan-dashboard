@@ -10,16 +10,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestClientException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SpringCloudConfigRefreshServiceImplTest {
@@ -31,7 +30,7 @@ public class SpringCloudConfigRefreshServiceImplTest {
 
     private String contextBaseUrl;
 
-    @MockBean
+    @MockitoBean
     private Environment environment;
     
     @Before

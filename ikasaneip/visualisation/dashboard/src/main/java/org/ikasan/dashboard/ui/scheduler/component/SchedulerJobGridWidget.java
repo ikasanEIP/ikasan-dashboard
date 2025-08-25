@@ -790,7 +790,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB)) {
                 FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, this.contextTemplate.isUseDisplayName(), this.contextTemplate, false);
+                    , schedulerJobService, this.contextTemplate.isUseDisplayName(), this.contextTemplate, this.contextTemplate, false);
                 fileEventJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 fileEventJobDialog.open();

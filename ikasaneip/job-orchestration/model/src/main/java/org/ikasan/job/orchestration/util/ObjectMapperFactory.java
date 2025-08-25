@@ -68,6 +68,7 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(JobLockInstance.class, JobLockInstanceImpl.class)
             .addAbstractTypeMapping(List.class, ArrayList.class)
             .addAbstractTypeMapping(JobLockHolder.class, JobLockHolderImpl.class)
+            .addAbstractTypeMapping(ReplacementPair.class, ReplacementPairImpl.class)
             .addAbstractTypeMapping(Map.class, HashMap.class)
             .addAbstractTypeMapping(Set.class, HashSet.class);
 

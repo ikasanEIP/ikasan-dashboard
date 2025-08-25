@@ -23,8 +23,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.annotation.Resource;
@@ -38,20 +38,20 @@ import static org.mockito.ArgumentMatchers.eq;
 
 public class SearchResultTest extends UITest {
 
-    @MockBean
+    @MockitoBean
     private SolrErrorReportingServiceImpl solrErrorReportingService;
 
-    @MockBean
+    @MockitoBean
     private HospitalAuditService hospitalAuditService;
 
-    @MockBean
+    @MockitoBean
     private ResubmissionRestServiceImpl resubmissionRestService;
 
-    @MockBean
+    @MockitoBean
     private ReplayRestServiceImpl replayRestService;
 
 
-    @MockBean
+    @MockitoBean
     private SolrReplayAuditServiceImpl replayAuditService;
 
     @Resource

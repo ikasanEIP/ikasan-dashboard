@@ -6,6 +6,8 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
@@ -38,6 +40,7 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.ReplacementPair;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +48,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashSet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -56,11 +60,14 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
     private TextField agentTf;
 
     // Fields to capture schedule job properties.
+    private Checkbox isDynamicCheckbox;
     private TextField jobNameTf;
     private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private TextField filenameTf;
     private TextField filePathTf;
+    private MultiSelectComboBox<ReplacementPair> filenamePairs;
+    private MultiSelectComboBox<ReplacementPair> filepathPairs;
     private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
     private TextField slaCronExpressionTf;
@@ -122,8 +129,15 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.formBinder
             = new Binder<>(FileEventDrivenJobInstance.class);
 
-        this.setHeight("750px");
-        this.setWidth("95vw");
+
+        if(this.fileEventDrivenJobInstance.isDynamic()) {
+            this.setHeight("900px");
+            this.setWidth("95vw");
+        }
+        else {
+            this.setHeight("750px");
+            this.setWidth("95vw");
+        }
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
@@ -270,8 +284,13 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
+        this.isDynamicCheckbox = new Checkbox(getTranslation("label.is-dynamic"));
+        this.isDynamicCheckbox.setEnabled(false);
+        this.formBinder.forField(this.isDynamicCheckbox)
+            .bind(FileEventDrivenJob::isDynamic, FileEventDrivenJob::setDynamic);
+
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(submitButton, resetButton, this.viewProcessEventButton, exportWrapper, helpButton);
+        actionsLayout.add(this.isDynamicCheckbox, submitButton, resetButton, this.viewProcessEventButton, exportWrapper, helpButton);
         actionsLayout.setMargin(false);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, submitButton);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, exportWrapper);
@@ -284,30 +303,30 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
         // Fields to capture schedule job properties.
         H3 fileWatcherJobLabel = new H3(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
-        formLayout.add(fileWatcherJobLabel, actionsButtonLayout);
+        this.formLayout.add(fileWatcherJobLabel, actionsButtonLayout);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
         this.jobNameTf.setRequired(true);
         this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
-        formBinder.forField(this.jobNameTf)
+        this.formBinder.forField(this.jobNameTf)
             .bind(FileEventDrivenJobInstance::getJobName, FileEventDrivenJobInstance::setJobName);
-        formLayout.add(jobNameTf);
+        this.formLayout.add(this.jobNameTf);
 
         this.agentTf = new TextField(getTranslation("label.agent", UI.getCurrent().getLocale()));
         this.agentTf.setId("agentCb");
         this.agentTf.setRequired(true);
         this.agentTf.setClearButtonVisible(true);
-        formBinder.forField(this.agentTf)
+        this.formBinder.forField(this.agentTf)
             .bind(FileEventDrivenJobInstance::getAgentName, FileEventDrivenJobInstance::setAgentName);
-        formLayout.add(agentTf);
+        this.formLayout.add(agentTf);
 
 
         this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
         this.jobDescriptionTa.setRequired(true);
         this.jobDescriptionTa.setId("jobDescriptionTa");
-        jobDescriptionTa.getStyle().set("minHeight", "100px");
-        formBinder.forField(this.jobDescriptionTa)
+        this.jobDescriptionTa.getStyle().set("minHeight", "100px");
+        this.formBinder.forField(this.jobDescriptionTa)
             .bind(FileEventDrivenJobInstance::getJobDescription, FileEventDrivenJobInstance::setJobDescription);
 
         if(this.contextInstance.isUseDisplayName()) {
@@ -318,26 +337,53 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                 ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
-            formBinder.forField(this.jobNameAliasTf)
+            this.formBinder.forField(this.jobNameAliasTf)
                 .bind(FileEventDrivenJob::getDisplayName, FileEventDrivenJob::setDisplayName);
-            formLayout.add(jobNameAliasTf, jobDescriptionTa);
+            this.formLayout.add(jobNameAliasTf, jobDescriptionTa);
         }
         else {
-            formLayout.add(jobDescriptionTa, 2);
+            this.formLayout.add(jobDescriptionTa, 2);
         }
 
         this.filenameTf = new TextField(getTranslation("label.file-name", UI.getCurrent().getLocale()));
         this.filenameTf.setRequired(true);
         this.filenameTf.setId("filePathTf");
-        filenameTf.setValue(this.fileEventDrivenJobInstance.getFilenames().get(0));
-        formLayout.add(filenameTf, 2);
+        this.filenameTf.setValue(this.fileEventDrivenJobInstance.getFilenames().get(0));
+        this.formLayout.add(filenameTf, 2);
+
+        this.filenamePairs = new MultiSelectComboBox<>(getTranslation("label.file-name-replacements"));
+        this.filenamePairs.setAutoExpand(MultiSelectComboBox.AutoExpandMode.BOTH);
+        this.filenamePairs.setItemLabelGenerator(item -> String.format(getTranslation("label.instance-file-name-item-label")
+            ,item.getReplacementToken(), contextInstance.getContextParameters().stream()
+                .filter(param -> param.getName().equals(item.getJobPlanParameterName()))
+                .map(param -> param.getValue())
+                .findFirst().orElse("Not Available"), item.getJobPlanParameterName()));
+        this.filenamePairs.setVisible(this.fileEventDrivenJobInstance.isDynamic());
+        this.formBinder.forField(this.filenamePairs)
+            .bind(FileEventDrivenJob::getFilenameReplacementPairs, FileEventDrivenJob::setFilenameReplacementPairs);
+        this.filenamePairs.setEnabled(false);
+        this.formLayout.add(this.filenamePairs, 2);
 
         this.filePathTf = new TextField(getTranslation("label.file-path", UI.getCurrent().getLocale()));
         this.filePathTf.setId("filePathTf");
         this.filePathTf.addThemeName("always-float-label");
         formBinder.forField(this.filePathTf)
             .bind(FileEventDrivenJob::getFilePath, FileEventDrivenJob::setFilePath);
-        formLayout.add(filePathTf, 2);
+        this.formLayout.add(filePathTf, 2);
+
+        this.filepathPairs = new MultiSelectComboBox<>(getTranslation("label.file-path-replacements"));
+        this.filepathPairs.setAutoExpand(MultiSelectComboBox.AutoExpandMode.BOTH);
+        this.filepathPairs.setValue(new HashSet<>());
+        this.filepathPairs.setItemLabelGenerator(item ->String.format(getTranslation("label.instance-file-path-item-label")
+            ,item.getReplacementToken(), contextInstance.getContextParameters().stream()
+                .filter(param -> param.getName().equals(item.getJobPlanParameterName()))
+                .map(param -> param.getValue())
+                .findFirst().orElse("Not Available"), item.getJobPlanParameterName()));
+        formBinder.forField(this.filepathPairs)
+            .bind(FileEventDrivenJob::getFilePathReplacementPairs, FileEventDrivenJob::setFilePathReplacementPairs);
+        this.filepathPairs.setVisible(this.fileEventDrivenJobInstance.isDynamic());
+        this.filepathPairs.setEnabled(false);
+        this.formLayout.add(this.filepathPairs, 2);
 
         archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
         this.archiveDirectoryTf.setId("archiveDirectoryTf");
@@ -373,8 +419,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         formBinder.forField(this.timezoneTf)
             .bind(FileEventDrivenJobInstance::getTimeZone, FileEventDrivenJobInstance::setTimeZone);
         this.timezoneTf.setClearButtonVisible(true);
-        this.timezoneTf.setPlaceholder(getTranslation("label.choose-a-timezone", UI.getCurrent().getLocale()));
-        this.timezoneTf.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
+        this.timezoneTf.setPlaceholder(getTranslation("label.timezone-not-set", UI.getCurrent().getLocale()));
         this.timezoneTf.addThemeName("always-float-label");
         formLayout.add(timezoneTf);
 
@@ -429,6 +474,9 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.scheduledProcessEvent = this.fileEventDrivenJobInstance.getScheduledProcessEvent();
 
         this.init();
+
+        this.filenamePairs.setItems(this.fileEventDrivenJobInstance.getFilenameReplacementPairs());
+        this.filepathPairs.setItems(this.fileEventDrivenJobInstance.getFilePathReplacementPairs());
 
         this.formBinder.readBean(this.fileEventDrivenJobInstance);
         this.setEnabled();

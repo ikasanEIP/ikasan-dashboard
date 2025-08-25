@@ -18,7 +18,7 @@ import org.jmock.lib.concurrent.Synchroniser;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,10 +43,10 @@ public class BusinessStreamViewTest extends UITest
 
     ConfigurationParameterMetaData configurationParameterMetaData = mockery.mock(ConfigurationParameterMetaData.class);
 
-    @MockBean
+    @MockitoBean
     private ConfigurationMetaDataService configurationMetadataService;
 
-    @MockBean
+    @MockitoBean
     private ConfigurationService configurationService;
 
     @Override

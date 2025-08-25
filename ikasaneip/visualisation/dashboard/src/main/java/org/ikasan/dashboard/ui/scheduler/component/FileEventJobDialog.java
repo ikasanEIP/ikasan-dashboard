@@ -7,6 +7,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
@@ -24,6 +25,8 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.job.orchestration.model.job.ReplacementPairImpl;
+import org.ikasan.job.orchestration.service.ReplacementPairSpelBuilder;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
@@ -34,6 +37,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.ReplacementPair;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.quartz.CronExpression;
@@ -41,9 +45,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FileEventJobDialog extends AbstractCloseableResizableDialog {
@@ -52,11 +57,16 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private ComboBox<String> agentCb;
 
     // Fields to capture schedule job properties.
+    private Checkbox isDynamicCheckbox;
     private TextField jobNameTf;
     private TextField jobNameAliasTf;
     private TextArea jobDescriptionTa;
     private TextField filenameTf;
     private TextField filePathTf;
+    private Button filenamePlus;
+    private Button filepathPlus;
+    private MultiSelectComboBox<ReplacementPair> filenamePairs;
+    private MultiSelectComboBox<ReplacementPair> filepathPairs;
     private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
     private TextField slaCronExpressionTf;
@@ -65,7 +75,6 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
 
     private Button saveButton;
     private Button cancelButton;
-
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
@@ -84,10 +93,10 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
 
     private boolean enabled = true;
     private boolean showDisplayName;
-
     private SystemEventLogger systemEventLogger;
 
     private SchedulerJobService schedulerJobService;
+    private ContextTemplate parentContextTemplate;
     private ContextTemplate contextTemplate;
 
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
@@ -108,8 +117,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     public FileEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                              SchedulerJobService schedulerJobService, boolean showDisplayName, ContextTemplate contextTemplate,
-                              boolean validateJobUniquenessAgainstContextJobs) {
+                              SchedulerJobService schedulerJobService, boolean showDisplayName, ContextTemplate parentContextTemplate,
+                              ContextTemplate contextTemplate, boolean validateJobUniquenessAgainstContextJobs) {
         super.showResize(false);
         super.title.setText(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
 
@@ -121,6 +130,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobService = schedulerJobService;
         this.showDisplayName = showDisplayName;
+        this.parentContextTemplate = parentContextTemplate;
         this.contextTemplate = contextTemplate;
         this.validateJobUniquenessAgainstContextJobs = validateJobUniquenessAgainstContextJobs;
 
@@ -174,6 +184,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         cancelButton = new Button(getTranslation("button.close", UI.getCurrent().getLocale()));
+        cancelButton.setId("scheduledJobCancelButton");
         cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -215,20 +226,33 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         H3 scheduleDetailsLabel = new H3(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
         formLayout.add(scheduleDetailsLabel);
 
-        Checkbox isDynamicCheckbox = new Checkbox("Is Dynamic");
-        formLayout.add(isDynamicCheckbox);
+        this.isDynamicCheckbox = new Checkbox(getTranslation("label.is-dynamic"));
+        this.isDynamicCheckbox.setId("isDynamicCheckbox");
+        formLayout.add(this.isDynamicCheckbox);
+        formBinder.forField(this.isDynamicCheckbox)
+            .bind(FileEventDrivenJob::isDynamic, FileEventDrivenJob::setDynamic);
         isDynamicCheckbox.addValueChangeListener(event -> {
             if(event.getValue()) {
-                this.setHeight("1200px");
+                this.setHeight("1000px");
                 this.setWidth("95vw");
+                this.filenamePairs.setVisible(true);
+                this.filepathPairs.setVisible(true);
+                this.filenamePlus.setVisible(true);
+                this.filepathPlus.setVisible(true);
             }
             else {
                 this.setHeight("800px");
                 this.setWidth("95vw");
+                this.filenamePairs.setValue();
+                this.filenamePairs.setItems(new HashSet<>());
+                this.filepathPairs.setValue();
+                this.filepathPairs.setItems(new HashSet<>());
+                this.filenamePairs.setVisible(false);
+                this.filepathPairs.setVisible(false);
+                this.filenamePlus.setVisible(false);
+                this.filepathPlus.setVisible(false);
             }
         });
-//        isDynamicCheckbox.getStyle().set("position", "absolute");
-//        isDynamicCheckbox.getStyle().set("right", "10px");
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
@@ -284,19 +308,116 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
 
         this.filenameTf = new TextField(getTranslation("label.file-name", UI.getCurrent().getLocale()));
         this.filenameTf.setRequired(true);
-        this.filenameTf.setId("filePathTf");
+        this.filenameTf.setId("filenameTf");
         this.filenameTf.setErrorMessage(getTranslation("error.missing-file-name", UI.getCurrent().getLocale()));
         formLayout.add(filenameTf, 2);
 
+        this.filenamePairs = new MultiSelectComboBox<>(getTranslation("label.file-name-replacements"));
+        this.filenamePairs.setId("filenamePairs");
+        this.filenamePairs.setAutoExpand(MultiSelectComboBox.AutoExpandMode.BOTH);
+        this.filenamePairs.setItemLabelGenerator(item -> String.format(getTranslation("label.file-name-item-label")
+                ,item.getReplacementToken(), item.getJobPlanParameterName()));
+        this.filenamePairs.setVisible(this.fileEventDrivenJob.isDynamic());
+        formBinder.forField(this.filenamePairs)
+            .bind(FileEventDrivenJob::getFilenameReplacementPairs, FileEventDrivenJob::setFilenameReplacementPairs);
+
+        this.filenamePlus = new Button();
+        this.filenamePlus.setId("filenamePlus");
+        this.filenamePlus.getElement().appendChild(VaadinIcon.PLUS.create().getElement());
+        this.filenamePlus.setVisible(this.fileEventDrivenJob.isDynamic());
+        this.filenamePlus.getElement().setAttribute("title", getTranslation("tooltip.add-filename-replacement"));
+
+        this.filenamePlus.addClickListener(buttonClickEvent -> {
+            ReplacementPairDialog replacementPairDialog = new ReplacementPairDialog(this.parentContextTemplate);
+            replacementPairDialog.open();
+            replacementPairDialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened()){
+                    if (replacementPairDialog.isSaved()) {
+                        Set<ReplacementPair> selected = new HashSet<>(this.filenamePairs.getValue());
+                        selected.add(replacementPairDialog.getReplacementPair());
+                        HashSet values = new HashSet();
+                        values.addAll(filenamePairs.getValue());
+                        values.add(replacementPairDialog.getReplacementPair());
+                        this.filenamePairs.setItems(values);
+                        this.filenamePairs.setValue(selected);
+                    }
+                }
+            });
+        });
+
+        this.filenamePairs.addSelectionListener(event -> {
+           if (event.getRemovedSelection().size() > 0) {
+               HashSet values = new HashSet();
+               Set<ReplacementPair> selected = this.filenamePairs.getValue();
+               values.addAll(filenamePairs.getValue());
+               values.removeAll(event.getRemovedSelection());
+               this.filenamePairs.setItems(values);
+               this.filenamePairs.setValue(selected);
+           }
+        });
+
+        HorizontalLayout filenameReplace = new HorizontalLayout(this.filenamePairs, this.filenamePlus);
+        filenameReplace.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.filenamePlus);
+        this.formLayout.add(filenameReplace, 2);
+
         this.filePathTf = new TextField(getTranslation("label.file-path", UI.getCurrent().getLocale()));
         this.filePathTf.setId("filePathTf");
-        formBinder.forField(this.filePathTf)
+        this.formBinder.forField(this.filePathTf)
             .bind(FileEventDrivenJob::getFilePath, FileEventDrivenJob::setFilePath);
-        formLayout.add(filePathTf, 2);
+        this.formLayout.add(this.filePathTf, 2);
 
-        archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
+        this.filepathPairs = new MultiSelectComboBox<>(getTranslation("label.file-path-replacements"));
+        this.filepathPairs.setId("filepathPairs");
+        this.filepathPairs.setAutoExpand(MultiSelectComboBox.AutoExpandMode.BOTH);
+        this.filepathPairs.setValue(new HashSet<>());
+        this.filepathPairs.setItemLabelGenerator(item ->String.format(getTranslation("label.file-path-item-label")
+            ,item.getReplacementToken(), item.getJobPlanParameterName()));
+        formBinder.forField(this.filepathPairs)
+            .bind(FileEventDrivenJob::getFilePathReplacementPairs, FileEventDrivenJob::setFilePathReplacementPairs);
+        this.filepathPairs.setVisible(this.fileEventDrivenJob.isDynamic());
+
+        this.filepathPlus = new Button();
+        this.filepathPlus.setId("filepathPlus");
+        this.filepathPlus.getElement().appendChild(VaadinIcon.PLUS.create().getElement());
+        this.filepathPlus.setVisible(this.fileEventDrivenJob.isDynamic());
+        this.filepathPlus.getElement().setAttribute("title", getTranslation("tooltip.add-file-path-replacement"));
+
+        this.filepathPlus.addClickListener(buttonClickEvent -> {
+            ReplacementPairDialog replacementPairDialog = new ReplacementPairDialog(this.parentContextTemplate);
+            replacementPairDialog.open();
+            replacementPairDialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened()){
+                    if (replacementPairDialog.isSaved()) {
+                        Set<ReplacementPair> selected = new HashSet<>(this.filepathPairs.getValue());
+                        selected.add(replacementPairDialog.getReplacementPair());
+                        HashSet values = new HashSet();
+                        values.addAll(filepathPairs.getValue());
+                        values.add(replacementPairDialog.getReplacementPair());
+                        this.filepathPairs.setItems(values);
+                        this.filepathPairs.setValue(selected);
+                    }
+                }
+            });
+        });
+
+        filepathPairs.addSelectionListener(event -> {
+            if (event.getRemovedSelection().size() > 0) {
+                HashSet values = new HashSet();
+                Set<ReplacementPair> selected = this.filepathPairs.getValue();
+                values.addAll(filepathPairs.getValue());
+                values.removeAll(event.getRemovedSelection());
+                this.filepathPairs.setItems(values);
+                this.filepathPairs.setValue(selected);
+            }
+        });
+
+        HorizontalLayout filepathReplace = new HorizontalLayout(this.filepathPairs, this.filepathPlus);
+        filepathReplace.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, filenameReplace);
+        formLayout.add(filepathReplace, 2);
+
+        this.archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
         this.archiveDirectoryTf.setId("archiveDirectoryTf");
-        formBinder.forField(this.archiveDirectoryTf)
+        this.formBinder.forField(this.archiveDirectoryTf)
             .bind(FileEventDrivenJob::getMoveDirectory, FileEventDrivenJob::setMoveDirectory);
         formLayout.add(this.archiveDirectoryTf, 2);
 
@@ -378,20 +499,20 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     /**
      * Perform validation of the form.
      *
-     * @param solrFileEventDrivenJob
+     * @param fileEventDrivenJob
      * @return
      */
-    private boolean performFormValidation(FileEventDrivenJob solrFileEventDrivenJob) {
+    private boolean performFormValidation(FileEventDrivenJob fileEventDrivenJob) {
 
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
 
             if(this.timezoneCb.getValue() != null) {
-                solrFileEventDrivenJob.setTimeZone(this.timezoneCb.getValue().zoneId);
+                fileEventDrivenJob.setTimeZone(this.timezoneCb.getValue().zoneId);
             }
 
             if(this.filenameTf.getValue() != null && !this.filenameTf.getValue().isEmpty()) {
-                solrFileEventDrivenJob.setFilenames(List.of(this.filenameTf.getValue()));
+                fileEventDrivenJob.setFilenames(List.of(this.filenameTf.getValue()));
                 this.filenameTf.setInvalid(false);
             }
             else {
@@ -399,13 +520,13 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
                 isValid.set(false);
             }
 
-            formBinder.writeBean(solrFileEventDrivenJob);
+            formBinder.writeBean(fileEventDrivenJob);
 
             if(this.editMode.equals(EditMode.NEW) || this.editMode.equals(EditMode.CLONE) || this.editMode.equals(EditMode.FROM_TEMPLATE)) {
                 if(this.schedulerJobService.findByContextNameAndJobName
-                    (fileEventDrivenJob.getContextName(), fileEventDrivenJob.getJobName()) != null ||
+                    (this.fileEventDrivenJob.getContextName(), this.fileEventDrivenJob.getJobName()) != null ||
                     (this.validateJobUniquenessAgainstContextJobs && this.contextTemplate != null && this.contextTemplate.getScheduledJobs().stream()
-                        .filter(job -> fileEventDrivenJob.getJobName().equals(job.getJobName()))
+                        .filter(job -> this.fileEventDrivenJob.getJobName().equals(job.getJobName()))
                         .findFirst().isPresent())) {
                     isValid.set(false);
                     this.jobNameTf.setErrorMessage(getTranslation("error.job-name-exists", UI.getCurrent().getLocale()));
@@ -419,6 +540,30 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         }
         catch (ValidationException e) {
             return false;
+        }
+
+        if(!this.fileEventDrivenJob.getFilenameReplacementPairs().isEmpty()){
+            ReplacementPairSpelBuilder fileNameReplace =  ReplacementPairSpelBuilder.fileNameReplace();
+            this.fileEventDrivenJob.getFilenameReplacementPairs().forEach(replacementPair -> {
+                fileNameReplace.withReplacement(replacementPair);
+            });
+
+            this.fileEventDrivenJob.setFilenameSpel(fileNameReplace.build());
+        }
+        else {
+            this.fileEventDrivenJob.setFilenameSpel(null);
+        }
+
+        if(!this.fileEventDrivenJob.getFilePathReplacementPairs().isEmpty()){
+            ReplacementPairSpelBuilder filePathReplace =  ReplacementPairSpelBuilder.filePathReplace();
+            fileEventDrivenJob.getFilePathReplacementPairs().forEach(replacementPair -> {
+                filePathReplace.withReplacement(replacementPair);
+            });
+
+            this.fileEventDrivenJob.setFilePathSpel(filePathReplace.build());
+        }
+        else {
+            this.fileEventDrivenJob.setFilePathSpel(null);
         }
 
         return true;
@@ -514,6 +659,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     public void setJob(FileEventDrivenJob fileEventDrivenJob, EditMode editMode) {
         this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
         this.fileEventDrivenJob = fileEventDrivenJob;
+        this.filenamePairs.setItems(this.fileEventDrivenJob.getFilenameReplacementPairs());
+        this.filepathPairs.setItems(this.fileEventDrivenJob.getFilePathReplacementPairs());
         this.formBinder.readBean(this.fileEventDrivenJob);
 
         // because file names are a collection we need to manually set

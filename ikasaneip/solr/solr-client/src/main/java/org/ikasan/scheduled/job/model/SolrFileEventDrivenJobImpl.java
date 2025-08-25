@@ -1,9 +1,12 @@
 package org.ikasan.scheduled.job.model;
 
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.ReplacementPair;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl implements FileEventDrivenJob {
 
@@ -45,6 +48,9 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
     private boolean isDynamic;
     private String filePathSpel;
     private String filenameSpel;
+
+    private Set<ReplacementPair> filenameReplacementPairs = new HashSet<>();
+    private Set<ReplacementPair> filePathReplacementPairs = new HashSet<>();
 
     @Override
     public String getFilePath() {
@@ -204,6 +210,26 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
     @Override
     public void setFilenameSpel(String filenameSpel) {
         this.filenameSpel = filenameSpel;
+    }
+
+    @Override
+    public Set<ReplacementPair> getFilenameReplacementPairs() {
+        return filenameReplacementPairs;
+    }
+
+    @Override
+    public void setFilenameReplacementPairs(Set<ReplacementPair> filenameReplacementPairs) {
+        this.filenameReplacementPairs = filenameReplacementPairs;
+    }
+
+    @Override
+    public Set<ReplacementPair> getFilePathReplacementPairs() {
+        return filePathReplacementPairs;
+    }
+
+    @Override
+    public void setFilePathReplacementPairs(Set<ReplacementPair> filePathReplacementPairs) {
+        this.filePathReplacementPairs = filePathReplacementPairs;
     }
 
     @Override
