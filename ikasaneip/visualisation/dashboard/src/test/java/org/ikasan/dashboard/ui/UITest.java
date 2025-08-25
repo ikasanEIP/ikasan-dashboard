@@ -8,6 +8,7 @@ import com.vaadin.flow.spring.SpringServlet;
 import kotlin.jvm.functions.Function0;
 import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDao;
 import org.ikasan.dashboard.Application;
+import org.ikasan.dashboard.cache.ModuleMetadataCache;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
@@ -118,6 +119,8 @@ public abstract class UITest
 
         UI.getCurrent().getSession().setAttribute(SessionAttributeConstants.TIMEZONE_ID,
             "Europe/London");
+
+        ModuleMetadataCache.instance().reset();
     }
 
     @After
