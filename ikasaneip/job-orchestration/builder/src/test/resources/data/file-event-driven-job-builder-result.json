@@ -29,7 +29,8 @@
   "logMatchedFilenames" : true,
   "ignoreFileRenameWhilstScanning" : false,
   "minFileAgeSeconds" : 180,
+  "dynamic" : false,
   "dropEventOnBlackout" : false,
-  "jobDescription" : "description",
-  "identifier" : "agentName-jobName"
+  "identifier" : "agentName-jobName",
+  "jobDescription" : "description"
 }

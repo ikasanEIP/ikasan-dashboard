@@ -12,9 +12,11 @@ import org.ikasan.error.reporting.dao.SolrErrorReportingServiceDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,14 +33,20 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
 
     private NodeConfig config;
 
+    private Path tmppath;
+
     @Before
     public void setup()
     {
-//        Logger rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-////        rootLogger.setLevel(Level.WARN);
-
-        config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
+        tmppath = createTempDir();
+        config = new NodeConfig.NodeConfigBuilder("testnode", tmppath)
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
+    }
+
+    @After
+    public void teardown() throws IOException
+    {
+        FileSystemUtils.deleteRecursively(tmppath);
     }
 
     private void init(EmbeddedSolrServer server) throws IOException, SolrServerException

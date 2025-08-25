@@ -42,6 +42,8 @@ public class FileEventDrivenJobBuilder  {
     private boolean ignoreFileRenameWhilstScanning = true;
     private int minFileAgeSeconds;
 
+    private boolean dynamic = false;
+
     /**
      *
      */
@@ -380,6 +382,12 @@ public class FileEventDrivenJobBuilder  {
         return this;
     }
 
+    public FileEventDrivenJobBuilder withDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
+
+        return this;
+    }
+
     /**
      * Builds a FileEventDrivenJob object with the specified properties.
      *
@@ -413,6 +421,7 @@ public class FileEventDrivenJobBuilder  {
         fileEventDrivenJob.setIgnoreFileRenameWhilstScanning(this.ignoreFileRenameWhilstScanning);
         fileEventDrivenJob.setMinFileAgeSeconds(this.minFileAgeSeconds);
         fileEventDrivenJob.setDisplayName(this.displayName);
+        fileEventDrivenJob.setDynamic(this.dynamic);
 
         return fileEventDrivenJob;
     }

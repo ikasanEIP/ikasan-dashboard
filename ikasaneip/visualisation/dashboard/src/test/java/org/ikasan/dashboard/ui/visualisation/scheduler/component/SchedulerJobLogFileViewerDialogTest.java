@@ -9,7 +9,7 @@ import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SchedulerJobLogFileViewerDialogTest extends UITest {
 
-    @MockBean
+    @MockitoBean
     private LogStreamingService logStreamingService;
 
     private final String host = "host";

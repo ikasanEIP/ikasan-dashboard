@@ -6,6 +6,7 @@ import com.github.mvysny.kaributesting.v10.spring.MockSpringServlet;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.spring.SpringServlet;
 import kotlin.jvm.functions.Function0;
+import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDao;
 import org.ikasan.dashboard.Application;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
@@ -26,10 +27,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
@@ -46,25 +48,25 @@ public abstract class UITest
     @Autowired
     protected ApplicationContext ctx;
 
-    @MockBean
+   @MockitoBean
     protected IkasanAuthentication ikasanAuthentication;
 
-    @MockBean
+   @MockitoBean
     protected UserService userService;
 
-    @MockBean
+    @MockitoBean
     protected User user;
 
-    @MockBean
+    @MockitoBean
     protected SolrGeneralServiceImpl solrSearchService;
 
-    @MockBean
+    @MockitoBean
     public ModuleMetaDataService moduleMetadataService;
 
-    @MockBean
+    @MockitoBean
     protected ContextInstanceRecoveryManager contextInstanceRecoveryManager;
 
-    @MockBean
+    @MockitoBean
     protected ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
     public abstract void setup_expectations() throws IOException;

@@ -458,7 +458,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
                 this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(),
-                this.contextTemplate, true);
+                this.rootContextTemplate, this.contextTemplate, true);
             fileEventJobDialog.addSchedulerJobSelectedListener(this);
 
             FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();

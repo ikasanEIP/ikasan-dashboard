@@ -20,12 +20,14 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.imposters.ByteBuddyClassImposteriser;
 import org.jmock.lib.concurrent.Synchroniser;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.FileSystemUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -62,6 +64,33 @@ public class SchedulerNotificationJobTest extends SolrTestCaseJ4 {
     private PlatformConfigurationService platformConfigurationService = mockery.mock(PlatformConfigurationService.class);
     private EmailNotifier emailNotifier = mockery.mock(EmailNotifier.class);
     private JobExecutionContext jobExecutionContext = mockery.mock(JobExecutionContext.class);
+
+    private Path tmppath;
+
+    @Before
+    public void setup()
+    {
+        tmppath = createTempDir();
+        config = new NodeConfig.NodeConfigBuilder("testnode", tmppath)
+            .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
+    }
+
+    @After
+    public void teardown() throws IOException
+    {
+        FileSystemUtils.deleteRecursively(tmppath);
+    }
+
+    private void init(EmbeddedSolrServer server) throws IOException, SolrServerException
+    {
+        CoreAdminRequest.Create createRequest = new CoreAdminRequest.Create();
+        createRequest.setCoreName("ikasan");
+        createRequest.setConfigSet("minimal");
+        server.request(createRequest);
+
+        dao = new SolrGeneralDaoImpl();
+        dao.setSolrClient(server);
+    }
 
     @Test
     public void test_job_success_no_exclusions_found() throws JobExecutionException {
@@ -206,29 +235,6 @@ public class SchedulerNotificationJobTest extends SolrTestCaseJ4 {
         templateResolver.setCharacterEncoding("UTF-8");
         templateResolver.setCacheable(false);
         return templateResolver;
-    }
-
-    @Before
-    public void setup()
-    {
-        Logger rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-//        rootLogger.setLevel(Level.WARN);
-
-        config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
-            .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
-
-
-    }
-
-    private void init(EmbeddedSolrServer server) throws IOException, SolrServerException
-    {
-        CoreAdminRequest.Create createRequest = new CoreAdminRequest.Create();
-        createRequest.setCoreName("ikasan");
-        createRequest.setConfigSet("minimal");
-        server.request(createRequest);
-
-        dao = new SolrGeneralDaoImpl();
-        dao.setSolrClient(server);
     }
 
     private SchedulerNotificationService initialiseService(EmbeddedSolrServer server) {

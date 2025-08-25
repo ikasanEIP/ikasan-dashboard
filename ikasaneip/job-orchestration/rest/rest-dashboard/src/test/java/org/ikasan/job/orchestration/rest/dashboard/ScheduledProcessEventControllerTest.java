@@ -7,15 +7,15 @@ import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceException;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -47,10 +47,10 @@ public class ScheduledProcessEventControllerTest extends AbstractRestMvcTest
     @Autowired
     WebApplicationContext webApplicationContext;
 
-    @MockBean
+    @MockitoBean
     private IBigQueue inboundQueue;
 
-    @MockBean
+    @MockitoBean
     private GlobalEventService globalEventService;
 
     private ObjectMapper objectMapper;

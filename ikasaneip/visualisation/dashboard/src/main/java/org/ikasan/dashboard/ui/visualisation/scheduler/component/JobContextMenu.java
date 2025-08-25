@@ -93,7 +93,7 @@ public class JobContextMenu extends Dialog {
             else if(job instanceof FileEventDrivenJob) {
                 FileEventJobDialog fileEventJobDialog
                     = new FileEventJobDialog(null, scheduledProcessManagementService, configurationRestService,
-                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.currentInstance.isUseDisplayName(), null, false);
+                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.currentInstance.isUseDisplayName(), null, null, false);
                 fileEventJobDialog.setJob((FileEventDrivenJob) job, EditMode.READONLY);
                 fileEventJobDialog.open();
             }

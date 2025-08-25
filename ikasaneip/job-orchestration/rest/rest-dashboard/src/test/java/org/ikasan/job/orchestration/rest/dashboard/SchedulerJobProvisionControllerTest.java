@@ -7,17 +7,16 @@ import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
-import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,7 +42,7 @@ public class SchedulerJobProvisionControllerTest {
     @Autowired
     WebApplicationContext webApplicationContext;
 
-    @MockBean
+    @MockitoBean
     private JobProvisionService jobProvisionService;
 
     @Autowired

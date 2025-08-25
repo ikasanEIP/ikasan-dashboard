@@ -1154,13 +1154,28 @@ public class ContextMachine {
                             , previousState, schedulerJobInstance.getStatus()));
                     }
                 }
-                if(this.bridgingJobInstanceMap.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {
+                else if(this.bridgingJobInstanceMap.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {
                     SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findById(schedulerJobInstance.getJobName()
                         + "_" + schedulerJobInstance.getContextInstanceId()
                         + "_" + schedulerJobInstance.getChildContextName()
                         + "_" + JobConstants.BRIDGING_JOB_INSTANCE);
                     if(schedulerJobInstanceRecord != null) {
                         BridgingJobInstance instance = (BridgingJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
+                        instance.setStatus(InstanceStatus.WAITING);
+                        schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
+                        this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+                        jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(instance, this.contextInstance
+                            , previousState, schedulerJobInstance.getStatus()));
+                    }
+                }
+                else {
+                    SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findById(schedulerJobInstance.getJobName()
+                        + "_" + schedulerJobInstance.getContextInstanceId()
+                        + "_" + schedulerJobInstance.getChildContextName()
+                        + "_" + JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
+                    if(schedulerJobInstanceRecord != null) {
+                        FileEventDrivenJobInstance instance = (FileEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
                         instance.setStatus(InstanceStatus.WAITING);
                         schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
                         this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);

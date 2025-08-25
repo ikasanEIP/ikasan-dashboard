@@ -1209,7 +1209,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 });
             }
             else {
-                NotificationHelper.showUserNotification("There are no jobs to release!");
+                NotificationHelper.showUserNotification(getTranslation("notification.no-scheduler-jobs-to-release"));
             }
         });
 

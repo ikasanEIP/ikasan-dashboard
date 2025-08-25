@@ -21,7 +21,7 @@ import java.util.List;
         """)
 public class JobContextParamsSetupFactoryTest {
 
-    @MockitoBean
+   @MockitoBean
     SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
     @Autowired

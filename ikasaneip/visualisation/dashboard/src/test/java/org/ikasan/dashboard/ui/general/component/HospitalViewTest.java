@@ -13,7 +13,7 @@ import org.ikasan.spec.module.client.ResubmissionService;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -26,13 +26,13 @@ import static org.mockito.Mockito.verify;
 
 public class HospitalViewTest extends UITest {
 
-    @MockBean
+    @MockitoBean
     private ModuleMetaData moduleMetaData;
 
-    @MockBean
+    @MockitoBean
     private ResubmissionService resubmissionRestService;
 
-    @MockBean
+    @MockitoBean
     private HospitalAuditService hospitalAuditService;
 
     @Override

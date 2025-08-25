@@ -11,6 +11,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.SortDirection;
 import org.ikasan.dashboard.ui.scheduler.AbstractSchedulerViewTest;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceAggregateJobStatus;
@@ -35,6 +36,7 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
 
     @Override
     public void setup_expectations() throws IOException {
+        ContextMachineCache.instance().resetAllCache();
         when(this.scheduledContextService.findByFilter(any(), anyInt(), anyInt(), isNull(), isNull()))
             .thenReturn(new SearchResultsImpl<>(new ArrayList<>(), 0, 1));
 
@@ -150,7 +152,6 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
     }
 
     @Test
-    @Ignore
     public void test_active_job_plan_instances_tab() throws IOException
     {
         UI.getCurrent().navigate("scheduler");

@@ -16,7 +16,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -30,22 +30,22 @@ import static org.mockito.ArgumentMatchers.*;
 
 public class SolrSearchFilteringGridTest extends UITest {
 
-    @MockBean
+    @MockitoBean
     private Set<IkasanPrincipal> principals;
 
-    @MockBean
+    @MockitoBean
     private IkasanPrincipal principal;
 
-    @MockBean
+    @MockitoBean
     private Set<Role> roles;
 
-    @MockBean
+    @MockitoBean
     private Role role;
 
-    @MockBean
+    @MockitoBean
     private Set<RoleModule> roleModules;
 
-    @MockBean
+    @MockitoBean
     private RoleModule roleModule;
 
 

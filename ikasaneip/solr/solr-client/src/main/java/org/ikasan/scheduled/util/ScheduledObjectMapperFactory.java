@@ -9,10 +9,7 @@ import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventI
 import org.ikasan.scheduled.event.model.SolrContextualisedSchedulerJobInitiationEventImpl;
 import org.ikasan.scheduled.event.model.SolrSchedulerJobInitiationEventImpl;
 import org.ikasan.scheduled.instance.model.*;
-import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobLockParticipantImpl;
+import org.ikasan.scheduled.job.model.*;
 import org.ikasan.scheduled.profile.model.SolrContextProfileImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
 import org.ikasan.spec.scheduled.context.model.*;
@@ -22,15 +19,13 @@ import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.ReplacementPair;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ScheduledObjectMapperFactory {
 
@@ -72,8 +67,10 @@ public class ScheduledObjectMapperFactory {
             .addAbstractTypeMapping(JobLockHolder.class, SolrJobLockHolderImpl.class)
             .addAbstractTypeMapping(ContextProfile.class, SolrContextProfileImpl.class)
             .addAbstractTypeMapping(ContextProfileRecord.class, SolrContextProfileRecordImpl.class)
+            .addAbstractTypeMapping(ReplacementPair.class, SolrReplacementPairImpl.class)
             .addAbstractTypeMapping(List.class, ArrayList.class)
-            .addAbstractTypeMapping(Map.class, HashMap.class);
+            .addAbstractTypeMapping(Map.class, HashMap.class)
+            .addAbstractTypeMapping(Set.class, HashSet.class);
 
 
         objectMapper.registerModule(simpleModule);

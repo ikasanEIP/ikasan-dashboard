@@ -27,8 +27,8 @@ import org.jmock.imposters.ByteBuddyClassImposteriser;
 import org.jmock.lib.concurrent.Synchroniser;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -61,10 +61,10 @@ public class ComponentConfigurationDialogTest extends UITest {
     JsonValue jsonValue = mockery.mock(JsonValue.class, "node");
 
 
-    @MockBean
+    @MockitoBean
     private ConfigurationService configurationRestService;
 
-    @MockBean
+    @MockitoBean
     private ConfigurationMetaDataService configurationMetadataService;
 
     @Override

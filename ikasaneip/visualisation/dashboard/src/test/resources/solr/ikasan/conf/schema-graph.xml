@@ -11,7 +11,7 @@
   language governing permissions and limitations under the License. -->
 
 <!-- This is a stripped down schema that includes the node_id and edge_id 
-  fields to test businessStream queries -->
+  fields to test graph queries -->
 
 <schema name="graphexample" version="1.6">
   <!-- field names should consist of alphanumeric or underscore characters 
@@ -29,14 +29,14 @@
   <field name="_version_" type="long" indexed="true" stored="true" />
 
   <!-- points to the root document of a block of nested documents. Required 
-    for nested document support, may be removed otherwise (not used in businessStream
+    for nested document support, may be removed otherwise (not used in graph 
     query test) -->
   <field name="_root_" type="string" indexed="true" stored="false" />
 
-  <!-- the field that contains the "node_id" for businessStream traversal -->
+  <!-- the field that contains the "node_id" for graph traversal -->
   <field name="node_id" type="string" indexed="true" stored="true"
     multiValued="false" omitNorms="true" termVectors="true" />
-  <!-- multi-valued field that contains the edge id's for businessStream traversal -->
+  <!-- multi-valued field that contains the edge id's for graph traversal -->
   <field name="edge_id" type="string" indexed="true" stored="true"
     multiValued="true" omitNorms="true" omitPositions="true" termVectors="true" />
 

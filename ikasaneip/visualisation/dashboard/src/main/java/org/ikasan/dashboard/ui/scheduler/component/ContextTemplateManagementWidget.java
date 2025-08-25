@@ -832,6 +832,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private MenuBar contextViewMenuBar() {
         MenuBar contextViewsMenuBar = new ContextTemplateViewMenuBar(this.contextTemplate
             , this.contextProfileService, this.schedulerVisualisation);
+        contextViewsMenuBar.setId("contextViewMenuBar");
 
         ComponentSecurityVisibility.applySecurity(contextViewsMenuBar, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
@@ -855,6 +856,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.synchroniseJobsButton = this.createSynchroniseJobsButton();
 
         MenuBar actionsMenuBar = new MenuBar();
+        actionsMenuBar.setId("actionsMenuBar");
         actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
         Button validateJobPlanButton = new Button(getTranslation("button.validate-job-plan"));
@@ -1109,6 +1111,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         SubMenu activeContextInstancesSubMenu = jobUploadMenutItem.getSubMenu();
         MenuItem jobTypesMenuItem = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
+        jobTypesMenuItem.setId("jobTypesMenuItem");
         SubMenu jobTypesSubMenu = jobTypesMenuItem.getSubMenu();
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale())
@@ -1165,7 +1168,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
-        jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
+        MenuItem newCommandExecutionJobMenuItem = jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
                     this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate,
                     this.schedulerJobExecutionEnvironmentLabel, false);
@@ -1182,8 +1185,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                         this.schedulerJobGridWidget.refresh();
                     }
                 });
-            })
-            .getElement()
+            });
+        newCommandExecutionJobMenuItem.setId("newCommandExecutionJobMenuItem");
+        newCommandExecutionJobMenuItem.getElement()
             .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
@@ -1215,10 +1219,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
-        jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
+        MenuItem newFileWatcherJobMenuItem = jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
                 FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
                     this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(),
-                    this.contextTemplate, false);
+                    this.contextTemplate, this.contextTemplate, false);
 
                 FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
                 fileEventDrivenJob.setContextName(contextTemplate.getName());
@@ -1233,8 +1237,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                         this.schedulerJobGridWidget.refresh();
                     }
                 });
-            })
-            .getElement()
+            });
+        newFileWatcherJobMenuItem.setId("newFileWatcherJobMenuItem");
+        newFileWatcherJobMenuItem.getElement()
             .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));

@@ -15,7 +15,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -91,6 +90,10 @@ public class ContextTemplateWidgetTest extends AbstractSchedulerViewTest {
             .thenReturn(new SearchResultsImpl<>(this.getScheduledContextInstanceRecords(5), 5, 0));
 
         Mockito.when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
+                eq(0),eq(0), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(new SearchResultsImpl<>(this.getScheduledContextInstanceRecords(5), 5, 0));
+
+        Mockito.when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
                 eq(5),eq(0), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(new SearchResultsImpl<>(this.getScheduledContextInstanceRecords(5), 5, 0));
 
@@ -147,30 +150,38 @@ public class ContextTemplateWidgetTest extends AbstractSchedulerViewTest {
         Assert.assertNotNull(actionsLayout);
 
         Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(0).getClass());
-        Assert.assertEquals("<iron-icon icon=\"vaadin:modal\" title=\"Manage Job Plan\" id=\"editScheduledJob\" style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></iron-icon>"
+        Assert.assertEquals("<vaadin-icon icon=\"vaadin:modal\" title=\"Manage Job Plan\" id=\"editScheduledJob\" " +
+                "style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
             , actionsLayout.getComponentAt(0).getElement().toString());
 
         Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(1).getClass());
-        Assert.assertEquals("<iron-icon icon=\"vaadin:trash\" title=\"Delete Job Plan\" style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></iron-icon>"
+        Assert.assertEquals("<vaadin-icon icon=\"vaadin:trash\" title=\"Delete Job Plan\" style=\"cursor:pointer;" +
+                "width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
             , actionsLayout.getComponentAt(1).getElement().toString());
 
         Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(2).getClass());
-        Assert.assertEquals("<iron-icon icon=\"vaadin:play\" title=\"Enable scheduled jobs. When scheduled jobs are enabled on a job plan, all instances of that job plan will also have their scheduled jobs enabled when they are created.\" style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></iron-icon>"
+        Assert.assertEquals("<vaadin-icon icon=\"vaadin:play\" title=\"Enable scheduled jobs. When scheduled jobs " +
+                "are enabled on a job plan, all instances of that job plan will also have their scheduled jobs enabled when they are created.\" " +
+                "style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
             , actionsLayout.getComponentAt(2).getElement().toString());
 
         Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(3).getClass());
-        Assert.assertEquals("<iron-icon icon=\"vaadin:ban\" title=\"Disable scheduled jobs. When scheduled jobs are disabled on a job plan, all instances of that job plan will also have their scheduled jobs disabled when they are created.\" style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></iron-icon>"
+        Assert.assertEquals("<vaadin-icon icon=\"vaadin:ban\" title=\"Disable scheduled jobs. When scheduled jobs" +
+                " are disabled on a job plan, all instances of that job plan will also have their scheduled jobs disabled when they " +
+                "are created.\" style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
             , actionsLayout.getComponentAt(3).getElement().toString());
 
-        Assert.assertEquals(FileDownloadWrapper.class, actionsLayout.getComponentAt(4).getClass());
-        Assert.assertEquals(FileDownloadWrapper.class, actionsLayout.getComponentAt(5).getClass());
+        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(4).getClass());
+        Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(5).getClass());
 
         Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(6).getClass());
-        Assert.assertEquals("<iron-icon icon=\"vaadin:external-link\" title=\"Open in new window\" style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></iron-icon>"
+        Assert.assertEquals("<vaadin-icon icon=\"vaadin:external-link\" title=\"Open in new window\" " +
+                "style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
             , actionsLayout.getComponentAt(6).getElement().toString());
 
         Assert.assertEquals(Icon.class, actionsLayout.getComponentAt(7).getClass());
-        Assert.assertEquals("<iron-icon icon=\"vaadin:plus\" title=\"Create a new instance of the job plan.\" style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></iron-icon>"
+        Assert.assertEquals("<vaadin-icon icon=\"vaadin:plus\" title=\"Create a new instance of the job plan.\" " +
+                "style=\"cursor:pointer;width:16pt;color:rgba(0, 0, 0, 1.0);height:16pt\"></vaadin-icon>"
             , actionsLayout.getComponentAt(7).getElement().toString());
 
         VerticalLayout scheduledJobsDisabled = (VerticalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "scheduledJobsDisabled");

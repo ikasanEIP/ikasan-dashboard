@@ -4,11 +4,13 @@ import com.github.mvysny.kaributesting.v10.GridKt;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
+import org.awaitility.Awaitility;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.scheduler.AbstractSchedulerViewTest;
 import org.ikasan.dashboard.ui.visualisation.component.FlowListFilteringGrid;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.rest.dashboard.model.metadata.module.FlowMetaDataImpl;
 import org.ikasan.rest.dashboard.model.metadata.module.ModuleMetaDataImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
@@ -19,11 +21,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._click;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
@@ -49,7 +53,7 @@ public class SchedulerStatusWidgetTest extends AbstractSchedulerViewTest {
             .thenReturn(this.getAgents(1));
 
         when(super.moduleMetadataService.findAll())
-            .thenAnswer((Answer<List<ModuleMetaData>>) invocationOnMock -> getAgents());
+            .thenReturn(getAgents());
     }
 
     @Test
@@ -63,7 +67,7 @@ public class SchedulerStatusWidgetTest extends AbstractSchedulerViewTest {
     }
 
     @Test
-    public void test_status_values() {
+    public void test_status_values() throws InterruptedException {
         UI.getCurrent().navigate("scheduler");
 
         SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
@@ -96,7 +100,7 @@ public class SchedulerStatusWidgetTest extends AbstractSchedulerViewTest {
 
         schedulerStatusWidget.recalculate();
 
-        Div runningDiv = _get(Div.class, spec -> spec.withId("runningDiv"));
+        Div runningDiv = _get(schedulerStatusWidget, Div.class, spec -> spec.withId("runningDiv"));
         Assert.assertNotNull(runningDiv);
         Assert.assertEquals("5 running", runningDiv.getText());
 
@@ -156,16 +160,21 @@ public class SchedulerStatusWidgetTest extends AbstractSchedulerViewTest {
         Assert.assertNotNull(recoveringIcon);
         _click(recoveringIcon);
 
+        Thread.sleep(2000);
         flowListFilteringGrid = _get(FlowListFilteringGrid.class, spec -> spec.withId("flowsGrid"));
-        Assert.assertEquals(1, GridKt._size(flowListFilteringGrid));
+
+        FlowListFilteringGrid finalFlowListFilteringGrid = flowListFilteringGrid;
+        Assert.assertEquals(1, GridKt._size(finalFlowListFilteringGrid));
 
         returnIcon = _get(Icon.class, spec -> spec.withId("returnIcon"));
         _click(returnIcon);
 
+        Thread.sleep(2000);
         Icon pausedDivIcon = _get(Icon.class, spec -> spec.withId("pausedDivIcon"));
         Assert.assertNotNull(pausedDivIcon);
         _click(pausedDivIcon);
 
+        Thread.sleep(2000);
         flowListFilteringGrid = _get(FlowListFilteringGrid.class, spec -> spec.withId("flowsGrid"));
         Assert.assertEquals(7, GridKt._size(flowListFilteringGrid));
     }

@@ -45,6 +45,10 @@ public class AgentWidgetTest extends AbstractSchedulerViewTest {
         Mockito.when(this.schedulerJobInstanceService.getJobStatusCountForContextInstances(Mockito.any()))
             .thenReturn(new ArrayList<>(this.getAggregateContextInstanceStatuses()));
 
+        Mockito.when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
+                eq(0),eq(0), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(new SearchResultsImpl<>(this.getScheduledContextInstanceRecords(5), 5, 0));
+
 
     }
 

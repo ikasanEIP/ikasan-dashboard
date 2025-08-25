@@ -25,7 +25,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.annotation.Resource;
@@ -43,34 +43,34 @@ public class JobContextMenuTest extends UITest {
     @Resource
     private NotificationHelper notificationHelper;
 
-    @MockBean
+    @MockitoBean
     private BatchInsert<ScheduledProcessEvent> scheduledProcessEventBatchInsert;
 
-    @MockBean
+    @MockitoBean
     private SchedulerJobService schedulerJobService;
 
-    @MockBean
+    @MockitoBean
     private ContextInstance rootContextInstance;
 
-    @MockBean
+    @MockitoBean
     private LogStreamingService logStreamingService;
 
-    @MockBean
+    @MockitoBean
     private SystemEventLogger systemEventLogger;
 
-    @MockBean
+    @MockitoBean
     private ScheduledProcessManagementService scheduledProcessManagementService;
 
-    @MockBean
+    @MockitoBean
     private ConfigurationService configurationRestService;
 
-    @MockBean
+    @MockitoBean
     private ModuleControlService moduleControlRestService;
 
-    @MockBean
+    @MockitoBean
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
-    @MockBean
+    @MockitoBean
     private MetaDataService metaDataRestService;
 
     private JobContextMenu jobContextMenu;

@@ -13,12 +13,14 @@ import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExc
 import org.ikasan.error.reporting.dao.SolrErrorReportingServiceDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,16 +37,20 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
 
     private NodeConfig config;
 
+    private Path tmppath;
+
     @Before
     public void setup()
     {
-        Logger rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-//        rootLogger.setLevel(Level.WARN);
-
-        config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
+        tmppath = createTempDir();
+        config = new NodeConfig.NodeConfigBuilder("testnode", tmppath)
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
+    }
 
-
+    @After
+    public void teardown() throws IOException
+    {
+        FileSystemUtils.deleteRecursively(tmppath);
     }
 
     private void init(EmbeddedSolrServer server) throws IOException, SolrServerException
@@ -100,7 +106,6 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
     @DirtiesContext
     public void test_business_stream_exclusions() throws Exception {
 
-
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {
             init(server);
@@ -121,7 +126,6 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
     @Test
     @DirtiesContext
     public void test_business_stream_exclusions_legacy() throws Exception {
-
 
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {
@@ -144,7 +148,6 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
     @DirtiesContext
     public void test_business_stream_exclusion_no_error() throws Exception {
 
-
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {
             init(server);
@@ -164,7 +167,6 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
     @Test
     @DirtiesContext
     public void test_business_stream_exclusion_no_error_legacy() throws Exception {
-
 
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {
