@@ -339,8 +339,8 @@
         <version.com.jcraft.jsch>0.1.55</version.com.jcraft.jsch>
         <version.org.mockftpserver>2.6</version.org.mockftpserver>
         <version.org.apache.sshd>2.1.0</version.org.apache.sshd>
-        <version.com.fasterxml.jackson.core>2.16.0</version.com.fasterxml.jackson.core>
-        <version.com.fasterxml.jackson.core.databind>2.16.0</version.com.fasterxml.jackson.core.databind>
+        <version.com.fasterxml.jackson.core>2.19.1</version.com.fasterxml.jackson.core>
+        <version.com.fasterxml.jackson.core.databind>2.19.1</version.com.fasterxml.jackson.core.databind>
         <version.vaadin>24.8.7</version.vaadin>
         <version.org.vaadin.tabs>1.2.0</version.org.vaadin.tabs>
         <version.com.vaadin.componentfactory>1.2.2</version.com.vaadin.componentfactory>
@@ -377,8 +377,8 @@
         <version.logback>1.5.16</version.logback>
         <ikasan.core.version>4.1.1-SNAPSHOT</ikasan.core.version>
         <version.spring.webflux>6.1.14</version.spring.webflux>
-        <version.reactor.test>3.4.10</version.reactor.test>
-        <version.reactor.netty.http>1.2.8</version.reactor.netty.http>
+        <version.reactor>3.7.9</version.reactor>
+        <version.reactor.netty>1.2.9</version.reactor.netty>
         <version.okhttp3>3.7.0</version.okhttp3>
         <version.cron.utils>9.1.6</version.cron.utils>
         <version.tech.huffman.re-retrying>3.0.0</version.tech.huffman.re-retrying>
@@ -391,6 +391,7 @@
         <version.javax.validation-api>2.0.1.Final</version.javax.validation-api>
         <version.woodstox.stax2-api>4.2.2</version.woodstox.stax2-api>
         <version.caffine>3.1.8</version.caffine>
+        <version.springdoc>2.8.11</version.springdoc>
     </properties>
 
     <!-- Distribution for releases -->
@@ -1452,7 +1453,7 @@
             <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-test</artifactId>
-                <version>${version.reactor.test}</version>
+                <version>${version.reactor}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>io.projectreactor</groupId>
@@ -1470,7 +1471,7 @@
             <dependency>
                 <groupId>io.projectreactor.netty</groupId>
                 <artifactId>reactor-netty-http</artifactId>
-                <version>${version.reactor.netty.http}</version>
+                <version>${version.reactor.netty}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>io.projectreactor</groupId>
@@ -1631,7 +1632,7 @@
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                <version>2.8.11</version>
+                <version>${version.springdoc}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.fasterxml.jackson.datatype</groupId>
@@ -2007,6 +2008,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-websocket</artifactId>
+                <version>${version.org.springframework}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.fasterxml</groupId>
                 <artifactId>classmate</artifactId>
                 <version>${version.com.fasterxml.classmate}</version>
@@ -2042,6 +2049,12 @@
                         <artifactId>jakarta.activation-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${version.com.fasterxml.jackson.core.databind}</version>
             </dependency>
 
             <!-- Vaadin -->
@@ -2854,6 +2867,24 @@
                 <groupId>org.skyscreamer</groupId>
                 <artifactId>jsonassert</artifactId>
                 <version>${version.json.assert}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.projectreactor.netty</groupId>
+                <artifactId>reactor-netty-core</artifactId>
+                <version>${version.reactor.netty}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-core</artifactId>
+                <version>${version.reactor}</version>
             </dependency>
 
         </dependencies>
