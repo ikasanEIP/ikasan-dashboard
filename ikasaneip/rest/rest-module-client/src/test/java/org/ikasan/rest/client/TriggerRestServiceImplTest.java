@@ -123,6 +123,76 @@ public class TriggerRestServiceImplTest
     }
 
     @Test
+    public void deleteTrigger_fails()
+    {
+
+        stubFor(delete(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL+"/1201"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(400)));
+
+
+        boolean result = uut.delete(contexBaseUrl, "1201");
+        assertEquals(false, result);
+    }
+
+    @Test
+    public void deleteTrigger_with_user()
+    {
+
+        stubFor(delete(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL+"/1201/user"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(200)));
+
+
+        boolean result = uut.delete(contexBaseUrl, "1201", "user");
+        assertEquals(true, result);
+    }
+
+    @Test
+    public void deleteTrigger_with_user_call_fails_so_fall_back_to_no_user()
+    {
+        stubFor(delete(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL+"/1201/user"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(400)));
+
+
+        stubFor(delete(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL+"/1201"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(200)));
+
+        boolean result = uut.delete(contexBaseUrl, "1201", "user");
+        assertEquals(true, result);
+    }
+
+    @Test
+    public void deleteTrigger_with_user_call_fails_so_fall_back_to_no_user_which_fails()
+    {
+        stubFor(delete(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL+"/1201/user"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(400)));
+
+
+        stubFor(delete(urlEqualTo(TriggerRestServiceImpl.PUT_TRIGGER_URL+"/1201"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(400)));
+
+        boolean result = uut.delete(contexBaseUrl, "1201", "user");
+        assertEquals(false, result);
+    }
+
+    @Test
     public void testTimeout() throws JsonProcessingException {
         Environment environment = new StandardEnvironment();
 
