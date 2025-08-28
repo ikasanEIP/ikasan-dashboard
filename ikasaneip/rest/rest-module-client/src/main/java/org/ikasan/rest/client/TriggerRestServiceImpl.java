@@ -20,12 +20,27 @@ public class TriggerRestServiceImpl extends ModuleRestService implements Trigger
 
     protected final static String PUT_TRIGGER_URL = "/rest/wiretap/trigger";
     protected final static String DELETE_TRIGGER_URL = "/rest/wiretap/trigger/{triggerId}";
+    protected final static String DELETE_TRIGGER_WITH_USER_URL = "/rest/wiretap/trigger/{triggerId}/{user}";
 
+    /**
+     * Constructor for TriggerRestServiceImpl.
+     *
+     * @param environment the environment object used for configuration
+     * @param httpComponentsClientHttpRequestFactory the HTTP components client request factory
+     */
     public TriggerRestServiceImpl(Environment environment,
                                   HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         super(environment, httpComponentsClientHttpRequestFactory);
     }
 
+    /**
+     * Creates a trigger using the provided context URL and trigger DTO.
+     *
+     * @param contextUrl The base URL context for the trigger creation
+     * @param triggerDto The TriggerDto object containing trigger details
+     * @return true if the trigger creation is successful, false otherwise
+     */
+    @Override
     public boolean create(String contextUrl, TriggerDto triggerDto)
     {
         HttpHeaders headers = createHttpHeaders();
@@ -44,14 +59,57 @@ public class TriggerRestServiceImpl extends ModuleRestService implements Trigger
         }
     }
 
-    public boolean delete(String contextUrl, String triggerId)
+
+    /**
+     * Deletes a trigger with the specified triggerId and user from the provided context URL.
+     *
+     * @param contextUrl The base URL context for trigger deletion
+     * @param triggerId The ID of the trigger to be deleted
+     * @param user The user associated with the trigger to be deleted
+     * @return true if the trigger is successfully deleted, false otherwise
+     */
+    @Override
+    public boolean delete(String contextUrl, String triggerId, String user)
     {
+        HttpHeaders headers = createHttpHeaders();
+        HttpEntity entity = new HttpEntity(headers);
+        String url = contextUrl + DELETE_TRIGGER_WITH_USER_URL;
+        try
+        {
+            Map<String, String> parameters = new HashMap<>()
+            {{put("triggerId", triggerId);put("user", user);}};
+
+            restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class,parameters);
+
+            return true;
+        }
+        catch (RestClientException e)
+        {
+            if(this.delete(contextUrl, triggerId) == false) {
+                logger.warn("Issue Deleting trigger [" + url + "] with module [" + triggerId + "] and user [" + user + "]");
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Deletes a trigger with the specified triggerId.
+     *
+     * @param contextUrl The base URL context for trigger deletion
+     * @param triggerId The ID of the trigger to be deleted
+     * @return true if the trigger is successfully deleted, false otherwise
+     */
+    @Override
+    public boolean delete(String contextUrl, String triggerId) {
         HttpHeaders headers = createHttpHeaders();
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl + DELETE_TRIGGER_URL;
         try
         {
-            Map<String, String> parameters = new HashMap<String, String>()
+            Map<String, String> parameters = new HashMap<>()
             {{put("triggerId", triggerId);}};
 
             restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class,parameters);
@@ -65,7 +123,4 @@ public class TriggerRestServiceImpl extends ModuleRestService implements Trigger
             return false;
         }
     }
-
-
-
 }

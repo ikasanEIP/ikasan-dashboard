@@ -16,11 +16,13 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.model.flow.AbstractWiretapNode;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.DecoratorMetaData;
 import org.ikasan.spec.module.client.TriggerService;
 import org.ikasan.spec.trigger.TriggerRelationship;
 import org.ikasan.vaadin.visjs.network.NetworkDiagram;
 import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,12 +78,13 @@ public class WiretapManagementDialog extends Dialog
 
         Button removeWiretapButton = new Button(getTranslation("button.remove-wiretap", UI.getCurrent().getLocale()));
         removeWiretapButton.setWidthFull();
+        IkasanAuthentication ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         removeWiretapButton.addClickListener((ComponentEventListener<ClickEvent<Button>>)
             buttonClickEvent -> {
                 AtomicBoolean success = new AtomicBoolean(true);
 
                 this.decoratorMetaDataList.forEach(decoratorMetaData -> {
-                    if(!this.triggerRestService.delete(this.module.getUrl(), decoratorMetaData.getConfigurationId())) {
+                    if(!this.triggerRestService.delete(this.module.getUrl(), decoratorMetaData.getConfigurationId(), ikasanAuthentication.getName())) {
                         success.set(false);
                     };
                 });
