@@ -72,6 +72,7 @@ public class SystemEventConstants
     public static final String SCHEDULED_JOB_HELD = "Scheduled job held";
     public static final String All_SCHEDULED_JOBS_HELD_FOR_JOB_PLAN = "All scheduled jobs held for job plan";
     public static final String All_SCHEDULED_JOBS_ENABLED_FOR_JOB_PLAN = "All scheduled jobs enabled for job plan";
+    public static final String All_SCHEDULED_JOBS_SKIPPED_FOR_JOB_PLAN = "All scheduled jobs skipped for job plan";
     public static final String All_SCHEDULED_JOBS_RELEASED_FOR_JOB_PLAN = "All scheduled jobs released for job plan";
     public static final String SCHEDULED_JOB_RELEASED = "Scheduled job released";
     public static final String SCHEDULED_JOB_SUBMITTED = "Scheduled job manually submitted";

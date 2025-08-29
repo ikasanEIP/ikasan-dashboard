@@ -1258,6 +1258,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                 NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-skip-error"
                                     , UI.getCurrent().getLocale()));
                             } else {
+                                this.systemEventLogger.logEvent(SystemEventConstants.All_SCHEDULED_JOBS_SKIPPED_FOR_JOB_PLAN,
+                                    String.format("Skipping all jobs for job plan. Job Plan Name[%s], Job Plan Instance Id[%s], Child Context[%s]"
+                                        , this.contextInstance.getName(), this.contextInstance.getId(), contextInstance.getName())
+                                    , this.authentication.getName());
                                 NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-skipped"
                                     , UI.getCurrent().getLocale()));
                             }
@@ -1312,6 +1316,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                 NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-enable-error"
                                     , UI.getCurrent().getLocale()));
                             } else {
+                                this.systemEventLogger.logEvent(SystemEventConstants.All_SCHEDULED_JOBS_ENABLED_FOR_JOB_PLAN,
+                                    String.format("Enabling all skipped jobs for job plan. Job Plan Name[%s], Job Plan Instance Id[%s], Child Context[%s]"
+                                        , this.contextInstance.getName(), this.contextInstance.getId(), contextInstance.getName())
+                                    , this.authentication.getName());
                                 NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-enabled"
                                     , UI.getCurrent().getLocale()));
                             }
