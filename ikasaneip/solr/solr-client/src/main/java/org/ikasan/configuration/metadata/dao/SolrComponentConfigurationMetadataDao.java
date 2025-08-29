@@ -179,10 +179,20 @@ public class SolrComponentConfigurationMetadataDao extends SolrDaoBase<Configura
 
         try
         {
-            QueryRequest req = new QueryRequest(query, SolrRequest.METHOD.POST);
+            query.setStart(0);
+            query.setRows(0);
+
+            QueryRequest req = new QueryRequest(query,  SolrRequest.METHOD.POST);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+            query.setRows((int)rsp.getResults().getNumFound());
+
+            req = new QueryRequest(query,  SolrRequest.METHOD.POST);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+            rsp = req.process(this.solrClient, SolrConstants.CORE);
 
             return rsp.getBeans(SolrComponentConfiguration.class);
         }

@@ -374,7 +374,8 @@ public class ModuleVisjsAdapter
                 .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
                 .build();
         }
-        else if(flowElement.getImplementingClass().equals("org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer"))
+        else if(flowElement.getImplementingClass().equals("org.ikasan.component.endpoint.jms.spring.producer.ArjunaJmsTemplateProducer") ||
+            flowElement.getImplementingClass().equals("org.ikasan.component.endpoint.jms.spring.producer.JmsTemplateProducer"))
         {
             ConfigurationMetaData configurationMetaData = configurationMetaDataMap.get(flowElement.getConfigurationId());
             String destinationName = this.getConfigurationParameterMetaData("destinationJndiName", configurationMetaData);
