@@ -30,8 +30,8 @@ public class ModuleVisjsAdapterTest
     public static final String MODULE_FOUR_JSON = "/data/graph/module-four.json";
     public static final String MODULE_FIVE_JSON = "/data/graph/module-five.json";
     public static final String MODULE_SIX_JSON = "/data/graph/module-six.json";
-
     public static final String MODULE_SAMPLE_JMS_JSON = "/data/graph/sample-jms-module.json";
+    public static final String MODULE_SAMPLE_JMS_TEMPLATE_PRODUCER_JSON = "/data/graph/sample-jms-module_jms_template_producer.json";
     public static final String JMS_PRODUCER_CONFIGURATION = "/data/graph/jmsProducerConfiguration.json";
     public static final String JMS_CONSUMER_CONFIGURATION = "/data/graph/jmsConsumerConfiguration.json";
 
@@ -133,6 +133,41 @@ public class ModuleVisjsAdapterTest
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
         Assertions.assertEquals("Sample Module", module.getDescription(), "module descriptions equals");
         Assertions.assertEquals(1, module.getFlows().size(), "number of flows equal");
+
+        Broker broker = (Broker) module.getFlows().get(0).getConsumer().getTransition();
+        broker = (Broker) broker.getTransition();
+        MessageProducer messageProducer = (MessageProducer) broker.getTransition();
+        MessageChannel messageChannel = (MessageChannel) messageProducer.getTransition();
+        Assertions.assertEquals("target", messageChannel.getLabel());
+    }
+
+    @Test
+    public void test_adapt_jms_module_JmsTemplateProducer_with_configurations() throws IOException
+    {
+        ModuleMetaData moduleMetaData = this.jsonModuleMetaDataProvider
+            .deserialiseModule(loadDataFile(MODULE_SAMPLE_JMS_TEMPLATE_PRODUCER_JSON));
+
+        ArrayList<ConfigurationMetaData> configurationMetaDataList = new ArrayList<>();
+
+        ConfigurationMetaData configurationMetaData = this.getConfigurationMetadata(JMS_PRODUCER_CONFIGURATION);
+        configurationMetaDataList.add(configurationMetaData);
+
+        configurationMetaData = this.getConfigurationMetadata(JMS_CONSUMER_CONFIGURATION);
+        configurationMetaDataList.add(configurationMetaData);
+
+        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+
+        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+
+        Assertions.assertEquals("sample-boot-jms", module.getName(), "module name equals");
+        Assertions.assertEquals(null, module.getVersion(), "module version equals");
+        Assertions.assertEquals("Sample Module", module.getDescription(), "module descriptions equals");
+        Assertions.assertEquals(1, module.getFlows().size(), "number of flows equal");
+        Broker broker = (Broker) module.getFlows().get(0).getConsumer().getTransition();
+        broker = (Broker) broker.getTransition();
+        MessageProducer messageProducer = (MessageProducer) broker.getTransition();
+        MessageChannel messageChannel = (MessageChannel) messageProducer.getTransition();
+        Assertions.assertEquals("target", messageChannel.getLabel());
     }
 
     @Test

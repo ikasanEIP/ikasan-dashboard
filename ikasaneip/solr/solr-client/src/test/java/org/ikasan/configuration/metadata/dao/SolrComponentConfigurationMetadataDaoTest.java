@@ -113,6 +113,39 @@ public class SolrComponentConfigurationMetadataDaoTest extends SolrTestCaseJ4
 
     @Test
     @DirtiesContext
+    public void test_find_by_ids_large_result_set() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
+            List<String> ids = new ArrayList<>();
+            for(int i=0; i<100; i++) {
+                SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+                    = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+                List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+                solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+                String id = "configurationId"+i;
+                ids.add(id);
+                SolrConfigurationMetaData event = new SolrConfigurationMetaData(id, solrConfigurationParameterMetaDataList,
+                    "description", "implementingClass");
+                solrConfigurationMetaData.add(event);
+            }
+
+            dao.save(solrConfigurationMetaData);
+
+            List<ConfigurationMetaData> configurationMetaData = dao.findInIdList(ids);
+
+            Assert.assertEquals("expect 100 records",100, configurationMetaData.size());
+
+            server.close();
+        }
+    }
+
+    @Test
+    @DirtiesContext
     public void test_find_by_id_not_found() throws Exception {
 
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
@@ -165,6 +198,39 @@ public class SolrComponentConfigurationMetadataDaoTest extends SolrTestCaseJ4
             Assert.assertEquals("description equals","description", configurationMetaData.get(0).getDescription());
             Assert.assertEquals("implementingClass equals","implementingClass", configurationMetaData.get(0).getImplementingClass());
             Assert.assertEquals("1 configuration parameter", 1, ((List<ConfigurationParameterMetaData>)configurationMetaData.get(0).getParameters()).size());
+
+            server.close();
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_find_all_large_result_set() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
+            List<String> ids = new ArrayList<>();
+            for(int i=0; i<100; i++) {
+                SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+                    = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+                List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+                solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+                String id = "configurationId"+i;
+                ids.add(id);
+                SolrConfigurationMetaData event = new SolrConfigurationMetaData(id, solrConfigurationParameterMetaDataList,
+                    "description", "implementingClass");
+                solrConfigurationMetaData.add(event);
+            }
+
+            dao.save(solrConfigurationMetaData);
+
+            List<ConfigurationMetaData> configurationMetaData = dao.findAll();
+
+            Assert.assertEquals("expect 100 records",100, configurationMetaData.size());
 
             server.close();
         }
