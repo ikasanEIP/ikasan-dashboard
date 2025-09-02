@@ -44,6 +44,19 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     @Test
+    public void test_context_with_nested_job_dependencies_validation_success() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContextTemplate(loadDataFile("/data/contexts/CONTEXT-369160711-with-nested-logic.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+        validator.validate(contextTemplate);
+
+        List<SchedulerJob> schedulerJobs = this.createJobs(contextTemplate, false, false);
+        validator.validateJobs(contextTemplate, schedulerJobs);
+    }
+
+    @Test
     public void test_simple_context_validation_success_2() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
 
