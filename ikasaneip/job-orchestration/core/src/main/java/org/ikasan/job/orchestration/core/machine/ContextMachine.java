@@ -1829,9 +1829,9 @@ public class ContextMachine {
 
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
             Iterator<ContextInstance> contextInstanceIterator = contextInstance.getContexts().listIterator();
-            while(contextInstanceIterator.hasNext()) {
+            for(ContextInstance instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if any job initiation events need to be raised.
-                results.addAll(this.getInitiationEvents(contextInstanceIterator.next(), scheduledProcessEvent,lockRaised, markAsRaised));
+                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised, markAsRaised));
                 this.setContextStatus(contextInstance, false);
             }
         }
