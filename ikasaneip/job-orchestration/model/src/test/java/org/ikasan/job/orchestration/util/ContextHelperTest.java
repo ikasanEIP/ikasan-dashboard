@@ -40,7 +40,7 @@ public class ContextHelperTest {
 
     ContextHelper contextHelper = new ContextHelper();
 
-    ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
 
     @Test
     public void test_context_template_token_replacement() throws IOException, JSONException {
@@ -52,7 +52,7 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/-1793100514-with-tokens.json")
-            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/job-plan-with-user-generated-layout-with-tokens.json")
-            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/job-plan-with-start-terminal-local-event-jobs-with-tokens.json")
-            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
 
     @Test
@@ -91,7 +91,7 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/job-plan-no-dependencies-with-tokens.json")
-            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/-1793100514-with-tokens_no_underscore.json")
-            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
 
     @Test
@@ -132,7 +132,7 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks-with-tokens.json")
-            , ObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
 
     @Test

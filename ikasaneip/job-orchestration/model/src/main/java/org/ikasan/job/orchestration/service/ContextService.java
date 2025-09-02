@@ -9,7 +9,7 @@ import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -28,7 +28,7 @@ public class ContextService {
     private ObjectMapper objectMapper;
 
     public ContextService() {
-        this.objectMapper = ObjectMapperFactory.newInstance();
+        this.objectMapper = ConcurrentObjectMapperFactory.newInstance();
     }
 
     public boolean isValidJSON(final String json) throws JsonProcessingException {

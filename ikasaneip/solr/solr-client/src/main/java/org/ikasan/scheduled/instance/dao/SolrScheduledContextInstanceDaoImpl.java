@@ -6,7 +6,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
-import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.scheduled.util.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledContextInstanceRecord> implements ScheduledContextInstanceDao {
 
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     /**
      * Logger for this class

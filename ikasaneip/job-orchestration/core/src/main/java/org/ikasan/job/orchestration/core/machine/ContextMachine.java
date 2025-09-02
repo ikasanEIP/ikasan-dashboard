@@ -32,7 +32,7 @@ import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.BigQueueContextMachineManagementServiceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.bigqueue.service.BigQueueManagementService;
@@ -194,7 +194,7 @@ public class ContextMachine {
         this.statusListenerExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-StatusChangeListener"));
         this.contextExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-ContextExecutor"));
         this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-EventRaisedListener"));
-        this.objectMapper = ObjectMapperFactory.newInstance();
+        this.objectMapper = ConcurrentObjectMapperFactory.newInstance();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -1828,9 +1828,10 @@ public class ContextMachine {
 
 
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
-            for(ContextInstance instance: contextInstance.getContexts()) {
+            Iterator<ContextInstance> contextInstanceIterator = contextInstance.getContexts().listIterator();
+            while(contextInstanceIterator.hasNext()) {
                 // Recursively work our way through all nested contexts to determine if any job initiation events need to be raised.
-                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised, markAsRaised));
+                results.addAll(this.getInitiationEvents(contextInstanceIterator.next(), scheduledProcessEvent,lockRaised, markAsRaised));
                 this.setContextStatus(contextInstance, false);
             }
         }

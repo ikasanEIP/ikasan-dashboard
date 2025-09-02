@@ -6,13 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 
 public class ScheduledContextInstanceRecordImpl implements ScheduledContextInstanceRecord {
 
-    private static final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private static final ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
 
     private String id;
     private String contextName;

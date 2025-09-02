@@ -6,10 +6,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends SchedulerJob, JOB_LOCK extends JobLock>
     extends AbstractContext<CONTEXT, JOB, JOB_LOCK>
@@ -20,15 +20,15 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     // blackoutWindowDateTimeRanges - The UTC millisecond timestamp begin -> end for which a blackout occurs
     // Map<beginMilliSecondTimestamp -> endMilliSecondTimestamp>
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
+    protected Map<Long, Long> blackoutWindowDateTimeRanges = new ConcurrentHashMap<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
+    protected List<String> blackoutWindowCronExpressions = new CopyOnWriteArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<JobDependency> jobDependencies = new ArrayList<>();
+    protected List<JobDependency> jobDependencies = new CopyOnWriteArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<ContextDependency> contextDependencies = new ArrayList<>();
+    protected List<ContextDependency> contextDependencies = new CopyOnWriteArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>();
+    protected List<CONTEXT_PARAM> contextParameters = new CopyOnWriteArrayList<>();
     protected String timeWindowStart;
     protected boolean customWeekDayOfMonth = false;
     protected long contextTtlMilliseconds;

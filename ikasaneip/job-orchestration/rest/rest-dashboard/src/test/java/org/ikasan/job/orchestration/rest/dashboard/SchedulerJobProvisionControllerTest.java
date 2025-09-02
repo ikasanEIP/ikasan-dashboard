@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.junit.Before;
@@ -55,12 +55,13 @@ public class SchedulerJobProvisionControllerTest {
     public void test_provision_context_success() throws Exception {
         ContextBundle contextBundle = loadContextBundle();
 
-        ObjectMapper mapper = ObjectMapperFactory.newInstance();
+        ObjectMapper mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
             .allowIfSubType("org.ikasan.job.orchestration.model.context")
             .allowIfSubType("org.ikasan.job.orchestration.model.profile")
+            .allowIfSubType("java.util.concurrent.CopyOnWriteArrayList")
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();

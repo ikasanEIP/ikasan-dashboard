@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class ScheduledObjectMapperFactory {
+public class ScheduledConcurrentObjectMapperFactory {
 
     /**
      * Create an ObjectMapper instance that can be used in the
@@ -71,9 +71,9 @@ public class ScheduledObjectMapperFactory {
             .addAbstractTypeMapping(ContextProfile.class, SolrContextProfileImpl.class)
             .addAbstractTypeMapping(ContextProfileRecord.class, SolrContextProfileRecordImpl.class)
             .addAbstractTypeMapping(ReplacementPair.class, SolrReplacementPairImpl.class)
-            .addAbstractTypeMapping(List.class, ArrayList.class)
-            .addAbstractTypeMapping(Map.class, HashMap.class)
-            .addAbstractTypeMapping(Set.class, HashSet.class);
+            .addAbstractTypeMapping(List.class, CopyOnWriteArrayList.class)
+            .addAbstractTypeMapping(Map.class, ConcurrentHashMap.class)
+            .addAbstractTypeMapping(Set.class, CopyOnWriteArraySet.class);
 
 
         objectMapper.registerModule(simpleModule);

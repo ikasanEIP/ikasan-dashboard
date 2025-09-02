@@ -12,7 +12,7 @@ import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.context.model.SolrContextTemplateImpl;
 import org.ikasan.scheduled.context.model.SolrJobLockImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
-import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.scheduled.util.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -213,7 +213,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             init(server);
 
             SolrContextTemplateImpl solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
 
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
@@ -244,7 +244,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             init(server);
 
             SolrContextTemplateImpl solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
 
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
@@ -283,7 +283,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             init(server);
 
             SolrContextTemplateImpl solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
 
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
@@ -293,7 +293,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             this.scheduledContextService.save(scheduledContextRecord);
 
             solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
             solrContextTemplate.setName("contextName2");
             scheduledContextRecord = new SolrScheduledContextRecordImpl();
@@ -317,7 +317,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             init(server);
 
             SolrContextTemplateImpl solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
 
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
@@ -327,7 +327,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             this.scheduledContextService.save(scheduledContextRecord);
 
             solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
             solrContextTemplate.setName("contextName2");
             scheduledContextRecord = new SolrScheduledContextRecordImpl();
@@ -357,7 +357,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             init(server);
 
             SolrContextTemplateImpl solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
 
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
@@ -367,7 +367,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             this.scheduledContextService.save(scheduledContextRecord);
 
             solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
             solrContextTemplate.setName("contextName2");
             scheduledContextRecord = new SolrScheduledContextRecordImpl();
@@ -419,7 +419,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             init(server);
 
             SolrContextTemplateImpl solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
 
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
@@ -429,7 +429,7 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             this.scheduledContextService.save(scheduledContextRecord);
 
             solrContextTemplate
-                = ScheduledObjectMapperFactory.newInstance()
+                = ScheduledConcurrentObjectMapperFactory.newInstance()
                 .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
             solrContextTemplate.setName("contextName2");
             scheduledContextRecord = new SolrScheduledContextRecordImpl();

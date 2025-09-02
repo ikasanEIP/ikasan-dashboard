@@ -14,7 +14,7 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecor
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecoveryServiceImpl;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -184,7 +184,7 @@ public abstract class ContextInstanceServiceBase {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
         }
 
-        this.objectMapper = ObjectMapperFactory.newInstance();
+        this.objectMapper = ConcurrentObjectMapperFactory.newInstance();
     }
 
     /**
