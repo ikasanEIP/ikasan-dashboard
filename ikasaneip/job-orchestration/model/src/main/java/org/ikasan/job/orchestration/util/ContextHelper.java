@@ -2223,7 +2223,7 @@ public class ContextHelper {
     private static void getAllJobsInJobDependencies(LogicalGrouping logicalGrouping, List<String> results) {
         if(logicalGrouping.getAnd() != null) {
             logicalGrouping.getAnd().forEach(and -> {
-                results.add(and.getIdentifier());
+                if(and.getIdentifier() != null) results.add(and.getIdentifier());
                 if (and.getLogicalGrouping() != null) {
                     getAllJobsInJobDependencies(and.getLogicalGrouping(), results);
                 }
@@ -2232,7 +2232,7 @@ public class ContextHelper {
 
         if(logicalGrouping.getOr() != null) {
             logicalGrouping.getOr().forEach(or -> {
-                results.add(or.getIdentifier());
+                if(or.getIdentifier() != null) results.add(or.getIdentifier());
                 if (or.getLogicalGrouping() != null) {
                     getAllJobsInJobDependencies(or.getLogicalGrouping(), results);
                 }
@@ -2241,7 +2241,7 @@ public class ContextHelper {
 
         if(logicalGrouping.getNot() != null) {
             logicalGrouping.getNot().forEach(not -> {
-                results.add(not.getIdentifier());
+                if(not.getIdentifier() != null) results.add(not.getIdentifier());
                 if (not.getLogicalGrouping() != null) {
                     getAllJobsInJobDependencies(not.getLogicalGrouping(), results);
                 }
