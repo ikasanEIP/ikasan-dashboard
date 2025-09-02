@@ -10,6 +10,7 @@ import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitia
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.model.job.*;
+import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.spec.scheduled.context.model.*;
@@ -27,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class ObjectMapperFactory {
+public class ConcurrentObjectMapperFactory {
 
     /**
      * Create an ObjectMapper instance that can be used in the
@@ -68,12 +69,11 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(ContextBundle.class, ContextBundleImpl.class)
             .addAbstractTypeMapping(JobLock.class, JobLockImpl.class)
             .addAbstractTypeMapping(JobLockInstance.class, JobLockInstanceImpl.class)
-            .addAbstractTypeMapping(List.class, ArrayList.class)
-            .addAbstractTypeMapping(List.class, ArrayList.class)
+            .addAbstractTypeMapping(List.class, CopyOnWriteArrayList.class)
             .addAbstractTypeMapping(JobLockHolder.class, JobLockHolderImpl.class)
             .addAbstractTypeMapping(ReplacementPair.class, ReplacementPairImpl.class)
-            .addAbstractTypeMapping(Map.class, HashMap.class)
-            .addAbstractTypeMapping(Set.class, HashSet.class);
+            .addAbstractTypeMapping(Map.class, ConcurrentHashMap.class)
+            .addAbstractTypeMapping(Set.class, CopyOnWriteArraySet.class);
 
         objectMapper.registerModule(simpleModule);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends SchedulerJob, JOB_LOCK extends JobLock>
     extends AbstractContext<CONTEXT, JOB, JOB_LOCK>
@@ -16,11 +18,11 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected String name;
     protected String description;
     protected String timezone;
-    protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
-    protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
-    protected List<JobDependency> jobDependencies = new ArrayList<>() ;
-    protected List<ContextDependency> contextDependencies = new ArrayList<>();
-    protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>() ;
+    protected Map<Long, Long> blackoutWindowDateTimeRanges = new ConcurrentHashMap<>();
+    protected List<String> blackoutWindowCronExpressions = new CopyOnWriteArrayList<>();
+    protected List<JobDependency> jobDependencies = new CopyOnWriteArrayList<>() ;
+    protected List<ContextDependency> contextDependencies = new CopyOnWriteArrayList<>();
+    protected List<CONTEXT_PARAM> contextParameters = new CopyOnWriteArrayList<>() ;
     protected String timeWindowStart;
     protected boolean customWeekDayOfMonth = false;
     protected long contextTtlMilliseconds;

@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.slf4j.Logger;
@@ -79,7 +79,7 @@ public class ContextProvisionController
             throw new IllegalArgumentException("contextProvisionService cannot be null!");
         }
 
-        this.mapper = ObjectMapperFactory.newInstance();
+        this.mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
@@ -87,6 +87,8 @@ public class ContextProvisionController
             .allowIfSubType("org.ikasan.job.orchestration.model.profile")
             .allowIfSubType("org.ikasan.job.orchestration.model.notification")
             .allowIfSubType("org.ikasan.spec.scheduled.notification.model")
+            .allowIfSubType("java.util.concurrent.CopyOnWriteArrayList")
+            .allowIfSubType("java.util.concurrent.ConcurrentHashMap")
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();

@@ -2,7 +2,7 @@ package org.ikasan.scheduled.instance.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.scheduled.context.model.SolrContextImpl;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
     private String id;
     private long createdDateTime;
     private long updatedDateTime;

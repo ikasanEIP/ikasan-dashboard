@@ -44,9 +44,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.slf4j.Logger;
@@ -79,11 +78,12 @@ public class SchedulerJobProvisionController
             throw new IllegalArgumentException("jobProvisionService cannot be null!");
         }
 
-        this.mapper = ObjectMapperFactory.newInstance();
+        this.mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
             .allowIfSubType("org.ikasan.job.orchestration.model.context")
+            .allowIfSubType("java.util.concurrent.CopyOnWriteArrayList")
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();

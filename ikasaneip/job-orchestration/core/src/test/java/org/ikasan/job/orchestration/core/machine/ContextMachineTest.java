@@ -10,19 +10,17 @@ import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.job.orchestration.JobLockCacheServiceTestImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
-import org.ikasan.job.orchestration.model.instance.GlobalEventJobInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.LocalEventJobInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.QuartzScheduleDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -50,9 +48,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -66,7 +67,7 @@ import static org.mockito.Mockito.*;
 public class ContextMachineTest extends AbstractTest {
 
     protected ContextService contextService = new ContextService();
-    protected ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    protected ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
     protected String queueDir = "./target";
 
     protected ContextTemplateValidator contextTemplateValidator = new ContextTemplateValidator();
@@ -6564,7 +6565,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_held_and_released_local_event_job() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 
@@ -6638,7 +6639,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_reset_preceding_job_to_held_local_event_job() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 
@@ -7182,7 +7183,7 @@ public class ContextMachineTest extends AbstractTest {
      */
     @Test
     public void test_global_events_through_context_machine_via_big_queue_two_context_running() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         
         //Context1 the main initiator
@@ -7383,7 +7384,7 @@ public class ContextMachineTest extends AbstractTest {
      */
     @Test
     public void test_global_events_through_context_machine_via_big_queue_single_context() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json"));
@@ -7513,7 +7514,7 @@ public class ContextMachineTest extends AbstractTest {
      */
     @Test
     public void test_global_events_through_context_machine_via_big_queue_three_context_running_send_to_two() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         // modify the context descriptor to add GRP1 for the environment group
@@ -7775,7 +7776,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_broadcast_global_events_success() throws IOException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         // modify the context descriptor to add GRP1 for the environment group
@@ -7858,7 +7859,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_broadcast_global_events_skipped_success() throws IOException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
+        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         // modify the context descriptor to add GRP1 for the environment group
@@ -7941,6 +7942,80 @@ public class ContextMachineTest extends AbstractTest {
 
         verify(inboundQueue, times(1)).enqueue(any());
         verifyNoMoreInteractions(inboundQueue);
+    }
+
+    @Test
+    public void test_context_machine_concurrent_modifications() throws IOException, InvalidContextTemplateException, InterruptedException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        // Start a thread that is heavily exercising the ContextMachine
+        ExecutorService contextExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("test-context-event-factory"));
+        ExecutorService contextModifierExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("test-context-modifier-factory"));
+
+        try {
+            AtomicReference<Boolean> concurrentModificationExceptionEncountered = new AtomicReference<>(false);
+            AtomicReference<Boolean> generalExceptionEncountered = new AtomicReference<>(false);
+            contextExecutor.execute(() -> {
+                try {
+                    while (true) {
+                        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
+                            "agentName3", false);
+                        eventInstance.setJobStarting(true);
+
+                        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+                        Assert.assertEquals(0, events.size());
+
+                        eventInstance = scheduledProcessEventInstance("jobName3",
+                            "agentName3", true);
+
+                        contextMachine.eventReceived(eventInstance);
+                    }
+                } catch (ConcurrentModificationException concurrentModificationException) {
+                    concurrentModificationException.printStackTrace();
+                    concurrentModificationExceptionEncountered.set(true);
+                } catch (Exception e) {
+                    generalExceptionEncountered.set(true);
+                }
+            });
+
+            // Now start another thread that changes the internal structure of the context instance. In reality this would not
+            // happen as a job plan instance is immutable, however we are doing here to try to expose a potential ConcurrentModificationException.
+            contextModifierExecutor.execute(() -> {
+                while(true) {
+                    contextMachine.getContext().getContexts().add(new ContextInstanceImpl());
+                    contextMachine.getContext().getContexts().get(0).getContexts().add(new ContextInstanceImpl());
+                    contextMachine.getContext().getContexts().get(0).getContexts().get(0).getContexts().add(new ContextInstanceImpl());
+                    contextMachine.getContext().getContexts().get(0).getContexts().get(0).getContexts()
+                        .remove(contextMachine.getContext().getContexts().get(0).getContexts().get(0).getContexts().size()-1);
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        // this get thrown when we tidy up our threads so simply ignore.
+                    }
+                }
+            });
+
+            // We'll give ourselves 30 seconds
+            Thread.sleep(30000);
+
+            Assert.assertFalse("No concurrent modification exceptions should be encountered!", concurrentModificationExceptionEncountered.get());
+            Assert.assertFalse("No general exceptions should be encountered!", generalExceptionEncountered.get());
+        }
+        finally {
+            // clean up our threads
+            contextExecutor.shutdownNow();
+            contextModifierExecutor.shutdownNow();
+        }
     }
     
     protected List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachineWithChildContextId(ContextMachine contextMachine, String contextId, List<String> childContextIds

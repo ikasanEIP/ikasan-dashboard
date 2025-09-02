@@ -6,13 +6,13 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.scheduled.util.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrScheduledContextRecordImpl implements ScheduledContextRecord {
-    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
 
     @Field(SolrDaoBase.ID)

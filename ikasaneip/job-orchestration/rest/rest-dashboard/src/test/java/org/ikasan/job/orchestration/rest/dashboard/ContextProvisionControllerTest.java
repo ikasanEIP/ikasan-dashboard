@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.junit.Before;
@@ -54,7 +54,7 @@ public class ContextProvisionControllerTest {
     public void test_provision_context_success() throws Exception {
         ContextBundle contextBundle = loadContextBundle();
 
-        ObjectMapper mapper = ObjectMapperFactory.newInstance();
+        ObjectMapper mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
@@ -62,6 +62,8 @@ public class ContextProvisionControllerTest {
             .allowIfSubType("org.ikasan.job.orchestration.model.profile")
             .allowIfSubType("org.ikasan.job.orchestration.model.notification")
             .allowIfSubType("org.ikasan.spec.scheduled.notification.model")
+            .allowIfSubType("java.util.concurrent.CopyOnWriteArrayList")
+            .allowIfSubType("java.util.concurrent.ConcurrentHashMap")
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();
@@ -88,7 +90,7 @@ public class ContextProvisionControllerTest {
     public void test_provision_context_success_all() throws Exception {
         ContextBundle contextBundle = loadContextBundleAll();
 
-        ObjectMapper mapper = ObjectMapperFactory.newInstance();
+        ObjectMapper mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
@@ -96,6 +98,8 @@ public class ContextProvisionControllerTest {
             .allowIfSubType("org.ikasan.job.orchestration.model.profile")
             .allowIfSubType("org.ikasan.job.orchestration.model.notification")
             .allowIfSubType("org.ikasan.spec.scheduled.notification.model")
+            .allowIfSubType("java.util.concurrent.CopyOnWriteArrayList")
+            .allowIfSubType("java.util.concurrent.ConcurrentHashMap")
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();
