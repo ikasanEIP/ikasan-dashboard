@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.rest.dashboard.model.flow.FlowStateImpl;
 import org.ikasan.rest.dashboard.util.TestCacheAdapter;
+import org.ikasan.spec.flow.FlowState;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.annotation.Resource;
+
+import java.util.ArrayList;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -84,6 +87,56 @@ public class NotifierControllerTest extends  AbstractRestMvcTest
     public void test_exception_bad_post_json() throws Exception
     {
         String uri = "/rest/flowStates/cache";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .content("bad json")).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.BAD_REQUEST.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+        assertThat(content,containsString( "An error has occurred attempting to update dashboard flow state cache!"));
+
+    }
+
+    @Test
+    public void update_all_cache_success() throws Exception
+    {
+        String uri = "/rest/flowStatesAll/cache";
+
+        ArrayList<FlowState> flowStates = new ArrayList<>();
+
+        FlowStateImpl flowState = new FlowStateImpl();
+        flowState.setModuleName("moduleName");
+        flowState.setFlowName("flowName1");
+        flowState.setState("running");
+
+        flowStates.add(flowState);
+
+        flowState = new FlowStateImpl();
+        flowState.setModuleName("moduleName");
+        flowState.setFlowName("flowName2");
+        flowState.setState("stopped");
+
+        flowStates.add(flowState);
+
+        this.mapper = new ObjectMapper();
+        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri)
+            .contentType(MediaType.APPLICATION_JSON_VALUE).content(this.mapper.writeValueAsString(flowStates))).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        Assert.assertEquals("State equals", "running", cacheAdapter.get(flowState.getModuleName()+"flowName1"));
+        Assert.assertEquals("State equals", "stopped", cacheAdapter.get(flowState.getModuleName()+"flowName2"));
+    }
+
+    @Test
+    public void test_exception_all_bad_post_json() throws Exception
+    {
+        String uri = "/rest/flowStatesAll/cache";
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri)
             .contentType(MediaType.APPLICATION_JSON_VALUE)

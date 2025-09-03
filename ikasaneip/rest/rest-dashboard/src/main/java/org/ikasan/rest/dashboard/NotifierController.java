@@ -56,6 +56,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+
 /**
  * Module application implementing the REST contract
  */
@@ -93,6 +96,32 @@ public class NotifierController
                 , FlowStateImpl.class);
 
             this.cacheAdapter.put(flowState.getModuleName(), flowState.getFlowName(), flowState.getState());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return new ResponseEntity(new ErrorDto("An error has occurred attempting to update dashboard flow state cache! Error message ["
+                + e.getMessage() + "]")
+                , HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.PUT,
+        value = "/flowStatesAll/cache")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity updateCacheForModule(@RequestBody String statusJson)
+    {
+        try
+        {
+            logger.debug(statusJson);
+
+            List<LinkedHashMap> flowStates = this.mapper.readValue(statusJson
+                , List.class);
+
+            flowStates.forEach(flowState -> this.cacheAdapter.put((String) flowState.get("moduleName")
+                , (String) flowState.get("flowName"), (String)flowState.get("state")));
         }
         catch (Exception e)
         {

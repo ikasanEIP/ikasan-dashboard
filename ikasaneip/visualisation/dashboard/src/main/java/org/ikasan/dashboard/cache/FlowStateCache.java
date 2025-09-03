@@ -27,6 +27,12 @@ public class FlowStateCache implements Consumer<FlowState>
 
     private ExecutorService executor = Executors.newFixedThreadPool(10, new VaadinThreadFactory("FlowStateCache"));
 
+    /**
+     * This method returns an instance of FlowStateCache. It follows the Singleton pattern
+     * to ensure that only one instance of FlowStateCache is created.
+     *
+     * @return An instance of FlowStateCache
+     */
     public static FlowStateCache instance()
     {
         if(INSTANCE == null) {
@@ -43,11 +49,18 @@ public class FlowStateCache implements Consumer<FlowState>
     private ModuleControlService moduleControlRestService;
     private ModuleMetaDataService moduleMetaDataService;
 
+    /**
+     * FlowStateCache class with a private constructor that initializes a ConcurrentHashMap to store flow states.
+     */
     private FlowStateCache()
     {
         cache = new ConcurrentHashMap<>();
     }
 
+    /**
+     * Initializes the FlowStateCache by retrieving all flow metadata through the moduleMetaDataService and
+     * fetching each corresponding flow state using the moduleControlRestService.
+     */
     public void init() {
         if(this.moduleMetaDataService != null && this.moduleControlRestService != null) {
             this.moduleMetaDataService.findAll().forEach((moduleMetaData
@@ -56,6 +69,11 @@ public class FlowStateCache implements Consumer<FlowState>
         }
     }
 
+    /**
+     * Puts a FlowState object into the cache if the key is not already present or if the state has changed.
+     *
+     * @param flowState The FlowState object to be put into the cache
+     */
     public void put(FlowState flowState)
     {
         String key = flowState.getModuleName() + flowState.getFlowName();
@@ -78,6 +96,13 @@ public class FlowStateCache implements Consumer<FlowState>
     }
 
 
+    /**
+     * Retrieves the FlowState object for the given Module and Flow.
+     *
+     * @param module The Module for which to retrieve the FlowState.
+     * @param flow The Flow for which to retrieve the FlowState.
+     * @return The FlowState object associated with the provided Module and Flow.
+     */
     public FlowState get(Module module, Flow flow)
     {
         logger.debug(String.format("%s attempting to get module[%s] - flow[%s] - cache value[%s]"
@@ -92,6 +117,13 @@ public class FlowStateCache implements Consumer<FlowState>
         return this.cache.get(module.getName()+flow.getName());
     }
 
+    /**
+     * Retrieves the FlowState object for the given ModuleMetaData and flowName.
+     *
+     * @param module The ModuleMetaData for which to retrieve the FlowState.
+     * @param flowName The name of the flow for which to retrieve the FlowState.
+     * @return The FlowState object associated with the provided ModuleMetaData and flow.
+     */
     public FlowState get(ModuleMetaData module, String flowName) {
         if(module == null) {
             return null;
@@ -109,6 +141,13 @@ public class FlowStateCache implements Consumer<FlowState>
         return this.cache.get(module.getName()+flowName);
     }
 
+    /**
+     * Checks if the cache contains a specific Module and Flow.
+     *
+     * @param module The Module to check in the cache.
+     * @param flow The Flow to check in the cache.
+     * @return true if the cache contains the Module and Flow, false otherwise.
+     */
     public boolean contains(Module module, Flow flow)
     {
         logger.debug(String.format("%s check contains[%s] - result [%s]",this
@@ -116,6 +155,13 @@ public class FlowStateCache implements Consumer<FlowState>
         return this.cache.containsKey(module.getName()+flow.getName());
     }
 
+    /**
+     * Checks if the cache contains a specific ModuleMetaData and flowName.
+     *
+     * @param module The ModuleMetaData to check in the cache.
+     * @param flowName The name of the flow to check in the cache.
+     * @return true if the cache contains the ModuleMetaData and flowName, false otherwise.
+     */
     public boolean contains(ModuleMetaData module, String flowName)
     {
         if(module == null) {
@@ -126,6 +172,13 @@ public class FlowStateCache implements Consumer<FlowState>
         return this.cache.containsKey(module.getName()+flowName);
     }
 
+    /**
+     * Checks if the cache contains a specific module name and flow name.
+     *
+     * @param moduleName The name of the module to check in the cache.
+     * @param flowName The name of the flow to check in the cache.
+     * @return true if the cache contains the module name and flow name, false otherwise.
+     */
     public boolean contains(String moduleName, String flowName)
     {
         logger.debug(String.format("%s check contains[%s] - result [%s]",this
@@ -141,15 +194,32 @@ public class FlowStateCache implements Consumer<FlowState>
         this.put(flowState);
     }
 
+    /**
+     * Sets the ModuleControlService for interacting with module controls.
+     *
+     * @param moduleControlRestService The ModuleControlService to be set.
+     */
     public void setModuleControlRestService(ModuleControlService moduleControlRestService)
     {
         this.moduleControlRestService = moduleControlRestService;
     }
 
+    /**
+     * Sets the ModuleMetaDataService to be used by this object.
+     *
+     * @param moduleMetaDataService The ModuleMetaDataService to be set
+     */
     public void setModuleMetaDataService(ModuleMetaDataService moduleMetaDataService) {
         this.moduleMetaDataService = moduleMetaDataService;
     }
 
+    /**
+     * Refreshes the flow state from the specified data source based on the module name, flow name, and context URL.
+     *
+     * @param moduleName The name of the module for which to refresh the flow state.
+     * @param flowName The name of the flow for which to refresh the state.
+     * @param contextUrl The URL of the context from which to fetch the flow state.
+     */
     private void refreshFromSource(String moduleName, String flowName, String contextUrl)
     {
         Optional<FlowDto> flowDto;
