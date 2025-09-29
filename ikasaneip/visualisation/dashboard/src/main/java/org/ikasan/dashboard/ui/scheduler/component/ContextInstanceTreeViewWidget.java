@@ -757,8 +757,17 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         errorAcknowledgedPositionedDialog.open();
                     });
 
-                    horizontalLayout.add(acknowledgedIcon);
-                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, acknowledgedIcon);
+                    Button systemEventButton = new Button();
+                    systemEventButton.getElement().appendChild(VaadinIcon.ELLIPSIS_DOTS_V.create().getElement());
+                    systemEventButton.getElement().setAttribute("title", getTranslation("tab-label.system-events", UI.getCurrent().getLocale()));
+                    systemEventButton.addClickListener(event -> {
+                        JobSystemEventHistoryDialog systemEventHistoryDialog = new JobSystemEventHistoryDialog(this.contextInstance,
+                                (SchedulerJobInstance) value, this.systemEventSearchService);
+                        systemEventHistoryDialog.open();
+                    });
+
+                    horizontalLayout.add(acknowledgedIcon, systemEventButton);
+                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, acknowledgedIcon, systemEventButton);
 
                     this.statusDivMap.put(componentKey, statusDiv);
                     this.errorAcknowledgedMap.put(componentKey, acknowledgedIcon);
@@ -1117,7 +1126,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                 contextMachine.saveContext();
                                 ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
                                 this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]"
-                                    ,this.contextInstance.getName() , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                                    ,this.contextInstance.getName() , contextInstance.getName(), this.contextInstance.getId()), this.authentication.getName());
                             }
                         }
                     } catch (Exception e) {
@@ -1186,7 +1195,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                     }
                                 }
                                 this.systemEventLogger.logEvent(SystemEventConstants.CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END, String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]"
-                                    , this.contextInstance.getName(), contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                                    , this.contextInstance.getName(), contextInstance.getName(), this.contextInstance.getId()), this.authentication.getName());
                             }
                         } catch (Exception e) {
                             e.printStackTrace();

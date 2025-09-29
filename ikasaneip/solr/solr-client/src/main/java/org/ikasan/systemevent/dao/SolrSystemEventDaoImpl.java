@@ -14,7 +14,9 @@ import org.ikasan.systemevent.model.SolrSystemEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements SystemEventSearchDao
 {
@@ -116,12 +118,16 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
 
         if(filter.getSearchTerm() != null && !filter.getSearchTerm().isEmpty()) {
             queryBuffer.append(AND);
-            queryBuffer.append(PAYLOAD_CONTENT).append(COLON);
-            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getSearchTerm()))queryBuffer.append("\"");
-            queryBuffer.append(WILDCARD)
-                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getSearchTerm()))
-                .append(WILDCARD);
-            if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(filter.getSearchTerm()))queryBuffer.append("\"");
+            queryBuffer.append(Arrays.stream(filter.getSearchTerm().split(" ")).map(term -> {
+                StringBuffer termBuffer = new StringBuffer();
+                termBuffer.append(PAYLOAD_CONTENT).append(COLON);
+                if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(term))termBuffer.append("\"");
+                termBuffer.append(WILDCARD)
+                    .append(SolrSpecialCharacterEscapeUtil.escape(term))
+                    .append(WILDCARD);
+                if(SolrSpecialCharacterEscapeUtil.containsSpecialChar(term))termBuffer.append("\"");
+                return termBuffer.toString();
+            }).collect(Collectors.joining(" AND ")));
         }
 
         if(filter.getEndTime() > 0 ) {

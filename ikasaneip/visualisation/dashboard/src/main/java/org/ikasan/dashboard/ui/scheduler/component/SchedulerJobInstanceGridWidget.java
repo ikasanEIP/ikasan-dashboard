@@ -931,7 +931,16 @@ public class SchedulerJobInstanceGridWidget extends Div
                 }
             }
 
-            horizontalLayout.add(schedulerStatusDiv);
+            Button systemEventButton = new Button();
+            systemEventButton.getElement().appendChild(VaadinIcon.ELLIPSIS_DOTS_V.create().getElement());
+            systemEventButton.getElement().setAttribute("title", getTranslation("tab-label.system-events", UI.getCurrent().getLocale()));
+            systemEventButton.addClickListener(event -> {
+                JobSystemEventHistoryDialog systemEventHistoryDialog = new JobSystemEventHistoryDialog(this.contextInstance,
+                    schedulerJobInstanceRecord.getSchedulerJobInstance(), this.systemEventSearchService);
+                systemEventHistoryDialog.open();
+            });
+
+            horizontalLayout.add(schedulerStatusDiv,systemEventButton);
 
             if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) &&
@@ -958,7 +967,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             .setResizable(true)
             .setSortable(true)
             .setKey("status")
-            .setFlexGrow(4);
+            .setFlexGrow(6);
 
         HeaderRow hr = schedulerJobInstanceFilteringGrid.appendHeaderRow();
         if(this.contextInstance.isUseDisplayName()) {

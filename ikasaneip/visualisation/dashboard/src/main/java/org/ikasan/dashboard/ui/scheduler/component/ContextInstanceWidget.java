@@ -1195,6 +1195,13 @@ public class ContextInstanceWidget extends VerticalLayout
             SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE);
 
+        Button systemEventsButton = new Button("System Events", VaadinIcon.CROSSHAIRS.create());
+        systemEventsButton.addClickListener(event -> {
+            ContextInstanceSystemEventHistoryDialog contextInstanceSystemEventHistoryDialog
+                = new ContextInstanceSystemEventHistoryDialog(this.contextInstance, this.systemEventSearchService);
+            contextInstanceSystemEventHistoryDialog.open();
+        });
+
         Button actionsButton = new Button(getTranslation("button.actions", UI.getCurrent().getLocale()), VaadinIcon.MENU.create());
         actionsButton.setId("actionsButton");
         actionsButton.addClickListener(buttonClickEvent -> {
@@ -1220,7 +1227,7 @@ public class ContextInstanceWidget extends VerticalLayout
         actionPopup.add(popupLayout);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(actionsButton);
+        buttonLayout.add(systemEventsButton, actionsButton);
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
 
