@@ -185,16 +185,6 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
                 .append(TO).append(this.atEndOfDay(new Date(filter.getModifiedTimestamp()))).append("]");
         }
 
-//        if(filter.getStartTime() > 0) {
-//            queryString.append(AND).append(START_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getStartTime())))
-//                .append(TO).append(this.atEndOfDay(new Date(filter.getStartTime()))).append("]");
-//        }
-//
-//        if(filter.getEndTime() > 0) {
-//            queryString.append(AND).append(END_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getEndTime())))
-//                .append(TO).append(this.atEndOfDay(new Date(filter.getEndTime()))).append("]");
-//        }
-
         if(filter.getStartTimeStart() > 0 && filter.getStartTimeEnd() > 0) {
             queryString.append(AND).append(START_TIME).append(COLON).append("[").append(filter.getStartTimeStart())
                 .append(TO).append(filter.getStartTimeEnd()).append("]");
