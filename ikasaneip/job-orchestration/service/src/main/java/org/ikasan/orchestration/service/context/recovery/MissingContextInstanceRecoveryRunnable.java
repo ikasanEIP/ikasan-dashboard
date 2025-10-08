@@ -6,11 +6,16 @@ import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -22,10 +27,15 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.List;
+
+import static org.ikasan.solr.dao.SolrGeneralDaoImpl.DESCENDING;
+import static org.ikasan.spec.solr.SolrDaoBase.START_TIME;
 
 public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServiceBase implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(MissingContextInstanceRecoveryRunnable.class);
@@ -109,10 +119,25 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             Date now = timeService.getDateNow();
             if(!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                 && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(),now)) {
-                initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, true,null);
+                if(this.scheduledContextRecord.getContext().isEndJobPlanUponCompletion()) {
+                    ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+                    filter.setContextInstanceNames(List.of(this.scheduledContextRecord.getContext().getName()));
+                    filter.setStatus(InstanceStatus.ENDED.toString());
+                    SearchResults<ScheduledContextInstanceRecord> results = super.scheduledContextInstanceService.getScheduledContextInstancesByFilter(filter, 1, 0, START_TIME, DESCENDING);
 
-                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
-                    , contextInstance.getTimezone(), contextInstance.getId());
+                    if(results != null && results.getTotalNumberOfResults() > 0 && QuartzTimeWindowChecker.withinOperatingWindow(contextInstance.getTimezone()
+                        , contextInstance.getTimeWindowStart(), contextInstance.getContextTtlMilliseconds(), new Date(results.getResultList().get(0).getContextInstance().getStartTime()))) {
+                        LOG.info(String.format("Job Plan[%] that has been configured to end automatically when complete, with start cron[%s] and ttl[%s milliseconds]," +
+                            " will not create a new job plan instance as instance[%s] has already run within this time window.", contextInstance.getName(), contextInstance.getTimeWindowStart()
+                            , contextInstance.getContextTtlMilliseconds(), contextInstance.getId()));
+                    }
+                    else {
+                        this.initialiseContextInstanceAndRegisterEndJob(contextInstance);
+                    }
+                }
+                else {
+                    this.initialiseContextInstanceAndRegisterEndJob(contextInstance);
+                }
             }
             else {
                 LOG.info(String.format("ContextTemplate [%s] falls withing a blackout time window and will not be registered!"
@@ -123,5 +148,18 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             // TODO hook in notification here
             LOG.error(String.format("Got error back filling context [%s]. Error: %s", this.scheduledContextRecord.getContextName(), e));
         }
+    }
+
+    /**
+     * Initializes the context instance and registers the end job for the given context instance.
+     *
+     * @param contextInstance the context instance to be initialized and registered with an end job
+     * @throws Exception if an error occurs during initialization or job registration
+     */
+    private void initialiseContextInstanceAndRegisterEndJob(ContextInstance contextInstance) throws Exception {
+        initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, true, null);
+
+        contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+            , contextInstance.getTimezone(), contextInstance.getId());
     }
 }
