@@ -91,6 +91,8 @@ public class ContextProvisionController
             .allowIfSubType("java.util.concurrent.ConcurrentHashMap")
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
+            .allowIfSubType("java.util.HashSet")
+            .allowIfSubType("java.util.concurrent.CopyOnWriteArraySet")
             .build();
         this.mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
