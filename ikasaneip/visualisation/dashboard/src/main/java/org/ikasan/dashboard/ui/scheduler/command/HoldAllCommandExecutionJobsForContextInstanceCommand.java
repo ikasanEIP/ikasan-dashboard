@@ -11,6 +11,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateCha
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.scheduled.instance.service.SolrSchedulerJobInstanceServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -18,10 +19,13 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class HoldAllCommandExecutionJobsForContextInstanceCommand {
+    private Logger logger = LoggerFactory.getLogger(HoldAllCommandExecutionJobsForContextInstanceCommand.class);
     private ContextInstance contextInstance;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -68,10 +72,11 @@ public class HoldAllCommandExecutionJobsForContextInstanceCommand {
                         });
                     }
 
+                    ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
                     this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
                         , contextMachine.getContext().getName(), contextMachine.getContext().getId()), this.ikasanAuthentication.getName());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error(String.format("An error has occurred holding all jobs for job plan[%s] with instance id[%s]!", contextInstance.getName(), contextInstance.getId()), e);
                     error = true;
                 } finally {
                     if (error) {

@@ -878,7 +878,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    public void test_put_jobs_on_hold_for_context_instance_the_query_for_jobs_to_release() throws SchedulerJobInstanceInitialisationException {
+    public void test_put_jobs_on_hold_for_context_instance_then_query_for_jobs_to_release() throws SchedulerJobInstanceInitialisationException {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
         this.insertInternalEventDrivenRecords("internal", 400, "context",null);
@@ -958,6 +958,112 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
 
        AtomicInteger numInternalJobs = new AtomicInteger();
        AtomicInteger numLocalJobs = new AtomicInteger();
+        schedulerJobInstanceRecords.getResultList()
+            .forEach(job -> {
+                if(job.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+                    Assert.assertEquals(true, job.getSchedulerJobInstance().isHeld());
+                    Assert.assertEquals(InstanceStatus.ON_HOLD, job.getSchedulerJobInstance().getStatus());
+                    Assert.assertEquals(InstanceStatus.ON_HOLD.name(), job.getStatus());
+                    numInternalJobs.getAndIncrement();
+                }
+                if(job.getSchedulerJobInstance() instanceof LocalEventJobInstance) {
+                    Assert.assertEquals(true, job.getSchedulerJobInstance().isHeld());
+                    Assert.assertEquals(InstanceStatus.ON_HOLD, job.getSchedulerJobInstance().getStatus());
+                    Assert.assertEquals(InstanceStatus.ON_HOLD.name(), job.getStatus());
+                    numLocalJobs.getAndIncrement();
+                }
+            });
+
+        Assert.assertEquals(400, numInternalJobs.get());
+        Assert.assertEquals(77, numLocalJobs.get());
+
+        List<SchedulerJobInstanceRecord> jobsToRelease
+            = this.service.getJobsToReleaseWithinContext(contextInstance, contextInstance.getName());
+
+        Assert.assertEquals(477, jobsToRelease.size());
+    }
+
+    @Test
+    public void test_put_jobs_on_hold_including_local_event_jobs_with_name_clash_for_context_instance_then_query_for_jobs_to_release() throws SchedulerJobInstanceInitialisationException {
+        this.insertFileEventRecords("file", 135, "context");
+        this.insertQuartzScheduleEventRecords("quartz", 75, "context");
+        this.insertInternalEventDrivenRecords("internal", 400, "context",null);
+        this.insertGlobalEventRecords("global", 10, "context", false);
+
+        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
+        ContextInstanceImpl contextInstance = new ContextInstanceImpl();
+        contextInstance.setName("context");
+        contextInstance.setId("contextInstanceId");
+        contextInstance.setScheduledJobs(this.solrSchedulerJobDao.findByContext("context", 1000, 0).getResultList()
+            .stream()
+            .map(schedulerJobRecord -> {
+                try {
+                    SchedulerJobInstance schedulerJobInstance = null;
+                    if (schedulerJobRecord.getJob() instanceof SolrFileEventDrivenJobImpl) {
+                        schedulerJobInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrFileEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
+                        schedulerJobInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
+                        schedulerJobInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class);
+                    }
+                    schedulerJobInstance.setChildContextName("context");
+                    return schedulerJobInstance;
+                }
+                catch (Exception e) {
+                    return null;
+                }
+            })
+            .collect(Collectors.toList())
+        );
+
+        ContextTemplate contextTemplate = new ContextTemplateImpl();
+        contextTemplate.setName("context");
+
+        for(int i=0; i<77; i++ ) {
+            LocalEventJobInstance localEventJobInstance = new LocalEventJobInstanceImpl();
+            localEventJobInstance.setJobName("localEventJob-internal"+i);
+            localEventJobInstance.setContextName("context");
+            contextInstance.getScheduledJobs().add(localEventJobInstance);
+            contextInstance.getScheduledJobsMap().put(localEventJobInstance.getIdentifier(), localEventJobInstance);
+
+            LocalEventJob localEventJob = new LocalEventJobImpl();
+            localEventJob.setJobName("localEventJob-internal"+i);
+            localEventJob.setContextName("context");
+            contextTemplate.getScheduledJobs().add(localEventJob);
+            contextTemplate.getScheduledJobsMap().put(localEventJob.getIdentifier(), localEventJob);
+        }
+
+        service.initialiseSchedulerJobInstancesForContext(contextTemplate, contextInstance, new SolrSchedulerJobInstancesInitialisationParametersImpl(false));
+
+        SearchResults<SchedulerJobInstanceRecord> schedulerJobInstanceRecords
+            = this.service.getSchedulerJobInstancesByContextInstanceId(contextInstance.getId()
+            , -1, -1, null, null);
+
+
+        schedulerJobInstanceRecords.getResultList()
+            .forEach(job -> {
+                if(job.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+                    Assert.assertEquals(false, job.getSchedulerJobInstance().isHeld());
+                    Assert.assertEquals(InstanceStatus.WAITING, job.getSchedulerJobInstance().getStatus());
+                    Assert.assertEquals(InstanceStatus.WAITING.name(), job.getStatus());
+                }
+                if(job.getSchedulerJobInstance() instanceof LocalEventJobInstance) {
+                    Assert.assertEquals(false, job.getSchedulerJobInstance().isHeld());
+                    Assert.assertEquals(InstanceStatus.WAITING, job.getSchedulerJobInstance().getStatus());
+                    Assert.assertEquals(InstanceStatus.WAITING.name(), job.getStatus());
+                }
+            });
+
+        this.service.holdJobsWithinContext(contextInstance, contextInstance.getName());
+
+        schedulerJobInstanceRecords = this.service.getSchedulerJobInstancesByContextInstanceId
+            (contextInstance.getId(), -1, -1, null, null);
+
+        AtomicInteger numInternalJobs = new AtomicInteger();
+        AtomicInteger numLocalJobs = new AtomicInteger();
         schedulerJobInstanceRecords.getResultList()
             .forEach(job -> {
                 if(job.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
