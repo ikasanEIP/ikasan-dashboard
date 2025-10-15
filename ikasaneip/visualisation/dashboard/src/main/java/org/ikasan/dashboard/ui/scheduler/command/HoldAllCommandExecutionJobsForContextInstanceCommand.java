@@ -4,9 +4,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import org.ikasan.dashboard.internationalisation.IkasanI18NProvider;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -23,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class HoldAllCommandExecutionJobsForContextInstanceCommand {
     private Logger logger = LoggerFactory.getLogger(HoldAllCommandExecutionJobsForContextInstanceCommand.class);
@@ -54,40 +58,52 @@ public class HoldAllCommandExecutionJobsForContextInstanceCommand {
         confirmDialog.open();
 
         confirmDialog.addConfirmListener(confirmEvent -> {
-            ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextInstanceId(this.contextInstance.getId());
+            ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+            dialog.open(this.ikasanI18NProvider.getTranslation("progress-dialog.hold-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                this.ikasanI18NProvider.getTranslation("progress-dialog.hold-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
-            if (contextMachine != null) {
-                boolean error = false;
-                try {
-                    List<SchedulerJobInstanceRecord> updatedRecords = this.schedulerJobInstanceService
-                        .holdJobsWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
+            final UI current = UI.getCurrent();
+            Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceTreeViewWidget"));
+            executor.execute(() -> {
+                ContextMachine contextMachine = ContextMachineCache.instance()
+                    .getByContextInstanceId(this.contextInstance.getId());
 
-                    if (updatedRecords.size() > 0) {
-                        updatedRecords.forEach(schedulerJobInstanceRecord -> {
-                            SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
-                                = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
-                                contextMachine.getContext(), InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
-                            SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+                if (contextMachine != null) {
+                    boolean error = false;
+                    try {
+                        List<SchedulerJobInstanceRecord> updatedRecords = this.schedulerJobInstanceService
+                            .holdJobsWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
+
+                        if (updatedRecords.size() > 0) {
+                            updatedRecords.forEach(schedulerJobInstanceRecord -> {
+                                SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+                                    = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
+                                    contextMachine.getContext(), InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
+                                SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+                            });
+                        }
+
+                        ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
+                            , contextMachine.getContext().getName(), contextMachine.getContext().getId()), this.ikasanAuthentication.getName());
+                    } catch (Exception e) {
+                        logger.error(String.format("An error has occurred holding all jobs for job plan[%s] with instance id[%s]!", contextInstance.getName(), contextInstance.getId()), e);
+                        error = true;
+                    } finally {
+                        boolean finalError = error;
+                        current.access(() -> {
+                            dialog.close();
+                            if (finalError) {
+                                NotificationHelper.showUserNotification(this.ikasanI18NProvider.getTranslation("notification.all-jobs-hold-error"
+                                    , UI.getCurrent().getLocale()));
+                            } else {
+                                NotificationHelper.showUserNotification(this.ikasanI18NProvider.getTranslation("notification.all-jobs-successfully-held"
+                                    , UI.getCurrent().getLocale()));
+                            }
                         });
                     }
-
-                    ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
-                    this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                        , contextMachine.getContext().getName(), contextMachine.getContext().getId()), this.ikasanAuthentication.getName());
-                } catch (Exception e) {
-                    logger.error(String.format("An error has occurred holding all jobs for job plan[%s] with instance id[%s]!", contextInstance.getName(), contextInstance.getId()), e);
-                    error = true;
-                } finally {
-                    if (error) {
-                        NotificationHelper.showUserNotification(this.ikasanI18NProvider.getTranslation("notification.all-jobs-hold-error"
-                            , UI.getCurrent().getLocale()));
-                    } else {
-                        NotificationHelper.showUserNotification(this.ikasanI18NProvider.getTranslation("notification.all-jobs-successfully-held"
-                            , UI.getCurrent().getLocale()));
-                    }
                 }
-            }
+            });
         });
     }
 }
