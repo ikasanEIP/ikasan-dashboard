@@ -355,7 +355,8 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
             return contextualisedSchedulerJobInstances;
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.error(String.format("An exception has occurred " +
+                "attempting to initialise scheduler job instances for context[%s]", contextInstance.getName()), e);
             throw new SchedulerJobInstanceInitialisationException(String.format("An exception has occurred " +
                 "attempting to initialise scheduler job instances for context[%s]", contextInstance.getName()), e);
         }
@@ -468,7 +469,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                     instance.setHeld(true);
 
                     if(instance instanceof LocalEventJobInstance) {
-                        instance.setChildContextNames(ContextHelper.getContextsWhereJobFilterMatchResides
+                        instance.setChildContextNames(ContextHelper.getContextsWhereJobNameMatchResides
                             (contextInstance, instance.getJobName()));
                     }
 

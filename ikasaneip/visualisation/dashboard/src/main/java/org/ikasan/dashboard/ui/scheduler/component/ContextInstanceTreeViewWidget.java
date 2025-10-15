@@ -1130,7 +1130,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             }
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error(String.format("An error has occurred holding all jobs for job plan[%s] with instance id[%s]!", contextInstance.getName(), contextInstance.getId()), e);
                         error = true;
                     } finally {
                         boolean finalError = error;
