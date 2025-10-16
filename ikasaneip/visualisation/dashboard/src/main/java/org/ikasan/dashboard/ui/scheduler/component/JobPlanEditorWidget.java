@@ -17,17 +17,16 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import de.f0rce.ace.util.AceCursorPosition;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.model.JsonValidationError;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.validation.ContextError;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -36,13 +35,18 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class JobPlanEditorWidget extends VerticalLayout {
+    private Logger logger = LoggerFactory.getLogger(JobPlanEditorWidget.class);
 
     private ScheduledContextService scheduledContextService;
     private SchedulerJobService<SchedulerJobRecord> schedulerJobService;
@@ -143,28 +147,56 @@ public class JobPlanEditorWidget extends VerticalLayout {
                 NotificationHelper.showUserNotification(getTranslation("notification.cannot-save-job-plan-template-json", UI.getCurrent().getLocale()));
             }
             else  {
-                try {
-                    ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(this.contextTemplate.getName());
+                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                dialog.open(getTranslation("progress-dialog.saving-job-plan", UI.getCurrent().getLocale()),
+                    getTranslation("progress-dialog.saving-job-plan-body", UI.getCurrent().getLocale()));
 
-                    ContextTemplate beforeUpdate = scheduledContextRecord.getContext();
-
-                    scheduledContextRecord.setContext(contextTemplate);
-                    this.scheduledContextService.save(scheduledContextRecord);
-
+                final UI current = UI.getCurrent();
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceTreeViewWidget"));
+                executor.execute(() -> {
+                    boolean error = false;
                     try {
+                        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(this.contextTemplate.getName());
+
+                        ContextTemplate beforeUpdate = scheduledContextRecord.getContext();
+
+                        scheduledContextRecord.setContext(contextTemplate);
+
+                        SearchResults<SchedulerJobRecord> searchResults = (SearchResults<SchedulerJobRecord>) this.schedulerJobService
+                            .findByContext(contextTemplate.getName(), -1, -1);
+
+                        List<SchedulerJob> jobs = searchResults.getResultList().stream()
+                            .map(record -> record.getJob())
+                            .collect(Collectors.toList());
+
+                        // Helper method to populate the contextNames collection on each of the scheduler jobs.
+                        ContextHelper.populateChildContextNamesOnSchedulerJobs(contextTemplate,
+                            jobs);
+
+                        this.schedulerJobService.save(jobs, ikasanAuthentication.getName());
+                        this.scheduledContextService.save(scheduledContextRecord);
+
                         this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_SAVED, String.format("Job Plan Saved. Parent Job Plan [%s]. Name of Saved Job Plan [%s].\nBefore\n[%s]\nAfter\n[%s]"
                             , this.contextTemplate.getName(), this.contextTemplate.getName(), this.objectMapper.writeValueAsString(beforeUpdate), this.objectMapper.writeValueAsString(contextTemplate)), this.ikasanAuthentication.getName());
-                    }
-                    catch (JsonProcessingException e) {
-                        // Ignore json exception
-                    }
 
-                    ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-                NotificationHelper.showUserNotification(getTranslation("notification.job-plan-successfully-saved", UI.getCurrent().getLocale()));
+
+                        ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                    } catch (Exception e) {
+                        logger.error(String.format("An error has occurred saving job plan[%s]!", contextTemplate.getName()), e);
+                        error = true;
+                    } finally {
+                        boolean finalError = error;
+                        current.access(() -> {
+                            dialog.close();
+                            if (finalError) {
+                                NotificationHelper.showUserNotification(getTranslation("notification.job-plan-save-error"
+                                    , UI.getCurrent().getLocale()));
+                            } else {
+                                NotificationHelper.showUserNotification(getTranslation("notification.job-plan-successfully-saved", UI.getCurrent().getLocale()));
+                            }
+                        });
+                    }
+                });
             }
         });
 
