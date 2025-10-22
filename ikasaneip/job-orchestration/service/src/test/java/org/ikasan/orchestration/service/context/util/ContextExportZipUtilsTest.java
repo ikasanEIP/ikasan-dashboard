@@ -5,6 +5,7 @@ import org.apache.commons.io.IOUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.orchestration.service.utils.TestSchedulerJobRecord;
 import org.ikasan.scheduled.general.SearchResultsImpl;
@@ -45,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -75,8 +77,7 @@ public class ContextExportZipUtilsTest {
     String contextName;
     ContextTemplateImpl context;
 
-    @Before
-    public void setupFixture() throws IOException {
+    public void setupFixture(boolean withGlobalEvents) throws IOException {
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         contextName = "HelloContext";
         String jsonContext = this.loadDataFile("/context.json");
@@ -86,7 +87,7 @@ public class ContextExportZipUtilsTest {
         record.setContext(context);
         record.setContextName(contextName);
 
-        SearchResultsImpl searchResults = new SearchResultsImpl(createListOfJobRecords(contextName), 0, 100);
+        SearchResultsImpl searchResults = new SearchResultsImpl(createListOfJobRecords(context, withGlobalEvents), 0, 100);
 
         doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 1000, 0);
 
@@ -104,8 +105,62 @@ public class ContextExportZipUtilsTest {
     }
 
     @Test
-    public void test_export_zip_with_tokens() throws Exception {
-        setupFixture();
+    public void test_export_zip_with_tokens_no_global_events() throws Exception {
+        setupFixture(false);
+
+        ByteArrayOutputStream result = ContextExportZipUtils.createZipFile(context, contextName, "downloadName", "."
+            , schedulerJobService, this.emailNotificationDetailsService, this.emailNotificationContextService
+            , this.contextProfileService, 1000, true, false);
+
+        Assert.assertNotNull(result);
+
+        ZipInputStream stream = this.resolveZipInputStream(result.toByteArray());
+
+        this.assertDirectoryStructure(stream, List.of("downloadName/", "downloadName/context/",
+            "downloadName/notification/", "downloadName/profiles/", "downloadName/jobs/", "downloadName/jobs/file/",
+            "downloadName/jobs/internal/", "downloadName/jobs/internalTemplate/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
+            "downloadName/notification_details/"));
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalJobs = this.getJobs(stream, "downloadName/jobs/internal/", InternalEventDrivenJob.class);
+        Assert.assertEquals(3, internalJobs.size());
+        this.assertJobsWithTokensCorrect(internalJobs);
+        this.assertJobsWithNoChildContexts(internalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> quartzJobs = this.getJobs(stream, "downloadName/jobs/quartz/", QuartzScheduleDrivenJob.class);
+        Assert.assertEquals(3, quartzJobs.size());
+        this.assertJobsWithTokensCorrect(quartzJobs);
+        this.assertJobsWithNoChildContexts(quartzJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> fileJobs = this.getJobs(stream, "downloadName/jobs/file/", FileEventDrivenJob.class);
+        Assert.assertEquals(3, fileJobs.size());
+        this.assertJobsWithTokensCorrect(fileJobs);
+        this.assertJobsWithNoChildContexts(fileJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> globalJobs = this.getJobs(stream, "downloadName/jobs/global/", GlobalEventJob.class);
+        Assert.assertEquals(0, globalJobs.size());
+        this.assertJobsWithTokensCorrect(globalJobs);
+        this.assertJobsWithNoChildContexts(globalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        ContextTemplate contextTemplate = this.getContext(stream, "downloadName/context/downloadName.json");
+        Assert.assertNotNull(contextTemplate);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalTemplateJobs = this.getJobs(stream, "downloadName/jobs/internalTemplate/", GlobalEventJob.class);
+        Assert.assertEquals(3, internalTemplateJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
+
+        JSONAssert.assertEquals(loadDataFile("/context-with-tokens.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void test_export_zip_with_tokens_with_global_events() throws Exception {
+        setupFixture(true);
 
         ByteArrayOutputStream result = ContextExportZipUtils.createZipFile(context, contextName, "downloadName", "."
             , schedulerJobService, this.emailNotificationDetailsService, this.emailNotificationContextService
@@ -152,14 +207,77 @@ public class ContextExportZipUtilsTest {
         Map<String, Object> internalTemplateJobs = this.getJobs(stream, "downloadName/jobs/internalTemplate/", GlobalEventJob.class);
         Assert.assertEquals(3, internalTemplateJobs.size());
         this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
-
-        JSONAssert.assertEquals(loadDataFile("/context-with-tokens.json")
-            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
 
     @Test
-    public void test_export_zip_with_tokens_and_spliting_subcontexts() throws Exception {
-        setupFixture();
+    public void test_export_zip_with_tokens_and_splitting_sub_contexts_no_global_events() throws Exception {
+        setupFixture(false);
+
+        ByteArrayOutputStream result = ContextExportZipUtils.createZipFile(context, contextName, "downloadName", "."
+            , schedulerJobService, this.emailNotificationDetailsService, this.emailNotificationContextService
+            , this.contextProfileService, 1000, true, true);
+
+        Assert.assertNotNull(result);
+
+        ZipInputStream stream = this.resolveZipInputStream(result.toByteArray());
+
+        this.assertDirectoryStructure(stream, List.of("downloadName/", "downloadName/context/", "downloadName/context/HelloContext/",
+            "downloadName/context/HelloContext/CONTEXT-1848727981/","downloadName/context/HelloContext/CONTEXT-1590773100/",
+            "downloadName/context/HelloContext/CONTEXT-1182789380/","downloadName/context/HelloContext/CONTEXT-2139852148/",
+            "downloadName/context/HelloContext/CONTEXT-195330380/", "downloadName/context/HelloContext/CONTEXT--715116816/",
+            "downloadName/context/HelloContext/CONTEXT-1182789416/",
+            "downloadName/notification/", "downloadName/profiles/", "downloadName/jobs/", "downloadName/jobs/file/",
+            "downloadName/jobs/internal/", "downloadName/jobs/internalTemplate/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
+            "downloadName/notification_details/"));
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalJobs = this.getJobs(stream, "downloadName/jobs/internal/", InternalEventDrivenJob.class);
+        Assert.assertEquals(3, internalJobs.size());
+        this.assertJobsWithTokensCorrect(internalJobs);
+        this.assertJobsWithNoChildContexts(internalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> quartzJobs = this.getJobs(stream, "downloadName/jobs/quartz/", QuartzScheduleDrivenJob.class);
+        Assert.assertEquals(3, quartzJobs.size());
+        this.assertJobsWithTokensCorrect(quartzJobs);
+        this.assertJobsWithNoChildContexts(quartzJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> fileJobs = this.getJobs(stream, "downloadName/jobs/file/", FileEventDrivenJob.class);
+        Assert.assertEquals(3, fileJobs.size());
+        this.assertJobsWithTokensCorrect(fileJobs);
+        this.assertJobsWithNoChildContexts(fileJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> globalJobs = this.getJobs(stream, "downloadName/jobs/global/", GlobalEventJob.class);
+        Assert.assertEquals(0, globalJobs.size());
+        this.assertJobsWithTokensCorrect(globalJobs);
+        this.assertJobsWithNoChildContexts(globalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalTemplateJobs = this.getJobs(stream, "downloadName/jobs/internalTemplate/", GlobalEventJob.class);
+        Assert.assertEquals(3, internalTemplateJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
+
+        ContextTemplate helloContext = getContextTemplateForFile(result, stream, "downloadName/context/HelloContext.json");
+        Assert.assertNotNull(helloContext);
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-195330380/CONTEXT--1250033421.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1182789380/CONTEXT--663833459.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1182789416/CONTEXT-613708632.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1590773100/CONTEXT-1195088490.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1590773100/CONTEXT-1195088490.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1848727981/CONTEXT-774294372.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-2139852148/CONTEXT-1065418539.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT--715116816/CONTEXT-521366615.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-195330380.json"));
+
+        JSONAssert.assertEquals(loadDataFile("/context-with-tokens-subcontext-split.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(helloContext), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void test_export_zip_with_tokens_and_splitting_sub_contexts_with_global_events() throws Exception {
+        setupFixture(true);
 
         ByteArrayOutputStream result = ContextExportZipUtils.createZipFile(context, contextName, "downloadName", "."
             , schedulerJobService, this.emailNotificationDetailsService, this.emailNotificationContextService
@@ -218,19 +336,66 @@ public class ContextExportZipUtilsTest {
         Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-2139852148/CONTEXT-1065418539.json"));
         Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT--715116816/CONTEXT-521366615.json"));
         Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-195330380.json"));
-
-        JSONAssert.assertEquals(loadDataFile("/context-with-tokens-subcontext-split.json")
-            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(helloContext), JSONCompareMode.LENIENT);
     }
 
-    private ContextTemplate getContextTemplateForFile(ByteArrayOutputStream result, ZipInputStream stream, String fileName) throws IOException {
+
+    @Test
+    public void test_export_zip_without_tokens_no_global_events() throws Exception {
+        setupFixture(false);
+
+        ByteArrayOutputStream result = ContextExportZipUtils.createZipFile(context, contextName, "downloadName", "."
+            , schedulerJobService, this.emailNotificationDetailsService, this.emailNotificationContextService
+            , this.contextProfileService, 1000, false, false);
+
+        Assert.assertNotNull(result);
+
+        ZipInputStream stream = this.resolveZipInputStream(result.toByteArray());
+
+        this.assertDirectoryStructure(stream, List.of("downloadName/", "downloadName/context/",
+            "downloadName/notification/", "downloadName/profiles/", "downloadName/jobs/", "downloadName/jobs/file/",
+            "downloadName/jobs/internal/", "downloadName/jobs/internalTemplate/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
+            "downloadName/notification_details/"));
+
         stream = this.resolveZipInputStream(result.toByteArray());
-        return this.getContext(stream, fileName);
+        Map<String, Object> internalJobs = this.getJobs(stream, "downloadName/jobs/internal/", InternalEventDrivenJob.class);
+        Assert.assertEquals(3, internalJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalJobs);
+        this.assertJobsWithNoChildContexts(internalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> quartzJobs = this.getJobs(stream, "downloadName/jobs/quartz/", QuartzScheduleDrivenJob.class);
+        Assert.assertEquals(3, quartzJobs.size());
+        this.assertJobsWithNoTokensCorrect(quartzJobs);
+        this.assertJobsWithNoChildContexts(quartzJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> fileJobs = this.getJobs(stream, "downloadName/jobs/file/", FileEventDrivenJob.class);
+        Assert.assertEquals(3, fileJobs.size());
+        this.assertJobsWithNoTokensCorrect(fileJobs);
+        this.assertJobsWithNoChildContexts(fileJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> globalJobs = this.getJobs(stream, "downloadName/jobs/global/", GlobalEventJob.class);
+        Assert.assertEquals(0, globalJobs.size());
+        this.assertJobsWithNoTokensCorrect(globalJobs);
+        this.assertJobsWithNoChildContexts(globalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalTemplateJobs = this.getJobs(stream, "downloadName/jobs/internalTemplate/", GlobalEventJob.class);
+        Assert.assertEquals(3, internalTemplateJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        ContextTemplate contextTemplate = this.getContext(stream, "downloadName/context/download");
+        Assert.assertNotNull(contextTemplate);
+
+        JSONAssert.assertEquals(loadDataFile("/context-without-tokens.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
 
     @Test
-    public void test_export_zip_without_tokens() throws Exception {
-        setupFixture();
+    public void test_export_zip_without_tokens_with_global_events() throws Exception {
+        setupFixture(true);
 
         ByteArrayOutputStream result = ContextExportZipUtils.createZipFile(context, contextName, "downloadName", "."
             , schedulerJobService, this.emailNotificationDetailsService, this.emailNotificationContextService
@@ -277,14 +442,77 @@ public class ContextExportZipUtilsTest {
         stream = this.resolveZipInputStream(result.toByteArray());
         ContextTemplate contextTemplate = this.getContext(stream, "downloadName/context/download");
         Assert.assertNotNull(contextTemplate);
-
-        JSONAssert.assertEquals(loadDataFile("/context-without-tokens.json")
-            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
     }
 
     @Test
-    public void test_export_zip_without_tokens_and_splitting_sub_contexts() throws Exception {
-        setupFixture();
+    public void test_export_zip_without_tokens_and_splitting_sub_contexts_no_global_events() throws Exception {
+        setupFixture(false);
+
+        ByteArrayOutputStream result = ContextExportZipUtils.createZipFile(context, contextName, "downloadName", "."
+            , schedulerJobService, this.emailNotificationDetailsService, this.emailNotificationContextService
+            , this.contextProfileService, 1000, false, true);
+
+        Assert.assertNotNull(result);
+
+        ZipInputStream stream = this.resolveZipInputStream(result.toByteArray());
+
+        this.assertDirectoryStructure(stream, List.of("downloadName/", "downloadName/context/", "downloadName/context/HelloContext/",
+            "downloadName/context/HelloContext/CONTEXT-1848727981/","downloadName/context/HelloContext/CONTEXT-1590773100/",
+            "downloadName/context/HelloContext/CONTEXT-1182789380/","downloadName/context/HelloContext/CONTEXT-2139852148/",
+            "downloadName/context/HelloContext/CONTEXT-195330380/", "downloadName/context/HelloContext/CONTEXT--715116816/",
+            "downloadName/context/HelloContext/CONTEXT-1182789416/",
+            "downloadName/notification/", "downloadName/profiles/", "downloadName/jobs/", "downloadName/jobs/file/",
+            "downloadName/jobs/internal/", "downloadName/jobs/internalTemplate/", "downloadName/jobs/quartz/", "downloadName/jobs/global/",
+            "downloadName/notification_details/"));
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalJobs = this.getJobs(stream, "downloadName/jobs/internal/", InternalEventDrivenJob.class);
+        Assert.assertEquals(3, internalJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalJobs);
+        this.assertJobsWithNoChildContexts(internalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> quartzJobs = this.getJobs(stream, "downloadName/jobs/quartz/", QuartzScheduleDrivenJob.class);
+        Assert.assertEquals(3, quartzJobs.size());
+        this.assertJobsWithNoTokensCorrect(quartzJobs);
+        this.assertJobsWithNoChildContexts(quartzJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> fileJobs = this.getJobs(stream, "downloadName/jobs/file/", FileEventDrivenJob.class);
+        Assert.assertEquals(3, fileJobs.size());
+        this.assertJobsWithNoTokensCorrect(fileJobs);
+        this.assertJobsWithNoChildContexts(fileJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> globalJobs = this.getJobs(stream, "downloadName/jobs/global/", GlobalEventJob.class);
+        Assert.assertEquals(0, globalJobs.size());
+        this.assertJobsWithNoTokensCorrect(globalJobs);
+        this.assertJobsWithNoChildContexts(globalJobs);
+
+        stream = this.resolveZipInputStream(result.toByteArray());
+        Map<String, Object> internalTemplateJobs = this.getJobs(stream, "downloadName/jobs/internalTemplate/", GlobalEventJob.class);
+        Assert.assertEquals(3, internalTemplateJobs.size());
+        this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
+
+        ContextTemplate helloContext = getContextTemplateForFile(result, stream, "downloadName/context/HelloContext.json");
+        Assert.assertNotNull(helloContext);
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-195330380/CONTEXT--1250033421.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1182789380/CONTEXT--663833459.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1182789416/CONTEXT-613708632.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1590773100/CONTEXT-1195088490.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1590773100/CONTEXT-1195088490.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-1848727981/CONTEXT-774294372.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-2139852148/CONTEXT-1065418539.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT--715116816/CONTEXT-521366615.json"));
+        Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-195330380.json"));
+
+        JSONAssert.assertEquals(loadDataFile("/context-without-tokens-subcontext-split.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(helloContext), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    public void test_export_zip_without_tokens_and_splitting_sub_contexts_with_global_events() throws Exception {
+        setupFixture(true);
 
         ByteArrayOutputStream result = ContextExportZipUtils.createZipFile(context, contextName, "downloadName", "."
             , schedulerJobService, this.emailNotificationDetailsService, this.emailNotificationContextService
@@ -343,15 +571,39 @@ public class ContextExportZipUtilsTest {
         Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-2139852148/CONTEXT-1065418539.json"));
         Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT--715116816/CONTEXT-521366615.json"));
         Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-195330380.json"));
-
-        JSONAssert.assertEquals(loadDataFile("/context-without-tokens-subcontext-split.json")
-            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(helloContext), JSONCompareMode.LENIENT);
     }
 
+    /**
+     * Retrieves a ContextTemplate object for a specific file within a ZipInputStream.
+     *
+     * @param result The ByteArrayOutputStream containing the zip contents
+     * @param stream The ZipInputStream pointing to the zip contents
+     * @param fileName The name of the file to retrieve within the zip
+     * @return A ContextTemplate object representing the specified file
+     * @throws IOException If an I/O error occurs
+     */
+    private ContextTemplate getContextTemplateForFile(ByteArrayOutputStream result, ZipInputStream stream, String fileName) throws IOException {
+        stream = this.resolveZipInputStream(result.toByteArray());
+        return this.getContext(stream, fileName);
+    }
+
+    /**
+     * Resolves a ZipInputStream object from the given zip contents byte array.
+     *
+     * @param zipContents The byte array containing the zip contents
+     * @return A ZipInputStream object pointing to the zip contents
+     */
     private ZipInputStream resolveZipInputStream(byte[] zipContents) {
         return new ZipInputStream(new ByteArrayInputStream(zipContents));
     }
 
+    /**
+     * Asserts the directory structure of a ZipInputStream against the expected list of directories.
+     *
+     * @param zipInputStream The ZipInputStream to assert directory structure on
+     * @param expected A list of expected directories to be contained in the ZipInputStream
+     * @throws IOException If an I/O error occurs while processing the ZipInputStream
+     */
     private void assertDirectoryStructure(ZipInputStream zipInputStream, List expected) throws IOException {
         List<String> directories = new ArrayList<>();
         ZipEntry entry;
@@ -369,6 +621,12 @@ public class ContextExportZipUtilsTest {
         Assert.assertTrue(expected.containsAll(directories));
     }
 
+    /**
+     * Asserts that the provided map of jobs contain correct tokens and values.
+     * For each entry in the map, it validates the job name, agent name, and identifier based on the job type.
+     *
+     * @param jobs A map where the key is the job path and the value is a SchedulerJob object
+     */
     private void assertJobsWithTokensCorrect(Map<String, Object> jobs) {
         jobs.entrySet().forEach(entry -> {
             String jobname = this.getJobNameFromPath(entry.getKey());
@@ -386,6 +644,12 @@ public class ContextExportZipUtilsTest {
         });
     }
 
+    /**
+     * Asserts that the provided map of jobs contain correct tokens and values.
+     * For each entry in the map, it validates the job name, agent name, and identifier based on the job type.
+     *
+     * @param jobs A map where the key is the job path and the value is a SchedulerJob object
+     */
     private void assertJobsWithNoTokensCorrect(Map<String, Object> jobs) {
         jobs.entrySet().forEach(entry -> {
             String jobname = this.getJobNameFromPath(entry.getKey());
@@ -403,6 +667,11 @@ public class ContextExportZipUtilsTest {
         });
     }
 
+    /**
+     * Asserts that all jobs in the provided map have no child contexts.
+     *
+     * @param jobs A map where the key is the job path and the value is a SchedulerJob object
+     */
     private void assertJobsWithNoChildContexts(Map<String, Object> jobs) {
         jobs.entrySet().forEach(entry -> {
             SchedulerJob job = (SchedulerJob) entry.getValue();
@@ -410,10 +679,26 @@ public class ContextExportZipUtilsTest {
         });
     }
 
+    /**
+     * Retrieves the job name from the given path by extracting the substring between the last '/' character
+     * and the '.' character.
+     *
+     * @param path The path to extract the job name from
+     * @return The extracted job name
+     */
     private String getJobNameFromPath(String path) {
         return path.substring(path.lastIndexOf("/")+1, path.indexOf("."));
     }
 
+    /**
+     * Retrieves a map of jobs from a ZipInputStream based on a specified base path and class.
+     *
+     * @param zipInputStream The ZipInputStream containing the zip contents
+     * @param base The base path to filter the jobs from within the zip contents
+     * @param theClass The class type to deserialize the job files into
+     * @return A map containing the job names and deserialized objects as key-value pairs
+     * @throws IOException If an I/O error occurs while processing the ZipInputStream
+     */
     private Map<String, Object> getJobs(ZipInputStream zipInputStream, String base, Class theClass) throws IOException {
         Map<String, Object> results = new HashMap<>();
         ZipEntry entry;
@@ -431,6 +716,14 @@ public class ContextExportZipUtilsTest {
         return results;
     }
 
+    /**
+     * Retrieves a ContextTemplate object for a specific file within a ZipInputStream.
+     *
+     * @param zipInputStream The ZipInputStream to retrieve the ContextTemplate from
+     * @param base The base path to filter the jobs from within the zip contents
+     * @return A ContextTemplate object representing the specified file, or null if not found
+     * @throws IOException If an I/O error occurs
+     */
     private ContextTemplate getContext(ZipInputStream zipInputStream, String base) throws IOException {
         ZipEntry entry;
         while((entry = zipInputStream.getNextEntry())!=null) {
@@ -448,19 +741,22 @@ public class ContextExportZipUtilsTest {
 
     /**
      * Helper method to create some Jobs based on the context name being tested
-     * @param contextName String value
+     * @param contextTemplate we are getting jobs for
      * @return a list of SchedulerJobRecords
      */
-    private static List<SchedulerJobRecord> createListOfJobRecords(String contextName) {
+    private static List<SchedulerJobRecord> createListOfJobRecords(ContextTemplate contextTemplate, boolean withGlobalEvents) {
         List<SchedulerJobRecord> schedulerJobRecords = new ArrayList<>();
+
+        List<String> identifiers = ContextHelper.getAllJobs(contextTemplate).stream()
+            .map(job -> job.getIdentifier()).collect(Collectors.toList());
 
         // Creating 9 jobs, 3 files, 3 schedulers and 3 event base ones.
         for (int i = 0; i < 3; i++) {
             SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
-            solrFileEventDrivenJob.setAgentName(contextName + "agentName" + i);
-            solrFileEventDrivenJob.setJobName(contextName + "jobName-fe" + i);
-            solrFileEventDrivenJob.setIdentifier(solrFileEventDrivenJob.getAgentName() + "_" + solrFileEventDrivenJob.getJobName());
-            solrFileEventDrivenJob.setContextName(contextName);
+            solrFileEventDrivenJob.setAgentName(contextTemplate.getName() + "agentName" + i);
+            solrFileEventDrivenJob.setJobName(contextTemplate.getName() + "jobName-fe" + i);
+            solrFileEventDrivenJob.setIdentifier(identifiers.get(i));
+            solrFileEventDrivenJob.setContextName(contextTemplate.getName());
             solrFileEventDrivenJob.setChildContextNames(List.of("child"));
             solrFileEventDrivenJob.setCronExpression("cronExpression" + i);
             solrFileEventDrivenJob.setFilePath("filePath" + i);
@@ -472,11 +768,11 @@ public class ContextExportZipUtilsTest {
             schedulerJobRecords.add(fileRecord);
 
             SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
-            solrInternalEventDrivenJob.setAgentName(contextName + "agentName" + i);
-            solrInternalEventDrivenJob.setJobName(contextName + "jobName-ce" + i);
+            solrInternalEventDrivenJob.setAgentName(contextTemplate.getName() + "agentName" + i);
+            solrInternalEventDrivenJob.setJobName(contextTemplate.getName() + "jobName-ce" + i);
             solrInternalEventDrivenJob.setChildContextNames(List.of("child"));
-            solrInternalEventDrivenJob.setIdentifier(solrInternalEventDrivenJob.getAgentName() + "_" + solrInternalEventDrivenJob.getJobName());
-            solrInternalEventDrivenJob.setContextName(contextName);
+            solrInternalEventDrivenJob.setIdentifier(identifiers.get(i+10));
+            solrInternalEventDrivenJob.setContextName(contextTemplate.getName());
             solrInternalEventDrivenJob.setCommandLine("ls -al" + i);
 
             TestSchedulerJobRecord eventRecord = new TestSchedulerJobRecord();
@@ -486,10 +782,10 @@ public class ContextExportZipUtilsTest {
             schedulerJobRecords.add(eventRecord);
 
             SolrInternalEventDrivenJobImpl solrInternalEventDrivenJobTemplate = new SolrInternalEventDrivenJobImpl();
-            solrInternalEventDrivenJobTemplate.setAgentName(contextName + "agentName" + i);
-            solrInternalEventDrivenJobTemplate.setJobName(contextName + "jobName-cet" + i);
-            solrInternalEventDrivenJobTemplate.setIdentifier(solrInternalEventDrivenJob.getAgentName() + "_" + solrInternalEventDrivenJob.getJobName());
-            solrInternalEventDrivenJobTemplate.setContextName(contextName);
+            solrInternalEventDrivenJobTemplate.setAgentName(contextTemplate.getName() + "agentName" + i);
+            solrInternalEventDrivenJobTemplate.setJobName(contextTemplate.getName() + "jobName-cet" + i);
+            solrInternalEventDrivenJobTemplate.setIdentifier(identifiers.get(i));
+            solrInternalEventDrivenJobTemplate.setContextName(contextTemplate.getName());
             solrInternalEventDrivenJobTemplate.setCommandLine("ls -al" + i);
             solrInternalEventDrivenJobTemplate.setTemplateJob(true);
 
@@ -500,10 +796,10 @@ public class ContextExportZipUtilsTest {
             schedulerJobRecords.add(templateRecord);
 
             SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
-            solrQuartzScheduleDrivenJob.setAgentName(contextName + "agentName" + i);
-            solrQuartzScheduleDrivenJob.setJobName(contextName + "jobName-qe" + i);
-            solrQuartzScheduleDrivenJob.setIdentifier(solrQuartzScheduleDrivenJob.getAgentName() + "_" + solrQuartzScheduleDrivenJob.getJobName());
-            solrQuartzScheduleDrivenJob.setContextName(contextName);
+            solrQuartzScheduleDrivenJob.setAgentName(contextTemplate.getName() + "agentName" + i);
+            solrQuartzScheduleDrivenJob.setJobName(contextTemplate.getName() + "jobName-qe" + i);
+            solrQuartzScheduleDrivenJob.setIdentifier(identifiers.get(i+20));
+            solrQuartzScheduleDrivenJob.setContextName(contextTemplate.getName());
             solrQuartzScheduleDrivenJob.setChildContextNames(List.of("child"));
             solrQuartzScheduleDrivenJob.setCronExpression("cronExpression" + i);
 
@@ -514,11 +810,16 @@ public class ContextExportZipUtilsTest {
             schedulerJobRecords.add(quartzRecord);
 
             SolrGlobalEventJobImpl globalEventJob = new SolrGlobalEventJobImpl();
-            globalEventJob.setJobName(contextName + "jobName-ge" + i);
-            globalEventJob.setAgentName(contextName + "agentName" + i);
+            globalEventJob.setJobName(contextTemplate.getName() + "jobName-ge" + i);
+            globalEventJob.setAgentName(contextTemplate.getName() + "agentName" + i);
             globalEventJob.setChildContextNames(List.of("child"));
-            globalEventJob.setIdentifier(solrQuartzScheduleDrivenJob.getAgentName() + "_" + solrQuartzScheduleDrivenJob.getJobName());
-            globalEventJob.setContextName(contextName);
+            globalEventJob.setIdentifier(JobConstants.GLOBAL_EVENT + "_" + solrQuartzScheduleDrivenJob.getJobName());
+            globalEventJob.setContextName(contextTemplate.getName());
+
+            if(withGlobalEvents) {
+                globalEventJob.setIdentifier(identifiers.get(i+30));
+                contextTemplate.getScheduledJobs().add(globalEventJob);
+            }
 
             TestSchedulerJobRecord globalRecord = new TestSchedulerJobRecord();
             globalRecord.setType(JobConstants.GLOBAL_EVENT_JOB);
@@ -529,6 +830,12 @@ public class ContextExportZipUtilsTest {
         return schedulerJobRecords;
     }
 
+    /**
+     * Creates a list of EmailNotificationContextRecord objects with the given context name.
+     *
+     * @param contextName The name of the context to be used for the EmailNotificationContextRecord objects
+     * @return A List of EmailNotificationContextRecord objects with the specified context name
+     */
     private static List<EmailNotificationContextRecord> createListOfEmailNotificationConext(String contextName) {
         List<EmailNotificationContextRecord> records = new ArrayList<>();
 
@@ -544,6 +851,12 @@ public class ContextExportZipUtilsTest {
         return records;
     }
 
+    /**
+     * Creates a list of EmailNotificationDetailsRecord objects for a specific context name.
+     *
+     * @param contextName The name of the context to create notifications for
+     * @return A list of EmailNotificationDetailsRecord objects associated with the context name
+     */
     private static List<EmailNotificationDetailsRecord> createListOfEmailNotification(String contextName) {
         List<EmailNotificationDetailsRecord> records = new ArrayList<>();
 
@@ -565,6 +878,12 @@ public class ContextExportZipUtilsTest {
         return records;
     }
 
+    /**
+     * Creates a list of ContextProfileRecord objects with the specified context name.
+     *
+     * @param contextName The name of the context to be used for the ContextProfileRecord objects
+     * @return A List of ContextProfileRecord objects with the specified context name
+     */
     private static List<ContextProfileRecord> createListOfContextProfileRecord(String contextName) {
         List<ContextProfileRecord> recordList = new ArrayList<>();
         ContextProfileRecord record = new ContextProfileRecordImpl();
@@ -574,6 +893,13 @@ public class ContextExportZipUtilsTest {
         return  recordList;
     }
 
+    /**
+     * Loads the content of a data file as a String.
+     *
+     * @param fileName The name of the data file to load
+     * @return The content of the data file as a String
+     * @throws IOException If an I/O error occurs while loading the data file
+     */
     protected String loadDataFile(String fileName) throws IOException
     {
         String contentToSend = IOUtils.toString(loadDataFileStream(fileName), StandardCharsets.UTF_8);
@@ -581,6 +907,12 @@ public class ContextExportZipUtilsTest {
         return contentToSend;
     }
 
+    /**
+     * Retrieves an InputStream for a specified data file.
+     *
+     * @param fileName The name of the data file
+     * @return An InputStream of the data file
+     */
     protected InputStream loadDataFileStream(String fileName)
     {
         return getClass().getResourceAsStream(fileName);
