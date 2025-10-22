@@ -22,6 +22,7 @@ import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.SerializationUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -123,12 +124,7 @@ public final class ContextExportZipUtils {
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-            int offset = 0;
-            SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(unmodifiedContextName, searchLimit, offset);
-
-            List<SchedulerJob> jobsInPlan = getJobsInPlanWithIncludedGlobalEventJobs(context, results.getResultList().stream()
-                .map(schedulerJobRecord -> schedulerJobRecord.getJob())
-                .collect(Collectors.toList()));
+            ContextTemplate unmodifiedContextTemplate = SerializationUtils.clone(context);
 
             // Export with pretty lines
             if(addReplacementTokens) {
@@ -175,8 +171,14 @@ public final class ContextExportZipUtils {
             Files.createDirectories(notificationDetailDir);
             Files.createDirectories(profilesDir);
 
-            // get all the jobs
+            int offset = 0;
+            SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(unmodifiedContextTemplate.getName(), searchLimit, offset);
 
+            List<SchedulerJob> jobsInPlan = getJobsInPlanWithIncludedGlobalEventJobs(unmodifiedContextTemplate, results.getResultList().stream()
+                .map(schedulerJobRecord -> schedulerJobRecord.getJob())
+                .collect(Collectors.toList()));
+
+            // get all the jobs
             addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, jobsInternalTemplateDir
                 , jobsInPlan
                 , addReplacementTokens);
@@ -185,9 +187,13 @@ public final class ContextExportZipUtils {
             long totalNumberOfResults = results.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
-                results = schedulerJobService.findByContext(unmodifiedContextName, searchLimit, offset);
+                results = schedulerJobService.findByContext(unmodifiedContextTemplate.getName(), searchLimit, offset);
+                jobsInPlan = getJobsInPlanWithIncludedGlobalEventJobs(unmodifiedContextTemplate, results.getResultList().stream()
+                    .map(schedulerJobRecord -> schedulerJobRecord.getJob())
+                    .collect(Collectors.toList()));
+
                 addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, jobsInternalTemplateDir
-                    , results.getResultList().stream().map(schedulerJobRecord -> schedulerJobRecord.getJob()).collect(Collectors.toList())
+                    , jobsInPlan
                     , addReplacementTokens);
             }
 
