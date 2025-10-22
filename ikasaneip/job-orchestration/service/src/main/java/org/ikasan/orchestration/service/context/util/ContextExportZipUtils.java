@@ -121,7 +121,16 @@ public final class ContextExportZipUtils {
                                                       boolean separateSubContextsWhenPersisting) {
         try {
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+            int offset = 0;
+            SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(unmodifiedContextName, searchLimit, offset);
+
+            List<SchedulerJob> jobsInPlan = getJobsInPlanWithIncludedGlobalEventJobs(context, results.getResultList().stream()
+                .map(schedulerJobRecord -> schedulerJobRecord.getJob())
+                .collect(Collectors.toList()));
+
+            // Export with pretty lines
             if(addReplacementTokens) {
                 ContextHelper.addContextTemplateReplacementTokens(context);
             }
@@ -167,10 +176,9 @@ public final class ContextExportZipUtils {
             Files.createDirectories(profilesDir);
 
             // get all the jobs
-            int offset = 0;
-            SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(unmodifiedContextName, searchLimit, offset);
+
             addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, jobsInternalTemplateDir
-                , results.getResultList().stream().map(schedulerJobRecord -> schedulerJobRecord.getJob()).collect(Collectors.toList())
+                , jobsInPlan
                 , addReplacementTokens);
 
             int retrievedNumber = results.getResultList().size();
@@ -293,6 +301,8 @@ public final class ContextExportZipUtils {
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
 
+            List<SchedulerJob> jobsInPlan = getJobsInPlanWithIncludedGlobalEventJobs(context, schedulerJobList);
+
             if(addReplacementTokens) {
                 ContextHelper.addContextTemplateReplacementTokens(context);
             }
@@ -337,7 +347,7 @@ public final class ContextExportZipUtils {
             Files.createDirectories(profilesDir);
 
             addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, jobsInternalTemplateDir
-                , schedulerJobList, addReplacementTokens);
+                , jobsInPlan, addReplacementTokens);
 
             // create the outputstream
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -365,6 +375,23 @@ public final class ContextExportZipUtils {
 
             return null;
         }
+    }
+
+    private static List<SchedulerJob> getJobsInPlanWithIncludedGlobalEventJobs(ContextTemplate context, List<SchedulerJob> results) {
+        List<String> jobPlanSchedulerJobIdentifiers = ContextHelper.getAllJobs(context).stream()
+            .map(job -> job.getIdentifier())
+            .collect(Collectors.toList());
+
+        List<SchedulerJob> filteredScheduledJobs = results.stream()
+            .filter(job -> {
+                if(!job.getAgentName().equals(JobConstants.GLOBAL_EVENT))
+                    return true;
+                else
+                    return jobPlanSchedulerJobIdentifiers.contains(job.getIdentifier());
+            })
+            .collect(Collectors.toList());
+
+        return filteredScheduledJobs;
     }
 
     /**
