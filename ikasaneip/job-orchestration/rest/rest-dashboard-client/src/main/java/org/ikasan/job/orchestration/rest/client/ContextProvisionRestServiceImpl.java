@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.rest.client;
 
+import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
@@ -32,6 +34,7 @@ public class ContextProvisionRestServiceImpl extends DashboardRestServiceImpl<St
                 .build();
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
             objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+            objectMapper.disable(MapperFeature.USE_ANNOTATIONS);
 
             String serialised = objectMapper.writeValueAsString(contextBundle);
             super.publish(serialised);

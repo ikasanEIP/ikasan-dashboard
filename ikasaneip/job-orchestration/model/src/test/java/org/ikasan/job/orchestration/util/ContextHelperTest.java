@@ -53,6 +53,16 @@ public class ContextHelperTest {
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/-1793100514-with-tokens.json")
             , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+
+        SchedulerJob job = new SchedulerJobImpl();
+        job.setIdentifier("scheduler-agent-zzzz-job");
+        job.setJobName("zzzz-job");
+        job.setAgentName("achedulerAgent");
+        job.setContextName(contextTemplate.getName());
+
+        contextTemplate.getScheduledJobs().add(job);
+        System.out.println(ConcurrentObjectMapperFactory.newInstance().writerWithDefaultPrettyPrinter()
+            .writeValueAsString(contextTemplate));
     }
 
     @Test

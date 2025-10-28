@@ -1,4 +1,20 @@
 {
+  "name" : "Context Template Name",
+  "description" : "Context Template Description",
+  "timeWindowStart" : "* * 6 ? * * *",
+  "contextTtlMilliseconds" : 100000,
+  "treeViewExpandLevel" : 3,
+  "ableToRunConcurrently" : true,
+  "useDisplayName" : false,
+  "ordinal" : 1,
+  "renderLogicalBoundaries" : true,
+  "useAutoLayout" : true,
+  "endJobPlanUponCompletion" : false,
+  "customWeekDayOfMonth" : false,
+  "disabled" : false,
+  "delayAgentSynchronisationUntilNextInstance" : false,
+  "requiresAgentSynchronisation" : false,
+  "quartzScheduleDrivenJobsDisabledForContext" : false,
   "scheduledJobs" : [ {
     "agentName" : "AgentName",
     "jobName" : "Job1",
@@ -56,15 +72,7 @@
     "identifier" : "AgentName-Job8",
     "jobDescription" : "Job8 Description"
   } ],
-  "name" : "Context Template Name",
-  "description" : "Context Template Description",
   "jobDependencies" : [ {
-    "jobIdentifier" : "AgentName-Job2"
-  }, {
-    "jobIdentifier" : "AgentName-Job3"
-  }, {
-    "jobIdentifier" : "AgentName-Job5"
-  }, {
     "jobIdentifier" : "AgentName-Job1",
     "logicalGrouping" : {
       "and" : [ {
@@ -73,6 +81,12 @@
         "identifier" : "AgentName-Job3"
       } ]
     }
+  }, {
+    "jobIdentifier" : "AgentName-Job2"
+  }, {
+    "jobIdentifier" : "AgentName-Job3"
+  }, {
+    "jobIdentifier" : "AgentName-Job5"
   }, {
     "jobIdentifier" : "AgentName-Job8",
     "logicalGrouping" : {
@@ -110,19 +124,5 @@
   }, {
     "name" : "param5",
     "defaultValue" : "value"
-  } ],
-  "timeWindowStart" : "* * 6 ? * * *",
-  "customWeekDayOfMonth" : false,
-  "contextTtlMilliseconds" : 100000,
-  "treeViewExpandLevel" : 3,
-  "ableToRunConcurrently" : true,
-  "useDisplayName" : false,
-  "ordinal" : 1,
-  "renderLogicalBoundaries" : true,
-  "useAutoLayout" : true,
-  "endJobPlanUponCompletion" : false,
-  "disabled" : false,
-  "delayAgentSynchronisationUntilNextInstance" : false,
-  "requiresAgentSynchronisation" : false,
-  "quartzScheduleDrivenJobsDisabledForContext" : false
+  } ]
 }

@@ -14,6 +14,7 @@ import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatus
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -128,7 +129,10 @@ public abstract class AbstractSchedulerViewTest extends UITest {
             filePathContextParam.setName("filepath_replacement");
             filePathContextParam.setDefaultValue("replacement");
 
-            contextTemplate.setContextParameters(List.of(filePathContextParam, filenameContextParam));
+            List<ContextParameter> contextParameters = new ArrayList<>();
+            contextParameters.add(filenameContextParam);
+            contextParameters.add(filePathContextParam);
+            contextTemplate.setContextParameters(contextParameters);
 
             scheduledContextInstanceRecord.setContext(contextTemplate);
 

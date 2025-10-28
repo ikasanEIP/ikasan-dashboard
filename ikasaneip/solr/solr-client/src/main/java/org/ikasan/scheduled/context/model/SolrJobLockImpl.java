@@ -1,7 +1,9 @@
 package org.ikasan.scheduled.context.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.ikasan.job.orchestration.util.deserialise.SortedSchedulerJobLocalParticipantMapSerializer;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 
@@ -12,6 +14,7 @@ public class SolrJobLockImpl implements JobLock {
 
     private String name;
     private long lockCount = 1;
+    @JsonSerialize(using = SortedSchedulerJobLocalParticipantMapSerializer.class)
     private Map<String, List<SchedulerJobLockParticipant>>  jobs;
     private boolean exclusiveJobLock = false;
 

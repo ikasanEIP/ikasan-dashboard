@@ -1,8 +1,13 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.SerializerFactory;
+import com.fasterxml.jackson.databind.ser.Serializers;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
@@ -70,6 +75,7 @@ public class ContextProvisionControllerTest {
             .allowIfSubType("java.util.concurrent.CopyOnWriteArraySet")
             .build();
         mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+        mapper.disable(MapperFeature.USE_ANNOTATIONS);
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put("/rest/provision/context")
             .contentType(MediaType.APPLICATION_JSON_VALUE).content(mapper.writeValueAsBytes(contextBundle))).andReturn();
@@ -108,6 +114,7 @@ public class ContextProvisionControllerTest {
             .allowIfSubType("java.util.concurrent.CopyOnWriteArraySet")
             .build();
         mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+        mapper.disable(MapperFeature.USE_ANNOTATIONS);
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put("/rest/provision/context")
             .contentType(MediaType.APPLICATION_JSON_VALUE).content(mapper.writeValueAsBytes(contextBundle))).andReturn();
@@ -122,6 +129,7 @@ public class ContextProvisionControllerTest {
         ObjectMapper mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
+            .allowIfSubType("org.ikasan.spec.scheduled.job.context")
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
             .allowIfSubType("org.ikasan.job.orchestration.model.context")
             .allowIfSubType("org.ikasan.job.orchestration.model.profile")
@@ -132,9 +140,12 @@ public class ContextProvisionControllerTest {
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .allowIfSubType("java.util.HashSet")
+            .allowIfSubType("java.util")
             .allowIfSubType("java.util.concurrent.CopyOnWriteArraySet")
+            .allowIfSubType("java.util.concurrent")
             .build();
         mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+        mapper.disable(MapperFeature.USE_ANNOTATIONS);
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put("/rest/provision/context")
             .contentType(MediaType.APPLICATION_JSON_VALUE).content(mapper.writeValueAsBytes(contextBundle))).andReturn();

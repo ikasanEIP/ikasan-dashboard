@@ -328,10 +328,10 @@ public class ContextMachineWithStartAndTerminalJobsTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(4, events.size());
 
-        Assert.assertEquals("TEST_IK_JOB_14", events.get(0).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_13", events.get(1).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_12", events.get(2).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_11", events.get(3).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_14", events.get(3).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_13", events.get(2).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_12", events.get(1).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_11", events.get(0).getJobName());
 
         processEventJobName = events.get(0).getJobName();
 
@@ -639,9 +639,10 @@ public class ContextMachineWithStartAndTerminalJobsTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 7", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 8", InstanceStatus.RUNNING);
 
-        Assert.assertEquals("TEST_IK_JOB_21_MIN", events.get(0).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_22_MAX", events.get(1).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_19", events.get(2).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_19", events.get(0).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_21_MIN", events.get(1).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_22_MAX", events.get(2).getJobName());
+
 
         processEventJobName = events.get(0).getJobName();
 

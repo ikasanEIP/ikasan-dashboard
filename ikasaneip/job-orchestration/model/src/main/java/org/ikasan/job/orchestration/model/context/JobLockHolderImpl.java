@@ -2,15 +2,11 @@ package org.ikasan.job.orchestration.model.context;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.ikasan.spec.scheduled.context.model.AbstractJobLockHolder;
-import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class JobLockHolderImpl extends AbstractJobLockHolder implements JobLockHolder {
     private String lockName;

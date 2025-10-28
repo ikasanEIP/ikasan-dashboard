@@ -2,10 +2,17 @@ package org.ikasan.job.orchestration.model.job;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.*;
 
+@JsonPropertyOrder({ "agentName",
+    "jobName",
+    "contextName",
+    "startupControlType",
+    "ordinal",
+    "identifier"})
 public class SchedulerJobImpl implements SchedulerJob {
     protected String jobIdentifier;
     protected String agentName;

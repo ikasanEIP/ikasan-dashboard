@@ -436,13 +436,18 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         lockParticipant1.setIdentifier("agentName1-jobName1");
 
         Map<String, List<SchedulerJobLockParticipant>> lockMap = new HashMap<>();
-        lockMap.put("ContextName", List.of(lockParticipant1));
+        List<SchedulerJobLockParticipant> schedulerJobLockParticipants = new ArrayList<>();
+        schedulerJobLockParticipants.add(lockParticipant1);
+        lockMap.put("ContextName", schedulerJobLockParticipants);
 
         JobLock jobLock = new JobLockImpl();
         jobLock.setName("testLock");
         jobLock.setJobs(lockMap);
 
-        contextTemplate.setJobLocks(List.of(jobLock));
+        List<JobLock> jobLocks = new ArrayList<>();
+        jobLocks.add(jobLock);
+
+        contextTemplate.setJobLocks(jobLocks);
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
@@ -521,7 +526,10 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
         JobLock jobLock = new JobLockImpl();
         jobLock.setName("testLock");
 
-        contextTemplate.setJobLocks(List.of(jobLock));
+        List<JobLock> jobLocks = new ArrayList<>();
+        jobLocks.add(jobLock);
+
+        contextTemplate.setJobLocks(jobLocks);
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");

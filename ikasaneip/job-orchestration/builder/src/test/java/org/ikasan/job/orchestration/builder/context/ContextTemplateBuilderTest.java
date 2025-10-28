@@ -519,7 +519,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
         ContextService contextService = new ContextService();
 
         JSONAssert.assertEquals(super.loadDataFile("/data/context-builder-result-2.json"),
-            contextService.getContextTemplateString(contextTemplate1), false);
+            contextService.getContextTemplateString(contextTemplate1), true);
     }
 
     @Test
@@ -677,7 +677,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
 
         String expectedStr = super.loadDataFile("/data/context-builder-result-with-job-locks.json");
         String actualContextTemplateStr = contextService.getContextTemplateString(contextTemplate1);
-        JSONAssert.assertEquals(expectedStr, actualContextTemplateStr, false);
+        JSONAssert.assertEquals(expectedStr, actualContextTemplateStr, true);
     }
 
     @Test
@@ -833,7 +833,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
         ContextService contextService = new ContextService();
 
         JSONAssert.assertEquals(super.loadDataFile("/data/context-builder-nested-context-result.json"),
-            contextService.getContextTemplateString(parentContext), false);
+            contextService.getContextTemplateString(parentContext), true);
     }
 
     @Test
