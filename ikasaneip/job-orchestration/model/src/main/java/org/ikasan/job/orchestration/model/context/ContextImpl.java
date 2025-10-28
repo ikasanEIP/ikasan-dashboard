@@ -1,8 +1,13 @@
 package org.ikasan.job.orchestration.model.context;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.ikasan.job.orchestration.util.deserialise.SortedBlackoutWindowDateTimeRangesMapSerializer;
+import org.ikasan.job.orchestration.util.deserialise.SortedContextParameterListSerializer;
+import org.ikasan.job.orchestration.util.deserialise.SortedJobDependencyListSerializer;
+import org.ikasan.job.orchestration.util.deserialise.SortedStringListSerializer;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
@@ -11,7 +16,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends SchedulerJob, JOB_LOCK extends JobLock>
+
+public abstract class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM extends ContextParameter, JOB extends SchedulerJob, JOB_LOCK extends JobLock>
     extends AbstractContext<CONTEXT, JOB, JOB_LOCK>
     implements Context<CONTEXT, CONTEXT_PARAM, JOB, JOB_LOCK> {
     protected String name;
@@ -20,14 +26,18 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     // blackoutWindowDateTimeRanges - The UTC millisecond timestamp begin -> end for which a blackout occurs
     // Map<beginMilliSecondTimestamp -> endMilliSecondTimestamp>
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonSerialize(using = SortedBlackoutWindowDateTimeRangesMapSerializer.class)
     protected Map<Long, Long> blackoutWindowDateTimeRanges = new ConcurrentHashMap<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonSerialize(using = SortedStringListSerializer.class)
     protected List<String> blackoutWindowCronExpressions = new CopyOnWriteArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonSerialize(using = SortedJobDependencyListSerializer.class)
     protected List<JobDependency> jobDependencies = new CopyOnWriteArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<ContextDependency> contextDependencies = new CopyOnWriteArrayList<>();
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonSerialize(using = SortedContextParameterListSerializer.class)
     protected List<CONTEXT_PARAM> contextParameters = new CopyOnWriteArrayList<>();
     protected String timeWindowStart;
     protected boolean customWeekDayOfMonth = false;
@@ -47,6 +57,8 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected Boolean useAutoLayout = true;
     protected String userGeneratedLayout;
     protected Boolean endJobPlanUponCompletion = false;
+
+
 
     @Override
     public String getName() {

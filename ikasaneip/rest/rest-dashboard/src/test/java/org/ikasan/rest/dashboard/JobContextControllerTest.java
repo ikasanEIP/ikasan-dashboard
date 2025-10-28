@@ -39,6 +39,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -92,21 +93,29 @@ public class JobContextControllerTest extends AbstractRestMvcTest {
         contextParameterInstance2.setDefaultValue("value");
         contextParameterInstance2.setValue("/opt/data/files");
 
+        List<ContextParameterInstance> contextParameterInstances = new ArrayList<>();
+        contextParameterInstances.add(contextParameterInstance1);
+        contextParameterInstances.add(contextParameterInstance2);
+
         ContextInstance contextInstance1 = new ContextInstanceImpl();
-        contextInstance1.setContextParameters(List.of(contextParameterInstance1, contextParameterInstance2));
+        contextInstance1.setContextParameters(contextParameterInstances);
         contextInstance1.setName("context-instance-1");
         contextInstance1.setId("UUID1");
         contextInstance1.setCreatedDateTime(11);
         contextInstance1.setUpdatedDateTime(111);
-        contextParametersInstanceService.addParamsToContext("context-instance-1", List.of(contextParameterInstance1, contextParameterInstance2));
+
+        contextParametersInstanceService.addParamsToContext("context-instance-1", contextParameterInstances);
+
+        contextParameterInstances = new ArrayList<>();
+        contextParameterInstances.add(contextParameterInstance1);
 
         ContextInstance contextInstance2 = new ContextInstanceImpl();
-        contextInstance2.setContextParameters(List.of(contextParameterInstance1));
+        contextInstance2.setContextParameters(contextParameterInstances);
         contextInstance2.setName("context-instance-2");
         contextInstance2.setId("UUID2");
         contextInstance2.setCreatedDateTime(22);
         contextInstance2.setUpdatedDateTime(222);
-        contextParametersInstanceService.addParamsToContext("context-instance-2", List.of(contextParameterInstance2));
+        contextParametersInstanceService.addParamsToContext("context-instance-2", contextParameterInstances);
 
         ContextTemplate contextTemplate1 = new ContextTemplateImpl();
         contextTemplate1.setName("context-template-1");

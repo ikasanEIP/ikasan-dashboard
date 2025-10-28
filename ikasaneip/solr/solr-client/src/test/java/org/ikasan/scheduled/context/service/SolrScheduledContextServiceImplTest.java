@@ -14,6 +14,7 @@ import org.ikasan.scheduled.context.model.SolrJobLockImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.scheduled.util.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.*;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl.SCHEDULED_CONTEXT;
@@ -78,7 +80,10 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
 
             SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
             solrContextTemplate.setName("contextName");
-            solrContextTemplate.setJobLocks(List.of(new SolrJobLockImpl()));
+            List<JobLock> jobLocks = new ArrayList<>();
+            JobLock jobLock = new SolrJobLockImpl();
+            jobLocks.add(jobLock);
+            solrContextTemplate.setJobLocks(jobLocks);
             solrContextTemplate.setUserGeneratedLayout("user generated layout");
             solrContextTemplate.setUseAutoLayout(false);
             solrContextTemplate.setDisabled(false);
@@ -134,7 +139,10 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
 
             SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
             solrContextTemplate.setName("contextName");
-            solrContextTemplate.setJobLocks(List.of(new SolrJobLockImpl()));
+            List<JobLock> jobLocks = new ArrayList<>();
+            JobLock jobLock = new SolrJobLockImpl();
+            jobLocks.add(jobLock);
+            solrContextTemplate.setJobLocks(jobLocks);
             solrContextTemplate.setDisabled(false);
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
             scheduledContextRecord.setContextName("contextName");
@@ -168,7 +176,10 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
 
             SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
             solrContextTemplate.setName("contextName");
-            solrContextTemplate.setJobLocks(List.of(new SolrJobLockImpl()));
+            List<JobLock> jobLocks = new ArrayList<>();
+            JobLock jobLock = new SolrJobLockImpl();
+            jobLocks.add(jobLock);
+            solrContextTemplate.setJobLocks(jobLocks);
             solrContextTemplate.setDisabled(false);
             solrContextTemplate.setQuartzScheduleDrivenJobsDisabledForContext(true);
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();

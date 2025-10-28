@@ -3,10 +3,12 @@ package org.ikasan.job.orchestration.rest.client;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.junit.Before;
@@ -160,11 +162,12 @@ public class ContextInstancePublicationRestServiceImplTest {
     }
 
     private List<ContextParameterInstance> createParams() {
-        return List.of(
-            createParam("BusinessDate", "20220428"),
-            createParam("ErrorSearch", "someValue"),
-            createParam("UseBusinessDate", "1")
-        );
+        List<ContextParameterInstance> contextParameters = new ArrayList<>();
+        contextParameters.add(createParam("BusinessDate", "20220428"));
+        contextParameters.add(createParam("ErrorSearch", "someValue"));
+        contextParameters.add(createParam("UseBusinessDate", "1"));
+
+        return contextParameters;
     }
 
     private ContextParameterInstanceImpl createParam(String name, String value) {

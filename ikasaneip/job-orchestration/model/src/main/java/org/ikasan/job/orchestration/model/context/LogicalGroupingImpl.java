@@ -1,18 +1,33 @@
 package org.ikasan.job.orchestration.model.context;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.ikasan.job.orchestration.util.deserialise.SortedAndListSerializer;
+import org.ikasan.job.orchestration.util.deserialise.SortedNotListSerializer;
+import org.ikasan.job.orchestration.util.deserialise.SortedOrListSerializer;
 import org.ikasan.spec.scheduled.context.model.And;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.context.model.Not;
 import org.ikasan.spec.scheduled.context.model.Or;
 
-import java.util.List;
 
+import java.util.List;
+import java.util.Objects;
+
+@JsonPropertyOrder({ "and",
+    "or",
+    "not",
+    "logicalGrouping"})
 public class LogicalGroupingImpl implements LogicalGrouping {
     private LogicalGrouping logicalGrouping;
+    @JsonSerialize(using = SortedAndListSerializer.class)
     private List<And> and;
+    @JsonSerialize(using = SortedOrListSerializer.class)
     private List<Or> or;
+    @JsonSerialize(using = SortedNotListSerializer.class)
     private List<Not> not;
 
     public LogicalGrouping getLogicalGrouping() {
@@ -50,5 +65,18 @@ public class LogicalGroupingImpl implements LogicalGrouping {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LogicalGroupingImpl that = (LogicalGroupingImpl) o;
+        return Objects.equals(logicalGrouping, that.logicalGrouping) && Objects.equals(and, that.and) && Objects.equals(or, that.or) && Objects.equals(not, that.not);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(logicalGrouping, and, or, not);
     }
 }

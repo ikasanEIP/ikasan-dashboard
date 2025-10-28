@@ -47,6 +47,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -721,7 +722,10 @@ public class MissingContextInstanceRecoveryRunnableTest {
         this.context.setEndJobPlanUponCompletion(true);
         this.context.setTimeWindowStart("0 0 0 * * ?");
         this.context.setContextTtlMilliseconds(1L);
-        this.context.setBlackoutWindowCronExpressions(List.of("* * * * * ? 1900-2900"));
+        String cron = "* * * * * ? 1900-2900";
+        List<String> cronExpressions = new ArrayList<>();
+        cronExpressions.add(cron);
+        this.context.setBlackoutWindowCronExpressions(cronExpressions);
         this.record.setContext(context);
 
         // set up

@@ -1,12 +1,20 @@
 package org.ikasan.scheduled.context.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.ikasan.spec.scheduled.context.model.*;
+import org.ikasan.job.orchestration.model.context.AbstractContext;
+import org.ikasan.job.orchestration.util.deserialise.SortedBlackoutWindowDateTimeRangesMapSerializer;
+import org.ikasan.job.orchestration.util.deserialise.SortedContextParameterListSerializer;
+import org.ikasan.job.orchestration.util.deserialise.SortedJobDependencyListSerializer;
+import org.ikasan.job.orchestration.util.deserialise.SortedStringListSerializer;
+import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.context.model.ContextDependency;
+import org.ikasan.spec.scheduled.context.model.JobDependency;
+import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,11 +26,20 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected String name;
     protected String description;
     protected String timezone;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonSerialize(using = SortedBlackoutWindowDateTimeRangesMapSerializer.class)
     protected Map<Long, Long> blackoutWindowDateTimeRanges = new ConcurrentHashMap<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonSerialize(using = SortedStringListSerializer.class)
     protected List<String> blackoutWindowCronExpressions = new CopyOnWriteArrayList<>();
-    protected List<JobDependency> jobDependencies = new CopyOnWriteArrayList<>() ;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonSerialize(using = SortedJobDependencyListSerializer.class)
+    protected List<JobDependency> jobDependencies = new CopyOnWriteArrayList<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     protected List<ContextDependency> contextDependencies = new CopyOnWriteArrayList<>();
-    protected List<CONTEXT_PARAM> contextParameters = new CopyOnWriteArrayList<>() ;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonSerialize(using = SortedContextParameterListSerializer.class)
+    protected List<CONTEXT_PARAM> contextParameters = new CopyOnWriteArrayList<>();
     protected String timeWindowStart;
     protected boolean customWeekDayOfMonth = false;
     protected long contextTtlMilliseconds;

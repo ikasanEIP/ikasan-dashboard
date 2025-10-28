@@ -1,5 +1,7 @@
 package org.ikasan.rest;
 
+import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
@@ -56,6 +58,7 @@ public class ContextProvisionRestServiceImplTest extends AbstractTest{
 
         objectMapper = ObjectMapperFactory.newInstance();
         objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+        objectMapper.disable(MapperFeature.USE_ANNOTATIONS);
 
         contextBaseUrl = "http://localhost:" + wireMockRule.port();
     }
@@ -72,10 +75,14 @@ public class ContextProvisionRestServiceImplTest extends AbstractTest{
         ContextProvisionRestServiceImpl contextProvisionRestService = new ContextProvisionRestServiceImpl(environment,
             new HttpComponentsClientHttpRequestFactory(), "/rest/provision/context");
 
-        InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT-1793100514_WITH-PROFILES.zip").getInputStream();
+        InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS.zip").getInputStream();
         ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
 
         String json = objectMapper.writeValueAsString(contextBundle);
+
+        StreamReadConstraints.overrideDefaultStreamReadConstraints(
+            StreamReadConstraints.builder().maxStringLength(Integer.MAX_VALUE).build()
+        );
 
         stubFor(put(urlEqualTo("/rest/provision/context"))
             .withHeader(HttpHeaders.USER_AGENT, equalTo("useragent"))
@@ -105,7 +112,7 @@ public class ContextProvisionRestServiceImplTest extends AbstractTest{
         ContextProvisionRestServiceImpl contextProvisionRestService = new ContextProvisionRestServiceImpl(environment,
             new HttpComponentsClientHttpRequestFactory(), "/rest/provision/context");
 
-        InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT-1793100514_WITH-PROFILES.zip").getInputStream();
+        InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS.zip").getInputStream();
         ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
 
         String json = objectMapper.writeValueAsString(contextBundle);

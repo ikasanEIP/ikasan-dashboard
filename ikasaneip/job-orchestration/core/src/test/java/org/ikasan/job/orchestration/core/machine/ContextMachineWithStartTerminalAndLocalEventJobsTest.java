@@ -330,10 +330,10 @@ public class ContextMachineWithStartTerminalAndLocalEventJobsTest extends Abstra
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(4, events.size());
 
-        Assert.assertEquals("TEST_IK_JOB_14", events.get(0).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_13", events.get(1).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_12", events.get(2).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_11", events.get(3).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_14", events.get(3).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_13", events.get(2).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_12", events.get(1).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_11", events.get(0).getJobName());
 
         processEventJobName = events.get(0).getJobName();
 
@@ -464,17 +464,17 @@ public class ContextMachineWithStartTerminalAndLocalEventJobsTest extends Abstra
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(2, events.size());
 
-        Assert.assertEquals("TEST_IK_JOB_18_EVENT", events.get(0).getJobName());
-        Assert.assertEquals("TEST_IK_EVENT2 Step 2 Terminal", events.get(1).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_18_EVENT", events.get(1).getJobName());
+        Assert.assertEquals("TEST_IK_EVENT2 Step 2 Terminal", events.get(0).getJobName());
 
-        processEventJobName = events.get(1).getJobName();
+        processEventJobName = events.get(0).getJobName();
 
         eventInstance = scheduledProcessEventInstance(processEventJobName,
             JobConstants.CONTEXT_TERMINAL_JOB, true);
         ;
         Assert.assertEquals(0, contextMachine.eventReceived(eventInstance).size());
 
-        processEventJobName = events.get(0).getJobName();
+        processEventJobName = events.get(1).getJobName();
 
         eventInstance = scheduledProcessEventInstance(processEventJobName,
             JobConstants.LOCAL_EVENT_JOB, true);
@@ -649,9 +649,10 @@ public class ContextMachineWithStartTerminalAndLocalEventJobsTest extends Abstra
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 7", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "TEST_IK_GLOB Step 8", InstanceStatus.RUNNING);
 
-        Assert.assertEquals("TEST_IK_JOB_21_MIN", events.get(0).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_22_MAX", events.get(1).getJobName());
-        Assert.assertEquals("TEST_IK_JOB_19", events.get(2).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_19", events.get(0).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_21_MIN", events.get(1).getJobName());
+        Assert.assertEquals("TEST_IK_JOB_22_MAX", events.get(2).getJobName());
+
 
         processEventJobName = events.get(0).getJobName();
 

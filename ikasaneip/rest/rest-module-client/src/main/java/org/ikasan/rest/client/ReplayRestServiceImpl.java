@@ -3,7 +3,6 @@ package org.ikasan.rest.client;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
 import org.ikasan.rest.client.dto.ReplayRequestDto;
-import org.ikasan.rest.client.util.UserUtil;
 import org.ikasan.spec.module.client.ReplayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

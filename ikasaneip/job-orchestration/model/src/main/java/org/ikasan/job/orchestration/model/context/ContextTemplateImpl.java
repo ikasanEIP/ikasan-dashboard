@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.model.context;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
@@ -7,6 +8,39 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
+@JsonPropertyOrder({ "name",
+    "description",
+    "timeWindowStart",
+    "timeWindowStart",
+    "contextTtlMilliseconds",
+    "timezone",
+    "environmentGroup",
+    "isQuartzScheduleDrivenJobsDisabledForContext",
+    "treeViewExpandLevel",
+    "ableToRunConcurrently",
+    "useDisplayName",
+    "ordinal",
+    "jobVisualisationVerticalSpacing",
+    "jobVisualisationHorizontalSpacing",
+    "contextVisualisationLevelDistance",
+    "contextVisualisationNodeDistance",
+    "visualisationFontSize",
+    "renderLogicalBoundaries",
+    "useAutoLayout",
+    "userGeneratedLayout",
+    "endJobPlanUponCompletion",
+    "customWeekDayOfMonth",
+    "disabled",
+    "delayAgentSynchronisationUntilNextInstance",
+    "requiresAgentSynchronisation",
+    "quartzScheduleDrivenJobsDisabledForContext",
+    "scheduledJobs",
+    "jobDependencies",
+    "contexts",
+    "contextParameters",
+    "jobLocks",
+    "blackoutWindowCronExpressions",
+    "blackoutWindowDateTimeRanges"})
 public class ContextTemplateImpl extends ContextImpl<ContextTemplate, ContextParameter, SchedulerJob, JobLock> implements ContextTemplate {
     private boolean disabled = false;
     private boolean delayAgentSynchronisationUntilNextInstance = false;

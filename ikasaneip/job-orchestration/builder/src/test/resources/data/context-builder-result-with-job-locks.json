@@ -1,4 +1,20 @@
 {
+  "name" : "Context Template Name",
+  "description" : "Context Template Description",
+  "timeWindowStart" : "* * 6 ? * * *",
+  "contextTtlMilliseconds" : 100000,
+  "treeViewExpandLevel" : 1,
+  "ableToRunConcurrently" : true,
+  "useDisplayName" : false,
+  "ordinal" : -1,
+  "renderLogicalBoundaries" : true,
+  "useAutoLayout" : true,
+  "endJobPlanUponCompletion" : false,
+  "customWeekDayOfMonth" : false,
+  "disabled" : false,
+  "delayAgentSynchronisationUntilNextInstance" : false,
+  "requiresAgentSynchronisation" : false,
+  "quartzScheduleDrivenJobsDisabledForContext" : false,
   "scheduledJobs" : [ {
     "agentName" : "AgentName",
     "jobName" : "Job1",
@@ -56,64 +72,7 @@
     "identifier" : "AgentName-Job8",
     "jobDescription" : "Job8 Description"
   } ],
-  "jobLocks" : [ {
-    "name" : "TEST-LOCK-1",
-    "lockCount" : 1,
-    "jobs" : {
-      "context2" : [ {
-        "agentName" : "AgentName",
-        "jobName" : "Job2",
-        "startupControlType" : "AUTOMATIC",
-        "ordinal" : -1,
-        "lockCount" : 1,
-        "identifier" : "AgentName-Job2",
-        "jobDescription" : "Job2 Description"
-      } ],
-      "context1" : [ {
-        "agentName" : "AgentName",
-        "jobName" : "Job1",
-        "startupControlType" : "AUTOMATIC",
-        "ordinal" : -1,
-        "lockCount" : 1,
-        "identifier" : "AgentName-Job1",
-        "jobDescription" : "Job1 Description"
-      } ]
-    },
-    "exclusiveJobLock" : false
-  }, {
-    "name" : "TEST-LOCK-2",
-    "lockCount" : 1,
-    "jobs" : {
-      "context2" : [ {
-        "agentName" : "AgentName",
-        "jobName" : "Job4",
-        "startupControlType" : "AUTOMATIC",
-        "ordinal" : -1,
-        "lockCount" : 1,
-        "identifier" : "AgentName-Job4",
-        "jobDescription" : "Job4 Description"
-      } ],
-      "context1" : [ {
-        "agentName" : "AgentName",
-        "jobName" : "Job3",
-        "startupControlType" : "AUTOMATIC",
-        "ordinal" : -1,
-        "lockCount" : 1,
-        "identifier" : "AgentName-Job3",
-        "jobDescription" : "Job3 Description"
-      } ]
-    },
-    "exclusiveJobLock" : false
-  } ],
-  "name" : "Context Template Name",
-  "description" : "Context Template Description",
   "jobDependencies" : [ {
-    "jobIdentifier" : "AgentName-Job2"
-  }, {
-    "jobIdentifier" : "AgentName-Job3"
-  }, {
-    "jobIdentifier" : "AgentName-Job5"
-  }, {
     "jobIdentifier" : "AgentName-Job1",
     "logicalGrouping" : {
       "and" : [ {
@@ -122,6 +81,12 @@
         "identifier" : "AgentName-Job3"
       } ]
     }
+  }, {
+    "jobIdentifier" : "AgentName-Job2"
+  }, {
+    "jobIdentifier" : "AgentName-Job3"
+  }, {
+    "jobIdentifier" : "AgentName-Job5"
   }, {
     "jobIdentifier" : "AgentName-Job8",
     "logicalGrouping" : {
@@ -160,12 +125,53 @@
     "name" : "param5",
     "defaultValue" : "value"
   } ],
-  "timeWindowStart" : "* * 6 ? * * *",
-  "contextTtlMilliseconds" : 100000,
-  "treeViewExpandLevel" : 1,
-  "ableToRunConcurrently" : true,
-  "useDisplayName" : false,
-  "ordinal" : -1,
-  "disabled" : false,
-  "quartzScheduleDrivenJobsDisabledForContext" : false
+  "jobLocks" : [ {
+    "name" : "TEST-LOCK-1",
+    "lockCount" : 1,
+    "jobs" : {
+      "context1" : [ {
+        "agentName" : "AgentName",
+        "jobName" : "Job1",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "AgentName-Job1",
+        "lockCount" : 1,
+        "jobDescription" : "Job1 Description"
+      } ],
+      "context2" : [ {
+        "agentName" : "AgentName",
+        "jobName" : "Job2",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "AgentName-Job2",
+        "lockCount" : 1,
+        "jobDescription" : "Job2 Description"
+      } ]
+    },
+    "exclusiveJobLock" : false
+  }, {
+    "name" : "TEST-LOCK-2",
+    "lockCount" : 1,
+    "jobs" : {
+      "context1" : [ {
+        "agentName" : "AgentName",
+        "jobName" : "Job3",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "AgentName-Job3",
+        "lockCount" : 1,
+        "jobDescription" : "Job3 Description"
+      } ],
+      "context2" : [ {
+        "agentName" : "AgentName",
+        "jobName" : "Job4",
+        "startupControlType" : "AUTOMATIC",
+        "ordinal" : -1,
+        "identifier" : "AgentName-Job4",
+        "lockCount" : 1,
+        "jobDescription" : "Job4 Description"
+      } ]
+    },
+    "exclusiveJobLock" : false
+  } ]
 }
