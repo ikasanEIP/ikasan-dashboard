@@ -27,7 +27,6 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
     "visualisationFontSize",
     "renderLogicalBoundaries",
     "useAutoLayout",
-    "userGeneratedLayout",
     "endJobPlanUponCompletion",
     "customWeekDayOfMonth",
     "disabled",
@@ -40,7 +39,8 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
     "contextParameters",
     "jobLocks",
     "blackoutWindowCronExpressions",
-    "blackoutWindowDateTimeRanges"})
+    "blackoutWindowDateTimeRanges",
+    "userGeneratedLayout"})
 public class ContextTemplateImpl extends ContextImpl<ContextTemplate, ContextParameter, SchedulerJob, JobLock> implements ContextTemplate {
     private boolean disabled = false;
     private boolean delayAgentSynchronisationUntilNextInstance = false;
