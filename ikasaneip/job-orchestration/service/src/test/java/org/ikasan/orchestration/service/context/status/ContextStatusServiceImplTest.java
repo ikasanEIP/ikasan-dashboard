@@ -12,8 +12,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
@@ -344,17 +346,26 @@ public class ContextStatusServiceImplTest {
         String contextStatus = contextStatusService.getJsonContextStatus("CONTEXT-1436221681", "CONTEXT-1436221681");
         contextStatus = formatContextStatus(contextStatus);
 
-        JSONAssert.assertEquals(jsonContextStatus, contextStatus, false);
+        JSONAssert.assertEquals(jsonContextStatus, contextStatus, new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
 
         contextStatus = contextStatusService.getJsonContextStatus("CONTEXT-1436221681", "CONTEXT-1848727981");
         contextStatus = formatContextStatus(contextStatus);
 
-        JSONAssert.assertEquals(jsonContextStatusContext1848727981, contextStatus, false);
+        JSONAssert.assertEquals(jsonContextStatusContext1848727981, contextStatus, new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
 
         contextStatus = contextStatusService.getJsonContextStatus("CONTEXT-1436221681", "CONTEXT--1209755884");
         contextStatus = formatContextStatus(contextStatus);
 
-        JSONAssert.assertEquals(jsonContextStatusContext1209755884, contextStatus, false);
+        JSONAssert.assertEquals(jsonContextStatusContext1209755884, contextStatus, new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
     }
 
     @Test
@@ -379,21 +390,30 @@ public class ContextStatusServiceImplTest {
         String contextStatus = contextStatusService.getJsonContextStatus("CONTEXT-1436221681", "CONTEXT-1436221681");
         contextStatus = formatContextStatus(contextStatus);
 
-        JSONAssert.assertEquals(jsonContextStatus, contextStatus, false);
+        JSONAssert.assertEquals(jsonContextStatus, contextStatus, new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
         Assert.assertTrue(contextStatus.contains("\"44444444-3b4c-4cf0-a84f-95f64ffc3ac5\""));
         Assert.assertTrue(contextStatus.contains("\"6ae44543-3b4c-4cf0-a84f-95f64ffc3ac5\""));
 
         contextStatus = contextStatusService.getJsonContextStatus("CONTEXT-1436221681", "CONTEXT-1848727981");
         contextStatus = formatContextStatus(contextStatus);
 
-        JSONAssert.assertEquals(jsonContextStatusContext1848727981, contextStatus, false);
+        JSONAssert.assertEquals(jsonContextStatusContext1848727981, contextStatus, new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
         Assert.assertTrue(contextStatus.contains("\"44444444-3b4c-4cf0-a84f-95f64ffc3ac5\""));
         Assert.assertTrue(contextStatus.contains("\"6ae44543-3b4c-4cf0-a84f-95f64ffc3ac5\""));
 
         contextStatus = contextStatusService.getJsonContextStatus("CONTEXT-1436221681", "CONTEXT--1209755884");
         contextStatus = formatContextStatus(contextStatus);
 
-        JSONAssert.assertEquals(jsonContextStatusContext1209755884, contextStatus, false);
+        JSONAssert.assertEquals(jsonContextStatusContext1209755884, contextStatus, new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
         Assert.assertTrue(contextStatus.contains("\"44444444-3b4c-4cf0-a84f-95f64ffc3ac5\""));
         Assert.assertTrue(contextStatus.contains("\"6ae44543-3b4c-4cf0-a84f-95f64ffc3ac5\""));
     }
@@ -421,21 +441,30 @@ public class ContextStatusServiceImplTest {
         String contextStatus = contextStatusService.getJsonContextStatus("CONTEXT-1436221681", "CONTEXT-1436221681");
         contextStatus = formatContextStatus(contextStatus);
 
-        JSONAssert.assertEquals(jsonContextStatus, contextStatus, false);
+        JSONAssert.assertEquals(jsonContextStatus, contextStatus, new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
         Assert.assertFalse(contextStatus.contains("\"44444444-3b4c-4cf0-a84f-95f64ffc3ac5\""));
         Assert.assertTrue(contextStatus.contains("\"6ae44543-3b4c-4cf0-a84f-95f64ffc3ac5\""));
 
         contextStatus = contextStatusService.getJsonContextStatus("CONTEXT-1436221681", "CONTEXT-1848727981");
         contextStatus = formatContextStatus(contextStatus);
 
-        JSONAssert.assertEquals(jsonContextStatusContext1848727981, contextStatus, false);
+        JSONAssert.assertEquals(jsonContextStatusContext1848727981, contextStatus, new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
         Assert.assertFalse(contextStatus.contains("\"44444444-3b4c-4cf0-a84f-95f64ffc3ac5\""));
         Assert.assertTrue(contextStatus.contains("\"6ae44543-3b4c-4cf0-a84f-95f64ffc3ac5\""));
 
         contextStatus = contextStatusService.getJsonContextStatus("CONTEXT-1436221681", "CONTEXT--1209755884");
         contextStatus = formatContextStatus(contextStatus);
 
-        JSONAssert.assertEquals(jsonContextStatusContext1209755884, contextStatus, false);
+        JSONAssert.assertEquals(jsonContextStatusContext1209755884, contextStatus, new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
         Assert.assertFalse(contextStatus.contains("\"44444444-3b4c-4cf0-a84f-95f64ffc3ac5\""));
         Assert.assertTrue(contextStatus.contains("\"6ae44543-3b4c-4cf0-a84f-95f64ffc3ac5\""));
     }

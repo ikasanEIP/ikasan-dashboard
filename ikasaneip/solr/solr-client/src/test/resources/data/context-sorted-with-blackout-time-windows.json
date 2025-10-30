@@ -21901,22 +21901,6 @@
       "name": "UseMDSExtract"
     },
     {
-      "name": "aaaaa",
-      "defaultValue": "value"
-    },
-    {
-      "name": "bbbbbb",
-      "defaultValue": "value"
-    },
-    {
-      "name": "ffffff",
-      "defaultValue": "value"
-    },
-    {
-      "name": "nnnnnn",
-      "defaultValue": "value"
-    },
-    {
       "name": "pDeliverScript"
     },
     {
@@ -21933,14 +21917,6 @@
     },
     {
       "name": "pUsage"
-    },
-    {
-      "name": "qqqqqq",
-      "defaultValue": "value"
-    },
-    {
-      "name": "zzzzzz",
-      "defaultValue": "value"
     }
   ],
   "jobLocks": [
@@ -23268,5 +23244,12 @@
       },
       "exclusiveJobLock": false
     }
-  ]
+  ],
+  "blackoutWindowDateTimeRanges": {
+    "0": 0,
+    "1": 1,
+    "12345": 12345,
+    "999999": 9999999,
+    "10101010101": 10101010101
+  }
 }

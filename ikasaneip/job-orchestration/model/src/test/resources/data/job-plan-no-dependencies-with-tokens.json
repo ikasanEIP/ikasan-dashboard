@@ -1,15 +1,23 @@
 {
+  "name": "IES Simple_D_[[env.name]]",
+  "description": "IES Simple D Description",
+  "timeWindowStart": "1 0 0 ? * * *",
+  "contextTtlMilliseconds": 85800000,
+  "timezone": "Europe/London",
+  "treeViewExpandLevel": 1,
+  "ableToRunConcurrently": false,
+  "useDisplayName": false,
+  "ordinal": -1,
+  "renderLogicalBoundaries": true,
+  "useAutoLayout": true,
+  "endJobPlanUponCompletion": false,
+  "customWeekDayOfMonth": false,
+  "disabled": true,
+  "delayAgentSynchronisationUntilNextInstance": false,
+  "requiresAgentSynchronisation": false,
+  "quartzScheduleDrivenJobsDisabledForContext": false,
   "contexts": [
     {
-      "scheduledJobs": [
-        {
-          "agentName": "[[agent.name]]",
-          "jobName": "child1",
-          "startupControlType": "AUTOMATIC",
-          "ordinal": -1,
-          "identifier": "[[agent.name]]-child1"
-        }
-      ],
       "name": "IEs Simple Child1",
       "description": "IEs Simple Child1",
       "contextTtlMilliseconds": 0,
@@ -17,19 +25,23 @@
       "ableToRunConcurrently": true,
       "useDisplayName": false,
       "ordinal": -1,
+      "renderLogicalBoundaries": true,
+      "useAutoLayout": true,
+      "endJobPlanUponCompletion": false,
+      "customWeekDayOfMonth": false,
       "disabled": false,
-      "quartzScheduleDrivenJobsDisabledForContext": false
+      "delayAgentSynchronisationUntilNextInstance": false,
+      "requiresAgentSynchronisation": false,
+      "quartzScheduleDrivenJobsDisabledForContext": false,
+      "scheduledJobs": [
+        {
+          "agentName": "[[agent.name]]",
+          "jobName": "child1",
+          "startupControlType": "AUTOMATIC",
+          "ordinal": 0,
+          "identifier": "[[agent.name]]-child1"
+        }
+      ]
     }
-  ],
-  "name": "IES Simple_D_[[env.name]]",
-  "description": "IES Simple D Description",
-  "timezone": "Europe/London",
-  "timeWindowStart": "1 0 0 ? * * *",
-  "contextTtlMilliseconds": 85800000,
-  "treeViewExpandLevel": 1,
-  "ableToRunConcurrently": false,
-  "useDisplayName": false,
-  "ordinal": -1,
-  "disabled": true,
-  "quartzScheduleDrivenJobsDisabledForContext": false
+  ]
 }

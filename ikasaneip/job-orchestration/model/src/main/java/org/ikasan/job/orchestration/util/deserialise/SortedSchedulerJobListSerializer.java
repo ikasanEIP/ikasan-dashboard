@@ -16,13 +16,21 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Custom JsonSerializer implementation for serializing a list of SchedulerJob objects in a sorted manner based on the job name or hash code.
+ * Custom JsonSerializer implementation for serializing a list of SchedulerJob objects in a sorted manner based on the
+ * job name or hash code.
  */
 public class SortedSchedulerJobListSerializer extends JsonSerializer<List<SchedulerJob>> {
 
     @Override
     public void serialize(List<SchedulerJob> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         if (list != null) {
+            // We set the ordinals on export if necessary
+            for(int i=0; i<list.size(); i++) {
+                if(list.get(i).getOrdinal() == -1) {
+                    list.get(i).setOrdinal(i);
+                }
+            }
+
             Collections.sort(list, (a, b) -> {
                 if (a.getIdentifier() != null && b.getIdentifier() != null) {
                     return a.getJobName().compareTo(b.getJobName());

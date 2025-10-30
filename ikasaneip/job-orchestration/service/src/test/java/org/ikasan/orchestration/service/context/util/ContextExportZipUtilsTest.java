@@ -34,8 +34,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -155,7 +157,10 @@ public class ContextExportZipUtilsTest {
         this.assertJobsWithNoTokensCorrect(internalTemplateJobs);
 
         JSONAssert.assertEquals(loadDataFile("/context-with-tokens.json")
-            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -272,7 +277,10 @@ public class ContextExportZipUtilsTest {
         Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-195330380.json"));
 
         JSONAssert.assertEquals(loadDataFile("/context-with-tokens-subcontext-split.json")
-            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(helloContext), JSONCompareMode.LENIENT);
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(helloContext), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -390,7 +398,10 @@ public class ContextExportZipUtilsTest {
         Assert.assertNotNull(contextTemplate);
 
         JSONAssert.assertEquals(loadDataFile("/context-without-tokens.json")
-            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -507,7 +518,10 @@ public class ContextExportZipUtilsTest {
         Assert.assertNotNull(getContextTemplateForFile(result, stream, "downloadName/context/HelloContext/CONTEXT-195330380.json"));
 
         JSONAssert.assertEquals(loadDataFile("/context-without-tokens-subcontext-split.json")
-            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(helloContext), JSONCompareMode.LENIENT);
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(helloContext), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test

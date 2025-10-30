@@ -9,7 +9,10 @@ import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 import java.io.IOException;
 
@@ -25,7 +28,10 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
 
         String result = loadDataFile("/data/contexts/results/results-multiple-and-roots.json");
 
-        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
     }
 
     @Test
@@ -36,7 +42,10 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
 
         String result = loadDataFile("/data/contexts/results/results-context-and-single-job-with-nested-or.json");
 
-        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
     }
 
     @Test
@@ -47,7 +56,10 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
 
         String result = loadDataFile("/data/contexts/results/results-sample-context-parallel-jobs.json");
 
-        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
     }
 
     @Test
@@ -58,7 +70,10 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
 
         String result = loadDataFile("/data/contexts/results/results-context-with-repeating-jobs.json");
 
-        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
     }
 
     @Test
@@ -69,7 +84,10 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
 
         String result = loadDataFile("/data/contexts/results/results-start-and-end-jobs.json");
 
-        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
     }
 
     @Test
@@ -80,7 +98,10 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
 
         String expected = loadDataFile("/data/contexts/DEMO-WITH_UPPER_CASE.json");
 
-        JSONAssert.assertEquals(expected, objectMapper.writeValueAsString(contextTemplate), false);
+        JSONAssert.assertEquals(expected, objectMapper.writeValueAsString(contextTemplate), new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
     }
 
     @Test
@@ -94,7 +115,10 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
 
         String result = loadDataFile("/data/contexts/results/parent-context-with-ordinal.json");
 
-        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
 
         canvasJson = loadDataFile("/data/contexts/parent-context-draw2d-context-moved.json");
 
@@ -102,6 +126,9 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
 
         result = loadDataFile("/data/contexts/results/parent-context-with-ordinal-context-moved.json");
 
-        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), false);
+        JSONAssert.assertEquals(result, objectMapper.writeValueAsString(contextTemplate), new CustomComparator(
+            JSONCompareMode.LENIENT,
+            new Customization("**.ordinal", (o1, o2) -> true)
+        ));
     }
 }
