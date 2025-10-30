@@ -36,7 +36,7 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
             .getContextTemplate(loadDataFile("/data/context-sorted-base.json"));
 
         Assert.assertNotNull(contextTemplate);
-        JSONAssert.assertEquals(loadDataFile("/data/context-sorted-base.json")
+        JSONAssert.assertEquals(loadDataFile("/data/context-sorted-base-result.json")
             , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
     }
 
@@ -361,7 +361,7 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
         contextTemplate.getBlackoutWindowDateTimeRanges().put(10101010101L, 10101010101L);
 
         Assert.assertNotNull(contextTemplate);
-        JSONAssert.assertEquals(loadDataFile("/data/context-sorted-with-balckout-time-windows.json")
+        JSONAssert.assertEquals(loadDataFile("/data/context-sorted-with-blackout-time-windows.json")
             , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
     }
 

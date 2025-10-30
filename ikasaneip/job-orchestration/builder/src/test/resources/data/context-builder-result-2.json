@@ -19,147 +19,147 @@
     "agentName" : "scheduler-agent",
     "jobName" : "File Arrive Job",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 0,
     "identifier" : "scheduler-agent-File Arrive Job",
     "jobDescription" : "Job1 Description"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-0",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 1,
     "identifier" : "scheduler-agent-job-0",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-0",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 11,
     "identifier" : "scheduler-agent-2-job-0",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-1",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 2,
     "identifier" : "scheduler-agent-job-1",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-1",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 12,
     "identifier" : "scheduler-agent-2-job-1",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-2",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 3,
     "identifier" : "scheduler-agent-job-2",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-2",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 13,
     "identifier" : "scheduler-agent-2-job-2",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-3",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 4,
     "identifier" : "scheduler-agent-job-3",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-3",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 14,
     "identifier" : "scheduler-agent-2-job-3",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-4",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 5,
     "identifier" : "scheduler-agent-job-4",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-4",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 15,
     "identifier" : "scheduler-agent-2-job-4",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-5",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 6,
     "identifier" : "scheduler-agent-job-5",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-5",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 16,
     "identifier" : "scheduler-agent-2-job-5",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-6",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 7,
     "identifier" : "scheduler-agent-job-6",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-6",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 17,
     "identifier" : "scheduler-agent-2-job-6",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-7",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 8,
     "identifier" : "scheduler-agent-job-7",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-7",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 18,
     "identifier" : "scheduler-agent-2-job-7",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-8",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 9,
     "identifier" : "scheduler-agent-job-8",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-8",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 19,
     "identifier" : "scheduler-agent-2-job-8",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent",
     "jobName" : "job-9",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 10,
     "identifier" : "scheduler-agent-job-9",
     "jobDescription" : "A simple internal job!"
   }, {
     "agentName" : "scheduler-agent-2",
     "jobName" : "job-9",
     "startupControlType" : "AUTOMATIC",
-    "ordinal" : -1,
+    "ordinal" : 20,
     "identifier" : "scheduler-agent-2-job-9",
     "jobDescription" : "A simple internal job!"
   } ],
