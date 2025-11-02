@@ -1,25 +1,25 @@
-package org.ikasan.job.orchestration.util.deserialise;
+package org.ikasan.job.orchestration.util.serialise;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.ikasan.spec.scheduled.context.model.Not;
+import org.ikasan.spec.scheduled.context.model.JobLock;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Custom JSON serializer for sorting and serializing a list of "Not" objects based on their identifiers.
+ * Custom JsonSerializer implementation for serializing a list of JobLock objects in a sorted manner based on the lock name.
  */
-public class SortedNotListSerializer extends JsonSerializer<List<Not>> {
+public class SortedJobLockListSerializer extends JsonSerializer<List<JobLock>> {
 
     @Override
-    public void serialize(List<Not> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(List<JobLock> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         if (list != null) {
             Collections.sort(list, (a, b) -> {
-                if (a.getIdentifier() != null && b.getIdentifier() != null) {
-                    return a.getIdentifier().compareTo(b.getIdentifier());
+                if (a.getName() != null && b.getName() != null) {
+                    return a.getName().compareTo(b.getName());
                 } else {
                     return ((Integer) a.hashCode()).compareTo(b.hashCode());
                 }
@@ -30,7 +30,7 @@ public class SortedNotListSerializer extends JsonSerializer<List<Not>> {
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, List<Not> list) {
+    public boolean isEmpty(SerializerProvider provider, List<JobLock> list) {
         if (list == null || list.isEmpty()) {
             return true;
         }

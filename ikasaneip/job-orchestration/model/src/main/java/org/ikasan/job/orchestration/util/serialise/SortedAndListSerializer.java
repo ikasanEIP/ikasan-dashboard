@@ -1,21 +1,21 @@
-package org.ikasan.job.orchestration.util.deserialise;
+package org.ikasan.job.orchestration.util.serialise;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.ikasan.spec.scheduled.context.model.Or;
+import org.ikasan.spec.scheduled.context.model.And;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Custom JSON serializer for sorting and serializing a list of "Or" objects based on their identifiers.
+ * Custom JSON serializer for sorting and serializing a list of "And" objects based on their identifiers.
  */
-public class SortedOrListSerializer extends JsonSerializer<List<Or>> {
+public class SortedAndListSerializer extends JsonSerializer<List<And>> {
 
     @Override
-    public void serialize(List<Or> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(List<And> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         if (list != null) {
             Collections.sort(list, (a, b) -> {
                 if (a.getIdentifier() != null && b.getIdentifier() != null) {
@@ -25,12 +25,11 @@ public class SortedOrListSerializer extends JsonSerializer<List<Or>> {
                 }
             });
         }
-
         serializerProvider.defaultSerializeValue(list, jsonGenerator);
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, List<Or> list) {
+    public boolean isEmpty(SerializerProvider provider, List<And> list) {
         if (list == null || list.isEmpty()) {
             return true;
         }

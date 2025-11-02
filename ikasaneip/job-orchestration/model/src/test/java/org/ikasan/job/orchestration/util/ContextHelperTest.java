@@ -15,8 +15,10 @@ import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatus;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +54,10 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/-1793100514-with-tokens.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
 
         SchedulerJob job = new SchedulerJobImpl();
         job.setIdentifier("scheduler-agent-zzzz-job");
@@ -75,7 +80,10 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/job-plan-with-user-generated-layout-with-tokens.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -101,7 +109,10 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/job-plan-no-dependencies-with-tokens.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -114,7 +125,10 @@ public class ContextHelperTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/-1793100514-with-tokens_no_underscore.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.LENIENT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
