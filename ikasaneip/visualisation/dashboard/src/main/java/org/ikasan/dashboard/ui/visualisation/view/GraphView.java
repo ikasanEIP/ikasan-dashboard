@@ -11,6 +11,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
+import java.util.List;
 
 @Route(value = "visualisation", layout = IkasanAppLayout.class)
 @UIScope
@@ -127,6 +129,11 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         if(!this.initialised) {
             this.init();
+            List<ModuleMetaData> moduleMetaData = this.moduleMetadataService.findAll();
+            if(moduleMetaData.size() > 0) {
+                this.graphVisualisation.setVisualisationName(moduleMetaData.get(0).getName());
+                this.graphVisualisation.setVisualisationType(VisualisationType.MODULE.name());
+            }
             this.graphVisualisation.beforeEnter(beforeEnterEvent);
         }
     }

@@ -106,7 +106,7 @@ public class IkasanRestAutoConfiguration {
 
     @Bean
     SchedulerJobProvisionController schedulerJobProvisionController() {
-        return new SchedulerJobProvisionController(this.jobProvisionService);
+        return new SchedulerJobProvisionController(this.jobProvisionService, schedulerJobService);
     }
 
     @Bean
