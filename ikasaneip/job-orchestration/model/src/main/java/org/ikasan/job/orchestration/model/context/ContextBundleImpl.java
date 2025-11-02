@@ -2,9 +2,6 @@ package org.ikasan.job.orchestration.model.context;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.ikasan.job.orchestration.util.deserialise.SortedBlackoutWindowDateTimeRangesMapSerializer;
-import org.ikasan.job.orchestration.util.deserialise.SortedContextListSerializer;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;

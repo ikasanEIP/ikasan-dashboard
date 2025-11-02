@@ -1,21 +1,22 @@
-package org.ikasan.job.orchestration.util.deserialise;
+package org.ikasan.job.orchestration.util.serialise;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.ikasan.spec.scheduled.context.model.JobLock;
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Custom JsonSerializer implementation for serializing a list of JobLock objects in a sorted manner based on the lock name.
+ * Custom JSON serializer for sorting and serializing a list of ContextParameters in ascending order based on name.
+ * Extends JsonSerializer to provide custom serialization logic.
  */
-public class SortedJobLockListSerializer extends JsonSerializer<List<JobLock>> {
+public class SortedContextParameterListSerializer extends JsonSerializer<List<ContextParameter>> {
 
     @Override
-    public void serialize(List<JobLock> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(List<ContextParameter> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         if (list != null) {
             Collections.sort(list, (a, b) -> {
                 if (a.getName() != null && b.getName() != null) {
@@ -30,7 +31,7 @@ public class SortedJobLockListSerializer extends JsonSerializer<List<JobLock>> {
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, List<JobLock> list) {
+    public boolean isEmpty(SerializerProvider provider, List<ContextParameter> list) {
         if (list == null || list.isEmpty()) {
             return true;
         }

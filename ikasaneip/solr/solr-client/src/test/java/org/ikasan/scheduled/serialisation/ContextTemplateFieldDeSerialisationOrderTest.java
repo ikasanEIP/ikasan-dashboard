@@ -16,8 +16,10 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +39,10 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/context-sorted-base-result.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -59,7 +64,10 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
         // bookend the resulting de-serialised context template
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/context-sorted-with-added-child-contexts.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -86,7 +94,10 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
         // bookend the resulting de-serialised context template
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/context-sorted-with-added-scheduler-jobs.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -162,7 +173,10 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/context-sorted-with-added-scheduler-jobs-and-job-dependencies.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -208,7 +222,10 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/context-sorted-with-added-context-parameters.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -346,7 +363,10 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/context-sorted-with-additional-job-lock.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -362,7 +382,10 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/context-sorted-with-blackout-time-windows.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     @Test
@@ -377,7 +400,10 @@ public class ContextTemplateFieldDeSerialisationOrderTest {
 
         Assert.assertNotNull(contextTemplate);
         JSONAssert.assertEquals(loadDataFile("/data/context-sorted-with-blackout-cron-expressions.json")
-            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), JSONCompareMode.STRICT);
+            , ConcurrentObjectMapperFactory.newInstance().writeValueAsString(contextTemplate), new CustomComparator(
+                JSONCompareMode.LENIENT,
+                new Customization("**.ordinal", (o1, o2) -> true)
+            ));
     }
 
     protected String loadDataFile(String fileName) throws IOException

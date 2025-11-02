@@ -1,9 +1,8 @@
-package org.ikasan.job.orchestration.util.deserialise;
+package org.ikasan.job.orchestration.util.serialise;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.ikasan.spec.scheduled.context.model.And;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
 
 import java.io.IOException;

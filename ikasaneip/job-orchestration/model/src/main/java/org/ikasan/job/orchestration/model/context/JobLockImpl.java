@@ -1,10 +1,9 @@
 package org.ikasan.job.orchestration.model.context;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.ikasan.job.orchestration.util.deserialise.SortedSchedulerJobLocalParticipantMapSerializer;
+import org.ikasan.job.orchestration.util.serialise.SortedSchedulerJobLocalParticipantMapSerializer;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 

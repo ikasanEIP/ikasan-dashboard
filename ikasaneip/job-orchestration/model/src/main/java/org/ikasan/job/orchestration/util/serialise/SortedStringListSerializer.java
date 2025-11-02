@@ -1,4 +1,4 @@
-package org.ikasan.job.orchestration.util.deserialise;
+package org.ikasan.job.orchestration.util.serialise;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
