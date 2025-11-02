@@ -46,17 +46,16 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Dashboard application implementing the REST contract
@@ -68,14 +67,22 @@ public class SchedulerJobProvisionController
     private static Logger logger = LoggerFactory.getLogger(SchedulerJobProvisionController.class);
 
     private JobProvisionService jobProvisionService;
+    private SchedulerJobService schedulerJobService;
     private ObjectMapper mapper;
 
-    public SchedulerJobProvisionController(JobProvisionService jobProvisionService)
+    public SchedulerJobProvisionController(JobProvisionService jobProvisionService,
+                                           SchedulerJobService schedulerJobService)
     {
         this.jobProvisionService = jobProvisionService;
         if (this.jobProvisionService == null)
         {
             throw new IllegalArgumentException("jobProvisionService cannot be null!");
+        }
+
+        this.schedulerJobService = schedulerJobService;
+        if (this.schedulerJobService == null)
+        {
+            throw new IllegalArgumentException("schedulerJobService cannot be null!");
         }
 
         this.mapper = ConcurrentObjectMapperFactory.newInstance();
@@ -112,11 +119,31 @@ public class SchedulerJobProvisionController
         catch (Exception e)
         {
             logger.error(e.getMessage());
-            e.printStackTrace();
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to provision scheduler jobs! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+        value = "/job/{contextName}/{jobName}")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity provisionJobs(@PathVariable(value = "contextName") String contextName,
+                                        @PathVariable(value = "jobName") String jobName)
+    {
+        try {
+            logger.info("Attempting to get job {} for context {}.", jobName, contextName);
+
+            SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(contextName, jobName);
+
+            return new ResponseEntity(schedulerJobRecord.getJob(), HttpStatus.OK);
+        }
+        catch (Exception e) {
+            logger.error(e.getMessage());
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to provision scheduler jobs! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
     }
 }
