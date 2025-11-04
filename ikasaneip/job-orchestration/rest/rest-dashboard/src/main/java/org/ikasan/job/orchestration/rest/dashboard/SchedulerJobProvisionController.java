@@ -56,6 +56,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClientException;
 
 /**
  * Dashboard application implementing the REST contract
@@ -137,13 +138,19 @@ public class SchedulerJobProvisionController
 
             SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(contextName, jobName);
 
+            if(schedulerJobRecord == null || schedulerJobRecord.getJob() == null) {
+                throw new RestClientException(String.format("Cannot find job[%s] for job plan[%s]! "
+                    , jobName, contextName));
+            }
+
             return new ResponseEntity(schedulerJobRecord.getJob(), HttpStatus.OK);
         }
         catch (Exception e) {
             logger.error(e.getMessage());
             return new ResponseEntity(
-                new ErrorDto("An error has occurred attempting to provision scheduler jobs! Error message ["
-                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+                new ErrorDto(String.format("An error has occurred attempting to get job[%s] for job plan[%s]! " +
+                    "Error message [%s]", jobName, contextName, e.getMessage()))
+                , HttpStatus.NOT_FOUND);
         }
     }
 }
