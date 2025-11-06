@@ -7,6 +7,7 @@ import org.ikasan.job.orchestration.util.serialise.SortedSchedulerJobLocalPartic
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public class JobLockImpl implements JobLock {
     private String name;
     private long lockCount = 1;
     @JsonSerialize(using = SortedSchedulerJobLocalParticipantMapSerializer.class)
-    private Map<String, List<SchedulerJobLockParticipant>> jobs;
+    private Map<String, List<SchedulerJobLockParticipant>> jobs = new HashMap<>();
     private boolean exclusiveJobLock = false;
 
     @Override

@@ -411,13 +411,15 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                     if(schedulerJobRecord.isParticipatesInLock()) {
                         AtomicReference<String> lockName = new AtomicReference<>();
                         this.contextTemplate.getJobLocks().forEach(jobLock -> {
-                            jobLock.getJobs().entrySet().forEach(entry -> {
-                                entry.getValue().forEach(job -> {
-                                    if (job.getIdentifier().equals(schedulerJobRecord.getJob().getIdentifier())) {
-                                        lockName.set(jobLock.getName());
-                                    }
+                            if(jobLock.getJobs() != null) {
+                                jobLock.getJobs().entrySet().forEach(entry -> {
+                                    entry.getValue().forEach(job -> {
+                                        if (job.getIdentifier().equals(schedulerJobRecord.getJob().getIdentifier())) {
+                                            lockName.set(jobLock.getName());
+                                        }
+                                    });
                                 });
-                            });
+                            }
                         });
 
                         Icon lock = IconDecorator.decorate(new Icon(VaadinIcon.LOCK), lockName.get(), "14pt", "rgba(0, 0, 0, 1.0)");
