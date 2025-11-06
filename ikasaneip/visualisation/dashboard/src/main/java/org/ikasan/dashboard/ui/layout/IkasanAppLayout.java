@@ -61,7 +61,6 @@ public class IkasanAppLayout extends AppLayout {
     private SideNavItem adminMenuItem;
     private SideNavItem dashboardMenuItem;
     private SideNavItem searchMenuItem;
-    private SideNavItem visualisationMenuItem;
     private SideNavItem schedulerMenuItem;
     private SideNavItem systemEventMenuItem;
     private SideNavItem userManagementMenuItem;
@@ -174,12 +173,6 @@ public class IkasanAppLayout extends AppLayout {
 
         sideNav.addItem(this.searchMenuItem);
 
-
-        this.visualisationMenuItem = new SideNavItem(getTranslation("menu-item.visualisation", getLocale(), null), GraphView.class, VaadinIcon.CLUSTER.create());
-        this.visualisationMenuItem.setId("visualisationMenuItem");
-
-        sideNav.addItem(this.visualisationMenuItem);
-
         this.schedulerMenuItem = new SideNavItem(getTranslation("menu-item.scheduler", getLocale()), SchedulerView.class, VaadinIcon.CLOCK.create());
         this.schedulerMenuItem.setId("schedulerMenuItem");
 
@@ -255,8 +248,6 @@ public class IkasanAppLayout extends AppLayout {
                 , SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ, SecurityConstants.SCHEDULER_WRITE
                 , SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_ADMIN)
                 && isIkasanEnterpriseSchedulerInstance);
-
-            this.visualisationMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
 
             this.systemEventMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_READ,
                 SecurityConstants.SYSTEM_EVENT_WRITE));
