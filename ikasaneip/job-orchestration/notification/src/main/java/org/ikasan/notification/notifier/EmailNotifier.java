@@ -185,19 +185,6 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                 emailNotificationDetails.setEmailBody(this.templateEngine.process(emailNotificationDetails.getEmailBodyTemplate(), ctx));
                 emailNotificationDetails.setEmailSubject(this.templateEngine.process(emailNotificationDetails.getEmailSubjectTemplate(), ctx));
 
-                /*
-                if (StringUtils.isNotBlank(emailNotificationDetails.getEmailBodyTemplate())) {
-                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_1.name(), createMailLink(notificationDetails, false));
-                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_2.name(), createMailLink(notificationDetails, true));
-                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_MESSAGE_FROM_MONITOR.name(), notificationDetails.getMessage());
-
-                }
-                if (StringUtils.isNotBlank(emailNotificationDetails.getEmailSubjectTemplate())) {
-                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_SUBJECT_LINK.name(), "link-3");
-
-                }
-                 */
-
                 super.sendEmail(emailNotificationDetails);
 
                 // save the notification

@@ -196,10 +196,12 @@ public final class ContextImportZipUtils {
 
     /**
      * As below
+     *
      * @param toBeSanitised which is typically some form of the context name
      * @return a sanitized version that can be used as a filename
      */
     public static String sanitiseForUseAsFilename(String toBeSanitised) {
-        return StringUtils.replaceEach(toBeSanitised, UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR).replace("_"+ ENV_NAME_REPLACEMENT, "");
+        return StringUtils.replaceEach(toBeSanitised, UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR)
+            .replace("_"+ ENV_NAME_REPLACEMENT, "");
     }
 }

@@ -138,7 +138,7 @@ public class ContextHelper {
      * @param contextName
      * @return
      */
-    private static String getContextName(String contextName) {
+    public static String getContextName(String contextName) {
         if(contextName.equals(JobConstants.GLOBAL_EVENT)) {
             return contextName;
         }

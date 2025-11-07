@@ -11,7 +11,9 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
@@ -200,27 +202,27 @@ public final class ContextExportZipUtils {
             // get the overall notifications settings for the context
             offset = 0;
             SearchResults<EmailNotificationContextRecord> notificationResults = emailNotificationContextService.findByContextName(unmodifiedContextName, searchLimit, offset);
-            addNotificationFilesToZip(objectMapper, notificationDir, notificationResults);
+            addNotificationFilesToZip(objectMapper, notificationDir, notificationResults, addReplacementTokens);
 
             retrievedNumber = notificationResults.getResultList().size();
             totalNumberOfResults = notificationResults.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
                 notificationResults = emailNotificationContextService.findByContextName(unmodifiedContextName, searchLimit, offset);
-                addNotificationFilesToZip(objectMapper, notificationDir, notificationResults);
+                addNotificationFilesToZip(objectMapper, notificationDir, notificationResults, addReplacementTokens);
             }
 
             // get the notification details for the context - these are the individual notification defined per context, child context and job.
             offset = 0;
             SearchResults<EmailNotificationDetailsRecord> notificationDetailResults = emailNotificationDetailsService.findByContextName(unmodifiedContextName, searchLimit, offset);
-            addNotificationDetailFilesToZip(objectMapper, notificationDetailDir, notificationDetailResults);
+            addNotificationDetailFilesToZip(objectMapper, notificationDetailDir, notificationDetailResults, addReplacementTokens);
 
             retrievedNumber = notificationDetailResults.getResultList().size();
             totalNumberOfResults = notificationDetailResults.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
                 notificationDetailResults = emailNotificationDetailsService.findByContextName(unmodifiedContextName, searchLimit, offset);
-                addNotificationDetailFilesToZip(objectMapper, notificationDetailDir, notificationDetailResults);
+                addNotificationDetailFilesToZip(objectMapper, notificationDetailDir, notificationDetailResults, addReplacementTokens);
             }
 
             // get the profiles for the context
@@ -564,14 +566,24 @@ public final class ContextExportZipUtils {
      * @param objectMapper the ObjectMapper to use for object serialization
      * @param notificationPath the directory where notification files will be stored in the zip archive
      * @param results the search results containing EmailNotificationContextRecord objects to add to the zip archive
+     * @param addReplacementTokens boolean flag to determine if replacement tokens should be added to context name
      * @throws IOException if an I/O error occurs during file creation or writing
      */
-    private static void addNotificationFilesToZip(ObjectMapper objectMapper, Path notificationPath, SearchResults<EmailNotificationContextRecord> results) throws IOException {
+    private static void addNotificationFilesToZip(ObjectMapper objectMapper, Path notificationPath
+        , SearchResults<EmailNotificationContextRecord> results, boolean addReplacementTokens) throws IOException {
         for (EmailNotificationContextRecord record : results.getResultList()) {
-            String jsonString = objectMapper.writeValueAsString(record.getEmailNotificationContext());
+            EmailNotificationContext emailNotificationContext = record.getEmailNotificationContext();
+            if(addReplacementTokens) {
+                emailNotificationContext.setContextName(ContextHelper.getContextName(emailNotificationContext.getContextName()));
+            }
+
+            String jsonString = objectMapper.writeValueAsString(emailNotificationContext);
 
             // Use the EmailNotificationContextRecord.id as the filename
             String fileName = sanitiseForUseAsFilename(record.getId());
+            if(fileName.contains("_")) {
+                fileName = fileName.substring(0, fileName.lastIndexOf("_"));
+            }
             Path path = Paths.get(notificationPath + File.separator + fileName + "-notification.json");
 
             // Create the file
@@ -586,11 +598,19 @@ public final class ContextExportZipUtils {
      * @param objectMapper the ObjectMapper to use for object serialization
      * @param notificationDetailPath the directory where notification detail files will be stored in the zip archive
      * @param results the search results containing EmailNotificationDetailsRecord objects to add to the zip archive
+     * @param addReplacementTokens boolean flag to determine if replacement tokens should be added to context name
      * @throws IOException if an I/O error occurs during file creation or writing
      */
-    private static void addNotificationDetailFilesToZip(ObjectMapper objectMapper, Path notificationDetailPath, SearchResults<EmailNotificationDetailsRecord> results) throws IOException {
+    private static void addNotificationDetailFilesToZip(ObjectMapper objectMapper, Path notificationDetailPath
+        , SearchResults<EmailNotificationDetailsRecord> results, boolean addReplacementTokens) throws IOException {
         for (EmailNotificationDetailsRecord record : results.getResultList()) {
-            String jsonString = objectMapper.writeValueAsString(record.getEmailNotificationDetails());
+            EmailNotificationDetails emailNotificationDetails = record.getEmailNotificationDetails();
+            if(addReplacementTokens) {
+                emailNotificationDetails.setContextName(ContextHelper
+                    .getContextName(emailNotificationDetails.getContextName()));
+            }
+
+            String jsonString = objectMapper.writeValueAsString(emailNotificationDetails);
 
             // Use the EmailNotificationDetailsRecord.id as the filename
             String fileName = sanitiseForUseAsFilename(record.getId());
