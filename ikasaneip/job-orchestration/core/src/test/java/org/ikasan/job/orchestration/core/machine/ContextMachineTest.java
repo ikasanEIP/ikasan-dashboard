@@ -8,6 +8,7 @@ import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.job.orchestration.JobLockCacheServiceTestImpl;
+import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.JobThreadFactory;
@@ -18,19 +19,23 @@ import org.ikasan.job.orchestration.core.ScheduledContextInstanceServiceTestImpl
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.*;
+import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.json.JSONException;
@@ -48,10 +53,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -95,6 +97,9 @@ public class ContextMachineTest extends AbstractTest {
 
     @Mock
     JobUtilsService jobUtilsService;
+
+    @Mock
+    ContextInstance mockContextInstance;
 
     @After
     public void tearDown() {
@@ -8017,7 +8022,106 @@ public class ContextMachineTest extends AbstractTest {
             contextModifierExecutor.shutdownNow();
         }
     }
-    
+
+    @Test
+    public void test_release_queued_jobs() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        internalEventDrivenJobs.values().forEach(job -> {
+            job.setContextName(contextInstance.getName());
+            job.setContextInstanceId("contextInstanceId");
+        });
+
+        ContextHelper.setJobStatusAll(contextInstance, internalEventDrivenJobs, InstanceStatus.LOCK_QUEUED);
+
+        when(mockContextInstance.getAllSchedulerJobInstances()).thenReturn(new ArrayList<>(internalEventDrivenJobs.values()));
+        when(mockContextInstance.getId()).thenReturn("contextInstanceId");
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, mockContextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        // Set up the job locks used in the test
+        ArrayList<InternalEventDrivenJob> jobs = new ArrayList<>(internalEventDrivenJobs.values());
+        JobLockCacheImpl.instance().addLocks(List.of(this.makeJobLock("JOB_LOCK", jobs)));
+
+        // We set all but one job in a queued state
+        for (int i=1; i<jobs.size(); i++) {
+            InternalEventDrivenJobInstance internalEventDrivenJob = (InternalEventDrivenJobInstance) jobs.get(i);
+            internalEventDrivenJob.setStatus(InstanceStatus.LOCK_QUEUED);
+
+            SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+            schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
+            schedulerJobInitiationEvent.setContextInstanceId(internalEventDrivenJob.getContextInstanceId());
+            JobLockCacheImpl.instance().addQueuedSchedulerJobInitiationEvent
+                    (internalEventDrivenJob.getIdentifier(), internalEventDrivenJob.getContextName()
+                        , schedulerJobInitiationEvent);
+        }
+
+        // And one running job that will take the lock
+        InternalEventDrivenJobInstance job = internalEventDrivenJobs.values().stream().findFirst().get();
+        job.setStatus(InstanceStatus.RUNNING);
+
+        JobLockCacheImpl.instance().lock(job.getIdentifier(), job.getContextName());
+
+        // Now assert that
+        Assert.assertEquals(16, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByIdentifier().size());
+        Assert.assertEquals(1, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().size());
+        Assert.assertEquals(15, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().values().stream().findFirst()
+            .get().getSchedulerJobInitiationEventWaitQueue().size());
+        Assert.assertTrue(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName()));
+
+        contextMachine.releaseQueuedJobs();
+
+        Assert.assertEquals(16, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByIdentifier().size());
+        Assert.assertEquals(1, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().size());
+
+        // After releasing all queued jobs, there are no longer any queued jobs or jobs holding jocks
+        Assert.assertEquals(0, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().values().stream().findFirst()
+            .get().getSchedulerJobInitiationEventWaitQueue().size());
+        Assert.assertFalse(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName()));
+
+        verify(mockContextInstance, times(16)).getId();
+        verify(mockContextInstance, times(2)).getScheduledJobs();
+        verify(mockContextInstance, times(2)).getContexts();
+        verify(mockContextInstance, times(1)).getAllSchedulerJobInstances();
+
+        verifyNoMoreInteractions(mockContextInstance);
+    }
+
+    protected JobLock makeJobLock(String jobLockName, ArrayList<InternalEventDrivenJob> internalEventDrivenJobs) {
+        JobLockBuilder jobLockBuilder = new JobLockBuilder();
+        jobLockBuilder.withLockName(jobLockName);
+        jobLockBuilder.withLockCount(1);
+        for (InternalEventDrivenJob internalEventDrivenJob: internalEventDrivenJobs) {
+            SchedulerJobLockParticipant job = makeSchedulerJobLockParticipant(internalEventDrivenJob);
+            job.setContextName(UUID.randomUUID().toString());
+            jobLockBuilder.withJob(job.getContextName(), job);
+        }
+        return jobLockBuilder.build().get(0);
+    }
+
+    /**
+     * Create a SchedulerJobLockParticipant object with the provided job lock name and internal event driven job.
+     *
+     * @param internalEventDrivenJob the internal event driven job to associate with the participant
+     * @return a SchedulerJobLockParticipant object initialized with the provided values
+     */
+    protected SchedulerJobLockParticipant makeSchedulerJobLockParticipant(InternalEventDrivenJob internalEventDrivenJob) {
+        SchedulerJobLockParticipant job = new SchedulerJobLockParticipantImpl();
+        job.setAgentName("AgentName");
+        job.setJobName(internalEventDrivenJob.getJobName());
+        job.setIdentifier(internalEventDrivenJob.getIdentifier());
+        job.setJobDescription("Job Description");
+        job.setLockCount(1);
+        return job;
+    }
+
     protected List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachineWithChildContextId(ContextMachine contextMachine, String contextId, List<String> childContextIds
     , String agentName, String jobName, boolean eventSuccessful) {
     ContextualisedScheduledProcessEventImpl eventInstance
