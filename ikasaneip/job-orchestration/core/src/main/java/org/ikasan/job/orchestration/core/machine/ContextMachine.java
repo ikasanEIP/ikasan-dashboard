@@ -1365,6 +1365,12 @@ public class ContextMachine {
 
         runningJobs.forEach(job -> {
             job.setContextInstanceId(this.contextInstance.getId());
+
+            // We need to release the lock if a job currently holds it!
+            if(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName())) {
+                JobLockCacheImpl.instance().release(job.getIdentifier(), job.getContextName());
+            }
+
             JobLockCacheImpl.instance().removeQueuedSchedulerJob(job);
         });
     }

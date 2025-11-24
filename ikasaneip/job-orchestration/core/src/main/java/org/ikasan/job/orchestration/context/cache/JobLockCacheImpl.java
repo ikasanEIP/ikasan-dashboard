@@ -246,20 +246,20 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
     }
 
     @Override
-    public synchronized boolean hasLock(String jobIdentifier, String contextId) {
+    public synchronized boolean hasLock(String jobIdentifier, String contextName) {
         JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
 
         if(jlh != null && jlh.isExclusiveJobLock()) {
             boolean hasLock = this.jobLockCacheData.getExclusiveLockHolder().getLockHolders()
-                .contains(jobIdentifier + CONTEXT_ID + contextId);
+                .contains(jobIdentifier + CONTEXT_ID + contextName);
             LOGGER.debug(String.format("Determining if job[%s], context[%s], exclusive lock currently holds lock. Result[%s]"
-                , jobIdentifier, contextId, hasLock));
+                , jobIdentifier, contextName, hasLock));
             return hasLock;
         }
         else {
-            boolean hasLock =  jlh != null && jlh.getLockHolders().contains(jobIdentifier + CONTEXT_ID + contextId);
+            boolean hasLock =  jlh != null && jlh.getLockHolders().contains(jobIdentifier + CONTEXT_ID + contextName);
             LOGGER.debug(String.format("Determining if job[%s], context[%s], non exclusive lock currently holds lock. Result[%s]"
-                , jobIdentifier, contextId, hasLock));
+                , jobIdentifier, contextName, hasLock));
             return hasLock;
         }
     }
