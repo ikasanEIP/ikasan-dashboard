@@ -1,5 +1,8 @@
 package org.ikasan.scheduled.context.service;
 
+import org.ikasan.scheduled.context.model.ScheduledContextRecordLiteImpl;
+import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.spec.scheduled.context.ScheduledContextRecordLite;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextViewDao;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -8,6 +11,9 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.search.SearchResults;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SolrScheduledContextServiceImpl implements ScheduledContextService {
 
@@ -38,6 +44,30 @@ public class SolrScheduledContextServiceImpl implements ScheduledContextService 
     @Override
     public SearchResults<ScheduledContextRecord> findByFilter(ScheduledContextSearchFilter filter, int limit, int offset, String sortColumn, String sortOrder) {
         return this.scheduledContextDao.findByFilter(filter, limit, offset, sortColumn, sortOrder);
+    }
+
+    @Override
+    public SearchResults<ScheduledContextRecordLite> findByFilterLite(ScheduledContextSearchFilter filter, int limit
+        , int offset, String sortColumn, String sortOrder) {
+        SearchResults<ScheduledContextRecord> searchResults = this.findByFilter(filter, limit, offset, sortColumn, sortOrder);
+        List<ScheduledContextRecordLite> records = searchResults.getResultList().stream()
+            .map(scheduledContextRecord -> {
+                ScheduledContextRecordLite scheduledContextRecordLite = new ScheduledContextRecordLiteImpl();
+                scheduledContextRecordLite.setId(scheduledContextRecord.getId());
+                scheduledContextRecordLite.setContextName(scheduledContextRecord.getContextName());
+                scheduledContextRecordLite.setDescription(scheduledContextRecord.getContext().getDescription());
+                scheduledContextRecordLite.setTimestamp(scheduledContextRecord.getModifiedTimestamp());
+                scheduledContextRecordLite.setModifiedBy(scheduledContextRecord.getModifiedBy());
+                scheduledContextRecordLite.setModifiedTimestamp(scheduledContextRecord.getModifiedTimestamp());
+                scheduledContextRecordLite.setDisabled(scheduledContextRecord.isDisabled());
+                scheduledContextRecordLite.setQuartzScheduleDrivenJobsDisabledForContext
+                    (scheduledContextRecord.isQuartzScheduleDrivenJobsDisabledForContext());
+
+                return scheduledContextRecordLite;
+            })
+            .collect(Collectors.toList());
+
+        return new SearchResultsImpl<>(records, searchResults.getTotalNumberOfResults(), searchResults.getQueryResponseTime());
     }
 
     @Override

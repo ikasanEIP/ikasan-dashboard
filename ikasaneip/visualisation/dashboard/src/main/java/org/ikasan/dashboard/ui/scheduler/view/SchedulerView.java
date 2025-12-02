@@ -241,6 +241,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         tabs.addSelectedChangeListener(event -> {
             tabsToPages.values().forEach(page -> page.setVisible(false));
             com.vaadin.flow.component.Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
+            if(selectedPage.equals(this.contextTemplateWidget)) {
+                this.contextTemplateWidget.init();
+            }
             selectedPage.setVisible(true);
         });
 

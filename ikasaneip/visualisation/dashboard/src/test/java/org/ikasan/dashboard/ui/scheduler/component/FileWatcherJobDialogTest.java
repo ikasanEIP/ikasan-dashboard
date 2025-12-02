@@ -43,72 +43,74 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
 
     @Override
     public void setup_expectations() throws IOException {
-        when(this.scheduledContextService.findByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(getScheduledContextRecords(15), 15, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(-1), eq(-1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(getScheduledContextRecordLites(15), 15, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(0), eq(0), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(getScheduledContextRecords(15), 15, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(0), eq(0), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(getScheduledContextRecordLites(15), 15, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(15), eq(0), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(getScheduledContextRecords(15), 15, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(15), eq(0), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(getScheduledContextRecordLites(15), 15, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(0), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(0)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(0), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(0)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(1), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(1)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(1)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(1), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(1)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(1), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(1)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(2), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(2)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(2), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(2)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(3), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(3)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(3), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(3)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(4), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(4)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(4), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(4)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(5), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(5)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(5), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(5)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(6), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(6)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(6), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(6)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(7), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(7)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(7), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(7)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(8), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(8)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(8), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(8)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(9), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(9)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(9), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(9)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(10), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(10)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(10), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(10)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(11), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(11)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(11), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(11)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(12), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(12)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(12), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(12)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(13), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(13)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(13), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(13)), 1, 1));
 
-        when(this.scheduledContextService.findByFilter(any(), eq(1), eq(14), isNull(), isNull()))
-            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecords(15).get(14)), 1, 1));
+        when(this.scheduledContextService.findByFilterLite(any(), eq(1), eq(14), isNull(), isNull()))
+            .thenReturn(new SearchResultsImpl<>(List.of(getScheduledContextRecordLites(15).get(14)), 1, 1));
 
-        Mockito.when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
+        when(this.scheduledContextService.findByName(anyString())).thenReturn(super.getScheduledContextRecord());
+
+        when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
                 eq(-1),eq(-1), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(new SearchResultsImpl<>(this.getScheduledContextInstanceRecords(5), 5, 0));
 
-        Mockito.when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
+        when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
                 eq(0),eq(0), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(new SearchResultsImpl<>(this.getScheduledContextInstanceRecords(5), 5, 0));
 
-        Mockito.when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
+        when(this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(Mockito.any(),
                 eq(5),eq(0), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(new SearchResultsImpl<>(this.getScheduledContextInstanceRecords(5), 5, 0));
 
