@@ -457,13 +457,11 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
 
             Assert.assertEquals(1, found.getResultList().size());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
-            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
 
             filter.setContextName("xt-Locks-1");
             found = this.scheduledContextService.findByFilterLite(filter, 100, 0, null, null);
 
             Assert.assertEquals(1, found.getResultList().size());
-            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
 
             filter.setContextName(null);
@@ -473,6 +471,58 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
 
             Assert.assertEquals(1, found.getResultList().size());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+        }
+    }
+
+    @Test
+    public void test_find_by_filter_ordered() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            for (int i=0;i<100;i++) {
+                SolrContextTemplateImpl solrContextTemplate
+                    = ScheduledConcurrentObjectMapperFactory.newInstance()
+                    .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
+
+                SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+                scheduledContextRecord.setContextName("Context-Locks-"+i);
+                scheduledContextRecord.setTimestamp(1000000L*i);
+                scheduledContextRecord.setContext(solrContextTemplate);
+                this.scheduledContextService.save(scheduledContextRecord);
+            }
+
+            ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
+            filter.setContextName("Context-Locks-");
+
+            SearchResults<ScheduledContextRecord> found = this.dao.findByFilter(filter, 100, 0, "timestamp", "ASCENDING");
+
+            Assert.assertEquals(100, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-0", found.getResultList().get(0).getContextName());
+
+            filter.setContextName("Context-Loc");
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, "timestamp", "DESCENDING");
+
+            Assert.assertEquals(100, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-99", found.getResultList().get(0).getContextName());
+
+            filter.setContextName("xt-Locks-");
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(100, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-99", found.getResultList().get(0).getContextName());
+
+            filter.setContextName(null);
+            filter.setContextNames(List.of("Context-Locks-1", "Context-Locks-2", "Context-Locks-3"));
+
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(3, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-3", found.getResultList().get(0).getContextName());
+
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, "timestamp", "ASCENDING");
+
+            Assert.assertEquals(3, found.getResultList().size());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
         }
     }
@@ -498,40 +548,31 @@ public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
             ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
             filter.setContextName("Context-Locks-");
 
-            SearchResults<ScheduledContextRecord> found = this.dao.findByFilter(filter, 100, 0, "timestamp", "ASCENDING");
-
-            Assert.assertEquals(100, found.getResultList().size());
-            Assert.assertEquals("Context-Locks-0", found.getResultList().get(0).getContextName());
-            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
-
             filter.setContextName("Context-Loc");
-            found = this.scheduledContextService.findByFilter(filter, 100, 0, "timestamp", "DESCENDING");
+            SearchResults<ScheduledContextRecordLite> found = this.scheduledContextService
+                .findByFilterLite(filter, 100, 0, "timestamp", "DESCENDING");
 
             Assert.assertEquals(100, found.getResultList().size());
             Assert.assertEquals("Context-Locks-99", found.getResultList().get(0).getContextName());
-            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
 
             filter.setContextName("xt-Locks-");
-            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
+            found = this.scheduledContextService.findByFilterLite(filter, 100, 0, null, null);
 
             Assert.assertEquals(100, found.getResultList().size());
             Assert.assertEquals("Context-Locks-99", found.getResultList().get(0).getContextName());
-            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
 
             filter.setContextName(null);
             filter.setContextNames(List.of("Context-Locks-1", "Context-Locks-2", "Context-Locks-3"));
 
-            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
+            found = this.scheduledContextService.findByFilterLite(filter, 100, 0, null, null);
 
             Assert.assertEquals(3, found.getResultList().size());
             Assert.assertEquals("Context-Locks-3", found.getResultList().get(0).getContextName());
-            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
 
-            found = this.scheduledContextService.findByFilter(filter, 100, 0, "timestamp", "ASCENDING");
+            found = this.scheduledContextService.findByFilterLite(filter, 100, 0, "timestamp", "ASCENDING");
 
             Assert.assertEquals(3, found.getResultList().size());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
-            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
         }
     }
 
