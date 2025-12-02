@@ -8,12 +8,14 @@ import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.rest.dashboard.model.metadata.module.ModuleMetaDataImpl;
+import org.ikasan.scheduled.context.model.ScheduledContextRecordLiteImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.scheduled.context.ScheduledContextRecordLite;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -135,6 +137,80 @@ public abstract class AbstractSchedulerViewTest extends UITest {
             contextTemplate.setContextParameters(contextParameters);
 
             scheduledContextInstanceRecord.setContext(contextTemplate);
+
+            scheduledContextInstanceRecords.add(scheduledContextInstanceRecord);
+        }
+
+        return scheduledContextInstanceRecords;
+    }
+
+    /**
+     * Retrieves a ScheduledContextRecord with predefined values for testing purposes.
+     *
+     * @return A ScheduledContextRecord instance containing the predefined values
+     */
+    protected ScheduledContextRecord getScheduledContextRecord() {
+        ScheduledContextRecord scheduledContextRecord = new ScheduledContextRecordImpl();
+        scheduledContextRecord.setContextName("contextName");
+        scheduledContextRecord.setTimestamp(100000000L);
+        scheduledContextRecord.setModifiedTimestamp(110000000L);
+
+        ContextTemplate contextTemplate =  new ContextTemplateImpl();
+        contextTemplate.setDescription("Description");
+        contextTemplate.setName("contextName");
+
+        ContextParameterImpl filenameContextParam = new ContextParameterImpl();
+        filenameContextParam.setName("filename_replacement");
+        filenameContextParam.setDefaultValue("replacement");
+
+        ContextParameterImpl filePathContextParam = new ContextParameterImpl();
+        filePathContextParam.setName("filepath_replacement");
+        filePathContextParam.setDefaultValue("replacement");
+
+        List<ContextParameter> contextParameters = new ArrayList<>();
+        contextParameters.add(filenameContextParam);
+        contextParameters.add(filePathContextParam);
+        contextTemplate.setContextParameters(contextParameters);
+
+        scheduledContextRecord.setContext(contextTemplate);
+
+        return scheduledContextRecord;
+    }
+
+    /**
+     * Retrieves a list of scheduled context records with the specified count.
+     *
+     * @param count The number of scheduled context records to retrieve
+     * @return List of ScheduledContextRecord instances containing the retrieved records
+     */
+    protected List<ScheduledContextRecordLite> getScheduledContextRecordLites(int count) {
+        List<ScheduledContextRecordLite> scheduledContextInstanceRecords
+            = new ArrayList<>();
+
+        for (int i=0; i<count; i++) {
+            ScheduledContextRecordLite scheduledContextInstanceRecord = new ScheduledContextRecordLiteImpl();
+            scheduledContextInstanceRecord.setContextName("contextName"+i);
+            scheduledContextInstanceRecord.setTimestamp(100000000L);
+            scheduledContextInstanceRecord.setModifiedTimestamp(110000000L);
+
+            ContextTemplate contextTemplate =  new ContextTemplateImpl();
+            contextTemplate.setDescription("Description"+i);
+            contextTemplate.setName("contextName"+i);
+
+            ContextParameterImpl filenameContextParam = new ContextParameterImpl();
+            filenameContextParam.setName("filename_replacement");
+            filenameContextParam.setDefaultValue("replacement");
+
+            ContextParameterImpl filePathContextParam = new ContextParameterImpl();
+            filePathContextParam.setName("filepath_replacement");
+            filePathContextParam.setDefaultValue("replacement");
+
+            List<ContextParameter> contextParameters = new ArrayList<>();
+            contextParameters.add(filenameContextParam);
+            contextParameters.add(filePathContextParam);
+            contextTemplate.setContextParameters(contextParameters);
+
+            scheduledContextInstanceRecord.setDescription(contextTemplate.getDescription());
 
             scheduledContextInstanceRecords.add(scheduledContextInstanceRecord);
         }

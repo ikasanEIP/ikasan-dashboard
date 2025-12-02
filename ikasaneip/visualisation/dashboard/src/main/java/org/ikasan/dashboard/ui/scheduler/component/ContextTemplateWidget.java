@@ -45,6 +45,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.ScheduledContextRecordLite;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
@@ -116,6 +117,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private double contextVisualisationNodeDistance;
     private UserService userService;
     private SecurityService securityService;
+
+    private boolean initialised = false;
 
     /**
      * Constructor
@@ -335,11 +338,16 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         div.add(headerLayout, this.contextTemplateFilteringGrid);
 
-        this.contextTemplateFilteringGrid.init();
-
         this.add(div);
         this.setSizeFull();
         this.setMargin(false);
+    }
+
+    public void init() {
+        if(!initialised) {
+            this.contextTemplateFilteringGrid.init();
+            initialised = true;
+        }
     }
 
     /**
@@ -390,7 +398,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(scheduledContextRecord.getContext().getDescription());
+            Text text = new Text(scheduledContextRecord.getDescription());
 
             horizontalLayout.add(text);
             return horizontalLayout;
@@ -410,10 +418,11 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 , SecurityConstants.SCHEDULER_ALL_READ);
 
             edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                 ContextTemplateManagementDialog contextTemplateManagementDialog
                     = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
+                    , schedulerJobService, logStreamingService, record.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
                     , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                     , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
                     , this.contextInstanceSchedulerService, this.springCloudConfigRefreshService, this.systemEventSearchService, this.removeTrailingPlanNameContextAfterUnderscore, this.jobPlanIntervalMultiple
@@ -473,7 +482,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                     , UI.getCurrent().getLocale()));
                             });
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error(String.format("An error has occurred deleting job plan[%s]!", scheduledContextRecord.getContextName()), e);
                             current.access(() -> {
                                 NotificationHelper.showUserNotification(getTranslation("error.delete-context-template"
                                     , UI.getCurrent().getLocale()));
@@ -493,9 +502,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             ComponentSecurityVisibility.applySecurity(this.authentication, clone, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
                 , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
             clone.addClickListener(iconClickEvent -> {
+                ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                 CloneContextTemplateDialog cloneContextTemplateDialog = new CloneContextTemplateDialog(this.scheduledContextService
                     , this.contextTemplateFilteringGrid, this.contextInstanceRegistrationService, this.schedulerJobService
-                    , this.contextProfileService, scheduledContextRecord);
+                    , this.contextProfileService, record);
 
                 cloneContextTemplateDialog.addOpenedChangeListener(event -> this.updateActiveContextMenu());
                 cloneContextTemplateDialog.open();
@@ -516,14 +526,14 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
             layout.add(disableQuartzScheduledJobsButton);
 
-            if(scheduledContextRecord.getContext().isQuartzScheduleDrivenJobsDisabledForContext()
+            if(scheduledContextRecord.isQuartzScheduleDrivenJobsDisabledForContext()
                 && ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
                 enableQuartzScheduledJobsButton.setVisible(true);
                 disableQuartzScheduledJobsButton.setVisible(false);
             }
-            else if(!scheduledContextRecord.getContext().isQuartzScheduleDrivenJobsDisabledForContext()
+            else if(!scheduledContextRecord.isQuartzScheduleDrivenJobsDisabledForContext()
                 && ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
@@ -543,7 +553,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 confirmDialog.addConfirmListener(confirmEvent -> {
                     boolean error = false;
                     try {
-                        ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                        ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
+                        ContextTemplate contextTemplate = record.getContext();
                         this.scheduledContextService.enableScheduledJobs(contextTemplate, authentication.getName());
                         enableQuartzScheduledJobsButton.setVisible(false);
                         disableQuartzScheduledJobsButton.setVisible(true);
@@ -577,7 +588,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 confirmDialog.addConfirmListener(confirmEvent -> {
                     boolean error = false;
                     try {
-                        ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                        ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
+                        ContextTemplate contextTemplate = record.getContext();
                         this.scheduledContextService.disableScheduledJobs(contextTemplate, authentication.getName());
                         enableQuartzScheduledJobsButton.setVisible(true);
                         disableQuartzScheduledJobsButton.setVisible(false);
@@ -622,8 +634,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                     Anchor downloadNotSplitAnchor = new Anchor( new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
                         try {
+                            ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                                SerializationUtils.clone(scheduledContextRecord.getContext()),
+                                SerializationUtils.clone(record.getContext()),
                                 scheduledContextRecord.getContextName(),
                                 scheduledContextRecord.getContextName(),
                                 this.zipWorkingDirectory,
@@ -646,8 +659,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                     Anchor downloadSplitAnchor = new Anchor(new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
                         try {
+                            ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                             ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                                SerializationUtils.clone(scheduledContextRecord.getContext()),
+                                SerializationUtils.clone(record.getContext()),
                                 scheduledContextRecord.getContextName(),
                                 scheduledContextRecord.getContextName(),
                                 this.zipWorkingDirectory,
@@ -695,8 +709,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                 Anchor downloadNotSplitAnchor = new Anchor(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
                     try {
+                        ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                         ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                            SerializationUtils.clone(scheduledContextRecord.getContext()),
+                            SerializationUtils.clone(record.getContext()),
                             scheduledContextRecord.getContextName(),
                             finalDownloadName,
                             this.zipWorkingDirectory,
@@ -719,8 +734,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                 Anchor downloadSplitAnchor = new Anchor(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
                     try {
+                        ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                         ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                            SerializationUtils.clone(scheduledContextRecord.getContext()),
+                            SerializationUtils.clone(record.getContext()),
                             scheduledContextRecord.getContextName(),
                             finalDownloadName,
                             this.zipWorkingDirectory,
@@ -766,7 +782,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             ComponentSecurityVisibility.applySecurity(this.authentication, newContextInstance, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
                 , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
             newContextInstance.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if((!scheduledContextRecord.getContext().isAbleToRunConcurrently()
+                ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
+                if((!record.getContext().isAbleToRunConcurrently()
                     && ((ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null
                     && !ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()).getContext().getStatus().equals(InstanceStatus.PREPARED))
                     || (ContextMachineCache.instance().getAllByContextName(scheduledContextRecord.getContextName()).size() > 1)))) {
@@ -798,12 +815,12 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                             .getCommandExecutionJobsForContext(scheduledContextRecord.getContextName());
 
                         List<ContextParameterInstance> contextParameterInstances = this.contextParametersInstanceService
-                            .getContextParameterInstancesForContext(scheduledContextRecord.getContext(), internalJobs);
+                            .getContextParameterInstancesForContext(record.getContext(), internalJobs);
 
-                        this.initialiseContextInstanceWithModifiedContextParams(scheduledContextRecord, contextParameterInstances);
+                        this.initialiseContextInstanceWithModifiedContextParams(record, contextParameterInstances);
                     }
                     else {
-                        this.initialiseContextInstance(scheduledContextRecord, null);
+                        this.initialiseContextInstance(record, null);
                     }
                 });
             });
@@ -818,7 +835,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             .setKey("actions")
             .setFlexGrow(4);
 
-        this.contextTemplateFilteringGrid.addColumn(LitRenderer.<ScheduledContextRecord>of(
+        this.contextTemplateFilteringGrid.addColumn(LitRenderer.<ScheduledContextRecordLite>of(
             "<div style=\"word-wrap:normal; white-space:normal\">${item.date}</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
@@ -828,7 +845,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             .setSortable(true)
             .setFlexGrow(2);
 
-        this.contextTemplateFilteringGrid.addColumn(LitRenderer.<ScheduledContextRecord>of(
+        this.contextTemplateFilteringGrid.addColumn(LitRenderer.<ScheduledContextRecordLite>of(
             "<div style=\"word-wrap:normal; white-space:normal\">${item.modified}</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
@@ -909,7 +926,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateWidget"));
                         executor.execute(() -> {
                             try {
-                                ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                                ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
+                                ContextTemplate contextTemplate = record.getContext();
                                 ScheduledContextRecord refreshedScheduledContextRecord = this.scheduledContextService.findByName(contextTemplate.getName());
                                 contextTemplate = refreshedScheduledContextRecord.getContext();
                                 contextTemplate.setDisabled(false);
@@ -926,7 +944,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 String action = String.format("Job plan [%s] has been enabled.", scheduledContextRecord.getContextName());
                                 this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_ENABLED, action, authentication.getName());
 
-                                ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
+                                ContextTemplateEnableDisableEventBroadcaster.broadcast(record.getContext());
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
                                 logger.error(String.format("An error has occurred enabling job plans [%s]", scheduledContextRecord.getContextName()), e);
@@ -971,12 +989,13 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateWidget"));
                         executor.execute(() -> {
                             try {
-                                ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                                ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
+                                ContextTemplate contextTemplate = record.getContext();
                                 ScheduledContextRecord refreshedScheduledContextRecord = this.scheduledContextService.findByName(contextTemplate.getName());
                                 contextTemplate = refreshedScheduledContextRecord.getContext();
                                 contextTemplate.setDisabled(true);
-                                scheduledContextRecord.setContext(contextTemplate);
-                                scheduledContextRecord.setModifiedBy(authentication.getName());
+                                record.setContext(contextTemplate);
+                                record.setModifiedBy(authentication.getName());
                                 this.jobProvisionService.removeJobs(contextTemplate.getName());
                                 List<ContextMachine> contextMachines = ContextMachineCache.instance()
                                     .getAllByContextName(contextTemplate.getName());
@@ -988,14 +1007,14 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                     }
                                 }
 
-                                this.scheduledContextService.save(scheduledContextRecord);
+                                this.scheduledContextService.save(record);
                                 contextTemplateFilteringGrid.getDataProvider().refreshAll();
                                 this.updateActiveContextMenu();
 
                                 String action = String.format("Job plan [%s] has been disabled.", scheduledContextRecord.getContextName());
                                 this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_DISABLED, action, authentication.getName());
 
-                                ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
+                                ContextTemplateEnableDisableEventBroadcaster.broadcast(record.getContext());
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
                                 logger.error(String.format("An error has occurred disabling job plans [%s]", scheduledContextRecord.getContextName()), e);

@@ -14,7 +14,7 @@ import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
+import org.ikasan.spec.scheduled.context.ScheduledContextRecordLite;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.search.SearchResults;
@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
+public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecordLite> {
     private Logger logger = LoggerFactory.getLogger(ContextTemplateFilteringGrid.class);
 
     private ScheduledContextService scheduledContextService;
 
-    private DataProvider<ScheduledContextRecord, ScheduledContextSearchFilter> dataProvider;
-    private ConfigurableFilterDataProvider<ScheduledContextRecord, Void, ScheduledContextSearchFilter> filteredDataProvider;
+    private DataProvider<ScheduledContextRecordLite, ScheduledContextSearchFilter> dataProvider;
+    private ConfigurableFilterDataProvider<ScheduledContextRecordLite, Void, ScheduledContextSearchFilter> filteredDataProvider;
 
     private ScheduledContextSearchFilter searchFilter;
 
@@ -149,7 +149,7 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
         SearchResults results;
 
         try {
-            results = this.scheduledContextService.findByFilter(filter, limit, offset, sortColumn, sortOrder);
+            results = this.scheduledContextService.findByFilterLite(filter, limit, offset, sortColumn, sortOrder);
         }
         catch (Exception e) {
             final UI current = UI.getCurrent();
