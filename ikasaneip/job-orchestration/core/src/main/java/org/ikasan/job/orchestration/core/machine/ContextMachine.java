@@ -36,6 +36,7 @@ import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.bigqueue.service.BigQueueManagementService;
+import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -305,7 +306,8 @@ public class ContextMachine {
      * @throws JsonProcessingException
      */
     public void resetContextInstance(boolean holdCommandJobs, boolean initiateWithSameParameters,
-                                     List<ContextParameterInstance> contextParameterInstances) throws IOException, SchedulerJobInstanceInitialisationException {
+                                     List<ContextParameterInstance> contextParameterInstances)
+        throws IOException, SchedulerJobInstanceInitialisationException, BigQueueNotFoundException {
         if(this.context != null) {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
@@ -495,7 +497,7 @@ public class ContextMachine {
      *
      * @throws IOException
      */
-    private void teardownBigQueue() throws IOException {
+    private void teardownBigQueue() throws IOException, BigQueueNotFoundException {
         BigQueueManagementService bigQueueManagementService =
             new BigQueueContextMachineManagementServiceImpl(getInboundQueueName(),
                 inboundQueue, getOutboundQueueName(), outboundQueue);
