@@ -3,10 +3,8 @@ package org.ikasan.job.orchestration.context.util;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+import java.time.ZoneId;
+import java.util.*;
 
 public class CronUtilsTest {
 
@@ -91,8 +89,40 @@ public class CronUtilsTest {
     }
 
     @Test
+    public void test_get_epoch_in_future_with_blackout_window() {
+        Assert.assertEquals(4076092800000L, CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow("0 0 0 2 3 ? 2099",
+            List.of(), Map.of(),"Europe/London"));
+
+        Calendar c = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        c.setTime(new Date(4076092800000L));
+
+        Assert.assertEquals(2, c.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(Calendar.MARCH, c.get(Calendar.MONTH));
+        Assert.assertEquals(2099, c.get(Calendar.YEAR));
+        Assert.assertEquals(0, c.get(Calendar.HOUR));
+        Assert.assertEquals(0, c.get(Calendar.MINUTE));
+        Assert.assertEquals(0, c.get(Calendar.SECOND));
+    }
+
+    @Test
+    public void test_get_epoch_in_future_with_blackout_window_time_zone_aware() {
+        Assert.assertEquals(4076053200000L, CronUtils.getEpochMilliOfNextFireTimeAccountingForBlackoutWindow("0 0 0 2 3 ? 2099",
+            List.of(), Map.of(),"Australia/Sydney"));
+
+        Calendar c = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        c.setTime(new Date(4076053200000L));
+
+        Assert.assertEquals(1, c.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(Calendar.MARCH, c.get(Calendar.MONTH));
+        Assert.assertEquals(2099, c.get(Calendar.YEAR));
+        Assert.assertEquals(1, c.get(Calendar.HOUR));
+        Assert.assertEquals(0, c.get(Calendar.MINUTE));
+        Assert.assertEquals(0, c.get(Calendar.SECOND));
+    }
+
+    @Test
     public void test_get_previous_epoch_in_past() {
-        Assert.assertEquals(920332800000L, CronUtils.getEpochMilliOfPreviousFireTime("0 0 0 2 3 ? 1999"));
+        Assert.assertEquals(920332800000L, CronUtils.getEpochMilliOfPreviousFireTime("0 0 0 2 3 ? 1999", "Europe/London"));
 
         Calendar c = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
         c.setTime(new Date(920332800000L));
@@ -106,8 +136,24 @@ public class CronUtilsTest {
     }
 
     @Test
+    public void test_get_previous_epoch_in_past_timezone_aware() {
+        Assert.assertEquals(920293200000L, CronUtils.getEpochMilliOfPreviousFireTime("0 0 0 2 3 ? 1999", "Australia/Sydney"));
+
+        Calendar c = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        c.setTime(new Date(920293200000L));
+
+        Assert.assertEquals(1, c.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(Calendar.MARCH, c.get(Calendar.MONTH));
+        Assert.assertEquals(1999, c.get(Calendar.YEAR));
+        Assert.assertEquals(1, c.get(Calendar.HOUR));
+        Assert.assertEquals(0, c.get(Calendar.MINUTE));
+        Assert.assertEquals(0, c.get(Calendar.SECOND));
+    }
+
+    @Test
     public void test_get_previous_epoch_in_future() {
-        Assert.assertEquals(-1, CronUtils.getEpochMilliOfPreviousFireTime("0 0 0 2 3 ? 2099"));
+        Assert.assertEquals(-1, CronUtils.getEpochMilliOfPreviousFireTime
+            ("0 0 0 2 3 ? 2099", ZoneId.systemDefault().toString()));
     }
 
     @Test

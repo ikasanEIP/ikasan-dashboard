@@ -440,7 +440,8 @@ public class ContextMachine {
             stopWatch.start();
 
             this.contextInstance.setStartTime(System.currentTimeMillis());
-            this.contextInstance.setProjectedEndTime(CronUtils.getEpochMilliOfPreviousFireTime(this.contextInstance.getTimeWindowStart()) + this.contextInstance.getContextTtlMilliseconds());
+            this.contextInstance.setProjectedEndTime(CronUtils.getEpochMilliOfPreviousFireTime(this.contextInstance.getTimeWindowStart(), this.contextInstance.getTimezone())
+                + this.contextInstance.getContextTtlMilliseconds());
 
             this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl
                 (previousContextInstance.getId(), previousContextInstance, previousContextInstance.getStatus(), InstanceStatus.ENDED));

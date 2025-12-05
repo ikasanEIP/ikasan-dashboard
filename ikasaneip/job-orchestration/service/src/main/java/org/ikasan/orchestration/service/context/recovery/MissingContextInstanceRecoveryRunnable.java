@@ -31,6 +31,7 @@ import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -159,7 +160,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
     private void initialiseContextInstanceAndRegisterEndJob(ContextInstance contextInstance) throws Exception {
         initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, true, null);
 
-        contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+        contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime()
+                , ZoneId.systemDefault().getId())
             , contextInstance.getTimezone(), contextInstance.getId());
     }
 }
