@@ -63,7 +63,8 @@ public class CronUtils {
      */
     public static String buildCronFromOriginal(long startTime, String zoneId) {
         Instant instant = Instant.ofEpochMilli(startTime);
-        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId != null && !zoneId.isEmpty() ? ZoneId.of(zoneId) : ZoneId.systemDefault());
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId != null
+            && !zoneId.isEmpty() ? ZoneId.of(zoneId) : ZoneId.systemDefault());
 
         Cron cron = CronBuilder.cron(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ))
             .withSecond(on(zonedDateTime.get(ChronoField.SECOND_OF_MINUTE)))
@@ -151,8 +152,8 @@ public class CronUtils {
      * @param cronExpression
      * @return
      */
-    public static long getEpochMilliOfPreviousFireTime(String cronExpression) {
-        ZonedDateTime now = ZonedDateTime.now();
+    public static long getEpochMilliOfPreviousFireTime(String cronExpression, String zoneId) {
+        ZonedDateTime now = ZonedDateTime.now(zoneId != null && !zoneId.isEmpty() ? ZoneId.of(zoneId) : ZoneId.systemDefault());
         ExecutionTime executionTime = ExecutionTime.forCron(cronParser.parse(cronExpression));
 
         Optional<ZonedDateTime> previousExecutionTime = executionTime.lastExecution(now);
@@ -171,7 +172,7 @@ public class CronUtils {
      */
     public static long getEpochMilliOfNextFireTimeAccountingForBlackoutWindow(String cronExpression, List<String> blackoutCronExpressions,
                                                                               Map<Long, Long> blackoutWindowDateTimeRanges, String timezone) {
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime now = ZonedDateTime.now(timezone != null && !timezone.isEmpty() ? ZoneId.of(timezone) : ZoneId.systemDefault());
         ExecutionTime executionTime = ExecutionTime.forCron(cronParser.parse(cronExpression));
 
         Optional<ZonedDateTime> nextExecutionTime = Optional.of(now);

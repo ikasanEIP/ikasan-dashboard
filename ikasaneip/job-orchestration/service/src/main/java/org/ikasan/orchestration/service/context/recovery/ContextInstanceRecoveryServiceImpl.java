@@ -73,6 +73,7 @@ import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -210,7 +211,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                 try {
                                     initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, true, null);
 
-                                    contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+                                    contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName()
+                                        , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), ZoneId.systemDefault().getId())
                                         , contextInstance.getTimezone(), contextInstance.getId());
 
                                     super.prepareFutureContextInstance(context.getName());
@@ -264,7 +266,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                             && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
                                             initialiseContextMachine(context, contextInstance, false, false, null);
                                             if (!contextInstance.isRunContextUntilManuallyEnded()) {
-                                                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+                                                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName()
+                                                    , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), ZoneId.systemDefault().getId())
                                                     , contextInstance.getTimezone(), contextInstance.getId());
                                                 LOG.info(String.format("Recovering context [%s] instance id [%s]", contextInstance.getName(), contextInstance.getId()));
                                             }

@@ -366,7 +366,7 @@ public abstract class ContextInstanceServiceBase {
 
         if (isInitialContextInstantiation) {
             instance.setStartTime(System.currentTimeMillis());
-            long startMilliEpoch = CronUtils.getEpochMilliOfPreviousFireTime(instance.getTimeWindowStart());
+            long startMilliEpoch = CronUtils.getEpochMilliOfPreviousFireTime(instance.getTimeWindowStart(), instance.getTimezone());
             instance.setProjectedEndTime(startMilliEpoch+instance.getContextTtlMilliseconds());
             this.saveContextInstance(instance, InstanceStatus.WAITING);
         }
