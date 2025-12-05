@@ -79,6 +79,7 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventService;
 
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -352,7 +353,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 if (!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                     && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
                     initialiseContextMachine(context, contextInstance, initialiseJobs, true, null);
-                    contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+                    contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName()
+                        , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), ZoneId.systemDefault().getId())
                         , contextInstance.getTimezone(), contextInstance.getId());
                     LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
                     this.contextInstanceSavedEventBroadcaster.broadcast(contextInstance);
