@@ -755,55 +755,6 @@ public class ContextHelperTest {
 
         // Assert all child context names have been populated.
         allJobs.forEach(schedulerJob -> Assert.assertFalse(schedulerJob.getChildContextNames().isEmpty()));
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 1", "TEST_IK_AM_1 Step 1"), allJobs.get(0).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT1 Step 1", "TEST_IK_EVENT2 Step 1"), allJobs.get(1).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 7"), allJobs.get(2).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 5"), allJobs.get(3).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 8"), allJobs.get(4).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT1 Step 1", "TEST_IK_EVENT2 Step 2"), allJobs.get(5).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 8"), allJobs.get(6).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_LOCK_1 Step 2"), allJobs.get(7).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_2 Step 1"), allJobs.get(8).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_LOCK_1 Step 2"), allJobs.get(9).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_LOCK_1 Step 2"), allJobs.get(10).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_2 Step 1"), allJobs.get(11).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 3", "TEST_IK_LOCK_1 Step 1"), allJobs.get(12).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_LOCK_1 Step 2"), allJobs.get(13).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_1 Step 1"), allJobs.get(14).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 8"), allJobs.get(15).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_1 Step 1"), allJobs.get(16).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_LOCK_1 Step 1"), allJobs.get(17).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 6"), allJobs.get(18).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_2 Step 1"), allJobs.get(19).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT2 Step 1"), allJobs.get(20).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_1 Step 1"), allJobs.get(21).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 1"), allJobs.get(22).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT1 Step 1"), allJobs.get(23).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT1 Step 1"), allJobs.get(24).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_2 Step 1"), allJobs.get(25).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_LOCK_1 Step 2"), allJobs.get(26).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 6"), allJobs.get(27).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 3"), allJobs.get(28).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT2 Step 1"), allJobs.get(29).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_1 Step 1"), allJobs.get(30).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT2 Step 2"), allJobs.get(31).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 8"), allJobs.get(32).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 5"), allJobs.get(33).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_LOCK_1 Step 1"), allJobs.get(34).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 7"), allJobs.get(35).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT1 Step 1", "TEST_IK_EVENT2 Step 2", "TEST_IK_GLOB Step 5"), allJobs.get(36).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT2 Step 1", "TEST_IK_EVENT2 Step 2"), allJobs.get(37).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 8"), allJobs.get(38).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_2 Step 1", "TEST_IK_GLOB Step 3"), allJobs.get(39).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 6", "TEST_IK_GLOB Step 7"), allJobs.get(40).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 1", "TEST_IK_AM_1 Step 1"), allJobs.get(41).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 5", "TEST_IK_GLOB Step 6"), allJobs.get(42).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 3", "TEST_IK_LOCK_1 Step 2"), allJobs.get(43).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 7", "TEST_IK_GLOB Step 8"), allJobs.get(44).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_LOCK_1 Step 1", "TEST_IK_LOCK_1 Step 2"), allJobs.get(45).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_GLOB Step 3", "TEST_IK_EVENT1 Step 1"), allJobs.get(46).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_AM_1 Step 1", "TEST_IK_AM_2 Step 1"), allJobs.get(47).getChildContextNames());
-//        Assert.assertEquals(List.of("TEST_IK_EVENT1 Step 1", "TEST_IK_GLOB Step 5"), allJobs.get(48).getChildContextNames());
     }
 
     @Test
@@ -847,6 +798,19 @@ public class ContextHelperTest {
             , "TEST_IK_EVENT1 Step 1");
 
         Assert.assertNotNull(trace);
+    }
+
+    @Test
+    public void test_get_jobs_outside_logical_grouping_duplicate_jobs() throws IOException {
+        String contextJson = loadDataFile("/data/context_duplicate_jobs.json");
+
+        ContextTemplate context = this.contextService.getContextTemplate(contextJson);
+
+        Map<String, SchedulerJob> jobs = ContextHelper.getJobsOutsideLogicalGrouping
+            (ContextHelper.getChildContext("Context3", context));
+
+        Assert.assertEquals(1, jobs.size());
+        Assert.assertEquals("jobName6", jobs.values().stream().findFirst().get().getJobName());
     }
 
     /**
