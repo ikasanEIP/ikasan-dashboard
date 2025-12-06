@@ -1009,7 +1009,7 @@ public class ContextHelper {
     public static Map<String, SchedulerJob> getJobsOutsideLogicalGrouping(Context context) {
         Map<String, SchedulerJob> jobsOutsideLogicConstructs
             = (Map<String, SchedulerJob>) context.getScheduledJobs().stream()
-                .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity()));
+                .collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (job1, job2) -> job1));
 
         if(context.getJobDependencies() != null) {
             ((List<JobDependency>)context.getJobDependencies()).forEach(jobDependency -> {
