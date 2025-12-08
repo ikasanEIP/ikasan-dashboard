@@ -2156,7 +2156,11 @@ public class ContextHelper {
     private static void populateAgentSet(Context context, HashSet<String> agentSet) {
         if(context.getScheduledJobs()!= null && !context.getScheduledJobs().isEmpty()) {
             context.getScheduledJobs().forEach(job -> {
-                if(!agentSet.contains(((SchedulerJob)job).getAgentName())){
+                if(!agentSet.contains(((SchedulerJob)job).getAgentName()) &&
+                    !((SchedulerJob)job).getAgentName().equals(JobConstants.GLOBAL_EVENT) &&
+                    !((SchedulerJob)job).getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) &&
+                    !((SchedulerJob)job).getAgentName().equals(JobConstants.CONTEXT_START_JOB) &&
+                    !((SchedulerJob)job).getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)){
                     agentSet.add(((SchedulerJob)job).getAgentName());
                 }
             });

@@ -587,10 +587,15 @@ public abstract class ContextInstanceServiceBase {
 
         List<String> contextAgents = ContextHelper.getAllAgents(context);
 
+        LOG.info(String.format("Attempting to load agents for context[%s]. Loading following agents[%s]!"
+            , context.getName(), String.join(", ", contextAgents)));
+
         ModuleMetadataSearchResults searchResults = moduleMetadataService
             .find(contextAgents, ModuleType.SCHEDULER_AGENT, -1, -1);
 
         searchResults.getResultList().forEach(agent -> agents.put(agent.getName(), agent));
+
+        LOG.info("Retrieved the following agents from the datastore: [{}]", agents.keySet());
 
         return agents;
     }
@@ -779,9 +784,15 @@ public abstract class ContextInstanceServiceBase {
      * @param agents          The agents to which the context instance will be propagated.
      */
     private void propagateContextInstanceToAgents(ContextInstance contextInstance, HashMap<String, ModuleMetaData> agents) {
+        if(agents.isEmpty()) {
+            LOG.warn(String.format("Could not publish context instance[%s] with id[%s], however the agents are empty!"
+                , contextInstance.getName(), contextInstance.getId()));
+        }
         if (!agents.keySet().isEmpty()) {
             for (String key : agents.keySet()) {
                 ModuleMetaData agent = agents.get(key);
+                LOG.warn(String.format("Publishing context instance[%s] with id[%s] to agent[%s] with url[%s]!",
+                    contextInstance.getName(), contextInstance.getId(), agent.getName(), agent.getUrl()));
                 contextInstancePublicationService.publish(agent.getUrl(), contextInstance);
             }
         }

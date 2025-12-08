@@ -83,7 +83,7 @@ public class ContextInstanceRegisterJob implements DashboardJob {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         logger.info("Executing jobExecutionContext start context " + jobName);
         try {
-            contextInstanceRegistrationService.register(this.jobName, this.contextInstanceSchedulerService);
+                contextInstanceRegistrationService.register(this.jobName, this.contextInstanceSchedulerService);
 
             // If the context template (job plan template) is using the custom version of the
             // week day of month cron syntax, we need to remove the regular context start job

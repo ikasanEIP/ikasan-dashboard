@@ -479,6 +479,10 @@ public class ContextMachine {
      * Propagates the new context instance to all agents.
      */
     private void propagateContextInstanceToAgents() {
+        if(agents.isEmpty()) {
+            logger.warn(String.format("Could not publish context instance[%s] with id[%s], however the agents are empty!"
+                , contextInstance.getName(), contextInstance.getId()));
+        }
         // Propagate the new context instance to all agents.
         for (var agent : this.agents.entrySet()) {
             // Find the url from solr. If it does not exist (maybe due to accidental removal) then use what's given at the start of the Context Instance creation
@@ -489,6 +493,8 @@ public class ContextMachine {
             } else {
                 url = agentMetaFromSolr.getUrl();
             }
+            logger.warn(String.format("Publishing context instance[%s] with id[%s] to url[%s]!",
+                contextInstance.getName(), contextInstance.getId(), url));
             this.contextInstancePublicationService.publish(url, this.contextInstance);
         }
     }

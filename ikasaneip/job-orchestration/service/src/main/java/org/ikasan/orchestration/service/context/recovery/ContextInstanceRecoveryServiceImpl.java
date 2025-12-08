@@ -267,7 +267,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                             initialiseContextMachine(context, contextInstance, false, false, null);
                                             if (!contextInstance.isRunContextUntilManuallyEnded()) {
                                                 contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName()
-                                                    , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), ZoneId.systemDefault().getId())
+                                                    , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
                                                     , contextInstance.getTimezone(), contextInstance.getId());
                                                 LOG.info(String.format("Recovering context [%s] instance id [%s]", contextInstance.getName(), contextInstance.getId()));
                                             }
