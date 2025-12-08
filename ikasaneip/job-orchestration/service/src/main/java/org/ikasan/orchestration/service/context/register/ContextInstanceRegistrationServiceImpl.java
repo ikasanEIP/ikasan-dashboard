@@ -67,8 +67,6 @@ import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationServ
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
@@ -76,10 +74,8 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventService;
 
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -354,7 +350,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                     && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
                     initialiseContextMachine(context, contextInstance, initialiseJobs, true, null);
                     contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName()
-                        , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), ZoneId.systemDefault().getId())
+                        , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
                         , contextInstance.getTimezone(), contextInstance.getId());
                     LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
                     this.contextInstanceSavedEventBroadcaster.broadcast(contextInstance);

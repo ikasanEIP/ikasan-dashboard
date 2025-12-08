@@ -34,20 +34,22 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
         HttpEntity<?> entity = new HttpEntity<>(instance, headers);
         String url = contextUrl + REST_URL_SAVE;
 
+        LOGGER.info(String.format("Publishing context instance[%s] with id[%s] to agent url[%s]"
+            , instance.getName(), instance.getId(), url));
         try {
             restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
+            LOGGER.info(String.format("Successfully published context instance[%s] with id[%s] to agent url[%s]"
+                , instance.getName(), instance.getId(), url));
             //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
             // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
-            e.printStackTrace();
             String message = String.format("Could not update context parameters for for agent url %s, instance %s, responseCode: %d, error: %s",
                 url, instance.getId(), e.getRawStatusCode(), e.getMessage());
-            LOGGER.warn(message);
+            LOGGER.warn(message, e);
         } catch (Exception e) {
-            e.printStackTrace();
             String message = String.format("Could not update context parameters for for agent url %s, instance %s, error: %s",
                 url, instance.getId(), e.getMessage());
-            LOGGER.warn(message);
+            LOGGER.warn(message, e);
         }
     }
 
