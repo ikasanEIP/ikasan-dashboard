@@ -176,4 +176,22 @@ public class SolrModuleMetaDataImpl implements ModuleMetaData
     public int hashCode() {
         return Objects.hash(moduleType, url, name, description, version, flows, configuredResourceId);
     }
+
+    @Override
+    public String toString() {
+        return "SolrModuleMetaDataImpl{" +
+                "moduleType=" + moduleType +
+                ", url='" + url + '\'' +
+                ", host='" + host + '\'' +
+                ", port=" + port +
+                ", context='" + context + '\'' +
+                ", protocol='" + protocol + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", version='" + version + '\'' +
+                ", ikasanVersion='" + ikasanVersion + '\'' +
+                ", flows=" + flows +
+                ", configuredResourceId='" + configuredResourceId + '\'' +
+                '}';
+    }
 }
