@@ -478,7 +478,7 @@ public class ContextMachine {
     /**
      * Propagates the new context instance to all agents.
      */
-    private void propagateContextInstanceToAgents() {
+    public void propagateContextInstanceToAgents() {
         if(agents.isEmpty()) {
             logger.warn(String.format("Could not publish context instance[%s] with id[%s], however the agents are empty!"
                 , contextInstance.getName(), contextInstance.getId()));

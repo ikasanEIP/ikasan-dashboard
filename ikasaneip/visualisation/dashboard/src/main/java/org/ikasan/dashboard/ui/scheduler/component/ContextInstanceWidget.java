@@ -1195,7 +1195,23 @@ public class ContextInstanceWidget extends VerticalLayout
             SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-        Button systemEventsButton = new Button("System Events", VaadinIcon.CROSSHAIRS.create());
+        Button synchronisePlanWithAgentButton = new Button(getTranslation("button.synchronise-instance-with-agent"), VaadinIcon.REFRESH.create());
+        synchronisePlanWithAgentButton.addClickListener(event -> {
+            try {
+                contextMachine.propagateContextInstanceToAgents();
+            }
+            catch (Exception e) {
+                NotificationHelper.showErrorNotification(getTranslation("notification.synchronise-instance-with-agent-error"));
+                return;
+            }
+
+            NotificationHelper.showUserNotification(getTranslation("notification.synchronise-instance-with-agent-success"));
+        });
+
+        ComponentSecurityVisibility.applySecurity(synchronisePlanWithAgentButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN);
+
+        Button systemEventsButton = new Button(getTranslation("button.system-events"), VaadinIcon.CROSSHAIRS.create());
         systemEventsButton.addClickListener(event -> {
             ContextInstanceSystemEventHistoryDialog contextInstanceSystemEventHistoryDialog
                 = new ContextInstanceSystemEventHistoryDialog(this.contextInstance, this.systemEventSearchService);
@@ -1227,7 +1243,7 @@ public class ContextInstanceWidget extends VerticalLayout
         actionPopup.add(popupLayout);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(systemEventsButton, actionsButton);
+        buttonLayout.add(synchronisePlanWithAgentButton, systemEventsButton, actionsButton);
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
 
