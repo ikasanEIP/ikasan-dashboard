@@ -19,15 +19,13 @@ import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
+import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
-import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateImpl;
-import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateRecordImpl;
-import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
+import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.BigQueueContextMachineManagementServiceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -39,6 +37,7 @@ import org.ikasan.spec.bigqueue.service.BigQueueManagementService;
 import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -1837,6 +1836,30 @@ public class ContextMachine {
                 // Update the context status after event received and attached
                 // to the job instance.
                 this.setContextStatus(contextInstance, false);
+
+                // If there are any job execution output parameters from the incoming job,
+                // set them as context parameters on the job initiation events.
+                if(scheduledProcessEvent.getJobExecutionOutputParameters() != null &&
+                    !scheduledProcessEvent.getJobExecutionOutputParameters().isEmpty() &&
+                    events != null &&
+                    !events.isEmpty()) {
+                    events.forEach(event -> {
+                        Map<String, String> params = scheduledProcessEvent.getJobExecutionOutputParameters();
+                        params.entrySet().forEach(entry -> {
+                            ContextParameterInstance contextParameterInstance = new ContextParameterInstanceImpl();
+                            contextParameterInstance.setName(entry.getKey());
+                            contextParameterInstance.setDefaultValue(entry.getValue());
+                            contextParameterInstance.setValue(entry.getValue());
+
+                            if(event.getContextParameters() == null) {
+                                event.setContextParameters(new ArrayList<>());
+                            }
+
+                            event.getContextParameters().add(contextParameterInstance);
+                        });
+                    });
+                }
+
                 results.addAll(events);
             }
         }

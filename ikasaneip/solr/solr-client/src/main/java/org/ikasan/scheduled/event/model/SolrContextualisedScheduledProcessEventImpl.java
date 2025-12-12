@@ -10,6 +10,7 @@ import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 public class SolrContextualisedScheduledProcessEventImpl implements ContextualisedScheduledProcessEvent<String, SolrDryRunParameters>, Serializable {
     private Long id;
@@ -40,6 +41,7 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     private boolean raisedDueToFailureResubmission;
     private String executionDetails;
     private ScheduledProcessEvent catalystEvent;
+    private Map<String, String> jobExecutionOutputParameters;
 
     public Long getId() {
         return id;
@@ -327,6 +329,16 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     @Override
     public void setCatalystEvent(ScheduledProcessEvent catalystEvent) {
         this.catalystEvent = catalystEvent;
+    }
+
+    @Override
+    public Map<String, String> getJobExecutionOutputParameters() {
+        return jobExecutionOutputParameters;
+    }
+
+    @Override
+    public void setJobExecutionOutputParameters(Map<String, String> jobExecutionOutputParameters) {
+        this.jobExecutionOutputParameters = jobExecutionOutputParameters;
     }
 
     @Override

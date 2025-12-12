@@ -311,6 +311,41 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    public void test_context_machine_full_nested_context_with_job_execution_output_parameters_success() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", false);
+        eventInstance.setJobStarting(true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job1-running-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", true);
+        eventInstance.setJobExecutionOutputParameters(Map.of("FILE_PATH", "/some/file/path"));
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals(1, events.get(0).getContextParameters().size());
+        Assert.assertEquals("FILE_PATH", ((ContextParameterInstance)events.get(0).getContextParameters().get(0)).getName());
+        Assert.assertEquals("/some/file/path", ((ContextParameterInstance)events.get(0).getContextParameters().get(0)).getValue());
+    }
+
+    @Test
     public void test_context_machine_full_nested_context_job_in_context_error_reset_skipped_job_plan_ends_completed() throws IOException, JSONException, InvalidContextTemplateException {
         when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
             .thenReturn(this.schedulerJobInstanceRecord);
