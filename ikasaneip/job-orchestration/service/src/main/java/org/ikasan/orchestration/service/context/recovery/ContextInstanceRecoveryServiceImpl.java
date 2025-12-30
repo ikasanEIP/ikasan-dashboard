@@ -212,7 +212,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                     initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, true, null);
 
                                     contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName()
-                                        , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), ZoneId.systemDefault().getId())
+                                        , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
                                         , contextInstance.getTimezone(), contextInstance.getId());
 
                                     super.prepareFutureContextInstance(context.getName());
