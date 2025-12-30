@@ -161,7 +161,6 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
         initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true, true, null);
 
         contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime()
-                , ZoneId.systemDefault().getId())
-            , contextInstance.getTimezone(), contextInstance.getId());
+                , contextInstance.getTimezone()), contextInstance.getTimezone(), contextInstance.getId());
     }
 }
