@@ -530,7 +530,7 @@ public abstract class ContextInstanceServiceBase {
      *
      * @param contextTemplate The context template to provision jobs for.
      */
-    protected void provisionJobs(ContextTemplate contextTemplate) {
+    protected synchronized void provisionJobs(ContextTemplate contextTemplate) {
         SearchResults<SchedulerJobRecord> jobRecords = this.schedulerJobService.findByContext(contextTemplate.getName(), -1, -1);
 
         List<String> jobIdentifiersInJobPlan = ContextHelper.getAllJobs(contextTemplate).stream()

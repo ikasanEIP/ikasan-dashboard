@@ -33,6 +33,8 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.provision.job.JobProvisionException;
+import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
@@ -85,7 +87,6 @@ import java.util.stream.Collectors;
 
 public class ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
     , ContextTemplateEnableDisableEventBroadcastListener, ContextTemplateSavedEventBroadcastListener {
-
     private Logger logger = LoggerFactory.getLogger(ContextTemplateWidget.class);
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
@@ -264,7 +265,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         Button uploadJobPlan = new Button(getTranslation("button.upload-job-plan", UI.getCurrent().getLocale()), uploadIcon);
         uploadJobPlan.setIconAfterText(true);
         uploadJobPlan.addClickListener(buttonClickEvent -> {
-            ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService, provisionJobs, this.userService, this.authentication);
+            ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService, this.userService, this.authentication);
             importer.open();
 
             importer.addOpenedChangeListener(openedChangeEvent -> {
@@ -455,15 +456,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     final UI current = UI.getCurrent();
                     Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateWidget"));
                     executor.execute(() -> {
+                        Exception exception = null;
                         try {
-                            try {
-                                this.jobProvisionService.removeJobs(scheduledContextRecord.getContextName());
-                            }
-                            catch (Exception e) {
-                                current.access(() ->
-                                NotificationHelper.showUserNotification(getTranslation("notification.agent-not-available-when-deleting-job-plan"
-                                    , current.getLocale())));
-                            }
+                            this.jobProvisionService.removeJobs(scheduledContextRecord.getContextName());
                             this.schedulerJobService.deleteByContextName(scheduledContextRecord.getContextName());
                             this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
                             this.contextInstanceRegistrationService.deRegisterByName(scheduledContextRecord.getContextName()
@@ -483,15 +478,29 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                             });
                         } catch (Exception e) {
                             logger.error(String.format("An error has occurred deleting job plan[%s]!", scheduledContextRecord.getContextName()), e);
-                            current.access(() -> {
-                                NotificationHelper.showUserNotification(getTranslation("error.delete-context-template"
-                                    , UI.getCurrent().getLocale()));
-                            });
+                            exception = e;
                         }
                         finally {
                             current.access(() -> {
                                 dialog.close();
                             });
+
+                            if(exception != null) {
+                                if (exception instanceof JobProvisionLockException) {
+                                    current.access(() ->
+                                        NotificationHelper.showErrorNotification(getTranslation("error.deleting-job-plan-due-to-lock", UI.getCurrent().getLocale())));
+                                }
+                                if (exception instanceof JobProvisionException) {
+                                    current.access(() ->
+                                        NotificationHelper.showUserNotification(getTranslation("notification.agent-not-available-when-deleting-job-plan"
+                                            , current.getLocale())));
+                                }
+                                else {
+                                    current.access(() ->
+                                        NotificationHelper.showUserNotification(getTranslation("error.delete-context-template"
+                                        , UI.getCurrent().getLocale())));
+                                }
+                            }
                         }
                     });
                 });
@@ -925,6 +934,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                         Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateWidget"));
                         executor.execute(() -> {
+                            Exception exception = null;
                             try {
                                 ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                                 ContextTemplate contextTemplate = record.getContext();
@@ -948,11 +958,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
                                 logger.error(String.format("An error has occurred enabling job plans [%s]", scheduledContextRecord.getContextName()), e);
-                                if (ui != null && ui.isAttached()) {
-                                    ui.access(() -> {
-                                        NotificationHelper.showErrorNotification(getTranslation("error.enabling-context", UI.getCurrent().getLocale()));
-                                    });
-                                }
+                                exception = e;
                             }
                             finally {
                                 if (ui != null && ui.isAttached()) {
@@ -961,6 +967,18 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                             progressIndicatorDialog.close();
                                         }
                                     });
+
+                                    if(exception != null) {
+                                        if (exception instanceof JobProvisionLockException) {
+                                            ui.access(() -> {
+                                                NotificationHelper.showErrorNotification(getTranslation("error.enabling-context-due-to-lock", UI.getCurrent().getLocale()));
+                                            });
+                                        } else {
+                                            ui.access(() -> {
+                                                NotificationHelper.showErrorNotification(getTranslation("error.enabling-context", UI.getCurrent().getLocale()));
+                                            });
+                                        }
+                                    }
                                 }
                             }
                         });
@@ -988,6 +1006,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                         Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextTemplateWidget"));
                         executor.execute(() -> {
+                            Exception exception = null;
                             try {
                                 ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                                 ContextTemplate contextTemplate = record.getContext();
@@ -1018,11 +1037,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
                                 logger.error(String.format("An error has occurred disabling job plans [%s]", scheduledContextRecord.getContextName()), e);
-                                if(ui != null && ui.isAttached()) {
-                                    ui.access(() -> {
-                                        NotificationHelper.showErrorNotification(getTranslation("error.disabling-context", UI.getCurrent().getLocale()));
-                                    });
-                                }
+                                exception = e;
                             }
                             finally {
                                 if(ui != null && ui.isAttached()) {
@@ -1031,6 +1046,18 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                             progressIndicatorDialog.close();
                                         }
                                     });
+                                }
+
+                                if(exception != null) {
+                                    if (exception instanceof JobProvisionLockException) {
+                                        ui.access(() -> {
+                                            NotificationHelper.showErrorNotification(getTranslation("error.disabling-context-due-to-lock", UI.getCurrent().getLocale()));
+                                        });
+                                    } else {
+                                        ui.access(() -> {
+                                            NotificationHelper.showErrorNotification(getTranslation("error.disabling-context", UI.getCurrent().getLocale()));
+                                        });
+                                    }
                                 }
                             }
                         });

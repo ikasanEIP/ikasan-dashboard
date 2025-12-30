@@ -219,7 +219,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
-            this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
+            this.contextProfileService, this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
             this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
             this.contextInstanceSchedulerService, this.contextParametersInstanceService, this.systemEventSearchService, removeTrailingPlanNameContextAfterUnderscore,
             this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationLevelDistance);

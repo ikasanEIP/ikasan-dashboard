@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.rest.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
@@ -7,6 +8,7 @@ import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
+import org.ikasan.job.orchestration.rest.client.dto.ErrorDto;
 import org.ikasan.job.orchestration.rest.client.exception.SchedulerAgentRestClientException;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.rest.client.ModuleRestService;
@@ -20,6 +22,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +33,8 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService impleme
 
     public static final String JOB_PROVISION_REST_URL = "/rest/jobProvision";
     public static final String JOB_PROVISION_REMOVE_REST_URL = "/rest/jobProvision/remove";
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public JobProvisionModuleRestServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         super(environment, httpComponentsClientHttpRequestFactory);
@@ -74,11 +79,16 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService impleme
             logger.debug("Context URL[{}] Payload[{}] ", url, contextName);
             restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
         }
-        catch (Exception e) {
-            logger.error(String.format("An error has occurred attempting to remove jobs for context[%s]!"
-                , contextName), e);
-            throw new SchedulerAgentRestClientException(String.format("An error has occurred attempting to remove jobs for context[%s]!"
-                , contextName), e);
+        catch (HttpClientErrorException e) {
+            try {
+                ErrorDto errorDto = this.objectMapper.readValue(e.getResponseBodyAsString(), ErrorDto.class);
+                logger.error(String.format("An error has occurred attempting to remove jobs for context[%s]!"
+                    , contextName), e);
+                throw new SchedulerAgentRestClientException(String.format("An error has occurred attempting to remove jobs " +
+                    "for context[%s] - error message[%s]!", contextName, errorDto.getErrorMessage()), e);
+            } catch (JsonProcessingException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 }

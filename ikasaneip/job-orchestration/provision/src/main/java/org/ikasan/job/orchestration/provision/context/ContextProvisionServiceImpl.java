@@ -1,10 +1,15 @@
 package org.ikasan.job.orchestration.provision.context;
 
 import com.esotericsoftware.minlog.Log;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
+import org.ikasan.job.orchestration.provision.job.JobProvisionException;
+import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
+import org.ikasan.job.orchestration.rest.client.dto.ErrorDto;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -34,8 +39,11 @@ import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public class ContextProvisionServiceImpl implements ContextProvisionService {
@@ -55,7 +63,25 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     private final ScheduledContextInstanceService scheduledContextInstanceService;
     private int jobPlanIntervalMultiple;
     private SecurityService securityService;
+    private final ConcurrentHashMap<String, ReentrantLock> agentLocks;
 
+    /**
+     * Constructor
+     *
+     * @param scheduledContextService The service for managing scheduled contexts
+     * @param moduleMetadataService The service for managing module metadata
+     * @param schedulerJobService The service for managing scheduler jobs
+     * @param jobProvisionModuleRestService The service for managing job provision modules
+     * @param contextInstanceRegistrationService The service for managing context instance registration
+     * @param contextProfileService The service for managing context profiles
+     * @param emailNotificationDetailsService The service for managing email notification details
+     * @param emailNotificationContextService The service for managing email notification contexts
+     * @param uploadProvisionJobs Flag indicating whether provision jobs should be uploaded
+     * @param contextInstanceSchedulerService The service for context instance scheduling
+     * @param scheduledContextInstanceService The service for managing scheduled context instances
+     * @param jobPlanIntervalMultiple The multiple for the job plan interval
+     * @param securityService The security service for managing security-related operations
+     */
     public ContextProvisionServiceImpl(ScheduledContextService scheduledContextService,
                                        ModuleMetaDataService moduleMetadataService,
                                        SchedulerJobService schedulerJobService,
@@ -122,6 +148,8 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         if (this.securityService == null) {
             throw new IllegalArgumentException("securityService cannot be null!");
         }
+
+        this.agentLocks = new ConcurrentHashMap<>();
     }
 
     /**
@@ -129,6 +157,23 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
      * @param contextBundle to provision
      */
     public void provisionContext(ContextBundle contextBundle) {
+
+        synchronized(this) {
+            List<String> agents = ContextHelper.getAllAgents(contextBundle.getContextTemplate());
+            agents.forEach(agent -> {
+                if (!agentLocks.containsKey(agent)) {
+                    ReentrantLock agentLock = new ReentrantLock();
+                    agentLock.lock();
+                    agentLocks.put(agent, agentLock);
+                } else if (agentLocks.containsKey(agent) && !agentLocks.get(agent).isLocked()) {
+                    agentLocks.get(agent).lock();
+                } else {
+                    throw new JobProvisionLockException(String.format("Cannot provision job plan[%s] as another process has " +
+                        "locked the agent[%s] for modification.", contextBundle.getContextTemplate().getName(), agent));
+                }
+            });
+        }
+
         try {
             // TODO need to expand validate
             final String jobPlanName = contextBundle.getContextTemplate().getName();
@@ -191,13 +236,29 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
             contextInstanceSchedulerService.registerStartJobAndTrigger(contextBundle.getContextTemplate(),
                 contextBundle.getContextTemplate().getTimezone());
 
-        } catch (Exception e) {
+        }
+        catch (JobProvisionLockException e) {
+            throw e;
+        }
+        catch (Exception e) {
             String message = String.format("Could not upload context and jobs. Error [%s]", e.getMessage());
-            LOG.warn(message, e);
-            throw new RuntimeException(message);
+            LOG.error(message, e);
+            throw new JobProvisionException(message, e);
+        }
+        finally {
+            synchronized (this) {
+                List<String> agents = ContextHelper.getAllAgents(contextBundle.getContextTemplate());
+                agents.forEach(agent -> agentLocks.get(agent).unlock());
+            }
         }
     }
 
+    /**
+     * Validates the provided context template and list of scheduler jobs.
+     *
+     * @param contextTemplate The context template to validate
+     * @param contextJobs The list of scheduler jobs to validate
+     */
     private void validate(ContextTemplate contextTemplate, List<SchedulerJob> contextJobs) {
         // todo expand this out
         if (contextTemplate == null) {
@@ -239,6 +300,12 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
     }
 
 
+    /**
+     * Provision jobs on specified agent URL based on the context jobs and template.
+     *
+     * @param contextJobs List of SchedulerJob objects to be provisioned
+     * @param contextTemplate ContextTemplate object representing the context
+     */
     private void provisionJobs(List<SchedulerJob> contextJobs, ContextTemplate contextTemplate) {
         long now = System.currentTimeMillis();
         int jobsSize = contextJobs.size();
@@ -269,8 +336,14 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                     jobsSize - schedulerJobWrapper.getJobs().size(), agent.getUrl()));
                 this.jobProvisionModuleRestService.provisionJobs(agent.getUrl(), schedulerJobWrapper);
                 LOG.info(String.format("Successfully provisioned %s jobs on agent[%s]", schedulerJobWrapper.getJobs().size(), agent.getUrl()));
-            } catch (Exception e) {
-                e.printStackTrace();
+            }
+            catch (JobProvisionLockException e) {
+                LOG.error(String.format("Agent[%s] Error[%s]", agent.getName(), e.getMessage()), e);
+                throw e;
+            }
+            catch (Exception e) {
+                LOG.error(String.format("Agent[%s] Error[%s]", agent.getName(), e.getMessage()), e);
+                this.determineIfLockExceptionAndRaiseAccordingly(e);
                 exceptions.add(new RuntimeException(String.format("Agent[%s] Error[%s]", agent.getName(), e.getMessage()), e));
             }
         });
@@ -285,6 +358,34 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         }
     }
 
+    /**
+     * Determines if the given exception is a lock-related exception. If the cause of the exception is an instance
+     * of HttpClientErrorException, it attempts to read the response body as an ErrorDto to check if the error code
+     * corresponds to a lock acquisition error. If a lock acquisition error is detected, a JobProvisionLockException
+     * is thrown with the error message and the original exception as the cause.
+     *
+     * @param e The exception to check for lock-related issues.
+     */
+    private void determineIfLockExceptionAndRaiseAccordingly(Exception e) {
+        if(e.getCause() != null && e.getCause() instanceof HttpClientErrorException) {
+            try {
+                ErrorDto errorDto = new ObjectMapper().readValue(((HttpClientErrorException) e.getCause()).getResponseBodyAsString(), ErrorDto.class);
+                if(errorDto.getErrorCode() != null && errorDto.getErrorCode().equals("LOCK_ACQUISITION_ERROR")) {
+                    throw new JobProvisionLockException(errorDto.getErrorMessage(), e);
+                }
+            } catch (JsonProcessingException ex) {
+                // Ignore as exception could not be determined if it was a lock related exception!
+            }
+        }
+    }
+
+    /**
+     * Saves the provided context information into the system.
+     * If the context requires agent synchronisation on the next instance, it is marked so.
+     * The context information is then saved as a ScheduledContextRecord.
+     *
+     * @param contextTemplate the template representing the context to be saved
+     */
     private void saveContext(ContextTemplate contextTemplate) {
         // As the context has been provisioned, we need to mark the plan
         // as requiring synchronisation with the agent next time the job
@@ -301,10 +402,22 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         this.scheduledContextService.save(scheduledContextRecord);
     }
 
+    /**
+     * Saves the provided list of SchedulerJob objects into the system.
+     * The jobs are saved using the SchedulerJobService with the specified username "system".
+     *
+     * @param contextJobs the list of SchedulerJob objects to be saved
+     */
     private void saveJobs(List<SchedulerJob> contextJobs) {
         this.schedulerJobService.save(contextJobs, "system");
     }
 
+    /**
+     * Sets the flag indicating whether each job in the given list of SchedulerJobs participates in a job lock.
+     *
+     * @param contextTemplate the context template containing job locks
+     * @param contextJobs the list of SchedulerJobs to update participation in job lock flag
+     */
     private void setJobsParticipateInJobLock(ContextTemplate contextTemplate, List<SchedulerJob> contextJobs) {
         List<JobLock> jobLocks = contextTemplate.getAllNestedJobLocks();
         Set<String> jobInJobLocks = new HashSet<>();
@@ -323,30 +436,66 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         });
     }
 
+    /**
+     * Deletes all jobs associated with the provided contextName.
+     *
+     * @param contextName the name of the context for which all jobs should be deleted
+     */
     private void deleteAllJobs(String contextName) {
         this.schedulerJobService.deleteByContextName(contextName);
     }
 
+    /**
+     * Saves the provided list of context profile records into the system.
+     * This method delegates the saving operation to the context profile service.
+     *
+     * @param contextProfileRecords the list of ContextProfileRecord objects to be saved
+     */
     private void saveContextProfiles(List<ContextProfileRecord> contextProfileRecords) {
         this.contextProfileService.save(contextProfileRecords);
     }
 
+    /**
+     * Deletes all context profiles associated with the provided context name.
+     *
+     * @param contextName the name of the context for which context profiles should be deleted
+     */
     private void deleteContextProfiles(String contextName) {
         this.contextProfileService.deleteByContextName(contextName);
     }
 
+    /**
+     * Saves the email notification details in the system.
+     *
+     * @param getEmailNotificationDetails the list of EmailNotificationDetails to be saved
+     */
     private void saveEmailNotificationDetails(List<EmailNotificationDetails> getEmailNotificationDetails) {
         this.emailNotificationDetailsService.saveEmailNotificationDetails(getEmailNotificationDetails);
     }
 
+    /**
+     * Deletes email notification details associated with the specified context name.
+     *
+     * @param contextName the name of the context for which email notification details should be deleted
+     */
     private void deleteEmailNotificationDetailsByContext(String contextName) {
         this.emailNotificationDetailsService.deleteByContextName(contextName);
     }
 
+    /**
+     * Saves the email notification context by delegating the operation to the EmailNotificationContextService.
+     *
+     * @param emailNotificationContext the email notification context to be saved
+     */
     private void saveEmailNotificationContext(EmailNotificationContext emailNotificationContext) {
         this.emailNotificationContextService.saveEmailNotificationContext(emailNotificationContext);
     }
 
+    /**
+     * Deletes the email notification context by the provided context name.
+     *
+     * @param contextName the name of the context for which the email notification context should be deleted
+     */
     private void deleteEmailNotificationContextByContext(String contextName) {
         this.emailNotificationContextService.deleteByContextName(contextName);
     }

@@ -10,6 +10,7 @@ import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.GlobalEventJobBuilder;
 import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.QuartzScheduleDrivenJobBuilder;
+import org.ikasan.job.orchestration.rest.client.dto.ErrorDto;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -27,6 +28,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,6 +84,132 @@ public class JobProvisionServiceTest extends AbstractTest {
             , moduleMetaDataService);
     }
 
+    @Test(expected = JobProvisionLockException.class)
+    public void test_provision_jobs_agent_locked_exception() throws IOException {
+        when(moduleMetaDataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
+                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
+                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")))
+                , 3, 3));
+
+        ErrorDto errorDto = new ErrorDto();
+        errorDto.setErrorCode("LOCK_ACQUISITION_ERROR");
+        errorDto.setErrorMessage("Lock error!");
+
+        String error = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(errorDto);
+        HttpClientErrorException exception = new HttpClientErrorException(HttpStatusCode.valueOf(401)
+            , "Lock Exception!", error.getBytes(), null);
+        RuntimeException runtimeException = new RuntimeException(exception);
+
+        doThrow(runtimeException).when(this.jobProvisionModuleRestService).provisionJobs(anyString(), any());
+
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        jobProvisionService.provisionJobs(this.createSchedulerJobs(), "system");
+
+        verify(jobProvisionModuleRestService, times(3)).provisionJobs(anyString(), any());
+        verify(moduleMetaDataService, times(1)).find(anyList(), any(), anyInt(), anyInt());
+
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
+    @Test(expected = JobProvisionException.class)
+    public void test_provision_jobs_NOT_agent_locked_exception() throws IOException {
+        when(moduleMetaDataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
+                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
+                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")))
+                , 3, 3));
+
+        ErrorDto errorDto = new ErrorDto();
+        errorDto.setErrorCode("SOME_OTHER_ERROR");
+        errorDto.setErrorMessage("Lock error!");
+
+        String error = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(errorDto);
+        HttpClientErrorException exception = new HttpClientErrorException(HttpStatusCode.valueOf(401)
+            , "Lock Exception!", error.getBytes(), null);
+        RuntimeException runtimeException = new RuntimeException(exception);
+
+        doThrow(runtimeException).when(this.jobProvisionModuleRestService).provisionJobs(anyString(), any());
+
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        jobProvisionService.provisionJobs(this.createSchedulerJobs(), "system");
+
+        verify(jobProvisionModuleRestService, times(3)).provisionJobs(anyString(), any());
+        verify(moduleMetaDataService, times(1)).find(anyList(), any(), anyInt(), anyInt());
+
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
+    @Test(expected = JobProvisionException.class)
+    public void test_provision_jobs_NOT_agent_locked_exception_null_cause() throws IOException {
+        when(moduleMetaDataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
+                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
+                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")))
+                , 3, 3));
+
+        RuntimeException runtimeException = new RuntimeException("Error provisioning jobs!");
+
+        doThrow(runtimeException).when(this.jobProvisionModuleRestService).provisionJobs(anyString(), any());
+
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        jobProvisionService.provisionJobs(this.createSchedulerJobs(), "system");
+
+        verify(jobProvisionModuleRestService, times(3)).provisionJobs(anyString(), any());
+        verify(moduleMetaDataService, times(1)).find(anyList(), any(), anyInt(), anyInt());
+
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
+    @Test(expected = JobProvisionException.class)
+    public void test_provision_jobs_NOT_agent_locked_exception_job_provision_exception() throws IOException {
+        when(moduleMetaDataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
+                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
+                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")))
+                , 3, 3));
+
+        JobProvisionException runtimeException = new JobProvisionException("Error provisioning jobs!");
+
+        doThrow(runtimeException).when(this.jobProvisionModuleRestService).provisionJobs(anyString(), any());
+
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        jobProvisionService.provisionJobs(this.createSchedulerJobs(), "system");
+
+        verify(jobProvisionModuleRestService, times(3)).provisionJobs(anyString(), any());
+        verify(moduleMetaDataService, times(1)).find(anyList(), any(), anyInt(), anyInt());
+
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
     @Test
     public void test_remove_jobs_for_context_success() throws IOException {
         JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
@@ -101,6 +231,176 @@ public class JobProvisionServiceTest extends AbstractTest {
 
         when(moduleMetaDataService.find(anyList(), any(), anyInt(), anyInt())).thenReturn(moduleMetadataSearchResults);
         when(agent.getUrl()).thenReturn("url");
+
+        jobProvisionService.removeJobs("contextName");
+
+        verify(schedulerJobService).findByContext(anyString(), anyInt(), anyInt());
+        verify(moduleMetaDataService).find(anyList(), any(), anyInt(), anyInt());
+        verify(this.jobProvisionModuleRestService).removeJobsForContext("url", "contextName");
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
+    @Test(expected = JobProvisionLockException.class)
+    public void test_remove_jobs_for_context_agent_locked_exception() throws IOException {
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        List<SchedulerJob> schedulerJobs = this.createSchedulerJobs();
+        List<SchedulerJobRecord> schedulerJobRecords = new ArrayList<>();
+        schedulerJobs.forEach(job -> {
+            TestSchedulerJobRecord schedulerJobRecord = new TestSchedulerJobRecord(job);
+            schedulerJobRecords.add(schedulerJobRecord);
+        });
+
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(schedulerJobRecords, schedulerJobRecords.size(), 100L);
+
+        when(schedulerJobService.findByContext(anyString(), anyInt(), anyInt())).thenReturn(searchResults);
+
+        ModuleMetadataSearchResults moduleMetadataSearchResults = new ModuleMetadataSearchResults(List.of(agent)
+            , 1, 100L);
+
+        when(moduleMetaDataService.find(anyList(), any(), anyInt(), anyInt())).thenReturn(moduleMetadataSearchResults);
+        when(agent.getUrl()).thenReturn("url");
+
+        ErrorDto errorDto = new ErrorDto();
+        errorDto.setErrorCode("LOCK_ACQUISITION_ERROR");
+        errorDto.setErrorMessage("Lock error!");
+
+        String error = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(errorDto);
+        HttpClientErrorException exception = new HttpClientErrorException(HttpStatusCode.valueOf(401)
+            , "Lock Exception!", error.getBytes(), null);
+        RuntimeException runtimeException = new RuntimeException(exception);
+
+        doThrow(runtimeException).when(this.jobProvisionModuleRestService).removeJobsForContext(anyString(), anyString());
+
+        jobProvisionService.removeJobs("contextName");
+
+        verify(schedulerJobService).findByContext(anyString(), anyInt(), anyInt());
+        verify(moduleMetaDataService).find(anyList(), any(), anyInt(), anyInt());
+        verify(this.jobProvisionModuleRestService).removeJobsForContext("url", "contextName");
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
+    @Test(expected = JobProvisionException.class)
+    public void test_remove_jobs_for_context_NOT_agent_locked_exception() throws IOException {
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        List<SchedulerJob> schedulerJobs = this.createSchedulerJobs();
+        List<SchedulerJobRecord> schedulerJobRecords = new ArrayList<>();
+        schedulerJobs.forEach(job -> {
+            TestSchedulerJobRecord schedulerJobRecord = new TestSchedulerJobRecord(job);
+            schedulerJobRecords.add(schedulerJobRecord);
+        });
+
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(schedulerJobRecords, schedulerJobRecords.size(), 100L);
+
+        when(schedulerJobService.findByContext(anyString(), anyInt(), anyInt())).thenReturn(searchResults);
+
+        ModuleMetadataSearchResults moduleMetadataSearchResults = new ModuleMetadataSearchResults(List.of(agent)
+            , 1, 100L);
+
+        when(moduleMetaDataService.find(anyList(), any(), anyInt(), anyInt())).thenReturn(moduleMetadataSearchResults);
+        when(agent.getUrl()).thenReturn("url");
+
+        ErrorDto errorDto = new ErrorDto();
+        errorDto.setErrorCode("SOME_OTHER_EXCEPTION");
+        errorDto.setErrorMessage("NOT Lock error!");
+
+        String error = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(errorDto);
+        HttpClientErrorException exception = new HttpClientErrorException(HttpStatusCode.valueOf(401)
+            , "Lock Exception!", error.getBytes(), null);
+        RuntimeException runtimeException = new RuntimeException(exception);
+
+        doThrow(runtimeException).when(this.jobProvisionModuleRestService).removeJobsForContext(anyString(), anyString());
+
+        jobProvisionService.removeJobs("contextName");
+
+        verify(schedulerJobService).findByContext(anyString(), anyInt(), anyInt());
+        verify(moduleMetaDataService).find(anyList(), any(), anyInt(), anyInt());
+        verify(this.jobProvisionModuleRestService).removeJobsForContext("url", "contextName");
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
+    @Test(expected = JobProvisionException.class)
+    public void test_remove_jobs_for_context_NOT_agent_locked_exception_null_cause() throws IOException {
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        List<SchedulerJob> schedulerJobs = this.createSchedulerJobs();
+        List<SchedulerJobRecord> schedulerJobRecords = new ArrayList<>();
+        schedulerJobs.forEach(job -> {
+            TestSchedulerJobRecord schedulerJobRecord = new TestSchedulerJobRecord(job);
+            schedulerJobRecords.add(schedulerJobRecord);
+        });
+
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(schedulerJobRecords, schedulerJobRecords.size(), 100L);
+
+        when(schedulerJobService.findByContext(anyString(), anyInt(), anyInt())).thenReturn(searchResults);
+
+        ModuleMetadataSearchResults moduleMetadataSearchResults = new ModuleMetadataSearchResults(List.of(agent)
+            , 1, 100L);
+
+        when(moduleMetaDataService.find(anyList(), any(), anyInt(), anyInt())).thenReturn(moduleMetadataSearchResults);
+        when(agent.getUrl()).thenReturn("url");
+
+        RuntimeException runtimeException = new RuntimeException();
+
+        doThrow(runtimeException).when(this.jobProvisionModuleRestService).removeJobsForContext(anyString(), anyString());
+
+        jobProvisionService.removeJobs("contextName");
+
+        verify(schedulerJobService).findByContext(anyString(), anyInt(), anyInt());
+        verify(moduleMetaDataService).find(anyList(), any(), anyInt(), anyInt());
+        verify(this.jobProvisionModuleRestService).removeJobsForContext("url", "contextName");
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
+    @Test(expected = JobProvisionException.class)
+    public void test_remove_jobs_for_context_NOT_agent_locked_job_provision_exception() throws IOException {
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        List<SchedulerJob> schedulerJobs = this.createSchedulerJobs();
+        List<SchedulerJobRecord> schedulerJobRecords = new ArrayList<>();
+        schedulerJobs.forEach(job -> {
+            TestSchedulerJobRecord schedulerJobRecord = new TestSchedulerJobRecord(job);
+            schedulerJobRecords.add(schedulerJobRecord);
+        });
+
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(schedulerJobRecords, schedulerJobRecords.size(), 100L);
+
+        when(schedulerJobService.findByContext(anyString(), anyInt(), anyInt())).thenReturn(searchResults);
+
+        ModuleMetadataSearchResults moduleMetadataSearchResults = new ModuleMetadataSearchResults(List.of(agent)
+            , 1, 100L);
+
+        when(moduleMetaDataService.find(anyList(), any(), anyInt(), anyInt())).thenReturn(moduleMetadataSearchResults);
+        when(agent.getUrl()).thenReturn("url");
+
+        JobProvisionException runtimeException = new JobProvisionException("Exception");
+
+        doThrow(runtimeException).when(this.jobProvisionModuleRestService).removeJobsForContext(anyString(), anyString());
 
         jobProvisionService.removeJobs("contextName");
 
