@@ -19,6 +19,7 @@ import org.ikasan.orchestration.service.utils.TestUtils;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
@@ -39,14 +40,21 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.annotation.Resource;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -239,6 +247,183 @@ public class MissingContextInstanceRecoveryRunnableTest {
             = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
         assertNotNull(schedulerJobInstanceStateChangeEventListeners);
         assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+    }
+
+    @Test
+    public void should_create_instance_and_populate_params_and_save_instance_with_agents_sydney_timezone() throws Exception {
+        this.context.setTimezone("Australia/Sydney");
+        // 5 hours TTL
+        this.context.setContextTtlMilliseconds(1000 * 60 * 60 * 5);
+        this.record.setContext(context);
+        // set up
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
+
+        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults = new GlobalEventJobTestSearchResults(1);
+        schedulerJobInstanceService.save(globalEventJobRecordSearchResults.getResultList());
+
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        // execute
+        backFiller.run();
+
+        // verify
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
+        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
+        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
+        ArgumentCaptor<String> endCron = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> endCronTimezone = ArgumentCaptor.forClass(String.class);
+        verify(contextInstanceSchedulerService).registerEndJobAndTrigger(anyString(), endCron.capture(), endCronTimezone.capture(), anyString());
+
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
+
+        verifyNoMoreInteractions(scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextParametersUpdateService,
+            jobLockCacheService,
+            scheduledContextService,
+            scheduledContextInstanceService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster,
+            contextInstanceSchedulerService,
+            this.jobProvisionService,
+            this.schedulerJobService
+        );
+
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName(contextName));
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        assertNotNull(contextMachine);
+
+        SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+            = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+        assertNotNull(schedulerJobInitiationEventRaisedListener);
+
+        List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+            = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+        assertNotNull(contextInstanceStateChangeEventListeners);
+        assertEquals(1, contextInstanceStateChangeEventListeners.size());
+
+        JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+        assertNotNull(jobLogicMachine);
+        List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+            = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+        assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+        assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+
+        Assert.assertEquals(920311200000L, contextMachine.getContext().getProjectedEndTime());
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(contextMachine.getContext().getProjectedEndTime())
+            , ZoneId.of("Australia/Sydney"));
+        Assert.assertEquals(zonedDateTime, ZonedDateTime.of(LocalDateTime.of(LocalDate.of(1999, 03, 02)
+            , LocalTime.of(5,0)), ZoneId.of("Australia/Sydney")));
+
+        Assert.assertEquals(zonedDateTime, ZonedDateTime.of(LocalDateTime.of(LocalDate.of(1999, 03, 02)
+            , LocalTime.of(5,0)), ZoneId.of("Australia/Sydney")));
+        Assert.assertEquals("0 0 5 2 3 ? 1999", endCron.getValue());
+        Assert.assertEquals("Australia/Sydney", endCronTimezone.getValue());
+    }
+
+    @Test
+    public void should_create_instance_and_populate_params_and_save_instance_with_agents_singapore_timezone() throws Exception {
+        this.context.setTimezone("Asia/Singapore");
+        // 5 hours TTL
+        this.context.setContextTtlMilliseconds(1000 * 60 * 60 * 5);
+        this.record.setContext(context);
+        // set up
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());
+
+        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults = new GlobalEventJobTestSearchResults(1);
+        schedulerJobInstanceService.save(globalEventJobRecordSearchResults.getResultList());
+
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
+
+        // execute
+        backFiller.run();
+
+        // verify
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
+        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
+        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
+        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
+        ArgumentCaptor<String> endCron = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> endCronTimezone = ArgumentCaptor.forClass(String.class);
+        verify(contextInstanceSchedulerService).registerEndJobAndTrigger(anyString(), endCron.capture(), endCronTimezone.capture(), anyString());
+
+        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
+        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
+        assertEquals(contextName, actualContextInstanceRecord.getContextName());
+        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
+        assertNull(null, actualContextInstanceRecord.getId());
+        assertNotNull(actualContextInstanceRecord.getContextInstance());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
+
+        verifyNoMoreInteractions(scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextParametersUpdateService,
+            jobLockCacheService,
+            scheduledContextService,
+            scheduledContextInstanceService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster,
+            this.contextInstanceSchedulerService,
+            this.jobProvisionService,
+            this.schedulerJobService
+        );
+
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName(contextName));
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        assertNotNull(contextMachine);
+
+        SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
+            = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
+        assertNotNull(schedulerJobInitiationEventRaisedListener);
+
+        List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners
+            = (List<ContextInstanceStateChangeEventListener>) ReflectionTestUtils.getField(contextMachine, "contextInstanceStateChangeEventListeners");
+        assertNotNull(contextInstanceStateChangeEventListeners);
+        assertEquals(1, contextInstanceStateChangeEventListeners.size());
+
+        JobLogicMachine jobLogicMachine = (JobLogicMachine) ReflectionTestUtils.getField(contextMachine, "jobLogicMachine");
+        assertNotNull(jobLogicMachine);
+        List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners
+            = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
+        assertNotNull(schedulerJobInstanceStateChangeEventListeners);
+        assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+
+        Assert.assertEquals(920322000000L, contextMachine.getContext().getProjectedEndTime());
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(contextMachine.getContext().getProjectedEndTime())
+            , ZoneId.of("Asia/Singapore"));
+        Assert.assertEquals(zonedDateTime, ZonedDateTime.of(LocalDateTime.of(LocalDate.of(1999, 03, 02)
+            , LocalTime.of(5,0)), ZoneId.of("Asia/Singapore")));
+        Assert.assertEquals("0 0 5 2 3 ? 1999", endCron.getValue());
+        Assert.assertEquals("Asia/Singapore", endCronTimezone.getValue());
     }
 
     @Test
@@ -673,6 +858,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         this.context.setEndJobPlanUponCompletion(true);
         this.context.setTimeWindowStart("0 0 0 * * ?");
         this.context.setContextTtlMilliseconds(24L * 50L * 60L * 1000L);
+        this.context.setTimezone(ZoneId.systemDefault().getId());
         this.record.setContext(context);
 
         // set up
