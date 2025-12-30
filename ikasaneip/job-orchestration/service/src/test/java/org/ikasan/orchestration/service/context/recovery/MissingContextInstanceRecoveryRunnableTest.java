@@ -19,6 +19,7 @@ import org.ikasan.orchestration.service.utils.TestUtils;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
@@ -698,6 +699,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         backFiller.run();
 
         verify(scheduledContextInstanceService).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), anyString(), anyString());
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
