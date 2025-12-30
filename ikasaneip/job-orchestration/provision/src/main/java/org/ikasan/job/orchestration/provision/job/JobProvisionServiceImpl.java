@@ -1,7 +1,10 @@
 package org.ikasan.job.orchestration.provision.job;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.job.*;
+import org.ikasan.job.orchestration.rest.client.dto.ErrorDto;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -13,10 +16,10 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -117,11 +120,12 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                 logger.info(String.format("Successfully provisioned %s jobs on agent[%s]", agentJobs.size(), agent.getUrl()));
             }
             catch (JobProvisionException e) {
-                e.printStackTrace();
+                logger.error(String.format("Error provisioning jobs! Agent[%s] Error[%s]", agent.getName(), e.getMessage()), e);
                 exceptions.add(e);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                this.determineIfLockExceptionAndRaiseAccordingly(e);
+                logger.error(String.format("Error provisioning jobs! Agent[%s] Error[%s]", agent.getName(), e.getMessage()), e);
                 exceptions.add(new JobProvisionException(String.format("Agent[%s] Error[%s]", agent.getName(), e.getMessage()),e));
             }
         });
@@ -169,11 +173,12 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                 logger.info(String.format("Successfully removed jobs for context[%s] jobs on agent[%s]", contextName, agent.getUrl()));
             }
             catch (JobProvisionException e) {
-                e.printStackTrace();
+                logger.error(String.format("Error removing jobs! Agent[%s] Error[%s]", agent.getName(), e.getMessage()), e);
                 exceptions.add(e);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                this.determineIfLockExceptionAndRaiseAccordingly(e);
+                logger.error(String.format("Error removing jobs! Agent[%s] Error[%s]", agent.getName(), e.getMessage()), e);
                 exceptions.add(new JobProvisionException(String.format("Agent[%s] Error[%s]", agent.getName(), e.getMessage()),e));
             }
         });
@@ -187,6 +192,27 @@ public class JobProvisionServiceImpl implements JobProvisionService {
 
         logger.info(String.format("Finished removing jobs for %s across %s agents. Time taken %s milliseconds."
             , contextName, uniqueAgentNames.size(), System.currentTimeMillis()-now));
+    }
+
+    /**
+     * Determines if the given exception is a lock-related exception. If the cause of the exception is an instance
+     * of HttpClientErrorException, it attempts to read the response body as an ErrorDto to check if the error code
+     * corresponds to a lock acquisition error. If a lock acquisition error is detected, a JobProvisionLockException
+     * is thrown with the error message and the original exception as the cause.
+     *
+     * @param e The exception to check for lock-related issues.
+     */
+    private void determineIfLockExceptionAndRaiseAccordingly(Exception e) {
+        if(e.getCause() != null && e.getCause() instanceof HttpClientErrorException) {
+            try {
+                ErrorDto errorDto = new ObjectMapper().readValue(((HttpClientErrorException) e.getCause()).getResponseBodyAsString(), ErrorDto.class);
+                if(errorDto.getErrorCode() != null && errorDto.getErrorCode().equals("LOCK_ACQUISITION_ERROR")) {
+                    throw new JobProvisionLockException(errorDto.getErrorMessage(), e);
+                }
+            } catch (JsonProcessingException ex) {
+                // Ignore as exception could not be determined if it was a lock related exception!
+            }
+        }
     }
 
     /**
