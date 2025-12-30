@@ -179,7 +179,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
                     dialog.close();
                     if (e instanceof JobProvisionLockException) {
                         current.access(() -> NotificationHelper
-                            .showErrorNotification(getTranslation("error.enabling-context-due-to-lock"
+                            .showErrorNotification(getTranslation("error.synchronising-all-jobs-on-agent-due-to-lock"
                                 , UI.getCurrent().getLocale())));
                     }
                     else {

@@ -1089,7 +1089,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                         dialog.close();
                         if (e instanceof JobProvisionLockException) {
                             current.access(() -> NotificationHelper
-                                .showErrorNotification(getTranslation("error.enabling-context-due-to-lock", UI.getCurrent().getLocale())));
+                                .showErrorNotification(getTranslation("error.synchronising-context-due-to-lock", UI.getCurrent().getLocale())));
                         }
                         else {
                             current.access(() -> NotificationHelper
