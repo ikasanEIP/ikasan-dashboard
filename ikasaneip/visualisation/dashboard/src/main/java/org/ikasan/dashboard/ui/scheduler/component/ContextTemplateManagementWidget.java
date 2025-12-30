@@ -46,6 +46,7 @@ import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
+import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -1083,10 +1084,17 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                         this.jobProvisionService.provisionJobs(schedulerJobs, this.authentication.getName());
                     }
                     catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error(String.format("An error has occurred synchronising jobs for job plan[%s]!", this.contextTemplate.getName()), e);
                         success = false;
                         dialog.close();
-                        current.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.provisioning-jobs", UI.getCurrent().getLocale())));
+                        if (e instanceof JobProvisionLockException) {
+                            current.access(() -> NotificationHelper
+                                .showErrorNotification(getTranslation("error.enabling-context-due-to-lock", UI.getCurrent().getLocale())));
+                        }
+                        else {
+                            current.access(() -> NotificationHelper
+                                .showErrorNotification(getTranslation("error.provisioning-jobs", UI.getCurrent().getLocale())));
+                        }
                     }
 
                     if(success) {

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
+import org.ikasan.job.orchestration.rest.client.dto.ErrorDto;
 import org.ikasan.job.orchestration.rest.client.dto.SchedulerJobInitiationEventDto;
 import org.ikasan.job.orchestration.rest.client.exception.SchedulerAgentRestClientException;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,6 +92,8 @@ public class JobProvisionModuleRestServiceImplTest {
 
     @Test(expected = SchedulerAgentRestClientException.class)
     public void test_job_provision_remove_exception() throws IOException {
+        ErrorDto errorDto = new ErrorDto();
+        errorDto.setErrorMessage("Error Message!");
         stubFor(delete(urlEqualTo("/rest/jobProvision/remove"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -97,8 +101,16 @@ public class JobProvisionModuleRestServiceImplTest {
             .willReturn(
                 aResponse()
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .withBody(objectMapper.writeValueAsString(errorDto))
                     .withStatus(400)));
 
-        uut.removeJobsForContext(contextBaseUrl, "contextName");
+        try {
+            uut.removeJobsForContext(contextBaseUrl, "contextName");
+        }
+        catch (SchedulerAgentRestClientException exception) {
+            Assert.assertEquals("An error has occurred attempting to remove jobs for context[contextName] - " +
+                "error message[Error Message!]!", exception.getMessage());
+            throw exception;
+        }
     }
 }

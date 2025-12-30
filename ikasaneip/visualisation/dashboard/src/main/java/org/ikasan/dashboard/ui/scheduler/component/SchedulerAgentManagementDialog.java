@@ -18,6 +18,7 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
+import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -28,6 +29,8 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
@@ -38,7 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDialog {
-
+    private Logger logger = LoggerFactory.getLogger(SchedulerAgentManagementDialog.class);
     private IkasanAuthentication authentication;
 
 
@@ -170,10 +173,19 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
                     jobProvisionService.provisionJobs(schedulerJobs, this.authentication.getName());
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error(String.format("An error has occurred synchronising all jobs on agent[%s] - URL[%s]!"
+                        , agent.getName(), agent.getUrl()), e);
                     success = false;
                     dialog.close();
-                    current.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.provisioning-jobs", UI.getCurrent().getLocale())));
+                    if (e instanceof JobProvisionLockException) {
+                        current.access(() -> NotificationHelper
+                            .showErrorNotification(getTranslation("error.enabling-context-due-to-lock"
+                                , UI.getCurrent().getLocale())));
+                    }
+                    else {
+                        current.access(() -> NotificationHelper
+                            .showErrorNotification(getTranslation("error.provisioning-jobs", UI.getCurrent().getLocale())));
+                    }
                 }
 
                 if(success) {

@@ -16,6 +16,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
+import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
@@ -39,12 +40,10 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
     private byte[] contextZipFile;
 
     private ContextProvisionService contextProvisionService;
-
-    private boolean provisionJobs;
     private UserService userService;
     private IkasanAuthentication ikasanAuthentication;
 
-    public ContextImportFileDialog(ContextProvisionService contextProvisionService, boolean provisionJobs, UserService userService,
+    public ContextImportFileDialog(ContextProvisionService contextProvisionService, UserService userService,
                                    IkasanAuthentication ikasanAuthentication) {
         this.contextProvisionService = contextProvisionService;
         if (this.contextProvisionService == null) {
@@ -58,7 +57,7 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
         if (this.ikasanAuthentication == null) {
             throw new IllegalArgumentException("contextUploadInitialisationService cannot be null!");
         }
-        this.provisionJobs = provisionJobs;
+
         this.init();
     }
 
@@ -101,12 +100,7 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
 
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setCancelable(true);
-            if (this.provisionJobs) {
-                confirmDialog.setHeader(getTranslation("confirm-dialog.provision-context-job-header", UI.getCurrent().getLocale()));
-            } else {
-                confirmDialog.setHeader(getTranslation("confirm-dialog.provision-context-header", UI.getCurrent().getLocale()));
-            }
-
+            confirmDialog.setHeader(getTranslation("confirm-dialog.provision-context-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.provision-context-job-body", UI.getCurrent().getLocale()));
             confirmDialog.setConfirmText(getTranslation("button.ok"));
             confirmDialog.setCancelText(getTranslation("button.cancel"));
@@ -120,7 +114,7 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
                 final UI current = UI.getCurrent();
                 Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextImportFileDialog"));
                 executor.execute(() -> {
-                    boolean error = false;
+                    Exception exception = null;
                     try {
                         ContextBundle contextBundle
                             = ContextImportZipUtils.extractZipFile(new ByteArrayInputStream(contextZipFile));
@@ -138,25 +132,31 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
 
 
                         contextBundle = new ContextBundleImpl(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs(),
-                            contextBundle.getContextProfiles(), contextBundle.getEmailNotificationDetails(), contextBundle.getEmailNotificationContext(), roleNames);
+                            contextBundle.getContextProfiles(), contextBundle.getEmailNotificationDetails(),
+                            contextBundle.getEmailNotificationContext(), roleNames);
 
                         this.contextProvisionService.provisionContext(contextBundle);
-
                     } catch (Exception e) {
-                        LOG.warn("Could not upload context and jobs error " + e.getMessage());
-                        current.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.provisioning-context-jobs", UI.getCurrent().getLocale())));
-                        error = true;
+                        LOG.error(String.format("Could not upload job plan bundle - error[%s]! ", e.getMessage()), e);
+                        exception = e;
                     } finally {
-                        boolean finalError = error;
+                        Exception finalException = exception;
                         current.access(() -> {
                             dialog.close();
                             this.close();
-                            if(!finalError) {
-                                if (this.provisionJobs) {
-                                    NotificationHelper.showUserNotification(getTranslation("notification.provisioned-context-jobs", UI.getCurrent().getLocale()));
-                                } else {
-                                    NotificationHelper.showUserNotification(getTranslation("notification.provisioned-context", UI.getCurrent().getLocale()));
+                            if(finalException != null) {
+                                if(finalException instanceof JobProvisionLockException) {
+                                    NotificationHelper.showErrorNotification(getTranslation
+                                        ("error.provisioning-context-jobs-due-to-lock", UI.getCurrent().getLocale()));
                                 }
+                                else {
+                                    NotificationHelper.showErrorNotification(getTranslation
+                                        ("error.provisioning-context-jobs", UI.getCurrent().getLocale()));
+                                }
+                            }
+                            else {
+                                NotificationHelper.showUserNotification(getTranslation("notification.provisioned-context"
+                                    , UI.getCurrent().getLocale()));
                             }
                         });
                     }
