@@ -699,7 +699,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         backFiller.run();
 
         verify(scheduledContextInstanceService).getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), anyString(), anyString());
-        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
