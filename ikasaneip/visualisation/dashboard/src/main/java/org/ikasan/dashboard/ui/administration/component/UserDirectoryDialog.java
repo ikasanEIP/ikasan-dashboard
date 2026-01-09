@@ -42,6 +42,7 @@ public class UserDirectoryDialog extends AbstractCloseableResizableDialog
     private static final String MEMBER_OF_ATTRIBUTE_NAME = "memberOf";
     private static final String USER_FILTER = "(objectclass=user)";
     private static final String GROUP_FILTER = "(objectclass=group)";
+    private static final String USER_ACCOUNT_MAPPING_ATTRIBUTE = "name";
 
     private Logger logger = LoggerFactory.getLogger(UserDirectoryDialog.class);
 
@@ -59,6 +60,7 @@ public class UserDirectoryDialog extends AbstractCloseableResizableDialog
     private TextField ldapUserSearchFilter;
     private TextField accountTypeAttributeName;
     private TextField userAccountNameAttributeName;
+    private TextField userAccountMappingAttributeName;
     private TextField emailAttributeName;
     private TextField firstNameAttributeName;
     private TextField surnameAttributeName;
@@ -210,35 +212,37 @@ public class UserDirectoryDialog extends AbstractCloseableResizableDialog
 
             if(value == true)
             {
-                ldapUserSearchFilter.setValue(LDAP_USER_SEARCH_FILTER);
-                emailAttributeName.setValue(EMAIL_ATTRIBUTE_NAME);
-                userAccountNameAttributeName.setValue(USER_ACCOUNT_NAME_ATTRIBUTE_NAME);
-                accountTypeAttributeName.setValue(ACCOUNT_TYPE_ATTRIBUTE_NAME);
-                firstNameAttributeName.setValue(FIRST_NAME_ATTRIBUTE_NAME);
-                surnameAttributeName.setValue(SURNAME_ATTRIBUTE_NAME);
-                departmentAttributeName.setValue(DEPARTMENT_ATTRIBUTE_NAME);
-                ldapUserDescriptionAttributeName.setValue(LDAP_USER_DESCRIPTION_ATTRIBUTE_NAME);
-                memberofAttributeName.setValue(MEMBER_OF_ATTRIBUTE_NAME);
-                applicationSecurityGroupAttributeName.setValue(APPLICATION_SECURITY_GROUP_ATTRIBUTE_NAME);
-                applicationSecurityDescriptionAttributeName.setValue(APPLICATION_SECURITY_DESCRIPTION_ATTRIBUTE_NAME);
-                userSynchronisationFilter.setValue(USER_FILTER);
-                groupSynchronisationFilter.setValue(GROUP_FILTER);
+                this.ldapUserSearchFilter.setValue(LDAP_USER_SEARCH_FILTER);
+                this.emailAttributeName.setValue(EMAIL_ATTRIBUTE_NAME);
+                this.userAccountNameAttributeName.setValue(USER_ACCOUNT_NAME_ATTRIBUTE_NAME);
+                this.accountTypeAttributeName.setValue(ACCOUNT_TYPE_ATTRIBUTE_NAME);
+                this.firstNameAttributeName.setValue(FIRST_NAME_ATTRIBUTE_NAME);
+                this.surnameAttributeName.setValue(SURNAME_ATTRIBUTE_NAME);
+                this.departmentAttributeName.setValue(DEPARTMENT_ATTRIBUTE_NAME);
+                this.ldapUserDescriptionAttributeName.setValue(LDAP_USER_DESCRIPTION_ATTRIBUTE_NAME);
+                this.memberofAttributeName.setValue(MEMBER_OF_ATTRIBUTE_NAME);
+                this.applicationSecurityGroupAttributeName.setValue(APPLICATION_SECURITY_GROUP_ATTRIBUTE_NAME);
+                this.applicationSecurityDescriptionAttributeName.setValue(APPLICATION_SECURITY_DESCRIPTION_ATTRIBUTE_NAME);
+                this.userSynchronisationFilter.setValue(USER_FILTER);
+                this.groupSynchronisationFilter.setValue(GROUP_FILTER);
+                this.userAccountMappingAttributeName.setValue(USER_ACCOUNT_MAPPING_ATTRIBUTE);
             }
             else
             {
-                ldapUserSearchFilter.setValue("");
-                emailAttributeName.setValue("");
-                userAccountNameAttributeName.setValue("");
-                accountTypeAttributeName.setValue("");
-                firstNameAttributeName.setValue("");
-                surnameAttributeName.setValue("");
-                departmentAttributeName.setValue("");
-                ldapUserDescriptionAttributeName.setValue("");
-                memberofAttributeName.setValue("");
-                applicationSecurityGroupAttributeName.setValue("");
-                applicationSecurityDescriptionAttributeName.setValue("");
-                userSynchronisationFilter.setValue("");
-                groupSynchronisationFilter.setValue("");
+                this.ldapUserSearchFilter.setValue("");
+                this.emailAttributeName.setValue("");
+                this.userAccountNameAttributeName.setValue("");
+                this.accountTypeAttributeName.setValue("");
+                this.firstNameAttributeName.setValue("");
+                this.surnameAttributeName.setValue("");
+                this.departmentAttributeName.setValue("");
+                this.ldapUserDescriptionAttributeName.setValue("");
+                this.memberofAttributeName.setValue("");
+                this.applicationSecurityGroupAttributeName.setValue("");
+                this.applicationSecurityDescriptionAttributeName.setValue("");
+                this.userSynchronisationFilter.setValue("");
+                this.groupSynchronisationFilter.setValue("");
+                this.userAccountMappingAttributeName.setValue("");
             }
         });
 
@@ -302,10 +306,15 @@ public class UserDirectoryDialog extends AbstractCloseableResizableDialog
         this.applicationSecurityGroupAttributeName.setRequired(true);
         formLayout.add(new Div(this.applicationSecurityGroupAttributeName));
 
+        this.userAccountMappingAttributeName = new TextField(getTranslation("text-field.user-account-mapping", UI.getCurrent().getLocale(), null));
+        this.userAccountMappingAttributeName.setWidth("300px");
+        this.userAccountMappingAttributeName.setRequired(true);
+        formLayout.add(new Div(this.userAccountMappingAttributeName));
+
         this.applicationSecurityDescriptionAttributeName = new TextField(getTranslation("text-field.user-directory-group-description", UI.getCurrent().getLocale(), null));
         this.applicationSecurityDescriptionAttributeName.setWidth("300px");
         this.applicationSecurityDescriptionAttributeName.setRequired(true);
-        formLayout.add(new Div(this.applicationSecurityDescriptionAttributeName), new Div());
+        formLayout.add(new Div(this.applicationSecurityDescriptionAttributeName));
 
 
         Binder<AuthenticationMethod> binder = this.setupBinderAndValidation();
@@ -487,6 +496,11 @@ public class UserDirectoryDialog extends AbstractCloseableResizableDialog
             .withValidator(new StringLengthValidator(
                 getTranslation("form-validation.user-directory-user-sync-filter", UI.getCurrent().getLocale(), null), 1, null))
             .bind(AuthenticationMethod::getUserSynchronisationFilter, AuthenticationMethod::setUserSynchronisationFilter);
+
+        binder.forField(this.userAccountMappingAttributeName)
+            .withValidator(new StringLengthValidator(
+                getTranslation("form-validation.user-account-mapping", UI.getCurrent().getLocale(), null), 1, null))
+            .bind(AuthenticationMethod::getUserAccountMappingAttributeName, AuthenticationMethod::setUserAccountMappingAttributeName);
 
         return binder;
     }
