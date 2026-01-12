@@ -61,10 +61,7 @@ import org.ikasan.dashboard.ui.administration.component.UserDirectoryDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.security.model.AuthenticationMethod;
 import org.ikasan.security.service.LdapService;
 import org.ikasan.security.service.SecurityService;
@@ -110,6 +107,9 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
 
     @Resource
     private LdapDirectorySynchronisationSchedulerService ldapDirectorySynchronisationSchedulerService;
+
+    @Resource
+    private SystemEventLogger systemEventLogger;
 
     private Grid<AuthenticationMethod> directoryTable;
     private Button newDirectoryButton;
@@ -390,10 +390,18 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
             executor.execute(() -> {
                 try
                 {
+                    logger.info(String.format("Manually running ldap synchronisation [%s]", authenticationMethod.getName()));
+                    this.systemEventLogger.logEvent(SystemEventConstants.LDAP_REPOSITORY_SYNCHRONISATION_JOB_START,
+                        String.format("Manually running ldap synchronisation [%s]", authenticationMethod.getName()), this.authentication.getName());
                     ldapService.synchronize(authenticationMethod);
 
                     authenticationMethod.setLastSynchronised(new Date());
                     securityService.saveOrUpdateAuthenticationMethod(authenticationMethod);
+
+                    logger.info(String.format("Finished manually running ldap synchronisation [%s]", authenticationMethod.getName()));
+
+                    this.systemEventLogger.logEvent(SystemEventConstants.LDAP_REPOSITORY_SYNCHRONISATION_JOB_COMPLETE,
+                        String.format("Finished manually running ldap synchronisation [%s]", authenticationMethod.getName()), this.authentication.getName());
 
                     current.access(() ->
                     {
@@ -404,7 +412,11 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
                 }
                 catch(Exception e)
                 {
-                    e.printStackTrace();
+                    logger.error(String.format("An error has occurred synchronising LDAP repository[%s]. Error message[%s]!"
+                        , authenticationMethod.getName(), e.getMessage()), e);
+                    this.systemEventLogger.logEvent(SystemEventConstants.LDAP_REPOSITORY_SYNCHRONISATION_JOB_COMPLETE,
+                        String.format("Error manually running ldap synchronisation [%s]. Error message[%s]!"
+                            , authenticationMethod.getName(), e.getMessage()), this.authentication.getName());
                     current.access(() ->
                     {
                         progressIndicatorDialog.close();

@@ -103,6 +103,9 @@ public class SystemEventConstants
     public static final String JOB_ERROR_ACKNOWLEDGED = "Job error acknowledged";
     public static final String LOCKED_JOB_RELEASE = "Locked Job Released";
     public static final String QUEUED_JOB_DEQUEUED = "Queued Job Dequeued";
+    public static final String LDAP_REPOSITORY_SYNCHRONISATION_JOB_START = "LDAP Repository Synchronisation Job Start";
+    public static final String LDAP_REPOSITORY_SYNCHRONISATION_JOB_COMPLETE = "LDAP Repository Synchronisation Job Complete";
+    public static final String LDAP_REPOSITORY_SYNCHRONISATION_JOB_ERROR = "LDAP Repository Synchronisation Job Error";
 
     public static List<String> getSystemEventConstants() {
         List<String> constantValues = Arrays.stream(SystemEventConstants.class.getDeclaredFields())
