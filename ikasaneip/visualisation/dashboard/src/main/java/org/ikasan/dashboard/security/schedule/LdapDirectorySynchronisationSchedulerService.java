@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.security.schedule;
 
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.quartz.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.security.model.AuthenticationMethod;
@@ -18,12 +19,12 @@ public class LdapDirectorySynchronisationSchedulerService extends AbstractDashbo
     private static Logger logger = LoggerFactory.getLogger(LdapDirectorySynchronisationSchedulerService.class);
 
     private SecurityService securityService;
-
     private LdapService ldapService;
+    private SystemEventLogger systemEventLogger;
 
 
     public LdapDirectorySynchronisationSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory
-        , SecurityService securityService, LdapService ldapService)
+        , SecurityService securityService, LdapService ldapService, SystemEventLogger systemEventLogger)
     {
         super(scheduler, scheduledJobFactory);
 
@@ -36,6 +37,11 @@ public class LdapDirectorySynchronisationSchedulerService extends AbstractDashbo
         if(this.ldapService == null)
         {
             throw new IllegalArgumentException("ldapService cannot be null!");
+        }
+        this.systemEventLogger = systemEventLogger;
+        if(this.systemEventLogger == null)
+        {
+            throw new IllegalArgumentException("systemEventLogger cannot be null!");
         }
     }
 
@@ -55,7 +61,7 @@ public class LdapDirectorySynchronisationSchedulerService extends AbstractDashbo
         authenticationMethods.forEach(authenticationMethod -> {
             if (authenticationMethod.isScheduled()) {
                 LdapDirectorySynchronisationJob job = new LdapDirectorySynchronisationJob(authenticationMethod,
-                    this.ldapService, this.securityService);
+                    this.ldapService, this.securityService, this.systemEventLogger);
                 JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
                     (job, LdapDirectorySynchronisationJob.class, job.getJobName(), "scheduled-ldap");
 
