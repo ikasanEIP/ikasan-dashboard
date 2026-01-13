@@ -7863,6 +7863,98 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    public void test_broadcast_global_events_with_exception_in_one_plan_success() throws IOException {
+        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
+        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // modify the context descriptor to add GRP1 for the environment group
+        String contextJson = loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json")
+            .replaceAll("\"environmentGroup\" : null", "\"environmentGroup\" : \"GRP1\"");
+
+        // modify the context descriptor to add GRP1 for the environment group
+        String contextJson2 = loadDataFile("/data/logic/simple-context-and-chained-single-dependency-2-jobs.json")
+            .replaceAll("\"environmentGroup\" : null", "\"environmentGroup\" : \"GRP1\"");
+
+        // modify the context descriptor to change the context name and agent name as we reusing the same descriptor.
+        String contextJson3 = loadDataFile("/data/logic/simple-context-and-chained-single-dependency-2-jobs.json")
+            .replaceAll("Context1-Two-Jobs","Context2-Two-Jobs").replaceAll("agentNameTwoJobs", "agentNameTwoJobsNull");
+
+        //Context1 the main initiator - environmentGroup = GRP1
+        ContextTemplate context1 = this.contextService.getContextTemplate(contextJson);
+        ContextInstance contextInstance1 = this.contextService.getContextInstance(contextJson);
+
+        // Context1-Two-Jobs - environmentGroup = GRP1
+        ContextTemplate context2 = this.contextService.getContextTemplate(contextJson2);
+        ContextInstance contextInstance2 = this.contextService.getContextInstance(contextJson2);
+
+        // Context2-Two-Jobs - environmentGroup = null
+        ContextTemplate context3 = this.contextService.getContextTemplate(contextJson3);
+        ContextInstance contextInstance3 = this.contextService.getContextInstance(contextJson3);
+
+        /* START setup for Context1 */
+        // Setup the jobs for testing
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        InternalEventDrivenJobInstanceImpl internalJob1 = new InternalEventDrivenJobInstanceImpl();
+        internalJob1.setAgentName("agentName1");
+        internalJob1.setJobName("jobName1");
+        internalEventDrivenJobs.put("agentName1-jobName1-Context1", internalJob1);
+
+        InternalEventDrivenJobInstanceImpl internalJob3 = new InternalEventDrivenJobInstanceImpl();
+        internalJob3.setAgentName("agentName3");
+        internalJob3.setJobName("jobName3");
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", internalJob3);
+
+        HashMap<String, GlobalEventJobInstance> globalEventJobInstances = new HashMap<>();
+        GlobalEventJobInstanceImpl globalJob2 = new GlobalEventJobInstanceImpl();
+        globalJob2.setAgentName("agentName2");
+        globalJob2.setJobName("jobName2");
+        globalEventJobInstances.put("GLOBAL_EVENT-jobName2-Context1", globalJob2);
+
+        ContextMachine contextMachine1  = new ContextMachine(context1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances, new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine1.init();
+        BigQueueImpl inboundQueue1 = mock(BigQueueImpl.class);
+        ReflectionTestUtils.setField(contextMachine1, "inboundQueue", inboundQueue1);
+
+        ContextMachineCache.instance().put(contextMachine1);
+
+        ContextMachine contextMachine2  = new ContextMachine(context2, contextInstance2, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances, new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine2.init();
+        BigQueueImpl inboundQueue2 = mock(BigQueueImpl.class);
+        ReflectionTestUtils.setField(contextMachine2, "inboundQueue", inboundQueue2);
+
+        ContextMachineCache.instance().put(contextMachine2);
+
+        ContextMachine contextMachine3  = new ContextMachine(context3, contextInstance3, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances, new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine3.init();
+        BigQueueImpl inboundQueue3 = mock(BigQueueImpl.class);
+        ReflectionTestUtils.setField(contextMachine3, "inboundQueue", inboundQueue3);
+
+        ContextMachineCache.instance().put(contextMachine3);
+
+        SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+        schedulerJobInitiationEvent.setJobName("jobName2");
+        schedulerJobInitiationEvent.setContextInstanceId(contextMachine1.getContext().getId());
+
+        doThrow(new RuntimeException("error enqueuing message!")).when(inboundQueue2).enqueue(any());
+
+        contextMachine1.broadcastGlobalEvents(schedulerJobInitiationEvent, true, false);
+
+        verify(inboundQueue1, times(1)).enqueue(any());
+        // we have an error thrown when enqueuing on inboundQueue2
+        verify(inboundQueue2, times(1)).enqueue(any());
+        // even though there was an error we still enqueue onto inboundQueue3
+        verify(inboundQueue3, times(1)).enqueue(any());
+        verifyNoMoreInteractions(inboundQueue1, inboundQueue2, inboundQueue3);
+    }
+
+    @Test
     public void test_broadcast_global_events_skipped_success() throws IOException {
         ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

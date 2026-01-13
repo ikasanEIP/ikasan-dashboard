@@ -2217,22 +2217,27 @@ public class ContextMachine {
                 globalContextualisedScheduledProcessEvent.setCatalystEvent(schedulerJobInitiationEvent.getCatalystEvent());
                 //No need to set the childContextNames property in ContextualisedScheduledProcessEvent as JobLogicMachine method getJobInitiationEvents should handle it.
 
-                // Event object to JSON and then build the BigQueue message
-                String globalContextualisedScheduledProcessEventJson = objectMapper.writeValueAsString(globalContextualisedScheduledProcessEvent);
-                BigQueueMessage<String> outgoingBigQueueMessage
-                    = new BigQueueMessageBuilder<String>().withMessage(globalContextualisedScheduledProcessEventJson)
-                    .withMessageProperties(
-                        Map.of("contextName", contextMachineFromCache.getContext().getName(),
-                            CONTEXT_INSTANCE_ID, contextMachineFromCache.getContext().getId()))
-                    .build();
-
-                // BigQueue message to JSON
-                String jsonString = objectMapper.writeValueAsString(outgoingBigQueueMessage);
-
-                // Send the Event to the Context Machine
-                contextMachineFromCache.eventReceived(jsonString);
-                logger.info("Sending Global Event [{}] to the ContextMachine [{}][{}]", schedulerJobInitiationEvent.getJobName(),
-                    contextMachineFromCache.getContext().getName(), contextMachineFromCache.getContext().getId());
+                try {
+                    // Event object to JSON and then build the BigQueue message
+                    String globalContextualisedScheduledProcessEventJson = objectMapper.writeValueAsString(globalContextualisedScheduledProcessEvent);
+                    BigQueueMessage<String> outgoingBigQueueMessage
+                        = new BigQueueMessageBuilder<String>().withMessage(globalContextualisedScheduledProcessEventJson)
+                        .withMessageProperties(
+                            Map.of("contextName", contextMachineFromCache.getContext().getName(),
+                                CONTEXT_INSTANCE_ID, contextMachineFromCache.getContext().getId()))
+                        .build();
+                    // BigQueue message to JSON
+                    String jsonString = objectMapper.writeValueAsString(outgoingBigQueueMessage);
+                    // Send the Event to the Context Machine
+                    contextMachineFromCache.eventReceived(jsonString);
+                    logger.info("Sending Global Event [{}] to the ContextMachine [{}][{}]", schedulerJobInitiationEvent.getJobName(),
+                        contextMachineFromCache.getContext().getName(), contextMachineFromCache.getContext().getId());
+                }
+                catch (Exception e) {
+                    // we log the error and move onto other job plan instances to broadcast the global event.
+                    logger.error(String.format("An error has occurred sending global event[%s] to job plan instance[%s]. Error message[%s]"
+                        , schedulerJobInitiationEvent.getJobName(), contextInstanceIdFromCache, e.getMessage()), e);
+                }
             }
         }
     }
