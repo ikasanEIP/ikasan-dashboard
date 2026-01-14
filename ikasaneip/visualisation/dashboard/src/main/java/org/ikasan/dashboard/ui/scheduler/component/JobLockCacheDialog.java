@@ -571,7 +571,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
      */
     private void addUnattachedJobManagementButtons(String jobIdentifier, String contextName, IkasanAuthentication ikasanAuthentication, VerticalLayout verticalLayout) {
         Button lockHolderButton = new Button("! " + jobIdentifier);
-        lockHolderButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RUNNING);
+        lockHolderButton.getElement().getStyle().set("background-color", IkasanColours.IKASAN_ORANGE);
         lockHolderButton.getElement().getStyle().set("color", IkasanColours.WHITE);
         lockHolderButton.getElement().getStyle().set("margin-bottom", "5px");
         lockHolderButton.getElement().setAttribute("title", getTranslation("label.detached-lock-holder") +
