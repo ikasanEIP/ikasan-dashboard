@@ -309,7 +309,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                 return;
                             }
                             else if(schedulerJobs == null) {
-                                verticalLayout.add(new Text(lockHolder));
+                                this.addUnattachedJobManagementButtons(jobIdentifier, contextName, ikasanAuthentication, verticalLayout);
                                 String keys = StringUtils.join(jobLockHolder.getSchedulerJobs().keySet(), ',');
                                 logger.info("Could not obtain scheduler jobs from lock holder[{}] scheduler jobs using key[{}]. Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]. " +
                                     "The keys contained in the scheduler job map are[{}]", lockHolder, contextName, jobLockHolder.getLockName(), this.contextInstance.getName(), this.contextInstance.getId(), keys);
@@ -559,6 +559,78 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
 
         super.showResize(false);
         super.setResizable(false);
+    }
+
+    /**
+     * Adds management buttons for unattached jobs to a given VerticalLayout.
+     *
+     * @param jobIdentifier The identifier of the job
+     * @param contextName The name of the context
+     * @param ikasanAuthentication The authentication details of the user
+     * @param verticalLayout The VerticalLayout to which the buttons will be added
+     */
+    private void addUnattachedJobManagementButtons(String jobIdentifier, String contextName, IkasanAuthentication ikasanAuthentication, VerticalLayout verticalLayout) {
+        Button lockHolderButton = new Button("! " + jobIdentifier);
+        lockHolderButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RUNNING);
+        lockHolderButton.getElement().getStyle().set("color", IkasanColours.WHITE);
+        lockHolderButton.getElement().getStyle().set("margin-bottom", "5px");
+        lockHolderButton.getElement().setAttribute("title", getTranslation("label.detached-lock-holder") +
+            "\n"+ getTranslation("label.job-identifier")+": "+ jobIdentifier +
+                "\n"+getTranslation("label.child-context-name")+": " + contextName);
+        lockHolderButton.setIcon(VaadinIcon.SITEMAP.create());
+
+        Button releaseLockedJobButton = new Button(getTranslation("button.job-lock-cache-release"
+            , UI.getCurrent().getLocale()));
+        releaseLockedJobButton.setIcon(VaadinIcon.HANDS_UP.create());
+        releaseLockedJobButton.getElement().getStyle().set("margin-bottom", "5px");
+        releaseLockedJobButton.getElement().setAttribute("title", getTranslation("tooltip.job-lock-cache-release"
+            , UI.getCurrent().getLocale()));
+        releaseLockedJobButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.job-lock-cache-release-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.job-lock-cache-release-text", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
+
+                progressIndicatorDialog.open(getTranslation("message.releasing-locked-scheduler-job-header")
+                    , getTranslation("message.releasing-locked-scheduler-job-test"));
+
+                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("JobLockCacheDialog"));
+                executor.execute(() -> {
+                    boolean error = false;
+                    try {
+                        this.jobLockCacheManagementService.releaseLockedJob(jobIdentifier, contextName);
+                        systemEventLogger.logEvent(SystemEventConstants.LOCKED_JOB_RELEASE
+                            , String.format("Released lock on job [%s] child context [%s]."
+                                , jobIdentifier,  contextName), ikasanAuthentication.getName());
+                    } catch (Exception e) {
+                        error = true;
+                        ui.access(() -> NotificationHelper.showErrorNotification
+                            ((String.format(getTranslation("error.unable-to-release-jocked-job"), jobIdentifier))));
+                    }
+
+                    if (!error) {
+                        ui.access(() -> NotificationHelper.showUserNotification
+                            (String.format(getTranslation("message.locked-job-successfully-released"), jobIdentifier)));
+                    }
+                    progressIndicatorDialog.close();
+                });
+            });
+        });
+
+        ComponentSecurityVisibility.applySecurity(ikasanAuthentication, releaseLockedJobButton,
+            SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN);
+
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.add(lockHolderButton, releaseLockedJobButton);
+        releaseLockedJobButton.getElement().getStyle().set("position", "absolute");
+        releaseLockedJobButton.getElement().getStyle().set("right", "30px");
+        verticalLayout.add(buttonLayout);
     }
 
 
