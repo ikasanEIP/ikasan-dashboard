@@ -37,6 +37,13 @@ public class BigQueueDashboardServiceImplTest {
         bigQueueDashboardService.getBigQueue("queueName");
     }
 
+    @Test(expected = BigQueueNotFoundException.class)
+    public void test_size_queue_not_found_exception() throws BigQueueNotFoundException {
+        BigQueueDashboardServiceImpl bigQueueDashboardService = new BigQueueDashboardServiceImpl(this.inboundQueue);
+
+        bigQueueDashboardService.size("queueName");
+    }
+
     @Test
     public void test_get_inbound_big_queue_success() throws BigQueueNotFoundException {
         ContextMachine contextMachine = mock(ContextMachine.class);
