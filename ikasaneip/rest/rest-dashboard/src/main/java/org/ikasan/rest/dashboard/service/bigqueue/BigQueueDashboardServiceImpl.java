@@ -3,6 +3,7 @@ package org.ikasan.rest.dashboard.service.bigqueue;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.service.AbstractBigQueueManagementService;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
 
 import java.util.Set;
 
@@ -10,10 +11,13 @@ public class BigQueueDashboardServiceImpl extends AbstractBigQueueManagementServ
 
     // Dashboard Inbound Queue
     private IBigQueue inboundQueue;
-    private static final String INBOUND_QUEUE = "dashboard-inbound-queue";
+    public static final String INBOUND_QUEUE = "dashboard-inbound-queue";
 
-    public BigQueueDashboardServiceImpl() {}
-
+    /**
+     * Constructor for BigQueueDashboardServiceImpl class.
+     *
+     * @param inboundQueue the IBigQueue instance to be used for the dashboard
+     */
     public BigQueueDashboardServiceImpl(IBigQueue inboundQueue) {
         this.inboundQueue = inboundQueue;
     }
@@ -26,11 +30,11 @@ public class BigQueueDashboardServiceImpl extends AbstractBigQueueManagementServ
      * @return the related IBigQueue instance of that queueName
      */
     @Override
-    public IBigQueue getBigQueue(String queueName) {
+    public IBigQueue getBigQueue(String queueName) throws BigQueueNotFoundException {
 
         // Avoid null pointer exception if somehow we passed a Null string.
         if (queueName == null) {
-            return null;
+            throw new BigQueueNotFoundException("Cannot get big queue when provided queueName is null!");
         }
 
         // Contains the dashboard queue set up in this DashboardComponentFactory class
@@ -51,6 +55,6 @@ public class BigQueueDashboardServiceImpl extends AbstractBigQueueManagementServ
             }
         }
         // Nothing found, return null
-        return null;
+        throw new BigQueueNotFoundException(String.format("Could not get big queue[%s]!", queueName));
     }
 }
