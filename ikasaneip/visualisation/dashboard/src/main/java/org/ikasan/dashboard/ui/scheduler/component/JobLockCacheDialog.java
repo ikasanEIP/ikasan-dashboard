@@ -309,9 +309,10 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                 return;
                             }
                             else if(schedulerJobs == null) {
-                                String keys = StringUtils.join(jobLockHolder.getSchedulerJobs().values(), ',');
-                                logger.info("Could not obtain scheduler jobs from lock holder scheduler jobs using key[{}]. Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]. " +
-                                    "The keys contained in the scheduler job map are[{}]", contextName, jobLockHolder.getLockName(), this.contextInstance.getName(), this.contextInstance.getId(), keys);
+                                verticalLayout.add(new Text(lockHolder));
+                                String keys = StringUtils.join(jobLockHolder.getSchedulerJobs().keySet(), ',');
+                                logger.info("Could not obtain scheduler jobs from lock holder[{}] scheduler jobs using key[{}]. Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]. " +
+                                    "The keys contained in the scheduler job map are[{}]", lockHolder, contextName, jobLockHolder.getLockName(), this.contextInstance.getName(), this.contextInstance.getId(), keys);
                                 return;
                             }
 
