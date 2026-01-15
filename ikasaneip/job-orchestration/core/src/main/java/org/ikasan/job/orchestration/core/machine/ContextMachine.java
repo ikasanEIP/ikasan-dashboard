@@ -1146,7 +1146,7 @@ public class ContextMachine {
 
                 if(this.internalEventDrivenJobInstances.containsKey(schedulerJobInstance.getIdentifier() + "-" + schedulerJobInstance.getChildContextName())) {
                     SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findById(schedulerJobInstance.getJobName()
-                        + "_" + schedulerJobInstance.getContextInstanceId()
+                        + "_" + this.contextInstance.getId()
                         + "_" + schedulerJobInstance.getChildContextName()
                         + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
                     if(schedulerJobInstanceRecord != null) {
