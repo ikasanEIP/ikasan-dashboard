@@ -1228,7 +1228,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.releaseButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
-            this.resetButton.setVisible(false);
+            this.resetButton.setVisible(true &&
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.submitDownstreamJobsButton.setVisible(false);
             this.acknowledgedButton.setVisible(false);
             this.acknowledgedIcon.setVisible(false);
