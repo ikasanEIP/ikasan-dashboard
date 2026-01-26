@@ -277,7 +277,7 @@
         <version.junit>4.13.2</version.junit>
         <version.org.awaitility>4.0.2</version.org.awaitility>
         <version.org.jmock>2.12.0</version.org.jmock>
-        <version.org.assertj>3.13.2</version.org.assertj>
+        <version.org.assertj>3.27.7</version.org.assertj>
         <version.javax.transaction.jta>1.1</version.javax.transaction.jta>
         <version.jakarta.annotation>3.0.0-M1</version.jakarta.annotation>
         <version.javax.xml.bind>2.3.1</version.javax.xml.bind>
