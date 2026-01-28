@@ -25,7 +25,6 @@ import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.dashboard.ui.search.view.SearchView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.view.BusinessStreamDesignerView;
-import org.ikasan.dashboard.ui.visualisation.view.GraphView;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -70,6 +69,7 @@ public class IkasanAppLayout extends AppLayout {
     private SideNavItem userDirectoryManagementMenuItem;
     private SideNavItem businessStreamDesignerMenuItem;
     private SideNavItem quartzSchedulerMenuItem;
+    private SideNavItem sessionManagementMenuItem;
     private  Button environmentButton;
     private HorizontalLayout bannerLayout = new HorizontalLayout();
 
@@ -137,7 +137,7 @@ public class IkasanAppLayout extends AppLayout {
             this.environmentButton.getStyle().setBackground(this.bannerBackgroundColor);
         }
         this.environmentButton.addClickListener(buttonClickEvent -> {
-            SessionDetailsDialog sessionDetailsDialog = new SessionDetailsDialog();
+            SessionDetailsDialog sessionDetailsDialog = new SessionDetailsDialog(VaadinSession.getCurrent());
             sessionDetailsDialog.open();
         });
 
@@ -222,6 +222,11 @@ public class IkasanAppLayout extends AppLayout {
         this.quartzSchedulerMenuItem.setId("quartzSchedulerViewMenuItem");
         adminMenuItem.addItem(this.quartzSchedulerMenuItem);
 
+        this.sessionManagementMenuItem = new SideNavItem(getTranslation("menu-item.session-management",
+            getLocale(), null), DashboardSessionsView.class, VaadinIcon.GLOBE_WIRE.create());
+        this.sessionManagementMenuItem.setId("sessionManagementViewMenuItem");
+        adminMenuItem.addItem(this.sessionManagementMenuItem);
+
         this.businessStreamDesignerMenuItem = new SideNavItem(getTranslation("menu-item.designer",
             getLocale()), BusinessStreamDesignerView.class, VaadinIcon.PALETTE.create());
         this.businessStreamDesignerMenuItem.setId("businessStreamDesignerMenuItem");
@@ -266,6 +271,8 @@ public class IkasanAppLayout extends AppLayout {
 
             this.userDirectoryManagementMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY
                 , SecurityConstants.USER_DIRECTORY_ADMIN, SecurityConstants.USER_DIRECTORY_WRITE, SecurityConstants.USER_DIRECTORY_READ));
+
+            this.sessionManagementMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
 
             this.swaggerUI.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
 

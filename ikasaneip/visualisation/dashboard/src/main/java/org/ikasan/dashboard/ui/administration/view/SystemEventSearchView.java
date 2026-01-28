@@ -8,6 +8,7 @@ import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.Query;
@@ -50,7 +51,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
 
     private SystemEventSearchForm searchForm;
 
-    private Label resultsLabel = new Label();
+    private NativeLabel resultsLabel = new NativeLabel();
 
     private DateFormatter dateFormatter;
 

@@ -295,6 +295,12 @@
             <version>3.0.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.openjdk.jol</groupId>
+            <artifactId>jol-core</artifactId>
+            <version>0.17</version>
+        </dependency>
+
         <!-- Ikasan  dependencies -->
         <dependency>
             <groupId>org.ikasan</groupId>
