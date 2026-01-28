@@ -646,14 +646,17 @@ public class ContextExportZipUtilsTest {
             String jobname = this.getJobNameFromPath(entry.getKey());
             SchedulerJob job = (SchedulerJob) entry.getValue();
 
-            Assert.assertEquals(jobname, job.getJobName());
+
             if(job instanceof GlobalEventJob == false){
+                Assert.assertEquals(jobname, job.getJobName());
                 Assert.assertEquals("[[agent.name]]", job.getAgentName());
                 Assert.assertTrue(job.getIdentifier().startsWith("[[agent.name]]"));
             }
             else {
+                Assert.assertEquals(jobname, job.getJobName().replace("_[[env.name]]", ""));
                 Assert.assertEquals("GLOBAL_EVENT", job.getAgentName());
                 Assert.assertFalse(job.getIdentifier().startsWith("[[agent.name]]"));
+                Assert.assertTrue(job.getIdentifier().endsWith("_[[env.name]]"));
             }
         });
     }

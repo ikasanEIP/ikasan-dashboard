@@ -395,7 +395,7 @@ public final class ContextExportZipUtils {
                 if(!job.getAgentName().equals(JobConstants.GLOBAL_EVENT))
                     return true;
                 else
-                    return jobPlanSchedulerJobIdentifiers.contains(job.getIdentifier());
+                    return jobPlanSchedulerJobIdentifiers.contains(job.getIdentifier().replace("_"+ContextHelper.ENV_NAME_REPLACEMENT, ""));
             })
             .collect(Collectors.toList());
 

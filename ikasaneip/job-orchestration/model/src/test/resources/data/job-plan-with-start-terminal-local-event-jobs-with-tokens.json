@@ -1438,7 +1438,7 @@
   ],
   "jobLocks": [
     {
-      "name": "STPMUR.TEST_IK_LOCK",
+      "name": "STPMUR.TEST_IK_LOCK_[[env.name]]",
       "lockCount": 2,
       "jobs": {
         "TEST_IK_GLOB Step 3": [

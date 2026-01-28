@@ -109,7 +109,7 @@
   ],
   "jobLocks": [
     {
-      "name": "TEST-LOCK-1",
+      "name": "TEST-LOCK-1_[[env.name]]",
       "lockCount": 1,
       "jobs": {
         "context1": [
@@ -138,7 +138,7 @@
       "exclusiveJobLock": false
     },
     {
-      "name": "TEST-LOCK-2",
+      "name": "TEST-LOCK-2_[[env.name]]",
       "lockCount": 1,
       "jobs": {
         "context1": [

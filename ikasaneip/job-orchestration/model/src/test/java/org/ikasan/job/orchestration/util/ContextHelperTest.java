@@ -62,7 +62,7 @@ public class ContextHelperTest {
         SchedulerJob job = new SchedulerJobImpl();
         job.setIdentifier("scheduler-agent-zzzz-job");
         job.setJobName("zzzz-job");
-        job.setAgentName("achedulerAgent");
+        job.setAgentName("schedulerAgent");
         job.setContextName(contextTemplate.getName());
 
         contextTemplate.getScheduledJobs().add(job);
@@ -208,7 +208,8 @@ public class ContextHelperTest {
         ContextHelper.addSchedulerJobReplacementTokens(globalEventJob);
 
         Assert.assertEquals("GLOBAL_EVENT", globalEventJob.getAgentName());
-        Assert.assertEquals("GLOBAL_EVENT-jobName", globalEventJob.getIdentifier());
+        Assert.assertEquals("GLOBAL_EVENT-jobName_[[env.name]]", globalEventJob.getIdentifier());
+        Assert.assertEquals("jobName_[[env.name]]", globalEventJob.getJobName());
         Assert.assertEquals("contextName_[[env.name]]", globalEventJob.getContextName());
     }
 
@@ -261,7 +262,8 @@ public class ContextHelperTest {
         ContextHelper.addSchedulerJobReplacementTokens(globalEventJob);
 
         Assert.assertEquals("GLOBAL_EVENT", globalEventJob.getAgentName());
-        Assert.assertEquals("GLOBAL_EVENT-jobName", globalEventJob.getIdentifier());
+        Assert.assertEquals("GLOBAL_EVENT-jobName_[[env.name]]", globalEventJob.getIdentifier());
+        Assert.assertEquals("jobName_[[env.name]]", globalEventJob.getJobName());
         Assert.assertEquals("[[context.name]]", globalEventJob.getContextName());
     }
 

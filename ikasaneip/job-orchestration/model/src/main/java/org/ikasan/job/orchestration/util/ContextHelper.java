@@ -57,6 +57,12 @@ public class ContextHelper {
         if(!(schedulerJob instanceof GlobalEventJob)) {
             schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
         }
+        else {
+            if(!schedulerJob.getJobName().endsWith("_" + ENV_NAME_REPLACEMENT)) {
+                schedulerJob.setJobName(schedulerJob.getJobName() + "_" + ENV_NAME_REPLACEMENT);
+                schedulerJob.setIdentifier(schedulerJob.getIdentifier() + "_" + ENV_NAME_REPLACEMENT);
+            }
+        }
     }
 
     /**
@@ -103,27 +109,28 @@ public class ContextHelper {
                     schedulerJob.setAgentName(AGENT_NAME_REPLACEMENT);
                     schedulerJob.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
                 }
-
+                else if(schedulerJob.getAgentName().equals(JobConstants.GLOBAL_EVENT)) {
+                    schedulerJob.setJobName(schedulerJob.getJobName() + "_" + ENV_NAME_REPLACEMENT);
+                    schedulerJob.setIdentifier(schedulerJob.getIdentifier() + "_" + ENV_NAME_REPLACEMENT);
+                }
             });
         }
 
         if(contextTemplate.getJobLocks() != null) {
             contextTemplate.getJobLocks().forEach(jobLock -> {
-                jobLock.getJobs().entrySet().forEach(entry -> {
-                    entry.getValue().forEach(job -> {
-                        if(job.getContextName() != null) {
-                            job.setContextName(getContextName(job.getContextName()));
-                        }
-                        if(!job.getAgentName().equals(JobConstants.GLOBAL_EVENT) &&
-                            !job.getAgentName().equals(JobConstants.CONTEXT_START_JOB) &&
-                            !job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) &&
-                            !job.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) &&
-                            !job.getAgentName().equals(JobConstants.BRIDGING_JOB)) {
-                            job.setAgentName(AGENT_NAME_REPLACEMENT);
-                            job.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + job.getJobName());
-                        }
-                    });
-                });
+                jobLock.setName(jobLock.getName() + "_" + ENV_NAME_REPLACEMENT);
+                jobLock.getJobs().entrySet().forEach(entry -> entry.getValue().forEach(job -> {
+                    if(job.getContextName() != null) {
+                        job.setContextName(getContextName(job.getContextName()));
+                    }
+                    if(!job.getAgentName().equals(JobConstants.CONTEXT_START_JOB) &&
+                        !job.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB) &&
+                        !job.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) &&
+                        !job.getAgentName().equals(JobConstants.BRIDGING_JOB)) {
+                        job.setAgentName(AGENT_NAME_REPLACEMENT);
+                        job.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + job.getJobName());
+                    }
+                }));
             });
         }
 
@@ -167,6 +174,9 @@ public class ContextHelper {
                 !schedulerJob.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB) &&
                 !schedulerJob.getAgentName().equals(JobConstants.BRIDGING_JOB)) {
                 jobDependency.setJobIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
+            }
+            else if(schedulerJob.getIdentifier().startsWith(JobConstants.GLOBAL_EVENT)) {
+                jobDependency.setJobIdentifier(schedulerJob.getIdentifier() + "_" + ENV_NAME_REPLACEMENT);
             }
         }
 
@@ -227,12 +237,16 @@ public class ContextHelper {
      * @param and
      */
     private static void replaceJobIdentifierAnd(SchedulerJob schedulerJob, And and) {
-        if(and.getIdentifier().startsWith(JobConstants.GLOBAL_EVENT) ||
-            and.getIdentifier().startsWith(JobConstants.CONTEXT_START_JOB) ||
+        if(and.getIdentifier().startsWith(JobConstants.CONTEXT_START_JOB) ||
             and.getIdentifier().startsWith(JobConstants.CONTEXT_TERMINAL_JOB) ||
             and.getIdentifier().startsWith(JobConstants.LOCAL_EVENT_JOB) ||
             and.getIdentifier().startsWith(JobConstants.BRIDGING_JOB)) return;
-        and.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+        if(and.getIdentifier().startsWith(JobConstants.GLOBAL_EVENT)) {
+            and.setIdentifier(schedulerJob.getIdentifier() + "_" + ENV_NAME_REPLACEMENT);
+        }
+        else {
+            and.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
+        }
     }
 
     /**
@@ -242,12 +256,16 @@ public class ContextHelper {
      * @param or
      */
     private static void replaceJobIdentifierOr(SchedulerJob schedulerJob, Or or) {
-        if(or.getIdentifier().startsWith(JobConstants.GLOBAL_EVENT) ||
-            or.getIdentifier().startsWith(JobConstants.CONTEXT_START_JOB) ||
+        if(or.getIdentifier().startsWith(JobConstants.CONTEXT_START_JOB) ||
             or.getIdentifier().startsWith(JobConstants.CONTEXT_TERMINAL_JOB) ||
             or.getIdentifier().startsWith(JobConstants.LOCAL_EVENT_JOB) ||
             or.getIdentifier().startsWith(JobConstants.BRIDGING_JOB)) return;
-        or.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+        if(or.getIdentifier().startsWith(JobConstants.GLOBAL_EVENT)) {
+            or.setIdentifier(schedulerJob.getIdentifier() + "_" + ENV_NAME_REPLACEMENT);
+        }
+        else {
+            or.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
+        }
     }
 
     /**
@@ -257,12 +275,16 @@ public class ContextHelper {
      * @param not
      */
     private static void replaceJobIdentifierNot(SchedulerJob schedulerJob, Not not) {
-        if(not.getIdentifier().startsWith(JobConstants.GLOBAL_EVENT) ||
-            not.getIdentifier().startsWith(JobConstants.CONTEXT_START_JOB) ||
+        if(not.getIdentifier().startsWith(JobConstants.CONTEXT_START_JOB) ||
             not.getIdentifier().startsWith(JobConstants.CONTEXT_TERMINAL_JOB) ||
             not.getIdentifier().startsWith(JobConstants.LOCAL_EVENT_JOB) ||
             not.getIdentifier().startsWith(JobConstants.BRIDGING_JOB)) return;
-        not.setIdentifier(AGENT_NAME_REPLACEMENT+"-"+schedulerJob.getJobName());
+        if(not.getIdentifier().startsWith(JobConstants.GLOBAL_EVENT)) {
+            not.setIdentifier(schedulerJob.getIdentifier() + "_" + ENV_NAME_REPLACEMENT);
+        }
+        else {
+            not.setIdentifier(AGENT_NAME_REPLACEMENT + "-" + schedulerJob.getJobName());
+        }
     }
 
     /**
