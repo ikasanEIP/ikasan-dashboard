@@ -52,6 +52,7 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
     , AfterNavigationObserver, BeforeEnterObserver
 {
     public static final String ROUTE = "login";
+    public static final String USERNAME = "USERNAME";
 
     @Resource
     private AuthenticationService authenticationService;
@@ -125,6 +126,8 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
                 User user = this.userService.loadUserByUsername(authentication.getName());
                 user.setPreviousAccessTimestamp(System.currentTimeMillis());
                 this.userService.updateUser(user);
+
+                VaadinSession.getCurrent().getSession().setAttribute(USERNAME, user.getUsername());
 
                 UI.getCurrent().getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
                     this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_LOGIN_CONSTANTS

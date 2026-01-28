@@ -5,6 +5,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -12,14 +13,12 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
-import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,13 +38,13 @@ public class SystemEventFilteringGrid extends Grid<SystemEvent>
     private long resultSize = 0;
     private long queryTime = 0;
 
-    private Label resultsLabel;
+    private NativeLabel resultsLabel;
 
     /**
      * Constructors
      */
     public SystemEventFilteringGrid(SystemEventSearchService systemEventSearchService,
-                                    SystemEventSearchFilter searchFilter, Label resultsLabel)
+                                    SystemEventSearchFilter searchFilter, NativeLabel resultsLabel)
     {
         this.systemEventSearchService = systemEventSearchService;
         if(this.systemEventSearchService ==  null)

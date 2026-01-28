@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 @Import({HarvestingAutoConfiguration.class})
@@ -135,20 +136,33 @@ public class DashboardComponentFactory
     }
 
     @Component
-    private static final class IkasanSessionListener implements SessionInitListener, SessionDestroyListener {
+    public static final class IkasanSessionListener implements SessionInitListener, SessionDestroyListener {
+        private static ConcurrentHashMap<String, VaadinSession> ACTIVE_SESSIONS = new ConcurrentHashMap<>();
 
         @Override
         public void sessionInit(SessionInitEvent event)
             throws ServiceException {
-            // Nothing to do here
+            ACTIVE_SESSIONS.put(event.getSession().getPushId(), event.getSession());
         }
 
         @Override
         public void sessionDestroy(SessionDestroyEvent event) {
             // Remove the authentication from the context holder
-            SecurityContextHolder.getContext().setAuthentication(null);
+            ACTIVE_SESSIONS.remove(event.getSession().getPushId());
+
+            if(VaadinSession.getCurrent().equals(event.getSession())) {
+                SecurityContextHolder.getContext().setAuthentication(null);
+            }
         }
 
+        /**
+         * Retrieves the currently active Vaadin sessions stored in a ConcurrentHashMap.
+         *
+         * @return A ConcurrentHashMap containing active Vaadin sessions, with session ID as key and VaadinSession as value.
+         */
+        public static ConcurrentHashMap<String, VaadinSession> getActiveSessions() {
+            return ACTIVE_SESSIONS;
+        }
     }
 
     @Component
