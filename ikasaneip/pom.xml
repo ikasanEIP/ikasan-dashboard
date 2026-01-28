@@ -392,6 +392,7 @@
         <version.woodstox.stax2-api>4.2.2</version.woodstox.stax2-api>
         <version.caffine>3.1.8</version.caffine>
         <version.springdoc>2.8.11</version.springdoc>
+        <version.carrotsearch.randomizedtesting>2.8.3</version.carrotsearch.randomizedtesting>
     </properties>
 
     <!-- Distribution for releases -->
@@ -2272,7 +2273,12 @@
                         <artifactId>commons-lang</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
 
+            <dependency>
+                <groupId>com.carrotsearch.randomizedtesting</groupId>
+                <artifactId>randomizedtesting-runner</artifactId>
+                <version>${version.carrotsearch.randomizedtesting}</version>
             </dependency>
 
             <dependency>
