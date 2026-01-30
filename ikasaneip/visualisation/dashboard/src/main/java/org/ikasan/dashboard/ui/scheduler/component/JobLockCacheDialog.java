@@ -321,6 +321,21 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                 .findAny()
                                 .orElse(null);
 
+                            if(job == null) {
+                                this.addUnattachedJobManagementButtons(jobIdentifier, contextName, ikasanAuthentication, verticalLayout);
+                                StringBuffer keyedJobs = new StringBuffer();
+
+                                jobLockHolder.getSchedulerJobs().entrySet().forEach(entry-> {
+                                    keyedJobs.append("Key[").append(entry.getKey()).append("]").append(" Values[")
+                                        .append(StringUtils.join(jobLockHolder.getSchedulerJobs().values(), ',')).append("] ");
+                                });
+
+                                logger.info("Could not obtain scheduler job from lock holder[{}] scheduler job lock participants [{}]. " +
+                                        "Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]. "
+                                    , lockHolder, keyedJobs, jobLockHolder.getLockName(), this.contextInstance.getName(), this.contextInstance.getId());
+                                return;
+                            }
+
                             Button lockHolderButton = new Button(job.getJobName());
                             lockHolderButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RUNNING);
                             lockHolderButton.getElement().getStyle().set("color", IkasanColours.WHITE);
