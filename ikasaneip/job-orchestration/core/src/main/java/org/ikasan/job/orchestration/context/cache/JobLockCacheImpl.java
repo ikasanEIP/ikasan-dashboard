@@ -200,7 +200,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
 
     @Override
     public synchronized boolean release(String jobIdentifier, String contextName) {
-        boolean removed = false;
+        AtomicBoolean removed = new AtomicBoolean(false);
         LOGGER.debug(String.format("Releasing lock for jobIdentifier: %s  contextName %s", jobIdentifier, contextName));
         if (jobIdentifier != null && contextName != null
             && this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier) != null) {
@@ -208,22 +208,31 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
                 .get(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier));
             if (jobLockHolder != null) {
                 if(jobLockHolder.isExclusiveJobLock()) {
-                    removed = this.jobLockCacheData.getExclusiveLockHolder().removeLockHolder(jobIdentifier + CONTEXT_ID + contextName);
+                    removed.set(this.jobLockCacheData.getExclusiveLockHolder().removeLockHolder(jobIdentifier + CONTEXT_ID + contextName));
                 }
                 else {
-                    removed = jobLockHolder.removeLockHolder(jobIdentifier + CONTEXT_ID + contextName);
+                    removed.set(jobLockHolder.removeLockHolder(jobIdentifier + CONTEXT_ID + contextName));
                 }
 
-                if (removed) {
+                if (removed.get()) {
                     saveJobLockCacheRecord();
                     this.publishJobLockCacheEvent(jobLockHolder.getLockName(), jobIdentifier, contextName
                         , JobLockCacheEvent.EventType.LOCK_RELEASED);
                 }
             }
         }
-        String message = removed ? "Successfully released " : "Failed to release ";
+        else if (jobIdentifier != null && contextName != null
+            && this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier) == null) {
+            jobLockCacheData.getJobLocksByLockName().values().forEach(lh -> {
+                if(lh.getLockHolders().contains(jobIdentifier + CONTEXT_ID + contextName)) {
+                    lh.removeLockHolder(jobIdentifier + CONTEXT_ID + contextName);
+                    removed.set(true);
+                }
+            });
+        }
+        String message = removed.get() ? "Successfully released " : "Failed to release ";
         LOGGER.debug(String.format("%s jobIdentifier: %s  contextName %s", message, jobIdentifier, contextName));
-        return removed;
+        return removed.get();
     }
 
     @Override

@@ -415,6 +415,32 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     }
 
     @Test
+    public void test_job_lock_cache_is_locked_by_unmanaged_job_lock_and_release() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        String contextId0 = UUID.randomUUID().toString();
+
+        assertFalse(jlc.locked("jobIdentifier", "contextName"));
+
+        JobLock jobLock = makeJobLock("TEST-LOCK", 3, 1);
+        // 3 jobs one lock count
+        jlc.addLocks(List.of(jobLock));
+
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0));
+
+        // removing the job that holds the lock from the job participant collection
+        JobLockCacheData jobLockCacheData = (JobLockCacheData)ReflectionTestUtils.getField(jlc, "jobLockCacheData");
+        jobLockCacheData.getJobLocksByLockName().values().forEach(l -> {
+            if(!l.getLockHolders().isEmpty()) {
+                l.getSchedulerJobs().get("contextName0").removeAll(l.getSchedulerJobs().get("contextName0"));
+            }
+        });
+        jobLockCacheData.getJobLocksByIdentifier().remove("AgentName0-TEST-LOCK-JobName0");
+
+        assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0));
+    }
+
+    @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_different_job_weightings() {
         JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);

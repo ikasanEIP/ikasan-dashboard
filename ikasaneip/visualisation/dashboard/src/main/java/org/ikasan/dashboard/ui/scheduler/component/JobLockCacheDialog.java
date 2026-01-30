@@ -327,7 +327,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
 
                                 jobLockHolder.getSchedulerJobs().entrySet().forEach(entry-> {
                                     keyedJobs.append("Key[").append(entry.getKey()).append("]").append(" Values[")
-                                        .append(StringUtils.join(jobLockHolder.getSchedulerJobs().values(), ',')).append("] ");
+                                        .append(StringUtils.join(entry.getValue().stream().map(p -> p.getIdentifier() + " in context " + p.getContextName())
+                                            .collect(Collectors.toList()), ',')).append("] ");
                                 });
 
                                 logger.info("Could not obtain scheduler job from lock holder[{}] scheduler job lock participants [{}]. " +
