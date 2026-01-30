@@ -373,11 +373,16 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                                     , job.getJobName(), job.getContextName(), contextName), ikasanAuthentication.getName());
                                         } catch (Exception e) {
                                             error = true;
-                                            ui.access(() -> NotificationHelper.showErrorNotification((String.format(getTranslation("error.unable-to-release-jocked-job"), job.getJobName()))));
+                                            ui.access(() -> NotificationHelper.showErrorNotification((String.format(getTranslation
+                                                ("error.unable-to-release-jocked-job"), job.getJobName()))));
                                         }
 
                                         if (!error) {
-                                            ui.access(() -> NotificationHelper.showUserNotification(String.format(getTranslation("message.locked-job-successfully-released"), job.getJobName())));
+                                            ui.access(() -> {
+                                                this.grid.getDataProvider().refreshAll();
+                                                NotificationHelper.showUserNotification(String.format(getTranslation
+                                                    ("message.locked-job-successfully-released"), job.getJobName()));
+                                            });
                                         }
                                         progressIndicatorDialog.close();
                                     });
