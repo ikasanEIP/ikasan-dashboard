@@ -1,6 +1,7 @@
 {
   "name": "test-start-end_[[env.name]]",
   "description": "test",
+  "environmentGroup" : "[[env.name]]",
   "timeWindowStart": "0 0 1 ? * * *",
   "contextTtlMilliseconds": 82800000,
   "timezone": "Asia/Aden",

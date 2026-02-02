@@ -1,6 +1,7 @@
 {
   "name": "-1793100514_[[env.name]]",
   "description": "The asset control parent context for all scheduler jobs.",
+  "environmentGroup" : "[[env.name]]",
   "timeWindowStart": "0 0 1 ? * * *",
   "contextTtlMilliseconds": 0,
   "treeViewExpandLevel": 1,

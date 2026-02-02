@@ -1,6 +1,7 @@
 {
   "name": "Context3_[[env.name]]",
   "timeWindowStart": "* * 6 ? * * *",
+  "environmentGroup" : "[[env.name]]",
   "contextTtlMilliseconds": 0,
   "treeViewExpandLevel": 1,
   "ableToRunConcurrently": true,

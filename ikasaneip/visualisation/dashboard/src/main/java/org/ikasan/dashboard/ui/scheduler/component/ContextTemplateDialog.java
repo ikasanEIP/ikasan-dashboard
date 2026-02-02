@@ -79,6 +79,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private IntegerField jobVisualisationVerticalSpacingIf;
     private IntegerField fontSize;
     private IntegerField treeViewExpandLevel;
+    private TextField environmentTf;
     private Checkbox isAbleToRunConcurrentlyCb;
     private Checkbox useDisplayNameCb;
     private Checkbox renderLogicalBoundariesCb;
@@ -305,6 +306,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         binder.forField(this.treeViewExpandLevel)
             .bind(ContextTemplate::getTreeViewExpandLevel, ContextTemplate::setTreeViewExpandLevel);
 
+        this.environmentTf = new TextField(getTranslation("label.environment", UI.getCurrent().getLocale()));
+        this.environmentTf.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.environmentTf)
+            .bind(ContextTemplate::getEnvironmentGroup, ContextTemplate::setEnvironmentGroup);
+
         this.contextVisualisationLevelDistanceIf = new IntegerField(getTranslation("label.context-node-vertical-distance", UI.getCurrent().getLocale()));
         this.contextVisualisationLevelDistanceIf.getElement().getThemeList().add("always-float-label");
         this.contextVisualisationLevelDistanceIf.setRequiredIndicatorVisible(true);
@@ -469,10 +475,10 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         cbLayout.getElement().getThemeList().remove("spacing");
 
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
-            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, cbLayout, this.descriptionTa
+            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.environmentTf, this.descriptionTa
             , this.contextVisualisationLevelDistanceIf, this.contextVisualisationNodeDistanceIf
             , this.jobVisualisationVerticalSpacingIf, this.jobVisualisationHorizontalSpacingIf
-            , this.fontSize, this.blackoutWindowsGrid, addDateTimePairButton);
+            , this.fontSize, cbLayout, this.blackoutWindowsGrid, addDateTimePairButton);
 
         this.formLayout.setColspan(this.contextNameTf, 11);
         this.formLayout.setColspan(this.startWindowCronExpressionTf, 5);
@@ -481,13 +487,14 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.formLayout.setColspan(this.contextTtlMinutes, 3);
         this.formLayout.setColspan(this.timezoneCb, 5);
         this.formLayout.setColspan(this.treeViewExpandLevel, 4);
+        this.formLayout.setColspan(this.environmentTf, 5);
         this.formLayout.setColspan(cbLayout, 6);
         this.formLayout.setColspan(this.descriptionTa, 11);
         this.formLayout.setColspan(this.contextVisualisationLevelDistanceIf, 5);
         this.formLayout.setColspan(this.contextVisualisationNodeDistanceIf, 5);
         this.formLayout.setColspan(this.jobVisualisationHorizontalSpacingIf, 5);
         this.formLayout.setColspan(this.jobVisualisationVerticalSpacingIf, 5);
-        this.formLayout.setColspan(this.fontSize, 5 );
+        this.formLayout.setColspan(this.fontSize, 3);
         this.formLayout.setColspan(blackoutWindowsGrid, 37);
         this.formLayout.setColspan(addDateTimePairButton, 3);
     }
