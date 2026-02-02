@@ -38,8 +38,8 @@ public class SolrJobLockCacheServiceImpl implements JobLockCacheService {
     }
 
     @Override
-    public JobLockCacheRecord get() {
-        return this.jobLockCacheDao.get();
+    public JobLockCacheRecord get(String environment) {
+        return this.jobLockCacheDao.get(environment);
     }
 
     @Override

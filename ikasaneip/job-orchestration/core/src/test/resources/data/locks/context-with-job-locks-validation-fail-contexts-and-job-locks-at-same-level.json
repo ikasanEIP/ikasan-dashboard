@@ -1,5 +1,6 @@
 {
   "name": "Context Template Name",
+  "environmentGroup": "environment",
   "description": "Context Template Description",
   "jobDependencies": [
     {

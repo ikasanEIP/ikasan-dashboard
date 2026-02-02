@@ -1,9 +1,7 @@
 package org.ikasan.orchestration.service.context;
 
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.spec.scheduled.context.model.Context;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
@@ -26,21 +24,21 @@ public class JobLockCacheInitialisationServiceImpl implements JobLockCacheInitia
         if(this.jobLockCacheService == null) {
             throw new IllegalArgumentException("jobLockCacheService cannot be null!");
         }
+        JobLockCacheImpl.instance().setJobLockCacheService(jobLockCacheService);
     }
 
     @Override
     public void initialiseJobLockCache(Context context, boolean isRefresh) {
         LOGGER.info(String.format("Initialising job lock cache for context[%s], refresh[%s]", context.getName(), isRefresh));
-        JobLockCacheRecord jobLockCacheRecord = jobLockCacheService.get();
-        JobLockCacheImpl.instance().setJobLockCacheService(jobLockCacheService);
+        JobLockCacheRecord jobLockCacheRecord = jobLockCacheService.get(context.getEnvironmentGroup());
 
         if (jobLockCacheRecord != null) {
-            JobLockCacheImpl.instance().setJobLockCacheRecord(jobLockCacheRecord);
+            JobLockCacheImpl.instance().setJobLockCacheRecord(jobLockCacheRecord, context.getEnvironmentGroup());
         }
 
         if(isRefresh) {
             JobLockCacheImpl.instance().removeJobsLocksForContext(context);
-            JobLockCacheImpl.instance().addLocks(context.getAllNestedJobLocks());
+            JobLockCacheImpl.instance().addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
         }
         LOGGER.info(String.format("Successfully initialised job lock cache for context[%s]", context.getName()));
     }

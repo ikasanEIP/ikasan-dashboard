@@ -1,4 +1,5 @@
 {
+  "environmentGroup": "environment",
   "contexts" : [ {
     "scheduledJobs" : [ {
       "agentName" : "scheduler-agent",

@@ -31,6 +31,7 @@ import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.provision.job.JobProvisionException;
@@ -1025,6 +1026,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                         contextMachine.teardown();
                                     }
                                 }
+
+                                // Because we are disabling, we will clean up the job lock cache!
+                                JobLockCacheImpl.instance().removeJobsLocksForContext(contextTemplate);
 
                                 this.scheduledContextService.save(record);
                                 contextTemplateFilteringGrid.getDataProvider().refreshAll();

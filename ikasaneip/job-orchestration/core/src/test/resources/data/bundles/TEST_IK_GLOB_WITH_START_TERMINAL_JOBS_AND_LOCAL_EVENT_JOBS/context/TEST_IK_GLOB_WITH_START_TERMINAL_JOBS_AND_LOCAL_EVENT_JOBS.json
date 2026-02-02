@@ -1134,5 +1134,6 @@
   "useDisplayName" : false,
   "ordinal" : -1,
   "disabled" : false,
+  "environmentGroup": "environment",
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

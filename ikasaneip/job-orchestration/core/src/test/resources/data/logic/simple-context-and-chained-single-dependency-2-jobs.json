@@ -1,5 +1,6 @@
 {
   "name" : "Context1-Two-Jobs",
+  "environmentGroup": "environment",
   "jobDependencies" : [ {
     "jobIdentifier" : "agentNameTwoJobs-jobName3",
     "logicalGrouping" : {
@@ -43,7 +44,6 @@
   } ],
   "createdDateTime" : 0,
   "updatedDateTime" : 0,
-  "environmentGroup" : null,
   "startTime" : 0,
   "endTime" : 0,
   "timezone" : null,

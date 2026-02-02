@@ -1,5 +1,6 @@
 {
   "name": "REPEATING_JOB",
+  "environmentGroup": "environment",
   "description": "Context Template Description",
   "contexts": [
     {

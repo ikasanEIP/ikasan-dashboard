@@ -12,7 +12,7 @@ public class JobLockCacheServiceTestImpl implements JobLockCacheService {
     }
 
     @Override
-    public JobLockCacheRecord get() {
+    public JobLockCacheRecord get(String environment) {
         return null;
     }
 

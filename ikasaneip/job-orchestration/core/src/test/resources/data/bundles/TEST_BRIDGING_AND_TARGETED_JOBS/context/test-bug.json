@@ -272,5 +272,6 @@
   "visualisationFontSize" : 14,
   "renderLogicalBoundaries" : true,
   "disabled" : false,
+  "environmentGroup": "environment",
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

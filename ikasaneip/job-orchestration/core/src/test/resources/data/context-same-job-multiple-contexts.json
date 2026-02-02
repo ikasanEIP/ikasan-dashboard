@@ -1,5 +1,6 @@
  {
   "name": "Context1",
+   "environmentGroup": "environment",
   "contextParameters": [
     {
       "name": "name",

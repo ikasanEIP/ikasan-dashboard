@@ -250,7 +250,9 @@ public class AbstractTest
      */
     protected void validateAllLocksCleared() {
         JobLockCacheImpl instance = JobLockCacheImpl.instance();
-        JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(instance, "jobLockCacheData");
+        ConcurrentHashMap<String, JobLockCacheData> jobLockCacheDataMap
+            = (ConcurrentHashMap)ReflectionTestUtils.getField(instance, "jobLockCacheDataMap");
+        JobLockCacheData jobLockCacheData = jobLockCacheDataMap.get("environment");
 
         ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
@@ -266,6 +268,18 @@ public class AbstractTest
         for (JobLockHolder jlh : jobLockHolders) {
             assertEquals(0, jlh.getLockHolders().size());
         }
+    }
+
+    /**
+     * Retrieves a specific JobLockCacheData object from the jobLockCacheDataMap based on the key "environment".
+     * This method accesses the underlying ConcurrentHashMap containing JobLockCacheData objects via reflection.
+     *
+     * Note that this method is protected and should be used according to the access control restrictions of the class.
+     */
+    protected JobLockCacheData getJobLockCacheData() {
+        ConcurrentHashMap<String, JobLockCacheData> jobLockCacheDataMap
+            = (ConcurrentHashMap)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheDataMap");
+        return jobLockCacheDataMap.get("environment");
     }
 
     /**

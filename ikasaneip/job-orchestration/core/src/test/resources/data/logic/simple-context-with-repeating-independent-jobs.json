@@ -83,6 +83,7 @@
   "jobLocks": [],
   "name": "JOB_PLAN_WITH_MANY_DISTINCT_JOB",
   "description": "JOB_PLAN_WITH_MANY_DISTINCT_JOB",
+  "environmentGroup": "environment",
   "timezone": "Europe/London",
   "contextDependencies": [],
   "contextParameters": [],

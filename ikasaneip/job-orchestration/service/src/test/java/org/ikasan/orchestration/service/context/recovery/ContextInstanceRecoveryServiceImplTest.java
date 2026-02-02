@@ -60,6 +60,7 @@ import java.time.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -240,7 +241,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
         when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
             .thenReturn(new SearchResultsImpl<>(List.of(prepared), 0, 1));
@@ -294,7 +295,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
         when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
             .thenReturn(new SearchResultsImpl<>(List.of(), 0, 1));
-        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
         when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
             .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
                 , TestUtils.createModuleMetaData("3")), 3, 0));
@@ -506,7 +507,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
 
         // execute
@@ -618,7 +619,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
 
         // execute
@@ -729,7 +730,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
 
         // execute
@@ -834,7 +835,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
 
         // execute
@@ -960,7 +961,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
 
         // execute
@@ -1086,7 +1087,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
 
         // execute
@@ -1215,7 +1216,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        jobLockCacheRecord.setJobLockCache(this.getJobLockCacheData());
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
         when(timeService.getLocalDateNow()).thenReturn(LocalDateTime.now());
         // execute
@@ -1424,5 +1425,17 @@ public class ContextInstanceRecoveryServiceImplTest {
 
     private List<InstanceStatus> getStatusesToLookFor() {
         return List.of(WAITING, RUNNING, ERROR, COMPLETE);
+    }
+
+    /**
+     * Retrieves a specific JobLockCacheData object from the jobLockCacheDataMap based on the key "environment".
+     * This method accesses the underlying ConcurrentHashMap containing JobLockCacheData objects via reflection.
+     *
+     * Note that this method is protected and should be used according to the access control restrictions of the class.
+     */
+    protected JobLockCacheData getJobLockCacheData() {
+        ConcurrentHashMap<String, JobLockCacheData> jobLockCacheDataMap
+            = (ConcurrentHashMap)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheDataMap");
+        return jobLockCacheDataMap.get("environment");
     }
 }

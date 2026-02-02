@@ -1,6 +1,7 @@
 {
   "name": "CONTEXT-1436221681",
   "description": "Context Template Description",
+  "environmentGroup": "environment",
   "jobDependencies": [
     {
       "jobIdentifier": "scheduler-agent--801842677",

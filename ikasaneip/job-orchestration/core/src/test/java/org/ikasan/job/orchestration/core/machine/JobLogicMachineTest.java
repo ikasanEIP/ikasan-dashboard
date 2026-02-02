@@ -2864,6 +2864,7 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_repeating_jobs() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-with-repeating-independent-jobs.json");
         ContextInstance contextPlan1 = context.getContexts().get(0);
+        contextPlan1.setEnvironmentGroup("environment");
 
         InternalEventDrivenJobInstanceImpl schedulerAgentJOB1 = new InternalEventDrivenJobInstanceImpl();
         schedulerAgentJOB1.setJobName("JOB1");

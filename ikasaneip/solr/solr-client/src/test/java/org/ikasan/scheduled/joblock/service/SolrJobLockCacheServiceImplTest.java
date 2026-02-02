@@ -89,7 +89,7 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    public void test_save_and_get_job_cache_instance() {
+    public void test_save_and_get_job_cache_instance_null_environment() {
         // set the flag to false for save audit records
         ReflectionTestUtils.setField(service, "saveJobLockCacheAudits", Boolean.FALSE);
 
@@ -109,9 +109,10 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         audits = service.findAll(25, 0);
         assertEquals(0, audits.getResultList().size());
 
-        JobLockCacheRecord savedRecord = service.get();
+        JobLockCacheRecord savedRecord = service.get(null);
 
         assertNotNull(savedRecord);
+        assertEquals(JobLockCacheRecord.DEFAULT_ENVIRONMENT, savedRecord.getEnvironment());
         if (savedRecord.getId().equals(SolrJobLockCacheDaoImpl.JOB_LOCK_CACHE_ID)) {
             assertEquals(savedRecord.getId(), savedRecord.getId());
         }
@@ -140,9 +141,10 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         audits = service.findAll(25, 0);
         assertEquals(0, audits.getResultList().size());
 
-        savedRecord = service.get();
+        savedRecord = service.get(null);
 
         assertNotNull(savedRecord);
+        assertEquals(JobLockCacheRecord.DEFAULT_ENVIRONMENT, savedRecord.getEnvironment());
         if (savedRecord.getId().equals(SolrJobLockCacheDaoImpl.JOB_LOCK_CACHE_ID)) {
             assertEquals(savedRecord.getId(), savedRecord.getId());
         }
@@ -171,7 +173,92 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    public void test_save_and_get_job_cache_instance_with_audit() {
+    public void test_save_and_get_job_cache_instance_non_null_environment() {
+        // set the flag to false for save audit records
+        ReflectionTestUtils.setField(service, "saveJobLockCacheAudits", Boolean.FALSE);
+
+        SearchResults<JobLockCacheAuditRecord> audits = service.findAll(25, 0);
+        assertEquals(0, audits.getResultList().size());
+
+        List<JobLock> jobLocks = List.of(makeJobLock("TEST-LOCK", 3, 3)
+            , makeJobLock("TEST-LOCK-1", 2, 2));
+
+        JobLockCacheData jobLockCacheData = new SolrJobLockCacheDataImpl();
+        this.addLocks(jobLockCacheData, jobLocks);
+
+        JobLockCacheRecord record1 = new SolrJobLockCacheRecordImpl();
+        record1.setEnvironment("environment");
+        record1.setJobLockCache(jobLockCacheData);
+
+        service.save(record1);
+        audits = service.findAll(25, 0);
+        assertEquals(0, audits.getResultList().size());
+
+        JobLockCacheRecord savedRecord = service.get("environment");
+
+        assertNotNull(savedRecord);
+        assertEquals("environment", savedRecord.getEnvironment());
+        if (savedRecord.getId().equals(SolrJobLockCacheDaoImpl.JOB_LOCK_CACHE_ID)) {
+            assertEquals(savedRecord.getId(), savedRecord.getId());
+        }
+        // make sure the timestamp is within the last couple of seconds
+        assertTrue(savedRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && savedRecord.getTimestamp() <= System.currentTimeMillis());
+
+        JobLockCacheData savedRecordJobLockCache = savedRecord.getJobLockCache();
+        assertEquals(2, savedRecordJobLockCache.getJobLocksByLockName().size());
+        assertEquals(5, savedRecordJobLockCache.getJobLocksByIdentifier().size());
+
+        JobLockHolder jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK");
+        assertEquals(3, jobLockHolder.getLockCount());
+        assertEquals(3, jobLockHolder.getSchedulerJobs().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-1");
+        assertEquals(2, jobLockHolder.getLockCount());
+        assertEquals(2, jobLockHolder.getSchedulerJobs().size());
+
+        jobLocks = List.of(makeJobLock("TEST-LOCK-3", 5, 1)
+            , makeJobLock("TEST-LOCK-4", 20, 1));
+
+        this.addLocks(jobLockCacheData, jobLocks);
+        record1.setJobLockCache(jobLockCacheData);
+
+        service.save(record1);
+        audits = service.findAll(25, 0);
+        assertEquals(0, audits.getResultList().size());
+
+        savedRecord = service.get("environment");
+
+        assertNotNull(savedRecord);
+        assertEquals("environment", savedRecord.getEnvironment());
+        if (savedRecord.getId().equals(SolrJobLockCacheDaoImpl.JOB_LOCK_CACHE_ID)) {
+            assertEquals(savedRecord.getId(), savedRecord.getId());
+        }
+        // make sure the timestamp is within the last couple of seconds
+        assertTrue(savedRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && savedRecord.getTimestamp() <= System.currentTimeMillis());
+
+        savedRecordJobLockCache = savedRecord.getJobLockCache();
+        assertEquals(4, savedRecordJobLockCache.getJobLocksByLockName().size());
+        assertEquals(30, savedRecordJobLockCache.getJobLocksByIdentifier().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK");
+        assertEquals(3, jobLockHolder.getLockCount());
+        assertEquals(3, jobLockHolder.getSchedulerJobs().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-1");
+        assertEquals(2, jobLockHolder.getLockCount());
+        assertEquals(2, jobLockHolder.getSchedulerJobs().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-3");
+        assertEquals(1, jobLockHolder.getLockCount());
+        assertEquals(5, jobLockHolder.getSchedulerJobs().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-4");
+        assertEquals(1, jobLockHolder.getLockCount());
+        assertEquals(20, jobLockHolder.getSchedulerJobs().size());
+    }
+
+    @Test
+    public void test_save_and_get_job_cache_instance_with_audit_null_environment() {
 
         SearchResults<JobLockCacheAuditRecord> audits = service.findAll(25, 0);
         assertEquals(0, audits.getResultList().size());
@@ -189,9 +276,10 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         audits = service.findAll(25, 0);
         assertEquals(1, audits.getResultList().size());
 
-        JobLockCacheRecord savedRecord = service.get();
+        JobLockCacheRecord savedRecord = service.get(null);
 
         assertNotNull(savedRecord);
+        assertEquals(JobLockCacheRecord.DEFAULT_ENVIRONMENT, savedRecord.getEnvironment());
         if (savedRecord.getId().equals(SolrJobLockCacheDaoImpl.JOB_LOCK_CACHE_ID)) {
             assertEquals(savedRecord.getId(), savedRecord.getId());
         }
@@ -222,9 +310,10 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         audits = service.findAll(25, 0);
         assertEquals(2, audits.getResultList().size());
 
-        savedRecord = service.get();
+        savedRecord = service.get(null);
 
         assertNotNull(savedRecord);
+        assertEquals(JobLockCacheRecord.DEFAULT_ENVIRONMENT, savedRecord.getEnvironment());
         if (savedRecord.getId().equals(SolrJobLockCacheDaoImpl.JOB_LOCK_CACHE_ID)) {
             assertEquals(savedRecord.getId(), savedRecord.getId());
         }
@@ -256,6 +345,94 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         assertEquals(20, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
     }
 
+    @Test
+    public void test_save_and_get_job_cache_instance_with_audit_non_null_environment() {
+
+        SearchResults<JobLockCacheAuditRecord> audits = service.findAll(25, 0);
+        assertEquals(0, audits.getResultList().size());
+
+        List<JobLock> jobLocks = List.of(makeJobLock("TEST-LOCK", 3, 3)
+            , makeJobLock("TEST-LOCK-1", 2, 2));
+
+        JobLockCacheData jobLockCacheData = new SolrJobLockCacheDataImpl();
+        this.addLocks(jobLockCacheData, jobLocks);
+
+        JobLockCacheRecord record1 = new SolrJobLockCacheRecordImpl();
+        record1.setEnvironment("environment");
+        record1.setJobLockCache(jobLockCacheData);
+
+        service.save(record1);
+        audits = service.findAll(25, 0);
+        assertEquals(1, audits.getResultList().size());
+
+        JobLockCacheRecord savedRecord = service.get("environment");
+
+        assertNotNull(savedRecord);
+        assertEquals("environment", savedRecord.getEnvironment());
+        if (savedRecord.getId().equals(SolrJobLockCacheDaoImpl.JOB_LOCK_CACHE_ID)) {
+            assertEquals(savedRecord.getId(), savedRecord.getId());
+        }
+        // make sure the timestamp is within the last couple of seconds
+        assertTrue(savedRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && savedRecord.getTimestamp() <= System.currentTimeMillis());
+
+        JobLockCacheData savedRecordJobLockCache = savedRecord.getJobLockCache();
+        assertEquals(2, savedRecordJobLockCache.getJobLocksByLockName().size());
+        assertEquals(5, savedRecordJobLockCache.getJobLocksByIdentifier().size());
+
+        JobLockHolder jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK");
+        assertEquals(3, jobLockHolder.getLockCount());
+        assertEquals(3, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(3, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-1");
+        assertEquals(2, jobLockHolder.getLockCount());
+        assertEquals(2, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(2, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
+
+        jobLocks = List.of(makeJobLock("TEST-LOCK-3", 5, 1)
+            , makeJobLock("TEST-LOCK-4", 20, 1));
+
+        this.addLocks(jobLockCacheData, jobLocks);
+        record1.setJobLockCache(jobLockCacheData);
+
+        service.save(record1);
+        audits = service.findAll(25, 0);
+        assertEquals(2, audits.getResultList().size());
+
+        savedRecord = service.get("environment");
+
+        assertNotNull(savedRecord);
+        assertEquals("environment", savedRecord.getEnvironment());
+        if (savedRecord.getId().equals(SolrJobLockCacheDaoImpl.JOB_LOCK_CACHE_ID)) {
+            assertEquals(savedRecord.getId(), savedRecord.getId());
+        }
+        // make sure the timestamp is within the last couple of seconds
+        assertTrue(savedRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && savedRecord.getTimestamp() <= System.currentTimeMillis());
+
+        savedRecordJobLockCache = savedRecord.getJobLockCache();
+        assertEquals(4, savedRecordJobLockCache.getJobLocksByLockName().size());
+        assertEquals(30, savedRecordJobLockCache.getJobLocksByIdentifier().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK");
+        assertEquals(3, jobLockHolder.getLockCount());
+        assertEquals(3, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(3, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-1");
+        assertEquals(2, jobLockHolder.getLockCount());
+        assertEquals(2, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(2, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-3");
+        assertEquals(1, jobLockHolder.getLockCount());
+        assertEquals(5, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(5, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
+
+        jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-4");
+        assertEquals(1, jobLockHolder.getLockCount());
+        assertEquals(20, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(20, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
+    }
 
     private JobLock makeJobLock(String jobLockName, int count, int jobLockCount) {
         JobLock jobLock = new SolrJobLockImpl();
