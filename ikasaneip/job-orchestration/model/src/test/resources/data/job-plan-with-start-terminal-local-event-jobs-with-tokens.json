@@ -1,6 +1,7 @@
 {
   "name": "TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_[[env.name]]",
   "description": "Context Template Description",
+  "environmentGroup" : "[[env.name]]",
   "timeWindowStart": "0 0 1 ? * * *",
   "contextTtlMilliseconds": 86340000,
   "treeViewExpandLevel": 1,

@@ -142,6 +142,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private TextField projectedEndTimeTf;
     private TextField endTimeTf;
     private TextField timezoneTf;
+    private TextField environmentTf;
     private Checkbox isAbleToRunConcurrentlyCb;
     private Checkbox useDisplayNameCb;
     private Checkbox renderLogicalBoundariesCb;
@@ -450,6 +451,12 @@ public class ContextInstanceWidget extends VerticalLayout
             .bind(ContextInstance::getTimezone, ContextInstance::setTimezone);
         this.timezoneTf.setEnabled(false);
 
+        this.environmentTf = new TextField(getTranslation("label.environment", UI.getCurrent().getLocale()));
+        this.environmentTf.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.environmentTf)
+            .bind(ContextInstance::getEnvironmentGroup, ContextInstance::setEnvironmentGroup);
+        this.environmentTf.setEnabled(false);
+
         this.startTimeTf = new TextField(getTranslation("label.start-date-time", UI.getCurrent().getLocale()));
         this.startTimeTf.getElement().getThemeList().add("always-float-label");
         if(this.contextInstance.getStartTime() > 0) {
@@ -525,11 +532,12 @@ public class ContextInstanceWidget extends VerticalLayout
         this.formLayout.add(this.contextTtlHours, 2);
         this.formLayout.add(this.contextTtlMinutes, 2);
         this.formLayout.add(this.timezoneTf, 3);
-        this.formLayout.add(cbLayout, 3);
+        this.formLayout.add(environmentTf, 3);
         this.formLayout.add(this.descriptionTa, 6);
         this.formLayout.add(this.startTimeTf, 4);
         this.formLayout.add(this.projectedEndTimeTf, 4);
         this.formLayout.add(this.endTimeTf, 4);
+        this.formLayout.add(cbLayout, 3);
 
         HorizontalLayout jobStatusLayout = new HorizontalLayout();
         jobStatusLayout.setWidthFull();

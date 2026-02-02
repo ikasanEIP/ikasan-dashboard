@@ -67,6 +67,7 @@ public class ContextHelper {
     public static void addContextTemplateReplacementTokens(ContextTemplate contextTemplate) {
         _addContextTemplateReplacementTokens(contextTemplate);
         contextTemplate.setName(getContextName(contextTemplate.getName()));
+        contextTemplate.setEnvironmentGroup(ENV_NAME_REPLACEMENT);
     }
 
     /**

@@ -134,6 +134,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private IntegerField contextTtlHours;
     private IntegerField contextTtlDays;
     private IntegerField treeViewExpandLevel;
+    private TextField environmentTf;
     private VerticalLayout schedulerVisualisationDiv;
     private Tab visualisationTab;
     private Tab rawContextTab;
@@ -424,6 +425,13 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         binder.forField(this.treeViewExpandLevel)
             .bind(ContextTemplate::getTreeViewExpandLevel, ContextTemplate::setTreeViewExpandLevel);
         this.treeViewExpandLevel.setEnabled(false);
+
+        this.environmentTf = new TextField(getTranslation("label.environment", UI.getCurrent().getLocale()));
+        this.environmentTf.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.environmentTf)
+            .bind(ContextTemplate::getEnvironmentGroup, ContextTemplate::setEnvironmentGroup);
+        this.environmentTf.setEnabled(false);
+
         this.isAbleToRunConcurrentlyCb = new Checkbox(getTranslation("label.concurrent", UI.getCurrent().getLocale()));
         this.isAbleToRunConcurrentlyCb.getElement().getThemeList().add("always-float-label");
         binder.forField(this.isAbleToRunConcurrentlyCb)
@@ -510,9 +518,14 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.formLayout.setResponsiveSteps(
             new FormLayout.ResponsiveStep("500px", 40)
         );
+
+        VerticalLayout widgetLayout = new VerticalLayout(cbLayout);
+        widgetLayout.setHorizontalComponentAlignment(Alignment.END, cbLayout);
+        widgetLayout.setWidthFull(); // Ensure the layout uses the full width
+
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
-            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, cbLayout
-            , this.descriptionTa, this.blackoutWindowsGrid);
+            , this.contextTtlMinutes, this.timezoneCb, this.treeViewExpandLevel, this.environmentTf
+            , this.descriptionTa, widgetLayout, this.blackoutWindowsGrid);
         this.formLayout.setColspan(this.contextNameTf, 11);
         this.formLayout.setColspan(this.startWindowCronExpressionTf, 5);
         this.formLayout.setColspan(this.contextTtlDays, 3);
@@ -520,7 +533,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.formLayout.setColspan(this.contextTtlMinutes, 3);
         this.formLayout.setColspan(this.timezoneCb, 5);
         this.formLayout.setColspan(this.treeViewExpandLevel, 4);
-        this.formLayout.setColspan(cbLayout, 6);
+        this.formLayout.setColspan(this.environmentTf, 5);
+        this.formLayout.setColspan(widgetLayout, 27);
         this.formLayout.setColspan(this.descriptionTa, 12);
         this.formLayout.setColspan(blackoutWindowsGrid, 25);
 

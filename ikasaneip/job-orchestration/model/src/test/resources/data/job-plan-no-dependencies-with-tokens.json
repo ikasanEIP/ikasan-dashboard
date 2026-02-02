@@ -1,6 +1,7 @@
 {
   "name": "IES Simple_D_[[env.name]]",
   "description": "IES Simple D Description",
+  "environmentGroup" : "[[env.name]]",
   "timeWindowStart": "1 0 0 ? * * *",
   "contextTtlMilliseconds": 85800000,
   "timezone": "Europe/London",
