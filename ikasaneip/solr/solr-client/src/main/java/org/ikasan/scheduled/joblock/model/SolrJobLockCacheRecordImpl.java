@@ -16,6 +16,8 @@ public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
     @Field(SolrDaoBase.ID)
     private String id;
 
+    private String environment;
+
     @Field(SolrDaoBase.PAYLOAD_CONTENT)
     private String jobLockCache;
 
@@ -28,6 +30,24 @@ public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
     @Override
     public String getId() {
         return this.id;
+    }
+
+    @Override
+    public String getEnvironment() {
+        if(this.environment != null) {
+            return environment;
+        }
+        else if(this.id != null && this.id.contains("__")) {
+            return id.substring(id.indexOf("__")+2, id.length());
+        }
+        else {
+            return JobLockCacheRecord.DEFAULT_ENVIRONMENT;
+        }
+    }
+
+    @Override
+    public void setEnvironment(String environment) {
+        this.environment = environment;
     }
 
     @Override

@@ -1,5 +1,6 @@
 {
   "name": "Context-Locks-1",
+  "environmentGroup": "environment",
   "jobDependencies": [
     {
       "jobIdentifier": "agentName1-jobName1",

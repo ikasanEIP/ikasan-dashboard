@@ -13,16 +13,16 @@ import java.util.List;
 
 public class JobLockCacheManagementServiceImpl implements JobLockCacheManagementService {
     @Override
-    public void releaseLockedJob(String jobIdentifier, String contextName) {
-        JobLockCacheImpl.instance().release(jobIdentifier, contextName);
+    public void releaseLockedJob(String jobIdentifier, String contextName, String environment) {
+        JobLockCacheImpl.instance().release(jobIdentifier, contextName, environment);
         List<ContextualisedSchedulerJobInitiationEvent> queuedEvents = JobLockCacheImpl.instance()
-            .pollSchedulerJobInitiationEventWaitQueue(jobIdentifier, contextName);
+            .pollSchedulerJobInitiationEventWaitQueue(jobIdentifier, contextName, environment);
         if (queuedEvents != null && !queuedEvents.isEmpty()) {
             for (ContextualisedSchedulerJobInitiationEvent queuedEvent : queuedEvents) {
                 if (ContextMachineCache.instance().containsInstanceIdentifier(queuedEvent.getSchedulerJobInitiationEvent().getContextInstanceId())) {
                     try {
                         JobLockCacheImpl.instance().lock(queuedEvent.getSchedulerJobInitiationEvent()
-                            .getInternalEventDrivenJob().getIdentifier(), contextName);
+                            .getInternalEventDrivenJob().getIdentifier(), contextName, environment);
                         ContextMachineCache.instance().getByContextInstanceId
                                 (queuedEvent.getSchedulerJobInitiationEvent().getContextInstanceId())
                             .publishJobInitiationEvent(queuedEvent.getSchedulerJobInitiationEvent());
@@ -36,9 +36,9 @@ public class JobLockCacheManagementServiceImpl implements JobLockCacheManagement
     }
 
     @Override
-    public void removeQueuedSchedulerJobInitiationEvent(SchedulerJobInitiationEvent schedulerJobInitiationEvent) {
+    public void removeQueuedSchedulerJobInitiationEvent(SchedulerJobInitiationEvent schedulerJobInitiationEvent, String environment) {
         SchedulerJobInstance schedulerJobInstance = schedulerJobInitiationEvent.getInternalEventDrivenJob();
-        JobLockCacheImpl.instance().removeQueuedSchedulerJob(schedulerJobInstance);
+        JobLockCacheImpl.instance().removeQueuedSchedulerJob(schedulerJobInstance, environment);
         if (ContextMachineCache.instance().containsInstanceIdentifier(schedulerJobInstance.getContextInstanceId())) {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(schedulerJobInstance.getContextInstanceId());
             contextMachine.resetJob(schedulerJobInstance.getIdentifier(),

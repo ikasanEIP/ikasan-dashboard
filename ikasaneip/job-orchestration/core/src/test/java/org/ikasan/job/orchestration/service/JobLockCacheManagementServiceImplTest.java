@@ -44,15 +44,15 @@ public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheT
         String jobIdentifier = "AgentName0-TEST-LOCK-JobName0";
 
         // 3 jobs one lock count
-        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)));
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)), "environment");
 
-        assertTrue(jlc.lock(jobIdentifier, contextName));
-        assertTrue(jlc.hasLock(jobIdentifier, contextName));
+        assertTrue(jlc.lock(jobIdentifier, contextName, "environment"));
+        assertTrue(jlc.hasLock(jobIdentifier, contextName, "environment"));
 
         JobLockCacheManagementService managementService = new JobLockCacheManagementServiceImpl();
-        managementService.releaseLockedJob("AgentName0-TEST-LOCK-JobName0", "contextName");
+        managementService.releaseLockedJob("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
 
-        assertFalse(jlc.hasLock(jobIdentifier, contextName));
+        assertFalse(jlc.hasLock(jobIdentifier, contextName, "environment"));
 
         verifyNoMoreInteractions(contextMachine);
     }
@@ -65,10 +65,10 @@ public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheT
         String jobIdentifier = "AgentName0-TEST-LOCK-JobName0";
 
         // 3 jobs one lock count
-        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)));
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)), "environment");
 
-        assertTrue(jlc.lock(jobIdentifier, contextName));
-        assertTrue(jlc.locked(jobIdentifier, contextName));
+        assertTrue(jlc.lock(jobIdentifier, contextName, "environment"));
+        assertTrue(jlc.locked(jobIdentifier, contextName, "environment"));
 
         ContextInstance contextInstance = new ContextInstanceImpl();
         contextInstance.setId("contextInstanceId");
@@ -91,19 +91,19 @@ public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheT
         schedulerJobInitiationEvent.setChildContextNames(List.of("childContext1", "childContext2"));
         schedulerJobInitiationEvent.setContextInstanceId("contextInstanceId");
 
-        jlc.addQueuedSchedulerJobInitiationEvent("AgentName1-TEST-LOCK-JobName1", contextName, schedulerJobInitiationEvent);
+        jlc.addQueuedSchedulerJobInitiationEvent("AgentName1-TEST-LOCK-JobName1", contextName, schedulerJobInitiationEvent, "environment");
 
         JobLockCacheManagementService managementService = new JobLockCacheManagementServiceImpl();
-        managementService.releaseLockedJob("AgentName0-TEST-LOCK-JobName0", "contextName");
+        managementService.releaseLockedJob("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
 
         // The original job no longer has the lock because we released it!
-        assertFalse(jlc.hasLock(jobIdentifier, contextName));
+        assertFalse(jlc.hasLock(jobIdentifier, contextName, "environment"));
 
         // The job that was queued now has the lock
-        assertTrue(jlc.hasLock("AgentName1-TEST-LOCK-JobName1", contextName));
+        assertTrue(jlc.hasLock("AgentName1-TEST-LOCK-JobName1", contextName, "environment"));
 
         // The job that was queued no longer is in the queue
-        assertNull(JobLockCacheImpl.instance().pollSchedulerJobInitiationEventWaitQueue("AgentName1-TEST-LOCK-JobName1", contextName));
+        assertNull(JobLockCacheImpl.instance().pollSchedulerJobInitiationEventWaitQueue("AgentName1-TEST-LOCK-JobName1", contextName, "environment"));
 
         verify(this.contextMachine, times(3)).getContext();
         verify(this.contextMachine, times(1)).registerToNotificationMonitors();
@@ -119,10 +119,10 @@ public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheT
         String jobIdentifier = "AgentName0-TEST-LOCK-JobName0";
 
         // 3 jobs one lock count
-        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)));
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)), "environment");
 
-        assertTrue(jlc.lock(jobIdentifier, contextName));
-        assertTrue(jlc.locked(jobIdentifier, contextName));
+        assertTrue(jlc.lock(jobIdentifier, contextName, "environment"));
+        assertTrue(jlc.locked(jobIdentifier, contextName, "environment"));
 
         ContextInstance contextInstance = new ContextInstanceImpl();
         contextInstance.setId("contextInstanceId");
@@ -139,10 +139,10 @@ public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheT
         schedulerJobInitiationEvent.setChildContextNames(List.of("childContext1", "childContext2"));
         schedulerJobInitiationEvent.setContextInstanceId("contextInstanceId");
 
-        jlc.addQueuedSchedulerJobInitiationEvent("AgentName1-TEST-LOCK-JobName1", contextName, schedulerJobInitiationEvent);
+        jlc.addQueuedSchedulerJobInitiationEvent("AgentName1-TEST-LOCK-JobName1", contextName, schedulerJobInitiationEvent, "environment");
 
         JobLockCacheManagementService managementService = new JobLockCacheManagementServiceImpl();
-        managementService.releaseLockedJob("AgentName0-TEST-LOCK-JobName0", "contextName");
+        managementService.releaseLockedJob("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
     }
 
     @Test
@@ -153,10 +153,10 @@ public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheT
         String jobIdentifier = "AgentName0-TEST-LOCK-JobName0";
 
         // 3 jobs one lock count
-        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)));
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)), "environment");
 
-        assertTrue(jlc.lock(jobIdentifier, contextName));
-        assertTrue(jlc.locked(jobIdentifier, contextName));
+        assertTrue(jlc.lock(jobIdentifier, contextName, "environment"));
+        assertTrue(jlc.locked(jobIdentifier, contextName, "environment"));
 
         ContextInstance contextInstance = new ContextInstanceImpl();
         contextInstance.setId("contextInstanceId");
@@ -179,16 +179,16 @@ public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheT
         schedulerJobInitiationEvent.setChildContextNames(List.of("childContext1", "childContext2"));
         schedulerJobInitiationEvent.setContextInstanceId("contextInstanceId");
 
-        jlc.addQueuedSchedulerJobInitiationEvent("AgentName1-TEST-LOCK-JobName1", contextName, schedulerJobInitiationEvent);
+        jlc.addQueuedSchedulerJobInitiationEvent("AgentName1-TEST-LOCK-JobName1", contextName, schedulerJobInitiationEvent, "environment");
 
         JobLockCacheManagementService managementService = new JobLockCacheManagementServiceImpl();
-        managementService.removeQueuedSchedulerJobInitiationEvent(schedulerJobInitiationEvent);
+        managementService.removeQueuedSchedulerJobInitiationEvent(schedulerJobInitiationEvent, "environment");
 
         // The original job will still hold the lock!
-        assertTrue(jlc.locked(jobIdentifier, contextName));
+        assertTrue(jlc.locked(jobIdentifier, contextName, "environment"));
 
         // But the queued job is no longer in the queue!
-        assertNull(JobLockCacheImpl.instance().pollSchedulerJobInitiationEventWaitQueue("AgentName1-TEST-LOCK-JobName1", contextName));
+        assertNull(JobLockCacheImpl.instance().pollSchedulerJobInitiationEventWaitQueue("AgentName1-TEST-LOCK-JobName1", contextName, "environment"));
 
         verify(this.contextMachine, times(3)).getContext();
         verify(this.contextMachine, times(1)).registerToNotificationMonitors();

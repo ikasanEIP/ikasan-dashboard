@@ -138,7 +138,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
     }
     /**
-     * Remove the all contextInstance associated with this context name, all jobsDetails & triggers.
+     * Remove the all contextInstance associated with this context name, all jobsDetails and triggers.
      * This will be invoked, for example, by the UI.
      *
      * @param contextName / plan for which we need to deregister.

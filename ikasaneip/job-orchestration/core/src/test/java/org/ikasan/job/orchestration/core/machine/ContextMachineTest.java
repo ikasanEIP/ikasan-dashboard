@@ -37,6 +37,7 @@ import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.json.JSONException;
 import org.junit.After;
@@ -54,6 +55,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -2251,7 +2253,7 @@ public class ContextMachineTest extends AbstractTest {
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -2333,7 +2335,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -2430,7 +2432,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -2527,7 +2529,7 @@ public class ContextMachineTest extends AbstractTest {
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -2733,7 +2735,7 @@ public class ContextMachineTest extends AbstractTest {
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -3761,7 +3763,7 @@ public class ContextMachineTest extends AbstractTest {
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -5550,7 +5552,7 @@ public class ContextMachineTest extends AbstractTest {
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -5728,7 +5730,7 @@ public class ContextMachineTest extends AbstractTest {
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -6046,7 +6048,7 @@ public class ContextMachineTest extends AbstractTest {
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -6225,7 +6227,7 @@ public class ContextMachineTest extends AbstractTest {
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
-        jobLockCache.addLocks(context.getAllNestedJobLocks());
+        jobLockCache.addLocks(context.getAllNestedJobLocks(), context.getEnvironmentGroup());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, jobLockCache
@@ -7523,28 +7525,33 @@ public class ContextMachineTest extends AbstractTest {
         objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         // modify the context descriptor to add GRP1 for the environment group
-        String contextJson = loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json")
-            .replaceAll("\"environmentGroup\" : null", "\"environmentGroup\" : \"GRP1\"");
+        String contextJson = loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json");
 
         // modify the context descriptor to add GRP1 for the environment group
-        String contextJson2 = loadDataFile("/data/logic/simple-context-and-chained-single-dependency-2-jobs.json")
-            .replaceAll("\"environmentGroup\" : null", "\"environmentGroup\" : \"GRP1\"");
+        String contextJson2 = loadDataFile("/data/logic/simple-context-and-chained-single-dependency-2-jobs.json");
 
         // modify the context descriptor to change the context name and agent name as we reusing the same descriptor.
         String contextJson3 = loadDataFile("/data/logic/simple-context-and-chained-single-dependency-2-jobs.json")
-            .replaceAll("Context1-Two-Jobs","Context2-Two-Jobs").replaceAll("agentNameTwoJobs", "agentNameTwoJobsNull");
+            .replaceAll("Context1-Two-Jobs","Context2-Two-Jobs")
+            .replaceAll("agentNameTwoJobs", "agentNameTwoJobsNull");
         
         //Context1 the main initiator - environmentGroup = GRP1
         ContextTemplate context = this.contextService.getContextTemplate(contextJson);
+        context.setEnvironmentGroup("GRP1");
         ContextInstance contextInstance = this.contextService.getContextInstance(contextJson);
+        contextInstance.setEnvironmentGroup("GRP1");
 
         // Context1-Two-Jobs - environmentGroup = GRP1
         ContextTemplate context2 = this.contextService.getContextTemplate(contextJson2);
+        context2.setEnvironmentGroup("GRP1");
         ContextInstance contextInstance2 = this.contextService.getContextInstance(contextJson2);
+        contextInstance2.setEnvironmentGroup("GRP1");
 
         // Context2-Two-Jobs - environmentGroup = null
         ContextTemplate context3 = this.contextService.getContextTemplate(contextJson3);
+        context3.setEnvironmentGroup("environment");
         ContextInstance contextInstance3 = this.contextService.getContextInstance(contextJson3);
+        contextInstance3.setEnvironmentGroup("environment");
 
         this.contextTemplateValidator.validate(context);
         this.contextTemplateValidator.validate(context2);
@@ -8130,6 +8137,7 @@ public class ContextMachineTest extends AbstractTest {
 
         when(mockContextInstance.getAllSchedulerJobInstances()).thenReturn(new ArrayList<>(internalEventDrivenJobs.values()));
         when(mockContextInstance.getId()).thenReturn("contextInstanceId");
+        when(mockContextInstance.getEnvironmentGroup()).thenReturn("environment");
 
         this.contextTemplateValidator.validate(context);
 
@@ -8140,7 +8148,7 @@ public class ContextMachineTest extends AbstractTest {
 
         // Set up the job locks used in the test
         ArrayList<InternalEventDrivenJob> jobs = new ArrayList<>(internalEventDrivenJobs.values());
-        JobLockCacheImpl.instance().addLocks(List.of(this.makeJobLock("JOB_LOCK", jobs)));
+        JobLockCacheImpl.instance().addLocks(List.of(this.makeJobLock("JOB_LOCK", jobs)), context.getEnvironmentGroup());
 
         // We set all but one job in a queued state
         for (int i=1; i<jobs.size(); i++) {
@@ -8152,35 +8160,40 @@ public class ContextMachineTest extends AbstractTest {
             schedulerJobInitiationEvent.setContextInstanceId(internalEventDrivenJob.getContextInstanceId());
             JobLockCacheImpl.instance().addQueuedSchedulerJobInitiationEvent
                     (internalEventDrivenJob.getIdentifier(), internalEventDrivenJob.getContextName()
-                        , schedulerJobInitiationEvent);
+                        , schedulerJobInitiationEvent, context.getEnvironmentGroup());
         }
 
         // And one running job that will take the lock
         InternalEventDrivenJobInstance job = internalEventDrivenJobs.values().stream().findFirst().get();
         job.setStatus(InstanceStatus.RUNNING);
 
-        JobLockCacheImpl.instance().lock(job.getIdentifier(), job.getContextName());
+        JobLockCacheImpl.instance().lock(job.getIdentifier(), job.getContextName(), context.getEnvironmentGroup());
+
+        ConcurrentHashMap<String, JobLockCacheData> jobLockCacheDataMap
+            = (ConcurrentHashMap)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheDataMap");
+        JobLockCacheData jobLockCacheData = jobLockCacheDataMap.get("environment");
 
         // Now assert that
-        Assert.assertEquals(16, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByIdentifier().size());
-        Assert.assertEquals(1, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().size());
-        Assert.assertEquals(15, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().values().stream().findFirst()
+        Assert.assertEquals(16, jobLockCacheData.getJobLocksByIdentifier().size());
+        Assert.assertEquals(1, jobLockCacheData.getJobLocksByLockName().size());
+        Assert.assertEquals(15, jobLockCacheData.getJobLocksByLockName().values().stream().findFirst()
             .get().getSchedulerJobInitiationEventWaitQueue().size());
-        Assert.assertTrue(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName()));
+        Assert.assertTrue(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName(), context.getEnvironmentGroup()));
 
         contextMachine.releaseQueuedJobs();
 
-        Assert.assertEquals(16, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByIdentifier().size());
-        Assert.assertEquals(1, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().size());
+        Assert.assertEquals(16, jobLockCacheData.getJobLocksByIdentifier().size());
+        Assert.assertEquals(1, jobLockCacheData.getJobLocksByLockName().size());
 
         // After releasing all queued jobs, there are no longer any queued jobs or jobs holding jocks
-        Assert.assertEquals(0, JobLockCacheImpl.instance().getJobLockCacheData().getJobLocksByLockName().values().stream().findFirst()
+        Assert.assertEquals(0, jobLockCacheData.getJobLocksByLockName().values().stream().findFirst()
             .get().getSchedulerJobInitiationEventWaitQueue().size());
-        Assert.assertFalse(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName()));
+        Assert.assertFalse(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName(), context.getEnvironmentGroup()));
 
         verify(mockContextInstance, times(16)).getId();
         verify(mockContextInstance, times(2)).getScheduledJobs();
         verify(mockContextInstance, times(2)).getContexts();
+        verify(mockContextInstance, times(33)).getEnvironmentGroup();
         verify(mockContextInstance, times(1)).getAllSchedulerJobInstances();
 
         verifyNoMoreInteractions(mockContextInstance);

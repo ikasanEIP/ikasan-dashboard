@@ -275,9 +275,9 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                     Set<String> jobLockHolders = new HashSet<>();
 
                     if(jobLockHolder.isExclusiveJobLock()) {
-                        if(JobLockCacheImpl.instance().getJobLockCacheData()
+                        if(JobLockCacheImpl.instance().getJobLockCacheData(this.contextInstance.getEnvironmentGroup())
                             .getExclusiveLockHolder() != null) {
-                            jobLockHolders = JobLockCacheImpl.instance().getJobLockCacheData()
+                            jobLockHolders = JobLockCacheImpl.instance().getJobLockCacheData(this.contextInstance.getEnvironmentGroup())
                                 .getExclusiveLockHolder().getLockHolders();
                         }
                     }
@@ -367,7 +367,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                     executor.execute(() -> {
                                         boolean error = false;
                                         try {
-                                            this.jobLockCacheManagementService.releaseLockedJob(job.getIdentifier(), contextName);
+                                            this.jobLockCacheManagementService.releaseLockedJob(job.getIdentifier(), contextName, this.contextInstance.getEnvironmentGroup());
                                             systemEventLogger.logEvent(SystemEventConstants.LOCKED_JOB_RELEASE
                                                 , String.format("Released lock on job [%s] job plan [%s], child context [%s]."
                                                     , job.getJobName(), job.getContextName(), contextName), ikasanAuthentication.getName());
@@ -437,9 +437,9 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                         = new LinkedList<>();
 
                     if(jobLockHolder.isExclusiveJobLock()) {
-                        if(JobLockCacheImpl.instance().getJobLockCacheData()
+                        if(JobLockCacheImpl.instance().getJobLockCacheData(this.contextInstance.getEnvironmentGroup())
                             .getExclusiveLockSchedulerJobInitiationEventWaitQueue() != null) {
-                            contextualisedSchedulerJobInitiationEventQueue = JobLockCacheImpl.instance().getJobLockCacheData()
+                            contextualisedSchedulerJobInitiationEventQueue = JobLockCacheImpl.instance().getJobLockCacheData(this.contextInstance.getEnvironmentGroup())
                                 .getExclusiveLockSchedulerJobInitiationEventWaitQueue();
                         }
                     }
@@ -493,7 +493,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
 
                                         Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("JobLockCacheDialog"));
                                         executor.execute(() -> {
-                                            this.jobLockCacheManagementService.removeQueuedSchedulerJobInitiationEvent(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent());
+                                            this.jobLockCacheManagementService.removeQueuedSchedulerJobInitiationEvent
+                                                (contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent(), this.contextInstance.getEnvironmentGroup());
 
                                             ui.access(() -> NotificationHelper.showUserNotification(String.format(getTranslation("message.queued-job-successfully-removed-from-job-lock-queue")
                                                 , contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getJobName())));
@@ -623,7 +624,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                 executor.execute(() -> {
                     boolean error = false;
                     try {
-                        this.jobLockCacheManagementService.releaseLockedJob(jobIdentifier, contextName);
+                        this.jobLockCacheManagementService.releaseLockedJob(jobIdentifier, contextName, this.contextInstance.getEnvironmentGroup());
                         systemEventLogger.logEvent(SystemEventConstants.LOCKED_JOB_RELEASE
                             , String.format("Released lock on job [%s] child context [%s]."
                                 , jobIdentifier,  contextName), ikasanAuthentication.getName());
@@ -682,7 +683,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
      * @param filter the filter to apply to job locks. If null or empty, all job locks will be considered.
      */
     private void populateGrid(String filter) {
-        List<JobLockHolder> jobLocks = JobLockCacheImpl.instance().getJobLockCacheData()
+        List<JobLockHolder> jobLocks = JobLockCacheImpl.instance().getJobLockCacheData(this.contextInstance.getEnvironmentGroup())
             .getJobLocksByLockName().values().stream()
             .filter(jobLockHolder ->
                 jobLockHolder.getSchedulerJobs().entrySet().stream()

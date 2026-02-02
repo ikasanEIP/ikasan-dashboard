@@ -1,6 +1,7 @@
 {
   "name": "CONTEXT-369160711",
   "description": "Context Template Description",
+  "environmentGroup": "environment",
   "contexts": [
     {
       "name": "CONTEXT-769949213",

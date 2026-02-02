@@ -16,14 +16,15 @@ import org.slf4j.LoggerFactory;
 
 public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> implements JobLockCacheDao {
 
-    public static final String JOB_LOCK_CACHE_TYPE = "jockLockCache";
-    public static final String JOB_LOCK_CACHE_ID = "jockLockCacheIdentifier";
+    public static final String JOB_LOCK_CACHE_TYPE = "jobLockCache";
+    public static final String JOB_LOCK_CACHE_ID = "jobLockCacheIdentifier";
     private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
     private static final Logger LOG = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
 
     @Override
-    public JobLockCacheRecord get() {
-        SolrQuery query = super.buildIdQuery(JOB_LOCK_CACHE_ID, JOB_LOCK_CACHE_TYPE);
+    public JobLockCacheRecord get(String environment) {
+        if(environment == null) environment = JobLockCacheRecord.DEFAULT_ENVIRONMENT;
+        SolrQuery query = super.buildIdQuery(JOB_LOCK_CACHE_ID + "__" + environment, JOB_LOCK_CACHE_TYPE);
         LOG.debug("query: " + query);
         SearchResults<JobLockCacheRecord> searchResults = this.findByQuery(query, SolrJobLockCacheRecordImpl.class, 0, 1);
         return searchResults.getResultList().size() > 0 ? searchResults.getResultList().get(0) : null;
@@ -32,7 +33,7 @@ public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> imp
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, JobLockCacheRecord record) {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField(ID, JOB_LOCK_CACHE_ID);
+        document.addField(ID, JOB_LOCK_CACHE_ID + "__" + record.getEnvironment());
         document.addField(TYPE, JOB_LOCK_CACHE_TYPE);
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getJobLockCache()));

@@ -1376,11 +1376,11 @@ public class ContextMachine {
             job.setContextInstanceId(this.contextInstance.getId());
 
             // We need to release the lock if a job currently holds it!
-            if(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName())) {
-                JobLockCacheImpl.instance().release(job.getIdentifier(), job.getContextName());
+            if(JobLockCacheImpl.instance().hasLock(job.getIdentifier(), job.getContextName(), this.contextInstance.getEnvironmentGroup())) {
+                JobLockCacheImpl.instance().release(job.getIdentifier(), job.getContextName(), this.contextInstance.getEnvironmentGroup());
             }
 
-            JobLockCacheImpl.instance().removeQueuedSchedulerJob(job);
+            JobLockCacheImpl.instance().removeQueuedSchedulerJob(job, this.contextInstance.getEnvironmentGroup());
         });
     }
 

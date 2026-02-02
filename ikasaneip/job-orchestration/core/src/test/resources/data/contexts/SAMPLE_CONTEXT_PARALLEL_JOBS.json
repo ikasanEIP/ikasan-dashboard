@@ -1,5 +1,6 @@
 {
   "name" : "PARALLEL_SAMPLE",
+  "environmentGroup": "environment",
   "description" : "Context Template Description",
   "jobDependencies" : [ {
     "jobIdentifier" : "scheduler-agent-STPMUR.GLOBAL_BATCH_DONE"

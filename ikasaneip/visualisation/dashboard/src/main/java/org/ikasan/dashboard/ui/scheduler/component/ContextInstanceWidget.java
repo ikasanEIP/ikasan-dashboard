@@ -1294,7 +1294,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 machine.getContext().setEndTime(System.currentTimeMillis());
                 this.saveContextInstance(machine.getContext(), InstanceStatus.ENDED);
                 machine.getContext().getAllNestedJobLocks().forEach(jobLockInstance -> {
-                    JobLockCacheImpl.instance().resetLock(jobLockInstance.getName());
+                    JobLockCacheImpl.instance().resetLock(jobLockInstance.getName(), this.contextInstance.getEnvironmentGroup());
                 });
                 this.statusDiv.setStatus(InstanceStatus.ENDED);
                 ContextMachineCache.instance().remove(machine);

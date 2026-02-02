@@ -1,5 +1,6 @@
 {
   "name": "Context1",
+  "environmentGroup": "environment",
   "description" : "Context Template Description",
   "timeWindowStart" : "* * 6 ? * * *",
   "timeWindowEnd" : "* * 15 ? * * *",

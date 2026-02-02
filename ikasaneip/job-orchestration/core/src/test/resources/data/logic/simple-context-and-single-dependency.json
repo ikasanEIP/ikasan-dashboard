@@ -1,5 +1,6 @@
 {
   "name" : "Context1",
+  "environmentGroup": "environment",
   "jobDependencies" : [ {
     "jobIdentifier" : "agentName2-jobName2",
     "logicalGrouping" : {

@@ -1,6 +1,7 @@
 {
   "name" : "ASSET_CONTROL_CONTEXT",
   "description" : "The asset control parent context for all scheduler jobs.",
+  "environmentGroup": "environment",
   "contexts" : [ {
     "name" : "CONTEXT-1436221681",
     "description" : "Context Template Description",

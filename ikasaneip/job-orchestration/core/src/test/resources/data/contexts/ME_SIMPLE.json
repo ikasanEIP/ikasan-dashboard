@@ -1,5 +1,6 @@
 {
   "name" : "SIMPLE_MONTH_END",
+  "environmentGroup": "environment",
   "description" : "Context Template Description",
   "contexts" : [ {
     "name" : "SIMPLE_ME",

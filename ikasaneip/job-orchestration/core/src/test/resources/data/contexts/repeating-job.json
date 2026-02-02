@@ -1,6 +1,7 @@
 {
   "name" : "REPEATING_JOB",
   "description" : "Context Template Description",
+  "environmentGroup": "environment",
   "contexts" : [ {
     "name" : "SIMPLE_ME",
     "jobDependencies" : [ {

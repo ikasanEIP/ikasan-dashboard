@@ -20,6 +20,7 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     }
 
     private String id;
+    private String environment;
     private String jobLockCache;
     private long timestamp;
     private long modifiedTimestamp;
@@ -27,6 +28,16 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     @Override
     public String getId() {
         return this.id;
+    }
+
+    @Override
+    public String getEnvironment() {
+        return environment;
+    }
+
+    @Override
+    public void setEnvironment(String environment) {
+        this.environment = environment;
     }
 
     @Override

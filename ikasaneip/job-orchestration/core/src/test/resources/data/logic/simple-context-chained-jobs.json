@@ -1,5 +1,6 @@
 {
   "name": "Context1",
+  "environmentGroup": "environment",
   "jobDependencies": [
     {
       "jobIdentifier": "agentName1-jobName1"
