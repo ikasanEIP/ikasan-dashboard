@@ -77,11 +77,11 @@ public class SolrModuleMetadataDaoTest extends SolrTestCaseJ4
             List<ModuleMetaData> moduleMetaData = new ArrayList<>();
             moduleMetaData.add(solrConfigurationMetaData);
 
+            // Saving twice as send is an update to the first
+            dao.save(moduleMetaData);
             dao.save(moduleMetaData);
 
-            // do twice to make sure we are removing and updating.
-            dao.save(moduleMetaData);
-
+            // Only one document on the index
             assertEquals(1, server.query(new SolrQuery("*:*")).getResults().getNumFound());
             assertEquals(1, server.query("ikasan", new SolrQuery("*:*")).getResults().getNumFound());
 

@@ -68,10 +68,12 @@ public class SolrComponentConfigurationMetadataDaoTest extends SolrTestCaseJ4
 
             List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
             solrConfigurationMetaData.add(event);
+
+            // Saving twice as send is an update to the first
+            dao.save(solrConfigurationMetaData);
             dao.save(solrConfigurationMetaData);
 
-            dao.save(solrConfigurationMetaData);
-
+            // Only one document on the index
             assertEquals(1, server.query(new SolrQuery("*:*")).getResults().getNumFound());
             assertEquals(1, server.query("ikasan", new SolrQuery("*:*")).getResults().getNumFound());
 
