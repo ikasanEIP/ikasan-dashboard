@@ -41,6 +41,7 @@ public class SolrComponentConfigurationMetadataDao extends SolrDaoBase<Configura
         this.objectMapper = new ObjectMapper();
     }
 
+    @Override
     public void save(List<ConfigurationMetaData> configurationMetaDataList)
     {
         try

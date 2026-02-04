@@ -49,6 +49,7 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
         objectMapper.registerModule(m);
     }
 
+    @Override
     public void save(List<ModuleMetaData> moduleMetaDataList)
     {
         try
@@ -58,8 +59,6 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
 
             for(ModuleMetaData moduleMetaData: moduleMetaDataList)
             {
-                super.removeById(MODULE_METADATA, moduleMetaData.getName());
-
                 SolrInputDocument document = convertEntityToSolrInputDocument(null,moduleMetaData);
                 req.add(document);
 
