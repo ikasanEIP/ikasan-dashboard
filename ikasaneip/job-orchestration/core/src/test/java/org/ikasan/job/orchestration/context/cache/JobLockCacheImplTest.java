@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;

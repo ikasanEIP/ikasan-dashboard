@@ -12,6 +12,7 @@ import org.junit.After;
 import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -35,6 +36,8 @@ public abstract class AbstractJobLockCacheTest {
         executorService.shutdownNow();
         ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "executor"
             , Executors.newFixedThreadPool(5, new JobThreadFactory("JobLockCacheImpl")));
+        ((LinkedList)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheEventListeners")).clear();
+        JobLockCacheImpl.instance().addJobLockCacheEventListener(JobLockCacheImpl.instance());
     }
 
     /**
