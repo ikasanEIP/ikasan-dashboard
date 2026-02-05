@@ -30,16 +30,9 @@ public abstract class AbstractJobLockCacheTest {
     @Mock
     protected JobLockCacheService jobLockCacheService;
 
-    @Before
-    public void setup() throws InterruptedException {
+    @After
+    public void teardown() throws InterruptedException {
         JobLockCacheImpl.instance().reset();
-        ExecutorService executorService = (ExecutorService)ReflectionTestUtils
-            .getField(JobLockCacheImpl.instance(), "executor");
-        executorService.shutdownNow();
-        executorService.awaitTermination(3000, TimeUnit.MILLISECONDS);
-        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "executor"
-            , Executors.newFixedThreadPool(5, new JobThreadFactory("JobLockCacheImpl")));
-        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "INSTANCE", null);
     }
 
     /**
