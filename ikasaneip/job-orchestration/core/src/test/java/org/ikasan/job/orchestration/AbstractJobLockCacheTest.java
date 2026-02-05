@@ -9,6 +9,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.junit.After;
+import org.junit.Before;
 import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -27,6 +28,11 @@ public abstract class AbstractJobLockCacheTest {
 
     @Mock
     protected JobLockCacheService jobLockCacheService;
+
+    @Before
+    public void setup() {
+        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "INSTANCE", null);
+    }
 
     @After
     public void tearDown() {
