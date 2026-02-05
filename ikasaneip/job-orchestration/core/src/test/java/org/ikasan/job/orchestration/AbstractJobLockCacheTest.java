@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,13 +30,14 @@ public abstract class AbstractJobLockCacheTest {
     @Mock
     protected JobLockCacheService jobLockCacheService;
 
-    @Before
-    public void setup() {
-        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "INSTANCE", null);
-    }
-
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
+        ExecutorService executorService = (ExecutorService)ReflectionTestUtils
+            .getField(JobLockCacheImpl.instance(), "executor");
+        executorService.shutdownNow();
+        executorService.awaitTermination(3000, TimeUnit.MILLISECONDS);
+        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "executor"
+            , Executors.newFixedThreadPool(5, new JobThreadFactory("JobLockCacheImpl")));
         ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "INSTANCE", null);
     }
 
