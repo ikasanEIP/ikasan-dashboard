@@ -1,7 +1,6 @@
 package org.ikasan.job.orchestration.context.cache;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.ikasan.job.orchestration.AbstractJobLockCacheTest;
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
@@ -22,13 +21,10 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
-import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
@@ -4424,13 +4420,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
-        ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
-
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
-            LOGGER.info("Event -> "+ event);
-            jobLockCacheEvent.add(event);
-        });
-
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
         assertFalse(jlc.locked("jobIdentifier", "contextName", "another_environment"));
 
@@ -4440,6 +4429,13 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment"));
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "another_environment"));
+
+        ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
+
+        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+            LOGGER.info("Event -> "+ event);
+            jobLockCacheEvent.add(event);
+        });
 
         // lock it
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
@@ -4693,16 +4689,35 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment"));
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "another_environment"));
-
-        // lock it
-        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
-        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
-
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
         JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
+        });
+
+        // lock it
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                Assert.assertEquals(2, jobLockCacheEvent.size());
+
+                List expected = List.of(new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
+                        , contextId0, "environment", JobLockCacheEvent.EventType.LOCK_OBTAINED ),
+                    new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
+                        , contextId0, "another_environment", JobLockCacheEvent.EventType.LOCK_OBTAINED ));
+
+                Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
+            });
+
+        ArrayList<JobLockCacheEvent> jobLockCacheEvent2 = new ArrayList<>();
+
+        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+            LOGGER.info("Event -> "+ event);
+            jobLockCacheEvent2.add(event);
         });
 
         // release the lock
@@ -4712,16 +4727,15 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
             .atMost(15, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                Assert.assertEquals(2, jobLockCacheEvent.size());
+                Assert.assertEquals(2, jobLockCacheEvent2.size());
 
                 List expected = List.of(new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
                         , contextId0, "environment", JobLockCacheEvent.EventType.LOCK_RELEASED ),
                     new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
                         , contextId0, "another_environment", JobLockCacheEvent.EventType.LOCK_RELEASED ));
 
-                Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
+                Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent2));
             });
-
     }
 
     @Test
@@ -4740,15 +4754,35 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment"));
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", null));
 
-        // lock it
-        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
-        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
-
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
         JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
+        });
+
+        // lock it
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                Assert.assertEquals(2, jobLockCacheEvent.size());
+
+                List expected = List.of(new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
+                        , contextId0, "environment", JobLockCacheEvent.EventType.LOCK_OBTAINED ),
+                    new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
+                        , contextId0, JobLockCacheRecord.DEFAULT_ENVIRONMENT, JobLockCacheEvent.EventType.LOCK_OBTAINED ));
+
+                Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
+            });
+
+        ArrayList<JobLockCacheEvent> jobLockCacheEvent2 = new ArrayList<>();
+
+        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+            LOGGER.info("Event -> "+ event);
+            jobLockCacheEvent2.add(event);
         });
 
         // release the lock
@@ -4758,14 +4792,14 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
             .atMost(15, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                Assert.assertEquals(2, jobLockCacheEvent.size());
+                Assert.assertEquals(2, jobLockCacheEvent2.size());
 
                 List expected = List.of(new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
                         , contextId0, "environment", JobLockCacheEvent.EventType.LOCK_RELEASED ),
                     new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
                         , contextId0, JobLockCacheRecord.DEFAULT_ENVIRONMENT, JobLockCacheEvent.EventType.LOCK_RELEASED ));
 
-                Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
+                Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent2));
             });
 
     }
@@ -4830,16 +4864,14 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment"));
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "another_environment"));
 
-        // lock it
-        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
-        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
-
-        ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
+        ArrayList<JobLockCacheEvent> obtainedEvents = new ArrayList<>();
+        ArrayList<JobLockCacheEvent> releasedEvents = new ArrayList<>();
 
         JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
             @Override
             public void broadcast(JobLockCacheEvent message) {
-                jobLockCacheEvent.add(message);
+                if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
+                if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
             }
 
             @Override
@@ -4849,6 +4881,23 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         };
         JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
 
+        // lock it
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                Assert.assertEquals(2, obtainedEvents.size());
+
+                List expected = List.of(new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
+                        , contextId0, "environment", JobLockCacheEvent.EventType.LOCK_OBTAINED ),
+                    new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
+                        , contextId0, "another_environment", JobLockCacheEvent.EventType.LOCK_OBTAINED ));
+
+                Assert.assertEquals(new HashSet<>(expected), new HashSet(obtainedEvents));
+            });
+
         // release the lock
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
@@ -4856,14 +4905,14 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
             .atMost(15, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                Assert.assertEquals(2, jobLockCacheEvent.size());
+                Assert.assertEquals(2, releasedEvents.size());
 
                 List expected = List.of(new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
                         , contextId0, "environment", JobLockCacheEvent.EventType.LOCK_RELEASED ),
                     new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
                         , contextId0, "another_environment", JobLockCacheEvent.EventType.LOCK_RELEASED ));
 
-                Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
+                Assert.assertEquals(new HashSet<>(expected), new HashSet(releasedEvents));
             });
 
     }
@@ -4884,16 +4933,14 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment"));
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", null));
 
-        // lock it
-        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
-        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
-
-        ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
+        ArrayList<JobLockCacheEvent> obtainedEvents = new ArrayList<>();
+        ArrayList<JobLockCacheEvent> releasedEvents = new ArrayList<>();
 
         JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
             @Override
             public void broadcast(JobLockCacheEvent message) {
-                jobLockCacheEvent.add(message);
+                if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
+                if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
             }
 
             @Override
@@ -4903,6 +4950,23 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         };
         JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
 
+        // lock it
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                Assert.assertEquals(2, obtainedEvents.size());
+
+                List expected = List.of(new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
+                        , contextId0, "environment", JobLockCacheEvent.EventType.LOCK_OBTAINED ),
+                    new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
+                        , contextId0, JobLockCacheRecord.DEFAULT_ENVIRONMENT, JobLockCacheEvent.EventType.LOCK_OBTAINED ));
+
+                Assert.assertEquals(new HashSet<>(expected), new HashSet(obtainedEvents));
+            });
+
         // release the lock
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, null));
@@ -4910,14 +4974,14 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
             .atMost(15, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-                Assert.assertEquals(2, jobLockCacheEvent.size());
+                Assert.assertEquals(2, releasedEvents.size());
 
                 List expected = List.of(new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
                         , contextId0, "environment", JobLockCacheEvent.EventType.LOCK_RELEASED ),
                     new JobLockCacheEventImpl("TEST-LOCK","AgentName0-TEST-LOCK-JobName0"
                         , contextId0, JobLockCacheRecord.DEFAULT_ENVIRONMENT, JobLockCacheEvent.EventType.LOCK_RELEASED ));
 
-                Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
+                Assert.assertEquals(new HashSet<>(expected), new HashSet(releasedEvents));
             });
 
     }
