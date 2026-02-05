@@ -40,7 +40,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
     public static final String CONTEXT_ID = ":context-id:";
 
     private List<JobLockCacheEventListener> jobLockCacheEventListeners;
-    private static JobLockCacheImpl INSTANCE = new JobLockCacheImpl();
+    private static final JobLockCacheImpl INSTANCE = new JobLockCacheImpl();
 
     private final ConcurrentHashMap<String, JobLockCacheData> jobLockCacheDataMap;
 
@@ -74,7 +74,6 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
      * @return the singleton instance of JobLockCacheImpl
      */
     public static JobLockCacheImpl instance() {
-        if(INSTANCE == null) INSTANCE = new JobLockCacheImpl();
         return INSTANCE;
     }
 
