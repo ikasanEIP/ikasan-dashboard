@@ -30,14 +30,7 @@ public abstract class AbstractJobLockCacheTest {
 
     @After
     public void tearDown() {
-        JobLockCacheImpl.instance().reset();
-        ExecutorService executorService = (ExecutorService)ReflectionTestUtils
-            .getField(JobLockCacheImpl.instance(), "executor");
-        executorService.shutdownNow();
-        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "executor"
-            , Executors.newFixedThreadPool(5, new JobThreadFactory("JobLockCacheImpl")));
-        ((LinkedList)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheEventListeners")).clear();
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(JobLockCacheImpl.instance());
+        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "INSTANCE", null);
     }
 
     /**
