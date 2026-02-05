@@ -4389,11 +4389,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
-
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
         JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
@@ -4425,11 +4420,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         JobLockCache jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
-
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
@@ -4471,11 +4461,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         JobLockCache jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
-
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
@@ -4519,11 +4504,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
-
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
         JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
@@ -4564,11 +4544,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         JobLockCache jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
-
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
@@ -4620,11 +4595,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
-
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
         JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
@@ -4675,11 +4645,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
-
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
 
         // 3 jobs one lock count
@@ -4715,11 +4680,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         JobLockCache jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
-
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
         assertFalse(jlc.locked("jobIdentifier", "contextName", "another_environment"));
@@ -4767,11 +4727,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
-
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
         assertFalse(jlc.locked("jobIdentifier", "contextName", null));
 
@@ -4785,11 +4740,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         // lock it
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
-
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
         JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
@@ -4821,11 +4771,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         JobLockCache jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
-
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
 
@@ -4870,11 +4815,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         JobLockCache jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
-
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
         assertFalse(jlc.locked("jobIdentifier", "contextName", "another_environment"));
@@ -4929,11 +4869,6 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         JobLockCache jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
-
-        // let previous events clear
-        await()
-            .pollDelay(5, SECONDS) // Wait 5 seconds
-            .until(() -> true);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
         assertFalse(jlc.locked("jobIdentifier", "contextName", null));
