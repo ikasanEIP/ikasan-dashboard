@@ -4422,6 +4422,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
+        ((LinkedList)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheEventListeners")).clear();
         JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
@@ -4463,6 +4464,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
+        ((LinkedList)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheEventListeners")).clear();
         JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
@@ -4656,6 +4658,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
+        ((LinkedList)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheEventListeners")).clear();
         JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.set(event);
@@ -4696,6 +4699,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
+        ((LinkedList)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheEventListeners")).clear();
         JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
@@ -4741,6 +4745,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
+
+        ((LinkedList)ReflectionTestUtils.getField(JobLockCacheImpl.instance(), "jobLockCacheEventListeners")).clear();
         JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
