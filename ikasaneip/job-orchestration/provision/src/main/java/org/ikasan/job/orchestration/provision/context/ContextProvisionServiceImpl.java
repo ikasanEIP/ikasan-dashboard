@@ -157,19 +157,24 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
      * @param contextBundle to provision
      */
     public void provisionContext(ContextBundle contextBundle) {
-        synchronized(this) {
-            List<String> agents = ContextHelper.getAllAgents(contextBundle.getContextTemplate());
-            agents.forEach(agent -> {
-                // We do not lock on these static agent names
+        List<String> agents = ContextHelper.getAllAgents(contextBundle.getContextTemplate()).stream()
+            .filter(agent -> {
+                // We do not lock on these static agent names so they are filtered!
                 if(agent.equals(JobConstants.BRIDGING_JOB) ||
                     agent.equals(JobConstants.CONTEXT_START_JOB) ||
                     agent.equals(JobConstants.CONTEXT_TERMINAL_JOB) ||
                     agent.equals(JobConstants.LOCAL_EVENT_JOB) ||
                     agent.equals(JobConstants.GLOBAL_EVENT_JOB) ||
                     agent.equals(JobConstants.GLOBAL_EVENT)) {
-                    return;
+                    return false;
                 }
+                else {
+                    return true;
+                }
+            }).collect(Collectors.toList());
 
+        synchronized(this) {
+            agents.forEach(agent -> {
                 if (!agentLocks.containsKey(agent)) {
                     ReentrantLock agentLock = new ReentrantLock();
                     agentLock.lock();
@@ -256,7 +261,6 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
         }
         finally {
             synchronized (this) {
-                List<String> agents = ContextHelper.getAllAgents(contextBundle.getContextTemplate());
                 agents.forEach(agent -> agentLocks.get(agent).unlock());
             }
         }
