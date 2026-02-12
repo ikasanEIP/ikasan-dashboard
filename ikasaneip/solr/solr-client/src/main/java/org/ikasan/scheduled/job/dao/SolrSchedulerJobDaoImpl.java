@@ -186,9 +186,9 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
                 queryBuffer.append(TYPE + COLON);
                 queryBuffer.append("\"").append(JobConstants.CONTEXT_START_JOB).append("\" ");
             }
-            else if(filter.getJobTypeFilter().equals(JobConstants.CONTEXT_START_JOB)) {
+            else if(filter.getJobTypeFilter().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
                 queryBuffer.append(TYPE + COLON);
-                queryBuffer.append("\"").append(JobConstants.CONTEXT_START_JOB).append("\" ");
+                queryBuffer.append("\"").append(JobConstants.CONTEXT_TERMINAL_JOB).append("\" ");
             }
             else if(filter.getJobTypeFilter().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE)) {
                 queryBuffer.append(TYPE + COLON);
@@ -281,11 +281,11 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
                 .append(true);
         }
 
-        if(filter.isTargetResidingContextOnly() != null && filter.isTargetResidingContextOnly().booleanValue()) {
+        if(filter.isTargetResidingContextOnly() != null) {
             queryBuffer.append(AND)
                 .append(TARGET_RESIDING_CONTEXT_ONLY)
                 .append(COLON)
-                .append(true);
+                .append(filter.isTargetResidingContextOnly().booleanValue());
         }
 
         if(filter.isParticipatesInLock() != null) {
