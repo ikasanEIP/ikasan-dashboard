@@ -97,6 +97,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
     private double jobVisualisationHorizontalSpacing;
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
+    private String jobName;
 
     /**
      * Constructor
@@ -127,7 +128,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                                   JobProvisionService jobProvisionService, ContextProfileService contextProfileService, UserService userService,
                                   SecurityService securityService, ScheduledContextService scheduledContextService,
                                   Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
-                                  double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+                                  double contextVisualisationLevelDistance, double contextVisualisationNodeDistance, String jobName) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -201,6 +202,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         this.contextVisualisationLevelDistance = contextVisualisationLevelDistance;
         this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
 
+        this.jobName = jobName;
+
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.createGrid(moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService
@@ -237,6 +240,9 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             LogStreamingService logStreamingService) {
         // Create a modulesGrid bound to the list
         SolrSchedulerJobSearchFilterImpl schedulerJobSearchFilter = new SolrSchedulerJobSearchFilterImpl();
+        if(this.jobName != null) {
+            schedulerJobSearchFilter.setJobNameFilter(this.jobName);
+        }
         schedulerJobFilteringGrid = new SchedulerJobFilteringGrid(schedulerJobService, schedulerJobSearchFilter);
         schedulerJobFilteringGrid.getElement().getStyle().set("margin-top", "40px");
         schedulerJobFilteringGrid.removeAllColumns();
@@ -868,7 +874,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         if(this.contextTemplate.isUseDisplayName()) {
             this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setDisplayNameFilter, "alias");
         }
-        this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
+        this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName", this.jobName);
         this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
             , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
 

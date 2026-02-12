@@ -154,6 +154,8 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     private ContextTemplate contextTemplate;
 
     private String contextName;
+    private String selectedTab;
+    private String jobName;
 
     private IkasanAuthentication ikasanAuthentication;
 
@@ -188,7 +190,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
                 , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
                 , this.contextInstanceSchedulerService, springCloudConfigRefreshService, this.systemEventSearchService, this.removeTrailingPlanNameContextAfterUnderscore
                 , this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance
-                , this.contextVisualisationNodeDistance);
+                , this.contextVisualisationNodeDistance, this.selectedTab, this.jobName);
 
             this.getElement().getStyle().set("padding-top", "0px");
             this.add(this.contextTemplateManagementWidget);
@@ -205,8 +207,16 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     }
 
     @Override
-    public void setParameter(BeforeEvent beforeEvent, String param) {
-        this.contextName = param;
+    public void setParameter(BeforeEvent beforeEvent, @WildcardParameter String param) {
+        if(param.contains("job/")) {
+            String[] params = param.split("/");
+            this.contextName = params[1];
+            this.selectedTab = params[2];
+            this.jobName = params[3];
+        }
+        else {
+            this.contextName = param;
+        }
     }
 }
 

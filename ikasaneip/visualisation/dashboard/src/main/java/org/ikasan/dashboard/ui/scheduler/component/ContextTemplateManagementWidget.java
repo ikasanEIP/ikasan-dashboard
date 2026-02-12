@@ -26,6 +26,8 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.server.StreamResource;
 import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
@@ -92,7 +94,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ContextTemplateManagementWidget extends VerticalLayout implements JobSynchronisationRequiredListener, ContextTemplateSavedEventBroadcastListener {
+public class ContextTemplateManagementWidget extends VerticalLayout
+    implements JobSynchronisationRequiredListener, ContextTemplateSavedEventBroadcastListener, BeforeEnterObserver {
 
     Logger logger = LoggerFactory.getLogger(ContextTemplateManagementWidget.class);
 
@@ -171,6 +174,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
 
+    private String selectedTab = null;
+    private String jobName = null;
+
     /**
      * Constructor
      *
@@ -214,7 +220,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                            SpringCloudConfigRefreshService springCloudConfigRefreshService, SystemEventSearchService systemEventSearchService,
                                            boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple,
-                                           double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
+                                           double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
+                                           double contextVisualisationNodeDistance) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -346,11 +353,77 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.setSpacing(false);
         this.setPadding(false);
 
-        this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, jobInitiationService);
-
         this.setSizeFull();
+    }
+
+    /**
+     * Constructs a new instance of ContextTemplateManagementWidget with the provided dependencies and settings.
+     *
+     * @param scheduledContextService the service for managing scheduled contexts
+     * @param scheduledContextInstanceService the service for managing scheduled context instances
+     * @param dynamicImagePath the path for dynamic images
+     * @param moduleMetaDataService the service for module metadata
+     * @param scheduledProcessManagementService the service for managing scheduled processes
+     * @param configurationRestService the service for configuration REST operations
+     * @param moduleControlRestService the service for module control REST operations
+     * @param metaDataRestService the service for metadata REST operations
+     * @param systemEventLogger the logger for system events
+     * @param schedulerJobService the service for scheduler jobs
+     * @param logStreamingService the service for log streaming
+     * @param contextTemplate the template for context
+     * @param schedulerJobInstanceService the service for scheduler job instances
+     * @param jobInitiationService the service for initiating jobs
+     * @param contextProfileService the service for context profiles
+     * @param jobProvisionService the service for job provision
+     * @param userService the service for user operations
+     * @param securityService the service for security operations
+     * @param jobUtilsService the service for job utilities
+     * @param zipWorkingDirectory the working directory for zipping
+     * @param emailNotificationDetailsService the service for email notification details
+     * @param emailNotificationContextService the service for email notification context
+     * @param schedulerJobExecutionEnvironmentLabel the labels for scheduler job execution environments
+     * @param globalEventService the service for global events
+     * @param contextInstanceRegistrationService the service for context instance registration
+     * @param contextInstanceSchedulerService the service for context instance scheduler
+     * @param springCloudConfigRefreshService the service for refreshing Spring Cloud configuration
+     * @param systemEventSearchService the service for system event search
+     * @param removeTrailingPlanNameContextAfterUnderscore flag to remove trailing plan name context after underscore
+     * @param jobPlanIntervalMultiple multiple for job plan interval
+     * @param jobVisualisationVerticalSpacing vertical spacing for job visualization
+     * @param jobVisualisationHorizontalSpacing horizontal spacing for job visualization
+     * @param contextVisualisationLevelDistance distance between visualization levels for context
+     * @param contextVisualisationNodeDistance distance between visualization*/
+    public ContextTemplateManagementWidget(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
+                                           ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                           LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
+                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService,
+                                           UserService userService, SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory,
+                                           EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
+                                           Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
+                                           ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
+                                           SpringCloudConfigRefreshService springCloudConfigRefreshService, SystemEventSearchService systemEventSearchService,
+                                           boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple,
+                                           double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
+                                           double contextVisualisationNodeDistance, String selectedTab, String jobName) {
+        this(scheduledContextService, scheduledContextInstanceService, dynamicImagePath,
+             moduleMetaDataService,  scheduledProcessManagementService,
+             configurationRestService,  moduleControlRestService,
+             metaDataRestService,  systemEventLogger,  schedulerJobService,
+             logStreamingService,  contextTemplate,  schedulerJobInstanceService,
+             jobInitiationService, contextProfileService, jobProvisionService,
+             userService, securityService, jobUtilsService, zipWorkingDirectory,
+             emailNotificationDetailsService, emailNotificationContextService,
+             schedulerJobExecutionEnvironmentLabel, globalEventService,
+             contextInstanceRegistrationService,  contextInstanceSchedulerService,
+             springCloudConfigRefreshService, systemEventSearchService,
+             removeTrailingPlanNameContextAfterUnderscore, jobPlanIntervalMultiple,
+             jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance,
+             contextVisualisationNodeDistance);
+
+        this.selectedTab = selectedTab;
+        this.jobName = jobName;
     }
 
     /**
@@ -587,7 +660,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         this.tabs = new Tabs();
         this.tabs.add(this.visualisationTab, this.rawContextTab
-            , this.contextInstancesTab, this.jobTemplatesTab/**, todo will introduce statisticsTab in future iteration this.statisticsTab*/);
+            , this.contextInstancesTab, this.jobTemplatesTab);
 
         tabs.addSelectedChangeListener(event -> {
             if(tabs.getSelectedTab().equals(this.contextInstancesTab)) {
@@ -626,6 +699,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 this.contextTemplateStatisticsWidget.setVisible(false);
             }
         });
+
+        if(this.selectedTab != null && this.selectedTab.equals("jobsTab")) {
+            this.tabs.setSelectedTab(this.jobTemplatesTab);
+        }
     }
 
     /**
@@ -805,7 +882,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate,
             this.jobInitiationService, this.jobProvisionService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextService,
             this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
-            this.contextVisualisationNodeDistance);
+            this.contextVisualisationNodeDistance, this.jobName);
         this.schedulerJobGridWidget.setWidthFull();
         this.schedulerJobGridWidget.setHeight("75vh");
         this.schedulerJobGridWidget.setVisible(false);
@@ -1461,6 +1538,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
+        this.init("", moduleMetaDataService, scheduledProcessManagementService,
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+            , schedulerJobService, logStreamingService, jobInitiationService);
         ContextTemplateSavedEventBroadcaster.register(this);
     }
 
@@ -1506,5 +1586,12 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.synchroniseJobsButton.getStyle().set("color","white");
         this.synchroniseJobsButton.getElement().setAttribute("title"
             , getTranslation("tooltip.synch-jobs-required", UI.getCurrent().getLocale()));
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+//        this.init("", moduleMetaDataService, scheduledProcessManagementService,
+//            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+//            , schedulerJobService, logStreamingService, jobInitiationService);
     }
 }

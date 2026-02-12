@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.view;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -9,13 +10,17 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateWidget;
+import org.ikasan.dashboard.ui.scheduler.component.JobSearchDialog;
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerAgentDashboardView;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
@@ -23,8 +28,11 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
@@ -33,6 +41,9 @@ import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.scheduled.job.service.*;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
@@ -40,17 +51,22 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Route(value = "scheduler", layout = IkasanAppLayout.class)
 @UIScope
@@ -254,6 +270,54 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         tabsLayout.setMargin(false);
         tabsLayout.add(tabs);
         tabsLayout.setWidth("100%");
+        TextField jobSearchTf = new TextField(getTranslation("label.job-search"));
+        jobSearchTf.setWidth("500px");
+        jobSearchTf.getElement().getThemeList().add("always-float-label");
+        jobSearchTf.setErrorMessage(getTranslation("error.job-name-cannot-be-null"));
+
+        Button jobSeatchButton = new Button();
+        jobSeatchButton.getElement().appendChild(VaadinIcon.SEARCH.create().getElement());
+        jobSeatchButton.addClickListener(event -> {
+            if(jobSearchTf.getValue() == null || jobSearchTf.getValue().isEmpty()) {
+                jobSearchTf.setInvalid(true);
+                return;
+            }
+            else {
+                jobSearchTf.setInvalid(false);
+            }
+            SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+            filter.setJobNameFilter(jobSearchTf.getValue());
+
+            if(!((IkasanAuthentication)SecurityContextHolder.getContext().getAuthentication())
+                .hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)){
+                filter.setContextNames(SecurityUtils
+                    .getAccessibleJobPlans((IkasanAuthentication)SecurityContextHolder.getContext().getAuthentication())
+                    .stream().collect(Collectors.toList()));
+            }
+
+            filter.setJobTypes(List.of(JobConstants.INTERNAL_EVENT_DRIVEN_JOB, JobConstants.FILE_EVENT_DRIVEN_JOB,
+                JobConstants.LOCAL_EVENT_JOB, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB));
+
+            SearchResults<SchedulerJobRecord<SolrSchedulerJobImpl>> results
+                = this.schedulerJobService.findByFilter(filter, 0, 0, null, null);
+
+            if(results.getTotalNumberOfResults() == 0) {
+                NotificationHelper.showUserNotification(getTranslation("notification.no-job-found"));
+            }
+            else {
+                JobSearchDialog jobSearchDialog = new JobSearchDialog(this.schedulerJobService
+                    , jobSearchTf.getValue());
+                jobSearchDialog.open();
+            }
+        });
+
+        HorizontalLayout globalJobSearchLayout = new HorizontalLayout(jobSearchTf, jobSeatchButton);
+        globalJobSearchLayout.getStyle().set("position", "absolute");
+        globalJobSearchLayout.getStyle().set("top", "65px");
+        globalJobSearchLayout.getStyle().set("right", "60px");
+
+        tabsLayout.add(globalJobSearchLayout);
+
         this.add(tabsLayout, this.schedulerAgentDashboardView, this.contextTemplateWidget, contextDebugBoard);
         this.setSizeFull();
     }
