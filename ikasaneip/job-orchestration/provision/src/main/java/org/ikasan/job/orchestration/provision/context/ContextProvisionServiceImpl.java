@@ -158,9 +158,25 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
      */
     public void provisionContext(ContextBundle contextBundle) {
 
+        String GLOBAL_EVENT_JOB = "globalEventJob";
+        String CONTEXT_START_JOB = "CONTEXT_START_JOB";
+        String CONTEXT_TERMINAL_JOB = "CONTEXT_TERMINAL_JOB";
+        String LOCAL_EVENT_JOB = "LOCAL_EVENT_JOB";
+        String BRIDGING_JOB = "BRIDGING_JOB";
+
         synchronized(this) {
             List<String> agents = ContextHelper.getAllAgents(contextBundle.getContextTemplate());
             agents.forEach(agent -> {
+                // We do not lock on these static agent names
+                if(agent.equals(JobConstants.BRIDGING_JOB) ||
+                    agent.equals(JobConstants.CONTEXT_START_JOB) ||
+                    agent.equals(JobConstants.CONTEXT_TERMINAL_JOB) ||
+                    agent.equals(JobConstants.LOCAL_EVENT_JOB) ||
+                    agent.equals(JobConstants.GLOBAL_EVENT_JOB) ||
+                    agent.equals(JobConstants.GLOBAL_EVENT)) {
+                    return;
+                }
+
                 if (!agentLocks.containsKey(agent)) {
                     ReentrantLock agentLock = new ReentrantLock();
                     agentLock.lock();
