@@ -71,11 +71,6 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         {
             throw new IllegalArgumentException("schedulerJobRecordDao cannot be null!");
         }
-        this.schedulerJobRecordDao = schedulerJobRecordDao;
-        if(this.schedulerJobRecordDao == null)
-        {
-            throw new IllegalArgumentException("schedulerJobRecordDao cannot be null!");
-        }
         this.solrInternalEventDrivenJobTemplateDao = solrInternalEventDrivenJobTemplateDao;
         if(this.solrInternalEventDrivenJobTemplateDao == null)
         {
