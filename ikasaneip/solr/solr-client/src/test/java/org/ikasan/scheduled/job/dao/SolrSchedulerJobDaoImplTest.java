@@ -327,6 +327,22 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             resultList = solrSchedulerJobRecords.getResultList();
 
             Assert.assertEquals(1367, resultList.size());
+
+            filter = new SolrSchedulerJobSearchFilterImpl();
+            filter.setContextNames(List.of("context2Idi"));
+
+            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            resultList = solrSchedulerJobRecords.getResultList();
+
+            Assert.assertEquals(2000, resultList.size());
+
+            filter = new SolrSchedulerJobSearchFilterImpl();
+            filter.setContextNames(List.of("blah"));
+
+            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            resultList = solrSchedulerJobRecords.getResultList();
+
+            Assert.assertEquals(0, resultList.size());
         }
     }
 

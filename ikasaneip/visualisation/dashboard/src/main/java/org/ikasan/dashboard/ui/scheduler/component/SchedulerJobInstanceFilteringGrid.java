@@ -99,6 +99,31 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
      * Add filtering to a column.
      *
      * @param hr
+     * @param setFilter
+     * @param columnKey
+     */
+    public void addGridFiltering(HeaderRow hr, Consumer<String> setFilter, String columnKey, String value) {
+        TextField textField = new TextField();
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("12pt");
+        textField.setSuffixComponent(filterIcon);
+        if(value!=null) textField.setValue(value);
+        textField.setWidthFull();
+
+        textField.addValueChangeListener(ev -> {
+
+            setFilter.accept("*"+ev.getValue()+"*");
+
+            filteredDataProvider.refreshAll();
+        });
+
+        hr.getCell(getColumnByKey(columnKey)).setComponent(textField);
+    }
+
+    /**
+     * Add filtering to a column.
+     *
+     * @param hr
      * @param setStartTime
      * @param columnKey
      */

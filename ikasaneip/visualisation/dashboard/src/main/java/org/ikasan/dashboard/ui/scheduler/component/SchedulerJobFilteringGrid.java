@@ -88,6 +88,32 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
     }
 
     /**
+     * Adds grid filtering to a specific column in the grid header row.
+     *
+     * @param hr The HeaderRow where the filtering component will be added.
+     * @param setFilter Consumer function to set the filter based on user input.
+     * @param columnKey The key of the column to add filtering to.
+     * @param value The initial value to populate in the filtering TextField.
+     */
+    public void addGridFiltering(HeaderRow hr, Consumer<String> setFilter, String columnKey, String value) {
+        TextField textField = new TextField();
+        if(value != null) textField.setValue(value);
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("12pt");
+        textField.setSuffixComponent(filterIcon);
+        textField.setWidthFull();
+
+        textField.addValueChangeListener(ev->{
+
+            setFilter.accept(ev.getValue());
+
+            filteredDataProvider.refreshAll();
+        });
+
+        hr.getCell(getColumnByKey(columnKey)).setComponent(textField);
+    }
+
+    /**
      * Add filtering to a column.
      *
      * @param hr

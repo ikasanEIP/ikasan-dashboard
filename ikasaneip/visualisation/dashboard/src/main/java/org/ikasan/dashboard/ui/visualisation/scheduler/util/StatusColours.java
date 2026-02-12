@@ -20,6 +20,7 @@ public class StatusColours {
         STATUS_COLOURS.put(InstanceStatus.SKIPPED_COMPLETE, IkasanColours.SCHEDULER_SKIPPED);
         STATUS_COLOURS.put(InstanceStatus.RELEASED, IkasanColours.SCHEDULER_RELEASED);
         STATUS_COLOURS.put(InstanceStatus.LOCK_QUEUED, IkasanColours.SCHEDULER_LOCK_QUEUED);
+        STATUS_COLOURS.put(InstanceStatus.PREPARED, IkasanColours.IKASAN_ORANGE);
     }
 
     public static String getInstanceStatusColour(InstanceStatus status) {

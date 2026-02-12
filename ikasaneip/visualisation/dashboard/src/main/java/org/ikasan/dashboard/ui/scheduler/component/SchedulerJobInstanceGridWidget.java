@@ -973,7 +973,7 @@ public class SchedulerJobInstanceGridWidget extends Div
         if(this.contextInstance.isUseDisplayName()) {
             this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setDisplayNameFilter, "alias");
         }
-        this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "moduleName");
+        this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "moduleName", this.jobName);
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setChildContextName, "childContextName");
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobType
             , SolrSchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
@@ -1029,6 +1029,8 @@ public class SchedulerJobInstanceGridWidget extends Div
                 localEventJobInstanceDialog.open();
             }
         });
+
+        this.jobName = null;
     }
 
     /**

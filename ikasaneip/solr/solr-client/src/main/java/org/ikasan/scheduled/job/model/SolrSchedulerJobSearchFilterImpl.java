@@ -35,6 +35,8 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
     private boolean skipped;
     private Boolean targetResidingContextOnly;
     private Boolean participatesInLock = null;
+    private List<String> contextNames = null;
+    private List<String> jobTypes = null;
 
     public String getJobNameFilter()
     {
@@ -66,24 +68,34 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
         this.notJobNameInFilter = notJobNameInFilter;
     }
 
+    @Override
     public String getJobTypeFilter() {
         return jobTypeFilter;
     }
 
+    @Override
     public void setJobTypeFilter(String jobTypeFilter) {
         this.jobTypeFilter = jobTypeFilter;
     }
 
+    @Override
     public String getContextSearchFilter() {
         return contextSearchFilter;
     }
 
+    @Override
     public void setContextSearchFilter(String contextSearchFilter) {
         this.contextSearchFilter = contextSearchFilter;
     }
 
-    public List<String> getTobTypes() {
-        return new ArrayList<>(JOB_TYPE_MAPPINGS.keySet());
+    @Override
+    public List<String> getJobTypes() {
+        return this.jobTypes;
+    }
+
+    @Override
+    public void setJobTypes(List<String> jobTypes) {
+        this.jobTypes = jobTypes;
     }
 
     @Override
@@ -141,5 +153,15 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
             this.held = false;
             this.skipped = true;
         }
+    }
+
+    @Override
+    public List<String> getContextNames() {
+        return contextNames;
+    }
+
+    @Override
+    public void setContextNames(List<String> contextNames) {
+        this.contextNames = contextNames;
     }
 }
