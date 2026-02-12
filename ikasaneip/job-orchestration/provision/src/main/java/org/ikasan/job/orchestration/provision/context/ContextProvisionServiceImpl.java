@@ -157,13 +157,6 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
      * @param contextBundle to provision
      */
     public void provisionContext(ContextBundle contextBundle) {
-
-        String GLOBAL_EVENT_JOB = "globalEventJob";
-        String CONTEXT_START_JOB = "CONTEXT_START_JOB";
-        String CONTEXT_TERMINAL_JOB = "CONTEXT_TERMINAL_JOB";
-        String LOCAL_EVENT_JOB = "LOCAL_EVENT_JOB";
-        String BRIDGING_JOB = "BRIDGING_JOB";
-
         synchronized(this) {
             List<String> agents = ContextHelper.getAllAgents(contextBundle.getContextTemplate());
             agents.forEach(agent -> {
