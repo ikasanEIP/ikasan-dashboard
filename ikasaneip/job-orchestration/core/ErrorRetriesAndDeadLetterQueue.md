@@ -8,16 +8,16 @@ When a message is successfully processed, it follows a straightforward path:
 
 ```mermaid
 graph TD
-    A[Start InboundQueueMessageRunner] --> B{Peek Message from Inbound Queue};
-    B --> |Message Found| C{Deserialize Message};
-    C --> D{Process Event (eventReceived)};
-    D --> E{Save Context};
-    E --> F{Publish Job Initiation Events};
-    F --> G{Dequeue Message};
-    G --> H{Garbage Collect Queue};
-    H --> I{Remove from Blacklist (if present)};
-    I --> J[End Successful Processing];
-    B --> |No Message| J;
+    A[Start InboundQueueMessageRunner] --> B{Peek Message from Inbound Queue}
+    B -->|Message Found| C{Deserialize Message}
+    C --> D{Process Event eventReceived}
+    D --> E{Save Context}
+    E --> F{Publish Job Initiation Events}
+    F --> G{Dequeue Message}
+    G --> H{Garbage Collect Queue}
+    H --> I{Remove from Blacklist if present}
+    I --> J[End Successful Processing]
+    B -->|No Message| J
 ```
 
 **Explanation:**
@@ -37,23 +37,23 @@ If an error occurs during message processing, the `InboundQueueMessageRunner` em
 
 ```mermaid
 graph TD
-    A[Start InboundQueueMessageRunner] --> B{Peek Message from Inbound Queue};
-    B --> |Message Found| C{Deserialize Message};
-    C --> D{Process Event (eventReceived)};
-    D --> |Exception Occurs| E{Dequeue Message};
-    E --> F{Garbage Collect Queue};
-    F --> G{Check Blacklist for Message ID};
-    G --> |Not in Blacklist| H{Add Message to Blacklist (retry count = 0)};
-    G --> |In Blacklist| I{Increment Retry Count};
-    H --> J{Check Retry Count < Max Retries};
-    I --> J;
-    J --> |Yes| K{Re-enqueue Message to Inbound Queue};
-    K --> L[End Retry Cycle];
-    J --> |No (Max Retries Exceeded)| M{Move Message to Dead Letter Queue (DLQ)};
-    M --> N{Remove Message from Blacklist};
-    N --> O{Issue DLQ Event};
-    O --> P[End DLQ Processing];
-    B --> |No Message| Q[End InboundQueueMessageRunner];
+    A[Start InboundQueueMessageRunner] --> B{Peek Message from Inbound Queue}
+    B -->|Message Found| C{Deserialize Message}
+    C --> D{Process Event eventReceived}
+    D -->|Exception Occurs| E{Dequeue Message}
+    E --> F{Garbage Collect Queue}
+    F --> G{Check Blacklist for Message ID}
+    G -->|Not in Blacklist| H{Add Message to Blacklist retry count = 0}
+    G -->|In Blacklist| I{Increment Retry Count}
+    H --> J{Check Retry Count < Max Retries}
+    I --> J
+    J -->|Yes| K{Re-enqueue Message to Inbound Queue}
+    K --> L[End Retry Cycle]
+    J -->|No Max Retries Exceeded| M{Move Message to Dead Letter Queue DLQ}
+    M --> N{Remove Message from Blacklist}
+    N --> O{Issue DLQ Event}
+    O --> P[End DLQ Processing]
+    B -->|No Message| Q[End InboundQueueMessageRunner]
 ```
 
 **Explanation:**
