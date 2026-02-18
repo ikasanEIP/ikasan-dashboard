@@ -65,7 +65,7 @@ graph TD
     *   If it's a new failure, the message ID is added to the `bigQueueMessageBlacklist` with a retry count of 0.
     *   If it's a recurring failure, the retry count for that message ID in the `bigQueueMessageBlacklist` is incremented.
 3.  **Retry Decision:**
-    *   The current retry count is compared against `blackListedMessageMaxRetries` (a configurable value, default 5).
+    *   The current retry count is compared against `blackListedMessageMaxRetries` (a configurable value, default 5). In order to change default number of retries, include `context.machine.blacklisted.message.max.retries` in the properties.
     *   **If `retry count < blackListedMessageMaxRetries`:** The message is re-enqueued to the `inboundQueue`. This allows the message to be re-processed after other messages, giving transient issues a chance to resolve.
     *   **If `retry count >= blackListedMessageMaxRetries`:** The message has exhausted its retries.
         *   It is moved to the `deadLetterQueue`.
