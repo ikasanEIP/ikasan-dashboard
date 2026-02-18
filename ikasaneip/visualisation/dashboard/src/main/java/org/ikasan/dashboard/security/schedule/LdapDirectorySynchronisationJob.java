@@ -95,7 +95,7 @@ public class LdapDirectorySynchronisationJob implements DashboardJob {
                 String.format("Finished running ldap synchronisation [%s]", authenticationMethod.getName()), "system");
         }
         catch (LdapServiceException e) {
-            this.systemEventLogger.logEvent(SystemEventConstants.LDAP_REPOSITORY_SYNCHRONISATION_JOB_COMPLETE,
+            this.systemEventLogger.logEvent(SystemEventConstants.LDAP_REPOSITORY_SYNCHRONISATION_JOB_ERROR,
                 String.format("Error running ldap synchronisation [%s]. Error message[%s]!"
                     , authenticationMethod.getName(), e.getMessage()), "system");
             logger.error("Error running ldap synchronisation " + authenticationMethod.getName(), e);

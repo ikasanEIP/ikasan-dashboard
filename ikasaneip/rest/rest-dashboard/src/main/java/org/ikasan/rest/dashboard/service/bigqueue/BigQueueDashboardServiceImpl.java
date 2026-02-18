@@ -52,6 +52,9 @@ public class BigQueueDashboardServiceImpl extends AbstractBigQueueManagementServ
             } else if (queueName.equals(ContextMachineCache.instance().getByContextInstanceId(contextInstance).getOutboundQueueName())) {
                 // Outbound
                 return ContextMachineCache.instance().getByContextInstanceId(contextInstance).getOutboundQueue();
+            } else if (queueName.equals(ContextMachineCache.instance().getByContextInstanceId(contextInstance).getDeadLetterQueueName())) {
+                // DLQ
+                return ContextMachineCache.instance().getByContextInstanceId(contextInstance).getDeadLetterQueue();
             }
         }
         // Nothing found, return null

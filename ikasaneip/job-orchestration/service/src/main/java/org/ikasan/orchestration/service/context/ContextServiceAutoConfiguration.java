@@ -45,6 +45,9 @@ public class ContextServiceAutoConfiguration {
     @Value("${context.machine.executor.wait.timeout.seconds:30}")
     private int contextMachineExecutorWaitTimeoutSeconds;
 
+    @Value("${context.machine.blacklisted.message.max.retries:5}")
+    private int contextMachineBlackListedMessageMaxRetries = 5;
+
     @Bean
     public JobLockCacheInitialisationService jobLockCacheInitialisationService(JobLockCacheService jobLockCacheService) {
         return new JobLockCacheInitialisationServiceImpl(jobLockCacheService);
@@ -99,6 +102,7 @@ public class ContextServiceAutoConfiguration {
             this.isIkasanEnterpriseSchedulerInstance
         );
         contextInstanceRecoveryService.setContextMachineExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
+        contextInstanceRecoveryService.setBlackListedMessageMaxRetries(this.contextMachineBlackListedMessageMaxRetries);
         return contextInstanceRecoveryService;
     }
 
@@ -145,6 +149,7 @@ public class ContextServiceAutoConfiguration {
             this.isIkasanEnterpriseSchedulerInstance
         );
         contextInstanceRegistrationService.setContextMachineExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
+        contextInstanceRegistrationService.setBlackListedMessageMaxRetries(this.contextMachineBlackListedMessageMaxRetries);
 
         return contextInstanceRegistrationService;
     }
@@ -194,6 +199,7 @@ public class ContextServiceAutoConfiguration {
             this.isIkasanEnterpriseSchedulerInstance
         );
         contextInstanceEndService.setContextMachineExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
+        contextInstanceEndService.setBlackListedMessageMaxRetries(this.contextMachineBlackListedMessageMaxRetries);
 
         return contextInstanceEndService;
     }
