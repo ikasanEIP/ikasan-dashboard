@@ -319,6 +319,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                         this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService, this.timeService, this.jobUtilsService, this.jobProvisionService,
                         this.schedulerJobService);
                     missingContextInstanceRecoveryRunnable.setContextMachineExecutorWaitTimeoutSeconds(super.contextMachineExecutorWaitTimeoutSeconds);
+                    missingContextInstanceRecoveryRunnable.setBlackListedMessageMaxRetries(super.blackListedMessageMaxRetries);
                     executor.execute(missingContextInstanceRecoveryRunnable);
                 }
             }

@@ -414,7 +414,7 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
                 {
                     logger.error(String.format("An error has occurred synchronising LDAP repository[%s]. Error message[%s]!"
                         , authenticationMethod.getName(), e.getMessage()), e);
-                    this.systemEventLogger.logEvent(SystemEventConstants.LDAP_REPOSITORY_SYNCHRONISATION_JOB_COMPLETE,
+                    this.systemEventLogger.logEvent(SystemEventConstants.LDAP_REPOSITORY_SYNCHRONISATION_JOB_ERROR,
                         String.format("Error manually running ldap synchronisation [%s]. Error message[%s]!"
                             , authenticationMethod.getName(), e.getMessage()), this.authentication.getName());
                     current.access(() ->

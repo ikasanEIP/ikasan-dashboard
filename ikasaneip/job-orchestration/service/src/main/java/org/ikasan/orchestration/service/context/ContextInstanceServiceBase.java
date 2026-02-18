@@ -73,6 +73,7 @@ public abstract class ContextInstanceServiceBase {
     protected final JobUtilsService jobUtilsService;
     protected final ObjectMapper objectMapper;
     protected int contextMachineExecutorWaitTimeoutSeconds = -1;
+    protected int blackListedMessageMaxRetries = -1;
 
 
 
@@ -194,6 +195,15 @@ public abstract class ContextInstanceServiceBase {
      */
     public void setContextMachineExecutorWaitTimeoutSeconds(int contextMachineExecutorWaitTimeoutSeconds) {
         this.contextMachineExecutorWaitTimeoutSeconds = contextMachineExecutorWaitTimeoutSeconds;
+    }
+
+    /**
+     * Set the maximum number of retries for blacklisted messages.
+     *
+     * @param blackListedMessageMaxRetries the maximum number of retries allowed for blacklisted messages
+     */
+    public void setBlackListedMessageMaxRetries(int blackListedMessageMaxRetries) {
+        this.blackListedMessageMaxRetries = blackListedMessageMaxRetries;
     }
 
     /**
@@ -336,6 +346,7 @@ public abstract class ContextInstanceServiceBase {
             this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService,
             this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine.setExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
+        contextMachine.setBlackListedMessageMaxRetries(this.blackListedMessageMaxRetries);
         contextMachine.init();
 
         // We add the listener to write initiation events to the agents.
@@ -465,6 +476,7 @@ public abstract class ContextInstanceServiceBase {
             moduleMetadataService, null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine.setExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
+        contextMachine.setBlackListedMessageMaxRetries(this.blackListedMessageMaxRetries);
         // We add a listener to update scheduler job instances when a state change occurs.
         contextMachine.addSchedulerJobStateChangeEventListener(event ->
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));

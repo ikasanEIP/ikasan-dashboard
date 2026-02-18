@@ -11,11 +11,13 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.TabVariant;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -114,6 +116,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
     private ContextInstanceTreeViewWidget contextInstanceTreeViewWidget;
     private SplitContextInstanceVisualisation splitContextInstanceVisualisation;
+    private DeadLetterQueueManagementWidget deadLetterQueueManagementWidget;
     private JobInitiationService jobInitiationService;
     private ContextProfileService contextProfileService;
     private ConfigurationService configurationRestService;
@@ -166,6 +169,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private Tab jobsTab;
     private Tab statisticsTab;
     private Tab auditTab;
+    private Tab dlqTab;
     private Tabs tabs;
     private ContextInstance contextInstance;
     private ContextTemplate contextTemplate;
@@ -624,6 +628,14 @@ public class ContextInstanceWidget extends VerticalLayout
         stopWatch.reset();
 
         stopWatch.start();
+        this.deadLetterQueueManagementWidget = new DeadLetterQueueManagementWidget(this.contextInstance, this.systemEventLogger);
+        this.deadLetterQueueManagementWidget.setVisible(false);
+        stopWatch.stop();
+        logger.info(String.format("Initialising context instance DLQ tab. Context Instance Name:[%s], Context Instance Id:[%s], Elapsed mill:[%s]"
+            , contextInstance.getName(), contextInstance.getId(), stopWatch.getTime()));
+        stopWatch.reset();
+
+        stopWatch.start();
         this.initialiseTabs();
         stopWatch.stop();
         logger.info(String.format("Initialising context instance tabs. Context Instance Name:[%s], Context Instance Id:[%s], Elapsed mill:[%s]"
@@ -634,7 +646,7 @@ public class ContextInstanceWidget extends VerticalLayout
         this.getStyle().set("padding-top", "0px");
 
         this.add(statusLayout, headerLayout, contextInstanceDetailsCollapsableLayout, tabLayout, this.contextInstanceTreeViewWidget, this.aceEditor, this.splitContextInstanceVisualisation
-            , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
+            , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget, this.deadLetterQueueManagementWidget);
         this.expand(this.splitContextInstanceVisualisation, this.aceEditor);
         this.setHeight("100%");
 
@@ -679,10 +691,12 @@ public class ContextInstanceWidget extends VerticalLayout
         this.jobsTab = new Tab(getTranslation("tab.job-instances", UI.getCurrent().getLocale()));
         this.statisticsTab = new Tab(getTranslation("tab.statistics", UI.getCurrent().getLocale()));
         this.auditTab = new Tab(getTranslation("tab.audit", UI.getCurrent().getLocale()));
+        this.dlqTab = new Tab(getTranslation("tab.dlq", UI.getCurrent().getLocale()));
 
         this.tabs = new Tabs();
         this.tabs.add(this.treeTab, this.visualisationTab, this.dagTab, this.rawContextTab
-            , this.jobsTab/**, todo will introduce statisticsTab in future iteration this.statisticsTab */, this.auditTab);
+            , this.jobsTab/**, todo will introduce statisticsTab in future iteration this.statisticsTab */
+            , this.auditTab, this.dlqTab);
 
         tabs.addSelectedChangeListener(event -> {
             if(tabs.getSelectedTab().equals(this.statisticsTab)) {
@@ -693,6 +707,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 this.contextTemplateStatisticsWidget.setVisible(true);
                 this.contextInstanceAuditWidget.setVisible(false);
                 this.contextInstanceTreeViewWidget.setVisible(false);
+                this.deadLetterQueueManagementWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
                 this.updateJson(this.contextInstance);
@@ -703,6 +718,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
                 this.contextInstanceTreeViewWidget.setVisible(false);
+                this.deadLetterQueueManagementWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
                 this.splitContextInstanceVisualisation.initialiseVisualisation();
@@ -713,6 +729,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
                 this.contextInstanceTreeViewWidget.setVisible(false);
+                this.deadLetterQueueManagementWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.dagTab)) {
                 if(this.dagComponent == null) {
@@ -736,6 +753,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
                 this.contextInstanceTreeViewWidget.setVisible(false);
+                this.deadLetterQueueManagementWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.jobsTab)) {
                 this.aceEditor.setVisible(false);
@@ -745,6 +763,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
                 this.contextInstanceTreeViewWidget.setVisible(false);
+                this.deadLetterQueueManagementWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.auditTab)) {
                 this.aceEditor.setVisible(false);
@@ -754,6 +773,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(true);
                 this.contextInstanceTreeViewWidget.setVisible(false);
+                this.deadLetterQueueManagementWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.treeTab)) {
                 this.aceEditor.setVisible(false);
@@ -763,6 +783,17 @@ public class ContextInstanceWidget extends VerticalLayout
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
                 this.contextInstanceTreeViewWidget.setVisible(true);
+                this.deadLetterQueueManagementWidget.setVisible(false);
+            }
+            else if(tabs.getSelectedTab().equals(this.dlqTab)) {
+                this.aceEditor.setVisible(false);
+                if(dagComponent!= null)this.dagComponent.setVisible(false);
+                this.splitContextInstanceVisualisation.setVisible(false);
+                this.schedulerJobInstanceGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+                this.contextInstanceAuditWidget.setVisible(false);
+                this.contextInstanceTreeViewWidget.setVisible(false);
+                this.deadLetterQueueManagementWidget.setVisible(true);
             }
         });
     }

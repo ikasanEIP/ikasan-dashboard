@@ -62,6 +62,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -81,11 +82,14 @@ public class ContextMachine {
     private JobLogicMachine jobLogicMachine;
     private ContextInstanceToContextInstanceStatusConverter statusConverter;
     private List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners;
+    private List<ContextInstanceDlqEventBroadcastListener> contextInstanceDlqEventBroadcastListeners;
     private ExecutorService statusListenerExecutor;
+    private ExecutorService contextInstanceDlqEventListenerExecutor;
     private ExecutorService schedulerInitiatorEventRaisedListenerExecutor;
     private ExecutorService contextExecutor;
     private IBigQueue inboundQueue;
     private IBigQueue outboundQueue;
+    private IBigQueue deadLetterQueue;
     private ListenableFuture<byte[]> inboundListenableFuture;
     private ListenableFuture<byte[]> outboundListenableFuture;
     private ObjectMapper objectMapper;
@@ -118,8 +122,10 @@ public class ContextMachine {
     private InboundQueueMessageRunner inboundQueueMessageRunner;
     private ContextStateHelper contextStateHelper;
     private JobUtilsService jobUtilsService;
+    private ConcurrentHashMap<String, Integer> bigQueueMessageBlacklist;
     private boolean tornDown = false;
     private int executorWaitTimeoutSeconds = 30;
+    private int blackListedMessageMaxRetries = 5;
 
     /**
      * Initializes a new instance of ContextMachine with the provided parameters.
@@ -192,7 +198,10 @@ public class ContextMachine {
         this.queueDir = queueDir;
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
         this.contextInstanceStateChangeEventListeners = new ArrayList<>();
+        this.contextInstanceDlqEventBroadcastListeners = new ArrayList<>();
         this.statusListenerExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-StatusChangeListener"));
+        this.contextInstanceDlqEventListenerExecutor = Executors
+            .newSingleThreadExecutor(new JobThreadFactory("ContextMachine-ContextInstanceDlqEventListener"));
         this.contextExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-ContextExecutor"));
         this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-EventRaisedListener"));
         this.objectMapper = ConcurrentObjectMapperFactory.newInstance();
@@ -208,6 +217,7 @@ public class ContextMachine {
         this.jobUtilsService = jobUtilsService;
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.moduleMetaDataService, this.jobLockCache, contextParametersInstanceService);
         this.contextStateHelper = new ContextStateHelper();
+        this.bigQueueMessageBlacklist = new ConcurrentHashMap<>();
     }
 
 
@@ -221,10 +231,12 @@ public class ContextMachine {
      * @throws IOException if there are errors during initialization of the queues
      */
     public void init() throws IOException {
-        String inboundQueueName = getInboundQueueName();
-        String outboundQueueName = getOutboundQueueName();
+        String inboundQueueName = this.getInboundQueueName();
+        String outboundQueueName = this.getOutboundQueueName();
+        String deadLetterQueueName = this.getDeadLetterQueueName();
         this.inboundQueue = new BigQueueImpl(this.queueDir, inboundQueueName);
         this.outboundQueue = new BigQueueImpl(this.queueDir, outboundQueueName);
+        this.deadLetterQueue = new BigQueueImpl(this.queueDir, deadLetterQueueName);
 
         this.addInboundListener();
         this.addOutboundListener();
@@ -271,6 +283,16 @@ public class ContextMachine {
         return "inbound-" + this.contextInstance.getId() + "-queue";
     }
 
+
+    /**
+     * Retrieves the name of the dead letter queue associated with the context instance.
+     *
+     * @return The name of the dead letter queue formatted as "dlq-[contextId]-queue".
+     */
+    public String getDeadLetterQueueName() {
+        return "dlq-" + this.contextInstance.getId() + "-queue";
+    }
+
     /**
      * Retrieve the inbound queue associated with this object.
      *
@@ -290,6 +312,15 @@ public class ContextMachine {
     }
 
     /**
+     * Retrieves the Dead Letter Queue from this object.
+     *
+     * @return The Dead Letter Queue associated with this object.
+     */
+    public IBigQueue getDeadLetterQueue() {
+        return deadLetterQueue;
+    }
+
+    /**
      * Sets the wait timeout in seconds for the executor.
      *
      * @param executorWaitTimeoutSeconds the wait timeout value in seconds to be set
@@ -297,6 +328,18 @@ public class ContextMachine {
     public void setExecutorWaitTimeoutSeconds(int executorWaitTimeoutSeconds) {
         if(executorWaitTimeoutSeconds > 0) {
             this.executorWaitTimeoutSeconds = executorWaitTimeoutSeconds;
+        }
+    }
+
+    /**
+     * Sets the maximum number of retries allowed for blacklisted messages.
+     *
+     * @param blackListedMessageMaxRetries The maximum number of retries allowed for blacklisted messages
+     *                                      before considering them as failed.
+     */
+    public void setBlackListedMessageMaxRetries(int blackListedMessageMaxRetries) {
+        if(blackListedMessageMaxRetries > 0) {
+            this.blackListedMessageMaxRetries = blackListedMessageMaxRetries;
         }
     }
 
@@ -506,8 +549,9 @@ public class ContextMachine {
      */
     private void teardownBigQueue() throws IOException, BigQueueNotFoundException {
         BigQueueManagementService bigQueueManagementService =
-            new BigQueueContextMachineManagementServiceImpl(getInboundQueueName(),
-                inboundQueue, getOutboundQueueName(), outboundQueue);
+            new BigQueueContextMachineManagementServiceImpl(this.getInboundQueueName(),
+                this.inboundQueue, this.getOutboundQueueName(), this.outboundQueue, this.getDeadLetterQueueName(),
+                this.deadLetterQueue);
 
         BigQueueDirectoryManagementService bigQueueDirectoryManagementService
             = new BigQueueDirectoryManagementServiceImpl(bigQueueManagementService, this.queueDir);
@@ -527,6 +571,12 @@ public class ContextMachine {
             this.outboundQueue.gc();
             bigQueueDirectoryManagementService.deleteQueue(getOutboundQueueName());
             this.outboundQueueMessageRunner.start();
+        }
+        if (this.deadLetterQueue != null) {
+            this.deadLetterQueue.close();
+            this.deadLetterQueue.removeAll();
+            this.deadLetterQueue.gc();
+            bigQueueDirectoryManagementService.deleteQueue(getInboundQueueName());
         }
     }
 
@@ -551,6 +601,7 @@ public class ContextMachine {
             this.awaitTerminationAfterShutdown(this.jobLogicMachine.getExecutor());
             this.awaitTerminationAfterShutdown(this.schedulerInitiatorEventRaisedListenerExecutor);
             this.awaitTerminationAfterShutdown(this.statusListenerExecutor);
+            this.awaitTerminationAfterShutdown(this.contextInstanceDlqEventListenerExecutor);
 
             if (this.inboundQueue != null) {
                 this.inboundQueueMessageRunner.stop();
@@ -564,7 +615,14 @@ public class ContextMachine {
                 this.contextInstanceStateChangeEventListeners = null;
             }
 
+            if (contextInstanceDlqEventBroadcastListeners != null) {
+                contextInstanceDlqEventBroadcastListeners.clear();
+                this.contextInstanceDlqEventBroadcastListeners = null;
+            }
+
+
             this.statusListenerExecutor = null;
+            this.contextInstanceDlqEventListenerExecutor = null;
             this.schedulerInitiatorEventRaisedListenerExecutor = null;
 
             this.objectMapper = null;
@@ -585,8 +643,9 @@ public class ContextMachine {
             this.jobLogicMachine = null;
 
             BigQueueManagementService bigQueueManagementService =
-                new BigQueueContextMachineManagementServiceImpl(getInboundQueueName(),
-                    inboundQueue, getOutboundQueueName(), outboundQueue);
+                new BigQueueContextMachineManagementServiceImpl(this.getInboundQueueName(),
+                    this.inboundQueue, this.getOutboundQueueName(), this.outboundQueue,
+                    this.getDeadLetterQueueName(), this.deadLetterQueue);
 
             BigQueueDirectoryManagementService bigQueueDirectoryManagementService
                 = new BigQueueDirectoryManagementServiceImpl(bigQueueManagementService, this.queueDir);
@@ -600,9 +659,15 @@ public class ContextMachine {
                 this.outboundQueue.gc();
                 bigQueueDirectoryManagementService.deleteQueue(getOutboundQueueName());
             }
+            if (this.deadLetterQueue != null) {
+                this.deadLetterQueue.removeAll();
+                this.deadLetterQueue.gc();
+                bigQueueDirectoryManagementService.deleteQueue(getInboundQueueName());
+            }
 
             this.inboundQueue = null;
             this.outboundQueue = null;
+            this.deadLetterQueue = null;
             this.queueDir = null;
 
             this.contextInstance = null;
@@ -784,6 +849,28 @@ public class ContextMachine {
     public void removeContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventListener listener) {
         if(contextInstanceStateChangeEventListeners.contains(listener)) {
             this.contextInstanceStateChangeEventListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Adds a ContextInstanceDlqEventBroadcastListener to the list of listeners.
+     *
+     * @param listener the ContextInstanceDlqEventBroadcastListener to add
+     */
+    public void addContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventBroadcastListener listener) {
+        if(!this.contextInstanceDlqEventBroadcastListeners.contains(listener)) {
+            this.contextInstanceDlqEventBroadcastListeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a specified ContextInstanceDlqEventBroadcastListener from the list of listeners.
+     *
+     * @param listener the listener to be removed from the list of listeners
+     */
+    public void removeContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventBroadcastListener listener) {
+        if(this.contextInstanceDlqEventBroadcastListeners.contains(listener)) {
+            this.contextInstanceDlqEventBroadcastListeners.remove(listener);
         }
     }
 
@@ -2064,6 +2151,15 @@ public class ContextMachine {
     }
 
     /**
+     * Method to issue a context instance DLQ (Dead Letter Queue) event by notifying all registered listeners.
+     * This method is executed asynchronously using a separate thread to improve performance.
+     */
+    private void issueContextInstanceDlqEvent() {
+        this.statusListenerExecutor.submit(() -> this.contextInstanceDlqEventBroadcastListeners
+            .forEach(listener -> listener.receiveBroadcast(this.contextInstance)));
+    }
+
+    /**
      * Saves the context instance by creating a new record of ScheduledContextInstanceRecord and
      * populating it with relevant information before saving it using the scheduledContextInstanceService.
      */
@@ -2337,6 +2433,41 @@ public class ContextMachine {
     }
 
     /**
+     * Resubmits a message from the Dead Letter Queue (DLQ) to the Inbound Queue.
+     *
+     * @param messageId unique identifier of the message to resubmit from DLQ
+     * @return true if the message was successfully resubmitted, false otherwise
+     * @throws IOException if an I/O error occurs during the process
+     * @throws BigQueueNotFoundException if the Big Queue is not found
+     */
+    public boolean resubmitMessageFromDeadLetterQueue(String messageId) throws IOException, BigQueueNotFoundException {
+        BigQueueManagementService bigQueueManagementService =
+            new BigQueueContextMachineManagementServiceImpl(this.getInboundQueueName(),
+                this.inboundQueue, this.getOutboundQueueName(), this.outboundQueue, this.getDeadLetterQueueName(),
+                this.deadLetterQueue);
+
+        BigQueueDirectoryManagementService bigQueueDirectoryManagementService
+            = new BigQueueDirectoryManagementServiceImpl(bigQueueManagementService, this.queueDir);
+
+        Optional<BigQueueMessage> dlqMessage = bigQueueDirectoryManagementService.getMessages(this.getDeadLetterQueueName())
+            .stream().filter(bigQueueMessage -> bigQueueMessage.getMessageId().equals(messageId)).findFirst();
+
+        if(dlqMessage.isPresent()) {
+            this.inboundQueue.enqueue(objectMapper.writeValueAsBytes(dlqMessage.get()));
+            bigQueueDirectoryManagementService.deleteMessage(this.getDeadLetterQueueName(), messageId);
+            logger.info("Successfully resubmitted message[{}] from dead letter queue for job plan instance[{}]!",
+                dlqMessage.get().getMessage(), this.contextInstance.getId());
+            return true;
+        }
+        else {
+            logger.info("Unable to resubmit message[{}] from dead letter queue for job plan instance[{}]!. Unable to " +
+                    " get message associated with that ID from the dead letter queue!",
+                messageId, this.contextInstance.getId());
+            return false;
+        }
+    }
+
+    /**
      * This class represents a Runnable implementation for processing inbound queue messages.
      * It runs in a separate thread and processes incoming messages from an inbound queue.
      * The class provides methods to start and stop the message processing.
@@ -2399,26 +2530,57 @@ public class ContextMachine {
 
                 inboundQueue.dequeue();
                 inboundQueue.gc();
+
+                if(bigQueueMessageBlacklist.containsKey(bigQueueMessage.getMessageId())) {
+                    logger.info("Successfully processed black listed message[{}] for context instance[{}] with id[{}]." +
+                        " Removing the blacklisted message from blacklist map.", bigQueueMessage.getMessageId(),
+                        contextInstance.getName(), contextInstance.getId());
+                    bigQueueMessageBlacklist.remove(bigQueueMessage.getMessageId());
+                }
             }
-            catch (ContextMachineException e) {
+            catch (Exception e) {
                 logger.error(String.format("An error has occurred attempting process scheduled process event [%s]"
                     , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
 
-                // We dequeue context machine exceptions.
-                // TODO perhaps we need to park these somewhere similar to excluded events.
+                // We dequeue messages associated with exceptions and blacklist them. The are then re-enqueued onto the
+                // back of the inbound queue associated with the context machine. This repeats until the number of retries
+                // exceeds blackListedMessageMaxRetries at which point the offending message is placed onto the associated
+                // dead letter queue.
                 try {
                     inboundQueue.dequeue();
                     inboundQueue.gc();
-                    addInboundListener();
+
+                    if(!bigQueueMessageBlacklist.containsKey(bigQueueMessage.getMessageId())) {
+                        bigQueueMessageBlacklist.put(bigQueueMessage.getMessageId(), 0);
+                        logger.info("Successfully black listed message[{}] for context instance[{}] with id[{}]." +
+                                " Adding the blacklisted message to the blacklist map.", bigQueueMessage.getMessageId(),
+                            contextInstance.getName(), contextInstance.getId());
+                    }
+
+                    if(bigQueueMessageBlacklist.get(bigQueueMessage.getMessageId()) < blackListedMessageMaxRetries) {
+                        inboundQueue.enqueue(objectMapper.writeValueAsBytes(bigQueueMessage));
+                        Integer retryCount = bigQueueMessageBlacklist.get(bigQueueMessage.getMessageId());
+                        bigQueueMessageBlacklist.put(bigQueueMessage.getMessageId(), ++retryCount);
+                        logger.info("Re-enqueued black listed message[{}] for context instance[{}] with id[{}]." +
+                                " Retry count[{}].", bigQueueMessage.getMessageId()
+                            , contextInstance.getName(), contextInstance.getId()
+                            , bigQueueMessageBlacklist.get(bigQueueMessage.getMessageId()));
+                    }
+                    else {
+                        // Adding the message to the DLQ
+                        deadLetterQueue.enqueue(objectMapper.writeValueAsBytes(bigQueueMessage));
+                        bigQueueMessageBlacklist.remove(bigQueueMessage.getMessageId());
+                        issueContextInstanceDlqEvent();
+                        logger.info("Successfully moved black listed message[{}] for context instance[{}] with id[{}] " +
+                                "to the Dead Letter Queue as the max retry count of [{}] has been exceeded!" +
+                                " Removed the blacklisted message from the blacklist map.", bigQueueMessage.getMessageId(),
+                            contextInstance.getName(), contextInstance.getId(), blackListedMessageMaxRetries);
+                    }
                 }
                 catch (IOException ex) {
                     logger.error(String.format("IOException - An error has occurred attempting to dequeue inbound message [%s]"
                         , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), ex);
                 }
-            }
-            catch (Exception e) {
-                logger.error(String.format("Generic Exception - An error has occurred attempting process scheduled process event [%s]"
-                    , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
             }
             finally {
                 addInboundListener();

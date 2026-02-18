@@ -106,7 +106,16 @@ public class SystemEventConstants
     public static final String LDAP_REPOSITORY_SYNCHRONISATION_JOB_START = "LDAP Repository Synchronisation Job Start";
     public static final String LDAP_REPOSITORY_SYNCHRONISATION_JOB_COMPLETE = "LDAP Repository Synchronisation Job Complete";
     public static final String LDAP_REPOSITORY_SYNCHRONISATION_JOB_ERROR = "LDAP Repository Synchronisation Job Error";
+    public static final String CONTEXT_INSTANCE_DLQ_MESSAGE_RESUBMITTED = "Job Plan Instance DLQ Message Resubmitted";
+    public static final String CONTEXT_INSTANCE_DLQ_MESSAGE_DELETED = "Job Plan Instance DLQ Message Deleted";
+    public static final String CONTEXT_INSTANCE_ALL_DLQ_MESSAGES_RESUBMITTED = "Job Plan Instance All DLQ Messages Resubmitted";
+    public static final String CONTEXT_INSTANCE_ALL_DLQ_MESSAGES_DELETED = "Job Plan Instance All DLQ Messages Deleted";
 
+    /**
+     * Retrieves a list of string constants representing system events defined in the SystemEventConstants class.
+     *
+     * @return List of string constants representing system events
+     */
     public static List<String> getSystemEventConstants() {
         List<String> constantValues = Arrays.stream(SystemEventConstants.class.getDeclaredFields())
             .filter(field -> Modifier.isStatic(field.getModifiers()))
