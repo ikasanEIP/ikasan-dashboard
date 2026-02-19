@@ -129,21 +129,29 @@ public class BridgingJobPositionedDialog extends PositionedDialog {
             resetJobButton.getElement().setAttribute("title", getTranslation("tooltip.reset-bridging-job"
                 , UI.getCurrent().getLocale()));
             resetJobButton.addClickListener(iconClickEvent -> {
-                if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                    try {
-                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
-                        contextMachine.resetJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
-                            schedulerJobInstanceRecord.getChildContextName());
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog.reset-bridging-job-header", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog.reset-bridging-job-text", UI.getCurrent().getLocale()));
+                confirmDialog.setConfirmText(getTranslation("button.ok"));
+                confirmDialog.setCancelText(getTranslation("button.cancel"));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                        try {
+                            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                            contextMachine.resetJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
+                                schedulerJobInstanceRecord.getChildContextName());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.reset-bridging-job"));
+                        } finally {
+                            this.close();
+                            NotificationHelper.showErrorNotification(getTranslation("message.reset-bridging-job"));
+                        }
                     }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showErrorNotification(getTranslation("error.reset-bridging-job"));
-                    }
-                    finally {
-                        this.close();
-                        NotificationHelper.showErrorNotification(getTranslation("message.reset-bridging-job"));
-                    }
-                }
+                });
             });
             buttonLayout.add(resetJobButton);
         }
