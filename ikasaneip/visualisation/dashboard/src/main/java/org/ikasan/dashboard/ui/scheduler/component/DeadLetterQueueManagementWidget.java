@@ -11,6 +11,7 @@ import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -78,10 +79,21 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
         }
         this.ui = UI.getCurrent();
 
-        this.initialiseBigQueueManagementService();
-        this.initialiseButtons();
-        this.initialiseGrid();
-        this.initDataProvider();
+        if(ContextMachineCache.instance()
+            .containsInstanceIdentifier(contextInstance.getId())) {
+            this.initialiseBigQueueManagementService();
+            this.initialiseButtons();
+            this.initialiseGrid();
+            this.initDataProvider();
+        }
+        else {
+            VerticalLayout noDLQManagementLayout = new VerticalLayout();
+            noDLQManagementLayout.setWidthFull();
+            Span message = new Span(getTranslation("label,no-dlq-management"));
+            noDLQManagementLayout.add(message);
+            noDLQManagementLayout.setHorizontalComponentAlignment(Alignment.CENTER, message);
+            this.add(noDLQManagementLayout);
+        }
         this.setSizeFull();
     }
 
@@ -573,23 +585,29 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        ContextInstanceDlqEventBroadcaster.register(this);
-        this.contextMachine.addContextInstanceDlqEventEventBroadcastListeners(this);
+        if(this.contextMachine != null) {
+            ContextInstanceDlqEventBroadcaster.register(this);
+            this.contextMachine.addContextInstanceDlqEventEventBroadcastListeners(this);
+        }
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
-        ContextInstanceDlqEventBroadcaster.unregister(this);
-        this.contextMachine.removeContextInstanceDlqEventEventBroadcastListeners(this);
+        if(this.contextMachine != null) {
+            ContextInstanceDlqEventBroadcaster.unregister(this);
+            this.contextMachine.removeContextInstanceDlqEventEventBroadcastListeners(this);
+        }
     }
 
     @Override
     public void receiveBroadcast(ContextInstance contextInstance) {
-        if(this.ui.isAttached()) {
-            this.ui.access(() -> {
-                this.bigQueueMessageGrid.getDataProvider().refreshAll();
-            });
+        if(this.contextMachine != null) {
+            if (this.ui.isAttached()) {
+                this.ui.access(() -> {
+                    this.bigQueueMessageGrid.getDataProvider().refreshAll();
+                });
+            }
         }
     }
 }
