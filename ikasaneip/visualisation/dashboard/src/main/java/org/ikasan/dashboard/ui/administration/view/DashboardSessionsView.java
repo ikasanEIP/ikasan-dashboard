@@ -19,6 +19,7 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.beans.DashboardComponentFactory;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.SessionDetailsDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.security.view.LoginView;
@@ -66,6 +67,12 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
         super();
     }
 
+    /**
+     * Initialize the DashboardSessionsView by setting up necessary components and UI elements.
+     * This method initializes the authentication context, creates a Grid for displaying session details,
+     * sets up filtering options, creates header layout with buttons for actions, adds columns to the grid
+     * to display session information, and populates the grid.
+     */
     protected void init()
     {
         this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -95,6 +102,7 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
                     if(!session.getSession().getAttribute(LoginView.USERNAME).equals(ikasanAuthentication.getName())) {
                         session.getSession().invalidate();
                     }
+                    NotificationHelper.showUserNotification(getTranslation("notification.all-sessions-ended"));
                 });
                 this.sessionGrid.getDataProvider().refreshAll();
             });
@@ -242,6 +250,7 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
 
                         confirmDialog.addConfirmListener(confirmEvent -> {
                             session.getSession().invalidate();
+                            NotificationHelper.showUserNotification(getTranslation("notification.session-ended"));
                             this.sessionGrid.getDataProvider().refreshAll();
                         });
                     });
@@ -256,6 +265,13 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
         this.populateGrid();
     }
 
+    /**
+     * Populates the grid with data by creating a DataProvider from filtering callbacks based on the provided query.
+     * The method handles loading items based on the query parameters such as filter, offset, and limit.
+     * It sets up the DataProvider with filter configuration, sets the provided searchFilter as the filtering filter,
+     * sets the data provider to the sessionGrid, adds grid filtering components to the header row of the grid for
+     * jobName and jobType attributes.
+     */
     private void populateGrid() {
         dataProvider = DataProvider.fromFilteringCallbacks(query -> {
             Optional<SessionFilter> filter = query.getFilter();
@@ -295,6 +311,13 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
         this.addGridFiltering(hr, this.searchFilter::setJobType, "username");
     }
 
+    /**
+     * Adds grid filtering functionality to the specified header row for a given column key.
+     *
+     * @param hr The HeaderRow where the filtering components will be added
+     * @param setFilter A Consumer function to set the filter value based on user input
+     * @param columnKey The key of the column in the grid where the filtering component will be attached
+     */
     private void addGridFiltering(HeaderRow hr, Consumer<String> setFilter, String columnKey) {
         TextField textField = new TextField();
         Icon filterIcon = VaadinIcon.FILTER.create();
@@ -311,6 +334,16 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
         hr.getCell(this.sessionGrid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
+    /**
+     * Retrieves a filtered and sorted list of VaadinSessions based on the provided parameters.
+     *
+     * @param sessionFilter The filter criteria to apply on the list of sessions
+     * @param offset The index from which to start fetching sessions
+     * @param limit The maximum number of sessions to fetch
+     * @param sortColumn The column to sort the sessions by
+     * @param sortOrder The order in which to sort the sessions (ASCENDING or DESCENDING)
+     * @return A List of VaadinSession objects filtered, sorted, and limited based on the criteria provided
+     */
     private List<VaadinSession> getResults(SessionFilter sessionFilter, int offset, int limit, String sortColumn, String sortOrder) {
         List<VaadinSession> items = new ArrayList<>();
 
@@ -430,7 +463,7 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not resolve session results!", e);
         }
 
 
