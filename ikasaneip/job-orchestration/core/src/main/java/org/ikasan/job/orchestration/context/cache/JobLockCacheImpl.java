@@ -708,6 +708,15 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
     }
 
     /**
+     * Retrieves the list of environments for which job lock cache data is available.
+     *
+     * @return List of strings representing the environments
+     */
+    public List<String> getEnvironments() {
+        return new ArrayList<>(jobLockCacheDataMap.keySet());
+    }
+
+    /**
      * Helper method to save the underlying cache record to the persistent store.
      */
     private void saveJobLockCacheRecord(String environment) {

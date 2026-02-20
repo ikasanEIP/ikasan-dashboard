@@ -305,6 +305,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -324,6 +326,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -343,6 +347,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -362,6 +368,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -381,6 +389,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -400,6 +410,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -419,6 +431,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -438,6 +452,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -476,6 +492,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -495,6 +513,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -514,6 +534,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -533,6 +555,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -552,6 +576,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -571,6 +597,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -590,6 +618,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -609,6 +639,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -628,6 +660,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -647,6 +681,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -666,6 +702,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -685,6 +723,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -723,6 +763,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -761,6 +803,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -780,6 +824,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -818,6 +864,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -837,6 +885,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -856,6 +906,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -875,6 +927,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -913,6 +967,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -932,6 +988,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -951,6 +1009,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -970,6 +1030,8 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 
     @Test
@@ -989,5 +1051,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "roleManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "policyManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userDirectoryManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "sessionManagementMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "jobLockMenuItem")).isVisible());
     }
 }

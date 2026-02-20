@@ -70,6 +70,7 @@ public class IkasanAppLayout extends AppLayout {
     private SideNavItem businessStreamDesignerMenuItem;
     private SideNavItem quartzSchedulerMenuItem;
     private SideNavItem sessionManagementMenuItem;
+    private SideNavItem jobLockMenuItem;
     private  Button environmentButton;
     private HorizontalLayout bannerLayout = new HorizontalLayout();
 
@@ -227,6 +228,11 @@ public class IkasanAppLayout extends AppLayout {
         this.sessionManagementMenuItem.setId("sessionManagementViewMenuItem");
         adminMenuItem.addItem(this.sessionManagementMenuItem);
 
+        this.jobLockMenuItem = new SideNavItem(getTranslation("menu-item.job-lock-management",
+            getLocale()), JobLockManagementView.class, VaadinIcon.LOCK.create());
+        this.jobLockMenuItem.setId("jobLockMenuItem");
+        adminMenuItem.addItem(this.jobLockMenuItem);
+
         this.businessStreamDesignerMenuItem = new SideNavItem(getTranslation("menu-item.designer",
             getLocale()), BusinessStreamDesignerView.class, VaadinIcon.PALETTE.create());
         this.businessStreamDesignerMenuItem.setId("businessStreamDesignerMenuItem");
@@ -273,6 +279,9 @@ public class IkasanAppLayout extends AppLayout {
                 , SecurityConstants.USER_DIRECTORY_ADMIN, SecurityConstants.USER_DIRECTORY_WRITE, SecurityConstants.USER_DIRECTORY_READ));
 
             this.sessionManagementMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
+
+            this.jobLockMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY) &&
+                isIkasanEnterpriseSchedulerInstance);
 
             this.swaggerUI.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
 

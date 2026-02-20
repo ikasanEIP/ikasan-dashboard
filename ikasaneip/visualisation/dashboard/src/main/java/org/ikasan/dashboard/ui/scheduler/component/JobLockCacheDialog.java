@@ -407,7 +407,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
                                     jobTemplateVisualisationDialog.open();
                                 }
                                 catch (IOException e) {
-                                    e.printStackTrace();
+                                    logger.error(e.getMessage(), e);
                                     NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation", UI.getCurrent().getLocale()));
                                 }
                             });
