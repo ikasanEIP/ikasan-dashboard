@@ -2,9 +2,12 @@ package org.ikasan.solr.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
+import org.apache.solr.client.solrj.request.GenericSolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.util.NamedList;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.solr.SolrConstants;
@@ -201,5 +204,35 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
         document.setField(EXPIRY, expiry);
 
         return document;
+    }
+
+    @Override
+    public void backupIndex(String backupLocationPath, int numberOfBackupsToKeep) {
+        try {
+            ModifiableSolrParams params = new ModifiableSolrParams();
+            params.set("command", "backup");
+            params.set("numberToKeep", numberOfBackupsToKeep);
+            params.set("location", backupLocationPath);
+
+            // The 'BACKUP' action is part of the /replication handler API
+            GenericSolrRequest request = new GenericSolrRequest(
+                GenericSolrRequest.METHOD.GET,
+                "/" + SolrConstants.CORE + "/replication",
+                params
+            );
+            request.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+
+            logger.info("Performing Ikasan SOLR backup to location[{}]. Number of backups to keep[{}].",
+                backupLocationPath, numberOfBackupsToKeep);
+            NamedList<Object> response = solrClient.request(request);
+
+            logger.info("Successfully performed Ikasan SOLR backup to location[{}]" +
+                    ". Number of backups to keep[{}]. Response[{}]",
+                backupLocationPath, numberOfBackupsToKeep, response);
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Caught exception performing Ikasan SOLR backup!", e);
+        }
     }
 }

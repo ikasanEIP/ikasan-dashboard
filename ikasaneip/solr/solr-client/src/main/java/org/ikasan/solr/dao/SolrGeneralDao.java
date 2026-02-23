@@ -24,7 +24,7 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      * @param sortOrder
      * @return RESULTS
      */
-    public RESULTS search(Set<String> moduleName, Set<String> flowNames, String searchString, long startTime
+    RESULTS search(Set<String> moduleName, Set<String> flowNames, String searchString, long startTime
         , long endTime, int resultSize, boolean negateQuery, String sortField, String sortOrder);
 
 
@@ -43,7 +43,7 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      * @param sortOrder
      * @return RESULTS
      */
-    public RESULTS search(Set<String> moduleName, Set<String> flowNames, String searchString, long startTime
+    RESULTS search(Set<String> moduleName, Set<String> flowNames, String searchString, long startTime
         , long endTime, int resultSize, List<String> entityTypes, boolean negateQuery, String sortField, String sortOrder);
 
     /**
@@ -64,7 +64,7 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      * @param sortOrder
      * @return
      */
-    public RESULTS search(Set<String> moduleName, Set<String> flowNames, Set<String> componentNames, String eventId
+    RESULTS search(Set<String> moduleName, Set<String> flowNames, Set<String> componentNames, String eventId
         , String searchString, long startTime, long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery
         , String sortField, String sortOrder);
 
@@ -83,7 +83,7 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      * @param sortOrder
      * @return RESULTS
      */
-    public RESULTS search(String searchString, long startTime, long endTime, int resultSize, List<String> entityTypes, boolean negateQuery
+    RESULTS search(String searchString, long startTime, long endTime, int resultSize, List<String> entityTypes, boolean negateQuery
         , String sortField, String sortOrder);
 
     /**
@@ -100,7 +100,7 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      * @param sortOrder
      * @return RESULTS
      */
-    public RESULTS search(String searchString, long startTime, long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery
+    RESULTS search(String searchString, long startTime, long endTime, int offset, int resultSize, List<String> entityTypes, boolean negateQuery
         , String sortField, String sortOrder);
 
     /**
@@ -108,7 +108,7 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      *
      * @param solrUsername
      */
-    public void setSolrUsername(String solrUsername);
+    void setSolrUsername(String solrUsername);
 
 
     /**
@@ -116,12 +116,12 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      *
      * @param solrPassword
      */
-    public void setSolrPassword(String solrPassword);
+    void setSolrPassword(String solrPassword);
 
     /**
      * Method to remove expired records from the solr index.
      */
-    public void removeExpired();
+    void removeExpired();
 
     /**
      * Method to find a document in the solr index by type and id.
@@ -129,7 +129,7 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      * @param type
      * @param id
      */
-    public DOCUMENT findById(String type, String id);
+    DOCUMENT findById(String type, String id);
 
     /**
      * Method to find a document in the solr index by type and id.
@@ -137,7 +137,7 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      * @param type
      * @param uri
      */
-    public DOCUMENT findByErrorUri(String type, String uri);
+    DOCUMENT findByErrorUri(String type, String uri);
 
     /**
      * Method to remove records from the solr index by type and id.
@@ -145,19 +145,27 @@ public interface SolrGeneralDao<RESULTS, DOCUMENT>
      * @param type
      * @param id
      */
-    public void removeById(String type, String id);
+    void removeById(String type, String id);
 
     /**
      * Save or update an IkasanSolrDocument
      *
      * @param ikasanSolrDocument
      */
-    public void saveOrUpdate(IkasanSolrDocument ikasanSolrDocument);
+    void saveOrUpdate(IkasanSolrDocument ikasanSolrDocument);
 
     /**
      * Save or update a list of IkasanSolrDocument
      *
      * @param ikasanSolrDocuments
      */
-    public void saveOrUpdate(List<IkasanSolrDocument> ikasanSolrDocuments);
+    void saveOrUpdate(List<IkasanSolrDocument> ikasanSolrDocuments);
+
+    /**
+     * Backs up the Solr index to a specified location with a specified number of backups to keep.
+     *
+     * @param backupLocationPath The path where the backup of the index should be stored
+     * @param numberOfBackupsToKeep The number of backup copies of the index to keep
+     */
+    void backupIndex(String backupLocationPath, int numberOfBackupsToKeep);
 }

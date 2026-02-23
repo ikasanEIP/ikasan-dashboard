@@ -144,5 +144,10 @@ public class SolrGeneralServiceImpl extends SolrServiceBase implements SolrGener
         this.solrGeneralDao.removeById(type, id);
     }
 
-
+    @Override
+    public void backupIndex(String backupLocationPath, int numberOfBackupsToKeep) {
+        this.solrGeneralDao.setSolrUsername(this.solrUsername);
+        this.solrGeneralDao.setSolrPassword(this.solrPassword);
+        this.solrGeneralDao.backupIndex(backupLocationPath, numberOfBackupsToKeep);
+    }
 }
