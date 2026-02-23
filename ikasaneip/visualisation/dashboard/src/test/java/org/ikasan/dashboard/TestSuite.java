@@ -4,6 +4,7 @@ import org.ikasan.dashboard.notification.business.stream.BusinessStreamNotificat
 import org.ikasan.dashboard.notification.business.stream.service.BusinessStreamNotificationServiceTest;
 import org.ikasan.dashboard.notification.scheduler.SchedulerNotificationJobTest;
 import org.ikasan.dashboard.notification.scheduler.service.SchedulerNotificationServiceTest;
+import org.ikasan.dashboard.backup.schedule.SolrIndexBackupJobTest;
 import org.ikasan.dashboard.security.schedule.LdapDirectorySynchronisationJobTest;
 import org.ikasan.dashboard.ui.administration.filter.*;
 import org.ikasan.dashboard.ui.administration.util.ConfigurationChangedSystemEventFormatterTest;
@@ -76,6 +77,7 @@ import org.junit.runners.Suite;
     ComponentConfigurationDialogTest.class,
     ModuleFilteringGridTest.class,
     FlowFilteringGridTest.class,
+    SolrIndexBackupJobTest.class,
     LdapDirectorySynchronisationJobTest.class,
     ModuleVisualisationViewTest.class,
     SystemEventSearchViewTest.class,

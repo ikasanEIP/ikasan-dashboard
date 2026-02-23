@@ -134,7 +134,7 @@ public class SolrReplayServiceTest extends SolrTestCaseJ4
         {
             {
                 // set event factory
-                oneOf(server).request(with(any(UpdateRequest.class)));
+                oneOf(server).request(with(any(UpdateRequest.class)), with(any(String.class)));
                 will(throwException(new RuntimeException("Error")));
 
             }

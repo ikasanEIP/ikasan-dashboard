@@ -7,8 +7,12 @@ import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.client.solrj.request.GenericSolrRequest;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.NodeConfig;
+import org.hamcrest.Description;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -37,7 +41,7 @@ import static org.ikasan.spec.solr.SolrDaoBase.DO_NOT_EXPIRE;
 /**
  * Created by Ikasan Development Team on 04/08/2017.
  */
-public class SolrGeneralSearchDaoTest extends SolrTestCaseJ4
+public class SolrGeneralDaoTest extends SolrTestCaseJ4
 {
     /**
      * Mockery for mocking concrete classes
@@ -832,6 +836,39 @@ public class SolrGeneralSearchDaoTest extends SolrTestCaseJ4
             assertEquals(35, dao.search(null, null, null, "mrsquid6", null, 0
                 , System.currentTimeMillis() + 100000000l, 0,  100, entityTypes, false, null ,null ).getResultList().size());
         }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_backup_index_success() throws Exception {
+        final String backupPath = tmppath.toString();
+        final int numberOfBackupsToKeep = 1;
+
+        dao = new SolrGeneralDaoImpl();
+        dao.setSolrClient(server);
+
+        mockery.checking(new Expectations() {{
+            oneOf(server).request(with(new org.hamcrest.TypeSafeMatcher<GenericSolrRequest>() {
+                @Override
+                public void describeTo(Description description) {
+                    description.appendText("a GenericSolrRequest for backup");
+                }
+
+                @Override
+                protected boolean matchesSafely(GenericSolrRequest item) {
+                    SolrParams params = item.getParams();
+                    return item.getPath().equals("/ikasan/replication") &&
+                           params.get("command").equals("backup") &&
+                           params.get("location").equals(backupPath) &&
+                           params.get("numberToKeep").equals(String.valueOf(numberOfBackupsToKeep));
+                }
+            }), with(aNull(String.class)));
+            will(returnValue(new NamedList<>()));
+        }});
+
+        dao.backupIndex(backupPath, numberOfBackupsToKeep);
+
+        mockery.assertIsSatisfied();
     }
 
     public static String TEST_HOME() {

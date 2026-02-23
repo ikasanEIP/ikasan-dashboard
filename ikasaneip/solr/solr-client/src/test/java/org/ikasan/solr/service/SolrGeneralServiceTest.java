@@ -21,7 +21,7 @@ import java.util.Set;
 /**
  * Created by Ikasan Development Team on 04/08/2017.
  */
-public class SolrGeneralSearchServiceTest extends SolrTestCaseJ4
+public class SolrGeneralServiceTest extends SolrTestCaseJ4
 {
     SolrGeneralDaoImpl dao;
 
