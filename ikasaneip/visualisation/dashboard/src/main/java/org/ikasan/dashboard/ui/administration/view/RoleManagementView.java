@@ -87,6 +87,7 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
         labelLayout.add(roleManagementLabel);
 
         Button addRoleButton = new Button(VaadinIcon.PLUS.create());
+        addRoleButton.setId("addRoleButton");
         addRoleButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             NewRoleDialog newRoleDialog = new NewRoleDialog(this.securityService, this.systemEventLogger);
             newRoleDialog.open();
@@ -116,6 +117,7 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
         RoleFilter roleFilter = new RoleFilter();
 
         this.roleGrid = new FilteringGrid<>(roleFilter);
+        this.roleGrid.setId("roleGrid");
         this.roleGrid.setSizeFull();
         this.roleGrid.setClassName("my-grid");
 

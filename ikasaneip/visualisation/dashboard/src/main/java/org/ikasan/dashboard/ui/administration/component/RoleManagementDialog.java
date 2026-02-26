@@ -117,6 +117,8 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
      */
     private void init()
     {
+        super.title.setText(getTranslation("label.ikasan-roles", UI.getCurrent().getLocale()));
+
         this.role = this.securityService.getRoleById(role.getId());
 
         Accordion accordion = new Accordion();
@@ -149,16 +151,16 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
      */
     private VerticalLayout createIkasanPoliciesLayout()
     {
-        super.title.setText(getTranslation("label.role-ikasan-policies", UI.getCurrent().getLocale()));
         H3 policyLabel = new H3(getTranslation("label.role-ikasan-policies", UI.getCurrent().getLocale()));
 
         PolicyFilter policyFilter = new PolicyFilter();
 
         this.policyGrid = new FilteringGrid<>(policyFilter);
-        policyGrid.setClassName("my-userGrid");
-        policyGrid.addColumn(Policy::getName).setKey("name").setHeader(getTranslation("table-header.role-name", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(1);
-        policyGrid.addColumn(Policy::getDescription).setKey("description").setHeader(getTranslation("table-header.role-description", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(4);
-        policyGrid.addColumn(new ComponentRenderer<>(policy->
+        this.policyGrid.setId("policyGrid");
+        this.policyGrid.setClassName("my-userGrid");
+        this.policyGrid.addColumn(Policy::getName).setKey("name").setHeader(getTranslation("table-header.role-name", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(1);
+        this.policyGrid.addColumn(Policy::getDescription).setKey("description").setHeader(getTranslation("table-header.role-description", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(4);
+        this.policyGrid.addColumn(new ComponentRenderer<>(policy->
         {
             Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
             deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
@@ -191,6 +193,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         policyGrid.setSizeFull();
 
         Button addPolicyButton = new Button(getTranslation("button.add-policy", UI.getCurrent().getLocale(), null));
+        addPolicyButton.setId("addPolicyButton");
         addPolicyButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
             SelectPolicyForRoleDialog dialog = new SelectPolicyForRoleDialog(this.role, this.securityService, this.systemEventLogger, this.policyGrid);
@@ -331,6 +334,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         groupFilter.setTypeFilter("application");
 
         groupGrid = new Grid<>();
+        groupGrid.setId("groupGrid");
         groupGrid.setClassName("my-userGrid");
         groupGrid.addColumn(IkasanPrincipalLite::getName).setKey("name").setHeader(getTranslation("table-header.group-name", UI.getCurrent().getLocale(), null)).setSortable(true);
         groupGrid.addColumn(IkasanPrincipalLite::getDescription).setKey("description").setHeader(getTranslation("table-header.group-description", UI.getCurrent().getLocale(), null)).setSortable(true);
@@ -366,6 +370,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         this.addGridFiltering(this.groupGrid, hr, groupFilter::setDescriptionFilter, "description");
 
         Button addGroup = new Button(getTranslation("button.add-group", UI.getCurrent().getLocale(), null));
+        addGroup.setId("addGroupButton");
         addGroup.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
             SelectGroupForRoleDialog dialog = new SelectGroupForRoleDialog(this.role

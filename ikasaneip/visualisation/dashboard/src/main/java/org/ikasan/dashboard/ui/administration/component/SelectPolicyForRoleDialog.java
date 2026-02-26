@@ -68,6 +68,7 @@ public class SelectPolicyForRoleDialog extends AbstractCloseableResizableDialog
         PolicyFilter policyFilter = new PolicyFilter();
 
         policyGrid = new FilteringGrid<>(policyFilter);
+        policyGrid.setId("selectPolicyGrid");
         policyGrid.setSizeFull();
 
         policyGrid.setClassName("my-grid");
