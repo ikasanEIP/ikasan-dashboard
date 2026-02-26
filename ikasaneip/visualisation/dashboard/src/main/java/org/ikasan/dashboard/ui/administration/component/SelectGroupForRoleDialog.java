@@ -67,6 +67,7 @@ public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
         groupFilter.setTypeFilter("application");
         
         Grid<IkasanPrincipalLite> groupGrid = new Grid<>();
+        groupGrid.setId("groupSelectGrid");
         groupGrid.setClassName("my-grid");
 
         groupGrid.addColumn(IkasanPrincipalLite::getName)
@@ -82,7 +83,11 @@ public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
 
         groupGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<IkasanPrincipalLite>>) ikasanPrincipalLiteItemDoubleClickEvent ->
         {
-                IkasanPrincipal ikasanPrincipal = this.securityService.findPrincipalByName(ikasanPrincipalLiteItemDoubleClickEvent.getItem().getName());
+                // Refresh the role to make sure we do not have a dirty role.
+                this.role = this.securityService.getRoleById(this.role.getId());
+
+                IkasanPrincipal ikasanPrincipal = this.securityService
+                    .findPrincipalByName(ikasanPrincipalLiteItemDoubleClickEvent.getItem().getName());
                 ikasanPrincipal.addRole(this.role);
 
                 this.securityService.savePrincipal(ikasanPrincipal);

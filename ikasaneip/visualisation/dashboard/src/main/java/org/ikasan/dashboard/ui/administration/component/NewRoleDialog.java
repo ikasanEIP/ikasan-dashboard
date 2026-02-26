@@ -51,6 +51,7 @@ public class NewRoleDialog extends AbstractCloseableResizableDialog
         Binder<Role> binder = new Binder<>(Role.class);
 
         TextField nameTf = new TextField(getTranslation("text-field.new-role-name", UI.getCurrent().getLocale(), null));
+        nameTf.setId("nameTf");
         binder.forField(nameTf)
             .withValidator(name -> name != null && name.length() > 0, getTranslation("message.new-role-name-missing", UI.getCurrent().getLocale(), null))
             .bind(Role::getName, Role::setName);
@@ -58,6 +59,7 @@ public class NewRoleDialog extends AbstractCloseableResizableDialog
         formLayout.setColspan(nameTf, 2);
 
         TextArea descriptionTf = new TextArea(getTranslation("text-field.new-role-description", UI.getCurrent().getLocale(), null));
+        descriptionTf.setId("descriptionTf");
         binder.forField(descriptionTf)
             .withValidator(description -> description != null && description.length() > 0, getTranslation("message.new-role-description-missing", UI.getCurrent().getLocale(), null))
             .bind(Role::getDescription, Role::setDescription);
@@ -76,6 +78,7 @@ public class NewRoleDialog extends AbstractCloseableResizableDialog
         formLayout.setSizeFull();
 
         Button save = new Button(getTranslation("button.save", UI.getCurrent().getLocale(), null));
+        save.setId("saveButton");
         save.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
             try
