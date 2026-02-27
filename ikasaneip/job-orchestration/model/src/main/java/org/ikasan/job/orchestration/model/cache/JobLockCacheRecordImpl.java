@@ -7,7 +7,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 
@@ -16,7 +16,7 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     private static ObjectMapper objectMapper;
 
     static {
-        objectMapper = ObjectMapperFactory.newInstance();
+        objectMapper = ConcurrentObjectMapperFactory.newInstance();
     }
 
     private String id;
