@@ -3,6 +3,7 @@ package org.ikasan.job.orchestration.context.cache;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.AbstractJobLockCacheTest;
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
+import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.event.JobLockCacheEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
@@ -32,11 +33,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -5335,6 +5337,122 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         assertEquals(0, jobLocksByLockName.size());
         assertEquals(0, jobLocksByIdentifier.size());
+    }
+
+    @Test
+    public void test_job_lock_cache_is_locked_lock_and_release_multi_threaded() {
+        ExecutorService executor = Executors.newFixedThreadPool(2, new JobThreadFactory("JobLockCacheImpl"));
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        String contextId0 = UUID.randomUUID().toString();
+        String contextId1 = UUID.randomUUID().toString();
+        String contextId2 = UUID.randomUUID().toString();
+
+        assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
+
+        // 3 jobs one lock count
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1)), "environment");
+
+        AtomicBoolean threadOneFinished = new AtomicBoolean(false);
+        AtomicBoolean threadTwoFinished = new AtomicBoolean(false);
+        AtomicBoolean hasAssertionError = new AtomicBoolean(false);
+        AtomicBoolean hasException = new AtomicBoolean(false);
+
+        executor.submit(() -> {
+            try {
+                for(int i=0; i<1000; i++ ) {
+                    assertTrue(jlc.doesJobParticipateInLock("AgentName0-TEST-LOCK-JobName0", "contextName", "environment"));
+                    jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
+
+                    // lock it
+                    jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment");
+
+                    jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
+                    jlc.hasLock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment");
+                    jlc.locked("AgentName1-TEST-LOCK-JobName1", "contextName", "environment");
+                    jlc.hasLock("AgentName1-TEST-LOCK-JobName1", contextId1, "environment");
+                    jlc.locked("AgentName2-TEST-LOCK-JobName2", "contextName", "environment");
+                    jlc.hasLock("AgentName2-TEST-LOCK-JobName2", contextId2, "environment");
+
+                    // release the lock - only the lock holder can release the lock
+                    jlc.release("AgentName0-TEST-LOCK-JobName0", contextId2, "environment");
+                    jlc.release("AgentName0-TEST-LOCK-JobName0", contextId1, "environment");
+                    jlc.release("AgentName2-TEST-LOCK-JobName2", contextId2, "environment");
+                    jlc.release("AgentName1-TEST-LOCK-JobName1", contextId1, "environment");
+                    jlc.release("AgentName1-TEST-LOCK-JobName1", contextId2, "environment");
+
+                    jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
+                    jlc.locked("AgentName1-TEST-LOCK-JobName1", "contextName", "environment");
+                    jlc.locked("AgentName2-TEST-LOCK-JobName2", "contextName", "environment");
+
+                    // release
+                    jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "environment");
+
+                    jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
+                    jlc.hasLock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment");
+                    jlc.locked("AgentName1-TEST-LOCK-JobName1", "contextName", "environment");
+                    jlc.hasLock("AgentName1-TEST-LOCK-JobName1", contextId1, "environment");
+                    jlc.locked("AgentName2-TEST-LOCK-JobName2", "contextName", "environment");
+                    jlc.hasLock("AgentName2-TEST-LOCK-JobName2", contextId2, "environment");
+                }
+            }
+            catch (Exception e) {
+                hasException.set(true);
+            }
+            finally {
+                threadOneFinished.set(true);
+            }
+        });
+
+        executor.submit(() -> {
+            try {
+                for(int i=0; i<1000; i++ ) {
+                    jlc.doesJobParticipateInLock("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
+                    jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
+
+                    // lock it
+                    jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment");
+
+                    jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
+                    jlc.hasLock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment");
+                    jlc.locked("AgentName1-TEST-LOCK-JobName1", "contextName", "environment");
+                    jlc.hasLock("AgentName1-TEST-LOCK-JobName1", contextId1, "environment");
+                    jlc.locked("AgentName2-TEST-LOCK-JobName2", "contextName", "environment");
+                    jlc.hasLock("AgentName2-TEST-LOCK-JobName2", contextId2, "environment");
+
+                    // release the lock - only the lock holder can release the lock
+                    jlc.release("AgentName0-TEST-LOCK-JobName0", contextId2, "environment");
+                    jlc.release("AgentName0-TEST-LOCK-JobName0", contextId1, "environment");
+                    jlc.release("AgentName2-TEST-LOCK-JobName2", contextId2, "environment");
+                    jlc.release("AgentName1-TEST-LOCK-JobName1", contextId1, "environment");
+                    jlc.release("AgentName1-TEST-LOCK-JobName1", contextId2, "environment");
+
+                    jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
+                    jlc.locked("AgentName1-TEST-LOCK-JobName1", "contextName", "environment");
+                    jlc.locked("AgentName2-TEST-LOCK-JobName2", "contextName", "environment");
+
+                    // release
+                    jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "environment");
+
+                    jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "environment");
+                    jlc.hasLock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment");
+                    jlc.locked("AgentName1-TEST-LOCK-JobName1", "contextName", "environment");
+                    jlc.hasLock("AgentName1-TEST-LOCK-JobName1", contextId1, "environment");
+                    jlc.locked("AgentName2-TEST-LOCK-JobName2", "contextName", "environment");
+                    jlc.hasLock("AgentName2-TEST-LOCK-JobName2", contextId2, "environment");
+                }
+            }
+            catch (Exception e) {
+                hasException.set(true);
+            }
+            finally {
+                threadTwoFinished.set(true);
+            }
+        });
+
+        await().atMost(30, TimeUnit.SECONDS)
+            .until(() -> threadOneFinished.get() && threadTwoFinished.get());
+        Assert.assertFalse(hasException.get());
     }
 
     private void validateJobLocksByIdentifier(ConcurrentHashMap<String, String> jobLocksByIdentifier, ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName) {
