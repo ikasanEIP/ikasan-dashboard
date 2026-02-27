@@ -145,7 +145,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
     }
 
     @Override
-    public boolean doesJobParticipateInLock(String jobIdentifier, String contextName, String environment) {
+    public synchronized boolean doesJobParticipateInLock(String jobIdentifier, String contextName, String environment) {
         this.initialiseJobLockCacheDataForEnvironment(environment);
         AtomicBoolean participatesInLock = new AtomicBoolean(false);
         this.getJobLockCacheData(environment).getJobLocksByLockName().entrySet().forEach(entry -> {

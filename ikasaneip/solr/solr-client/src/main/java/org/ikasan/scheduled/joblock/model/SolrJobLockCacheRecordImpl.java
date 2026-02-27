@@ -4,14 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.scheduled.util.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
 
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
