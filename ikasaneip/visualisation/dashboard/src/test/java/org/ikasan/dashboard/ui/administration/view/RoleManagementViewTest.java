@@ -8,9 +8,11 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.security.model.Role;
 import org.ikasan.security.service.SecurityService;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.ikasan.security.model.IkasanPrincipal;
+import org.springframework.test.annotation.DirtiesContext;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -33,7 +35,13 @@ public class RoleManagementViewTest extends UITest
         securityService.savePrincipal(ikasanPrincipal);
     }
 
+    @After
+    public void teardown() {
+        securityService.deletePrincipal(securityService.findPrincipalByName("sample_group"));
+    }
+
     @Test
+    @DirtiesContext
     public void testRoleManagementView() throws IOException
     {
         UI.getCurrent().navigate("roleManagement");
@@ -43,6 +51,7 @@ public class RoleManagementViewTest extends UITest
     }
 
     @Test
+    @DirtiesContext
     public void test_add_new_role() throws IOException
     {
         // Navigate to the role management view
