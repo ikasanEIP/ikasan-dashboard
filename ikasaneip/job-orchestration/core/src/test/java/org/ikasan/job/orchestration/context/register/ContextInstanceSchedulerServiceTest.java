@@ -52,7 +52,8 @@ public class ContextInstanceSchedulerServiceTest {
     @Before
     public void setUp() {
         contextInstanceSchedulerService = new ContextInstanceSchedulerServiceImpl(scheduler, scheduledJobFactory,
-            scheduledContextService, contextInstanceRegistrationService, new TimeService(), true, true);
+            scheduledContextService, contextInstanceRegistrationService, new TimeService(),
+            true, true, 5, 1000);
         ContextMachineCache.instance().resetAllCache();
     }
 

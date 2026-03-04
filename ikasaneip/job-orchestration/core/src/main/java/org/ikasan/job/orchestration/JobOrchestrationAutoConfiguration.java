@@ -61,8 +61,14 @@ public class JobOrchestrationAutoConfiguration implements ApplicationListener<Co
     @Value("${context.lifecycle.active:true}")
     private boolean isContextLifeCycleActive;
 
-    @Value("${s.ikasan.enterprise.scheduler.instance:true}")
+    @Value("${is.ikasan.enterprise.scheduler.instance:true}")
     private boolean isIkasanEnterpriseSchedulerInstance;
+
+    @Value("${scheduler.instance.registration.attempts:5}")
+    private int registrationJobAttempts;
+
+    @Value("${scheduler.instance.registration.retry.interval,milliseconds:1000}")
+    private int registrationJobRetryInterval;
 
     @Resource
     private JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration;
@@ -116,7 +122,9 @@ public class JobOrchestrationAutoConfiguration implements ApplicationListener<Co
             contextInstanceRegistrationService,
             timeService,
             this.isContextLifeCycleActive,
-            this.isIkasanEnterpriseSchedulerInstance);
+            this.isIkasanEnterpriseSchedulerInstance,
+            this.registrationJobAttempts,
+            this.registrationJobRetryInterval);
     }
 
     @Override
