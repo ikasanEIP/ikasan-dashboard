@@ -36,24 +36,30 @@ public class ContextInstanceSchedulerServiceImpl extends AbstractDashboardSchedu
     private final TimeService timeService;
     private final boolean isContextLifeCycleActive;
     private final boolean isIkasanEnterpriseSchedulerInstance;
+    private int registrationJobAttempts;
+    private int registrationJobRetryInterval;
 
     /**
-     * Constructor for the ContextInstanceSchedulerServiceImpl class.
+     * Constructor for ContextInstanceSchedulerServiceImpl class.
      *
-     * @param scheduler                          the scheduler to be used
-     * @param scheduledJobFactory                the factory for creating scheduled jobs
-     * @param scheduledContextService            the service for managing scheduled contexts
-     * @param contextInstanceRegistrationService the service for registering context instances
-     * @param timeService                        the service for time-related operations
-     * @param isContextLifeCycleActive           flag indicating if the context lifecycle is active
-     * @param isIkasanEnterpriseSchedulerInstance flag indicating if it's an Ikasan enterprise scheduler instance
+     * @param scheduler the Scheduler instance
+     * @param scheduledJobFactory the ScheduledJobFactory instance
+     * @param scheduledContextService the ScheduledContextService instance
+     * @param contextInstanceRegistrationService the ContextInstanceRegistrationService instance
+     * @param timeService the TimeService instance
+     * @param isContextLifeCycleActive flag indicating if context lifecycle is active
+     * @param isIkasanEnterpriseSchedulerInstance flag indicating if an enterprise scheduler instance is used
+     * @param registrationJobAttempts number of retries for registration job
+     * @param registrationJobRetryInterval interval between registration job retries
      */
     public ContextInstanceSchedulerServiceImpl(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory,
                                                ScheduledContextService scheduledContextService,
                                                ContextInstanceRegistrationService contextInstanceRegistrationService,
                                                TimeService timeService,
                                                boolean isContextLifeCycleActive,
-                                               boolean isIkasanEnterpriseSchedulerInstance) {
+                                               boolean isIkasanEnterpriseSchedulerInstance,
+                                               int registrationJobAttempts,
+                                               int registrationJobRetryInterval) {
 
         super(scheduler, scheduledJobFactory);
         this.scheduledContextService = scheduledContextService;
@@ -73,6 +79,8 @@ public class ContextInstanceSchedulerServiceImpl extends AbstractDashboardSchedu
 
         this.isContextLifeCycleActive = isContextLifeCycleActive;
         this.isIkasanEnterpriseSchedulerInstance = isIkasanEnterpriseSchedulerInstance;
+        this.registrationJobAttempts = registrationJobAttempts;
+        this.registrationJobRetryInterval = registrationJobRetryInterval;
     }
 
     /**
@@ -116,7 +124,8 @@ public class ContextInstanceSchedulerServiceImpl extends AbstractDashboardSchedu
     public void registerStartJobAndTrigger(ContextTemplate contextTemplate, String timezone) {
         final ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(
             contextTemplate.getName(), CustomWeekdayOfMonthHelper.determineContextStartCron(contextTemplate, this.timeService.getLocalDateNow())
-            , timezone, contextInstanceRegistrationService, this, contextTemplate);
+            , timezone, contextInstanceRegistrationService, this, contextTemplate, this.registrationJobAttempts
+            , this.registrationJobRetryInterval);
         final JobDetail jobDetail = scheduledJobFactory.createJobDetail(job, ContextInstanceRegisterJob.class, job.getJobName(), CONTEXT_START_GROUP);
 
         // Overwrite if already in map

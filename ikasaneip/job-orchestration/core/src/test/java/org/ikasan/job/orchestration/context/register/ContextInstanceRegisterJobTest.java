@@ -10,9 +10,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.quartz.JobExecutionException;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextInstanceRegisterJobTest {
@@ -37,7 +38,8 @@ public class ContextInstanceRegisterJobTest {
         contextName = RandomStringUtils.randomAlphabetic(22);
         timezone = RandomStringUtils.randomAlphabetic(22);
         contextInstanceRegisterJob = new ContextInstanceRegisterJob(contextName, "0 0 6 ? * * *", timezone,
-            contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.contextTemplate);
+            contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.contextTemplate
+            , 5, 2000);
     }
 
     @Test
@@ -60,5 +62,52 @@ public class ContextInstanceRegisterJobTest {
         contextInstanceRegisterJob.execute(new JobExecutionContextDefaultImpl());
 
         verify(contextInstanceRegistrationService).register(contextName, this.contextInstanceSchedulerService);
+    }
+
+    @Test
+    public void execute_with_retry_followed_by_success() throws Exception {
+        doThrow(new RuntimeException("error!"))
+            .doNothing()
+            .when(contextInstanceRegistrationService).register(any(), any());
+
+        contextInstanceRegisterJob.execute(new JobExecutionContextDefaultImpl());
+
+        verify(contextInstanceRegistrationService, times(2))
+            .register(contextName, this.contextInstanceSchedulerService);
+    }
+
+    @Test(expected = JobExecutionException.class)
+    public void execute_with_retry_followed_by_recovery_but_retries_exceeded() throws Exception {
+        Exception exception = new RuntimeException("error!");
+
+        doThrow(exception)
+            .doThrow(exception)
+            .doThrow(exception)
+            .doThrow(exception)
+            .doThrow(exception)
+            .doNothing()
+            .when(contextInstanceRegistrationService).register(any(), any());
+
+        contextInstanceRegisterJob.execute(new JobExecutionContextDefaultImpl());
+
+        verify(contextInstanceRegistrationService, times(5))
+            .register(contextName, this.contextInstanceSchedulerService);
+    }
+
+    @Test(expected = JobExecutionException.class)
+    public void execute_with_one_retry_exception() throws Exception {
+        contextInstanceRegisterJob = new ContextInstanceRegisterJob(contextName, "0 0 6 ? * * *", timezone,
+            contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.contextTemplate
+            , 1, 2000);
+
+        Exception exception = new RuntimeException("error!");
+
+        doThrow(exception)
+            .when(contextInstanceRegistrationService).register(any(), any());
+
+        contextInstanceRegisterJob.execute(new JobExecutionContextDefaultImpl());
+
+        verify(contextInstanceRegistrationService, times(1))
+            .register(contextName, this.contextInstanceSchedulerService);
     }
 }

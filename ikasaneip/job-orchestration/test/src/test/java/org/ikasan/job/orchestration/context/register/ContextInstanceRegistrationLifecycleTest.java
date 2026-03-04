@@ -153,7 +153,8 @@ public class ContextInstanceRegistrationLifecycleTest {
             true);
 
         contextInstanceSchedulerService = new ContextInstanceSchedulerServiceImpl(scheduler, scheduledJobFactory,
-            scheduledContextService, contextInstanceRegistrationService, this.timeService, true, true);
+            scheduledContextService, contextInstanceRegistrationService, this.timeService,
+            true, true, 5, 1000);
         ContextMachineCache.instance().resetAllCache();
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
