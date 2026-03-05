@@ -390,23 +390,30 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      */
     protected void addQueuedSchedulerJobInitiationEvent(ContextInstance contextInstance, ContextInstance parentContextInstance
         , String jobIdentifier, SchedulerJobInitiationEvent event) {
-        logger.info("Add queued scheduler job {}", event.getInternalEventDrivenJob());
-        if(this.jobLockCache == null) {
-            this.jobLockCache = JobLockCacheImpl.instance();
+        if(!contextInstance.getScheduledJobsMap().get(event.getInternalEventDrivenJob().getIdentifier()).getStatus()
+            .equals(InstanceStatus.ON_HOLD)) {
+            logger.info("Add queued scheduler job {}", event.getInternalEventDrivenJob());
+            if(this.jobLockCache == null) {
+                this.jobLockCache = JobLockCacheImpl.instance();
+            }
+            // If already locked, we add the job to the queued jobs, as the lock is held by another job.
+            this.jobLockCache.addQueuedSchedulerJobInitiationEvent(jobIdentifier, contextInstance.getName(), event
+                , parentContextInstance.getEnvironmentGroup());
+
+            SchedulerJobInstance schedulerJobInstance = event.getInternalEventDrivenJob();
+
+            InstanceStatus currentJobState = schedulerJobInstance.getStatus();
+
+
+            schedulerJobInstance.setStatus(InstanceStatus.LOCK_QUEUED);
+            contextInstance.getScheduledJobsMap().get(jobIdentifier).setStatus(InstanceStatus.LOCK_QUEUED);
+
+            this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, parentContextInstance
+                , currentJobState, schedulerJobInstance.getStatus()));
         }
-        // If already locked, we add the job to the queued jobs, as the lock is held by another job.
-        this.jobLockCache.addQueuedSchedulerJobInitiationEvent(jobIdentifier, contextInstance.getName(), event
-            , parentContextInstance.getEnvironmentGroup());
-
-        SchedulerJobInstance schedulerJobInstance = event.getInternalEventDrivenJob();
-
-        InstanceStatus currentJobState = schedulerJobInstance.getStatus();
-
-        schedulerJobInstance.setStatus(InstanceStatus.LOCK_QUEUED);
-        contextInstance.getScheduledJobsMap().get(jobIdentifier).setStatus(InstanceStatus.LOCK_QUEUED);
-
-        this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, parentContextInstance
-            , currentJobState, schedulerJobInstance.getStatus()));
+        else {
+            logger.info("Job {} was ON HOLD and will NOT be added to job lock queue!", event.getInternalEventDrivenJob());
+        }
     }
 
     /**
