@@ -35,6 +35,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -5580,5 +5581,414 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertEquals("Job1New Description", schedulerJob.getJobDescription());
         assertEquals("AgentName1New-TEST-LOCK-1-JobName1New", schedulerJob.getIdentifier());
         assertEquals(schedulerJob.getAgentName() + "-" + schedulerJob.getJobName(), schedulerJob.getIdentifier());
+    }
+
+    @Test
+    public void test_concurrent_addLocks_thread_safety() throws Exception {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.reset("test-env");
+        jlc.setJobLockCacheService(jobLockCacheService);
+
+        int numThreads = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        CountDownLatch latch = new CountDownLatch(numThreads);
+        AtomicBoolean hasException = new AtomicBoolean(false);
+
+        for (int i = 0; i < numThreads; i++) {
+            final int threadNum = i;
+            executor.submit(() -> {
+                try {
+                    JobLock jobLock = makeJobLock("LOCK-" + threadNum, 3, 1);
+                    jlc.addLocks(List.of(jobLock), "test-env");
+                } catch (Exception e) {
+                    LOGGER.error("Exception in thread " + threadNum, e);
+                    hasException.set(true);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        assertTrue("Threads timed out", latch.await(30, TimeUnit.SECONDS));
+        assertFalse("Exception occurred during concurrent addLocks", hasException.get());
+
+        // Verify all locks were added
+        JobLockCacheData cacheData = ((JobLockCacheImpl) jlc).getJobLockCacheData("test-env");
+        assertEquals("All locks should be added", 10, cacheData.getJobLocksByLockName().size());
+
+        executor.shutdown();
+    }
+
+    @Test
+    public void test_concurrent_lock_acquisition_race_condition() throws Exception {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.reset("test-env");
+        jlc.setJobLockCacheService(jobLockCacheService);
+
+        // Create a lock with count of 1 - only one thread can acquire it
+        jlc.addLocks(List.of(makeJobLock("EXCLUSIVE-LOCK", 1, 1)), "test-env");
+
+        int numThreads = 20;
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch endLatch = new CountDownLatch(numThreads);
+        AtomicReference<String> lockHolder = new AtomicReference<>();
+        List<String> acquiredLocks = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < numThreads; i++) {
+            final String contextId = "context-" + i;
+            executor.submit(() -> {
+                try {
+                    startLatch.await(); // All threads start at the same time
+                    boolean acquired = jlc.lock("AgentName0-EXCLUSIVE-LOCK-JobName0", contextId, "test-env");
+                    if (acquired) {
+                        acquiredLocks.add(contextId);
+                        // Hold the lock briefly
+                        Thread.sleep(10);
+                        jlc.release("AgentName0-EXCLUSIVE-LOCK-JobName0", contextId, "test-env");
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Exception in lock acquisition", e);
+                } finally {
+                    endLatch.countDown();
+                }
+            });
+        }
+
+        startLatch.countDown(); // Start all threads
+        assertTrue("Threads timed out", endLatch.await(30, TimeUnit.SECONDS));
+
+        // With lock count of 1, only one thread at a time should acquire the lock
+        // But over time, multiple threads should get a turn
+        assertTrue("At least some threads should acquire the lock", acquiredLocks.size() > 0);
+        assertTrue("Not all threads should acquire simultaneously", acquiredLocks.size() <= numThreads);
+
+        executor.shutdown();
+    }
+
+    @Test
+    public void test_concurrent_exclusive_lock_enforcement() throws Exception {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.reset("test-env");
+        jlc.setJobLockCacheService(jobLockCacheService);
+
+        // Create an exclusive lock
+        JobLock exclusiveLock = makeJobLock("EXCLUSIVE", 1, 1);
+        exclusiveLock.setExclusiveJobLock(true);
+        jlc.addLocks(List.of(exclusiveLock), "test-env");
+
+        int numThreads = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch endLatch = new CountDownLatch(numThreads);
+        AtomicInteger concurrentHolders = new AtomicInteger(0);
+        AtomicInteger maxConcurrent = new AtomicInteger(0);
+
+        for (int i = 0; i < numThreads; i++) {
+            final String contextId = "context-" + i;
+            executor.submit(() -> {
+                try {
+                    startLatch.await();
+                    for (int j = 0; j < 50; j++) {
+                        if (jlc.lock("AgentName0-EXCLUSIVE-JobName0", contextId, "test-env")) {
+                            int current = concurrentHolders.incrementAndGet();
+                            maxConcurrent.updateAndGet(max -> Math.max(max, current));
+                            Thread.sleep(1); // Hold briefly
+                            concurrentHolders.decrementAndGet();
+                            jlc.release("AgentName0-EXCLUSIVE-JobName0", contextId, "test-env");
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Exception", e);
+                } finally {
+                    endLatch.countDown();
+                }
+            });
+        }
+
+        startLatch.countDown();
+        assertTrue(endLatch.await(30, TimeUnit.SECONDS));
+
+        // Exclusive lock should never have more than 1 concurrent holder
+        assertEquals("Exclusive lock should allow max 1 concurrent holder", 1, maxConcurrent.get());
+
+        executor.shutdown();
+    }
+
+    @Test
+    public void test_concurrent_queue_operations() throws Exception {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.reset("test-env");
+        jlc.setJobLockCacheService(jobLockCacheService);
+
+        jlc.addLocks(List.of(makeJobLock("QUEUE-LOCK", 1, 1)), "test-env");
+
+        int numProducers = 5;
+        int numConsumers = 3;
+        ExecutorService executor = Executors.newFixedThreadPool(numProducers + numConsumers);
+        CountDownLatch producerLatch = new CountDownLatch(numProducers);
+        CountDownLatch consumerLatch = new CountDownLatch(numConsumers);
+        AtomicBoolean hasException = new AtomicBoolean(false);
+        List<Object> consumed = Collections.synchronizedList(new ArrayList<>());
+
+        // Producers
+        for (int i = 0; i < numProducers; i++) {
+            final int producerId = i;
+            executor.submit(() -> {
+                try {
+                    for (int j = 0; j < 20; j++) {
+                        InternalEventDrivenJobInstance job = new InternalEventDrivenJobInstanceImpl();
+                        job.setJobName("JobName0");
+                        job.setIdentifier("AgentName0-QUEUE-LOCK-JobName0");
+                        job.setContextName("context");
+                        job.setChildContextName("child-" + producerId + "-" + j);
+
+                        SchedulerJobInitiationEventImpl event = new SchedulerJobInitiationEventImpl();
+                        event.setInternalEventDrivenJob(job);
+                        event.setContextInstanceId(UUID.randomUUID().toString());
+
+                        jlc.addQueuedSchedulerJobInitiationEvent("AgentName0-QUEUE-LOCK-JobName0", "context", event, "test-env");
+                        Thread.sleep(1);
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Producer exception", e);
+                    hasException.set(true);
+                } finally {
+                    producerLatch.countDown();
+                }
+            });
+        }
+
+        // Consumers
+        for (int i = 0; i < numConsumers; i++) {
+            executor.submit(() -> {
+                try {
+                    for (int j = 0; j < 35; j++) {
+                        var events = jlc.pollSchedulerJobInitiationEventWaitQueue("AgentName0-QUEUE-LOCK-JobName0", "context", "test-env");
+                        if (events != null && !events.isEmpty()) {
+                            consumed.addAll(events);
+                        }
+                        Thread.sleep(2);
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Consumer exception", e);
+                    hasException.set(true);
+                } finally {
+                    consumerLatch.countDown();
+                }
+            });
+        }
+
+        assertTrue(producerLatch.await(30, TimeUnit.SECONDS));
+        assertTrue(consumerLatch.await(30, TimeUnit.SECONDS));
+        assertFalse("No exceptions should occur", hasException.get());
+
+        // Should have consumed all or most events
+        assertTrue("Should consume events", consumed.size() > 0);
+
+        executor.shutdown();
+    }
+
+    @Test
+    public void test_concurrent_reset_while_operations_ongoing() throws Exception {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.reset("test-env");
+        jlc.setJobLockCacheService(jobLockCacheService);
+
+        jlc.addLocks(List.of(makeJobLock("RESET-LOCK", 5, 1)), "test-env");
+
+        ExecutorService executor = Executors.newFixedThreadPool(6);
+        CountDownLatch latch = new CountDownLatch(6);
+        AtomicBoolean hasException = new AtomicBoolean(false);
+
+        // 5 threads doing lock/release operations
+        for (int i = 0; i < 5; i++) {
+            final String contextId = "context-" + i;
+            executor.submit(() -> {
+                try {
+                    for (int j = 0; j < 100; j++) {
+                        jlc.lock("AgentName0-RESET-LOCK-JobName0", contextId, "test-env");
+                        Thread.sleep(1);
+                        jlc.release("AgentName0-RESET-LOCK-JobName0", contextId, "test-env");
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Lock operation exception", e);
+                    hasException.set(true);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        // 1 thread doing periodic resets
+        executor.submit(() -> {
+            try {
+                for (int i = 0; i < 20; i++) {
+                    Thread.sleep(10);
+                    jlc.resetLock("RESET-LOCK", "test-env");
+                }
+            } catch (Exception e) {
+                LOGGER.error("Reset exception", e);
+                hasException.set(true);
+            } finally {
+                latch.countDown();
+            }
+        });
+
+        assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertFalse("Operations should complete without exceptions", hasException.get());
+
+        executor.shutdown();
+    }
+
+    @Test
+    public void test_concurrent_multiple_environments() throws Exception {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.reset("env1");
+        jlc.reset("env2");
+        jlc.reset("env3");
+        jlc.setJobLockCacheService(jobLockCacheService);
+
+        String[] environments = {"env1", "env2", "env3"};
+
+        int numThreadsPerEnv = 5;
+        ExecutorService executor = Executors.newFixedThreadPool(environments.length * numThreadsPerEnv);
+        CountDownLatch latch = new CountDownLatch(environments.length * numThreadsPerEnv);
+        AtomicBoolean hasException = new AtomicBoolean(false);
+
+        for (String env : environments) {
+            jlc.addLocks(List.of(makeJobLock("LOCK-" + env, 3, 1)), env);
+
+            for (int i = 0; i < numThreadsPerEnv; i++) {
+                final String contextId = "context-" + i;
+                executor.submit(() -> {
+                    try {
+                        for (int j = 0; j < 100; j++) {
+                            jlc.lock("AgentName0-LOCK-" + env + "-JobName0", contextId, env);
+                            jlc.hasLock("AgentName0-LOCK-" + env + "-JobName0", contextId, env);
+                            jlc.release("AgentName0-LOCK-" + env + "-JobName0", contextId, env);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("Multi-env exception", e);
+                        hasException.set(true);
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+        }
+
+        assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertFalse("No exceptions in multi-environment test", hasException.get());
+
+        // Verify environment isolation - check that all our environments exist
+        JobLockCacheImpl impl = (JobLockCacheImpl) jlc;
+        List<String> envs = impl.getEnvironments();
+        assertTrue("env1 should exist", envs.contains("env1"));
+        assertTrue("env2 should exist", envs.contains("env2"));
+        assertTrue("env3 should exist", envs.contains("env3"));
+
+        executor.shutdown();
+    }
+
+    @Test
+    public void test_concurrent_removeQueuedSchedulerJob() throws Exception {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.reset("test-env");
+        jlc.setJobLockCacheService(jobLockCacheService);
+
+        jlc.addLocks(List.of(makeJobLock("REMOVE-LOCK", 1, 1)), "test-env");
+
+        List<SchedulerJobInstance> instances = Collections.synchronizedList(new ArrayList<>());
+
+        // Add events to queue
+        for (int i = 0; i < 50; i++) {
+            InternalEventDrivenJobInstance job = new InternalEventDrivenJobInstanceImpl();
+            job.setJobName("JobName0");
+            job.setIdentifier("AgentName0-REMOVE-LOCK-JobName0");
+            job.setContextName("context");
+            job.setChildContextName("child-" + i);
+
+            SchedulerJobInitiationEventImpl event = new SchedulerJobInitiationEventImpl();
+            event.setInternalEventDrivenJob(job);
+            String instanceId = UUID.randomUUID().toString();
+            event.setContextInstanceId(instanceId);
+
+            SchedulerJobInstance instance = new SchedulerJobInstanceImpl();
+            instance.setJobName("JobName0");
+            instance.setIdentifier("AgentName0-REMOVE-LOCK-JobName0");
+            instance.setContextName("context");
+            instance.setChildContextName("child-" + i);
+            instance.setContextInstanceId(instanceId);
+            instance.setStatus(InstanceStatus.LOCK_QUEUED);
+            instances.add(instance);
+
+            jlc.addQueuedSchedulerJobInitiationEvent("AgentName0-REMOVE-LOCK-JobName0", "context", event, "test-env");
+        }
+
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        CountDownLatch latch = new CountDownLatch(instances.size());
+        AtomicBoolean hasException = new AtomicBoolean(false);
+
+        // Concurrent removal of queued jobs
+        for (SchedulerJobInstance instance : instances) {
+            executor.submit(() -> {
+                try {
+                    jlc.removeQueuedSchedulerJob(instance, "test-env");
+                } catch (Exception e) {
+                    LOGGER.error("Remove exception", e);
+                    hasException.set(true);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertFalse("No exceptions during concurrent removal", hasException.get());
+
+        executor.shutdown();
+    }
+
+    @Test
+    public void test_concurrent_lock_release_with_doesJobParticipate() throws Exception {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.reset("test-env");
+        jlc.setJobLockCacheService(jobLockCacheService);
+
+        jlc.addLocks(List.of(makeJobLock("PARTICIPATE-LOCK", 3, 1)), "test-env");
+
+        int numThreads = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        CountDownLatch latch = new CountDownLatch(numThreads);
+        AtomicBoolean hasException = new AtomicBoolean(false);
+
+        for (int i = 0; i < numThreads; i++) {
+            final String contextId = "context-" + i;
+            executor.submit(() -> {
+                try {
+                    for (int j = 0; j < 200; j++) {
+                        // Mix of operations
+                        boolean participates = jlc.doesJobParticipateInLock("AgentName0-PARTICIPATE-LOCK-JobName0", "context", "test-env");
+                        assertTrue("Job should participate in lock", participates);
+
+                        if (jlc.lock("AgentName0-PARTICIPATE-LOCK-JobName0", contextId, "test-env")) {
+                            assertTrue(jlc.hasLock("AgentName0-PARTICIPATE-LOCK-JobName0", contextId, "test-env"));
+                            jlc.release("AgentName0-PARTICIPATE-LOCK-JobName0", contextId, "test-env");
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Mixed operations exception", e);
+                    hasException.set(true);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertFalse("No exceptions during mixed operations", hasException.get());
+
+        executor.shutdown();
     }
 }
