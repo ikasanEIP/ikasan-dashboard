@@ -61,9 +61,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -8493,8 +8495,125 @@ public class ContextMachineTest extends AbstractTest {
         InstanceStatus status = contextMachine.getJobStatus(context, jobName);
         Assert.assertEquals(expected, status);
     }
-    
-    // The below is used to disable the outbound threads from consuming the data so that interrogating what is on the BigQueue is possible 
+
+    /**
+     * Test concurrent read operations for thread safety
+     */
+    @Test
+    public void test_concurrent_status_reads() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        int numThreads = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        AtomicBoolean hasException = new AtomicBoolean(false);
+
+        for (int i = 0; i < numThreads; i++) {
+            final int threadNum = i;
+            executor.submit(() -> {
+                try {
+                    for (int j = 0; j < 100; j++) {
+                        // Read operations should be thread-safe
+                        contextMachine.getContextStatus("Context1");
+                        contextMachine.getJobStatus("Context1", "agentName1-jobName1");
+                        contextMachine.getContext();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    hasException.set(true);
+                }
+            });
+        }
+
+        executor.shutdown();
+        assertTrue("Concurrent operations should complete", executor.awaitTermination(30, TimeUnit.SECONDS));
+        assertFalse("No exceptions should occur during concurrent reads", hasException.get());
+    }
+
+    /**
+     * Test concurrent getContext calls
+     */
+    @Test
+    public void test_concurrent_get_context() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        int numThreads = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        AtomicBoolean hasException = new AtomicBoolean(false);
+
+        for (int i = 0; i < numThreads; i++) {
+            executor.submit(() -> {
+                try {
+                    for (int j = 0; j < 100; j++) {
+                        ContextInstance ctx = contextMachine.getContext();
+                        assertFalse(ctx == null);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    hasException.set(true);
+                }
+            });
+        }
+
+        executor.shutdown();
+        assertTrue("Concurrent operations should complete", executor.awaitTermination(30, TimeUnit.SECONDS));
+        assertFalse("No exceptions should occur during concurrent getContext", hasException.get());
+    }
+
+
+    /**
+     * Test error handling when hold job called with invalid job identifier
+     */
+    @Test(expected = ContextMachineException.class)
+    public void test_hold_job_invalid_identifier_throws_exception() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        contextMachine.holdJob("non-existent-job", "Context1");
+    }
+
+    /**
+     * Test error handling when release job called with invalid job identifier
+     */
+    @Test(expected = ContextMachineException.class)
+    public void test_release_job_invalid_identifier_throws_exception() throws Exception {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+
+        contextMachine.releaseJob("non-existent-job", "Context1");
+    }
+
+
+    // The below is used to disable the outbound threads from consuming the data so that interrogating what is on the BigQueue is possible
     protected class SchedulerJobInitiationEventRaisedListenerToDisableOutboundBigQueue implements SchedulerJobInitiationEventRaisedListener {
         @Override
         public void onSchedulerJobInitiationEventRaised(SchedulerJobInitiationEvent event) {
