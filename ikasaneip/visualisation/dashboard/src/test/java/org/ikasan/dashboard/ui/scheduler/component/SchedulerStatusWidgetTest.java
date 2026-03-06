@@ -216,4 +216,160 @@ public class SchedulerStatusWidgetTest extends AbstractSchedulerViewTest {
 
         return agents;
     }
+
+    @Test
+    public void test_widget_is_visible() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
+        Assert.assertTrue(schedulerStatusWidget.isVisible());
+    }
+
+    @Test
+    public void test_all_status_divs_exist() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
+
+        // Verify all status divs exist
+        Assertions.assertNotNull(_get(schedulerStatusWidget, Div.class, spec -> spec.withId("runningDiv")));
+        Assertions.assertNotNull(_get(schedulerStatusWidget, Div.class, spec -> spec.withId("stoppedDiv")));
+        Assertions.assertNotNull(_get(schedulerStatusWidget, Div.class, spec -> spec.withId("errorDiv")));
+        Assertions.assertNotNull(_get(schedulerStatusWidget, Div.class, spec -> spec.withId("recoveringDiv")));
+        Assertions.assertNotNull(_get(schedulerStatusWidget, Div.class, spec -> spec.withId("pausedDiv")));
+        Assertions.assertNotNull(_get(schedulerStatusWidget, Div.class, spec -> spec.withId("unknownDiv")));
+    }
+
+
+    @Test
+    public void test_running_div_initial_state() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
+
+        Div runningDiv = _get(schedulerStatusWidget, Div.class, spec -> spec.withId("runningDiv"));
+        Assertions.assertNotNull(runningDiv);
+        // Verify div contains text (should have initial state)
+        Assertions.assertNotNull(runningDiv.getText());
+    }
+
+    @Test
+    public void test_stopped_div_initial_state() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
+
+        Div stoppedDiv = _get(schedulerStatusWidget, Div.class, spec -> spec.withId("stoppedDiv"));
+        Assertions.assertNotNull(stoppedDiv);
+        Assertions.assertNotNull(stoppedDiv.getText());
+    }
+
+    @Test
+    public void test_error_div_initial_state() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
+
+        Div errorDiv = _get(schedulerStatusWidget, Div.class, spec -> spec.withId("errorDiv"));
+        Assertions.assertNotNull(errorDiv);
+        Assertions.assertNotNull(errorDiv.getText());
+    }
+
+    @Test
+    public void test_recovering_div_initial_state() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
+
+        Div recoveringDiv = _get(schedulerStatusWidget, Div.class, spec -> spec.withId("recoveringDiv"));
+        Assertions.assertNotNull(recoveringDiv);
+        Assertions.assertNotNull(recoveringDiv.getText());
+    }
+
+    @Test
+    public void test_paused_div_initial_state() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
+
+        Div pausedDiv = _get(schedulerStatusWidget, Div.class, spec -> spec.withId("pausedDiv"));
+        Assertions.assertNotNull(pausedDiv);
+        Assertions.assertNotNull(pausedDiv.getText());
+    }
+
+    @Test
+    public void test_unknown_div_initial_state() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
+
+        Div unknownDiv = _get(schedulerStatusWidget, Div.class, spec -> spec.withId("unknownDiv"));
+        Assertions.assertNotNull(unknownDiv);
+        Assertions.assertNotNull(unknownDiv.getText());
+    }
+
+    @Test
+    public void test_widget_has_children() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerStatusWidget schedulerStatusWidget = _get(SchedulerStatusWidget.class);
+
+        // Verify widget has components
+        Assert.assertTrue(schedulerStatusWidget.getChildren().count() > 0);
+    }
+
+    @Test
+    public void test_setup_flow_states_helper_method() {
+        List<FlowState> flowStates = setupFlowStates(3, State.RUNNING_STATE);
+
+        // Verify helper method creates correct number of flow states
+        Assert.assertEquals(3, flowStates.size());
+    }
+
+    @Test
+    public void test_setup_flow_states_has_correct_state() {
+        List<FlowState> flowStates = setupFlowStates(2, State.STOPPED_STATE);
+
+        // Verify flow states have correct state
+        flowStates.forEach(flowState -> {
+            Assert.assertEquals(State.STOPPED_STATE, flowState.getState());
+        });
+    }
+
+    @Test
+    public void test_get_agents_helper_method() {
+        List<ModuleMetaData> agents = getAgents();
+
+        // Verify helper returns agents (should be 28 total: 5+12+3+1+7)
+        Assert.assertEquals(28, agents.size());
+    }
+
+    @Test
+    public void test_get_agents_with_state_helper_method() {
+        List<ModuleMetaData> agents = getAgents(5, State.RUNNING_STATE);
+
+        // Verify helper method creates correct number of agents
+        Assert.assertEquals(5, agents.size());
+    }
+
+    @Test
+    public void test_agents_have_correct_module_type() {
+        List<ModuleMetaData> agents = getAgents(3, State.RUNNING_STATE);
+
+        // Verify all agents have SCHEDULER_AGENT type
+        agents.forEach(agent -> {
+            Assert.assertEquals(ModuleType.SCHEDULER_AGENT, agent.getType());
+        });
+    }
+
+    @Test
+    public void test_agents_have_flows() {
+        List<ModuleMetaData> agents = getAgents(2, State.RUNNING_STATE);
+
+        // Verify all agents have flows
+        agents.forEach(agent -> {
+            Assert.assertNotNull(agent.getFlows());
+            Assert.assertEquals(1, agent.getFlows().size());
+        });
+    }
 }

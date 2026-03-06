@@ -495,4 +495,345 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
         Assert.assertEquals("0 0/2 * 1/1 * ? *", fileEventDrivenJob.getSlaCronExpression());
         Assert.assertEquals("Europe/London", fileEventDrivenJob.getTimeZone());
     }
+
+    @Test
+    public void test_dialog_opens_successfully() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuBar actionsMenuBar = _get(MenuBar.class, spec -> spec.withId("actionsMenuBar"));
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        FileEventJobDialog fileEventJobDialog = _get(FileEventJobDialog.class);
+        Assertions.assertNotNull(fileEventJobDialog);
+        Assert.assertTrue(fileEventJobDialog.isOpened());
+    }
+
+    @Test
+    public void test_dialog_has_all_required_fields() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        // Verify all required fields exist
+        Assertions.assertNotNull(_get(TextField.class, spec -> spec.withId("jobNameTf")));
+        Assertions.assertNotNull(_get(ComboBox.class, spec -> spec.withId("agentCb")));
+        Assertions.assertNotNull(_get(TextArea.class, spec -> spec.withId("jobDescriptionTa")));
+        Assertions.assertNotNull(_get(TextField.class, spec -> spec.withId("filenameTf")));
+        Assertions.assertNotNull(_get(TextField.class, spec -> spec.withId("filePathTf")));
+        Assertions.assertNotNull(_get(TextField.class, spec -> spec.withId("archiveDirectoryTf")));
+        Assertions.assertNotNull(_get(TextField.class, spec -> spec.withId("cronExpressionTf")));
+        Assertions.assertNotNull(_get(ComboBox.class, spec -> spec.withId("timezoneCb")));
+    }
+
+    @Test
+    public void test_dynamic_checkbox_default_value() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        Checkbox isDynamicCheckbox = _get(Checkbox.class, spec -> spec.withId("isDynamicCheckbox"));
+
+        // Verify dynamic checkbox is unchecked by default
+        Assertions.assertFalse(isDynamicCheckbox.getValue());
+    }
+
+    @Test
+    public void test_agent_combobox_has_data() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        ComboBox agentCb = _get(ComboBox.class, spec -> spec.withId("agentCb"));
+
+        // Verify agent combobox has 2 agents
+        Assert.assertEquals(2, ((ListDataProvider)agentCb.getDataProvider()).getItems().size());
+    }
+
+    @Test
+    public void test_save_button_exists() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        Button scheduledJobSaveButton = _get(Button.class, spec -> spec.withId("scheduledJobSaveButton"));
+        Assertions.assertNotNull(scheduledJobSaveButton);
+    }
+
+    @Test
+    public void test_cancel_button_exists() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        Button scheduledJobCancelButton = _get(Button.class, spec -> spec.withId("scheduledJobCancelButton"));
+        Assertions.assertNotNull(scheduledJobCancelButton);
+    }
+
+    @Test
+    public void test_dynamic_mode_shows_additional_fields() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        Checkbox isDynamicCheckbox = _get(Checkbox.class, spec -> spec.withId("isDynamicCheckbox"));
+        isDynamicCheckbox.setValue(true);
+
+        // Verify dynamic fields are visible
+        MultiSelectComboBox filenamePairs = _get(MultiSelectComboBox.class, spec -> spec.withId("filenamePairs"));
+        Assert.assertTrue(filenamePairs.isVisible());
+
+        Button filenamePlus = _get(Button.class, spec -> spec.withId("filenamePlus"));
+        Assert.assertTrue(filenamePlus.isVisible());
+
+        MultiSelectComboBox filepathPairs = _get(MultiSelectComboBox.class, spec -> spec.withId("filepathPairs"));
+        Assert.assertTrue(filepathPairs.isVisible());
+
+        Button filepathPlus = _get(Button.class, spec -> spec.withId("filepathPlus"));
+        Assert.assertTrue(filepathPlus.isVisible());
+    }
+
+    @Test
+    public void test_replacement_pair_dialog_opens_for_filename() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        Checkbox isDynamicCheckbox = _get(Checkbox.class, spec -> spec.withId("isDynamicCheckbox"));
+        isDynamicCheckbox.setValue(true);
+
+        Button filenamePlus = _get(Button.class, spec -> spec.withId("filenamePlus"));
+        _click(filenamePlus);
+
+        ReplacementPairDialog replacementPairDialog = _get(ReplacementPairDialog.class);
+        Assertions.assertNotNull(replacementPairDialog);
+    }
+
+    @Test
+    public void test_replacement_pair_dialog_has_required_fields() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        Checkbox isDynamicCheckbox = _get(Checkbox.class, spec -> spec.withId("isDynamicCheckbox"));
+        isDynamicCheckbox.setValue(true);
+
+        Button filenamePlus = _get(Button.class, spec -> spec.withId("filenamePlus"));
+        _click(filenamePlus);
+
+        TextField replacementTokenTf = _get(TextField.class, spec -> spec.withId("replacementTokenTf"));
+        Assertions.assertNotNull(replacementTokenTf);
+
+        Select contextParameterSelect = _get(Select.class, spec -> spec.withId("contextParameterSelect"));
+        Assertions.assertNotNull(contextParameterSelect);
+
+        Button replacementPairSaveButton = _get(Button.class, spec -> spec.withId("replacementPairSaveButton"));
+        Assertions.assertNotNull(replacementPairSaveButton);
+    }
+
+    @Test
+    public void test_context_parameter_select_has_data() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        Checkbox isDynamicCheckbox = _get(Checkbox.class, spec -> spec.withId("isDynamicCheckbox"));
+        isDynamicCheckbox.setValue(true);
+
+        Button filenamePlus = _get(Button.class, spec -> spec.withId("filenamePlus"));
+        _click(filenamePlus);
+
+        Select contextParameterSelect = _get(Select.class, spec -> spec.withId("contextParameterSelect"));
+
+        // Verify context parameter select has 2 items
+        Assert.assertEquals(2, ((ListDataProvider)contextParameterSelect.getDataProvider()).getItems().size());
+    }
+
+    @Test
+    public void test_sla_cron_expression_field_exists() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        TextField slaCronExpressionTf = _get(TextField.class, spec -> spec.withId("slaCronExpressionTf"));
+        Assertions.assertNotNull(slaCronExpressionTf);
+    }
+
+    @Test
+    public void test_timezone_combobox_exists() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        ComboBox timezoneCb = _get(ComboBox.class, spec -> spec.withId("timezoneCb"));
+        Assertions.assertNotNull(timezoneCb);
+    }
+
+    @Test
+    public void test_replacement_pair_dialog_opens_for_filepath() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        Checkbox isDynamicCheckbox = _get(Checkbox.class, spec -> spec.withId("isDynamicCheckbox"));
+        isDynamicCheckbox.setValue(true);
+
+        Button filepathPlus = _get(Button.class, spec -> spec.withId("filepathPlus"));
+        _click(filepathPlus);
+
+        ReplacementPairDialog replacementPairDialog = _get(ReplacementPairDialog.class);
+        Assertions.assertNotNull(replacementPairDialog);
+    }
+
+    @Test
+    public void test_menu_items_structure() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuBar actionsMenuBar = _get(MenuBar.class, spec -> spec.withId("actionsMenuBar"));
+        Assertions.assertNotNull(actionsMenuBar);
+
+        MenuItem jobTypesMenuItem = _get(MenuItem.class, spec -> spec.withId("jobTypesMenuItem"));
+        Assertions.assertNotNull(jobTypesMenuItem);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        Assertions.assertNotNull(newFileWatcherJobMenuItem);
+    }
 }
