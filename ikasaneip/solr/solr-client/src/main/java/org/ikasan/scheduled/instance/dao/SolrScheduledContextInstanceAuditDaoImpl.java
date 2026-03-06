@@ -32,7 +32,7 @@ public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<Schedu
                 , record.getContextInstance()));
         }
 
-        document.setField(FLOW_NAME, record.getContextInstanceId());
+        document.setField(COMPONENT_NAME, record.getContextInstanceId());
         document.addField(MODULE_NAME, record.getContextName());
         document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
         document.setField(EXPIRY, expiry);
