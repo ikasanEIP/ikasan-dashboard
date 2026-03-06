@@ -357,6 +357,7 @@ public class ContextInstanceDashboardWidget extends Div
         });
 
         Button refresh = new Button(getTranslation("button.refresh"), VaadinIcon.REFRESH.create());
+        refresh.setId("refresh-button");
         refresh.getElement().getStyle().set("cursor", "pointer");
         refresh.setIconAfterText(true);
         refresh.addClickListener(event -> {
@@ -365,6 +366,7 @@ public class ContextInstanceDashboardWidget extends Div
         });
 
         Button clearFiltersButton = new Button(getTranslation("button.clear-filters"), VaadinIcon.FILTER.create());
+        clearFiltersButton.setId("clear-filters-button");
         clearFiltersButton.setIconAfterText(true);
         clearFiltersButton.getElement().getStyle().set("cursor", "pointer");
         clearFiltersButton.addClickListener(event -> {

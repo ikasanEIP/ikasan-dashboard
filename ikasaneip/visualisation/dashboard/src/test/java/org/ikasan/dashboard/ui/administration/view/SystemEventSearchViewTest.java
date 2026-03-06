@@ -251,4 +251,182 @@ public class SystemEventSearchViewTest extends UITest {
         return new SearchResultsImpl<>(ikasanSolrDocuments
             , ikasanSolrDocuments.size(), 1);
     }
+
+    @Test
+    public void test_view_exists() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        SystemEventSearchView systemEventSearchView = _get(SystemEventSearchView.class);
+        Assertions.assertNotNull(systemEventSearchView);
+    }
+
+    @Test
+    public void test_view_is_visible() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        SystemEventSearchView systemEventSearchView = _get(SystemEventSearchView.class);
+        Assertions.assertTrue(systemEventSearchView.isVisible());
+    }
+
+    @Test
+    public void test_search_button_exists() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        Button searchButton = _get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton"));
+        Assertions.assertNotNull(searchButton);
+    }
+
+    @Test
+    public void test_search_results_grid_initialized() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        Mockito.when(this.systemEventSearchService.findByFilter(Mockito.any(SystemEventSearchFilter.class), Mockito.anyInt()
+                , Mockito.anyInt(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrSystemEventsResults(0));
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        SystemEventSearchView systemEventSearchView = _get(SystemEventSearchView.class);
+
+        SystemEventFilteringGrid searchResultsGrid = (SystemEventFilteringGrid) ReflectionTestUtils
+            .getField(systemEventSearchView, "searchResultsGrid");
+
+        Assertions.assertNotNull(searchResultsGrid);
+    }
+
+    @Test
+    public void test_view_has_children() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        SystemEventSearchView systemEventSearchView = _get(SystemEventSearchView.class);
+        Assertions.assertTrue(systemEventSearchView.getChildren().count() > 0);
+    }
+
+    @Test
+    public void test_search_with_zero_results() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        Mockito.when(this.systemEventSearchService.findByFilter(Mockito.any(SystemEventSearchFilter.class), Mockito.anyInt()
+                , Mockito.anyInt(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrSystemEventsResults(0));
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        SystemEventSearchView systemEventSearchView = _get(SystemEventSearchView.class);
+
+        _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
+
+        SystemEventFilteringGrid searchResultsGrid = (SystemEventFilteringGrid) ReflectionTestUtils
+            .getField(systemEventSearchView, "searchResultsGrid");
+
+        Assert.assertEquals(0, searchResultsGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_with_multiple_results() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        Mockito.when(this.systemEventSearchService.findByFilter(Mockito.any(SystemEventSearchFilter.class), Mockito.anyInt()
+                , Mockito.anyInt(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrSystemEventsResults(50));
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        SystemEventSearchView systemEventSearchView = _get(SystemEventSearchView.class);
+
+        _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
+
+        SystemEventFilteringGrid searchResultsGrid = (SystemEventFilteringGrid) ReflectionTestUtils
+            .getField(systemEventSearchView, "searchResultsGrid");
+
+        Assert.assertEquals(50, searchResultsGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_button_clickable() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        Mockito.when(this.systemEventSearchService.findByFilter(Mockito.any(SystemEventSearchFilter.class), Mockito.anyInt()
+                , Mockito.anyInt(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrSystemEventsResults(5));
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        Button searchButton = _get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton"));
+
+        // Verify button is clickable
+        _click(searchButton);
+        Assertions.assertNotNull(searchButton);
+    }
+
+    @Test
+    public void test_grid_is_populated_after_search() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        Mockito.when(this.systemEventSearchService.findByFilter(Mockito.any(SystemEventSearchFilter.class), Mockito.anyInt()
+                , Mockito.anyInt(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrSystemEventsResults(15));
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        SystemEventSearchView systemEventSearchView = _get(SystemEventSearchView.class);
+
+        _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("systemEventSearchFormSearchButton")));
+
+        SystemEventFilteringGrid searchResultsGrid = (SystemEventFilteringGrid) ReflectionTestUtils
+            .getField(systemEventSearchView, "searchResultsGrid");
+
+        // Verify grid has results
+        Assertions.assertTrue(searchResultsGrid.getResultSize() > 0);
+        Assert.assertEquals(15, searchResultsGrid.getResultSize());
+    }
+
+    @Test
+    public void test_navigation_successful() {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        UI.getCurrent().navigate("adminSearchView");
+
+        SystemEventSearchView systemEventSearchView = _get(SystemEventSearchView.class);
+        Assertions.assertTrue(systemEventSearchView.isAttached());
+    }
+
+    @Test
+    public void test_helper_method_creates_correct_results() {
+        SearchResults<SystemEvent> results = getSolrSystemEventsResults(10);
+
+        Assertions.assertNotNull(results);
+        Assert.assertEquals(10, results.getResultList().size());
+        Assert.assertEquals(10, results.getTotalNumberOfResults());
+    }
+
+    @Test
+    public void test_helper_method_creates_empty_results() {
+        SearchResults<SystemEvent> results = getSolrSystemEventsResults(0);
+
+        Assertions.assertNotNull(results);
+        Assert.assertEquals(0, results.getResultList().size());
+        Assert.assertEquals(0, results.getTotalNumberOfResults());
+    }
 }
