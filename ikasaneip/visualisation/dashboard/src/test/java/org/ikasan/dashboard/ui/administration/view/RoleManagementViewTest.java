@@ -125,4 +125,166 @@ public class RoleManagementViewTest extends UITest
         Assertions.assertNotNull(ikasanPrincipal);
         Assertions.assertEquals(1, ikasanPrincipal.getRoles().size());
     }
+
+    @Test
+    public void test_view_is_visible() {
+        UI.getCurrent().navigate("roleManagement");
+
+        RoleManagementView roleManagementView = _get(RoleManagementView.class);
+        Assertions.assertTrue(roleManagementView.isVisible());
+    }
+
+    @Test
+    public void test_view_is_sized_full() {
+        UI.getCurrent().navigate("roleManagement");
+
+        RoleManagementView roleManagementView = _get(RoleManagementView.class);
+        Assertions.assertTrue(roleManagementView.getWidth().equals("100%"));
+    }
+
+    @Test
+    public void test_role_grid_exists() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Grid roleGrid = _get(Grid.class, spec -> spec.withId("roleGrid"));
+        Assertions.assertNotNull(roleGrid);
+    }
+
+    @Test
+    public void test_role_grid_is_sized_full() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Grid roleGrid = _get(Grid.class, spec -> spec.withId("roleGrid"));
+        Assertions.assertTrue(roleGrid.getWidth().equals("100%"));
+    }
+
+    @Test
+    public void test_role_grid_has_columns() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Grid roleGrid = _get(Grid.class, spec -> spec.withId("roleGrid"));
+        Assertions.assertTrue(roleGrid.getColumns().size() > 0);
+    }
+
+    @Test
+    public void test_add_role_button_exists() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Button addRoleButton = _get(Button.class, spec -> spec.withId("addRoleButton"));
+        Assertions.assertNotNull(addRoleButton);
+    }
+
+    @Test
+    public void test_view_has_children() {
+        UI.getCurrent().navigate("roleManagement");
+
+        RoleManagementView roleManagementView = _get(RoleManagementView.class);
+        Assertions.assertTrue(roleManagementView.getChildren().count() > 0);
+    }
+
+    @Test
+    public void test_navigation_successful() {
+        UI.getCurrent().navigate("roleManagement");
+
+        RoleManagementView roleManagementView = _get(RoleManagementView.class);
+        Assertions.assertTrue(roleManagementView.isAttached());
+    }
+
+    @Test
+    public void test_view_has_spacing() {
+        UI.getCurrent().navigate("roleManagement");
+
+        RoleManagementView roleManagementView = _get(RoleManagementView.class);
+        Assertions.assertTrue(roleManagementView.isSpacing());
+    }
+
+    @Test
+    public void test_role_grid_has_default_roles() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Grid roleGrid = _get(Grid.class, spec -> spec.withId("roleGrid"));
+
+        // Verify grid has default roles (should have 5 by default)
+        Assertions.assertTrue(_size(roleGrid) >= 5);
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_add_role_button_opens_dialog() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Button addRoleButton = _get(Button.class, spec -> spec.withId("addRoleButton"));
+        _click(addRoleButton);
+
+        // Verify dialog fields appear
+        TextField nameTf = _get(TextField.class, spec -> spec.withId("nameTf"));
+        Assertions.assertNotNull(nameTf);
+
+        TextArea descriptionTf = _get(TextArea.class, spec -> spec.withId("descriptionTf"));
+        Assertions.assertNotNull(descriptionTf);
+
+        Button saveButton = _get(Button.class, spec -> spec.withId("saveButton"));
+        Assertions.assertNotNull(saveButton);
+    }
+
+    @Test
+    public void test_role_grid_has_name_column() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Grid roleGrid = _get(Grid.class, spec -> spec.withId("roleGrid"));
+
+        // Verify name column exists
+        Assertions.assertNotNull(roleGrid.getColumnByKey("name"));
+    }
+
+    @Test
+    public void test_role_grid_has_description_column() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Grid roleGrid = _get(Grid.class, spec -> spec.withId("roleGrid"));
+
+        // Verify description column exists
+        Assertions.assertNotNull(roleGrid.getColumnByKey("description"));
+    }
+
+    @Test
+    public void test_role_grid_columns_are_sortable() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Grid roleGrid = _get(Grid.class, spec -> spec.withId("roleGrid"));
+
+        // Verify columns are sortable
+        Assertions.assertTrue(roleGrid.getColumnByKey("name").isSortable());
+        Assertions.assertTrue(roleGrid.getColumnByKey("description").isSortable());
+    }
+
+    @Test
+    public void test_view_initialization() {
+        UI.getCurrent().navigate("roleManagement");
+
+        RoleManagementView roleManagementView = _get(RoleManagementView.class);
+
+        Assertions.assertTrue(roleManagementView.isAttached());
+        Assertions.assertTrue(roleManagementView.isVisible());
+        Assertions.assertTrue(roleManagementView.getWidth().equals("100%"));
+        Assertions.assertTrue(roleManagementView.isSpacing());
+    }
+
+    @Test
+    public void test_header_exists() {
+        UI.getCurrent().navigate("roleManagement");
+
+        com.vaadin.flow.component.html.H2 header = _get(com.vaadin.flow.component.html.H2.class);
+        Assertions.assertNotNull(header);
+    }
+
+    @Test
+    public void test_role_grid_has_header_row() {
+        UI.getCurrent().navigate("roleManagement");
+
+        Grid roleGrid = _get(Grid.class, spec -> spec.withId("roleGrid"));
+
+        // Verify grid has header rows (includes filter row)
+        Assertions.assertTrue(roleGrid.getHeaderRows().size() > 0);
+    }
 }

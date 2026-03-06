@@ -329,6 +329,198 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
         }
     }
 
+    @Test
+    public void test_find_by_filter_with_sorting_ascending() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            for(int i = 0; i < 5; i++) {
+                SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+                solrContextTemplate.setName("context" + i);
+                SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+                scheduledContextRecord.setContextName("context" + i);
+                scheduledContextRecord.setTimestamp(1000000L + i);
+                scheduledContextRecord.setContext(solrContextTemplate);
+                this.dao.save(scheduledContextRecord);
+            }
+
+            ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
+            SearchResults<ScheduledContextRecord> found = this.dao.findByFilter(filter, 100, 0, "timestamp", "ASCENDING");
+
+            Assert.assertEquals(5, found.getResultList().size());
+            Assert.assertEquals("context0", found.getResultList().get(0).getContextName());
+        }
+    }
+
+    @Test
+    public void test_find_by_filter_with_sorting_descending() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            for(int i = 0; i < 5; i++) {
+                SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+                solrContextTemplate.setName("context" + i);
+                SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+                scheduledContextRecord.setContextName("context" + i);
+                scheduledContextRecord.setTimestamp(1000000L + i);
+                scheduledContextRecord.setContext(solrContextTemplate);
+                this.dao.save(scheduledContextRecord);
+            }
+
+            ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
+            SearchResults<ScheduledContextRecord> found = this.dao.findByFilter(filter, 100, 0, "timestamp", "DESCENDING");
+
+            Assert.assertEquals(5, found.getResultList().size());
+            Assert.assertEquals("context4", found.getResultList().get(0).getContextName());
+        }
+    }
+
+    @Test
+    public void test_find_by_filter_with_pagination() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            for(int i = 0; i < 10; i++) {
+                SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+                solrContextTemplate.setName("context" + i);
+                SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+                scheduledContextRecord.setContextName("context" + i);
+                scheduledContextRecord.setTimestamp(1000000L + i);
+                scheduledContextRecord.setContext(solrContextTemplate);
+                this.dao.save(scheduledContextRecord);
+            }
+
+            ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
+            SearchResults<ScheduledContextRecord> page1 = this.dao.findByFilter(filter, 5, 0, null, null);
+
+            Assert.assertEquals(5, page1.getResultList().size());
+            Assert.assertEquals(10, page1.getTotalNumberOfResults());
+
+            SearchResults<ScheduledContextRecord> page2 = this.dao.findByFilter(filter, 5, 5, null, null);
+
+            Assert.assertEquals(5, page2.getResultList().size());
+            Assert.assertEquals(10, page2.getTotalNumberOfResults());
+        }
+    }
+
+    @Test
+    public void test_save_with_modified_by() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("contextName");
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+            scheduledContextRecord.setModifiedBy("testUser");
+
+            this.dao.save(scheduledContextRecord);
+
+            ScheduledContextRecord found = this.dao.findById("contextName");
+
+            Assert.assertNotNull(found);
+            Assert.assertEquals("testUser", found.getModifiedBy());
+        }
+    }
+
+    @Test
+    public void test_find_by_name_not_found() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("contextName");
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+            this.dao.save(scheduledContextRecord);
+
+            ScheduledContextRecord found = this.dao.findByName("nonExistentContext");
+
+            Assert.assertNull(found);
+        }
+    }
+
+    @Test
+    public void test_find_by_filter_with_context_name_containing_spaces() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("context with spaces");
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("context with spaces");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+            this.dao.save(scheduledContextRecord);
+
+            ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
+            filter.setContextName("context with spaces");
+
+            SearchResults<ScheduledContextRecord> found = this.dao.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("context with spaces", found.getResultList().get(0).getContextName());
+        }
+    }
+
+    @Test
+    public void test_find_by_filter_with_multiple_context_names() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            for(int i = 0; i < 5; i++) {
+                SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+                solrContextTemplate.setName("context" + i);
+                SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+                scheduledContextRecord.setContextName("context" + i);
+                scheduledContextRecord.setTimestamp(1000000L + i);
+                scheduledContextRecord.setContext(solrContextTemplate);
+                this.dao.save(scheduledContextRecord);
+            }
+
+            ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
+            filter.setContextNames(List.of("context1", "context3"));
+
+            SearchResults<ScheduledContextRecord> found = this.dao.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(2, found.getResultList().size());
+        }
+    }
+
+    @Test
+    public void test_find_by_filter_empty_results() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("contextName");
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+            this.dao.save(scheduledContextRecord);
+
+            ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
+            filter.setContextName("nonExistent");
+
+            SearchResults<ScheduledContextRecord> found = this.dao.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(0, found.getResultList().size());
+        }
+    }
+
     public static String TEST_HOME() {
         return getFile("solr/ikasan").getParent();
     }

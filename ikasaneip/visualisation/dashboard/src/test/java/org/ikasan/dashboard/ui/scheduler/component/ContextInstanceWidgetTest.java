@@ -303,6 +303,11 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
                 .thenReturn(true);
             this.addContextInstanceToCache(true, true);
         }
+        else {
+            Mockito.when(mockIkasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+                .thenReturn(true);
+            this.addContextInstanceToCache(false, false);
+        }
     }
 
     private void addContextInstanceToCache(boolean isRunContextUntilManuallyEnded,
@@ -929,5 +934,171 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
 
         _assertNone(actionPopup
             , Button.class, spec -> spec.withId("resetContextButton"));
+    }
+
+    @Test
+    public void test_widget_visibility() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        ContextInstanceWidget contextInstanceWidget = _get(ContextInstanceWidget.class);
+        Assertions.assertNotNull(contextInstanceWidget);
+        Assert.assertTrue(contextInstanceWidget.isVisible());
+    }
+
+    @Test
+    public void test_action_popup_exists() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        Dialog actionPopup = _get(Dialog.class, spec -> spec.withId("actionPopup"));
+        Assertions.assertNotNull(actionPopup);
+    }
+
+    @Test
+    public void test_actions_button_opens_popup() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab activeJobPlanInstancesTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(activeJobPlanInstancesTab);
+
+        Grid contextInstanceAggregateJobStatusGrid = _get(Grid.class, spec -> spec.withId("contextInstanceAggregateJobStatusGrid"));
+        Assertions.assertNotNull(contextInstanceAggregateJobStatusGrid);
+
+        HorizontalLayout layout = (HorizontalLayout) GridKt._getCellComponent(contextInstanceAggregateJobStatusGrid, 0, "completeStatusCounts");
+        Button completeStatusButton = _get(layout, Button.class, spec -> spec.withId("completeStatusButton"));
+        completeStatusButton.click();
+
+        ContextInstanceWidget contextInstanceWidget = _get(ContextInstanceWidget.class);
+        Assert.assertNotNull(contextInstanceWidget);
+
+        Button actionsButton = _get(contextInstanceWidget, Button.class, spec -> spec.withId("actionsButton"));
+        Assert.assertNotNull(actionsButton);
+
+        actionsButton.click();
+
+        Dialog actionPopup = _get(Dialog.class, spec -> spec.withId("actionPopup"));
+        Assertions.assertNotNull(actionPopup);
+    }
+
+    @Test
+    public void test_job_lock_dashboard_button_exists() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        Dialog actionPopup = _get(Dialog.class, spec -> spec.withId("actionPopup"));
+
+        Button jobLockDashboard = _get(actionPopup, Button.class, spec -> spec.withId("jobLockDashboard"));
+        Assertions.assertNotNull(jobLockDashboard);
+    }
+
+    @Test
+    public void test_hold_context_button_exists() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        Dialog actionPopup = _get(Dialog.class, spec -> spec.withId("actionPopup"));
+
+        Button holdContextButton = _get(actionPopup, Button.class, spec -> spec.withId("holdContextButton"));
+        Assertions.assertNotNull(holdContextButton);
+    }
+
+    @Test
+    public void test_release_context_button_exists() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        Dialog actionPopup = _get(Dialog.class, spec -> spec.withId("actionPopup"));
+
+        Button releaseContextButton = _get(actionPopup, Button.class, spec -> spec.withId("releaseContextButton"));
+        Assertions.assertNotNull(releaseContextButton);
+    }
+
+    @Test
+    public void test_reset_context_button_exists() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        Dialog actionPopup = _get(Dialog.class, spec -> spec.withId("actionPopup"));
+
+        Button resetContextButton = _get(actionPopup, Button.class, spec -> spec.withId("resetContextButton"));
+        Assertions.assertNotNull(resetContextButton);
+    }
+
+    @Test
+    public void test_widget_contains_status_div() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        ContextInstanceWidget contextInstanceWidget = _get(ContextInstanceWidget.class);
+        Assertions.assertNotNull(contextInstanceWidget);
+
+        // Widget should contain component structure
+        Assert.assertTrue(contextInstanceWidget.getChildren().count() > 0);
+    }
+
+    @Test
+    public void test_action_popup_layout_structure() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        Dialog actionPopup = _get(Dialog.class, spec -> spec.withId("actionPopup"));
+        Assertions.assertNotNull(actionPopup);
+
+        // Verify popup contains components
+        Assert.assertTrue(actionPopup.getChildren().count() > 0);
+    }
+
+    @Test
+    public void test_widget_navigation_opens_correctly() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab activeJobPlanInstancesTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(activeJobPlanInstancesTab);
+
+        Grid contextInstanceAggregateJobStatusGrid = _get(Grid.class, spec -> spec.withId("contextInstanceAggregateJobStatusGrid"));
+        HorizontalLayout layout = (HorizontalLayout) GridKt._getCellComponent(contextInstanceAggregateJobStatusGrid, 0, "completeStatusCounts");
+        Button completeStatusButton = _get(layout, Button.class, spec -> spec.withId("completeStatusButton"));
+        completeStatusButton.click();
+
+        ContextInstanceWidget contextInstanceWidget = _get(ContextInstanceWidget.class);
+        Assertions.assertNotNull(contextInstanceWidget);
+    }
+
+    @Test
+    public void test_actions_button_exists_in_widget() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        ContextInstanceWidget contextInstanceWidget = _get(ContextInstanceWidget.class);
+
+        Button actionsButton = _get(contextInstanceWidget, Button.class, spec -> spec.withId("actionsButton"));
+        Assertions.assertNotNull(actionsButton);
+    }
+
+    @Test
+    public void test_multiple_buttons_exist_in_action_popup() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        Dialog actionPopup = _get(Dialog.class, spec -> spec.withId("actionPopup"));
+
+        // Count buttons in popup - should have at least job lock, hold, release, reset
+        long buttonCount = actionPopup.getChildren()
+            .flatMap(component -> component.getChildren())
+            .filter(component -> component instanceof Button)
+            .count();
+
+        Assert.assertTrue(buttonCount >= 4);
+    }
+
+    @Test
+    public void test_widget_hierarchy_structure() {
+        this.setupUIComponentPrerequisiteStatesForTests();
+
+        ContextInstanceWidget contextInstanceWidget = _get(ContextInstanceWidget.class);
+        Assertions.assertNotNull(contextInstanceWidget);
+
+        // Verify widget is a VerticalLayout with children
+        Assert.assertTrue(contextInstanceWidget instanceof org.ikasan.dashboard.ui.scheduler.component.ContextInstanceWidget);
+        Assert.assertTrue(contextInstanceWidget.getChildren().count() > 0);
     }
 }

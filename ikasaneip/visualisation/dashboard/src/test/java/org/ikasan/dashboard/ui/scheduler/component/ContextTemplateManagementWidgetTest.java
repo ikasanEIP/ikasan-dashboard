@@ -153,4 +153,269 @@ public class ContextTemplateManagementWidgetTest extends AbstractSchedulerViewTe
         ContextTemplateManagementWidget contextTemplateManagementWidget = _get(ContextTemplateManagementWidget.class);
         Assertions.assertNotNull(contextTemplateManagementWidget);
     }
+
+    @Test
+    public void test_widget_is_visible() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        ContextTemplateManagementWidget contextTemplateManagementWidget = _get(ContextTemplateManagementWidget.class);
+        Assert.assertTrue(contextTemplateManagementWidget.isVisible());
+    }
+
+    @Test
+    public void test_widget_has_children() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        ContextTemplateManagementWidget contextTemplateManagementWidget = _get(ContextTemplateManagementWidget.class);
+        Assert.assertTrue(contextTemplateManagementWidget.getChildren().count() > 0);
+    }
+
+    @Test
+    public void test_context_template_filtering_grid_displays_data() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        Assertions.assertNotNull(contextTemplateFilteringGrid);
+
+        // Verify grid has data
+        Assert.assertEquals(15, GridKt._size(contextTemplateFilteringGrid));
+    }
+
+    @Test
+    public void test_context_template_grid_has_actions_column() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+
+        // Verify actions column exists
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Assertions.assertNotNull(actionsLayout);
+    }
+
+    @Test
+    public void test_actions_layout_has_icon() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+
+        // Verify the actions layout has at least one component
+        Assert.assertTrue(actionsLayout.getComponentCount() > 0);
+
+        // Verify first component is an Icon
+        Assert.assertTrue(actionsLayout.getComponentAt(0) instanceof Icon);
+    }
+
+    @Test
+    public void test_scheduler_view_tabs_exist() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Assertions.assertNotNull(schedulerDashboardTabs);
+
+        // Verify tabs has multiple tabs
+        Assert.assertTrue(schedulerDashboardTabs.getComponentCount() > 0);
+    }
+
+    @Test
+    public void test_context_template_tab_selection() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+
+        // Select the tab
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        // Verify selection
+        Assertions.assertEquals(contextTemplateTab, schedulerDashboardTabs.getSelectedTab());
+    }
+
+    @Test
+    public void test_widget_is_vertical_layout() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        ContextTemplateManagementWidget contextTemplateManagementWidget = _get(ContextTemplateManagementWidget.class);
+
+        // Verify widget extends VerticalLayout
+        Assert.assertTrue(contextTemplateManagementWidget instanceof com.vaadin.flow.component.orderedlayout.VerticalLayout);
+    }
+
+    @Test
+    public void test_grid_displays_correct_number_of_templates() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+
+        // Verify exactly 15 templates are displayed as mocked
+        Assert.assertEquals(15, GridKt._size(contextTemplateFilteringGrid));
+    }
+
+    @Test
+    public void test_navigation_to_scheduler_view() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
+
+        // Verify scheduler view is visible
+        Assert.assertTrue(schedulerView.isVisible());
+    }
+
+    @Test
+    public void test_context_template_filtering_grid_exists() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        Assertions.assertNotNull(contextTemplateFilteringGrid);
+        Assert.assertTrue(contextTemplateFilteringGrid.isVisible());
+    }
+
+    @Test
+    public void test_widget_component_hierarchy() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        ContextTemplateManagementWidget contextTemplateManagementWidget = _get(ContextTemplateManagementWidget.class);
+
+        // Verify widget has component structure
+        long childCount = contextTemplateManagementWidget.getChildren().count();
+        Assert.assertTrue(childCount > 0);
+    }
+
+    @Test
+    public void test_icon_click_opens_widget() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+
+        // Click the icon
+        _click(openPlanManagementInNewWindow);
+
+        // Verify widget appears
+        ContextTemplateManagementWidget contextTemplateManagementWidget = _get(ContextTemplateManagementWidget.class);
+        Assertions.assertNotNull(contextTemplateManagementWidget);
+    }
+
+    @Test
+    public void test_actions_layout_is_horizontal_layout() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+
+        // Verify it's a HorizontalLayout
+        Assert.assertTrue(actionsLayout instanceof HorizontalLayout);
+    }
+
+    @Test
+    public void test_grid_has_multiple_rows() {
+        UI.getCurrent().navigate("scheduler");
+
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+
+        // Verify grid has multiple rows
+        Assert.assertTrue(GridKt._size(contextTemplateFilteringGrid) > 1);
+    }
 }

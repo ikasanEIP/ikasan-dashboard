@@ -93,6 +93,12 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
             , scheduledContextInstanceAuditAggregateDao, true, true);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionIfContextInstanceAuditAggregateDaoIsNull() {
+        service = new SolrScheduledContextInstanceServiceImpl(scheduledContextInstanceDao, scheduledContextInstanceAuditDao
+            , null, true, true);
+    }
+
     @Test
     public void should_not_save_audits_if_flag_not_set() {
         ReflectionTestUtils.setField(service, "saveContextInstanceAuditRecords", Boolean.FALSE);
@@ -677,6 +683,110 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
 
         Assert.assertEquals(3, searchResults.getResultList().size());
         Assert.assertEquals(1000003L, searchResults.getResultList().get(0).getTimestamp());
+    }
+
+    @Test
+    public void test_getScheduledContextInstancesByStatus_with_limit_and_offset() {
+        for(int i = 0; i < 10; i++) {
+            SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance" + i);
+            SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L + i);
+            scheduledContextRecord.setStatus(InstanceStatus.RUNNING.name());
+            service.save(scheduledContextRecord);
+        }
+
+        SearchResults<ScheduledContextInstanceRecord> results = service.getScheduledContextInstancesByStatus(
+            List.of(InstanceStatus.RUNNING), 5, 0);
+
+        Assert.assertEquals(5, results.getResultList().size());
+        Assert.assertEquals(10, results.getTotalNumberOfResults());
+
+        results = service.getScheduledContextInstancesByStatus(
+            List.of(InstanceStatus.RUNNING), 5, 5);
+
+        Assert.assertEquals(5, results.getResultList().size());
+        Assert.assertEquals(10, results.getTotalNumberOfResults());
+
+        results = service.getScheduledContextInstancesByStatus(
+            List.of(InstanceStatus.RUNNING), -1, -1);
+
+        Assert.assertEquals(10, results.getResultList().size());
+        Assert.assertEquals(10, results.getTotalNumberOfResults());
+    }
+
+    @Test
+    public void test_getScheduledContextInstancesByFilter_with_null_sort_parameters() {
+        SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000001L);
+        scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+        service.save(scheduledContextRecord);
+
+        ContextInstanceSearchFilter filter = new SolrContextInstanceSearchFilterImpl();
+        filter.setStartTime(0);
+        filter.setEndTime(1200001L);
+        filter.setContextSearchFilter("contextName1");
+
+        SearchResults<ScheduledContextInstanceRecord> searchResults = service.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Assert.assertEquals(1, searchResults.getResultList().size());
+    }
+
+    @Test
+    public void test_audit_records_with_different_statuses() {
+        ScheduledContextInstanceAuditAggregateRecord record1 = createAuditRecord();
+        record1.setStatus(InstanceStatus.COMPLETE.name());
+
+        ScheduledContextInstanceAuditAggregateRecord record2 = createAuditRecord();
+        record2.setStatus(InstanceStatus.ERROR.name());
+
+        ScheduledContextInstanceAuditAggregateRecord record3 = createAuditRecord();
+        record3.setStatus(InstanceStatus.RUNNING.name());
+
+        SolrContextInstanceImpl previous = new SolrContextInstanceImpl();
+        SolrContextInstanceImpl updated = new SolrContextInstanceImpl();
+
+        service.saveAudit(record1, previous, updated);
+        service.saveAudit(record2, previous, updated);
+        service.saveAudit(record3, previous, updated);
+
+        SearchResults<ScheduledContextInstanceAuditAggregateRecord> allAuditRecords = service.findAllAuditRecords(100, 0, null, null);
+        assertEquals(3, allAuditRecords.getResultList().size());
+
+        ScheduledContextInstanceAuditAggregateSearchFilter filter = new ScheduledContextInstanceAuditAggregateSearchFilter();
+        filter.setStatus(InstanceStatus.ERROR.name());
+
+        SearchResults<ScheduledContextInstanceAuditAggregateRecord> errorRecords = service.findAllAuditRecordsByFilter(filter, 100, 0, null, null);
+        assertEquals(1, errorRecords.getTotalNumberOfResults());
+        assertEquals(InstanceStatus.ERROR.name(), errorRecords.getResultList().get(0).getStatus());
+    }
+
+    @Test
+    public void test_find_audit_records_with_pagination() {
+        for(int i = 0; i < 15; i++) {
+            ScheduledContextInstanceAuditAggregateRecord record = createAuditRecord();
+            SolrContextInstanceImpl previous = new SolrContextInstanceImpl();
+            SolrContextInstanceImpl updated = new SolrContextInstanceImpl();
+            service.saveAudit(record, previous, updated);
+        }
+
+        SearchResults<ScheduledContextInstanceAuditAggregateRecord> page1 = service.findAllAuditRecords(5, 0, null, null);
+        assertEquals(5, page1.getResultList().size());
+        assertEquals(15, page1.getTotalNumberOfResults());
+
+        SearchResults<ScheduledContextInstanceAuditAggregateRecord> page2 = service.findAllAuditRecords(5, 5, null, null);
+        assertEquals(5, page2.getResultList().size());
+        assertEquals(15, page2.getTotalNumberOfResults());
+
+        SearchResults<ScheduledContextInstanceAuditAggregateRecord> page3 = service.findAllAuditRecords(5, 10, null, null);
+        assertEquals(5, page3.getResultList().size());
+        assertEquals(15, page3.getTotalNumberOfResults());
     }
 
     @Test

@@ -534,4 +534,295 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
             , "completeContextInstanceSearchFilter")).getContextInstanceId());
         Assert.assertEquals(5, GridKt._size(completedContextInstanceGrid));
     }
+
+    @Test
+    public void test_tabs_configuration() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Assertions.assertNotNull(contextInstanceTabs);
+
+        // Verify all three tabs exist
+        Tab activeTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        Tab preparedTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        Tab completedTab = _get(Tab.class, spec -> spec.withId("completedJobPlanInstances"));
+
+        Assertions.assertNotNull(activeTab);
+        Assertions.assertNotNull(preparedTab);
+        Assertions.assertNotNull(completedTab);
+
+        Assert.assertEquals(3, contextInstanceTabs.getComponentCount());
+    }
+
+    @Test
+    public void test_tab_switching() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab activeTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        Tab preparedTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        Tab completedTab = _get(Tab.class, spec -> spec.withId("completedJobPlanInstances"));
+
+        // Switch to active tab
+        contextInstanceTabs.setSelectedTab(activeTab);
+        Assert.assertEquals(activeTab, contextInstanceTabs.getSelectedTab());
+
+        // Switch to prepared tab
+        contextInstanceTabs.setSelectedTab(preparedTab);
+        Assert.assertEquals(preparedTab, contextInstanceTabs.getSelectedTab());
+
+        // Switch to completed tab
+        contextInstanceTabs.setSelectedTab(completedTab);
+        Assert.assertEquals(completedTab, contextInstanceTabs.getSelectedTab());
+    }
+
+    @Test
+    public void test_active_grid_refresh_button() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab activeTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(activeTab);
+
+        // Find refresh button
+        Button refreshButton = _get(Button.class, spec -> spec.withId("refresh-button"));
+        Assertions.assertNotNull(refreshButton);
+        Assert.assertTrue(refreshButton.isVisible());
+    }
+
+    @Test
+    public void test_prepared_grid_refresh_button() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab preparedTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(preparedTab);
+
+        Button refreshButton = _get(Button.class, spec -> spec.withText("Refresh"));
+        Assertions.assertNotNull(refreshButton);
+        Assert.assertTrue(refreshButton.isVisible());
+    }
+
+    @Test
+    public void test_completed_grid_refresh_button() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab completedTab = _get(Tab.class, spec -> spec.withId("completedJobPlanInstances"));
+        contextInstanceTabs.setSelectedTab(completedTab);
+
+        Button refreshButton = _get(Button.class, spec -> spec.withText("Refresh"));
+        Assertions.assertNotNull(refreshButton);
+        Assert.assertTrue(refreshButton.isVisible());
+    }
+
+    @Test
+    public void test_active_grid_clear_filters_button() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab activeTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(activeTab);
+
+        Button clearFiltersButton = _get(Button.class, spec -> spec.withId("clear-filters-button"));
+        Assertions.assertNotNull(clearFiltersButton);
+        Assert.assertTrue(clearFiltersButton.isVisible());
+    }
+
+    @Test
+    public void test_prepared_grid_clear_filters_button() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab preparedTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(preparedTab);
+
+        Button clearFiltersButton = _get(Button.class, spec -> spec.withText("Clear Filters"));
+        Assertions.assertNotNull(clearFiltersButton);
+        Assert.assertTrue(clearFiltersButton.isVisible());
+    }
+
+    @Test
+    public void test_active_grid_has_filter_fields() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab activeTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(activeTab);
+
+        Grid<ContextInstanceAggregateJobStatus> grid = _get(Grid.class,
+            spec -> spec.withId("contextInstanceAggregateJobStatusGrid"));
+
+        Assertions.assertNotNull(grid);
+        // Grid should have header filters configured
+        Assert.assertTrue(grid.getHeaderRows().size() > 0);
+    }
+
+    @Test
+    public void test_prepared_grid_filter_fields_exist() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab preparedTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(preparedTab);
+
+        TextField preparedContextNameTf = _get(TextField.class, spec -> spec.withId("preparedContextNameTf"));
+        TextField preparedContextInstanceIdTf = _get(TextField.class, spec -> spec.withId("preparedContextInstanceIdTf"));
+
+        Assertions.assertNotNull(preparedContextNameTf);
+        Assertions.assertNotNull(preparedContextInstanceIdTf);
+    }
+
+    @Test
+    public void test_completed_grid_filter_fields_exist() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab completedTab = _get(Tab.class, spec -> spec.withId("completedJobPlanInstances"));
+        contextInstanceTabs.setSelectedTab(completedTab);
+
+        TextField completeContextNameTf = _get(TextField.class, spec -> spec.withId("completeContextNameTf"));
+        TextField completeContextInstanceIdTf = _get(TextField.class, spec -> spec.withId("completeContextInstanceIdTf"));
+
+        Assertions.assertNotNull(completeContextNameTf);
+        Assertions.assertNotNull(completeContextInstanceIdTf);
+    }
+
+    @Test
+    public void test_active_grid_columns_configuration() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab activeTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(activeTab);
+
+        Grid<ContextInstanceAggregateJobStatus> grid = _get(Grid.class,
+            spec -> spec.withId("contextInstanceAggregateJobStatusGrid"));
+
+        // Verify key columns exist
+        Assertions.assertNotNull(grid.getColumnByKey("name"));
+        Assertions.assertNotNull(grid.getColumnByKey("id"));
+        Assertions.assertNotNull(grid.getColumnByKey("waitingStatusCounts"));
+        Assertions.assertNotNull(grid.getColumnByKey("completeStatusCounts"));
+        Assertions.assertNotNull(grid.getColumnByKey("runningStatusCounts"));
+        Assertions.assertNotNull(grid.getColumnByKey("errorStatusCounts"));
+    }
+
+    @Test
+    public void test_prepared_grid_columns_configuration() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab preparedTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(preparedTab);
+
+        Grid preparedGrid = _get(Grid.class, spec -> spec.withId("preparedFutureContextInstanceGrid"));
+
+        // Verify key columns exist
+        Assertions.assertNotNull(preparedGrid.getColumnByKey("name"));
+        Assertions.assertNotNull(preparedGrid.getColumnByKey("id"));
+        Assertions.assertNotNull(preparedGrid.getColumnByKey("startTime"));
+    }
+
+    @Test
+    public void test_completed_grid_columns_configuration() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab completedTab = _get(Tab.class, spec -> spec.withId("completedJobPlanInstances"));
+        contextInstanceTabs.setSelectedTab(completedTab);
+
+        Grid completedGrid = _get(Grid.class, spec -> spec.withId("completedContextInstanceGrid"));
+
+        // Verify key columns exist
+        Assertions.assertNotNull(completedGrid.getColumnByKey("name"));
+        Assertions.assertNotNull(completedGrid.getColumnByKey("id"));
+        Assertions.assertNotNull(completedGrid.getColumnByKey("startTime"));
+        Assertions.assertNotNull(completedGrid.getColumnByKey("endTime"));
+    }
+
+    @Test
+    public void test_widget_is_visible() {
+        UI.getCurrent().navigate("scheduler");
+
+        ContextInstanceDashboardWidget widget = _get(ContextInstanceDashboardWidget.class);
+        Assertions.assertNotNull(widget);
+        Assert.assertTrue(widget.isVisible());
+    }
+
+    @Test
+    public void test_all_grids_initially_present() {
+        UI.getCurrent().navigate("scheduler");
+
+        Grid<ContextInstanceAggregateJobStatus> activeGrid = _get(Grid.class,
+            spec -> spec.withId("contextInstanceAggregateJobStatusGrid"));
+        Grid preparedGrid = _get(Grid.class,
+            spec -> spec.withId("preparedFutureContextInstanceGrid"));
+        Grid completedGrid = _get(Grid.class,
+            spec -> spec.withId("completedContextInstanceGrid"));
+
+        Assertions.assertNotNull(activeGrid);
+        Assertions.assertNotNull(preparedGrid);
+        Assertions.assertNotNull(completedGrid);
+    }
+
+    @Test
+    public void test_prepared_grid_filtering_by_name_clears_properly() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab preparedTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(preparedTab);
+
+        Grid preparedGrid = _get(Grid.class, spec -> spec.withId("preparedFutureContextInstanceGrid"));
+        TextField preparedContextNameTf = _get(TextField.class, spec -> spec.withId("preparedContextNameTf"));
+
+        // Apply filter
+        preparedContextNameTf.setValue("contextName0");
+        Assert.assertEquals(1, GridKt._size(preparedGrid));
+
+        // Clear filter
+        preparedContextNameTf.setValue("");
+        Assert.assertEquals(5, GridKt._size(preparedGrid));
+    }
+
+    @Test
+    public void test_prepared_grid_filtering_by_instance_id_clears_properly() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab preparedTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(preparedTab);
+
+        Grid preparedGrid = _get(Grid.class, spec -> spec.withId("preparedFutureContextInstanceGrid"));
+        TextField preparedContextInstanceIdTf = _get(TextField.class, spec -> spec.withId("preparedContextInstanceIdTf"));
+
+        // Apply filter
+        preparedContextInstanceIdTf.setValue("contextInstanceId0");
+        Assert.assertEquals(1, GridKt._size(preparedGrid));
+
+        // Clear filter
+        preparedContextInstanceIdTf.setValue("");
+        Assert.assertEquals(5, GridKt._size(preparedGrid));
+    }
+
+    @Test
+    public void test_active_grid_displays_aggregate_statuses() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs contextInstanceTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab activeTab = _get(Tab.class, spec -> spec.withId("activeJobPlanInstancesTab"));
+        contextInstanceTabs.setSelectedTab(activeTab);
+
+        Grid contextInstanceAggregateJobStatusGrid = _get(Grid.class,
+            spec -> spec.withId("contextInstanceAggregateJobStatusGrid"));
+
+        // Verify grid size
+        Assert.assertEquals(1, GridKt._size(contextInstanceAggregateJobStatusGrid));
+
+        // Verify aggregate status is displayed
+        ContextInstanceAggregateJobStatus status = (ContextInstanceAggregateJobStatus)
+            GridKt._get(contextInstanceAggregateJobStatusGrid, 0);
+        Assertions.assertNotNull(status);
+    }
 }
