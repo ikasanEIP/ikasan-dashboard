@@ -396,6 +396,7 @@
         <version.carrotsearch.randomizedtesting>2.8.3</version.carrotsearch.randomizedtesting>
         <version.google.gson>2.11.0</version.google.gson>
         <version.system.rules>1.19.0</version.system.rules>
+        <version.micrometer>1.14.14</version.micrometer>
     </properties>
 
     <!-- Distribution for releases -->
@@ -2054,6 +2055,12 @@
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${version.com.fasterxml.jackson.core.databind}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-influx</artifactId>
+                <version>${version.micrometer}</version>
             </dependency>
 
             <!-- Vaadin -->
