@@ -92,18 +92,12 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     protected String solrPassword;
 
 
-    /**
-     * Initializes the Solr cloud client for interacting with the Solr cluster.
-     * Configures the connection timeout and sets the default Solr collection to be used.
-     *
-     * @param solrCloudUrls A list of URLs pointing to the SolrCloud instances.
-     * @param daysToKeep The number of days to keep records in the Solr index.
-     */
+    @Override
     public void initCloud(List<String> solrCloudUrls, int daysToKeep,
                           int connectionTimeoutMilli)
     {
         solrClient = new CloudSolrClient.Builder(solrCloudUrls,  Optional.empty())
-            .withZkConnectTimeout(1000000, TimeUnit.MILLISECONDS)
+            .withZkConnectTimeout(connectionTimeoutMilli, TimeUnit.MILLISECONDS)
             .build();
         ((CloudSolrClient)solrClient).setDefaultCollection("ikasan");
 

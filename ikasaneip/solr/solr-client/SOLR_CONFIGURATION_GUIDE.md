@@ -1,3 +1,4 @@
+![IKASAN](../../developer/docs/quickstart-images/Ikasan-title-transparent.png)
 # Solr Client Configuration Guide
 
 The Ikasan Solr client can be configured to work with either **Standalone Solr** or **SolrCloud** mode.
