@@ -1,0 +1,346 @@
+<!--
+# //
+# //
+# // $Id$
+# // $URL$
+# //
+# // ====================================================================
+# // Ikasan Enterprise Integration Platform
+# //
+# // Distributed under the Modified BSD License.
+# // Copyright notice: The copyright for this software and a full listing
+# // of individual contributors are as shown in the packaged copyright.txt
+# // file.
+# //
+# // All rights reserved.
+# //
+# // Redistribution and use in source and binary forms, with or without
+# // modification, are permitted provided that the following conditions are met:
+# //
+# //  - Redistributions of source code must retain the above copyright notice,
+# //    this list of conditions and the following disclaimer.
+# //
+# //  - Redistributions in binary form must reproduce the above copyright notice,
+# //    this list of conditions and the following disclaimer in the documentation
+# //    and/or other materials provided with the distribution.
+# //
+# //  - Neither the name of the ORGANIZATION nor the names of its contributors may
+# //    be used to endorse or promote products derived from this software without
+# //    specific prior written permission.
+# //
+# // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# // FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+# // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# // ====================================================================
+# //
+# // Author:  Ikasan Development Team
+# //
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.ikasan</groupId>
+        <artifactId>ikasan-solr</artifactId>
+        <version>4.1.4-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ikasan-solr-cloud-distribution</artifactId>
+    <packaging>pom</packaging>
+    <name>Ikasan Solr Cloud Distribution</name>
+    <description>Ikasan EIP Solr Cloud Distribution (3 nodes, 1 shard, 3 replicas)</description>
+
+    <properties>
+        <archive.file>${project.build.directory}/ikasan-solr-cloud-${project.version}.zip</archive.file>
+        <version.org.apache.zookeeper>3.9.3</version.org.apache.zookeeper>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.3</version>
+            </plugin>
+
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.4.2</version>
+                <executions>
+                    <execution>
+                        <id>install-solr</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://archive.apache.org/dist/solr/solr/${version.org.apache.solr}/solr-${version.org.apache.solr}.tgz</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-zookeeper</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://archive.apache.org/dist/zookeeper/zookeeper-${version.org.apache.zookeeper}/apache-zookeeper-${version.org.apache.zookeeper}-bin.tar.gz</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+
+                <executions>
+                    <execution>
+                        <id>prepare-base-distribution</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+
+                        <configuration>
+                            <target>
+                                <echo message="Preparing base Solr Cloud distribution..." />
+
+                                <!-- Create base directory -->
+                                <property name="base.dir" value="${project.build.directory}/solr-base" />
+                                <mkdir dir="${base.dir}" />
+
+                                <!-- Copy base Solr distribution -->
+                                <copy todir="${base.dir}">
+                                    <fileset dir="${project.build.directory}/solr-${version.org.apache.solr}" includes="**" />
+                                </copy>
+
+                                <!-- Create configsets directory for ikasan -->
+                                <mkdir dir="${base.dir}/server/solr/configsets/ikasan/conf" />
+
+                                <!-- Copy ikasan configuration to configsets -->
+                                <copy todir="${base.dir}/server/solr/configsets/ikasan/conf">
+                                    <fileset dir="${basedir}/src/main/resources/ikasan/conf" includes="**" />
+                                </copy>
+
+                                <!-- Copy SolrCloud solr.xml -->
+                                <copy file="${basedir}/src/main/resources/ikasan/solr.xml"
+                                      tofile="${base.dir}/server/solr/solr.xml"
+                                      overwrite="true" />
+
+                                <!-- Copy security.json -->
+                                <copy file="${basedir}/src/main/resources/security.json"
+                                      tofile="${base.dir}/server/solr/security.json" />
+
+                                <!-- Copy ZooKeeper distribution -->
+                                <echo message="Adding ZooKeeper to distribution..." />
+                                <mkdir dir="${base.dir}/zookeeper" />
+                                <copy todir="${base.dir}/zookeeper">
+                                    <fileset dir="${project.build.directory}/apache-zookeeper-${version.org.apache.zookeeper}-bin" includes="**" />
+                                </copy>
+
+                                <!-- Copy zkServer.sh directly to zookeeper/bin (not packaged in distribution) -->
+                                <copy file="${basedir}/src/main/resources/zookeeper-scripts/zkServer.sh"
+                                      tofile="${base.dir}/zookeeper/bin/zkServer.sh"
+                                      overwrite="true" />
+                                <chmod file="${base.dir}/zookeeper/bin/zkServer.sh" perm="744" />
+
+                                <!-- Copy environment configuration samples -->
+                                <echo message="Adding environment configuration..." />
+                                <mkdir dir="${base.dir}/config" />
+                                <mkdir dir="${base.dir}/config/samples" />
+
+                                <!-- Copy environment samples -->
+                                <copy todir="${base.dir}/config/samples">
+                                    <fileset dir="${basedir}/src/main/resources/config/samples" includes="**/*" />
+                                </copy>
+                                <chmod perm="644">
+                                    <fileset dir="${base.dir}/config/samples" includes="**/*" />
+                                </chmod>
+
+                                <!-- Copy solr.in.sh directly to bin/ (not packaged in distribution) -->
+                                <copy file="${basedir}/src/main/resources/node-configs/solr.in.sh"
+                                      tofile="${base.dir}/bin/solr.in.sh"
+                                      overwrite="true" />
+                                <chmod file="${base.dir}/bin/solr.in.sh" perm="644" />
+
+                                <!-- Copy configuration templates (for distribution) -->
+                                <echo message="Adding configuration templates..." />
+                                <mkdir dir="${base.dir}/zookeeper-configs" />
+                                <copy todir="${base.dir}/zookeeper-configs">
+                                    <fileset dir="${basedir}/src/main/resources/zookeeper-configs" includes="**/*" />
+                                </copy>
+
+                                <!-- Copy configuration generation scripts (for distribution) -->
+                                <mkdir dir="${base.dir}/zookeeper-scripts" />
+                                <copy todir="${base.dir}/zookeeper-scripts">
+                                    <fileset dir="${basedir}/src/main/resources/zookeeper-scripts" includes="configure-zookeeper.sh,setup-myid.sh" />
+                                </copy>
+                                <chmod perm="744">
+                                    <fileset dir="${base.dir}/zookeeper-scripts" includes="*.sh" />
+                                </chmod>
+
+                                <!-- Copy bootstrap and management scripts -->
+                                <copy file="${basedir}/src/main/resources/bootstrap-cluster.sh"
+                                      todir="${base.dir}" preservelastmodified="true" />
+                                <copy file="${basedir}/src/main/resources/create-collection-manual.sh"
+                                      todir="${base.dir}" preservelastmodified="true" />
+                                <copy file="${basedir}/src/main/resources/DEPLOYMENT.md"
+                                      todir="${base.dir}" />
+
+                                <!-- Make scripts executable -->
+                                <chmod file="${base.dir}/bootstrap-cluster.sh" perm="744" />
+                                <chmod file="${base.dir}/create-collection-manual.sh" perm="744" />
+
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>package-distribution</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="Packaging unified SolrCloud distribution..." />
+
+                                <property name="dist.dir" value="${project.build.directory}/ikasan-solr-cloud" />
+
+                                <!-- Copy base distribution -->
+                                <copy todir="${dist.dir}">
+                                    <fileset dir="${project.build.directory}/solr-base" includes="**" />
+                                </copy>
+
+                                <!-- Restore executable permissions on all scripts -->
+                                <chmod perm="744">
+                                    <fileset dir="${dist.dir}/bin" includes="*.sh" />
+                                </chmod>
+                                <chmod perm="744">
+                                    <fileset dir="${dist.dir}/zookeeper/bin" includes="*.sh" />
+                                </chmod>
+                                <chmod perm="744">
+                                    <fileset dir="${dist.dir}/zookeeper-scripts" includes="*.sh" />
+                                </chmod>
+                                <chmod file="${dist.dir}/bootstrap-cluster.sh" perm="744" />
+                                <chmod file="${dist.dir}/create-collection-manual.sh" perm="744" />
+
+                                <!-- Create README -->
+                                <echo file="${dist.dir}/README.txt">Ikasan SolrCloud Distribution
+===============================
+
+This is a unified distribution for deploying Ikasan SolrCloud clusters.
+It can be configured for any node (1, 2, or 3) through environment files.
+
+Quick Start:
+============
+
+1. Copy an environment sample:
+   - Localhost: cp config/samples/localhost/localhost-node1.env.sh config/ikasan-env.sh
+   - Multi-host: cp config/samples/multihost/multihost-node1.env.sh config/ikasan-env.sh
+
+2. Edit configuration (if needed):
+   vi config/ikasan-env.sh
+
+3. Generate ZooKeeper configuration:
+   ./zookeeper-scripts/configure-zookeeper.sh
+
+4. Setup ZooKeeper node ID:
+   ./zookeeper-scripts/setup-myid.sh
+
+5. Create required directories:
+   source config/ikasan-env.sh &amp;&amp; create_directories
+
+6. Start ZooKeeper:
+   ./zookeeper/bin/zkServer.sh start
+
+7. Bootstrap cluster (node 1 only, before starting Solr):
+   ./bootstrap-cluster.sh
+
+8. Start Solr:
+   ./bin/solr start
+
+Documentation:
+==============
+- config/samples/README.md - Configuration guide with examples
+- DEPLOYMENT.md - Detailed deployment instructions
+- CONFIGURATION.md - Configuration reference
+
+Configuration Samples:
+=====================
+Localhost (single host, 3 nodes):
+- config/samples/localhost/localhost-node1.env.sh
+- config/samples/localhost/localhost-node2.env.sh
+- config/samples/localhost/localhost-node3.env.sh
+
+Multi-host (3 separate hosts):
+- config/samples/multihost/multihost-node1.env.sh
+- config/samples/multihost/multihost-node2.env.sh
+- config/samples/multihost/multihost-node3.env.sh
+
+For detailed instructions, see config/samples/README.md
+</echo>
+
+                                <!-- Create zip -->
+                                <zip destfile="${archive.file}">
+                                    <zipfileset dir="${dist.dir}" filemode="644" dirmode="755">
+                                        <exclude name="**/*.sh" />
+                                        <exclude name="bin/solr" />
+                                        <exclude name="bin/post" />
+                                    </zipfileset>
+                                    <zipfileset dir="${dist.dir}" filemode="744" dirmode="755">
+                                        <include name="**/*.sh" />
+                                        <include name="bin/solr" />
+                                        <include name="bin/post" />
+                                    </zipfileset>
+                                </zip>
+
+                            </target>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>attach-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${archive.file}</file>
+                                    <type>zip</type>
+                                    <classifier>distribution</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<!--
+   Ikasan SolrCloud Configuration
+
+   This configuration is optimized for SolrCloud deployment with:
+   - 1 shard
+   - 3 replicas for high availability
+
+   More information about SolrCloud configuration:
+   https://solr.apache.org/guide/solr/latest/deployment-guide/solrcloud.html
+-->
+
+<solr>
+
+  <!-- Maximum number of boolean clauses in a query -->
+  <int name="maxBooleanClauses">${solr.max.booleanClauses:1024}</int>
+
+  <solrcloud>
+
+    <!-- Host and port settings for this Solr instance -->
+    <str name="host">${host:}</str>
+    <int name="hostPort">${jetty.port:8983}</int>
+    <str name="hostContext">${hostContext:solr}</str>
+
+    <!-- Use generic core node names for easier replica management -->
+    <bool name="genericCoreNodeNames">${genericCoreNodeNames:true}</bool>
+
+    <!-- ZooKeeper connection settings -->
+    <int name="zkClientTimeout">${zkClientTimeout:30000}</int>
+    <int name="distribUpdateSoTimeout">${distribUpdateSoTimeout:600000}</int>
+    <int name="distribUpdateConnTimeout">${distribUpdateConnTimeout:60000}</int>
+
+    <!-- ZooKeeper security providers -->
+    <str name="zkCredentialsProvider">${zkCredentialsProvider:org.apache.solr.common.cloud.DefaultZkCredentialsProvider}</str>
+    <str name="zkACLProvider">${zkACLProvider:org.apache.solr.common.cloud.DefaultZkACLProvider}</str>
+
+    <!-- Leader vote wait time (milliseconds) -->
+    <int name="leaderVoteWait">${leaderVoteWait:180000}</int>
+
+    <!-- Leader conflict resolution wait time (milliseconds) -->
+    <int name="leaderConflictResolveWait">${leaderConflictResolveWait:180000}</int>
+
+  </solrcloud>
+
+  <!-- Shard handler configuration for distributed requests -->
+  <shardHandlerFactory name="shardHandlerFactory"
+    class="HttpShardHandlerFactory">
+    <int name="socketTimeout">${socketTimeout:600000}</int>
+    <int name="connTimeout">${connTimeout:60000}</int>
+    <str name="shardsWhitelist">${solr.shardsWhitelist:}</str>
+
+    <!-- Thread pool settings for distributed requests -->
+    <int name="maxConnectionsPerHost">${maxConnectionsPerHost:100}</int>
+    <int name="maxConnections">${maxConnections:10000}</int>
+  </shardHandlerFactory>
+
+  <!-- Metrics reporter configuration -->
+  <metrics enabled="${metricsEnabled:true}">
+    <reporter name="jmx" class="org.apache.solr.metrics.reporters.SolrJmxReporter">
+      <str name="rootName">solr_${hostPort:8983}</str>
+    </reporter>
+  </metrics>
+
+</solr>

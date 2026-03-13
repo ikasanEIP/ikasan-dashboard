@@ -19,10 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -94,15 +91,20 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     protected String solrUsername;
     protected String solrPassword;
 
+
     /**
-     * Method to initialise all solr cloud DAO objects.
+     * Initializes the Solr cloud client for interacting with the Solr cluster.
+     * Configures the connection timeout and sets the default Solr collection to be used.
      *
-     * @param solrCloudUrls
-     * @param daysToKeep
+     * @param solrCloudUrls A list of URLs pointing to the SolrCloud instances.
+     * @param daysToKeep The number of days to keep records in the Solr index.
      */
-    public void initCloud(List<String> solrCloudUrls, int daysToKeep)
+    public void initCloud(List<String> solrCloudUrls, int daysToKeep,
+                          int connectionTimeoutMilli)
     {
-        solrClient = new CloudSolrClient.Builder(solrCloudUrls).build();
+        solrClient = new CloudSolrClient.Builder(solrCloudUrls,  Optional.empty())
+            .withZkConnectTimeout(1000000, TimeUnit.MILLISECONDS)
+            .build();
         ((CloudSolrClient)solrClient).setDefaultCollection("ikasan");
 
         this.daysToKeep = daysToKeep;
@@ -110,7 +112,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
 
     @Override
     public void initStandalone(String solrCloudUrl, int daysToKeep,
-                               int socketTimeoutMilli, int connectionTimeoutMilli)
+                               int connectionTimeoutMilli)
     {
         solrClient = new Http2SolrClient.Builder(solrCloudUrl)
             .withConnectionTimeout(connectionTimeoutMilli, TimeUnit.MILLISECONDS)
