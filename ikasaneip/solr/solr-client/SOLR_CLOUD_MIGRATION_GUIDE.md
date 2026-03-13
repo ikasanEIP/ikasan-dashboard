@@ -80,7 +80,10 @@ SolrCloud is Apache Solr's distributed architecture that provides:
 
 #### 1. ZooKeeper Ensemble
 - **Purpose**: Cluster coordination, configuration management, leader election
-- **Recommended Setup**: 3-5 nodes (must be odd number)
+- **Deployment Options**:
+  - **Embedded ZooKeeper**: Built into Solr, suitable for development/testing only
+  - **External ZooKeeper**: Separate installation, **required for production**
+- **Recommended Setup**: 3-5 external nodes (must be odd number) for production
 - **Responsibilities**:
   - Maintains cluster state
   - Stores collection configurations
@@ -265,9 +268,28 @@ replicationFactor: 3
 
 ## Migration Requirements
 
+### ZooKeeper Deployment Options
+
+| Feature | Embedded ZooKeeper | External ZooKeeper |
+|---------|-------------------|-------------------|
+| **Installation** | Included with Solr | Separate installation required |
+| **Setup Complexity** | Simple | Moderate |
+| **Production Ready** | ❌ No | ✅ Yes |
+| **High Availability** | ❌ No | ✅ Yes |
+| **Fault Tolerance** | Single point of failure | Tolerates node failures |
+| **Performance** | Good for dev/test | Optimized for production |
+| **Management** | Managed with Solr | Independent management |
+| **Recommended Use** | Development, Testing | Production, Staging |
+| **Port** | 9983 (default) | 2181 (default) |
+| **Nodes Required** | 1 | 3-5 (odd number) |
+
+**Recommendation**:
+- **Development/Testing**: Use Embedded ZooKeeper for simplicity
+- **Production**: Use External ZooKeeper Ensemble (3 nodes minimum)
+
 ### Infrastructure Requirements
 
-#### 1. ZooKeeper Ensemble
+#### 1. ZooKeeper Ensemble (External - Production Only)
 **Minimum Configuration**:
 - **Nodes**: 3 (must be odd number for quorum)
 - **RAM**: 2GB per node (minimum)
@@ -553,9 +575,56 @@ curl "http://localhost:8983/solr/ikasan/select?q=*:*&rows=10000&wt=json&start=10
 # ... continue as needed
 ```
 
-### Step 2: Set Up ZooKeeper Ensemble
+### Step 2: Set Up ZooKeeper
 
-#### Install ZooKeeper on Each Node
+**IMPORTANT**: Choose between Embedded or External ZooKeeper based on your environment.
+
+#### Option A: Embedded ZooKeeper (Development/Testing Only)
+
+**Use Case**: Quick setup, single-node development, testing
+
+**Advantages**:
+- No separate installation required
+- Simple configuration
+- Fast to set up
+
+**Disadvantages**:
+- Not suitable for production
+- Single point of failure
+- Limited to development/testing
+
+**Setup**:
+```bash
+# Start Solr with embedded ZooKeeper
+# ZooKeeper will run on port 9983 by default
+bin/solr start -c -e cloud
+
+# Or start manually with embedded ZK
+bin/solr start -c
+
+# The embedded ZooKeeper is automatically started
+# ZK data stored in: server/solr/zoo_data/
+```
+
+**Skip to Step 3** if using embedded ZooKeeper.
+
+---
+
+#### Option B: External ZooKeeper Ensemble (Production - Recommended)
+
+**Use Case**: Production deployments, high availability
+
+**Advantages**:
+- Production-ready
+- High availability (no single point of failure)
+- Better performance and stability
+- Can be managed independently of Solr
+
+**Disadvantages**:
+- Requires separate installation and management
+- More complex setup
+
+##### Install ZooKeeper on Each Node
 ```bash
 # Download ZooKeeper
 cd /opt
@@ -567,7 +636,7 @@ ln -s apache-zookeeper-3.8.3-bin zookeeper
 mkdir -p /var/lib/zookeeper
 ```
 
-#### Configure ZooKeeper
+##### Configure ZooKeeper
 ```bash
 # Create zoo.cfg
 cat > /opt/zookeeper/conf/zoo.cfg <<EOF
@@ -592,7 +661,7 @@ echo "2" > /var/lib/zookeeper/myid
 echo "3" > /var/lib/zookeeper/myid
 ```
 
-#### Start ZooKeeper
+##### Start ZooKeeper
 ```bash
 # On each ZooKeeper node
 /opt/zookeeper/bin/zkServer.sh start
@@ -602,6 +671,8 @@ echo "3" > /var/lib/zookeeper/myid
 
 # Expected output: "Mode: leader" or "Mode: follower"
 ```
+
+---
 
 ### Step 3: Set Up SolrCloud Cluster
 
@@ -619,11 +690,21 @@ chown -R solr:solr /opt/solr-9.4.1
 ```
 
 #### Configure Solr for Cloud Mode
-```bash
-# Configure ZooKeeper connection
-# Edit /opt/solr/server/solr/solr.xml or use environment variable
 
-# Set environment variables
+**For Embedded ZooKeeper**:
+```bash
+# Set environment variables (no ZK_HOST needed for embedded)
+cat > /etc/default/solr.in.sh <<EOF
+SOLR_JAVA_MEM="-Xms16g -Xmx16g"
+SOLR_HEAP="16g"
+SOLR_HOST=$(hostname -f)
+SOLR_PORT=8983
+EOF
+```
+
+**For External ZooKeeper**:
+```bash
+# Set environment variables with ZK_HOST
 cat > /etc/default/solr.in.sh <<EOF
 SOLR_JAVA_MEM="-Xms16g -Xmx16g"
 SOLR_HEAP="16g"
@@ -634,6 +715,20 @@ EOF
 ```
 
 #### Start Solr Nodes
+
+**For Embedded ZooKeeper** (single node or first node):
+```bash
+# Start first node with embedded ZooKeeper
+sudo -u solr /opt/solr/bin/solr start -c
+
+# Start additional nodes pointing to first node's embedded ZK
+sudo -u solr /opt/solr/bin/solr start -c -z localhost:9983
+
+# Verify cluster status
+curl "http://localhost:8983/solr/admin/collections?action=CLUSTERSTATUS"
+```
+
+**For External ZooKeeper** (recommended):
 ```bash
 # On each Solr node
 sudo -u solr /opt/solr/bin/solr start -c -z zk1.example.com:2181,zk2.example.com:2181,zk3.example.com:2181

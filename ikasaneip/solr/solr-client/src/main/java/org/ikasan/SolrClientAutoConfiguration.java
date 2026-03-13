@@ -77,18 +77,26 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
 public class SolrClientAutoConfiguration {
 
-    @Value("${solr.url}")
+    @Value("${solr.mode:standalone}")
+    private String solrMode;
+
+    @Value("${solr.url:}")
     private String solrUrl;
 
-    @Value("${solr.username}")
+    @Value("${solr.cloud.zk.hosts:}")
+    private String solrCloudZkHosts;
+
+    @Value("${solr.username:}")
     private String solrUsername;
 
-    @Value("${solr.password}")
+    @Value("${solr.password:}")
     private String solrPassword;
 
     @Value("${solr.joblockcacheaudit.retention.days:30}")
@@ -130,16 +138,10 @@ public class SolrClientAutoConfiguration {
     @Bean
     public JobLockCacheService jobLockCacheService() {
         SolrJobLockCacheDaoImpl solrJobLockCacheDao = new SolrJobLockCacheDaoImpl();
-        solrJobLockCacheDao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        solrJobLockCacheDao.setSolrUsername(solrUsername);
-        solrJobLockCacheDao.setSolrPassword(solrPassword);
+        initializeDao(solrJobLockCacheDao, SolrDaoBase.DO_NOT_EXPIRE);
 
         SolrJobLockCacheAuditDaoImpl solrJobLockCacheAuditDao = new SolrJobLockCacheAuditDaoImpl();
-        solrJobLockCacheAuditDao.initStandalone(solrUrl, solrJobLockCacheAuditRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        solrJobLockCacheAuditDao.setSolrUsername(solrUsername);
-        solrJobLockCacheAuditDao.setSolrPassword(solrPassword);
+        initializeDao(solrJobLockCacheAuditDao, solrJobLockCacheAuditRetentionDays);
 
         return new SolrJobLockCacheServiceImpl(solrJobLockCacheDao, solrJobLockCacheAuditDao, saveJobLockCacheAudits);
     }
@@ -147,16 +149,10 @@ public class SolrClientAutoConfiguration {
     @Bean
     public ScheduledContextService scheduledContextService() {
         SolrScheduledContextDaoImpl solrScheduledContextDao = new SolrScheduledContextDaoImpl();
-        solrScheduledContextDao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        solrScheduledContextDao.setSolrUsername(solrUsername);
-        solrScheduledContextDao.setSolrPassword(solrPassword);
+        initializeDao(solrScheduledContextDao, SolrDaoBase.DO_NOT_EXPIRE);
 
         SolrScheduledContextViewDaoImpl solrScheduledContextViewDao = new SolrScheduledContextViewDaoImpl();
-        solrScheduledContextViewDao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        solrScheduledContextViewDao.setSolrUsername(solrUsername);
-        solrScheduledContextViewDao.setSolrPassword(solrPassword);
+        initializeDao(solrScheduledContextViewDao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return new SolrScheduledContextServiceImpl(solrScheduledContextDao, solrScheduledContextViewDao);
     }
@@ -165,28 +161,16 @@ public class SolrClientAutoConfiguration {
     public SolrScheduledProcessServiceImpl solrScheduledProcessEventService()
     {
         SolrScheduledProcessEventDao dao = new SolrScheduledProcessEventDao();
-        dao.initStandalone(solrUrl, 30, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, 30);
 
         SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();
-        solrModuleMetadataDao.initStandalone(solrUrl, 30, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        solrModuleMetadataDao.setSolrUsername(solrUsername);
-        solrModuleMetadataDao.setSolrPassword(solrPassword);
+        initializeDao(solrModuleMetadataDao, 30);
 
         SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao = new SolrComponentConfigurationMetadataDao();
-        solrComponentConfigurationMetadataDao.initStandalone(solrUrl, 30, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        solrComponentConfigurationMetadataDao.setSolrUsername(solrUsername);
-        solrComponentConfigurationMetadataDao.setSolrPassword(solrPassword);
+        initializeDao(solrComponentConfigurationMetadataDao, 30);
 
         SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao = new SolrBusinessStreamMetadataDao();
-        solrBusinessStreamMetadataDao.initStandalone(solrUrl, 30, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        solrBusinessStreamMetadataDao.setSolrUsername(solrUsername);
-        solrBusinessStreamMetadataDao.setSolrPassword(solrPassword);
+        initializeDao(solrBusinessStreamMetadataDao, 30);
 
         SolrScheduledProcessServiceImpl service = new SolrScheduledProcessServiceImpl(dao, solrModuleMetadataDao
             , solrComponentConfigurationMetadataDao, solrBusinessStreamMetadataDao, notifyBatchInsertListeners);
@@ -199,16 +183,10 @@ public class SolrClientAutoConfiguration {
     @Bean
     public ScheduledContextInstanceService scheduledContextInstanceService(ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao) {
         SolrScheduledContextInstanceDaoImpl scheduledContextInstanceDao = new SolrScheduledContextInstanceDaoImpl();
-        scheduledContextInstanceDao.initStandalone(solrUrl, solrSchedulerInstanceRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        scheduledContextInstanceDao.setSolrUsername(solrUsername);
-        scheduledContextInstanceDao.setSolrPassword(solrPassword);
+        initializeDao(scheduledContextInstanceDao, solrSchedulerInstanceRetentionDays);
 
         SolrScheduledContextInstanceAuditDaoImpl scheduledContextInstanceAuditDao = new SolrScheduledContextInstanceAuditDaoImpl();
-        scheduledContextInstanceAuditDao.initStandalone(solrUrl, solrSchedulerInstanceRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        scheduledContextInstanceAuditDao.setSolrUsername(solrUsername);
-        scheduledContextInstanceAuditDao.setSolrPassword(solrPassword);
+        initializeDao(scheduledContextInstanceAuditDao, solrSchedulerInstanceRetentionDays);
 
         return new SolrScheduledContextInstanceServiceImpl(scheduledContextInstanceDao, scheduledContextInstanceAuditDao, scheduledContextInstanceAuditAggregateDao
             , this.saveContextInstanceAuditRecords, this.saveContextInstanceAuditDeltaRecords);
@@ -217,10 +195,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao() {
         SolrScheduledContextInstanceAuditAggregateDaoImpl scheduledContextInstanceAuditAggregateDao = new SolrScheduledContextInstanceAuditAggregateDaoImpl();
-        scheduledContextInstanceAuditAggregateDao.initStandalone(solrUrl, solrSchedulerInstanceRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        scheduledContextInstanceAuditAggregateDao.setSolrUsername(solrUsername);
-        scheduledContextInstanceAuditAggregateDao.setSolrPassword(solrPassword);
+        initializeDao(scheduledContextInstanceAuditAggregateDao, solrSchedulerInstanceRetentionDays);
 
         return scheduledContextInstanceAuditAggregateDao;
     }
@@ -228,10 +203,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public EmailNotificationContextService emailNotificationContextService() {
         SolrEmailNotificationContextDaoImpl dao = new SolrEmailNotificationContextDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         SolrEmailNotificationContextServiceImpl service = new SolrEmailNotificationContextServiceImpl(dao);
         service.setSolrPassword(solrPassword);
@@ -242,10 +214,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SystemEventSearchService systemEventSearchService() {
         SolrSystemEventDaoImpl dao = new SolrSystemEventDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         SolrSystemEventSearchServiceImpl service = new SolrSystemEventSearchServiceImpl(dao);
         service.setSolrPassword(solrPassword);
@@ -256,10 +225,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public EmailNotificationDetailsService emailNotificationDetailsService() {
         SolrEmailNotificationDetailsDaoImpl dao = new SolrEmailNotificationDetailsDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         SolrEmailNotificationDetailsServiceImpl service = new SolrEmailNotificationDetailsServiceImpl(dao);
         service.setSolrPassword(solrPassword);
@@ -270,10 +236,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public NotificationSendAuditService notificationSendAuditService() {
         SolrNotificationSendAuditDaoImpl dao = new SolrNotificationSendAuditDaoImpl();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, solrRetentionDays);
 
         SolrNotificationSendAuditServiceImpl service = new SolrNotificationSendAuditServiceImpl(dao);
         service.setSolrPassword(solrPassword);
@@ -298,10 +261,7 @@ public class SolrClientAutoConfiguration {
                                                                    ScheduledContextInstanceAuditAggregateDao solrScheduledContextInstanceAuditAggregateDao,
                                                                    ScheduledContextInstanceService scheduledContextInstanceService) {
         SolrSchedulerJobInstanceDaoImpl scheduledContextInstanceDao = new SolrSchedulerJobInstanceDaoImpl();
-        scheduledContextInstanceDao.initStandalone(solrUrl, solrSchedulerInstanceRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        scheduledContextInstanceDao.setSolrUsername(solrUsername);
-        scheduledContextInstanceDao.setSolrPassword(solrPassword);
+        initializeDao(scheduledContextInstanceDao, solrSchedulerInstanceRetentionDays);
 
         return new SolrSchedulerJobInstanceServiceImpl(scheduledContextInstanceDao
             , (SolrScheduledContextInstanceAuditAggregateDaoImpl) solrScheduledContextInstanceAuditAggregateDao
@@ -317,10 +277,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public ContextProfileService contextProfileService() {
         SolrContextProfileDaoImpl solrContextProfileDao = new SolrContextProfileDaoImpl();
-        solrContextProfileDao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        solrContextProfileDao.setSolrUsername(solrUsername);
-        solrContextProfileDao.setSolrPassword(solrPassword);
+        initializeDao(solrContextProfileDao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return new SolrContextProfileServiceImpl(solrContextProfileDao);
     }
@@ -328,10 +285,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao() {
         SolrFileEventDrivenJobDaoImpl dao = new SolrFileEventDrivenJobDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return dao;
     }
@@ -339,10 +293,7 @@ public class SolrClientAutoConfiguration {
     @Bean("internalEventDrivenJobRecordDao")
     public SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao() {
         SolrInternalEventDrivenJobDaoImpl dao = new SolrInternalEventDrivenJobDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return dao;
     }
@@ -350,10 +301,7 @@ public class SolrClientAutoConfiguration {
     @Bean("internalEventDrivenJobTemplateDao")
     public SolrInternalEventDrivenJobTemplateDaoImpl internalEventDrivenJobTemplateDao() {
         SolrInternalEventDrivenJobTemplateDaoImpl dao = new SolrInternalEventDrivenJobTemplateDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return dao;
     }
@@ -361,10 +309,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao() {
         SolrQuartzScheduleDrivenJobDaoImpl dao = new SolrQuartzScheduleDrivenJobDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return dao;
     }
@@ -372,10 +317,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SolrGlobalEventJobDaoImpl globalEventJobRecordDao() {
         SolrGlobalEventJobDaoImpl dao = new SolrGlobalEventJobDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return dao;
     }
@@ -383,10 +325,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SolrContextStartJobDaoImpl contextStartJobDao() {
         SolrContextStartJobDaoImpl dao = new SolrContextStartJobDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return dao;
     }
@@ -394,10 +333,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SolrContextTerminalJobDaoImpl contextTerminalJobDao() {
         SolrContextTerminalJobDaoImpl dao = new SolrContextTerminalJobDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return dao;
     }
@@ -405,10 +341,7 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SolrSchedulerJobDaoImpl schedulerJobRecordDao() {
         SolrSchedulerJobDaoImpl dao = new SolrSchedulerJobDaoImpl();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         return dao;
     }
@@ -417,8 +350,7 @@ public class SolrClientAutoConfiguration {
     public SolrGeneralServiceImpl solrSearchService()
     {
         SolrGeneralDaoImpl dao = new SolrGeneralDaoImpl();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
         SolrGeneralServiceImpl service = new SolrGeneralServiceImpl(dao);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
@@ -430,8 +362,7 @@ public class SolrClientAutoConfiguration {
     public BatchInsert<WiretapEvent> solrWiretapService()
     {
         SolrWiretapDao dao = new SolrWiretapDao();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
         SolrWiretapServiceImpl service = new SolrWiretapServiceImpl(dao);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
@@ -443,8 +374,7 @@ public class SolrClientAutoConfiguration {
     public SolrErrorReportingServiceImpl solrErrorReportingService()
     {
         SolrErrorReportingServiceDao dao = new SolrErrorReportingServiceDao();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
         SolrErrorReportingServiceImpl service = new SolrErrorReportingServiceImpl(dao);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
@@ -456,8 +386,7 @@ public class SolrClientAutoConfiguration {
     public BatchInsert<ExclusionEvent> solrExclusionService()
     {
         SolrExclusionEventDao dao = new SolrExclusionEventDao();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
         SolrExclusionServiceImpl service = new SolrExclusionServiceImpl(dao);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
@@ -469,8 +398,7 @@ public class SolrClientAutoConfiguration {
     public BatchInsert<ReplayEvent> solrReplayService()
     {
         SolrReplayDao dao = new SolrReplayDao();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
 
         SolrReplayServiceImpl service = new SolrReplayServiceImpl(dao);
         service.setSolrUsername(solrUsername);
@@ -483,8 +411,7 @@ public class SolrClientAutoConfiguration {
     public BatchInsert<FlowInvocationMetric> solrMetricsBatchInsert()
     {
         SolrMetricsDao dao = new SolrMetricsDao(this.solrMetricsQueryLimit);
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
 
         SolrMetricsServiceImpl service = new SolrMetricsServiceImpl(dao);
         service.setSolrUsername(solrUsername);
@@ -509,8 +436,7 @@ public class SolrClientAutoConfiguration {
     public MetricsService solrMetricsService()
     {
         SolrMetricsDao dao = new SolrMetricsDao(this.solrMetricsQueryLimit);
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
 
         SolrMetricsServiceImpl service = new SolrMetricsServiceImpl(dao);
         service.setSolrUsername(solrUsername);
@@ -523,8 +449,7 @@ public class SolrClientAutoConfiguration {
     public HospitalAuditService hospitalAuditService()
     {
         SolrHospitalDao dao = new SolrHospitalDao();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
 
         SolrHospitalServiceImpl service = new SolrHospitalServiceImpl(dao);
         service.setSolrUsername(solrUsername);
@@ -548,8 +473,7 @@ public class SolrClientAutoConfiguration {
     private SolrModuleMetadataServiceImpl createSolrModuleMetadataServiceImpl()
     {
         SolrModuleMetadataDao dao = new SolrModuleMetadataDao();
-        dao.initStandalone(solrUrl, SolrDaoBase.DO_NOT_EXPIRE, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
 
         SolrModuleMetadataServiceImpl service = new SolrModuleMetadataServiceImpl(dao);
         service.setSolrUsername(solrUsername);
@@ -562,8 +486,7 @@ public class SolrClientAutoConfiguration {
     public BusinessStreamMetaDataService businessStreamMetaDataService()
     {
         SolrBusinessStreamMetadataDao dao = new SolrBusinessStreamMetadataDao();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
 
         SolrBusinessStreamMetaDataServiceImpl service = new SolrBusinessStreamMetaDataServiceImpl(dao);
         service.setSolrUsername(solrUsername);
@@ -587,8 +510,7 @@ public class SolrClientAutoConfiguration {
     private SolrReplayAuditServiceImpl createSolrReplayAuditServiceImpl()
     {
         SolrReplayAuditDao dao = new SolrReplayAuditDao();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
 
         SolrReplayAuditServiceImpl service = new SolrReplayAuditServiceImpl(dao);
         service.setSolrUsername(solrUsername);
@@ -600,8 +522,7 @@ public class SolrClientAutoConfiguration {
     private SolrComponentConfigurationMetadataServiceImpl createSolrComponentConfigurationMetadataServiceImpl()
     {
         SolrComponentConfigurationMetadataDao dao = new SolrComponentConfigurationMetadataDao();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
 
         SolrComponentConfigurationMetadataServiceImpl service = new SolrComponentConfigurationMetadataServiceImpl(dao);
         service.setSolrUsername(solrUsername);
@@ -613,13 +534,35 @@ public class SolrClientAutoConfiguration {
     private SolrSystemEventServiceImpl createSolrSystemEventServiceImpl()
     {
         SolrSystemEventDaoImpl dao = new SolrSystemEventDaoImpl();
-        dao.initStandalone(solrUrl, solrRetentionDays, solrSocketTimeoutMilli,
-            solrConnectionTimeoutMilli);
+        initializeDao(dao, solrRetentionDays);
 
         SolrSystemEventServiceImpl service = new SolrSystemEventServiceImpl(dao);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
 
         return service;
+    }
+
+    /**
+     * Helper method to initialize a DAO based on the configured Solr mode.
+     *
+     * @param dao the DAO to initialize
+     * @param daysToKeep retention days for the data
+     */
+    private void initializeDao(SolrDaoBase<?> dao, int daysToKeep) {
+        if ("cloud".equalsIgnoreCase(solrMode)) {
+            if (solrCloudZkHosts == null || solrCloudZkHosts.trim().isEmpty()) {
+                throw new IllegalArgumentException("solr.cloud.zk.hosts must be configured when solr.mode=cloud");
+            }
+            List<String> zkHosts = Arrays.asList(solrCloudZkHosts.split(","));
+            dao.initCloud(zkHosts, daysToKeep);
+        } else {
+            if (solrUrl == null || solrUrl.trim().isEmpty()) {
+                throw new IllegalArgumentException("solr.url must be configured when solr.mode=standalone");
+            }
+            dao.initStandalone(solrUrl, daysToKeep, solrSocketTimeoutMilli, solrConnectionTimeoutMilli);
+        }
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
     }
 }

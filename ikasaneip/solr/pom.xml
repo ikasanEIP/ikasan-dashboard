@@ -60,6 +60,7 @@
     <modules>
         <module>solr-client</module>
         <module>solr-distribution</module>
+        <module>solr-cloud-distribution</module>
     </modules>
 
 </project>

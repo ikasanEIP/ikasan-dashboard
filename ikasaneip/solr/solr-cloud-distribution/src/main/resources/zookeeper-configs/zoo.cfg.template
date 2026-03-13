@@ -1,0 +1,225 @@
+# Ikasan ZooKeeper Configuration Template
+# This is a unified template for all nodes in the ZooKeeper ensemble
+# The actual zoo.cfg will be generated from this template and config/ikasan-env.sh
+#
+# To deploy:
+# 1. Copy and customize an ikasan-env.sh file for your node (see config/samples/)
+# 2. Run configure-zookeeper.sh to generate zoo.cfg from this template
+
+# ===========================================
+# Basic Configuration
+# ===========================================
+
+# The number of milliseconds of each tick
+# Used as the basic time unit for heartbeats and timeouts
+tickTime=2000
+
+# The number of ticks that the initial synchronization phase can take
+# Amount of time to allow followers to connect and sync to a leader
+initLimit=10
+
+# The number of ticks that can pass between sending a request and getting an acknowledgement
+# How far out of date a follower can be from the leader
+syncLimit=5
+
+# ===========================================
+# Data Directory Configuration
+# ===========================================
+
+# The directory where the snapshot is stored
+# Will be replaced with ${ZK_DATA_DIR} from ikasan-env.sh
+dataDir=__ZK_DATA_DIR__
+
+# The directory where transaction logs are stored
+# Will be replaced with ${ZK_LOG_DIR} from ikasan-env.sh
+dataLogDir=__ZK_LOG_DIR__
+
+# ===========================================
+# Network Configuration
+# ===========================================
+
+# The port at which the clients will connect
+# Will be replaced with ${ZK_CLIENT_PORT} from ikasan-env.sh
+clientPort=__ZK_CLIENT_PORT__
+
+# Address to bind client port (0.0.0.0 = all interfaces)
+#clientPortAddress=0.0.0.0
+
+# Maximum number of client connections from a single IP
+maxClientCnxns=60
+
+# Secure client port (for SSL/TLS connections)
+#secureClientPort=__ZK_SECURE_PORT__
+
+# ===========================================
+# Session Timeout Configuration
+# ===========================================
+
+# Minimum session timeout in milliseconds
+minSessionTimeout=4000
+
+# Maximum session timeout in milliseconds
+maxSessionTimeout=40000
+
+# ===========================================
+# Admin Server Configuration
+# ===========================================
+
+# Enable admin server (provides HTTP API for monitoring)
+admin.enableServer=true
+
+# Admin server port
+# Will be replaced with ${ZK_ADMIN_PORT} from ikasan-env.sh
+admin.serverPort=__ZK_ADMIN_PORT__
+
+# Admin server address
+#admin.serverAddress=0.0.0.0
+
+# Idle timeout for admin server
+#admin.idleTimeout=30000
+
+# Command URL for admin server
+#admin.commandURL=/commands
+
+# ===========================================
+# Snapshot and Log Management
+# ===========================================
+
+# Purge snapshots and transaction logs automatically
+# Number of snapshots to retain
+autopurge.snapRetainCount=3
+
+# Purge interval in hours (0 = disabled)
+autopurge.purgeInterval=24
+
+# Pre-allocate space in transaction log file
+#preAllocSize=65536
+
+# Number of transactions before creating a new snapshot
+#snapCount=100000
+
+# ===========================================
+# Performance Tuning
+# ===========================================
+
+# Enable fsync on transaction log writes
+#fsync.warningthresholdms=1000
+
+# Global outstanding limit (max requests being processed)
+#globalOutstandingLimit=1000
+
+# Max buffer size for sending and receiving data
+#jute.maxbuffer=1048575
+
+# Skip ACL check for super user
+#skipACL=no
+
+# Force sync on transaction log
+#forceSync=yes
+
+# ===========================================
+# Leader Election Configuration
+# ===========================================
+
+# Leader election algorithm (default is 3)
+#electionAlg=3
+
+# Leader serves requests (3.5.0+)
+#leaderServes=yes
+
+# Connection timeout for leader election
+#cnxTimeout=5000
+
+# ===========================================
+# Ensemble Configuration
+# ===========================================
+
+# ZooKeeper ensemble configuration
+# Format: server.X=hostname:peer_port:leader_election_port[:observer]
+# X must match the myid file content for this server
+#
+# The configuration below will be replaced with values from ikasan-env.sh:
+# - __THIS_NODE_BINDING__ = 0.0.0.0 for this node, actual hostname for other nodes
+# - __ZK_PEER_PORT__ = peer communication port for this node
+# - __ZK_ELECTION_PORT__ = leader election port for this node
+
+server.1=__NODE1_BINDING__:__NODE1_PEER_PORT__:__NODE1_ELECTION_PORT__
+server.2=__NODE2_BINDING__:__NODE2_PEER_PORT__:__NODE2_ELECTION_PORT__
+server.3=__NODE3_BINDING__:__NODE3_PEER_PORT__:__NODE3_ELECTION_PORT__
+
+# Dynamic reconfiguration support
+#reconfigEnabled=true
+#standaloneEnabled=false
+
+# ===========================================
+# Observer Configuration
+# ===========================================
+
+# Learner type (participant or observer)
+#peerType=participant
+
+# ===========================================
+# Monitoring and Metrics
+# ===========================================
+
+# Enable metrics provider
+#metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
+#metricsProvider.httpPort=__ZK_METRICS_PORT__
+#metricsProvider.exportJvmInfo=true
+
+# ===========================================
+# Security Configuration
+# ===========================================
+
+# SSL/TLS Configuration
+#ssl.keyStore.location=/path/to/keystore.jks
+#ssl.keyStore.password=password
+#ssl.trustStore.location=/path/to/truststore.jks
+#ssl.trustStore.password=password
+#ssl.clientAuth=none
+
+# SASL Authentication
+#authProvider.sasl=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+
+# Kerberos
+#requireClientAuthScheme=sasl
+
+# ===========================================
+# Quota Configuration
+# ===========================================
+
+# Enable quota checking
+#quota.enable=false
+
+# ===========================================
+# 4-Letter Word Commands
+# ===========================================
+
+# 4-letter word command whitelist
+# Available commands: conf, cons, crst, dump, envi, ruok, srst, srvr, stat, wchs, wchc, wchp, mntr
+4lw.commands.whitelist=stat, ruok, conf, isro, mntr, srvr
+
+# ===========================================
+# Advanced Configuration
+# ===========================================
+
+# Request throttling
+#maxCnxns=0
+#maxRequests=0
+
+# Commit log flush interval
+#commitLogFlushInterval=100
+
+# Enable watch manager optimization
+#watchManClass=org.apache.zookeeper.server.watch.WatchManager
+
+# Enable request throttler
+#requestThrottleLimit=0
+#requestThrottleStallTime=100
+
+# Multi-thread settings (3.5.0+)
+#zookeeper.nio.numSelectorThreads=4
+#zookeeper.nio.numWorkerThreads=4
+
+# Enable admin commands
+#admin.enableCommands=true
