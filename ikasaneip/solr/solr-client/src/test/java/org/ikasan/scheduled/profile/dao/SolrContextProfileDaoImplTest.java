@@ -228,7 +228,7 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
     @Ignore
     public void test() throws JsonProcessingException {
         SolrContextProfileDaoImpl dao = new SolrContextProfileDaoImpl();
-        dao.initStandalone("http://localhost:8983/solr", 30, 10000, 10000);
+        dao.initStandalone("http://localhost:8983/solr", 30, 10000);
         dao.setSolrUsername("ikasan");
         dao.setSolrPassword("1ka5an");
 

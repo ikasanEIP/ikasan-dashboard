@@ -1,3 +1,4 @@
+![IKASAN](../../developer/docs/quickstart-images/Ikasan-title-transparent.png)
 # SolrCloud Migration Guide
 
 ## Table of Contents
