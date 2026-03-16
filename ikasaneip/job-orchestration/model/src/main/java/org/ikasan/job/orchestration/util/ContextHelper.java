@@ -714,7 +714,7 @@ public class ContextHelper {
                 .collect(Collectors.toList())));
 
         return contextParameterInstances.stream()
-            .filter(distinctByKey(contextParameterInstance -> contextParameterInstance.getName()) )
+            .filter(distinctByKey(contextParameterInstance -> contextParameterInstance.getName()))
             .collect( Collectors.toList() );
     }
 
@@ -1176,6 +1176,60 @@ public class ContextHelper {
                     .filter(j -> job!= null && job.getJobName().equals(((SchedulerJob)j).getJobName()))
                     .findFirst()
                     .isPresent())
+            .filter(distinctByKey(j -> j.getJobName()))
+            .collect(Collectors.toList());
+
+        return finalResults.stream().map(job -> (SchedulerJobInstance)job).collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves a list of preceding job instances for a given job name within a specified context.
+     *
+     * This method evaluates the dependencies of the specified job by analyzing the contexts where
+     * the job resides, as well as the upstream dependencies linked through those contexts.
+     *
+     * @param context the base context in which the jobs and their dependencies are evaluated
+     * @param jobName the name of the job for which preceding jobs are to be determined
+     * @param internalEventDrivenJobMap a mapping of internal event-driven jobs used to resolve dependencies
+     * @return a list of {@code SchedulerJobInstance} objects representing jobs that precede the specified job
+     */
+    public static List<SchedulerJobInstance> getPrecedingJobs(Context context
+        , String jobName, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+        List<String> residingContexts = getContextsWhereJobResides(context, jobName);
+
+        List<SchedulerJob> finalResults = new ArrayList<>();
+
+        for (String name : residingContexts) {
+            Context child = ContextHelper.getChildContext(name, context);
+
+            if (child == null) continue;
+
+            Optional<SchedulerJobInstance> schedulerJobInstance = child.getScheduledJobs().stream()
+                .filter(job -> jobName.equals(((SchedulerJob)job).getJobName()))
+                .findFirst();
+
+            if (schedulerJobInstance.isEmpty()) continue;
+
+            if (child.getJobDependencies() == null) continue;
+
+            Optional<JobDependency> jobDependency = child.getJobDependencies().stream().filter(dependency
+                    -> schedulerJobInstance.get().getIdentifier().equals(((JobDependency)dependency).getJobIdentifier()))
+                .findFirst();
+
+            if (jobDependency.isEmpty()) continue;
+
+            List<SchedulerJob> results = new ArrayList<>();
+
+            getUpstreamDependencies(jobDependency.get().getLogicalGrouping(), results, child.getScheduledJobsMap());
+
+            // Filter to only return jobs that appear in multiple contexts.
+            if(results.size() > 0) {
+                finalResults.addAll(results.stream()
+                    .collect(Collectors.toList()));
+            }
+        }
+
+        finalResults = finalResults.stream().flatMap(s -> Stream.ofNullable(s))
             .filter(distinctByKey(j -> j.getJobName()))
             .collect(Collectors.toList());
 

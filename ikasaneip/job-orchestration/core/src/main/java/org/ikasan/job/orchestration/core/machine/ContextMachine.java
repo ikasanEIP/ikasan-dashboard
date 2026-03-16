@@ -1032,9 +1032,46 @@ public class ContextMachine {
             InstanceStatus previousState = schedulerJobInstance.getStatus();
             schedulerJobInstance.setSkip(skipFlag);
             if(skipFlag) {
-                schedulerJobInstance.setStatus(InstanceStatus.SKIPPED);
-                dbInstance.setStatus(InstanceStatus.SKIPPED);
-                schedulerJobInstanceRecord.setStatus(InstanceStatus.SKIPPED.name());
+                List<SchedulerJobInstance> precedingJobs = ContextHelper.getPrecedingJobs(this.contextInstance, schedulerJobInstance.getJobName()
+                    , this.internalEventDrivenJobInstances.entrySet()
+                        .stream()
+                        .map(entry -> Map.entry(entry.getKey(), (InternalEventDrivenJob) entry.getValue()))
+                        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+                AtomicBoolean shouldBeSkipComplete = new AtomicBoolean(false);
+                precedingJobs.forEach(job -> {
+                    if(this.internalEventDrivenJobInstances.get(job.getIdentifier() + "-" + job.getChildContextName()) != null) {
+                        ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
+                        contextualisedScheduledProcessEvent.setJobStarting(false);
+                        contextualisedScheduledProcessEvent.setJobName(job.getJobName());
+                        contextualisedScheduledProcessEvent.setAgentName(job.getAgentName());
+                        contextualisedScheduledProcessEvent.setContextName(job.getContextName());
+                        contextualisedScheduledProcessEvent.setInternalEventDrivenJob
+                            (this.internalEventDrivenJobInstances.get(job.getIdentifier() + "-" + job.getChildContextName()));
+                        contextualisedScheduledProcessEvent.setRaisedDueToFailureResubmission(true);
+
+                        try {
+                            getEventsThatCanRun(contextualisedScheduledProcessEvent).forEach(event -> {
+                                if (event.getInternalEventDrivenJob().getIdentifier().equals(schedulerJobInstance.getIdentifier())) {
+                                    shouldBeSkipComplete.set(true);
+                                }
+                            });
+                        } catch (ContextMachineException e) {
+                            // safe to ignore this exception
+                        }
+                    }
+                });
+
+                if(precedingJobs.isEmpty() || shouldBeSkipComplete.get()) {
+                    schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_COMPLETE);
+                    dbInstance.setStatus(InstanceStatus.SKIPPED_COMPLETE);
+                    schedulerJobInstanceRecord.setStatus(InstanceStatus.SKIPPED_COMPLETE.name());
+                }
+                else {
+                    schedulerJobInstance.setStatus(InstanceStatus.SKIPPED);
+                    dbInstance.setStatus(InstanceStatus.SKIPPED);
+                    schedulerJobInstanceRecord.setStatus(InstanceStatus.SKIPPED.name());
+                }
             }
             else {
                 schedulerJobInstance.setStatus(InstanceStatus.WAITING);
