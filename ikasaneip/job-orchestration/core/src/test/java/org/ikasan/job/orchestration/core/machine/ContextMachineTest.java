@@ -30,6 +30,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -1197,7 +1198,8 @@ public class ContextMachineTest extends AbstractTest {
 
         context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
         context3.getScheduledJobs().forEach(job -> {
-            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+            Assert.assertTrue(job.getStatus().equals(InstanceStatus.SKIPPED)
+                || job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE));
         });
     }
 
@@ -1230,7 +1232,8 @@ public class ContextMachineTest extends AbstractTest {
 
         context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
         context3.getScheduledJobs().forEach(job -> {
-            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+            Assert.assertTrue(job.getStatus().equals(InstanceStatus.SKIPPED)
+                || job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE));
         });
 
         contextMachine.skipJobs("Context3", false);
@@ -1271,7 +1274,8 @@ public class ContextMachineTest extends AbstractTest {
 
         context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
         context3.getScheduledJobs().forEach(job -> {
-            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+            Assert.assertTrue(job.getStatus().equals(InstanceStatus.SKIPPED)
+                || job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE));
         });
 
         contextMachine.skipJobs("Context3", false);
@@ -1398,18 +1402,177 @@ public class ContextMachineTest extends AbstractTest {
 
         context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
         context4.getScheduledJobs().forEach(job -> {
-            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+            Assert.assertTrue(job.getStatus().equals(InstanceStatus.SKIPPED)
+                || job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE));
         });
 
         context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
         context3.getScheduledJobs().forEach(job -> {
-            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+            Assert.assertTrue(job.getStatus().equals(InstanceStatus.SKIPPED)
+                || job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE));
         });
 
         context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
         context2.getScheduledJobs().forEach(job -> {
-            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+            Assert.assertTrue(job.getStatus().equals(InstanceStatus.SKIPPED)
+                || job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE));
         });
+    }
+
+    @Test
+    public void test_context_machine_job_skipped_not_run_downstream_if_preceding_jobs_not_complete() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/test-skipped-job.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/test-skipped-job.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("test-cluster2", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        ContextInstance context4 = (ContextInstance) ContextHelper.getChildContext("cluster-child", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        ContextInstance context2 = (ContextInstance) ContextHelper.getChildContext("skipped-job-bug", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        contextMachine.skipJob("scheduler-agent-sched-cmd1", "skipped-job-bug", true);
+
+        this.assertJobStatus(contextMachine, "skipped-job-bug",  "scheduler-agent-sched-cmd1", InstanceStatus.SKIPPED);
+
+        ContextualisedScheduledProcessEvent eventInstance
+            = scheduledProcessEventInstance("sched-ski1", "scheduler-agent", true);
+
+        List<SchedulerJobInitiationEvent> events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("schedskip2", "scheduler-agent", true);
+
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance(events.get(0).getJobName(), events.get(0).getAgentName(), true);
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        this.assertJobStatus(contextMachine, "skipped-job-bug",  "scheduler-agent-sched-cmd1", InstanceStatus.SKIPPED_COMPLETE);
+
+        eventInstance
+            = scheduledProcessEventInstance("sched-cmd3", "scheduler-agent", true);
+
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("sched-skip4", "scheduler-agent", true);
+
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance(events.get(0).getJobName(), events.get(0).getAgentName(), true);
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        this.assertJobStatus(contextMachine, "skipped-job-bug",  "scheduler-agent-sched-cmd2", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "skipped-job-bug", InstanceStatus.COMPLETE);
+    }
+
+    @Test
+    public void test_context_machine_job_skipped_not_run_downstream_if_preceding_jobs_already_complete() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/test-skipped-job.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/test-skipped-job.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        ContextInstance context3 = (ContextInstance) ContextHelper.getChildContext("test-cluster2", contextMachine.getContext());
+        context3.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        ContextInstance context4 = (ContextInstance) ContextHelper.getChildContext("cluster-child", contextMachine.getContext());
+        context4.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        ContextInstance context2 = (ContextInstance) ContextHelper.getChildContext("skipped-job-bug", contextMachine.getContext());
+        context2.getScheduledJobs().forEach(job -> {
+            Assert.assertEquals(InstanceStatus.WAITING, job.getStatus());
+        });
+
+        ContextualisedScheduledProcessEvent eventInstance
+            = scheduledProcessEventInstance("sched-ski1", "scheduler-agent", true);
+
+        List<SchedulerJobInitiationEvent> events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("sched-cmd3", "scheduler-agent", true);
+
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("sched-skip4", "scheduler-agent", true);
+
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+
+        contextMachine.skipJob("scheduler-agent-sched-cmd1", "skipped-job-bug", true);
+
+        eventInstance
+            = scheduledProcessEventInstance("schedskip2", "scheduler-agent", true);
+
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance(events.get(0).getJobName(), events.get(0).getAgentName(), true);
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance(events.get(0).getJobName(), events.get(0).getAgentName(), true);
+        events =  contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        this.assertJobStatus(contextMachine, "skipped-job-bug",  "scheduler-agent-sched-cmd1", InstanceStatus.SKIPPED_COMPLETE);
+        this.assertJobStatus(contextMachine, "skipped-job-bug",  "scheduler-agent-sched-cmd2", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "skipped-job-bug", InstanceStatus.COMPLETE);
     }
 
     @Test
@@ -1451,17 +1614,20 @@ public class ContextMachineTest extends AbstractTest {
 
         context4 = (ContextInstance) ContextHelper.getChildContext("Context4", contextMachine.getContext());
         context4.getScheduledJobs().forEach(job -> {
-            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+            Assert.assertTrue(job.getStatus().equals(InstanceStatus.SKIPPED)
+                || job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE));
         });
 
         context3 = (ContextInstance) ContextHelper.getChildContext("Context3", contextMachine.getContext());
         context3.getScheduledJobs().forEach(job -> {
-            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+            Assert.assertTrue(job.getStatus().equals(InstanceStatus.SKIPPED)
+                || job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE));
         });
 
         context2 = (ContextInstance) ContextHelper.getChildContext("Context2", contextMachine.getContext());
         context2.getScheduledJobs().forEach(job -> {
-            Assert.assertEquals(InstanceStatus.SKIPPED, job.getStatus());
+            Assert.assertTrue(job.getStatus().equals(InstanceStatus.SKIPPED)
+                || job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE));
         });
 
         contextMachine.skipJobs("Context2", false);
@@ -7123,17 +7289,20 @@ public class ContextMachineTest extends AbstractTest {
         InternalEventDrivenJobInstanceImpl internalJob1 = new InternalEventDrivenJobInstanceImpl();
         internalJob1.setAgentName("agentName1");
         internalJob1.setJobName("jobName1");
+        internalJob1.setIdentifier("agentName1-jobName1");
         internalEventDrivenJobs.put("agentName1-jobName1-Context1", internalJob1);
 
         InternalEventDrivenJobInstanceImpl internalJob3 = new InternalEventDrivenJobInstanceImpl();
         internalJob3.setAgentName("agentName3");
         internalJob3.setJobName("jobName3");
+        internalJob3.setIdentifier("agentName3-jobName3");
         internalEventDrivenJobs.put("agentName3-jobName3-Context1", internalJob3);
 
         HashMap<String, GlobalEventJobInstance> globalEventJobInstances = new HashMap<>();
         GlobalEventJobInstanceImpl globalJob2 = new GlobalEventJobInstanceImpl();
         globalJob2.setAgentName("agentName2");
         globalJob2.setJobName("jobName2");
+        globalJob2.setIdentifier("agentName2-jobName2");
         globalEventJobInstances.put("GLOBAL_EVENT-jobName2-Context1", globalJob2);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances, new HashMap<>()
