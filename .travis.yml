@@ -1,3 +1,4 @@
+dist: focal
 sudo: false
 language: java
 jdk:
@@ -10,28 +11,32 @@ cache:
     - $HOME/apache-maven-3.8.4
 ## export GPG details
 before_install:
-  #  - echo -e "machine github.com\n  login $GITHUB_USER\n  password $GITHUB_PASSWORD" > $HOME/.netrc
-  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
-  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
-  - nvm install 10.17.0
+  - echo use-agent >> ~/.gnupg/gpg.conf
+  - echo pinentry-mode loopback >> ~/.gnupg/gpg.conf
+  - echo allow-loopback-pinentry >> ~/.gnupg/gpg-agent.conf
+  - echo RELOADAGENT | gpg-connect-agent
+  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --batch --import --no-tty --batch --yes
+  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --batch --import-ownertrust
+  - nvm install 18.0.0
   - npm install --save-dev @babel/core
-  - npm install --save-dev @babel/plugin-proposal-object-rest-spread
-  - export M2_HOME=$HOME/apache-maven-3.8.4
-  - if [ ! -d $M2_HOME/bin ]; then curl https://archive.apache.org/dist/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz | tar zxf - -C $HOME; fi
+  - npm install --save-dev @babel/plugin-transform-object-rest-spread
+  - export M2_HOME=$HOME/apache-maven-3.8.6
+  - if [ ! -d $M2_HOME/bin ]; then curl https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz | tar zxf - -C $HOME; fi
   - export PATH=$M2_HOME/bin:$PATH
+  - export GPG_TTY=$(tty)
 
 install:
   - mvn -U  --file ikasaneip/pom.xml --settings .settings.xml test -Dmaven.javadoc.skip=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B -V
 
 deploy:
   - skip_cleanup: true
-  # deploy develop 3.1.x to oss
+  # deploy develop 3.2.x to oss
   - provider: script
     skip_cleanup: true
     script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V --settings .settings.xml
     on:
       branch: 3.2.x
-  # deploy develop 3.2.x to oss
+  # deploy develop 3.3.x to oss
   - provider: script
     skip_cleanup: true
     script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V -q --settings .settings.xml
