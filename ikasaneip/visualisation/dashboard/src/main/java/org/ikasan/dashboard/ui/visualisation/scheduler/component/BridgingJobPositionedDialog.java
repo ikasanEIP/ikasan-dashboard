@@ -21,14 +21,13 @@ import org.ikasan.dashboard.ui.scheduler.component.ErrorAcknowledgedPositionedDi
 import org.ikasan.dashboard.ui.scheduler.component.JsonViewerDialog;
 import org.ikasan.dashboard.ui.scheduler.component.LogFileHistoryDialog;
 import org.ikasan.dashboard.ui.scheduler.component.TextViewerDialog;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.IconDecorator;
-import org.ikasan.dashboard.ui.util.IkasanColours;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.designer.PositionedDialog;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -40,6 +39,7 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,21 +53,25 @@ public class BridgingJobPositionedDialog extends PositionedDialog {
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ContextInstance contextInstance;
-
+    private SystemEventLogger systemEventLogger;
 
     /**
-     * Constructor for creating a BridgingJobPositionedDialog object.
+     * Constructs a new instance of the BridgingJobPositionedDialog class.
+     * This dialog is designed to manage the interaction and display of a scheduler job instance record
+     * along with associated services and context information.
      *
-     * @param schedulerJobInstanceRecord The SchedulerJobInstanceRecord object associated with the dialog.
-     * @param logStreamingService The LogStreamingService used for log streaming.
-     * @param moduleMetaDataService The ModuleMetaDataService used for module metadata operations.
-     * @param schedulerJobInstanceService The SchedulerJobInstanceService for scheduler job instance operations.
-     * @param scheduledContextInstanceService The ScheduledContextInstanceService for scheduled context instance operations.
-     * @param contextInstance The ContextInstance object associated with the dialog.
+     * @param schedulerJobInstanceRecord The record containing details about the scheduler job instance.
+     * @param logStreamingService The service responsible for handling log streaming functionality.
+     * @param moduleMetaDataService The service providing metadata information about the module.
+     * @param schedulerJobInstanceService The service to manage or retrieve scheduler job instance details.
+     * @param scheduledContextInstanceService The service to handle scheduled context instances.
+     * @param contextInstance The context instance associated with the current job.
+     * @param systemEventLogger The logger used to record system events and actions.
      */
     public BridgingJobPositionedDialog(SchedulerJobInstanceRecord schedulerJobInstanceRecord, LogStreamingService logStreamingService,
                                        ModuleMetaDataService moduleMetaDataService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                       ScheduledContextInstanceService scheduledContextInstanceService, ContextInstance contextInstance) {
+                                       ScheduledContextInstanceService scheduledContextInstanceService, ContextInstance contextInstance,
+                                       SystemEventLogger systemEventLogger) {
         super(90, 270);
         this.schedulerJobInstanceRecord = schedulerJobInstanceRecord;
         this.logStreamingService = logStreamingService;
@@ -75,6 +79,7 @@ public class BridgingJobPositionedDialog extends PositionedDialog {
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.contextInstance = contextInstance;
+        this.systemEventLogger = systemEventLogger;
         this.init();
     }
 
@@ -91,6 +96,7 @@ public class BridgingJobPositionedDialog extends PositionedDialog {
         buttonLayout.add(label);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, label);
 
+        IkasanAuthentication ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         if(this.schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.WAITING)) {
             Button executeJobButton = new Button(getTranslation("button.execute"), VaadinIcon.PLAY.create());
             executeJobButton.setIconAfterText(true);
@@ -107,16 +113,29 @@ public class BridgingJobPositionedDialog extends PositionedDialog {
 
                 confirmDialog.addConfirmListener(confirmEvent -> {
                     if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                        boolean error = false;
                         try {
                             ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
                             contextMachine.broadcastLocalEvent(this.createSchedulerJobInitiationEvent((BridgingJobInstance) this.schedulerJobInstanceRecord.getSchedulerJobInstance()
                                 , contextMachine.getContext()));
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED
+                                , String.format("Bridging job submitted[%s], context[%s], context instance[%s], user[%s]!"
+                                , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                                , this.contextInstance.getId(), ikasanAuthentication.getName()), ikasanAuthentication.getName());
+                            logger.info(String.format("Successfully executed bridging job[%s], context[%s], context instance[%s], user[%s]!"
+                                , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                                , this.contextInstance.getId(), ikasanAuthentication.getName()));
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            logger.error(String.format("Error executing  bridging job[%s], context[%s], context instance[%s], user[%s]!"
+                                , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                                , this.contextInstance.getId(), ikasanAuthentication.getName()), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.execute-bridging-job"));
+                            error = true;
                         } finally {
                             this.close();
-                            NotificationHelper.showErrorNotification(getTranslation("message.execute-bridging-job"));
+                            if(!error) {
+                                NotificationHelper.showErrorNotification(getTranslation("message.execute-bridging-job"));
+                            }
                         }
                     }
                 });
@@ -139,16 +158,29 @@ public class BridgingJobPositionedDialog extends PositionedDialog {
 
                 confirmDialog.addConfirmListener(confirmEvent -> {
                     if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                        boolean error = false;
                         try {
                             ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
                             contextMachine.resetJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
                                 schedulerJobInstanceRecord.getChildContextName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET
+                                , String.format("Bridging job reset[%s], context[%s], context instance[%s], user[%s]!"
+                                    , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                                    , this.contextInstance.getId(), ikasanAuthentication.getName()), ikasanAuthentication.getName());
+                            logger.info(String.format("Successfully reset bridging job[%s], context[%s], context instance[%s], user[%s]!"
+                                , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                                , this.contextInstance.getId(), ikasanAuthentication.getName()));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error(String.format("Error resetting bridging job[%s], context[%s], context instance[%s], user[%s]!"
+                                , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), this.contextInstance.getName()
+                                , this.contextInstance.getId(), ikasanAuthentication.getName()), e);
                             NotificationHelper.showErrorNotification(getTranslation("error.reset-bridging-job"));
+                            error = true;
                         } finally {
                             this.close();
-                            NotificationHelper.showErrorNotification(getTranslation("message.reset-bridging-job"));
+                            if(!error) {
+                                NotificationHelper.showErrorNotification(getTranslation("message.reset-bridging-job"));
+                            }
                         }
                     }
                 });
