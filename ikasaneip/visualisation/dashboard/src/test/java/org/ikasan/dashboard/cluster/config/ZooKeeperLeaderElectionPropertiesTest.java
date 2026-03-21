@@ -18,7 +18,7 @@ public class ZooKeeperLeaderElectionPropertiesTest {
         Assert.assertEquals("Default connection timeout should be 15000ms", 15000, properties.getConnectionTimeoutMs());
         Assert.assertEquals("Default base sleep time should be 1000ms", 1000, properties.getBaseSleepTimeMs());
         Assert.assertEquals("Default max retries should be 3", 3, properties.getMaxRetries());
-        Assert.assertEquals("Default namespace should be /ikasan", "/ikasan", properties.getNamespace());
+        Assert.assertEquals("Default namespace should be /ikasan", "ikasan", properties.getNamespace());
         Assert.assertEquals("Default leader path should be /leader", "/leader", properties.getLeaderPath());
     }
 
