@@ -1,5 +1,9 @@
 package org.ikasan.dashboard;
 
+import org.ikasan.dashboard.cluster.config.LeaderElectionConfigurationTest;
+import org.ikasan.dashboard.cluster.config.ZooKeeperLeaderElectionPropertiesTest;
+import org.ikasan.dashboard.cluster.health.LeaderElectionHealthIndicatorTest;
+import org.ikasan.dashboard.cluster.service.ZooKeeperLeaderElectionServiceTest;
 import org.ikasan.dashboard.notification.business.stream.BusinessStreamNotificationJobTest;
 import org.ikasan.dashboard.notification.business.stream.service.BusinessStreamNotificationServiceTest;
 import org.ikasan.dashboard.notification.scheduler.SchedulerNotificationJobTest;
@@ -42,6 +46,10 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 
 @Suite.SuiteClasses({
+    ZooKeeperLeaderElectionPropertiesTest.class,
+    ZooKeeperLeaderElectionServiceTest.class,
+    LeaderElectionConfigurationTest.class,
+    LeaderElectionHealthIndicatorTest.class,
     BusinessStreamNotificationServiceTest.class,
     BusinessStreamNotificationJobTest.class,
     SchedulerNotificationJobTest.class,
