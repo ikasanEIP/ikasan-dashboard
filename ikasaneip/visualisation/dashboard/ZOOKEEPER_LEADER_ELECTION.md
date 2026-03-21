@@ -180,7 +180,7 @@ Configuration is managed through `ZooKeeperLeaderElectionProperties` with the pr
 | `connectionTimeoutMs` | `15000` | Connection timeout in milliseconds |
 | `baseSleepTimeMs` | `1000` | Initial retry delay for exponential backoff |
 | `maxRetries` | `3` | Maximum connection retry attempts |
-| `namespace` | `/ikasan` | ZooKeeper namespace for isolation |
+| `namespace` | `ikasan` | ZooKeeper namespace for isolation |
 | `leaderPath` | `/leader` | Path under namespace for leader election |
 
 ### Example Configuration
