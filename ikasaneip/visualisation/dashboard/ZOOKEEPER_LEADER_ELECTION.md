@@ -1,3 +1,4 @@
+![IKASAN](../../developer/docs/quickstart-images/Ikasan-title-transparent.png)
 # ZooKeeper Leader Election Integration
 
 ## Overview
