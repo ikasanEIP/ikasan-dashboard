@@ -14,7 +14,7 @@ public class ZooKeeperLeaderElectionProperties {
     private int connectionTimeoutMs = 15000;
     private int baseSleepTimeMs = 1000;
     private int maxRetries = 3;
-    private String namespace = "/ikasan";
+    private String namespace = "ikasan";
     private String leaderPath = "/leader";
 
     public boolean isEnabled() {
