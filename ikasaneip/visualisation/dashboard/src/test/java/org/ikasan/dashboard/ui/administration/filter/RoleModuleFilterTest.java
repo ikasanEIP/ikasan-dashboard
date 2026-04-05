@@ -3,7 +3,8 @@ package org.ikasan.dashboard.ui.administration.filter;
 import com.google.common.collect.Lists;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
-import org.ikasan.security.model.RoleModule;
+import org.ikasan.dashboard.security.model.RoleModuleImpl;
+import org.ikasan.spec.security.model.RoleModule;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class RoleModuleFilterTest {
         List<RoleModule> roleModules = new ArrayList<>();
 
         for(int i=0; i<100; i++) {
-            RoleModule roleModule = new RoleModule();
+            RoleModule roleModule = new RoleModuleImpl();
             roleModule.setModuleName("name"+i);
 
             roleModules.add(roleModule);

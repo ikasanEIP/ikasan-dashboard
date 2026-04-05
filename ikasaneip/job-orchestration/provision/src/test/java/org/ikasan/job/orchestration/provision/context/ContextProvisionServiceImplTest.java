@@ -16,7 +16,6 @@ import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
-import org.ikasan.security.service.SecurityService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -37,6 +36,7 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextSe
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
 import org.junit.Assert;
 import org.junit.Before;

@@ -1,11 +1,10 @@
 package org.ikasan.dashboard.security;
 
-
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.shared.ApplicationConstants;
 import org.ikasan.dashboard.cache.ModuleMetadataCache;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.security.model.User;
+import org.ikasan.spec.security.model.User;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;

@@ -4,7 +4,7 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.security.service.LdapService;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.service.SecurityService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;

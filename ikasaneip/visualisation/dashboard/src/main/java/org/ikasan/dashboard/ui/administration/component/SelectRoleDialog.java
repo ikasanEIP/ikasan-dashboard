@@ -2,20 +2,18 @@ package org.ikasan.dashboard.ui.administration.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.ListDataProvider;
 import org.ikasan.dashboard.ui.administration.filter.RoleFilter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.IkasanPrincipal;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.IkasanPrincipal;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.service.SecurityService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
@@ -24,10 +22,19 @@ import java.util.Set;
 public class SelectRoleDialog extends AbstractCloseableResizableDialog
 {
     private IkasanPrincipal principal;
-    private SecurityService securityService;
-    private SystemEventLogger systemEventLogger;
-    private FilteringGrid<Role> roleGrid;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
+    private final FilteringGrid<Role> roleGrid;
 
+    /**
+     * Constructs a new SelectRoleDialog instance.
+     *
+     * @param principal the principal representing the user whose roles are being managed; must not be null
+     * @param securityService the security service used for managing and interacting with security data; must not be null
+     * @param systemEventLogger the logger for logging system events; must not be null
+     * @param roleGrid the grid component for displaying and filtering roles; must not be null
+     * @throws IllegalArgumentException if any of the parameters are null
+     */
     public SelectRoleDialog(IkasanPrincipal principal, SecurityService securityService, SystemEventLogger systemEventLogger,
                             FilteringGrid<Role> roleGrid)
     {

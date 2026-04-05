@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.administration.component;
 
-
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -19,8 +18,8 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.service.SecurityService;
 
 public class NewRoleDialog extends AbstractCloseableResizableDialog
 {
@@ -65,7 +64,7 @@ public class NewRoleDialog extends AbstractCloseableResizableDialog
             .bind(Role::getDescription, Role::setDescription);
         descriptionTf.setHeight("150px");
 
-        Role role = new Role();
+        Role role = this.securityService.createRole();
         binder.readBean(role);
 
         formLayout.add(descriptionTf);

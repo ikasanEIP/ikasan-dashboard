@@ -13,12 +13,12 @@ import com.vaadin.flow.data.provider.DataProvider;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.IkasanPrincipal;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.model.UserFilter;
-import org.ikasan.security.model.UserLite;
-import org.ikasan.security.service.SecurityService;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.IkasanPrincipal;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.model.UserFilter;
+import org.ikasan.spec.security.model.UserLite;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -26,11 +26,10 @@ import java.util.function.Consumer;
 public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
 {
     private Role role;
-    private SecurityService securityService;
-    private SystemEventLogger systemEventLogger;
-    private UserService userService;
-    private Grid<UserLite> userLiteFilteringGrid;
-    private DataProvider<UserLite, UserFilter> userDataProvider;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
+    private final UserService userService;
+    private final Grid<UserLite> userLiteFilteringGrid;
     private ConfigurableFilterDataProvider<UserLite,Void,UserFilter> userGridFilteredDataProvider;
 
     public SelectUserForRoleDialog(Role role, UserService userService, SecurityService securityService
@@ -70,7 +69,7 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
         super.title.setText(getTranslation("label.select-user", UI.getCurrent().getLocale()));
         H3 selectUserLabel = new H3(getTranslation("label.select-user", UI.getCurrent().getLocale()));
 
-        UserFilter userFilter = new UserFilter();
+        UserFilter userFilter = new UserFilterImpl();
 
         Grid<UserLite> userGrid = new Grid<>();
 
@@ -103,7 +102,8 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
         userGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<UserLite>>) userLiteItemDoubleClickEvent ->
         {
             this.role = this.securityService.getRoleById(this.role.getId());
-            IkasanPrincipal ikasanPrincipal = this.securityService.findPrincipalByName(userLiteItemDoubleClickEvent.getItem().getUsername());
+            IkasanPrincipal ikasanPrincipal = this.securityService.findPrincipalByName
+                (userLiteItemDoubleClickEvent.getItem().getUsername());
             ikasanPrincipal.addRole(this.role);
 
             this.securityService.savePrincipal(ikasanPrincipal);
@@ -123,7 +123,9 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
         this.addGridFiltering(userGrid, hr, userFilter::setEmailFilter, "email");
         this.addGridFiltering(userGrid, hr, userFilter::setDepartmentFilter, "department");
 
-        userDataProvider = DataProvider.fromFilteringCallbacks(query -> {
+        // The index of the first item to load
+        // The number of items to load
+        DataProvider<UserLite, UserFilter> userDataProvider = DataProvider.fromFilteringCallbacks(query -> {
             Optional<UserFilter> filter = query.getFilter();
 
             // The index of the first item to load
@@ -132,21 +134,20 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
             // The number of items to load
             int limit = query.getLimit();
 
-            if(filter.isPresent() && !query.getSortOrders().isEmpty()) {
+            if (filter.isPresent() && !query.getSortOrders().isEmpty()) {
                 filter.get().setSortColumn(query.getSortOrders().get(0).getSorted());
                 filter.get().setSortOrder(query.getSortOrders().get(0).getDirection().name());
-            }
-            else if (filter.isPresent()){
+            } else if (filter.isPresent()) {
                 filter.get().setSortColumn(null);
                 filter.get().setSortOrder(null);
             }
 
-            return this.userService.getUsersWithoutRole(this.role.getName(), filter.isPresent() ? filter.get() :  new UserFilter()
+            return this.userService.getUsersWithoutRole(this.role.getName(), filter.isPresent() ? filter.get() : new UserFilterImpl()
                 , limit, offset).stream();
         }, query -> {
             Optional<UserFilter> filter = query.getFilter();
 
-            return this.userService.getUsersWithoutRoleCount(role.getName(), filter.isPresent() ? filter.get() :  new UserFilter());
+            return this.userService.getUsersWithoutRoleCount(role.getName(), filter.isPresent() ? filter.get() : new UserFilterImpl());
         });
 
         userGridFilteredDataProvider = userDataProvider.withConfigurableFilter();
@@ -187,5 +188,85 @@ public class SelectUserForRoleDialog extends AbstractCloseableResizableDialog
         });
 
         hr.getCell(grid.getColumnByKey(columnKey)).setComponent(textField);
+    }
+
+    private class UserFilterImpl implements UserFilter {
+        private String username;
+        private String name;
+        private String lastName;
+        private String email;
+        private String department;
+        private String sortColumn;
+        private String sortOrder;
+
+        @Override
+        public void setUsernameFilter(String username) {
+            this.username = username;
+        }
+
+        @Override
+        public String getUsernameFilter() {
+            return this.username;
+        }
+
+        @Override
+        public void setNameFilter(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getNameFilter() {
+            return this.name;
+        }
+
+        @Override
+        public void setLastNameFilter(String lastName) {
+            this.lastName = lastName;
+        }
+
+        @Override
+        public String getLastNameFilter() {
+            return this.lastName;
+        }
+
+        @Override
+        public void setEmailFilter(String email) {
+            this.email = email;
+        }
+
+        @Override
+        public String getEmailFilter() {
+            return this.email;
+        }
+
+        @Override
+        public void setDepartmentFilter(String department) {
+            this.department = department;
+        }
+
+        @Override
+        public String getDepartmentFilter() {
+            return this.department;
+        }
+
+        @Override
+        public void setSortColumn(String sortColumn) {
+            this.sortColumn = sortColumn;
+        }
+
+        @Override
+        public String getSortColumn() {
+            return this.sortColumn;
+        }
+
+        @Override
+        public void setSortOrder(String sortOrder) {
+            this.sortOrder = sortOrder;
+        }
+
+        @Override
+        public String getSortOrder() {
+            return this.sortOrder;
+        }
     }
 }

@@ -1,7 +1,8 @@
 package org.ikasan.rest.dashboard.util;
 
 import org.ikasan.security.model.*;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.*;
+import org.ikasan.spec.security.service.UserService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,6 +27,11 @@ public class TestUserService implements UserService {
         return List.of(this.createUser("username1"),
             this.createUser("username2"),
             this.createUser("username3"));
+    }
+
+    @Override
+    public User createUser(String username, String password, String email, boolean enabled) {
+        return new UserImpl(username, password, email, enabled);
     }
 
     @Override
@@ -150,7 +156,7 @@ public class TestUserService implements UserService {
     }
 
     private User createUser(String username) {
-        User user = new User();
+        User user = new UserImpl();
         user.setUsername(username);
         user.setPrincipals(Set.of(createPrincipal("principal1"),
             createPrincipal("principal2")));
@@ -159,7 +165,7 @@ public class TestUserService implements UserService {
     }
 
     private IkasanPrincipal createPrincipal(String name) {
-        IkasanPrincipal ikasanPrincipal = new IkasanPrincipal();
+        IkasanPrincipal ikasanPrincipal = new IkasanPrincipalImpl();
         ikasanPrincipal.setName(name);
         ikasanPrincipal.setRoles(Set.of(createRole("role1"),
             createRole("role2"), createRole("role3")));
@@ -168,7 +174,7 @@ public class TestUserService implements UserService {
     }
 
     private Role createRole(String roleName) {
-        Role role = new Role();
+        Role role = new RoleImpl();
         role.setName(roleName);
         role.setDescription("Role Description");
         role.setPolicies(Set.of(createPolicy("policy1")
@@ -184,21 +190,21 @@ public class TestUserService implements UserService {
     }
 
     private Policy createPolicy(String policyName) {
-        Policy policy = new Policy();
+        Policy policy = new PolicyImpl();
         policy.setName(policyName);
 
         return policy;
     }
 
     private RoleModule createRoleModule(Role role, String moduleName) {
-        RoleModule roleModule = new RoleModule();
+        RoleModule roleModule = new RoleModuleImpl();
         roleModule.setRole(role);
         roleModule.setModuleName(moduleName);
         return roleModule;
     }
 
     private RoleJobPlan createRoleJobPlan(Role role, String planName) {
-        RoleJobPlan roleModule = new RoleJobPlan();
+        RoleJobPlan roleModule = new RoleJobPlanImpl();
         roleModule.setRole(role);
         roleModule.setJobPlanName(planName);
         return roleModule;

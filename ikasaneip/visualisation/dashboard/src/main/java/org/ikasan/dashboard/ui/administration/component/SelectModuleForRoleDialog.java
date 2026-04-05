@@ -2,20 +2,18 @@ package org.ikasan.dashboard.ui.administration.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.ListDataProvider;
 import org.ikasan.dashboard.ui.administration.filter.ModuleFilter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.model.RoleModule;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.model.RoleModule;
+import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 
@@ -25,15 +23,28 @@ import java.util.stream.Collectors;
 
 public class SelectModuleForRoleDialog extends AbstractCloseableResizableDialog
 {
-    private Role role;
-    private ModuleMetaDataService moduleMetadataService;
-    private SecurityService securityService;
-    private SystemEventLogger systemEventLogger;
-    private List<ModuleMetaData> moduleMetaDataList;
-    private FilteringGrid<RoleModule> roleModuleFilteringGrid;
+    private final ModuleMetaDataService moduleMetadataService;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
+    private final FilteringGrid<RoleModule> roleModuleFilteringGrid;
 
-    public SelectModuleForRoleDialog(Role role, ModuleMetaDataService moduleMetadataService,  SecurityService securityService
-        , SystemEventLogger systemEventLogger, FilteringGrid<RoleModule> roleModuleFilteringGrid)
+    private List<ModuleMetaData> moduleMetaDataList;
+    private Role role;
+
+
+    /**
+     * Creates a dialog for selecting modules associated with a specific role.
+     *
+     * @param role The role for which the module selection dialog is created. Must not be null.
+     * @param moduleMetadataService Service used to retrieve metadata about modules. Must not be null.
+     * @param securityService Service for handling security-related operations. Must not be null.
+     * @param systemEventLogger Logger used for recording system events. Must not be null.
+     * @param roleModuleFilteringGrid A grid component used for filtering and displaying role modules. Must not be null.
+     * @throws IllegalArgumentException If any parameter is null.
+     */
+    public SelectModuleForRoleDialog(Role role, ModuleMetaDataService moduleMetadataService
+        ,  SecurityService securityService, SystemEventLogger systemEventLogger
+        , FilteringGrid<RoleModule> roleModuleFilteringGrid)
     {
         this.role = role;
         if(this.role == null)
@@ -91,7 +102,7 @@ public class SelectModuleForRoleDialog extends AbstractCloseableResizableDialog
 
         moduleGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<ModuleMetaData>>) moduleItemDoubleClickEvent ->
         {
-            RoleModule roleModule = new RoleModule();
+            RoleModule roleModule = this.securityService.createRoleModule();
             roleModule.setRole(this.role);
             roleModule.setModuleName(moduleItemDoubleClickEvent.getItem().getName());
             this.securityService.saveRoleModule(roleModule);

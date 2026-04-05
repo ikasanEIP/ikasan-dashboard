@@ -17,7 +17,7 @@ public class AdministrationSearchViewTest extends UITest {
     }
 
     @Test
-    public void test_search_reesolve_view()
+    public void test_search_resolve_view()
     {
         UI.getCurrent().navigate("adminSearchView");
 

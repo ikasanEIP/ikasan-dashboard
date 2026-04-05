@@ -3,7 +3,8 @@ package org.ikasan.dashboard.ui.administration.filter;
 import com.google.common.collect.Lists;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
-import org.ikasan.security.model.Policy;
+import org.ikasan.dashboard.security.model.PolicyImpl;
+import org.ikasan.spec.security.model.Policy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class PolicyFilterTest {
         List<Policy> policies = new ArrayList<>();
 
         for(int i=0; i<100; i++) {
-            Policy policy = new Policy();
+            Policy policy = new PolicyImpl();
             policy.setName("name"+i);
             policy.setDescription("description"+i);
 

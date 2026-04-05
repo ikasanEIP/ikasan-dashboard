@@ -9,15 +9,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.administration.filter.UserLiteFilter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.IkasanPrincipal;
-import org.ikasan.security.model.IkasanPrincipalLite;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.model.UserLite;
-import org.ikasan.security.service.SecurityService;
-import org.ikasan.security.service.UserService;
-import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import org.ikasan.spec.security.model.UserLite;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,11 +20,11 @@ import java.util.stream.Collectors;
 
 public class SelectUserDialog extends AbstractCloseableResizableDialog
 {
-    private SecurityService securityService;
-    private SystemEventLogger systemEventLogger;
-    private UserService userService;
-    private List<String> associatedUsers;
-    private FilteringGrid<UserLite> userLiteFilteringGrid;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
+    private final UserService userService;
+    private final List<String> associatedUsers;
+    private final FilteringGrid<UserLite> userLiteFilteringGrid;
 
     public SelectUserDialog(UserService userService, List<String> associatedUsers, SecurityService securityService
         , SystemEventLogger systemEventLogger, FilteringGrid<UserLite> userLiteFilteringGrid)

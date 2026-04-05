@@ -1,0 +1,664 @@
+[
+  {
+    "name": "ALL",
+    "description": "Policy to do everything",
+    "roles": [
+      "ADMIN"
+    ]
+  },
+  {
+    "name": "Discover",
+    "description": "A policy to allow users to perform topology discovery.",
+    "roles": []
+  },
+  {
+    "name": "wiretap-read",
+    "description": "Wiretap read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "wiretap-write",
+    "description": "Wiretap write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "wiretap-admin",
+    "description": "Wiretap admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "error-read",
+    "description": "Error read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "error-write",
+    "description": "Error write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "error-admin",
+    "description": "Error admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "actioned_error-read",
+    "description": "Actioned Error read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "actioned_error-write",
+    "description": "Actioned Error write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "actioned_error-admin",
+    "description": "Actioned Error admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "categorised_error-read",
+    "description": "Categorised Error read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "categorised_error-write",
+    "description": "Categorised Error write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "categorised_error-admin",
+    "description": "Categorised Error admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "exclusion-read",
+    "description": "Exclusion read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "exclusion-write",
+    "description": "Exclusion write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "exclusion-admin",
+    "description": "Exclusion admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "actioned_exclusion-read",
+    "description": "Actioned Exclusion read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "actioned_exclusion-write",
+    "description": "Actioned Exclusion write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "actioned_exclusion-admin",
+    "description": "Actioned Exclusion admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "system_event-read",
+    "description": "System Event read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "system_event-write",
+    "description": "System Event write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "system_event-admin",
+    "description": "System Event admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "filter-read",
+    "description": "Filter read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "filter-write",
+    "description": "Filter write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "filter-admin",
+    "description": "Filter admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "topology-read",
+    "description": "Topology read only policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "topology-write",
+    "description": "Topology write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "topology-admin",
+    "description": "Topology admin policy.",
+    "roles": []
+  },
+  {
+    "name": "mapping-read",
+    "description": "Mapping read only policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "mapping-write",
+    "description": "Mapping write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "mapping-admin",
+    "description": "Mapping admin policy.",
+    "roles": []
+  },
+  {
+    "name": "monitoring-read",
+    "description": "Monitoring read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "monitoring-write",
+    "description": "Monitoring write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "monitoring-admin",
+    "description": "Monitoring admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "replay-read",
+    "description": "Replay read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "replay-write",
+    "description": "Replay write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "replay-admin",
+    "description": "Replay admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "housekeeping-read",
+    "description": "Housekeeping read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "housekeeping-write",
+    "description": "Housekeeping write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "housekeeping-admin",
+    "description": "Housekeeping admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "user_administration-read",
+    "description": "User Administration read only policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "user_administration-write",
+    "description": "User Administration write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "user_administration-admin",
+    "description": "User Administration admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "group_administration-read",
+    "description": "Group Administration read only policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "group_administration-write",
+    "description": "Group Administration write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "group_administration-admin",
+    "description": "Group Administration admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "role_administration-read",
+    "description": "Role Administration read only policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "role_administration-write",
+    "description": "Role Administration write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "role_administration-admin",
+    "description": "Role Administration admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "policy_administration-read",
+    "description": "Policy Administration read only policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "policy_administration-write",
+    "description": "Policy Administration write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "policy_administration-admin",
+    "description": "Policy Administration admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "user_directory-read",
+    "description": "User Directory read only policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "user_directory-write",
+    "description": "User Directory write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "user_directory-admin",
+    "description": "User Directory admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "platform_configuration-read",
+    "description": "Platform Configuration read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "platform_configuration-write",
+    "description": "Platform Configuration write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "platform_configuration-admin",
+    "description": "Platform Configuration admin policy.",
+    "roles": []
+  },
+  {
+    "name": "notification-read",
+    "description": "Notification read only policy.",
+    "roles": [
+      "User",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "notification-write",
+    "description": "Notification write policy.",
+    "roles": [
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "notification-admin",
+    "description": "Notification admin policy.",
+    "roles": [
+      "AdminUser"
+    ]
+  },
+  {
+    "name": "harvesting-read",
+    "description": "Harvesting read only policy.",
+    "roles": []
+  },
+  {
+    "name": "harvesting-write",
+    "description": "Harvesting write policy.",
+    "roles": []
+  },
+  {
+    "name": "harvesting-admin",
+    "description": "Harvesting admin policy.",
+    "roles": []
+  },
+  {
+    "name": "search-read",
+    "description": "Search read only policy.",
+    "roles": [
+      "User"
+    ]
+  },
+  {
+    "name": "search-write",
+    "description": "Search write policy.",
+    "roles": []
+  },
+  {
+    "name": "search-admin",
+    "description": "Search admin policy.",
+    "roles": []
+  },
+  {
+    "name": "search-replay-read",
+    "description": "Search replay read only policy.",
+    "roles": []
+  },
+  {
+    "name": "search-replay-write",
+    "description": "Search replay write policy.",
+    "roles": []
+  },
+  {
+    "name": "search-replay-admin",
+    "description": "Search replay admin policy.",
+    "roles": []
+  },
+  {
+    "name": "ReadBlueConsole",
+    "description": "BlueConsole read only policy.",
+    "roles": [
+      "User",
+      "AdminUser",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "WriteBlueConsole",
+    "description": "BlueConsole write only policy.",
+    "roles": [
+      "AdminUser",
+      "WriteUser"
+    ]
+  },
+  {
+    "name": "WebServiceAdmin",
+    "description": "REST access read write policy policy.",
+    "roles": [
+      "RESTAccess"
+    ]
+  },
+  {
+    "name": "module-control-read",
+    "description": "Module control read only policy.",
+    "roles": []
+  },
+  {
+    "name": "module-control-write",
+    "description": "Module control write policy.",
+    "roles": []
+  },
+  {
+    "name": "module-control-admin",
+    "description": "Control control admin policy.",
+    "roles": []
+  },
+  {
+    "name": "scheduler-read",
+    "description": "Scheduler read only policy.",
+    "roles": []
+  },
+  {
+    "name": "scheduler-write",
+    "description": "Scheduler write policy.",
+    "roles": []
+  },
+  {
+    "name": "scheduler-admin",
+    "description": "Scheduler admin policy.",
+    "roles": []
+  },
+  {
+    "name": "business-stream-read",
+    "description": "Business Stream read only policy.",
+    "roles": []
+  },
+  {
+    "name": "business-stream-write",
+    "description": "Business Stream write policy.",
+    "roles": []
+  },
+  {
+    "name": "business-stream-admin",
+    "description": "Business Stream admin policy.",
+    "roles": []
+  },
+  {
+    "name": "wiretap_all_modules-read",
+    "description": "Wiretap read only policy.",
+    "roles": []
+  },
+  {
+    "name": "wiretap_all_modules-write",
+    "description": "Wiretap write policy.",
+    "roles": []
+  },
+  {
+    "name": "wiretap_all_modules-admin",
+    "description": "Wiretap admin policy.",
+    "roles": []
+  },
+  {
+    "name": "error_all_modules-read",
+    "description": "Error read only policy.",
+    "roles": []
+  },
+  {
+    "name": "error_all_modules-write",
+    "description": "Error write policy.",
+    "roles": []
+  },
+  {
+    "name": "error_all_modules-admin",
+    "description": "Error admin policy.",
+    "roles": []
+  },
+  {
+    "name": "exclusion_all_modules-read",
+    "description": "Exclusion read only policy.",
+    "roles": []
+  },
+  {
+    "name": "exclusion_all_modules-write",
+    "description": "Exclusion write policy.",
+    "roles": []
+  },
+  {
+    "name": "exclusion_all_modules-admin",
+    "description": "Exclusion admin policy.",
+    "roles": []
+  },
+  {
+    "name": "replay_all_modules-read",
+    "description": "Replay read only policy.",
+    "roles": []
+  },
+  {
+    "name": "replay_all_modules-write",
+    "description": "Replay write policy.",
+    "roles": []
+  },
+  {
+    "name": "replay_all_modules-admin",
+    "description": "Replay admin policy.",
+    "roles": []
+  },
+  {
+    "name": "scheduler-all-read",
+    "description": "Scheduler read only policy with access to all job plans.",
+    "roles": []
+  },
+  {
+    "name": "scheduler-all-write",
+    "description": "Scheduler write policy with access to all job plans.",
+    "roles": []
+  },
+  {
+    "name": "scheduler-all-admin",
+    "description": "Scheduler admin policy with access to all job plans.",
+    "roles": []
+  },
+  {
+    "name": "scheduler-dev-read",
+    "description": "Scheduler dev read only policy.",
+    "roles": []
+  },
+  {
+    "name": "scheduler-dev-write",
+    "description": "Scheduler dev write policy.",
+    "roles": []
+  },
+  {
+    "name": "scheduler-dev-admin",
+    "description": "Scheduler dev admin policy.",
+    "roles": []
+  },
+  {
+    "name": "dashboard-read",
+    "description": "Dashboard view read only policy with access to all job plans.",
+    "roles": [
+      "User"
+    ]
+  },
+  {
+    "name": "dashboard-write",
+    "description": "Dashboard view write policy with access to all job plans.",
+    "roles": []
+  },
+  {
+    "name": "dashboard-admin",
+    "description": "Dashboard view admin policy with access to all job plans.",
+    "roles": []
+  }
+]

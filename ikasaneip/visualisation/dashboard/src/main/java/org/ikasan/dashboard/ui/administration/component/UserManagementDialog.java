@@ -23,11 +23,11 @@ import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.IkasanPrincipal;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.model.User;
-import org.ikasan.security.service.SecurityService;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.IkasanPrincipal;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.model.User;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.spec.systemevent.SystemEventService;
 
@@ -37,23 +37,26 @@ import java.util.List;
 
 public class UserManagementDialog extends AbstractCloseableResizableDialog
 {
-    private User user;
-    private UserService userService;
-    private SecurityService securityService;
-    private SystemEventService systemEventService;
-    private SystemEventLogger systemEventLogger;
-    private Grid<SystemEvent> securityChangesGrid = new Grid<>();
+    private final User user;
+    private final UserService userService;
+    private final SecurityService securityService;
+    private final SystemEventService systemEventService;
+    private final SystemEventLogger systemEventLogger;
+    private final Grid<SystemEvent> securityChangesGrid = new Grid<>();
 
     private FilteringGrid<Role> roleGrid;
 
+
     /**
-     * Constructor
+     * Constructs an instance of the UserManagementDialog class, initializing it with the provided user, services, and logger.
+     * This dialog is used for the management of user details, roles, LDAP groups, and security changes.
      *
-     * @param user
-     * @param userService
-     * @param securityService
-     * @param systemEventService
-     * @param systemEventLogger
+     * @param user the user instance to be managed. Must not be null.
+     * @param userService the service responsible for user-related operations. Must not be null.
+     * @param securityService the service responsible for handling security-related operations. Must not be null.
+     * @param systemEventService the service responsible for managing system events. Must not be null.
+     * @param systemEventLogger the logger used for logging system events. Must not be null.
+     * @throws IllegalArgumentException if any of the provided parameters is null.
      */
     public UserManagementDialog(User user, UserService userService,
         SecurityService securityService, SystemEventService systemEventService, SystemEventLogger systemEventLogger)

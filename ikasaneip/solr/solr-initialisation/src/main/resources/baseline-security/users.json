@@ -1,0 +1,12 @@
+[
+  {
+    "username": "admin",
+    "password": "{bcrypt}$2a$10$OuV2SIg.0Nj3zsO7LUpTEOuh2N6YrAheAeE3rPCKzgtqVR.mMZqSW",
+    "email": null,
+    "firstName": "Admin",
+    "surname": "User",
+    "department": null,
+    "enabled": true,
+    "principals": ["admin"]
+  }
+]

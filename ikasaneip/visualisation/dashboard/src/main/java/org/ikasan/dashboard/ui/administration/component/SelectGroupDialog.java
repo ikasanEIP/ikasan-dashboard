@@ -9,12 +9,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.administration.filter.GroupFilter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.IkasanPrincipal;
-import org.ikasan.security.model.IkasanPrincipalLite;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.IkasanPrincipalLite;
+import org.ikasan.spec.security.service.SecurityService;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,10 +19,10 @@ import java.util.stream.Collectors;
 
 public class SelectGroupDialog extends AbstractCloseableResizableDialog
 {
-    private SecurityService securityService;
-    private SystemEventLogger systemEventLogger;
-    private List<String> associatedGroups;
-    private FilteringGrid<IkasanPrincipalLite> ikasanPrincipalLiteFilteringGrid;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
+    private final List<String> associatedGroups;
+    private final FilteringGrid<IkasanPrincipalLite> ikasanPrincipalLiteFilteringGrid;
 
     public SelectGroupDialog(List<String> associatedGroups, SecurityService securityService
         , SystemEventLogger systemEventLogger, FilteringGrid<IkasanPrincipalLite> ikasanPrincipalLiteFilteringGrid)

@@ -5,13 +5,14 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import org.ikasan.dashboard.security.model.IkasanPrincipalImpl;
 import org.ikasan.dashboard.ui.UITest;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.service.SecurityService;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.ikasan.security.model.IkasanPrincipal;
+import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.springframework.test.annotation.DirtiesContext;
 
 import javax.annotation.Resource;
@@ -27,7 +28,7 @@ public class RoleManagementViewTest extends UITest
 
     @Override
     public void setup_expectations() {
-        IkasanPrincipal ikasanPrincipal = new IkasanPrincipal();
+        IkasanPrincipal ikasanPrincipal = securityService.createPrincipal();
         ikasanPrincipal.setName("sample_group");
         ikasanPrincipal.setDescription("description");
         ikasanPrincipal.setType("application");

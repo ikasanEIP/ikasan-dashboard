@@ -3,7 +3,8 @@ package org.ikasan.dashboard.ui.administration.filter;
 import com.google.common.collect.Lists;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
-import org.ikasan.security.model.IkasanPrincipalLite;
+import org.ikasan.dashboard.security.model.IkasanPrincipalLiteImpl;
+import org.ikasan.spec.security.model.IkasanPrincipalLite;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class GroupFilterTest {
         List<IkasanPrincipalLite> groups = new ArrayList<>();
 
         for(int i=0; i<100; i++) {
-            IkasanPrincipalLite ikasanPrincipalLite = new IkasanPrincipalLite();
+            IkasanPrincipalLite ikasanPrincipalLite = new IkasanPrincipalLiteImpl();
             ikasanPrincipalLite.setName("name"+i);
             ikasanPrincipalLite.setType("type"+i);
             ikasanPrincipalLite.setDescription("description"+i);

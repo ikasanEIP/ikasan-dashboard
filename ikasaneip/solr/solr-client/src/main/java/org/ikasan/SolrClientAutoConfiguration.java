@@ -43,6 +43,9 @@ import org.ikasan.scheduled.notification.service.SolrEmailNotificationDetailsSer
 import org.ikasan.scheduled.notification.service.SolrNotificationSendAuditServiceImpl;
 import org.ikasan.scheduled.profile.dao.SolrContextProfileDaoImpl;
 import org.ikasan.scheduled.profile.service.SolrContextProfileServiceImpl;
+import org.ikasan.security.dao.*;
+import org.ikasan.security.service.SecurityServiceImpl;
+import org.ikasan.security.service.UserServiceImpl;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.exclusion.ExclusionEvent;
@@ -64,6 +67,8 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextSe
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.ikasan.spec.wiretap.WiretapEvent;
@@ -76,6 +81,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -541,6 +548,69 @@ public class SolrClientAutoConfiguration {
         service.setSolrPassword(this.solrPassword);
 
         return service;
+    }
+
+    @Bean
+    public SecurityService securityService(SolrSecurityDaoImpl solrSecurityDao)
+    {
+        return new SecurityServiceImpl(solrSecurityDao);
+    }
+
+    @Bean
+    public UserService userService(SolrUserDaoImpl solrUserDao, SecurityService securityService)
+    {
+        return new UserServiceImpl(solrUserDao, securityService, passwordEncoder(), false);
+    }
+
+    @Bean
+    public SolrAuthenticationMethodDaoImpl solrAuthenticationMethodDao() {
+        SolrAuthenticationMethodDaoImpl dao = new SolrAuthenticationMethodDaoImpl();
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
+        return dao;
+    }
+
+    @Bean
+    public SolrPolicyDaoImpl solrPolicyDao() {
+        SolrPolicyDaoImpl dao = new SolrPolicyDaoImpl();
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
+        return dao;
+    }
+
+    @Bean
+    public SolrRoleDaoImpl solrRoleDao(SolrPolicyDaoImpl solrPolicyDao) {
+        SolrRoleDaoImpl dao = new SolrRoleDaoImpl(solrPolicyDao);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
+        return dao;
+    }
+
+    @Bean
+    public SolrIkasanPrincipalDaoImpl solrIkasanPrincipalDao(SolrRoleDaoImpl solrRoleDao) {
+        SolrIkasanPrincipalDaoImpl dao = new SolrIkasanPrincipalDaoImpl(solrRoleDao);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
+        return dao;
+    }
+
+    @Bean
+    public SolrUserDaoImpl solrUserDao(SolrIkasanPrincipalDaoImpl solrIkasanPrincipalDao) {
+        SolrUserDaoImpl dao = new SolrUserDaoImpl(solrIkasanPrincipalDao);
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
+        return dao;
+    }
+
+    @Bean
+    public SolrSecurityDaoImpl solrSecurityDao(SolrIkasanPrincipalDaoImpl solrIkasanPrincipalDao,
+                                                SolrPolicyDaoImpl solrPolicyDao,
+                                                SolrRoleDaoImpl solrRoleDao,
+                                                SolrAuthenticationMethodDaoImpl solrAuthenticationMethodDao,
+                                                SolrUserDaoImpl solrUserDao) {
+        return new SolrSecurityDaoImpl(solrIkasanPrincipalDao, solrPolicyDao, solrRoleDao,
+            solrAuthenticationMethodDao, solrUserDao);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder()
+    {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
     /**

@@ -2,7 +2,7 @@ package org.ikasan.dashboard.ui.administration.filter;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import org.ikasan.dashboard.ui.general.component.Filter;
-import org.ikasan.security.model.RoleModule;
+import org.ikasan.spec.security.model.RoleModule;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -52,9 +52,9 @@ public class RoleModuleFilter implements Filter<RoleModule>
     }
 
     @Override
-    public Comparator getSortComparator(List<QuerySortOrder> querySortOrders)
+    public Comparator<RoleModule> getSortComparator(List<QuerySortOrder> querySortOrders)
     {
-        Comparator comparator = null;
+        Comparator<RoleModule> comparator = null;
 
         if(querySortOrders.get(0).getSorted().equals("name"))
         {

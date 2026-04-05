@@ -32,10 +32,10 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.model.profile.ContextProfileImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
-import org.ikasan.security.model.IkasanPrincipalLite;
-import org.ikasan.security.model.UserLite;
-import org.ikasan.security.service.SecurityService;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.IkasanPrincipalLite;
+import org.ikasan.spec.security.model.UserLite;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
@@ -48,10 +48,10 @@ import java.util.stream.Collectors;
 
 public class ContextViewManagementDialog extends AbstractCloseableResizableDialog {
 
-    private ContextProfileService contextProfileService;
-    private UserService userService;
-    private SecurityService securityService;
-    private SystemEventLogger systemEventLogger;
+    private final ContextProfileService contextProfileService;
+    private final UserService userService;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
 
     private FilteringGrid<UserLite> userGrid;
     private FilteringGrid<IkasanPrincipalLite> groupGrid;
@@ -59,8 +59,8 @@ public class ContextViewManagementDialog extends AbstractCloseableResizableDialo
 
     private ContextProfileRecord contextProfileRecord;
 
-    private String parentContextName;
-    private String contextName;
+    private final String parentContextName;
+    private final String contextName;
 
     public ContextViewManagementDialog(ContextProfileService contextProfileService, UserService userService,
                                        SecurityService securityService, SystemEventLogger systemEventLogger,

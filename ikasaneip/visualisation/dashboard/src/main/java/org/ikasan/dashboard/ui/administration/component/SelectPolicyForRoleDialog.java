@@ -2,34 +2,40 @@ package org.ikasan.dashboard.ui.administration.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.ListDataProvider;
 import org.ikasan.dashboard.ui.administration.filter.PolicyFilter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.Policy;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.model.RoleModule;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.Policy;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.service.SecurityService;
 
 import java.util.Collection;
 import java.util.List;
 
 public class SelectPolicyForRoleDialog extends AbstractCloseableResizableDialog
 {
-    private Role role;
-    private SecurityService securityService;
-    private SystemEventLogger systemEventLogger;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
+    private final FilteringGrid<Policy> policyFilteringGrid;
     private FilteringGrid<Policy> policyGrid;
     private List<Policy> policiesList;
-    private FilteringGrid<Policy> policyFilteringGrid;
+    private Role role;
 
+    /**
+     * Constructs a dialog for selecting policies associated with a specific role.
+     *
+     * @param role the role for which policies are to be managed; must not be null.
+     * @param securityService the security service used to manage security operations; must not be null.
+     * @param systemEventLogger the system event logger for logging system events; must not be null.
+     * @param policyFilteringGrid the grid used for displaying and filtering policies; must not be null.
+     * @throws IllegalArgumentException if any of the provided parameters are null.
+     */
     public SelectPolicyForRoleDialog(Role role, SecurityService securityService, SystemEventLogger systemEventLogger,
                                      FilteringGrid<Policy> policyFilteringGrid)
     {

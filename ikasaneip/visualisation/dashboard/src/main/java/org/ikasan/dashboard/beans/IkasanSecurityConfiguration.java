@@ -1,21 +1,28 @@
 package org.ikasan.dashboard.beans;
 
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.SecurityAutoConfiguration;
-import org.ikasan.security.dao.SecurityDao;
-import org.ikasan.security.dao.UserDao;
-import org.ikasan.security.service.*;
+import org.ikasan.security.service.AuthenticationServiceImpl;
+import org.ikasan.security.service.LdapService;
+import org.ikasan.security.service.LdapServiceImpl;
 import org.ikasan.security.service.authentication.AuthenticationProviderFactory;
 import org.ikasan.security.service.authentication.AuthenticationProviderFactoryImpl;
 import org.ikasan.security.service.authentication.CustomAuthenticationProvider;
+import org.ikasan.spec.security.dao.SecurityDao;
+import org.ikasan.spec.security.dao.UserDao;
+import org.ikasan.spec.security.service.AuthenticationService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.ikasan.systemevent.SystemEventAutoConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportResource;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.security.access.method.P;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -27,7 +34,7 @@ import java.util.Properties;
     "classpath:datasource-conf.xml",
     "classpath:transaction-conf.xml"
 } )
-@Import({SecurityAutoConfiguration.class, SystemEventAutoConfiguration.class})
+@Import({SystemEventAutoConfiguration.class})
 public class IkasanSecurityConfiguration
 {
     @Value("${hibernate.show_sql:false}")
@@ -45,12 +52,12 @@ public class IkasanSecurityConfiguration
     @Value("${com.sun.jndi.ldap.read.timeout.milliseconds:60000}")
     private int ldapReadTimeoutMilliseconds;
 
-    @Bean
-    @Primary
-    public UserService userService(UserDao userDao, SecurityService securityService, PasswordEncoder passwordEncoder)
-    {
-        return new UserServiceImpl(userDao, securityService, passwordEncoder, false);
-    }
+//    @Bean
+//    @Primary
+//    public UserService userService(UserDao userDao, SecurityService securityService, PasswordEncoder passwordEncoder)
+//    {
+//        return new UserServiceImpl(userDao, securityService, passwordEncoder, false);
+//    }
 
     @Bean
     public SystemEventLogger systemEventLogger(SystemEventService systemEventService)
@@ -60,15 +67,15 @@ public class IkasanSecurityConfiguration
 
 
     @Bean(name = "entityManagerFactory") // todo work out why we need a been named entity manager factory in the context
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("ikasan.ds")DataSource dataSource
-        , JpaVendorAdapter jpaVendorAdapter, @Qualifier("platformJpaProperties") Properties platformJpaProperties) {
+    public LocalContainerEntityManagerFactoryBean configurationServiceEntityManager(@Qualifier("ikasan.ds")DataSource dataSource
+        , JpaVendorAdapter jpaVendorAdapter, @Qualifier("platformJpaProperties")Properties platformJpaProperties) {
         LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean
             = new LocalContainerEntityManagerFactoryBean();
         localContainerEntityManagerFactoryBean.setDataSource(dataSource);
         localContainerEntityManagerFactoryBean.setJpaVendorAdapter(jpaVendorAdapter);
         localContainerEntityManagerFactoryBean.setJpaProperties(platformJpaProperties);
-        localContainerEntityManagerFactoryBean.setPersistenceUnitName("security");
-        localContainerEntityManagerFactoryBean.setPersistenceXmlLocation("classpath:security-persistence.xml");
+        localContainerEntityManagerFactoryBean.setPersistenceUnitName("configuration-service");
+        localContainerEntityManagerFactoryBean.setPersistenceXmlLocation("classpath:/configuration-service-persistence.xml");
 
         return localContainerEntityManagerFactoryBean;
     }
@@ -111,5 +118,13 @@ public class IkasanSecurityConfiguration
             hibernateEventMergeEntityCopyObserver);
 
         return platformJpaProperties;
+    }
+
+    @Bean
+    public JpaVendorAdapter jpaVendorAdapter() {
+        HibernateJpaVendorAdapter hibernateJpaVendorAdapter
+            = new HibernateJpaVendorAdapter();
+
+        return hibernateJpaVendorAdapter;
     }
 }

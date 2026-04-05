@@ -1,7 +1,8 @@
 package org.ikasan.dashboard.ui.search.component.filter;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
-import org.ikasan.security.model.IkasanPrincipalLite;
+import org.ikasan.security.model.SolrIkasanPrincipalLiteImpl;
+import org.ikasan.spec.security.model.IkasanPrincipalLite;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -144,15 +145,15 @@ public class SearchFilter
 
         if(querySortOrders.get(0).getSorted().equals("name"))
         {
-            comparator = Comparator.comparing(IkasanPrincipalLite::getName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            comparator = Comparator.comparing(SolrIkasanPrincipalLiteImpl::getName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
         }
         else if(querySortOrders.get(0).getSorted().equals("type"))
         {
-            comparator = Comparator.comparing(IkasanPrincipalLite::getType, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            comparator = Comparator.comparing(SolrIkasanPrincipalLiteImpl::getType, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
         }
         else if(querySortOrders.get(0).getSorted().equals("description"))
         {
-            comparator = Comparator.comparing(IkasanPrincipalLite::getDescription, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            comparator = Comparator.comparing(SolrIkasanPrincipalLiteImpl::getDescription, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
         }
 
         return comparator;

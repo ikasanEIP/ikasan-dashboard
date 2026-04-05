@@ -61,6 +61,7 @@
         <module>solr-client</module>
         <module>solr-distribution</module>
         <module>solr-cloud-distribution</module>
+        <module>solr-initialisation</module>
     </modules>
 
 </project>

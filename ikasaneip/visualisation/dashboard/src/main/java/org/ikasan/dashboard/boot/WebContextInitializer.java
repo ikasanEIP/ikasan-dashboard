@@ -2,15 +2,10 @@ package org.ikasan.dashboard.boot;
 
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
-import org.ikasan.security.service.UserService;
-import org.ikasan.setup.persistence.service.PersistenceService;
 import org.ikasan.setup.persistence.service.PersistenceServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 
 @Component
@@ -19,14 +14,6 @@ public class WebContextInitializer implements VaadinServiceInitListener
 
     private Logger logger = LoggerFactory.getLogger(WebContextInitializer.class);
 
-//    @Resource
-//    private PersistenceService persistenceService;
-//
-//    @Resource
-//    private UserService userService;
-//
-//    @Resource
-//    private ContextInstanceRecoveryManager contextInstanceRecoveryManager;
 
     @Override
     public void serviceInit(ServiceInitEvent serviceInitEvent)
