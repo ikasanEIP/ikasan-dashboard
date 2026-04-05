@@ -7,6 +7,7 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.TimeService;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
@@ -26,8 +27,6 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -95,9 +94,6 @@ public class ContextInstanceRegistrationServiceImplTest {
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @Mock
-    ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
-
-    @Mock
     SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
 
     @Mock
@@ -107,8 +103,6 @@ public class ContextInstanceRegistrationServiceImplTest {
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     @Mock
     private TimeService timeService;
-    @Mock
-    private ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster;
     @Mock
     private SystemEventService systemEventService;
     @Mock
@@ -153,11 +147,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -192,7 +183,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -221,7 +211,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -243,11 +232,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -265,7 +251,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -285,11 +270,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -307,7 +289,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -327,11 +308,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -349,7 +327,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -369,11 +346,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -391,7 +365,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -411,11 +384,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -433,7 +403,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -453,11 +422,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -475,7 +441,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -520,7 +485,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -537,10 +501,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -596,7 +558,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -614,10 +575,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -712,7 +671,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -729,10 +687,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -800,7 +756,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -818,10 +773,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -921,7 +874,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -939,10 +891,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -1049,7 +999,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
@@ -1067,10 +1016,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -1160,7 +1107,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(timeService, times(2)).getLocalDateNow();
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -1179,10 +1125,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -1281,7 +1225,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -1300,10 +1243,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -1375,7 +1316,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
@@ -1397,10 +1337,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -1505,7 +1443,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -1524,8 +1461,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             systemEventService
@@ -1603,7 +1538,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(), any());
@@ -1626,8 +1560,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             systemEventService
@@ -1732,7 +1664,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(), any());
@@ -1755,8 +1686,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             systemEventService
@@ -1856,7 +1785,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -1873,10 +1801,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -1952,7 +1878,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(), any());
@@ -1972,10 +1897,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -2069,7 +1992,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -2088,10 +2010,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -2165,7 +2085,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
@@ -2187,10 +2106,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -2288,7 +2205,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -2308,10 +2224,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -2389,7 +2303,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
@@ -2413,10 +2326,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -2505,7 +2416,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -2559,7 +2469,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -2621,7 +2530,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -2678,7 +2586,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         contextInstanceRegistrationService.register(contextName, this.contextInstanceSchedulerService);
 
         // verify
-        verify(contextInstanceStateChangeEventBroadcaster, times(1)).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(1)).save(contextInstanceCaptor.capture());
         verify(scheduledContextService, times(2)).findById(contextName);
@@ -2694,10 +2601,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         assertEquals(1, ContextMachineCache.instance().contextInstanceIdentifiers().size());
@@ -2756,7 +2661,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -2822,7 +2726,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -2886,7 +2789,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         // verify
         verify(scheduledContextService, times(2)).findById(contextName);
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
-        verify(contextInstanceStateChangeEventBroadcaster, times(1)).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(1)).save(contextInstanceCaptor.capture());
         verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
@@ -2899,10 +2801,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         Assert.assertEquals(1, ContextMachineCache.instance().contextInstanceIdentifiers().size());
@@ -2941,7 +2841,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -2980,7 +2879,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -3036,7 +2934,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -3053,10 +2950,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -3123,7 +3018,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -3140,10 +3034,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -3182,7 +3074,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -3199,7 +3090,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null,
+        ContextMachine contextMachine = new ContextMachineImpl(context, contextInstance, null, null, null,
             null, null, null, null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
             null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
 
@@ -3220,7 +3111,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.ENDED.name(), actualContextInstanceRecord.getStatus());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
@@ -3233,10 +3123,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
@@ -3260,7 +3148,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             job.setScheduledProcessEvent(event);
         });
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
+        ContextMachine contextMachine = new ContextMachineImpl(context, contextInstance, null
             , null, null, null, null
             , null, null, null, null, null
             , moduleMetadataService, JobLockCacheImpl.instance(), null,
@@ -3290,7 +3178,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.ENDED.name(), actualContextInstanceRecord.getStatus());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
@@ -3313,8 +3200,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             mockInternalEventDrivenJobInstance,
             jobUtilsService,
             this.jobProvisionService,
@@ -3343,7 +3228,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             job.setScheduledProcessEvent(event);
         });
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
+        ContextMachine contextMachine = new ContextMachineImpl(context, contextInstance, null
             , null, null, null, null, null
             , null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance()
             , null, null, this.mockSchedulerJobInstanceService, this.jobLockCacheInitialisationService
@@ -3372,7 +3257,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.ENDED.name(), actualContextInstanceRecord.getStatus());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
@@ -3395,8 +3279,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             mockInternalEventDrivenJobInstance,
             jobUtilsService,
             this.jobProvisionService,
@@ -3423,7 +3305,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         contextInstance.getScheduledJobs().get(0).setStatus(InstanceStatus.RUNNING);
         contextInstance.getScheduledJobs().get(0).setScheduledProcessEvent(event);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null
+        ContextMachine contextMachine = new ContextMachineImpl(context, contextInstance, null, null
             , null, null, null, null, null
             , null, null, null, moduleMetadataService, JobLockCacheImpl.instance(), null,
             null, this.mockSchedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService
@@ -3452,7 +3334,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.ENDED.name(), actualContextInstanceRecord.getStatus());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
@@ -3475,8 +3356,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             mockInternalEventDrivenJobInstance,
             jobUtilsService,
             this.jobProvisionService,
@@ -3496,7 +3375,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
         contextInstance.setRunContextUntilManuallyEnded(true);
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
+        ContextMachine contextMachine = new ContextMachineImpl(context, contextInstance, null
             , null, null, null, null, null
             , null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance()
             , null, null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
@@ -3516,7 +3395,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -3536,7 +3414,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
         contextInstance.setRunContextUntilManuallyEnded(true);
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
+        ContextMachine contextMachine = new ContextMachineImpl(context, contextInstance, null
             , null, null, null, null, null
             , null, null, null, null, moduleMetadataService, JobLockCacheImpl.instance()
             , null, null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService
@@ -3554,7 +3432,6 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.ENDED.name(), actualContextInstanceRecord.getStatus());
@@ -3571,10 +3448,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
@@ -3635,7 +3510,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -3652,10 +3526,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -3727,7 +3599,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextInstanceService, times(2)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(1)).save(contextInstanceCaptor.capture());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.PREPARED.name(), actualContextInstanceRecord.getStatus());
@@ -3744,10 +3615,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         Assert.assertEquals(1, ContextMachineCache.instance().contextInstanceIdentifiers().size());
@@ -3769,11 +3638,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -3794,7 +3660,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -3842,7 +3707,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             schedulerJobStateChangeEventBroadcaster
@@ -3922,7 +3786,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -3942,10 +3805,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -4043,7 +3904,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -4063,10 +3923,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -4166,7 +4024,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -4186,10 +4043,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -4289,7 +4144,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -4309,10 +4163,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
@@ -4447,7 +4299,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         // verify
         verify(scheduledContextService, times(1)).findById(contextName);
         verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
-        verify(contextInstanceStateChangeEventBroadcaster, times(1)).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(1)).save(contextInstanceCaptor.capture());
         verify(scheduledContextInstanceService, times(1)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
@@ -4461,10 +4312,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
@@ -4549,7 +4398,6 @@ public class ContextInstanceRegistrationServiceImplTest {
         // verify
         verify(scheduledContextService, times(1)).findById(contextName);
         verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
-        verify(contextInstanceStateChangeEventBroadcaster, times(1)).broadcast(any());
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(1)).save(contextInstanceCaptor.capture());
         verify(scheduledContextInstanceService, times(1)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
@@ -4563,10 +4411,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);

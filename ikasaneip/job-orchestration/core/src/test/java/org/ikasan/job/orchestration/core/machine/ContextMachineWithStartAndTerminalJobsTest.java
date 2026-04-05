@@ -91,7 +91,7 @@ public class ContextMachineWithStartAndTerminalJobsTest extends AbstractTest {
 
         Map<String, ContextStartJobInstance> contextStartJobInstanceMap = loadContextStartJobInstanceMap(context, contextInstance);
 
-        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+        ContextMachineImpl contextMachine  = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobInstanceMap, contextStartJobInstanceMap, contextTerminalJobInstanceMap, new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>()
             , moduleMetadataService, JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);

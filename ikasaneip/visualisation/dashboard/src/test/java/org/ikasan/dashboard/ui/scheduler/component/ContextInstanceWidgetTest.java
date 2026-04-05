@@ -14,7 +14,7 @@ import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
@@ -318,7 +318,7 @@ public class ContextInstanceWidgetTest extends AbstractSchedulerViewTest {
         contextInstance.setRunContextUntilManuallyEnded(isRunContextUntilManuallyEnded);
         contextInstance.setQuartzScheduleDrivenJobsDisabledForContext(quartzScheduleDrivenJobsDisabledForContext);
 
-        ContextMachine contextMachine = new ContextMachine(new ContextTemplateImpl(), contextInstance
+        ContextMachineImpl contextMachine = new ContextMachineImpl(new ContextTemplateImpl(), contextInstance
             , this.scheduledContextInstanceService, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>()
             , "this.queueDir", new HashMap<>(), null, JobLockCacheImpl.instance(), contextParametersInstanceService
             , this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService

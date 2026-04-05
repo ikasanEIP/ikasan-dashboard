@@ -1,6 +1,5 @@
-package org.ikasan.dashboard.ui.scheduler.util;
+package org.ikasan.job.orchestration.broadcast;
 
-import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.WeakHashMap;
@@ -8,7 +7,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class NewSchedulerJobEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("NewSchedulerJobEventBroadcaster"));
+    static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("NewSchedulerJobEventBroadcaster"));
 
     private static WeakHashMap<NewSchedulerJobEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();

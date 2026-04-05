@@ -92,7 +92,7 @@ public class ContextMachineWithStartTerminalAndLocalEventJobsTest extends Abstra
         Map<String, ContextStartJobInstance> contextStartJobInstanceMap = loadContextStartJobInstanceMap(context, contextInstance);
         Map<String, LocalEventJobInstance> localEventJobInstanceMap = loadLocalEventJobInstanceMap(context, contextInstance);
 
-        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+        ContextMachineImpl contextMachine  = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobInstanceMap, contextStartJobInstanceMap, contextTerminalJobInstanceMap,localEventJobInstanceMap, new HashMap<>(), this.queueDir
             , new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
             , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService

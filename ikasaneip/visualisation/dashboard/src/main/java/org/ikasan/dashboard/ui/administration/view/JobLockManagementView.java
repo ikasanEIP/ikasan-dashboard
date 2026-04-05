@@ -24,7 +24,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.JobLockCacheEventBroadcaster;
+import org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.service.JobLockCacheManagementServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;

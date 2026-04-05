@@ -3,7 +3,7 @@ package org.ikasan.rest.dashboard;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
@@ -124,10 +124,10 @@ public class JobContextControllerTest extends AbstractRestMvcTest {
         contextTemplate2.setName("context-template-2");
 
 
-        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null, null, null, null, null
+        ContextMachineImpl contextMachine1 = new ContextMachineImpl(contextTemplate1, contextInstance1, null, null, null, null, null, null
             ,null, null, null, AGENTS_MAP, moduleMetadataService, null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService, null);
-        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null, null, null, null, null
+        ContextMachineImpl contextMachine2 = new ContextMachineImpl(contextTemplate2, contextInstance2, null, null, null, null, null, null
             ,null, null, null, AGENTS_MAP, moduleMetadataService, null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService, null);
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -57,7 +57,7 @@ public class JobRunningTimesMonitorTest {
 
     private ObjectMapper objectMapper;
 
-    private ContextMachine contextMachine1;
+    private ContextMachineImpl contextMachine1;
 
     private Monitor jobRunningTimesMonitor;
 
@@ -115,7 +115,7 @@ public class JobRunningTimesMonitorTest {
         monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(jobRunningTimesMonitor);
 
-        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null, null, null
+        contextMachine1 = new ContextMachineImpl(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null, null, null
             , null, null, null, null,"./target", null, null, null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine1.init();

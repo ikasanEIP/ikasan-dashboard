@@ -2,7 +2,7 @@ package org.ikasan.orchestration.service.context.global;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.instance.GlobalEventJobInstanceImpl;
 import org.ikasan.orchestration.service.utils.TestUtils;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
@@ -13,11 +13,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -26,27 +24,27 @@ import static org.mockito.Mockito.*;
 public class GlobalEventServiceImplTest {
 
     @Mock
-    ContextMachine contextMachine1;
+    ContextMachineImpl contextMachine1;
     @Mock
     ContextInstance context1;
 
     @Mock
-    ContextMachine contextMachine2;
+    ContextMachineImpl contextMachine2;
     @Mock
     ContextInstance context2;
 
     @Mock
-    ContextMachine contextMachine3;
+    ContextMachineImpl contextMachine3;
     @Mock
     ContextInstance context3;
 
     @Mock
-    ContextMachine contextMachine4;
+    ContextMachineImpl contextMachine4;
     @Mock
     ContextInstance context4;
 
     @Mock
-    ContextMachine contextMachine5;
+    ContextMachineImpl contextMachine5;
     @Mock
     ContextInstance context5;
 

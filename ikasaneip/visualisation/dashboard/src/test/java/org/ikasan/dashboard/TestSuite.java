@@ -97,7 +97,6 @@ import org.junit.runners.Suite;
     SchedulerJobLogFileViewerDialogTest.class,
     AceEditorLogConsumerTest.class,
     SchedulerJobStateChangeEventBroadcasterImplTest.class,
-    ContextInstanceStateChangeEventBroadcasterImplTest.class,
     CanvasJsonToContextTemplateAdapterTest.class,
     ContextDraw2DAdapterTest.class,
     ContextTemplateWidgetTest.class,

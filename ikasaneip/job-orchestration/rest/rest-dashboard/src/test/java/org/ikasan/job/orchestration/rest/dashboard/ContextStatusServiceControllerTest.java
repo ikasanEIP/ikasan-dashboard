@@ -2,7 +2,7 @@ package org.ikasan.job.orchestration.rest.dashboard;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -251,7 +251,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -271,7 +271,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -293,7 +293,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -312,7 +312,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -332,7 +332,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -366,7 +366,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -386,7 +386,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -406,7 +406,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -428,7 +428,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -447,7 +447,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -467,7 +467,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -501,7 +501,7 @@ public class ContextStatusServiceControllerTest {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId("test-instance-id");
         instance.setName("JOB_PLAN");
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null , JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -522,7 +522,7 @@ public class ContextStatusServiceControllerTest {
         instance.setProjectedEndTime(System.currentTimeMillis() + System.currentTimeMillis());
         instance.setStartTime(System.currentTimeMillis());
         instance.setTimezone(TimeZone.getDefault().getID());
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null , JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -543,7 +543,7 @@ public class ContextStatusServiceControllerTest {
         instance.setStartTime(10000000L);
         instance.setProjectedEndTime(1000L);
         instance.setTimezone(TimeZone.getTimeZone("Europe/London").getID());
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null , JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -566,7 +566,7 @@ public class ContextStatusServiceControllerTest {
         instance.setProjectedEndTime(System.currentTimeMillis() + System.currentTimeMillis());
         instance.setRunContextUntilManuallyEnded(true);
         instance.setTimezone(TimeZone.getTimeZone("Europe/London").getID());
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null , JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -589,7 +589,7 @@ public class ContextStatusServiceControllerTest {
         instance.setProjectedEndTime(0);
         instance.setStatus(InstanceStatus.PREPARED);
         instance.setTimezone(TimeZone.getTimeZone("Europe/London").getID());
-        ContextMachine contextMachine = new ContextMachine(null, instance, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(null, instance, null, null, null
             , null, null, null, null, null, null, null, null , JobLockCacheImpl.instance(), null
             , null, null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);

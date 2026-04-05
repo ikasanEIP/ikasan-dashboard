@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * This class represents a cache for ContextMachine instances.
+ * This class represents a cache for ContextMachineImpl instances.
  */
 public class ContextMachineCache
 {
@@ -44,7 +44,7 @@ public class ContextMachineCache
     private final Set<String> contextNames;
 
     /**
-     * This class represents a cache for ContextMachine objects.
+     * This class represents a cache for ContextMachineImpl objects.
      */
     private ContextMachineCache() {
         this.contextInstanceByContextInstanceIdCache = new ConcurrentHashMap<>();
@@ -52,9 +52,9 @@ public class ContextMachineCache
     }
 
     /**
-     * Adds a ContextMachine object to the cache.
+     * Adds a ContextMachineImpl object to the cache.
      *
-     * @param contextMachine The ContextMachine object to add to the cache.
+     * @param contextMachine The ContextMachineImpl object to add to the cache.
      */
     public synchronized void put(ContextMachine contextMachine) {
         // Note, we can now have multiple instances per plan, so the ContextNameCache will contain the latest only.
@@ -68,7 +68,7 @@ public class ContextMachineCache
     /**
      * @todo @Mick
      * Now that we have the potential to have multiple instances per plan, we can't rely on contextName/planName
-     * to return a single ContextMachine ... however the REST status API currently needs this.
+     * to return a single ContextMachineImpl ... however the REST status API currently needs this.
      *
      * Within the next few dev days I expect we will make a decision on how best to handle this e.g. have the rest
      * services return lists (since a single call for planName status could return multiple ContextMachines) or
@@ -117,10 +117,10 @@ public class ContextMachineCache
     }
 
     /**
-     * Retrieves the ContextMachine object corresponding to the given context instance ID.
+     * Retrieves the ContextMachineImpl object corresponding to the given context instance ID.
      *
      * @param contextInstanceId The ID of the context instance to retrieve.
-     * @return The ContextMachine object associated with the given context instance ID,
+     * @return The ContextMachineImpl object associated with the given context instance ID,
      *         or null if the context instance ID is null or does not exist in the cache.
      */
     public ContextMachine getByContextInstanceId(String contextInstanceId)
@@ -169,7 +169,7 @@ public class ContextMachineCache
 
 
     /**
-     * Retrieves the ConcurrentHashMap that maps context instance IDs to ContextMachine objects.
+     * Retrieves the ConcurrentHashMap that maps context instance IDs to ContextMachineImpl objects.
      *
      * @return The ConcurrentHashMap containing the context instances by their IDs.
      */
@@ -212,9 +212,9 @@ public class ContextMachineCache
     }
 
     /**
-     * Removes a ContextMachine object from the cache.
+     * Removes a ContextMachineImpl object from the cache.
      *
-     * @param contextMachine The ContextMachine object to remove.
+     * @param contextMachine The ContextMachineImpl object to remove.
      */
     public synchronized void remove(ContextMachine contextMachine)
     {

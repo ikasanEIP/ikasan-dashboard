@@ -1,12 +1,14 @@
 package org.ikasan.orchestration.service.context;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.CustomWeekdayOfMonthHelper;
 import org.ikasan.job.orchestration.context.util.TimeService;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
@@ -26,8 +28,6 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -67,8 +67,6 @@ public abstract class ContextInstanceServiceBase {
     protected final JobLockCacheInitialisationService jobLockCacheInitialisationService;
     protected final JobProvisionService jobProvisionService;
     protected final SchedulerJobService schedulerJobService;
-    protected final ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
-    protected final SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
     protected final TimeService timeService;
     protected final JobUtilsService jobUtilsService;
     protected final ObjectMapper objectMapper;
@@ -91,8 +89,6 @@ public abstract class ContextInstanceServiceBase {
      * @param jobLockCacheService                      The service for job lock cache
      * @param scheduledContextService                  The service for scheduled context
      * @param schedulerJobInstanceService               The service for scheduler job instances
-     * @param contextInstanceStateChangeEventBroadcaster The broadcaster for context instance state change events
-     * @param schedulerJobStateChangeEventBroadcaster  The broadcaster for scheduler job state change events
      * @param jobLockCacheInitialisationService        The service for initializing job lock cache
      * @param timeService                              The service for time
      * @param jobUtilsService                          The service for job utilities
@@ -109,8 +105,6 @@ public abstract class ContextInstanceServiceBase {
                                       JobLockCacheService jobLockCacheService,
                                       ScheduledContextService scheduledContextService,
                                       SchedulerJobInstanceService schedulerJobInstanceService,
-                                      ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                      SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                       JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                       TimeService timeService,
                                       JobUtilsService jobUtilsService,
@@ -155,14 +149,6 @@ public abstract class ContextInstanceServiceBase {
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         if (this.schedulerJobInstanceService == null) {
             throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
-        }
-        this.contextInstanceStateChangeEventBroadcaster = contextInstanceStateChangeEventBroadcaster;
-        if (this.contextInstanceStateChangeEventBroadcaster == null) {
-            throw new IllegalArgumentException("contextInstanceStateChangeEventBroadcaster cannot be null!");
-        }
-        this.schedulerJobStateChangeEventBroadcaster = schedulerJobStateChangeEventBroadcaster;
-        if (this.schedulerJobStateChangeEventBroadcaster == null) {
-            throw new IllegalArgumentException("schedulerJobStateChangeEventBroadcaster cannot be null!");
         }
         this.jobLockCacheInitialisationService = jobLockCacheInitialisationService;
         if (this.jobLockCacheInitialisationService == null) {
@@ -226,7 +212,7 @@ public abstract class ContextInstanceServiceBase {
 
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
 
-        this.contextInstanceStateChangeEventBroadcaster.broadcast(new ContextInstanceStateChangeEventImpl(contextInstance.getId(), contextInstance,
+        ContextInstanceStateChangeEventBroadcaster.broadcast(new ContextInstanceStateChangeEventImpl(contextInstance.getId(), contextInstance,
             previousStatus, contextInstance.getStatus()));
     }
 
@@ -339,7 +325,7 @@ public abstract class ContextInstanceServiceBase {
         Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId());
         Map<String, BridgingJobInstance> bridgingJobInstanceMap = this.getBridgingJobs(instance.getId());
 
-        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap,
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, instance, scheduledContextInstanceService, globalEventJobMap,
             quartzScheduleDrivenJobInstanceMap, internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap,
             localEventJobInstanceMap, bridgingJobInstanceMap, queueDirectory, agents,
             moduleMetadataService, initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService,
@@ -358,12 +344,10 @@ public abstract class ContextInstanceServiceBase {
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
         // We add a listener to broadcast any context state changes to interested parties.
-        contextMachine.addContextInstanceStateChangeEventListener(event ->
-            contextInstanceStateChangeEventBroadcaster.broadcast(event));
+        contextMachine.addContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventBroadcaster::broadcast);
 
         // We add a listener to broadcast any job state changes to interested parties.
-        contextMachine.addSchedulerJobStateChangeEventListener(event ->
-            schedulerJobStateChangeEventBroadcaster.broadcast(event));
+        contextMachine.addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventBroadcaster::broadcast);
 
         // set the parameters on the instance every time
         if(contextParameterInstances == null) {
@@ -471,7 +455,7 @@ public abstract class ContextInstanceServiceBase {
         Map<String, LocalEventJobInstance> localEventJobInstanceMap = this.getLocalEventJobs(instance.getId());
         Map<String, BridgingJobInstance> bridgingJobInstanceMap = this.getBridgingJobs(instance.getId());
 
-        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap,
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap,
             internalJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, bridgingJobInstanceMap, queueDirectory, agents,
             moduleMetadataService, null, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
@@ -482,8 +466,7 @@ public abstract class ContextInstanceServiceBase {
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
         // We add a listener to broadcast any job state changes to interested parties.
-        contextMachine.addSchedulerJobStateChangeEventListener(event ->
-            schedulerJobStateChangeEventBroadcaster.broadcast(event));
+        contextMachine.addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventBroadcaster::broadcast);
 
         contextMachine.getContext().setStatus(InstanceStatus.PREPARED);
         ContextMachineCache.instance().put(contextMachine);

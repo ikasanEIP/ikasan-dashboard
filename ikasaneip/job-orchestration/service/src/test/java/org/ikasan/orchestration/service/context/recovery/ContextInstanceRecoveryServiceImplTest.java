@@ -26,8 +26,6 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
@@ -98,12 +96,6 @@ public class ContextInstanceRecoveryServiceImplTest {
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @Mock
-    ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
-
-    @Mock
-    SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
-
-    @Mock
     JobLockCacheInitialisationServiceImpl jobLockCacheInitialisationService;
     private ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -149,8 +141,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
             timeService,
@@ -204,8 +194,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService,
             timeService
@@ -267,8 +255,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
             );
@@ -318,8 +304,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -371,7 +355,6 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(contextInstancePublicationService, times(3)).removeAll(anyString());
         verify(contextInstancePublicationService, times(6)).remove(anyString(), any()); // due to updating 2 instances to Ended, will remove contextId from 3 agent as mocking 3 agents at part of the moduleMetadataService
         verify(moduleMetadataService, times(4)).find(any(), any(), eq(-1), eq(-1));
-        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -381,8 +364,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             timeService,
             this.jobProvisionService,
             this.schedulerJobService
@@ -441,8 +422,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
             );
@@ -533,8 +512,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             timeService,
             this.jobProvisionService,
             this.schedulerJobService
@@ -645,8 +622,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             timeService,
             this.jobProvisionService,
             this.schedulerJobService
@@ -756,8 +731,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             timeService,
             this.jobProvisionService,
             this.schedulerJobService
@@ -856,7 +829,6 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(contextInstancePublicationService, times(6)).remove(anyString(), any());
         verify(scheduledContextInstanceService, times(3)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(scheduledContextService, times(2)).findById(anyString());
-        verify(contextInstanceStateChangeEventBroadcaster, times(3)).broadcast(any());
         verify(timeService, times(4)).getLocalDateNow();
 
         ArgumentCaptor<String> endCron = ArgumentCaptor.forClass(String.class);
@@ -871,8 +843,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             timeService,
             contextInstanceSchedulerService,
             this.jobProvisionService,
@@ -982,7 +952,6 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(contextInstancePublicationService, times(6)).remove(anyString(), any());
         verify(scheduledContextInstanceService, times(3)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(scheduledContextService, times(2)).findById(anyString());
-        verify(contextInstanceStateChangeEventBroadcaster, times(3)).broadcast(any());
         verify(timeService, times(4)).getLocalDateNow();
 
         ArgumentCaptor<String> endCron = ArgumentCaptor.forClass(String.class);
@@ -997,8 +966,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             timeService,
             contextInstanceSchedulerService,
             this.jobProvisionService,
@@ -1108,7 +1075,6 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(contextInstancePublicationService, times(6)).remove(anyString(), any());
         verify(scheduledContextInstanceService, times(3)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(scheduledContextService, times(2)).findById(anyString());
-        verify(contextInstanceStateChangeEventBroadcaster, times(3)).broadcast(any());
         verify(timeService, times(4)).getLocalDateNow();
 
         ArgumentCaptor<String> endCron = ArgumentCaptor.forClass(String.class);
@@ -1123,8 +1089,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             timeService,
             contextInstanceSchedulerService,
             this.jobProvisionService,
@@ -1235,7 +1199,6 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(contextInstancePublicationService, times(3)).removeAll(anyString());
         verify(scheduledContextInstanceService, times(6)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(scheduledContextService, times(3)).findById(any());
-        verify(contextInstanceStateChangeEventBroadcaster, times(3)).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -1245,8 +1208,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             timeService,
             this.jobProvisionService,
             this.schedulerJobService
@@ -1336,8 +1297,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             timeService,
             this.jobProvisionService,
             this.schedulerJobService
@@ -1392,8 +1351,6 @@ public class ContextInstanceRecoveryServiceImplTest {
             contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
             );

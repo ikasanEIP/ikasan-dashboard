@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.scheduler.util;
+package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 
