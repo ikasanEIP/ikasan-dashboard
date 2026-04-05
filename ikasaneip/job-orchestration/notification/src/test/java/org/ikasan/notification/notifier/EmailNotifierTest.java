@@ -1,7 +1,7 @@
 package org.ikasan.notification.notifier;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.*;
@@ -94,7 +94,7 @@ public class EmailNotifierTest {
         contextTemplate1.setName("context-template-1");
         ContextInstance contextInstance1 = new ContextInstanceImpl();
         contextInstance1.setName("context-instance-1");
-        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null, null
+        ContextMachineImpl contextMachine1 = new ContextMachineImpl(contextTemplate1, contextInstance1, null, null, null
             , null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(),"./target", null, null, null, null, null,
             null, null, null, null);
         if (ContextMachineCache.instance().getFirstByContextName("context-instance-1") == null) {

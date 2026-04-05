@@ -102,8 +102,6 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
      * @param jobLockCacheService
      * @param scheduledContextService
      * @param schedulerJobInstanceService
-     * @param contextInstanceStateChangeEventBroadcaster
-     * @param schedulerJobStateChangeEventBroadcaster
      * @param jobLockCacheInitialisationService
      * @param contextInstanceSchedulerService
      * @param timeService
@@ -119,8 +117,6 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                               JobLockCacheService jobLockCacheService,
                                               ScheduledContextService scheduledContextService,
                                               SchedulerJobInstanceService schedulerJobInstanceService,
-                                              ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                              SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                               JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                               ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                               TimeService timeService,
@@ -139,8 +135,6 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
             jobUtilsService,
@@ -315,9 +309,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                     MissingContextInstanceRecoveryRunnable missingContextInstanceRecoveryRunnable = new MissingContextInstanceRecoveryRunnable(
                         this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
                         this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
-                        scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
-                        this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService, this.timeService, this.jobUtilsService, this.jobProvisionService,
-                        this.schedulerJobService);
+                        scheduledContextRecord, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService,
+                        this.timeService, this.jobUtilsService, this.jobProvisionService, this.schedulerJobService);
                     missingContextInstanceRecoveryRunnable.setContextMachineExecutorWaitTimeoutSeconds(super.contextMachineExecutorWaitTimeoutSeconds);
                     missingContextInstanceRecoveryRunnable.setBlackListedMessageMaxRetries(super.blackListedMessageMaxRetries);
                     executor.execute(missingContextInstanceRecoveryRunnable);

@@ -27,8 +27,8 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.ContextFilter;
-import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.job.orchestration.broadcast.ContextViewUpdateEventBroadcaster;
 import org.ikasan.job.orchestration.model.profile.ContextProfileImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;

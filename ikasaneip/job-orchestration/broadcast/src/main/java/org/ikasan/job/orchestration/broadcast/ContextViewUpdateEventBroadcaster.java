@@ -1,6 +1,4 @@
-package org.ikasan.dashboard.ui.scheduler.util;
-
-import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
+package org.ikasan.job.orchestration.broadcast;
 
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
@@ -8,7 +6,7 @@ import java.util.concurrent.Executors;
 
 public class ContextViewUpdateEventBroadcaster
 {
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextViewUpdateEventBroadcaster"));
+    static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextViewUpdateEventBroadcaster"));
 
     private static WeakHashMap<ContextViewUpdateEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();

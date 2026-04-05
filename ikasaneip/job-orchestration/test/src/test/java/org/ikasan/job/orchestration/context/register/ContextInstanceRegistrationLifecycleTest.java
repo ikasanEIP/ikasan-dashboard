@@ -97,12 +97,6 @@ public class ContextInstanceRegistrationLifecycleTest {
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @Mock
-    private ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
-
-    @Mock
-    private SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
-
-    @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
     @Mock
     private TimeService timeService;
@@ -141,11 +135,8 @@ public class ContextInstanceRegistrationLifecycleTest {
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
-            contextInstanceSavedEventBroadcaster,
             systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,

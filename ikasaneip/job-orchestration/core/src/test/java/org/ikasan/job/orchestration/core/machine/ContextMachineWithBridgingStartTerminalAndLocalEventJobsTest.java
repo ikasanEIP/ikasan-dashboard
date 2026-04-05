@@ -14,7 +14,6 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -94,7 +93,7 @@ public class ContextMachineWithBridgingStartTerminalAndLocalEventJobsTest extend
         Map<String, LocalEventJobInstance> localEventJobInstanceMap = loadLocalEventJobInstanceMap(context, contextInstance);
         Map<String, BridgingJobInstance> bridgingJobInstanceMap = loadBridgingJobInstanceMap(context, contextInstance);
 
-        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+        ContextMachineImpl contextMachine  = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobInstanceMap, contextStartJobInstanceMap, contextTerminalJobInstanceMap,localEventJobInstanceMap, bridgingJobInstanceMap, this.queueDir
             , new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
             , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
@@ -732,7 +731,7 @@ public class ContextMachineWithBridgingStartTerminalAndLocalEventJobsTest extend
         Map<String, LocalEventJobInstance> localEventJobInstanceMap = loadLocalEventJobInstanceMap(context, contextInstance);
         Map<String, BridgingJobInstance> bridgingJobInstanceMap = loadBridgingJobInstanceMap(context, contextInstance);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
             , internalEventDrivenJobInstanceMap, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, bridgingJobInstanceMap, this.queueDir
             , new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
             , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService

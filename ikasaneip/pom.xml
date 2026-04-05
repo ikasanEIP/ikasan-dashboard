@@ -376,7 +376,7 @@
         <version.ace.editor>3.4.2</version.ace.editor>
         <version.big.queue>1.0.0</version.big.queue>
         <version.logback>1.5.25</version.logback>
-        <ikasan.core.version>4.2.0-SNAPSHOT</ikasan.core.version>
+        <ikasan.core.version>5.0.0-SNAPSHOT</ikasan.core.version>
         <version.spring.webflux>6.1.14</version.spring.webflux>
         <version.reactor>3.7.9</version.reactor>
         <version.reactor.netty>1.2.9</version.reactor.netty>
@@ -1343,6 +1343,12 @@
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-job-orchestration-rest-module-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-job-orchestration-broadcast</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

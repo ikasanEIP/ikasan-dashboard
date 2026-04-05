@@ -30,7 +30,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.designer.PositionedDialog;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -485,7 +485,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 NotificationHelper.showUserNotification(getTranslation("notification.downstream-job-initiation", UI.getCurrent().getLocale()));
             });
         });
-
 
         this.resetButton = new Button("Reset", new Icon(VaadinIcon.ARROW_BACKWARD));
         this.resetButton.setIconAfterText(true);

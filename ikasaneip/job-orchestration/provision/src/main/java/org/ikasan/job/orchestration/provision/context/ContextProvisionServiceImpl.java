@@ -336,11 +336,11 @@ public class ContextProvisionServiceImpl implements ContextProvisionService {
                 SchedulerJobWrapper schedulerJobWrapper = new SchedulerJobWrapperImpl();
                 schedulerJobWrapper.setJobs(contextJobs.stream()
                     .filter(schedulerJob -> schedulerJob.getAgentName().equals(agent.getName()) &&
-                        !(schedulerJob instanceof GlobalEventJob) && // Do not provision Global Events as this is not managed by the agent, but through the ContextMachine
-                        !(schedulerJob instanceof LocalEventJob) && // Do not provision Local Events as this is not managed by the agent, but through the ContextMachine
-                        !(schedulerJob instanceof ContextStartJob) && // Do not provision ContextStartJobs as they is not managed by the agent, but through the ContextMachine
-                        !(schedulerJob instanceof ContextTerminalJob) && // Do not provision ContextTerminalJobs as they is not managed by the agent, but through the ContextMachine
-                        !(schedulerJob.isTemplateJob() != null && schedulerJob.isTemplateJob() == true) && // Do not provision template jobs as they are not managed by the agent, but through the ContextMachine
+                        !(schedulerJob instanceof GlobalEventJob) && // Do not provision Global Events as this is not managed by the agent, but through the ContextMachineImpl
+                        !(schedulerJob instanceof LocalEventJob) && // Do not provision Local Events as this is not managed by the agent, but through the ContextMachineImpl
+                        !(schedulerJob instanceof ContextStartJob) && // Do not provision ContextStartJobs as they is not managed by the agent, but through the ContextMachineImpl
+                        !(schedulerJob instanceof ContextTerminalJob) && // Do not provision ContextTerminalJobs as they is not managed by the agent, but through the ContextMachineImpl
+                        !(schedulerJob.isTemplateJob() != null && schedulerJob.isTemplateJob() == true) && // Do not provision template jobs as they are not managed by the agent, but through the ContextMachineImpl
                         jobIdentifiersInJobPlan.contains(schedulerJob.getIdentifier())) // We only provision jobs in the job plan
                     .collect(Collectors.toList()));
 

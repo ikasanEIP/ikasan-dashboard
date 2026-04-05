@@ -3,7 +3,7 @@ package org.ikasan.job.orchestration.service;
 import org.ikasan.job.orchestration.AbstractJobLockCacheTest;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheTest {
 
     @Mock
-    ContextMachine contextMachine;
+    ContextMachineImpl contextMachine;
     @Before
     public void setup() {
         ContextMachineCache.instance().resetAllCache();

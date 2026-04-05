@@ -2,7 +2,7 @@ package org.ikasan.job.orchestration.integration.component.endpoint;
 
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.ScheduleProcessInboundProducer;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.configuration.ScheduleProcessInboundProducerConfiguration;
 import org.ikasan.job.orchestration.integration.inbound.exception.InvalidContextInstanceIdException;
@@ -43,7 +43,7 @@ import static org.mockito.Mockito.*;
 public class ScheduleProcessInboundProducerTest {
 
     @Mock
-    private ContextMachine contextMachine;
+    private ContextMachineImpl contextMachine;
 
     @Mock
     private ContextInstance contextInstance;

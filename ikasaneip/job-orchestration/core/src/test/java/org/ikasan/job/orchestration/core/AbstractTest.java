@@ -9,7 +9,7 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
 import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextStartJobInstanceImpl;
@@ -19,7 +19,6 @@ import org.ikasan.job.orchestration.model.instance.LocalEventJobInstanceImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.instance.model.SolrBridgingJobInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrLocalEventJobInstanceImpl;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
@@ -283,12 +282,12 @@ public class AbstractTest
     }
 
     /**
-     * Prints the context of a ContextMachine object to the console as JSON.
+     * Prints the context of a ContextMachineImpl object to the console as JSON.
      *
-     * @param contextMachine The ContextMachine object whose context will be printed.
+     * @param contextMachine The ContextMachineImpl object whose context will be printed.
      * @throws JsonProcessingException if an error occurs while processing the JSON.
      */
-    protected void printContext(ContextMachine contextMachine) throws JsonProcessingException {
+    protected void printContext(ContextMachineImpl contextMachine) throws JsonProcessingException {
         System.out.println(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()));
     }
 
@@ -302,26 +301,26 @@ public class AbstractTest
     }
 
     /**
-     * Asserts that the status of a given context in a ContextMachine object matches the expected status.
+     * Asserts that the status of a given context in a ContextMachineImpl object matches the expected status.
      *
-     * @param contextMachine The ContextMachine object that contains the context.
+     * @param contextMachine The ContextMachineImpl object that contains the context.
      * @param context The name of the context to check the status for.
      * @param expected The expected status of the context.
      */
-    protected void assertContextStatus(ContextMachine contextMachine, String context, InstanceStatus expected) {
+    protected void assertContextStatus(ContextMachineImpl contextMachine, String context, InstanceStatus expected) {
         InstanceStatus status = contextMachine.getContextStatus(context);
         Assert.assertEquals(expected, status);
     }
 
     /**
-     * Asserts that the status of a job in a given context in a ContextMachine object matches the expected status.
+     * Asserts that the status of a job in a given context in a ContextMachineImpl object matches the expected status.
      *
-     * @param contextMachine The ContextMachine object that contains the job.
+     * @param contextMachine The ContextMachineImpl object that contains the job.
      * @param context The name of the context where the job resides.
      * @param jobName The name of the job to check the status for.
      * @param expected The expected status of the job.
      */
-    protected void assertJobStatus(ContextMachine contextMachine, String context, String jobName, InstanceStatus expected) {
+    protected void assertJobStatus(ContextMachineImpl contextMachine, String context, String jobName, InstanceStatus expected) {
         InstanceStatus status = contextMachine.getJobStatus(context, jobName);
         Assert.assertEquals(expected, status);
     }

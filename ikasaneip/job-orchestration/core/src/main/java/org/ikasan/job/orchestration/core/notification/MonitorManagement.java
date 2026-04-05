@@ -1,6 +1,6 @@
 package org.ikasan.job.orchestration.core.notification;
 
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +22,14 @@ public class MonitorManagement {
         monitors.remove(monitor);
     }
 
-    public static void startMonitoring(ContextMachine contextMachine) {
+    public static void startMonitoring(ContextMachineImpl contextMachine) {
         for (Monitor monitor : monitors) {
             monitor.register(contextMachine.getContext());
             LOG.info(contextMachine.getContext().getName()+" has registered to "+monitor);
         }
     }
 
-    public static void stopMonitoring(ContextMachine contextMachine) {
+    public static void stopMonitoring(ContextMachineImpl contextMachine) {
         for (Monitor monitor : monitors) {
             monitor.unregister(contextMachine.getContext());
             LOG.info(contextMachine.getContext().getName()+" context instance ID [" + contextMachine.getContext().getId() +

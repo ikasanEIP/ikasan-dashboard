@@ -1,6 +1,5 @@
-package org.ikasan.dashboard.ui.visualisation.scheduler.util;
+package org.ikasan.job.orchestration.broadcast;
 
-import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
 
@@ -9,7 +8,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class JobLockCacheEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("JobLockCacheEventBroadcaster"));
+    static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("JobLockCacheEventBroadcaster"));
 
     private static WeakHashMap<JobLockCacheEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();

@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -56,7 +56,7 @@ public class ContextResetServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, null, null, null, null
             , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService
             , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, null);
         ContextMachineCache.instance().put(contextMachine);
@@ -77,7 +77,7 @@ public class ContextResetServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, null, null, null, null
             , null, null, null, null, null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService
             , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, null);
         ContextMachineCache.instance().put(contextMachine);

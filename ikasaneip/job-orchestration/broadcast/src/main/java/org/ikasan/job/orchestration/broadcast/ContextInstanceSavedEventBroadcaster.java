@@ -1,6 +1,5 @@
-package org.ikasan.dashboard.ui.scheduler.util;
+package org.ikasan.job.orchestration.broadcast;
 
-import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 
@@ -9,7 +8,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ContextInstanceSavedEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceSavedEventBroadcaster"));
+    static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextInstanceSavedEventBroadcaster"));
 
     private static WeakHashMap<ContextInstanceSavedEventBroadcastListener, Object> listeners =
         new WeakHashMap<>();

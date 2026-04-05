@@ -60,6 +60,7 @@
         <module>service</module>
         <module>notification</module>
         <module>test</module>
+        <module>broadcast</module>
     </modules>
 
 </project>

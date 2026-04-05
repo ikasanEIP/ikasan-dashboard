@@ -66,7 +66,7 @@ public class QuartzTimeWindowChecker {
     /**
      * Use when recovery context instance after a restart to the dashboard. Takes in the start and end time stamped
      * on the context instance and if the dashboard start time sit inside this, then it will be a candidate for
-     * this instance to be registered to the ContextMachine cache.
+     * this instance to be registered to the ContextMachineImpl cache.
      *
      * @param startTime millisecond of when the context was started
      * @param endTime millisecond of the projected end time for the context

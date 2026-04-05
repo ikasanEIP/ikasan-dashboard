@@ -1,39 +1,31 @@
 package org.ikasan.dashboard.beans;
 
 import com.vaadin.flow.server.*;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.cache.ModuleMetadataCache;
-import org.ikasan.dashboard.ui.scheduler.service.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
-import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcasterImpl;
+import org.ikasan.dashboard.ui.scheduler.service.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.util.DashboardCacheAdapter;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceStateChangeEventBroadcasterImpl;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.JobLockCacheEventBroadcasterImpl;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.SchedulerJobStateChangeEventBroadcasterImpl;
+import org.ikasan.flow.configuration.FlowComponentInvokerSetupServiceConfiguration;
 import org.ikasan.flow.configuration.FlowPersistentConfiguration;
 import org.ikasan.harvesting.HarvestingAutoConfiguration;
 import org.ikasan.harvesting.HarvestingSchedulerServiceImpl;
-import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
-import org.ikasan.security.SecurityAutoConfiguration;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.harvest.HarvestingJob;
 import org.ikasan.spec.harvest.HarvestingSchedulerService;
 import org.ikasan.spec.metadata.ModuleMetaDataProvider;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
-import org.ikasan.systemevent.SystemEventAutoConfiguration;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,11 +39,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.ikasan.flow.configuration.FlowComponentInvokerSetupServiceConfiguration;
 
 import javax.annotation.Resource;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -230,28 +219,28 @@ public class DashboardComponentFactory
         return flowStateCache;
     }
 
-    @Bean
-    public ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster() {
-        return new ContextInstanceStateChangeEventBroadcasterImpl();
-    }
+//    @Bean
+//    public ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster() {
+//        return new ContextInstanceStateChangeEventBroadcasterImpl();
+//    }
+//
+//    @Bean
+//    public SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster() {
+//        return new SchedulerJobStateChangeEventBroadcasterImpl();
+//    }
 
-    @Bean
-    public SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster() {
-        return new SchedulerJobStateChangeEventBroadcasterImpl();
-    }
+//    @Bean
+//    public ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster() {
+//        return new ContextInstanceSavedEventBroadcasterImpl();
+//    }
 
-    @Bean
-    public ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster() {
-        return new ContextInstanceSavedEventBroadcasterImpl();
-    }
-
-    @Bean
-    public JobLockCacheEventBroadcaster jobLockCacheEventBroadcaster() {
-        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcasterImpl();
-        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
-
-        return broadcaster;
-    }
+//    @Bean
+//    public JobLockCacheEventBroadcaster jobLockCacheEventBroadcaster() {
+//        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcasterImpl();
+//        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+//
+//        return broadcaster;
+//    }
 
     @Bean
     @Primary

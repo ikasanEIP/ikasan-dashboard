@@ -59,8 +59,6 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
      * @param scheduledContextService service for scheduled context
      * @param scheduledContextRecord the record of the scheduled context
      * @param schedulerJobInstanceService service for scheduler job instances
-     * @param contextInstanceStateChangeEventBroadcaster broadcaster for context instance state change events
-     * @param schedulerJobStateChangeEventBroadcaster broadcaster for scheduler job state change events
      * @param jobLockCacheInitialisationService service for job lock cache initialization
      * @param contextInstanceSchedulerService service for context instance scheduling
      * @param timeService service for handling time-related operations
@@ -77,8 +75,6 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
                                                   ScheduledContextService scheduledContextService,
                                                   ScheduledContextRecord scheduledContextRecord,
                                                   SchedulerJobInstanceService schedulerJobInstanceService,
-                                                  ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                                  SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                                   JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                                   ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService,
                                                   TimeService timeService,
@@ -94,8 +90,6 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
             jobUtilsService,

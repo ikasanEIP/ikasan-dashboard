@@ -3,34 +3,17 @@ package org.ikasan.orchestration.service.context.lifecycle;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.TimeService;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
-import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
-import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
-import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
-import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.*;
-import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.orchestration.service.context.register.ContextInstanceRegistrationServiceImpl;
 import org.ikasan.orchestration.service.utils.*;
-import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
-import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
@@ -46,25 +29,15 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static java.time.ZonedDateTime.now;
-import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -96,20 +69,12 @@ public class ContextInstanceEndServiceImplTest {
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @Mock
-    ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
-
-    @Mock
-    SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
-
-    @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
     @Mock
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     @Mock
     private TimeService timeService;
-    @Mock
-    private ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster;
     @Mock
     private SystemEventService systemEventService;
     @Mock
@@ -172,11 +137,8 @@ public class ContextInstanceEndServiceImplTest {
             this.jobLockCacheService,
             this.scheduledContextService,
             this.schedulerJobInstanceService,
-            this.contextInstanceStateChangeEventBroadcaster,
-            this.schedulerJobStateChangeEventBroadcaster,
             this.jobLockCacheInitialisationService,
             this.timeService,
-            this.contextInstanceSavedEventBroadcaster,
             this.systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -209,11 +171,8 @@ public class ContextInstanceEndServiceImplTest {
             this.jobLockCacheService,
             this.scheduledContextService,
             this.schedulerJobInstanceService,
-            this.contextInstanceStateChangeEventBroadcaster,
-            this.schedulerJobStateChangeEventBroadcaster,
             this.jobLockCacheInitialisationService,
             this.timeService,
-            this.contextInstanceSavedEventBroadcaster,
             this.systemEventService,
             this.jobUtilsService,
             this.jobProvisionService,
@@ -230,13 +189,10 @@ public class ContextInstanceEndServiceImplTest {
 
         this.contextInstanceEndService.receiveBroadcast(this.contextInstanceStateChangeEvent);
 
-        verify(this.contextInstanceStateChangeEventBroadcaster, times(1)).register(this.contextInstanceEndService);
-        verify(this.contextInstanceStateChangeEvent, times(1)).getContextInstance();
         verify(this.contextInstance, times(1)).isEndJobPlanUponCompletion();
 
         verifyNoMoreInteractions(
             this.contextInstance,
-            this.contextInstanceStateChangeEvent,
             this.scheduledContextInstanceService,
             this.jobInitiationService,
             this.moduleMetadataService,
@@ -245,10 +201,8 @@ public class ContextInstanceEndServiceImplTest {
             this.contextInstancePublicationService,
             this.scheduledContextService,
             this.jobLockCacheService,
-            this.contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            this.schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
     }
 
@@ -261,14 +215,11 @@ public class ContextInstanceEndServiceImplTest {
 
         this.contextInstanceEndService.receiveBroadcast(this.contextInstanceStateChangeEvent);
 
-        verify(this.contextInstanceStateChangeEventBroadcaster, times(1)).register(this.contextInstanceEndService);
-        verify(this.contextInstanceStateChangeEvent, times(2)).getContextInstance();
         verify(this.contextInstance, times(1)).isEndJobPlanUponCompletion();
         verify(this.contextInstance, times(1)).isRunContextUntilManuallyEnded();
 
         verifyNoMoreInteractions(
             this.contextInstance,
-            this.contextInstanceStateChangeEvent,
             this.scheduledContextInstanceService,
             this.jobInitiationService,
             this.moduleMetadataService,
@@ -277,10 +228,8 @@ public class ContextInstanceEndServiceImplTest {
             this.contextInstancePublicationService,
             this.scheduledContextService,
             this.jobLockCacheService,
-            this.contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            this.schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
     }
 
@@ -294,15 +243,12 @@ public class ContextInstanceEndServiceImplTest {
 
         this.contextInstanceEndService.receiveBroadcast(this.contextInstanceStateChangeEvent);
 
-        verify(this.contextInstanceStateChangeEventBroadcaster, times(1)).register(this.contextInstanceEndService);
-        verify(this.contextInstanceStateChangeEvent, times(2)).getContextInstance();
         verify(this.contextInstance, times(1)).isEndJobPlanUponCompletion();
         verify(this.contextInstance, times(1)).isRunContextUntilManuallyEnded();
         verify(this.contextInstanceStateChangeEvent, times(1)).getNewStatus();
 
         verifyNoMoreInteractions(
             this.contextInstance,
-            this.contextInstanceStateChangeEvent,
             this.scheduledContextInstanceService,
             this.jobInitiationService,
             this.moduleMetadataService,
@@ -311,10 +257,8 @@ public class ContextInstanceEndServiceImplTest {
             this.contextInstancePublicationService,
             this.scheduledContextService,
             this.jobLockCacheService,
-            this.contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            this.schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
     }
 
@@ -349,8 +293,6 @@ public class ContextInstanceEndServiceImplTest {
 
         this.contextInstanceEndService.receiveBroadcast(this.contextInstanceStateChangeEvent);
 
-        verify(this.contextInstanceStateChangeEventBroadcaster, times(1)).register(this.contextInstanceEndService);
-        verify(this.contextInstanceStateChangeEvent, times(8)).getContextInstance();
         verify(this.contextInstance, times(1)).isEndJobPlanUponCompletion();
         verify(this.contextInstance, times(1)).isRunContextUntilManuallyEnded();
         verify(this.contextInstance, times(6)).getName();
@@ -367,12 +309,10 @@ public class ContextInstanceEndServiceImplTest {
         verify(this.scheduledContextInstanceService, times(3)).save(any());
         verify(this.contextParametersInstanceService, times(1)).populateContextParameters();
         verify(this.contextParametersInstanceService, times(1)).populateContextParametersOnContextInstance(any(), any());
-        verify(this.contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
 
         verifyNoMoreInteractions(
             this.contextInstance,
             this.preparedContextInstanceRecord,
-            this.contextInstanceStateChangeEvent,
             this.scheduledContextInstanceService,
             this.jobInitiationService,
             this.moduleMetadataService,
@@ -381,10 +321,8 @@ public class ContextInstanceEndServiceImplTest {
             this.contextInstancePublicationService,
             this.scheduledContextService,
             this.jobLockCacheService,
-            this.contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            this.schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
     }
 
@@ -414,8 +352,6 @@ public class ContextInstanceEndServiceImplTest {
 
         this.contextInstanceEndService.receiveBroadcast(this.contextInstanceStateChangeEvent);
 
-        verify(this.contextInstanceStateChangeEventBroadcaster, times(1)).register(this.contextInstanceEndService);
-        verify(this.contextInstanceStateChangeEvent, times(5)).getContextInstance();
         verify(this.contextInstance, times(1)).isEndJobPlanUponCompletion();
         verify(this.contextInstance, times(1)).isRunContextUntilManuallyEnded();
         verify(this.contextInstance, times(3)).getName();
@@ -428,7 +364,6 @@ public class ContextInstanceEndServiceImplTest {
         verifyNoMoreInteractions(
             this.contextInstance,
             this.preparedContextInstanceRecord,
-            this.contextInstanceStateChangeEvent,
             this.scheduledContextInstanceService,
             this.jobInitiationService,
             this.moduleMetadataService,
@@ -437,10 +372,8 @@ public class ContextInstanceEndServiceImplTest {
             this.contextInstancePublicationService,
             this.scheduledContextService,
             this.jobLockCacheService,
-            this.contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            this.schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
     }
 
@@ -476,8 +409,6 @@ public class ContextInstanceEndServiceImplTest {
 
         this.contextInstanceEndService.receiveBroadcast(this.contextInstanceStateChangeEvent);
 
-        verify(this.contextInstanceStateChangeEventBroadcaster, times(1)).register(this.contextInstanceEndService);
-        verify(this.contextInstanceStateChangeEvent, times(8)).getContextInstance();
         verify(this.contextInstance, times(1)).isEndJobPlanUponCompletion();
         verify(this.contextInstance, times(1)).isRunContextUntilManuallyEnded();
         verify(this.contextInstance, times(6)).getName();
@@ -494,12 +425,10 @@ public class ContextInstanceEndServiceImplTest {
         verify(this.scheduledContextInstanceService, times(2)).save(any());
         verify(this.contextParametersInstanceService, times(1)).populateContextParameters();
         verify(this.contextParametersInstanceService, times(1)).populateContextParametersOnContextInstance(any(), any());
-        verify(this.contextInstanceStateChangeEventBroadcaster, times(1)).broadcast(any());
 
         verifyNoMoreInteractions(
             this.contextInstance,
             this.preparedContextInstanceRecord,
-            this.contextInstanceStateChangeEvent,
             this.scheduledContextInstanceService,
             this.jobInitiationService,
             this.moduleMetadataService,
@@ -508,10 +437,8 @@ public class ContextInstanceEndServiceImplTest {
             this.contextInstancePublicationService,
             this.scheduledContextService,
             this.jobLockCacheService,
-            this.contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            this.schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
     }
 }

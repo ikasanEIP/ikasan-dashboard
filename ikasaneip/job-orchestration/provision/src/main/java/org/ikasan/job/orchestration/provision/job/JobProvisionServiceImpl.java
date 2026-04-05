@@ -102,7 +102,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
 
         agents.getResultList().forEach(agent -> {
             try {
-                // Do not provision Global Events as this is not managed by the agent, but through the ContextMachine
+                // Do not provision Global Events as this is not managed by the agent, but through the ContextMachineImpl
                 List<SchedulerJob> agentJobs = new ArrayList<>();
                 jobs.forEach(schedulerJob -> {
                     if (!(schedulerJob instanceof GlobalEventJob)) {
