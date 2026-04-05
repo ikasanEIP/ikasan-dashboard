@@ -1,0 +1,8 @@
+[
+  {
+    "name": "admin",
+    "principalType": "user",
+    "description": "The administrator user",
+    "roles": ["ADMIN"]
+  }
+]

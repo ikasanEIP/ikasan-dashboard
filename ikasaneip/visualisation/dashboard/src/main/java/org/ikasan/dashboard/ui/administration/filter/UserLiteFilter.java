@@ -2,7 +2,7 @@ package org.ikasan.dashboard.ui.administration.filter;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import org.ikasan.dashboard.ui.general.component.Filter;
-import org.ikasan.security.model.UserLite;
+import org.ikasan.spec.security.model.UserLite;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -162,9 +162,9 @@ public class UserLiteFilter implements Filter<UserLite>
     }
 
     @Override
-    public Comparator getSortComparator(List<QuerySortOrder> querySortOrders)
+    public Comparator<UserLite> getSortComparator(List<QuerySortOrder> querySortOrders)
     {
-        Comparator comparator = null;
+        Comparator<UserLite> comparator = null;
 
         if(querySortOrders.get(0).getSorted().equals("username"))
         {

@@ -3,7 +3,8 @@ package org.ikasan.dashboard.ui.administration.filter;
 import com.google.common.collect.Lists;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
-import org.ikasan.security.model.User;
+import org.ikasan.dashboard.security.model.UserImpl;
+import org.ikasan.spec.security.model.User;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class UserFilterTest {
         List<User> users = new ArrayList<>();
 
         for(int i=0; i<100; i++) {
-            User user = new User();
+            User user = new UserImpl();
             user.setUsername("username"+i);
             user.setDepartment("department"+i);
             user.setFirstName("name"+i);

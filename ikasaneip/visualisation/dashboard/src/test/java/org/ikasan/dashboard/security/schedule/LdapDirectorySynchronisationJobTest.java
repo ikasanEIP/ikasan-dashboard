@@ -1,10 +1,10 @@
 package org.ikasan.dashboard.security.schedule;
 
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.AuthenticationMethod;
+import org.ikasan.spec.security.model.AuthenticationMethod;
 import org.ikasan.security.service.LdapService;
 import org.ikasan.security.service.LdapServiceException;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.service.SecurityService;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.imposters.ByteBuddyClassImposteriser;
@@ -42,8 +42,8 @@ public class LdapDirectorySynchronisationJobTest {
             oneOf(ldapService).synchronize(authenticationMethod);
             oneOf(authenticationMethod).setLastSynchronised(with(any(Date.class)));
             oneOf(authenticationMethod).getId();
-            will(returnValue(1L));
-            oneOf(securityService).getAuthenticationMethod(1L);
+            will(returnValue("1L"));
+            oneOf(securityService).getAuthenticationMethod("1L");
             will(returnValue(authenticationMethod));
             oneOf(securityService).saveOrUpdateAuthenticationMethod(authenticationMethod);
             exactly(3).of(authenticationMethod).getName();

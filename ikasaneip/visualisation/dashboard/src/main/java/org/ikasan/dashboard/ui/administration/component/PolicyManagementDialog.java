@@ -24,9 +24,9 @@ import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.Policy;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.Policy;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.service.SecurityService;
 
 public class PolicyManagementDialog extends AbstractCloseableResizableDialog
 {
@@ -89,30 +89,6 @@ public class PolicyManagementDialog extends AbstractCloseableResizableDialog
         roleGrid.setClassName("my-grid");
         roleGrid.addColumn(Role::getName).setKey("name").setHeader(getTranslation("table-header.policy-name", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(1);
         roleGrid.addColumn(Role::getDescription).setKey("description").setHeader(getTranslation("table-header.policy-description", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(4);
-        roleGrid.addColumn(new ComponentRenderer<>(role->
-        {
-            Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
-            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
-            {
-//                policy.getRoles().remove(role);
-//                securityService.savePolicy(policy);
-
-                String action = String.format("Role [%s] removed from policy [%s].", role.getName(), policy.getName());
-
-                this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_PRINCIPAL_ROLE_CHANGED_CONSTANTS, action, null);
-
-                this.updateRolesGrid();
-            });
-
-            deleteButton.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.POLICY_ADMINISTRATION_WRITE,
-                SecurityConstants.POLICY_ADMINISTRATION_ADMIN, SecurityConstants.ALL_AUTHORITY));
-
-            VerticalLayout layout = new VerticalLayout();
-            layout.setSizeFull();
-            layout.add(deleteButton);
-            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, deleteButton);
-            return layout;
-        })).setFlexGrow(1);
 
         HeaderRow hr = roleGrid.appendHeaderRow();
         roleGrid.addGridFiltering(hr, roleFilter::setNameFilter, "name");
@@ -122,28 +98,13 @@ public class PolicyManagementDialog extends AbstractCloseableResizableDialog
 
         this.updateRolesGrid();
 
-        Button addRoleButton = new Button(getTranslation("button-associate-policy-with-role", UI.getCurrent().getLocale(), null));
-        addRoleButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
-        {
-            SelectRoleForPolicyDialog dialog = new SelectRoleForPolicyDialog(policy, this.securityService, this.systemEventLogger
-                , this.roleGrid);
-
-            dialog.open();
-        });
-
-        ComponentSecurityVisibility.applySecurity(addRoleButton, SecurityConstants.ALL_AUTHORITY
-            , SecurityConstants.USER_ADMINISTRATION_ADMIN
-            , SecurityConstants.USER_ADMINISTRATION_WRITE);
-
         HorizontalLayout labelLayout = new HorizontalLayout();
         labelLayout.setWidthFull();
         labelLayout.add(rolesLabel);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(addRoleButton);
         buttonLayout.setWidthFull();
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, addRoleButton);
 
         HorizontalLayout headerLayout = new HorizontalLayout();
         headerLayout.setWidthFull();
@@ -157,9 +118,8 @@ public class PolicyManagementDialog extends AbstractCloseableResizableDialog
         return layout;
     }
 
-    private void updateRolesGrid()
-    {
-        //roleGrid.setItems(this.policy.getRoles());
+    private void updateRolesGrid() {
+        roleGrid.setItems(this.securityService.getRolesAssociatedWithPolicy(this.policy.getId()));
     }
 
 

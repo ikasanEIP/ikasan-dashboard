@@ -14,8 +14,8 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.security.model.User;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.User;
+import org.ikasan.spec.security.service.UserService;
 
 import java.util.function.IntPredicate;
 
@@ -62,7 +62,7 @@ public class ChangePasswordDialog extends Dialog
         formLayout.add(confirmPasswordTf);
         formLayout.setColspan(confirmPasswordTf, 2);
 
-        User userPasswordChange = new User();
+        User userPasswordChange = this.userService.createUser("", "", "", true);
         binder.readBean(userPasswordChange);
 
         formLayout.setSizeFull();

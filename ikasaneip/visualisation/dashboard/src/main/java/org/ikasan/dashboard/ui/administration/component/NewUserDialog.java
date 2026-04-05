@@ -4,7 +4,6 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
@@ -19,21 +18,20 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.IkasanPrincipal;
-import org.ikasan.security.model.User;
-import org.ikasan.security.service.SecurityService;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.IkasanPrincipal;
+import org.ikasan.spec.security.model.User;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class NewUserDialog extends AbstractCloseableResizableDialog
 {
     private Logger logger = LoggerFactory.getLogger(NewUserDialog.class);
 
-    private UserService userService;
-    private SystemEventLogger systemEventLogger;
-    private SecurityService securityService;
+    private final UserService userService;
+    private final SystemEventLogger systemEventLogger;
+    private final SecurityService securityService;
 
     public NewUserDialog(UserService userService, SystemEventLogger systemEventLogger,
                          SecurityService securityService)
@@ -100,7 +98,7 @@ public class NewUserDialog extends AbstractCloseableResizableDialog
         formLayout.add(passwordTf);
         formLayout.setColspan(passwordTf, 2);
 
-        User user = new User();
+        User user = this.userService.createUser("", "", "", true);
         binder.readBean(user);
 
         Div result = new Div();

@@ -30,8 +30,8 @@ import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerSer
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
-import org.ikasan.security.service.SecurityService;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;

@@ -346,6 +346,11 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-security-authentication</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
             <artifactId>ikasan-vis.js</artifactId>
         </dependency>
 
@@ -390,10 +395,10 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>org.ikasan</groupId>
-            <artifactId>ikasan-configuration-service</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.ikasan</groupId>-->
+<!--            <artifactId>ikasan-configuration-service</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.ikasan</groupId>
@@ -691,6 +696,13 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-solr</artifactId>
+            <version>2.0.4</version>
             <scope>test</scope>
         </dependency>
 

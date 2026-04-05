@@ -72,6 +72,19 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String CONTAINS_REPEATING_JOBS = "containsRepeatingJobs";
     public static final String IS_REPEATING_JOB = "isRepeatingJob";
     public static final String JOB_TYPE = "jobType";
+    public static final String NAME = "name";
+    public static final String IKASAN_PRINCIPAL_TYPE = "ikasanPrincipalType";
+    public static final String DESCRIPTION = "description";
+    public static final String ROLES_RELATED_ENTITY_COLLECTION = "rolesRelatedEntity";
+    public static final String ROLE_JOB_PLAN_RELATED_ENTITY_COLLECTION = "roleJobPlanRelatedEntity";
+    public static final String ROLE_MODULE_RELATED_ENTITY_COLLECTION = "roleModuleRelatedEntity";
+    public static final String ROLE_POLICY_RELATED_ENTITY_COLLECTION = "policiesRelatedEntity";
+    public static final String PRINCIPAL_RELATED_ENTITY_COLLECTION = "principalRelatedEntity";
+    public static final String ORDER = "order";
+    public static final String EMAIL = "email";
+    public static final String FIRST_NAME = "firstName";
+    public static final String SURNAME = "surname";
+    public static final String DEPARTMENT = "department";
 
     public static final String AND = " AND ";
     public static final String OR = " OR ";

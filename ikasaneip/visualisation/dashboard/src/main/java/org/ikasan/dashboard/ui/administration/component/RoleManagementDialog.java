@@ -29,9 +29,9 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.*;
-import org.ikasan.security.service.SecurityService;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.*;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.systemevent.SystemEventService;
@@ -43,13 +43,11 @@ import java.util.function.Consumer;
 public class RoleManagementDialog extends AbstractCloseableResizableDialog
 {
     private Role role;
-    private SecurityService securityService;
-    private SystemEventService systemEventService;
-    private SystemEventLogger systemEventLogger;
-    private UserService userService;
-    private ModuleMetaDataService moduleMetadataService;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
+    private final UserService userService;
+    private final ModuleMetaDataService moduleMetadataService;
     private Grid<UserLite> userGrid;
-    private DataProvider<UserLite, UserFilter> userDataProvider;
     private ConfigurableFilterDataProvider<UserLite,Void,UserFilter> userGridFilteredDataProvider;
     private Grid<IkasanPrincipalLite> groupGrid;
     private DataProvider<IkasanPrincipalLite, IkasanPrincipalFilter> groupDataProvider;
@@ -59,15 +57,21 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     private FilteringGrid<RoleJobPlan> roleJobPlanGrid;
     private ScheduledContextService scheduledContextService;
 
+
     /**
-     * Constructor
+     * Constructs a new {@code RoleManagementDialog} instance and initializes its components.
+     * This dialog allows managing a specified role and its associated entities, including users,
+     * groups, policies, integration modules, and job plans. The provided services are utilized
+     * for role management and system event logging functionality.
      *
-     * @param role
-     * @param securityService
-     * @param userService
-     * @param systemEventService
-     * @param systemEventLogger
-     * @param moduleMetadataService
+     * @param role the role to be managed; must not be null
+     * @param securityService the security service for role operations; must not be null
+     * @param userService the user service for managing associated users; must not be null
+     * @param systemEventService the system event service for logging system events; must not be null
+     * @param systemEventLogger the system event logger for logging system interactions; must not be null
+     * @param moduleMetadataService the module metadata service for integration modules; must not be null
+     * @param scheduledContextService the service for handling scheduled contexts; must not be null
+     * @throws IllegalArgumentException if any of the parameters are null
      */
     public RoleManagementDialog(Role role, SecurityService securityService, UserService userService,
                                 SystemEventService systemEventService, SystemEventLogger systemEventLogger,
@@ -88,8 +92,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         {
             throw new IllegalArgumentException("userService cannot be null!");
         }
-        this.systemEventService = systemEventService;
-        if(this.systemEventService == null)
+        if((SystemEventService) systemEventService == null)
         {
             throw new IllegalArgumentException("systemEventService cannot be null!");
         }
@@ -196,7 +199,8 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         addPolicyButton.setId("addPolicyButton");
         addPolicyButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
-            SelectPolicyForRoleDialog dialog = new SelectPolicyForRoleDialog(this.role, this.securityService, this.systemEventLogger, this.policyGrid);
+            SelectPolicyForRoleDialog dialog = new SelectPolicyForRoleDialog(this.role, this.securityService
+                , this.systemEventLogger, this.policyGrid);
 
             dialog.open();
         });
@@ -223,7 +227,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     {
         H3 associatedUsersLabel = new H3(getTranslation("label.role-associated-users", UI.getCurrent().getLocale(), null));
 
-        UserFilter userFilter = new UserFilter();
+        UserFilter userFilter = new UserFilterImpl();
 
         this.userGrid = new Grid<>();
 
@@ -276,7 +280,9 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
             dialog.open();
         });
 
-        userDataProvider = DataProvider.fromFilteringCallbacks(query -> {
+        // The index of the first item to load
+        // The number of items to load
+        DataProvider<UserLite, UserFilter> userDataProvider = DataProvider.fromFilteringCallbacks(query -> {
             Optional<UserFilter> filter = query.getFilter();
 
             // The index of the first item to load
@@ -285,11 +291,10 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
             // The number of items to load
             int limit = query.getLimit();
 
-            if(!query.getSortOrders().isEmpty()) {
+            if (!query.getSortOrders().isEmpty()) {
                 filter.get().setSortColumn(query.getSortOrders().get(0).getSorted());
                 filter.get().setSortOrder(query.getSortOrders().get(0).getDirection().name());
-            }
-            else {
+            } else {
                 filter.get().setSortColumn(null);
                 filter.get().setSortOrder(null);
             }
@@ -330,7 +335,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     {
         H3 associatedGroupsLabel = new H3(getTranslation("label.role-associated-groups", UI.getCurrent().getLocale(), null));
 
-        IkasanPrincipalFilter groupFilter = new IkasanPrincipalFilter();
+        IkasanPrincipalFilter groupFilter = new IkasanPrincipalFilterImpl();
         groupFilter.setTypeFilter("application");
 
         groupGrid = new Grid<>();
@@ -657,5 +662,143 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         VerticalLayout layout = new VerticalLayout();
         layout.add(userProfileLabel, formLayout);
         return layout;
+    }
+    
+    private class UserFilterImpl implements UserFilter {
+        private String usernameFilter;
+        private String nameFilter;
+        private String lastNameFilter;
+        private String emailFilter;
+        private String departmentFilter;
+        private String sortColumn;
+        private String sortOrder;
+
+        @Override
+        public String getUsernameFilter() {
+            return usernameFilter;
+        }
+
+        @Override
+        public void setUsernameFilter(String usernameFilter) {
+            this.usernameFilter = usernameFilter;
+        }
+
+        @Override
+        public String getNameFilter() {
+            return nameFilter;
+        }
+
+        @Override
+        public void setNameFilter(String nameFilter) {
+            this.nameFilter = nameFilter;
+        }
+
+        @Override
+        public String getLastNameFilter() {
+            return lastNameFilter;
+        }
+
+        @Override
+        public void setLastNameFilter(String lastNameFilter) {
+            this.lastNameFilter = lastNameFilter;
+        }
+
+        @Override
+        public String getEmailFilter() {
+            return emailFilter;
+        }
+
+        @Override
+        public void setEmailFilter(String emailFilter) {
+            this.emailFilter = emailFilter;
+        }
+
+        @Override
+        public String getDepartmentFilter() {
+            return departmentFilter;
+        }
+
+        @Override
+        public void setDepartmentFilter(String departmentFilter) {
+            this.departmentFilter = departmentFilter;
+        }
+
+        @Override
+        public String getSortColumn() {
+            return sortColumn;
+        }
+
+        @Override
+        public void setSortColumn(String sortColumn) {
+            this.sortColumn = sortColumn;
+        }
+
+        @Override
+        public String getSortOrder() {
+            return sortOrder;
+        }
+
+        @Override
+        public void setSortOrder(String sortOrder) {
+            this.sortOrder = sortOrder;
+        }
+    }
+    
+    private class IkasanPrincipalFilterImpl implements IkasanPrincipalFilter {
+        private String nameFilter;
+        private String descriptionFilter;
+        private String typeFilter;
+        private String sortColumn;
+        private String sortOrder;
+
+        @Override
+        public String getNameFilter() {
+            return nameFilter;
+        }
+
+        @Override
+        public void setNameFilter(String nameFilter) {
+            this.nameFilter = nameFilter;
+        }
+
+        @Override
+        public String getDescriptionFilter() {
+            return descriptionFilter;
+        }
+
+        @Override
+        public void setDescriptionFilter(String descriptionFilter) {
+            this.descriptionFilter = descriptionFilter;
+        }
+
+        @Override
+        public String getTypeFilter() {
+            return typeFilter;
+        }
+
+        @Override
+        public void setTypeFilter(String typeFilter) {
+            this.typeFilter = typeFilter;
+        }
+
+        @Override
+        public String getSortColumn() {
+            return sortColumn;
+        }
+
+        @Override
+        public void setSortColumn(String sortColumn) {
+            this.sortColumn = sortColumn;
+        }
+
+        @Override
+        public String getSortOrder() {
+            return sortOrder;
+        }
+
+        @Override
+        public void setSortOrder(String sortOrder) {
+            this.sortOrder = sortOrder;
+        }
     }
 }

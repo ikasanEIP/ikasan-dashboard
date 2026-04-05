@@ -2,7 +2,8 @@ package org.ikasan.dashboard.ui.administration.filter;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import org.ikasan.dashboard.ui.general.component.Filter;
-import org.ikasan.security.model.User;
+import org.ikasan.security.model.SolrUserImpl;
+import org.ikasan.spec.security.model.User;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -162,9 +163,9 @@ public class UserFilter implements Filter<User>
     }
 
     @Override
-    public Comparator getSortComparator(List<QuerySortOrder> querySortOrders)
+    public Comparator<User> getSortComparator(List<QuerySortOrder> querySortOrders)
     {
-        Comparator comparator = null;
+        Comparator<User> comparator = null;
 
         if(querySortOrders.get(0).getSorted().equals("username"))
         {

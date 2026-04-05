@@ -18,9 +18,9 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.IkasanPrincipalFilter;
-import org.ikasan.security.model.IkasanPrincipalLite;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.IkasanPrincipalFilter;
+import org.ikasan.spec.security.model.IkasanPrincipalLite;
+import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class GroupManagementView extends VerticalLayout implements BeforeEnterOb
     private DataProvider<IkasanPrincipalLite, IkasanPrincipalFilter> dataProvider;
     private ConfigurableFilterDataProvider<IkasanPrincipalLite,Void,IkasanPrincipalFilter> filteredDataProvider;
 
-    private IkasanPrincipalFilter groupFilter = new IkasanPrincipalFilter();
+    private IkasanPrincipalFilter groupFilter = new IkasanPrincipalFilterImpl();
 
     /**
      * Constructor
@@ -159,6 +159,64 @@ public class GroupManagementView extends VerticalLayout implements BeforeEnterOb
         if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.GROUP_ADMINISTRATION_ADMIN, SecurityConstants.GROUP_ADMINISTRATION_WRITE, SecurityConstants.GROUP_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
             DashboardContextNavigator.navigateToLandingPage();
+        }
+    }
+
+    private class IkasanPrincipalFilterImpl implements IkasanPrincipalFilter {
+        private String nameFilter;
+        private String descriptionFilter;
+        private String typeFilter;
+        private String sortColumn;
+        private String sortOrder;
+
+        @Override
+        public String getNameFilter() {
+            return nameFilter;
+        }
+
+        @Override
+        public void setNameFilter(String nameFilter) {
+            this.nameFilter = nameFilter;
+        }
+
+        @Override
+        public String getDescriptionFilter() {
+            return descriptionFilter;
+        }
+
+        @Override
+        public void setDescriptionFilter(String descriptionFilter) {
+            this.descriptionFilter = descriptionFilter;
+        }
+
+        @Override
+        public String getTypeFilter() {
+            return typeFilter;
+        }
+
+        @Override
+        public void setTypeFilter(String typeFilter) {
+            this.typeFilter = typeFilter;
+        }
+
+        @Override
+        public String getSortColumn() {
+            return sortColumn;
+        }
+
+        @Override
+        public void setSortColumn(String sortColumn) {
+            this.sortColumn = sortColumn;
+        }
+
+        @Override
+        public String getSortOrder() {
+            return sortOrder;
+        }
+
+        @Override
+        public void setSortOrder(String sortOrder) {
+            this.sortOrder = sortOrder;
         }
     }
 }

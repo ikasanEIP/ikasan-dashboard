@@ -2,7 +2,8 @@ package org.ikasan.dashboard.ui.administration.filter;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import org.ikasan.dashboard.ui.general.component.Filter;
-import org.ikasan.security.model.Policy;
+import org.ikasan.security.model.SolrPolicyImpl;
+import org.ikasan.spec.security.model.Policy;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -78,9 +79,9 @@ public class PolicyFilter implements Filter<Policy>
     }
 
     @Override
-    public Comparator getSortComparator(List<QuerySortOrder> querySortOrders)
+    public Comparator<Policy> getSortComparator(List<QuerySortOrder> querySortOrders)
     {
-        Comparator comparator = null;
+        Comparator<Policy> comparator = null;
 
         if(querySortOrders.get(0).getSorted().equals("name"))
         {

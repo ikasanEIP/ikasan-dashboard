@@ -2,7 +2,6 @@ package org.ikasan.dashboard.ui.scheduler;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import org.ikasan.dashboard.ui.general.component.Filter;
-import org.ikasan.security.model.IkasanPrincipalLite;
 
 import java.util.Collection;
 import java.util.Comparator;

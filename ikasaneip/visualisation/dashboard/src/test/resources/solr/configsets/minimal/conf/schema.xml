@@ -77,4 +77,18 @@
     <field name="containsRepeatingJobs" type="boolean" indexed="true" stored="true"/>
     <field name="isRepeatingJob" type="boolean" indexed="true" stored="true"/>
     <field name="jobType" type="text_general" multiValued="false" stored="true"/>
+    <field name="name" type="text_general" multiValued="false" stored="true"/>
+    <field name="description" type="text_general" multiValued="false" stored="true"/>
+    <field name="ikasanPrincipalType" type="text_general" multiValued="false" stored="true"/>
+    <field name="rolesRelatedEntity" type="strings" multiValued="true" stored="true"/>
+    <field name="roleJobPlanRelatedEntity" type="strings" multiValued="true" stored="true"/>
+    <field name="roleModuleRelatedEntity" type="strings" multiValued="true" stored="true"/>
+    <field name="policiesRelatedEntity" type="strings" multiValued="true" stored="true"/>
+    <field name="principalRelatedEntity" type="strings" multiValued="true" stored="true"/>
+    <field name="email" type="text_general" multiValued="false" stored="true"/>
+    <field name="username" type="text_general" multiValued="false" stored="true"/>
+    <field name="firstName" type="text_general" multiValued="false" stored="true"/>
+    <field name="surname" type="text_general" multiValued="false" stored="true"/>
+    <field name="department" type="text_general" multiValued="false" stored="true"/>
+    <field name="order" type="plongs" multiValued="false" stored="true"/>
 </schema>

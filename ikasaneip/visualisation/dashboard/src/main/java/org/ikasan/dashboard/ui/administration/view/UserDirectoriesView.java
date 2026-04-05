@@ -62,9 +62,10 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.security.model.AuthenticationMethod;
+import org.ikasan.security.service.model.AuthenticationMethodImpl;
+import org.ikasan.spec.security.model.AuthenticationMethod;
 import org.ikasan.security.service.LdapService;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.security.service.authentication.AuthenticationProviderFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.slf4j.Logger;
@@ -148,7 +149,7 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
 
         newDirectoryButton = new Button(getTranslation("button.add-user-directory", UI.getCurrent().getLocale(), null));
         newDirectoryButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent
-            -> openUserDirectoryDialog(new AuthenticationMethod()));
+            -> openUserDirectoryDialog(this.securityService.createAuthenticationMethod()));
 
         applyAdminVisibilitySecurity(newDirectoryButton);
 

@@ -15,5 +15,5 @@ public interface Filter<ENTITY>
 
     public Stream<ENTITY> getFilterStream();
 
-    public Comparator getSortComparator(List<QuerySortOrder> querySortOrders);
+    public Comparator<ENTITY> getSortComparator(List<QuerySortOrder> querySortOrders);
 }

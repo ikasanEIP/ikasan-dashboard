@@ -9,9 +9,9 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.model.RoleJobPlan;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.model.RoleJobPlan;
+import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 
@@ -22,11 +22,11 @@ import java.util.stream.Collectors;
 public class SelectJobPlanForRoleDialog extends AbstractCloseableResizableDialog
 {
     private Role role;
-    private ScheduledContextService scheduledContextService;
-    private SecurityService securityService;
-    private SystemEventLogger systemEventLogger;
+    private final ScheduledContextService scheduledContextService;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
     private List<ContextTemplate> contextTemplates;
-    private FilteringGrid<RoleJobPlan> roleModuleFilteringGrid;
+    private final FilteringGrid<RoleJobPlan> roleModuleFilteringGrid;
 
     public SelectJobPlanForRoleDialog(Role role, ScheduledContextService scheduledContextService, SecurityService securityService
         , SystemEventLogger systemEventLogger, FilteringGrid<RoleJobPlan> roleJobPlanFilteringGrid)
@@ -92,7 +92,7 @@ public class SelectJobPlanForRoleDialog extends AbstractCloseableResizableDialog
 
         contextTemplateFilteringGrid.addItemDoubleClickListener(event ->
         {
-            RoleJobPlan roleModule = new RoleJobPlan();
+            RoleJobPlan roleModule = this.securityService.createRoleJobPlan();
             roleModule.setRole(this.role);
             roleModule.setJobPlanName(event.getItem().getName());
             this.securityService.saveRoleJobPlan(roleModule);

@@ -24,10 +24,10 @@ import org.ikasan.dashboard.ui.administration.component.UserManagementDialog;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.security.model.User;
-import org.ikasan.security.model.UserFilter;
-import org.ikasan.security.service.SecurityService;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.User;
+import org.ikasan.spec.security.model.UserFilter;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +68,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
     private DataProvider<User, UserFilter> dataProvider;
     private ConfigurableFilterDataProvider<User,Void,UserFilter> filteredDataProvider;
 
-    private UserFilter userFilter = new UserFilter();
+    private UserFilter userFilter = new UserFilterImpl();
 
     private Tooltip newUserTooltip;
     private Button addNewUserButton;
@@ -248,5 +248,85 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
     {
         super.onAttach(attachEvent);
         this.newUserTooltip.attachToComponent(this.addNewUserButton);
+    }
+
+    private class UserFilterImpl implements UserFilter {
+        private String username;
+        private String name;
+        private String lastName;
+        private String email;
+        private String department;
+        private String sortColumn;
+        private String sortOrder;
+
+        @Override
+        public void setUsernameFilter(String username) {
+            this.username = username;
+        }
+
+        @Override
+        public String getUsernameFilter() {
+            return this.username;
+        }
+
+        @Override
+        public void setNameFilter(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getNameFilter() {
+            return this.name;
+        }
+
+        @Override
+        public void setLastNameFilter(String lastName) {
+            this.lastName = lastName;
+        }
+
+        @Override
+        public String getLastNameFilter() {
+            return this.lastName;
+        }
+
+        @Override
+        public void setEmailFilter(String email) {
+            this.email = email;
+        }
+
+        @Override
+        public String getEmailFilter() {
+            return this.email;
+        }
+
+        @Override
+        public void setDepartmentFilter(String department) {
+            this.department = department;
+        }
+
+        @Override
+        public String getDepartmentFilter() {
+            return this.department;
+        }
+
+        @Override
+        public void setSortColumn(String sortColumn) {
+            this.sortColumn = sortColumn;
+        }
+
+        @Override
+        public String getSortColumn() {
+            return this.sortColumn;
+        }
+
+        @Override
+        public void setSortOrder(String sortOrder) {
+            this.sortOrder = sortOrder;
+        }
+
+        @Override
+        public String getSortOrder() {
+            return this.sortOrder;
+        }
     }
 }

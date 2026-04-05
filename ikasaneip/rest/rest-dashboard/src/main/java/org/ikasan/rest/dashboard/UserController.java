@@ -44,8 +44,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.ikasan.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.rest.dashboard.model.user.*;
-import org.ikasan.security.model.User;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.User;
+import org.ikasan.spec.security.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -151,7 +151,7 @@ public class UserController
         return dto;
     }
 
-    private IkasanPrincipal convert(org.ikasan.security.model.IkasanPrincipal ikasanPrincipal)
+    private IkasanPrincipal convert(org.ikasan.spec.security.model.IkasanPrincipal ikasanPrincipal)
     {
         IkasanPrincipal principal = new IkasanPrincipal();
         principal.setName(ikasanPrincipal.getName());
@@ -160,7 +160,7 @@ public class UserController
         return principal;
     }
 
-    private Role convert(org.ikasan.security.model.Role role)
+    private Role convert(org.ikasan.spec.security.model.Role role)
     {
         Role r = new Role();
         r.setName(role.getName());
@@ -171,7 +171,7 @@ public class UserController
         return r;
     }
 
-    private Policy convert(org.ikasan.security.model.Policy policy)
+    private Policy convert(org.ikasan.spec.security.model.Policy policy)
     {
         Policy p = new Policy();
         p.setName(policy.getName());
@@ -179,14 +179,14 @@ public class UserController
         return p;
     }
 
-    private RoleModule convert(org.ikasan.security.model.RoleModule roleModule, Role role)
+    private RoleModule convert(org.ikasan.spec.security.model.RoleModule roleModule, Role role)
     {
         RoleModule p = new RoleModule();
         p.setModuleName(roleModule.getModuleName());
         return p;
     }
 
-    private RoleJobPlan convert(org.ikasan.security.model.RoleJobPlan roleJobPlan, Role role)
+    private RoleJobPlan convert(org.ikasan.spec.security.model.RoleJobPlan roleJobPlan, Role role)
     {
         RoleJobPlan p = new RoleJobPlan();
         p.setJobPlanName(roleJobPlan.getJobPlanName());

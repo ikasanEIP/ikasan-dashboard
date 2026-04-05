@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.security.view;
 
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Tag;
@@ -24,10 +23,10 @@ import jakarta.servlet.http.Cookie;
 import org.ikasan.dashboard.internationalisation.IkasanI18NProvider;
 import org.ikasan.dashboard.security.ContextCache;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.security.model.User;
-import org.ikasan.security.service.AuthenticationService;
-import org.ikasan.security.service.AuthenticationServiceException;
-import org.ikasan.security.service.UserService;
+import org.ikasan.spec.security.model.User;
+import org.ikasan.spec.security.service.AuthenticationService;
+import org.ikasan.spec.security.service.AuthenticationServiceException;
+import org.ikasan.spec.security.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.Authentication;
@@ -54,7 +53,7 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
     public static final String ROUTE = "login";
     public static final String USERNAME = "USERNAME";
 
-    @Resource
+        @Resource
     private AuthenticationService authenticationService;
 
     @Resource

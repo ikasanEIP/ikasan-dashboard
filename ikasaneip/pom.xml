@@ -376,7 +376,7 @@
         <version.ace.editor>3.4.2</version.ace.editor>
         <version.big.queue>1.0.0</version.big.queue>
         <version.logback>1.5.25</version.logback>
-        <ikasan.core.version>4.2.0-SNAPSHOT</ikasan.core.version>
+        <ikasan.core.version>5.0.0-SNAPSHOT</ikasan.core.version>
         <version.spring.webflux>6.1.14</version.spring.webflux>
         <version.reactor>3.7.9</version.reactor>
         <version.reactor.netty>1.2.9</version.reactor.netty>
@@ -886,6 +886,23 @@
 
             <dependency>
                 <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-security-service</artifactId>
+                <version>${ikasan.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-security-common</artifactId>
+                <version>${ikasan.core.version}</version>            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-security-authentication</artifactId>
+                <version>${ikasan.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-security-ldap</artifactId>
                 <version>${ikasan.core.version}</version>
             </dependency>
@@ -972,6 +989,12 @@
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-spec-exclusion</artifactId>
                 <version>${ikasan.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-spec-security</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -1154,6 +1177,10 @@
                     <exclusion>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-starter-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.ikasan</groupId>
+                        <artifactId>ikasan-security-db</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

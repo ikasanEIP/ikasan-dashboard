@@ -4,13 +4,21 @@ import com.vaadin.flow.component.UI;
 import org.ikasan.dashboard.ui.UITest;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.BindMode;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
+import org.testcontainers.solr.SolrContainer;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
+import java.net.URL;
+import java.time.Duration;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 
-public class GroupManagementViewTest extends UITest
-{
+public class GroupManagementViewTest extends UITest {
+
     @Override
     public void setup_expectations() {
 

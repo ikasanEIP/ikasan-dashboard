@@ -13,11 +13,11 @@ import com.vaadin.flow.data.provider.DataProvider;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.model.IkasanPrincipal;
-import org.ikasan.security.model.IkasanPrincipalFilter;
-import org.ikasan.security.model.IkasanPrincipalLite;
-import org.ikasan.security.model.Role;
-import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.security.model.IkasanPrincipal;
+import org.ikasan.spec.security.model.IkasanPrincipalFilter;
+import org.ikasan.spec.security.model.IkasanPrincipalLite;
+import org.ikasan.spec.security.model.Role;
+import org.ikasan.spec.security.service.SecurityService;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -25,10 +25,9 @@ import java.util.function.Consumer;
 public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
 {
     private Role role;
-    private SecurityService securityService;
-    private SystemEventLogger systemEventLogger;
-    private Grid<IkasanPrincipalLite> ikasanPrincipalLiteFilteringGrid;
-    private DataProvider<IkasanPrincipalLite, IkasanPrincipalFilter> groupDataProvider;
+    private final SecurityService securityService;
+    private final SystemEventLogger systemEventLogger;
+    private final Grid<IkasanPrincipalLite> ikasanPrincipalLiteFilteringGrid;
     private ConfigurableFilterDataProvider<IkasanPrincipalLite,Void,IkasanPrincipalFilter> groupGridFilteredDataProvider;
 
     public SelectGroupForRoleDialog(Role role, SecurityService securityService
@@ -63,7 +62,7 @@ public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
         super.title.setText(getTranslation("label.select-group", UI.getCurrent().getLocale()));
         H3 selectGroupLabel = new H3(getTranslation("label.select-group", UI.getCurrent().getLocale()));
 
-        IkasanPrincipalFilter groupFilter = new IkasanPrincipalFilter();
+        IkasanPrincipalFilter groupFilter = new IkasanPrincipalFilterImpl();
         groupFilter.setTypeFilter("application");
         
         Grid<IkasanPrincipalLite> groupGrid = new Grid<>();
@@ -106,7 +105,9 @@ public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
 
         groupGrid.setSizeFull();
 
-        groupDataProvider = DataProvider.fromFilteringCallbacks(query -> {
+        // The index of the first item to load
+        // The number of items to load
+        DataProvider<IkasanPrincipalLite, IkasanPrincipalFilter> groupDataProvider = DataProvider.fromFilteringCallbacks(query -> {
             Optional<IkasanPrincipalFilter> filter = query.getFilter();
 
             // The index of the first item to load
@@ -115,11 +116,10 @@ public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
             // The number of items to load
             int limit = query.getLimit();
 
-            if(!query.getSortOrders().isEmpty()) {
+            if (!query.getSortOrders().isEmpty()) {
                 filter.get().setSortColumn(query.getSortOrders().get(0).getSorted());
                 filter.get().setSortOrder(query.getSortOrders().get(0).getDirection().name());
-            }
-            else {
+            } else {
                 filter.get().setSortColumn(null);
                 filter.get().setSortOrder(null);
             }
@@ -167,5 +167,63 @@ public class SelectGroupForRoleDialog extends AbstractCloseableResizableDialog
         });
 
         hr.getCell(grid.getColumnByKey(columnKey)).setComponent(textField);
+    }
+    
+    private class IkasanPrincipalFilterImpl implements IkasanPrincipalFilter {
+        private String nameFilter;
+        private String descriptionFilter;
+        private String typeFilter;
+        private String sortColumn;
+        private String sortOrder;
+
+        @Override
+        public String getNameFilter() {
+            return nameFilter;
+        }
+
+        @Override
+        public void setNameFilter(String nameFilter) {
+            this.nameFilter = nameFilter;
+        }
+
+        @Override
+        public String getDescriptionFilter() {
+            return descriptionFilter;
+        }
+
+        @Override
+        public void setDescriptionFilter(String descriptionFilter) {
+            this.descriptionFilter = descriptionFilter;
+        }
+
+        @Override
+        public String getTypeFilter() {
+            return typeFilter;
+        }
+
+        @Override
+        public void setTypeFilter(String typeFilter) {
+            this.typeFilter = typeFilter;
+        }
+
+        @Override
+        public String getSortColumn() {
+            return sortColumn;
+        }
+
+        @Override
+        public void setSortColumn(String sortColumn) {
+            this.sortColumn = sortColumn;
+        }
+
+        @Override
+        public String getSortOrder() {
+            return sortOrder;
+        }
+
+        @Override
+        public void setSortOrder(String sortOrder) {
+            this.sortOrder = sortOrder;
+        }
     }
 }
