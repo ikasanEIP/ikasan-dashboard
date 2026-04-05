@@ -2,16 +2,14 @@ package org.ikasan.orchestration.service.context.lifecycle;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.orchestration.service.context.register.ContextInstanceRegistrationServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceSchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -48,11 +46,8 @@ public class ContextInstanceEndServiceImpl extends ContextInstanceRegistrationSe
      * @param jobLockCacheService service for caching job locks
      * @param scheduledContextService service for scheduled contexts
      * @param schedulerJobInstanceService service for scheduler job instances
-     * @param contextInstanceStateChangeEventBroadcaster broadcaster for context instance state change events
-     * @param schedulerJobStateChangeEventBroadcaster broadcaster for scheduler job state change events
      * @param jobLockCacheInitialisationService service for initializing job lock cache
      * @param timeService service for handling time-related operations
-     * @param contextInstanceSavedEventBroadcaster broadcaster for saved context instance events
      * @param systemEventService service for system events
      * @param jobUtilsService service for job utility methods
      * @param jobProvisionService service for job provisioning
@@ -65,16 +60,13 @@ public class ContextInstanceEndServiceImpl extends ContextInstanceRegistrationSe
         , InternalEventDrivenJobService internalEventDrivenJobService, ContextParametersInstanceService contextParametersInstanceService
         , ContextInstancePublicationService contextInstancePublicationService, JobLockCacheService jobLockCacheService
         , ScheduledContextService scheduledContextService, SchedulerJobInstanceService schedulerJobInstanceService
-        , ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster
-        , SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster
         , JobLockCacheInitialisationService jobLockCacheInitialisationService, TimeService timeService
-        , ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster, SystemEventService systemEventService
+        , SystemEventService systemEventService
         , JobUtilsService jobUtilsService, JobProvisionService jobProvisionService, SchedulerJobService schedulerJobService
         , ContextInstanceSchedulerService contextInstanceSchedulerService, boolean isIkasanEnterpriseSchedulerInstance) {
         super(queueDirectory, scheduledContextInstanceService, jobInitiationService, moduleMetadataService, internalEventDrivenJobService
             , contextParametersInstanceService, contextInstancePublicationService, jobLockCacheService, scheduledContextService
-            , schedulerJobInstanceService, contextInstanceStateChangeEventBroadcaster, schedulerJobStateChangeEventBroadcaster
-            , jobLockCacheInitialisationService, timeService, contextInstanceSavedEventBroadcaster, systemEventService, jobUtilsService
+            , schedulerJobInstanceService, jobLockCacheInitialisationService, timeService, systemEventService, jobUtilsService
             , jobProvisionService, schedulerJobService, isIkasanEnterpriseSchedulerInstance);
 
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
@@ -82,7 +74,7 @@ public class ContextInstanceEndServiceImpl extends ContextInstanceRegistrationSe
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
 
-        this.contextInstanceStateChangeEventBroadcaster.register(this);
+        ContextInstanceStateChangeEventBroadcaster.register(this);
     }
 
     @Override

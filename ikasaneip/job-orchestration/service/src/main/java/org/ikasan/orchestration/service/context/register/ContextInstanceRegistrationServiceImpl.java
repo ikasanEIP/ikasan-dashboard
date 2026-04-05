@@ -42,6 +42,7 @@ package org.ikasan.orchestration.service.context.register;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.CustomWeekdayOfMonthHelper;
@@ -57,9 +58,6 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceSchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -76,13 +74,13 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.systemevent.SystemEventService;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
-    private ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster;
 
     private SystemEventService systemEventService;
 
@@ -98,11 +96,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   JobLockCacheService jobLockCacheService,
                                                   ScheduledContextService scheduledContextService,
                                                   SchedulerJobInstanceService schedulerJobInstanceService,
-                                                  ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                                  SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                                   JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                                   TimeService timeService,
-                                                  ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster,
                                                   SystemEventService systemEventService,
                                                   JobUtilsService jobUtilsService,
                                                   JobProvisionService jobProvisionService,
@@ -118,18 +113,12 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             timeService,
             jobUtilsService,
             jobProvisionService,
             schedulerJobService);
 
-        this.contextInstanceSavedEventBroadcaster = contextInstanceSavedEventBroadcaster;
-        if (this.contextInstanceSavedEventBroadcaster == null) {
-            throw new IllegalArgumentException("contextInstanceSavedEventBroadcaster cannot be null!");
-        }
         this.systemEventService = systemEventService;
         if (this.systemEventService == null) {
             throw new IllegalArgumentException("systemEventService cannot be null!");
@@ -187,7 +176,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
         final ContextInstance instance = contextMachine.getContext();
         if (instance == null) {
-            String messages = String.format("Could not find instance in ContextMachine for context Instance ID [%s]", contextInstanceId);
+            String messages = String.format("Could not find instance in ContextMachineImpl for context Instance ID [%s]", contextInstanceId);
             LOG.error(messages);
             throw new RuntimeException(messages);
         }
@@ -213,10 +202,10 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         }
 
         ContextMachineCache.instance().remove(contextMachine);
-        this.contextInstanceSavedEventBroadcaster.broadcast(instance);
+        ContextInstanceSavedEventBroadcaster.broadcast(instance);
         try {
             contextMachine.teardown();
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOG.error(String.format("An error has occurred executing de registering job[%s]", e.getMessage()), e);
             throw new RuntimeException(e);
         }
@@ -323,7 +312,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             LOG.info(String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
                 "A new instance will not be created automatically.", contextName));
             systemEventService.logSystemEvent("Context Instance Not Created", String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
-                "A new instance will not be created automatically.", contextName), "ContextMachine");
+                "A new instance will not be created automatically.", contextName), "ContextMachineImpl");
             return;
         }
 
@@ -353,7 +342,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                         , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
                         , contextInstance.getTimezone(), contextInstance.getId());
                     LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
-                    this.contextInstanceSavedEventBroadcaster.broadcast(contextInstance);
+                    ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
                 } else {
                     LOG.info(String.format("Context name [%s] falls withing a blackout time window and will not be registered!", contextName));
                 }
@@ -399,7 +388,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             LOG.info(String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
                 "A new instance will not be created automatically.", contextName));
             systemEventService.logSystemEvent("Context Instance Not Created", String.format("Context name [%s] cannot run concurrently, however there is already an active instance! " +
-                "A new instance will not be created automatically.", contextName), "ContextMachine");
+                "A new instance will not be created automatically.", contextName), "ContextMachineImpl");
             return null;
         }
 
@@ -422,7 +411,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
                 // save instance to take in any modification to the projected end time.
                 ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId()).saveContext();
-                this.contextInstanceSavedEventBroadcaster.broadcast(contextInstance);
+                ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
                 return contextInstance.getId();
             } else {
                 LOG.info(String.format("Context name [%s] falls withing a blackout time window and will not be registered!", contextName));

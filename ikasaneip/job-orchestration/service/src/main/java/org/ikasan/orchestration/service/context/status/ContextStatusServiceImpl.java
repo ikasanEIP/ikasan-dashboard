@@ -43,6 +43,7 @@ package org.ikasan.orchestration.service.context.status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.status.*;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -61,7 +62,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ContextStatusServiceImpl implements ContextStatusService<ContextMachine> {
+public class ContextStatusServiceImpl implements ContextStatusService<ContextMachineImpl> {
 
     /**
      * Get that status of all instances from the Context machine
@@ -102,7 +103,7 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
      * @throws JsonProcessingException if issue transforming to Json
      */
     @Override
-    public String getJsonContextJobStatus(InstanceStatus instanceStatus, Map<String, ContextMachine> mapAllContextMachine) throws JsonProcessingException {
+    public String getJsonContextJobStatus(InstanceStatus instanceStatus, Map<String, ContextMachineImpl> mapAllContextMachine) throws JsonProcessingException {
         if (mapAllContextMachine == null || mapAllContextMachine.isEmpty()) {
             // Return Empty
             return "";
@@ -110,7 +111,7 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
         ContextJobInstanceStatusWrapper contextJobInstanceStatusWrapper = new ContextJobInstanceStatusWrapperImpl();
         List<ContextJobInstanceStatus> contextJobInstanceStatusList = new ArrayList<>();
 
-        for (Map.Entry<String, ContextMachine> contextMachineEntry : mapAllContextMachine.entrySet()) {
+        for (Map.Entry<String, ContextMachineImpl> contextMachineEntry : mapAllContextMachine.entrySet()) {
             if (!contextMachineEntry.getValue().getContext().getStatus().equals(InstanceStatus.PREPARED)) {
                 ContextJobInstanceStatus contextJobInstanceStatus = ContextHelper.getContextJobInstanceStatus(contextMachineEntry.getValue().getContext()
                     , contextMachineEntry.getValue().getInternalEventDrivenJobInstancesMap());

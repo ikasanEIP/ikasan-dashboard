@@ -19,8 +19,8 @@ import de.f0rce.ace.util.AceCursorPosition;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.model.JsonValidationError;
-import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.job.orchestration.context.validation.ContextError;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
@@ -181,7 +181,7 @@ public class JobPlanEditorWidget extends VerticalLayout {
 
 
                         ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
-                    } catch (Exception e) {
+                    } catch (JsonProcessingException e) {
                         logger.error(String.format("An error has occurred saving job plan[%s]!", contextTemplate.getName()), e);
                         error = true;
                     } finally {

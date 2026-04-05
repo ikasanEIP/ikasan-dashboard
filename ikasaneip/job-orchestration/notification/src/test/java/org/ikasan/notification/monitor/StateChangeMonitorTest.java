@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -105,7 +105,7 @@ public class StateChangeMonitorTest {
         contextInstance1.setScheduledJobs(Arrays.asList(schedulerJobInstance1));
         contextInstance1.setJobDependencies(new ArrayList<>());
 
-        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachineImpl contextMachine1 = new ContextMachineImpl(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl()
             , null, null, null, null, null
             ,null, null, "./target", null, null, null, null, this.scheduledContextService,
             this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
@@ -131,7 +131,7 @@ public class StateChangeMonitorTest {
         contextInstance2.setScheduledJobs(Arrays.asList(schedulerJobInstance2));
         contextInstance2.setJobDependencies(new ArrayList<>());
 
-        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachineImpl contextMachine2 = new ContextMachineImpl(contextTemplate2, contextInstance2, new ScheduledContextInstanceServiceTestImpl()
             , null, null, null, null
             , null, null, null, "./target", null, null, null, null, this.scheduledContextService,
             this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);

@@ -2,7 +2,7 @@ package org.ikasan.rest.dashboard.util.service.bigqueue;
 
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.rest.dashboard.service.bigqueue.BigQueueDashboardServiceImpl;
 import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -46,7 +46,7 @@ public class BigQueueDashboardServiceImplTest {
 
     @Test
     public void test_get_inbound_big_queue_success() throws BigQueueNotFoundException {
-        ContextMachine contextMachine = mock(ContextMachine.class);
+        ContextMachineImpl contextMachine = mock(ContextMachineImpl.class);
         ContextInstance contextInstance = mock(ContextInstance.class);
         when(contextMachine.getContext()).thenReturn(contextInstance);
         when(contextInstance.getId()).thenReturn(UUID.randomUUID().toString());
@@ -77,7 +77,7 @@ public class BigQueueDashboardServiceImplTest {
 
     @Test
     public void test_get_outbound_big_queue_success() throws BigQueueNotFoundException {
-        ContextMachine contextMachine = mock(ContextMachine.class);
+        ContextMachineImpl contextMachine = mock(ContextMachineImpl.class);
         ContextInstance contextInstance = mock(ContextInstance.class);
         when(contextMachine.getContext()).thenReturn(contextInstance);
         when(contextInstance.getId()).thenReturn(UUID.randomUUID().toString());
@@ -110,7 +110,7 @@ public class BigQueueDashboardServiceImplTest {
 
     @Test
     public void test_get_dashboard_inbound_big_queue_success() throws BigQueueNotFoundException {
-        ContextMachine contextMachine = mock(ContextMachine.class);
+        ContextMachineImpl contextMachine = mock(ContextMachineImpl.class);
         ContextInstance contextInstance = mock(ContextInstance.class);
         when(contextMachine.getContext()).thenReturn(contextInstance);
         when(contextInstance.getId()).thenReturn(UUID.randomUUID().toString());

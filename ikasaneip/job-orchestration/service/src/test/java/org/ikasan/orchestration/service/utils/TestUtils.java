@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
@@ -40,8 +40,8 @@ public class TestUtils {
 
     public static void resetContextMachineCache() {
         ContextMachineCache instance = ContextMachineCache.instance();
-        ConcurrentHashMap<String, ContextMachine> contextInstanceByContextNameCache
-            = (ConcurrentHashMap<String, ContextMachine>) ReflectionTestUtils.getField(instance, "contextInstanceByContextInstanceIdCache");
+        ConcurrentHashMap<String, ContextMachineImpl> contextInstanceByContextNameCache
+            = (ConcurrentHashMap<String, ContextMachineImpl>) ReflectionTestUtils.getField(instance, "contextInstanceByContextInstanceIdCache");
         contextInstanceByContextNameCache.clear();
 
         Set<String> contextNames =

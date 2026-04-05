@@ -19,14 +19,11 @@ import org.ikasan.orchestration.service.utils.TestUtils;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
-import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
@@ -47,13 +44,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.Trigger;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.annotation.Resource;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -90,12 +82,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
 
     @Mock
     private ScheduledContextService scheduledContextService;
-
-    @Mock
-    ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
-
-    @Mock
-    SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
 
     @Mock
     JobLockCacheInitialisationServiceImpl jobLockCacheInitialisationService;
@@ -155,8 +141,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             scheduledContextService,
             record,
             schedulerJobInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
             timeService,
@@ -211,7 +195,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -222,8 +205,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -288,7 +269,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -299,8 +279,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             contextInstanceSchedulerService,
             this.jobProvisionService,
             this.schedulerJobService
@@ -378,7 +356,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -389,8 +366,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.contextInstanceSchedulerService,
             this.jobProvisionService,
             this.schedulerJobService
@@ -470,7 +445,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -481,8 +455,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -553,7 +525,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -564,8 +535,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -639,7 +608,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -650,8 +618,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -727,7 +693,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -738,8 +703,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -815,7 +778,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -826,8 +788,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -894,8 +854,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -944,8 +902,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -991,8 +947,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -1052,7 +1006,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -1063,8 +1016,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );
@@ -1109,7 +1060,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class), any(Map.class));
-        verify(contextInstanceStateChangeEventBroadcaster).broadcast(any());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -1120,8 +1070,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
             jobLockCacheService,
             scheduledContextService,
             scheduledContextInstanceService,
-            contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster,
             this.jobProvisionService,
             this.schedulerJobService
         );

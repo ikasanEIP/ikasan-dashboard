@@ -15,6 +15,6 @@ public class SchedulerJobStateChangeEventBroadcasterImpl implements SchedulerJob
 
     @Override
     public synchronized void broadcast(SchedulerJobInstanceStateChangeEvent message) {
-        org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster.broadcast(message);
+        org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster.broadcast(message);
     }
 }

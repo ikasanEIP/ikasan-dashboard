@@ -1,7 +1,6 @@
 package org.ikasan.rest.client;
 
 import org.ikasan.rest.client.dto.*;
-import org.ikasan.rest.client.util.UserUtil;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestClientException;
 
 import java.util.HashMap;

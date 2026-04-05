@@ -1,4 +1,4 @@
-package org.ikasan.job.orchestration.core.machine;
+package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 
