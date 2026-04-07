@@ -299,7 +299,7 @@
         <version.commons-codec>1.13</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-collections4>4.4</version.commons-collections4>
-        <version.commons-io>2.16.1</version.commons-io>
+        <version.commons-io>2.20.0</version.commons-io>
         <version.commons-dbcp2>2.7.0</version.commons-dbcp2>
         <version.commons-lang>2.6</version.commons-lang>
         <version.commons-lang3>3.18.0</version.commons-lang3>
