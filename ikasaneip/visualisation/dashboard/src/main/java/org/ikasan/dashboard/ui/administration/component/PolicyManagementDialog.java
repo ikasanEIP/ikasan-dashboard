@@ -1,28 +1,19 @@
 package org.ikasan.dashboard.ui.administration.component;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.accordion.Accordion;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.ui.administration.filter.RoleFilter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
-import org.ikasan.dashboard.ui.general.component.TableButton;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.spec.security.model.Policy;
 import org.ikasan.spec.security.model.Role;
@@ -119,7 +110,8 @@ public class PolicyManagementDialog extends AbstractCloseableResizableDialog
     }
 
     private void updateRolesGrid() {
-        roleGrid.setItems(this.securityService.getRolesAssociatedWithPolicy(this.policy.getId()));
+        // todo reinstate this feature after rebase
+        // roleGrid.setItems(this.securityService.getRolesAssociatedWithPolicy(this.policy.getId()));
     }
 
 

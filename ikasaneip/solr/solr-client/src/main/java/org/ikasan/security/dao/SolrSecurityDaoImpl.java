@@ -267,7 +267,6 @@ public class SolrSecurityDaoImpl implements SecurityDao {
         return this.solrRoleDaoImpl.getRoleJobPlansByJobPlanName(jobPlanName);
     }
 
-    @Override
     public List<Role> getRolesAssociatedWithPolicy(Object policyId) {
         return this.solrRoleDaoImpl.getRolesAssociatedWithPolicy(String.valueOf(policyId));
     }
