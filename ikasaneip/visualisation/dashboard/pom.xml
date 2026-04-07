@@ -346,7 +346,7 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
-            <artifactId>ikasan-security-authentication</artifactId>
+            <artifactId>ikasan-security-service</artifactId>
         </dependency>
 
         <dependency>
