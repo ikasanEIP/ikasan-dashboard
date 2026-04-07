@@ -1,664 +1,418 @@
 [
   {
     "name": "ALL",
-    "description": "Policy to do everything",
-    "roles": [
-      "ADMIN"
-    ]
+    "description": "Policy to do everything"
   },
   {
     "name": "Discover",
-    "description": "A policy to allow users to perform topology discovery.",
-    "roles": []
+    "description": "A policy to allow users to perform topology discovery."
   },
   {
     "name": "wiretap-read",
-    "description": "Wiretap read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Wiretap read only policy."
   },
   {
     "name": "wiretap-write",
-    "description": "Wiretap write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Wiretap write policy."
   },
   {
     "name": "wiretap-admin",
-    "description": "Wiretap admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Wiretap admin policy."
   },
   {
     "name": "error-read",
-    "description": "Error read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Error read only policy."
   },
   {
     "name": "error-write",
-    "description": "Error write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Error write policy."
   },
   {
     "name": "error-admin",
-    "description": "Error admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Error admin policy."
   },
   {
     "name": "actioned_error-read",
-    "description": "Actioned Error read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Actioned Error read only policy."
   },
   {
     "name": "actioned_error-write",
-    "description": "Actioned Error write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Actioned Error write policy."
   },
   {
     "name": "actioned_error-admin",
-    "description": "Actioned Error admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Actioned Error admin policy."
   },
   {
     "name": "categorised_error-read",
-    "description": "Categorised Error read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Categorised Error read only policy."
   },
   {
     "name": "categorised_error-write",
-    "description": "Categorised Error write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Categorised Error write policy."
   },
   {
     "name": "categorised_error-admin",
-    "description": "Categorised Error admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Categorised Error admin policy."
   },
   {
     "name": "exclusion-read",
-    "description": "Exclusion read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Exclusion read only policy."
   },
   {
     "name": "exclusion-write",
-    "description": "Exclusion write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Exclusion write policy."
   },
   {
     "name": "exclusion-admin",
-    "description": "Exclusion admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Exclusion admin policy."
   },
   {
     "name": "actioned_exclusion-read",
-    "description": "Actioned Exclusion read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Actioned Exclusion read only policy."
   },
   {
     "name": "actioned_exclusion-write",
-    "description": "Actioned Exclusion write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Actioned Exclusion write policy."
   },
   {
     "name": "actioned_exclusion-admin",
-    "description": "Actioned Exclusion admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Actioned Exclusion admin policy."
   },
   {
     "name": "system_event-read",
-    "description": "System Event read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "System Event read only policy."
   },
   {
     "name": "system_event-write",
-    "description": "System Event write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "System Event write policy."
   },
   {
     "name": "system_event-admin",
-    "description": "System Event admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "System Event admin policy."
   },
   {
     "name": "filter-read",
-    "description": "Filter read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Filter read only policy."
   },
   {
     "name": "filter-write",
-    "description": "Filter write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Filter write policy."
   },
   {
     "name": "filter-admin",
-    "description": "Filter admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Filter admin policy."
   },
   {
     "name": "topology-read",
-    "description": "Topology read only policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Topology read only policy."
   },
   {
     "name": "topology-write",
-    "description": "Topology write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Topology write policy."
   },
   {
     "name": "topology-admin",
-    "description": "Topology admin policy.",
-    "roles": []
+    "description": "Topology admin policy."
   },
   {
     "name": "mapping-read",
-    "description": "Mapping read only policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Mapping read only policy."
   },
   {
     "name": "mapping-write",
-    "description": "Mapping write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Mapping write policy."
   },
   {
     "name": "mapping-admin",
-    "description": "Mapping admin policy.",
-    "roles": []
+    "description": "Mapping admin policy."
   },
   {
     "name": "monitoring-read",
-    "description": "Monitoring read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Monitoring read only policy."
   },
   {
     "name": "monitoring-write",
-    "description": "Monitoring write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Monitoring write policy."
   },
   {
     "name": "monitoring-admin",
-    "description": "Monitoring admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Monitoring admin policy."
   },
   {
     "name": "replay-read",
-    "description": "Replay read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Replay read only policy."
   },
   {
     "name": "replay-write",
-    "description": "Replay write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Replay write policy."
   },
   {
     "name": "replay-admin",
-    "description": "Replay admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Replay admin policy."
   },
   {
     "name": "housekeeping-read",
-    "description": "Housekeeping read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Housekeeping read only policy."
   },
   {
     "name": "housekeeping-write",
-    "description": "Housekeeping write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Housekeeping write policy."
   },
   {
     "name": "housekeeping-admin",
-    "description": "Housekeeping admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Housekeeping admin policy."
   },
   {
     "name": "user_administration-read",
-    "description": "User Administration read only policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "User Administration read only policy."
   },
   {
     "name": "user_administration-write",
-    "description": "User Administration write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "User Administration write policy."
   },
   {
     "name": "user_administration-admin",
-    "description": "User Administration admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "User Administration admin policy."
   },
   {
     "name": "group_administration-read",
-    "description": "Group Administration read only policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Group Administration read only policy."
   },
   {
     "name": "group_administration-write",
-    "description": "Group Administration write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Group Administration write policy."
   },
   {
     "name": "group_administration-admin",
-    "description": "Group Administration admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Group Administration admin policy."
   },
   {
     "name": "role_administration-read",
-    "description": "Role Administration read only policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Role Administration read only policy."
   },
   {
     "name": "role_administration-write",
-    "description": "Role Administration write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Role Administration write policy."
   },
   {
     "name": "role_administration-admin",
-    "description": "Role Administration admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Role Administration admin policy."
   },
   {
     "name": "policy_administration-read",
-    "description": "Policy Administration read only policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Policy Administration read only policy."
   },
   {
     "name": "policy_administration-write",
-    "description": "Policy Administration write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Policy Administration write policy."
   },
   {
     "name": "policy_administration-admin",
-    "description": "Policy Administration admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Policy Administration admin policy."
   },
   {
     "name": "user_directory-read",
-    "description": "User Directory read only policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "User Directory read only policy."
   },
   {
     "name": "user_directory-write",
-    "description": "User Directory write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "User Directory write policy."
   },
   {
     "name": "user_directory-admin",
-    "description": "User Directory admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "User Directory admin policy."
   },
   {
     "name": "platform_configuration-read",
-    "description": "Platform Configuration read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Platform Configuration read only policy."
   },
   {
     "name": "platform_configuration-write",
-    "description": "Platform Configuration write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Platform Configuration write policy."
   },
   {
     "name": "platform_configuration-admin",
-    "description": "Platform Configuration admin policy.",
-    "roles": []
+    "description": "Platform Configuration admin policy."
   },
   {
     "name": "notification-read",
-    "description": "Notification read only policy.",
-    "roles": [
-      "User",
-      "WriteUser"
-    ]
+    "description": "Notification read only policy."
   },
   {
     "name": "notification-write",
-    "description": "Notification write policy.",
-    "roles": [
-      "WriteUser"
-    ]
+    "description": "Notification write policy."
   },
   {
     "name": "notification-admin",
-    "description": "Notification admin policy.",
-    "roles": [
-      "AdminUser"
-    ]
+    "description": "Notification admin policy."
   },
   {
     "name": "harvesting-read",
-    "description": "Harvesting read only policy.",
-    "roles": []
+    "description": "Harvesting read only policy."
   },
   {
     "name": "harvesting-write",
-    "description": "Harvesting write policy.",
-    "roles": []
+    "description": "Harvesting write policy."
   },
   {
     "name": "harvesting-admin",
-    "description": "Harvesting admin policy.",
-    "roles": []
+    "description": "Harvesting admin policy."
   },
   {
     "name": "search-read",
-    "description": "Search read only policy.",
-    "roles": [
-      "User"
-    ]
+    "description": "Search read only policy."
   },
   {
     "name": "search-write",
-    "description": "Search write policy.",
-    "roles": []
+    "description": "Search write policy."
   },
   {
     "name": "search-admin",
-    "description": "Search admin policy.",
-    "roles": []
+    "description": "Search admin policy."
   },
   {
     "name": "search-replay-read",
-    "description": "Search replay read only policy.",
-    "roles": []
+    "description": "Search replay read only policy."
   },
   {
     "name": "search-replay-write",
-    "description": "Search replay write policy.",
-    "roles": []
+    "description": "Search replay write policy."
   },
   {
     "name": "search-replay-admin",
-    "description": "Search replay admin policy.",
-    "roles": []
+    "description": "Search replay admin policy."
   },
   {
     "name": "ReadBlueConsole",
-    "description": "BlueConsole read only policy.",
-    "roles": [
-      "User",
-      "AdminUser",
-      "WriteUser"
-    ]
+    "description": "BlueConsole read only policy."
   },
   {
     "name": "WriteBlueConsole",
-    "description": "BlueConsole write only policy.",
-    "roles": [
-      "AdminUser",
-      "WriteUser"
-    ]
+    "description": "BlueConsole write only policy."
   },
   {
     "name": "WebServiceAdmin",
-    "description": "REST access read write policy policy.",
-    "roles": [
-      "RESTAccess"
-    ]
+    "description": "REST access read write policy policy."
   },
   {
     "name": "module-control-read",
-    "description": "Module control read only policy.",
-    "roles": []
+    "description": "Module control read only policy."
   },
   {
     "name": "module-control-write",
-    "description": "Module control write policy.",
-    "roles": []
+    "description": "Module control write policy."
   },
   {
     "name": "module-control-admin",
-    "description": "Control control admin policy.",
-    "roles": []
+    "description": "Control control admin policy."
   },
   {
     "name": "scheduler-read",
-    "description": "Scheduler read only policy.",
-    "roles": []
+    "description": "Scheduler read only policy."
   },
   {
     "name": "scheduler-write",
-    "description": "Scheduler write policy.",
-    "roles": []
+    "description": "Scheduler write policy."
   },
   {
     "name": "scheduler-admin",
-    "description": "Scheduler admin policy.",
-    "roles": []
+    "description": "Scheduler admin policy."
   },
   {
     "name": "business-stream-read",
-    "description": "Business Stream read only policy.",
-    "roles": []
+    "description": "Business Stream read only policy."
   },
   {
     "name": "business-stream-write",
-    "description": "Business Stream write policy.",
-    "roles": []
+    "description": "Business Stream write policy."
   },
   {
     "name": "business-stream-admin",
-    "description": "Business Stream admin policy.",
-    "roles": []
+    "description": "Business Stream admin policy."
   },
   {
     "name": "wiretap_all_modules-read",
-    "description": "Wiretap read only policy.",
-    "roles": []
+    "description": "Wiretap read only policy."
   },
   {
     "name": "wiretap_all_modules-write",
-    "description": "Wiretap write policy.",
-    "roles": []
+    "description": "Wiretap write policy."
   },
   {
     "name": "wiretap_all_modules-admin",
-    "description": "Wiretap admin policy.",
-    "roles": []
+    "description": "Wiretap admin policy."
   },
   {
     "name": "error_all_modules-read",
-    "description": "Error read only policy.",
-    "roles": []
+    "description": "Error read only policy."
   },
   {
     "name": "error_all_modules-write",
-    "description": "Error write policy.",
-    "roles": []
+    "description": "Error write policy."
   },
   {
     "name": "error_all_modules-admin",
-    "description": "Error admin policy.",
-    "roles": []
+    "description": "Error admin policy."
   },
   {
     "name": "exclusion_all_modules-read",
-    "description": "Exclusion read only policy.",
-    "roles": []
+    "description": "Exclusion read only policy."
   },
   {
     "name": "exclusion_all_modules-write",
-    "description": "Exclusion write policy.",
-    "roles": []
+    "description": "Exclusion write policy."
   },
   {
     "name": "exclusion_all_modules-admin",
-    "description": "Exclusion admin policy.",
-    "roles": []
+    "description": "Exclusion admin policy."
   },
   {
     "name": "replay_all_modules-read",
-    "description": "Replay read only policy.",
-    "roles": []
+    "description": "Replay read only policy."
   },
   {
     "name": "replay_all_modules-write",
-    "description": "Replay write policy.",
-    "roles": []
+    "description": "Replay write policy."
   },
   {
     "name": "replay_all_modules-admin",
-    "description": "Replay admin policy.",
-    "roles": []
+    "description": "Replay admin policy."
   },
   {
     "name": "scheduler-all-read",
-    "description": "Scheduler read only policy with access to all job plans.",
-    "roles": []
+    "description": "Scheduler read only policy with access to all job plans."
   },
   {
     "name": "scheduler-all-write",
-    "description": "Scheduler write policy with access to all job plans.",
-    "roles": []
+    "description": "Scheduler write policy with access to all job plans."
   },
   {
     "name": "scheduler-all-admin",
-    "description": "Scheduler admin policy with access to all job plans.",
-    "roles": []
+    "description": "Scheduler admin policy with access to all job plans."
   },
   {
     "name": "scheduler-dev-read",
-    "description": "Scheduler dev read only policy.",
-    "roles": []
+    "description": "Scheduler dev read only policy."
   },
   {
     "name": "scheduler-dev-write",
-    "description": "Scheduler dev write policy.",
-    "roles": []
+    "description": "Scheduler dev write policy."
   },
   {
     "name": "scheduler-dev-admin",
-    "description": "Scheduler dev admin policy.",
-    "roles": []
+    "description": "Scheduler dev admin policy."
   },
   {
     "name": "dashboard-read",
-    "description": "Dashboard view read only policy with access to all job plans.",
-    "roles": [
-      "User"
-    ]
+    "description": "Dashboard view read only policy with access to all job plans."
   },
   {
     "name": "dashboard-write",
-    "description": "Dashboard view write policy with access to all job plans.",
-    "roles": []
+    "description": "Dashboard view write policy with access to all job plans."
   },
   {
     "name": "dashboard-admin",
-    "description": "Dashboard view admin policy with access to all job plans.",
-    "roles": []
+    "description": "Dashboard view admin policy with access to all job plans."
   }
 ]

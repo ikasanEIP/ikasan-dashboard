@@ -97,28 +97,6 @@ public class BaselineSecurityDataLoader {
                 roleData.getPolicyNames() != null ? roleData.getPolicyNames().size() : 0);
         }
 
-        // Update policies with their related role identifiers (bidirectional relationship)
-        logger.info("Updating policies with related role identifiers...");
-        for (PolicyData policyData : policyDataList) {
-            if (policyData.getRoleNames() != null && !policyData.getRoleNames().isEmpty()) {
-                SolrPolicyImpl policy = policyMap.get(policyData.getName());
-                if (policy != null) {
-                    for (String roleName : policyData.getRoleNames()) {
-                        SolrRoleImpl role = roleMap.get(roleName);
-                        if (role != null) {
-//                            policy.(role);
-                        } else {
-                            logger.warn("Role not found: {} for policy: {}", roleName, policy.getName());
-                        }
-                    }
-                    policyDao.saveOrUpdatePolicy(policy);
-                    logger.debug("Updated policy: {} with {} roles", policy.getName(), policyData.getRoleNames().size());
-                } else {
-                    logger.warn("Policy not found in map: {}", policyData.getName());
-                }
-            }
-        }
-
         // Save principals to Solr with their roles
         logger.info("Writing {} principals to Solr...", principalDataList.size());
         Map<String, SolrIkasanPrincipalImpl> principalMap = new HashMap<>();
@@ -200,7 +178,6 @@ public class BaselineSecurityDataLoader {
                         roleNames.add(roleNode.asText());
                     }
                 }
-                policy.setRoleNames(roleNames);
 
                 policies.add(policy);
             }
@@ -314,14 +291,11 @@ public class BaselineSecurityDataLoader {
     public static class PolicyData {
         private String name;
         private String description;
-        private List<String> roleNames;
 
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
-        public List<String> getRoleNames() { return roleNames; }
-        public void setRoleNames(List<String> roleNames) { this.roleNames = roleNames; }
     }
 
     public static class RoleData {
