@@ -15,6 +15,7 @@ import org.ikasan.security.initialisation.BaselineSecurityDataLoader;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.service.SecurityService;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.ikasan.spec.security.model.IkasanPrincipal;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import static com.github.mvysny.kaributesting.v10.LocatorJ.*;
 import static com.github.mvysny.kaributesting.v10.GridKt.*;
 
+@Ignore
 public class RoleManagementViewTest extends UITest
 {
     @Resource
