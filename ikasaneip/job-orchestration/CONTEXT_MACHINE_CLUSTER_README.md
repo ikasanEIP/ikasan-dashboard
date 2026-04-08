@@ -236,9 +236,144 @@ Implement a distributed event broadcasting mechanism:
 
 ## Implementation Plan
 
-### Phase 1: REST Service Layer for ContextMachine
+### Phase 1: Cluster-Wide Event Broadcasting
 
-#### 1.1 Create REST Module Structure
+#### 1.1 Enhanced Broadcaster Architecture
+
+```mermaid
+sequenceDiagram
+    participant App as Application Code
+    participant BCast as ContextInstanceSavedEventBroadcaster
+    participant LocalL as Local Listeners
+    participant RestL as REST Listener Impl
+    participant N2 as Node 2<br/>ClusterEventController
+    participant N3 as Node 3<br/>ClusterEventController
+    participant N2BCast as Node 2<br/>Broadcaster
+    participant N3BCast as Node 3<br/>Broadcaster
+    participant N2LocalL as Node 2<br/>Local Listeners
+    participant N3LocalL as Node 3<br/>Local Listeners
+
+    Note over App,N3LocalL: Scenario: broadcast() called on Node 1
+    App->>BCast: broadcast(contextInstance)
+
+    par Notify local listeners on Node 1
+        BCast->>LocalL: executor.execute()<br/>listener.receiveBroadcast()
+    and Notify REST listeners (to other nodes)
+        BCast->>RestL: restExecutor.execute()<br/>restListener.receiveBroadcast()
+
+        par REST calls to other nodes
+            RestL->>N2: POST /api/cluster/events/context-instance-saved
+            RestL->>N3: POST /api/cluster/events/context-instance-saved
+        end
+    end
+
+    Note over N2,N2LocalL: Node 2 receives cluster event
+    N2->>N2BCast: broadcastClusterEvent(contextInstance)
+    N2BCast->>N2LocalL: executor.execute()<br/>listener.receiveBroadcast()
+
+    Note over N3,N3LocalL: Node 3 receives cluster event
+    N3->>N3BCast: broadcastClusterEvent(contextInstance)
+    N3BCast->>N3LocalL: executor.execute()<br/>listener.receiveBroadcast()
+```
+
+#### 1.2 Cluster Event Broadcasting Components
+
+**Module:** `ikasan-job-orchestration-broadcast`
+
+Add cluster-aware broadcasting:
+
+```java
+public class ContextInstanceSavedEventBroadcaster {
+    static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextInstanceSavedEventBroadcaster"));
+    static Executor restExecutor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextInstanceSavedEventRestBroadcaster"));
+
+    private static WeakHashMap<ContextInstanceSavedEventBroadcastRestListener, Object> restListeners =
+        new WeakHashMap<>();
+    private static WeakHashMap<ContextInstanceSavedEventBroadcastListener, Object> listeners =
+        new WeakHashMap<>();
+
+    public static synchronized void broadcast(final ContextInstance contextInstance) {
+        // Broadcast to local listeners (existing behavior)
+        for (final ContextInstanceSavedEventBroadcastListener listener: listeners.keySet()) {
+            executor.execute(() -> listener.receiveBroadcast(contextInstance));
+        }
+        
+        // Broadcast to rest listeners
+        for (final ContextInstanceSavedEventBroadcastListener listener: restListeners.keySet()) {
+            restExecutor.execute(() -> restListeners.receiveBroadcast(contextInstance));
+        }
+    }
+
+    // Called when receiving event from another node
+    public static synchronized void broadcastClusterEvent(final ContextInstance contextInstance) {
+        // Only notify local listeners (don't republish to cluster)
+        for (final ContextInstanceSavedEventBroadcastListener listener: listeners.keySet()) {
+            executor.execute(() -> listener.receiveBroadcast(contextInstance));
+        }
+    }
+
+    public static synchronized void register(ContextInstanceSavedEventBroadcastListener listener) {
+        listeners.put(listener, null);
+    }
+
+    public static synchronized void unregister(ContextInstanceSavedEventBroadcastListener listener) {
+        listeners.remove(listener);
+    }
+
+    public static synchronized void register(ContextInstanceSavedEventBroadcastRestListener listener) {
+        restListeners.put(listener, null);
+    }
+
+    public static synchronized void unregister(ContextInstanceSavedEventBroadcastRestListener listener) {
+        restListeners.remove(listener);
+    }
+}
+```
+#### 1.3 Broadcaster Interfaces 
+
+```java
+public interface ContextInstanceSavedEventBroadcastListener {
+    void receiveBroadcast(ContextInstance var1);
+}
+
+// marker interface for REST listener
+public interface ContextInstanceSavedEventRestBroadcastListener extends ContextInstanceSavedEventBroadcastListener {
+}
+```
+#### 1.4 Broadcaster Interface REST Client Implementation
+
+```java
+// marker interface for REST listener
+public class ContextInstanceSavedEventRestBroadcastListenerImpl implements ContextInstanceSavedEventRestBroadcastListener {
+    public void receiveBroadcast(ContextInstance var1) {
+        // implement REST client code here that calls the endpoint in 1.5 below running on other nodes
+    }
+}
+```
+
+#### 1.5 Cluster Event REST API
+
+**Endpoint:** `/api/cluster/events`
+
+```java
+@RestController
+@RequestMapping("/api/cluster/events")
+public class ClusterEventController {
+
+    @PostMapping("/context-instance-saved")
+    public ResponseEntity<Void> handleContextInstanceSaved(
+            @RequestBody ContextInstance contextInstance) {
+
+        // Dispatch to local listeners only
+        ContextInstanceSavedEventBroadcaster.broadcaseClusterEvent(contextInstance);
+        return ResponseEntity.ok().build();
+    }
+}
+```
+
+### Phase 2: REST Service Layer for ContextMachine
+
+#### 2.1 Create REST Module Structure
 
 ```
 ikasan-job-orchestration/
@@ -264,7 +399,7 @@ ikasan-job-orchestration/
 │   │   └── pom.xml
 ```
 
-#### 1.2 Define REST API Contract
+#### 2.2 Define REST API Contract
 
 **Base Path:** `/api/context-machine/{contextInstanceId}`
 
@@ -327,7 +462,7 @@ ikasan-job-orchestration/
 | PUT | `/config/executor-timeout` | Set executor wait timeout |
 | PUT | `/config/blacklist-retries` | Set blacklisted message max retries |
 
-#### 1.3 Implement ContextMachineRestProxy
+#### 2.3 Implement ContextMachineRestProxy
 
 The `ContextMachineRestProxy` implements `ContextMachine` and delegates all calls to the leader node via REST:
 
@@ -385,7 +520,7 @@ public class ContextMachineRestProxy implements ContextMachine {
 - The `ClusterTopologyService` determines which node hosts the actual ContextMachine
 - No state is maintained locally - this is a pure delegation proxy
 
-#### 1.4 Update ContextMachineCache
+#### 2.4 Update ContextMachineCache
 
 The `ContextMachineCache` is updated to serve the appropriate implementation based on node role:
 
@@ -462,7 +597,7 @@ public class ContextMachineCache {
 - `put()` is only called on leader nodes to register actual implementations
 - Transparent to existing code - all callers work with `ContextMachine` interface
 
-#### 1.5 Cluster Topology Service
+#### 2.5 Cluster Topology Service
 
 Maintains cluster membership and ContextMachine location information:
 
@@ -501,7 +636,7 @@ public interface ClusterTopologyService {
 - **Option B:** Database-backed registry with periodic refresh
 - **Option C:** Hazelcast distributed map for cluster coordination
 
-#### 1.6 Complete Call Flow
+#### 2.6 Complete Call Flow
 
 Here's how a method call flows through the system:
 
@@ -548,134 +683,6 @@ sequenceDiagram
 2. **Follower Node**: REST call transparently proxied to leader
 3. **Transparent to Caller**: Application code doesn't know if it's calling local or remote
 4. **Interface-Based**: All interactions through `ContextMachine` interface
-
-### Phase 2: Cluster-Wide Event Broadcasting
-
-#### 2.1 Enhanced Broadcaster Architecture
-
-```mermaid
-sequenceDiagram
-    participant App as Application Code
-    participant BCast as LocalBroadcaster
-    participant CEP as ClusterEventPublisher
-    participant N2 as Node 2 REST
-    participant N3 as Node 3 REST
-    participant L2 as Node 2 Listeners
-    participant L3 as Node 3 Listeners
-
-    App->>BCast: broadcast(event)
-    BCast->>BCast: Notify local listeners
-    BCast->>CEP: publishToCluster(event)
-
-    par Broadcast to all nodes
-        CEP->>N2: POST /cluster/events
-        CEP->>N3: POST /cluster/events
-    end
-
-    N2->>L2: Notify local listeners
-    N3->>L3: Notify local listeners
-```
-
-#### 2.2 Cluster Event Broadcasting Components
-
-**Module:** `ikasan-job-orchestration-broadcast`
-
-Add cluster-aware broadcasting:
-
-```java
-public class ClusterAwareContextInstanceSavedEventBroadcaster {
-
-    private static ClusterEventPublisher clusterPublisher;
-    private static WeakHashMap<ContextInstanceSavedEventBroadcastListener, Object> listeners =
-        new WeakHashMap<>();
-
-    public static void setClusterPublisher(ClusterEventPublisher publisher) {
-        clusterPublisher = publisher;
-    }
-
-    public static synchronized void broadcast(final ContextInstance contextInstance) {
-        // Broadcast to local listeners (existing behavior)
-        for (final ContextInstanceSavedEventBroadcastListener listener: listeners.keySet()) {
-            executor.execute(() -> listener.receiveBroadcast(contextInstance));
-        }
-
-        // Broadcast to cluster (new behavior)
-        if (clusterPublisher != null) {
-            clusterPublisher.publishEvent(
-                EventType.CONTEXT_INSTANCE_SAVED,
-                contextInstance
-            );
-        }
-    }
-
-    // Called when receiving event from another node
-    public static synchronized void receiveClusterEvent(final ContextInstance contextInstance) {
-        // Only notify local listeners (don't republish to cluster)
-        for (final ContextInstanceSavedEventBroadcastListener listener: listeners.keySet()) {
-            executor.execute(() -> listener.receiveBroadcast(contextInstance));
-        }
-    }
-}
-```
-
-#### 2.3 Cluster Event REST API
-
-**Endpoint:** `/api/cluster/events`
-
-```java
-@RestController
-@RequestMapping("/api/cluster/events")
-public class ClusterEventController {
-
-    @Autowired
-    private ClusterEventDispatcher dispatcher;
-
-    @PostMapping("/context-instance-saved")
-    public ResponseEntity<Void> handleContextInstanceSaved(
-            @RequestBody ContextInstance contextInstance) {
-
-        // Dispatch to local listeners only
-        dispatcher.dispatchContextInstanceSaved(contextInstance);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/context-instance-state-change")
-    public ResponseEntity<Void> handleContextInstanceStateChange(
-            @RequestBody ContextInstanceStateChangeEvent event) {
-
-        dispatcher.dispatchContextInstanceStateChange(event);
-        return ResponseEntity.ok().build();
-    }
-
-    // Additional endpoints for each event type...
-}
-```
-
-#### 2.4 Event Type Enumeration
-
-```java
-public enum ClusterEventType {
-    CONTEXT_INSTANCE_SAVED("context-instance-saved"),
-    CONTEXT_INSTANCE_STATE_CHANGE("context-instance-state-change"),
-    CONTEXT_INSTANCE_DLQ("context-instance-dlq"),
-    CONTEXT_TEMPLATE_SAVED("context-template-saved"),
-    CONTEXT_TEMPLATE_ENABLE_DISABLE("context-template-enable-disable"),
-    CONTEXT_VIEW_UPDATE("context-view-update"),
-    JOB_LOCK_CACHE("job-lock-cache"),
-    NEW_SCHEDULER_JOB("new-scheduler-job"),
-    SCHEDULER_JOB_STATE_CHANGE("scheduler-job-state-change");
-
-    private final String eventPath;
-
-    ClusterEventType(String eventPath) {
-        this.eventPath = eventPath;
-    }
-
-    public String getEventPath() {
-        return eventPath;
-    }
-}
-```
 
 ### Phase 3: Configuration and Integration
 
@@ -1758,12 +1765,20 @@ This architecture provides a robust, scalable solution for enabling cluster-wide
 - `ContextMachineImpl` updated to implement interface
 
 🚧 **To Be Implemented:**
+
+**Phase 1 (Cluster-wide event broadcasting):**
+- Cluster-wide event broadcasting components
+- `ClusterEventPublisher` - Publish events to all cluster nodes
+- `ClusterEventListener` - Receive events from other nodes
+- `ClusterEventRestClient` - REST client for event distribution
+- `ClusterEventRestController` - REST endpoint for receiving events
+
+**Phase 2 (ContextMachine REST Service Layer):**
 - `ContextMachineRestProxy` - REST-based implementation for follower nodes
 - `ContextMachineRestController` - REST endpoints on leader nodes
 - `ContextMachineRestClient` - REST client for remote calls
 - `ContextMachineCache` updates - Serve different implementations based on node role
 - `ClusterTopologyService` - Track which nodes host which context instances
-- Cluster-wide event broadcasting
 
 ### Benefits of This Design
 
@@ -1777,9 +1792,9 @@ This architecture provides a robust, scalable solution for enabling cluster-wide
 **Next Steps:**
 1. Review and approve this design document ✅
 2. Create JIRA tickets for implementation phases
-3. Implement `ContextMachineRestProxy` and REST infrastructure
-4. Update `ContextMachineCache` to serve different implementations
-5. Implement cluster-wide event broadcasting
+3. Implement cluster-wide event broadcasting (Phase 1)
+4. Implement `ContextMachineRestProxy` and REST infrastructure (Phase 2)
+5. Update `ContextMachineCache` to serve different implementations (Phase 2)
 6. Set up integration tests with multi-node cluster
 7. Performance testing and optimization
 
