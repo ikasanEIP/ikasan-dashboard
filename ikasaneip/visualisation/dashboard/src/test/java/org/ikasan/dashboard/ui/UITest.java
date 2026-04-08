@@ -62,6 +62,10 @@ public abstract class UITest {
         URL solrConfigDir = Thread.currentThread().getContextClassLoader()
             .getResource("./solr/ikasan/conf");
 
+        System.out.println("Solr schema: " + schemaUrl.getPath());
+        System.out.println("Solr config: " + solrConfigUrl.getPath());
+        System.out.println("Solr configuration directory: " + solrConfigDir.getPath());
+
         solr.withCommand("solr-precreate ikasan")
             .withCollection("ikasan")
             .withConfiguration("configset", solrConfigUrl)
@@ -74,17 +78,7 @@ public abstract class UITest {
             .withZookeeper(false)
             .withSchema(schemaUrl);
 
-        solr.withReuse(true);
-
-//        try {
-            solr.start();
-//        }
-//        catch (Exception e) {
-//            e.printStackTrace();
-//            System.out.println(solr.getLogs());
-//        }
-
-//        Awaitility.await().atMost(Duration.ofSeconds(30)).until(() -> solr.isRunning());
+        solr.start();
     }
 
     @DynamicPropertySource
