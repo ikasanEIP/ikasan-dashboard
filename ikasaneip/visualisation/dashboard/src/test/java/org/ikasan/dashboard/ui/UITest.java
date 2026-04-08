@@ -52,39 +52,39 @@ import java.util.stream.IntStream;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class UITest {
 
-    static SolrContainer solr = new SolrContainer("solr:9.10.1");
-
-    static {
-        URL schemaUrl = Thread.currentThread().getContextClassLoader()
-            .getResource("./solr/ikasan/conf/managed-schema.xml");
-        URL solrConfigUrl = Thread.currentThread().getContextClassLoader()
-            .getResource("./solr/ikasan/conf/solrconfig.xml");
-        URL solrConfigDir = Thread.currentThread().getContextClassLoader()
-            .getResource("./solr/ikasan/conf");
-
-        System.out.println("Solr schema: " + schemaUrl.getPath());
-        System.out.println("Solr config: " + solrConfigUrl.getPath());
-        System.out.println("Solr configuration directory: " + solrConfigDir.getPath());
-
-        solr.withCommand("solr-precreate ikasan")
-            .withCollection("ikasan")
-            .withConfiguration("configset", solrConfigUrl)
-            .withCopyFileToContainer(
-                MountableFile.forHostPath(solrConfigDir.getPath()),
-                "/var/solr/data/ikasan/conf"
-            )
-            .withFileSystemBind(solrConfigDir.getPath().toString(),
-                "/var/solr/data/ikasan", BindMode.READ_WRITE)
-            .withZookeeper(false)
-            .withSchema(schemaUrl);
-
-        solr.start();
-    }
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("solr.url", () -> "http://" + solr.getHost() + ":" + solr.getSolrPort() + "/solr");
-    }
+//    static SolrContainer solr = new SolrContainer("solr:9.10.1");
+//
+//    static {
+//        URL schemaUrl = Thread.currentThread().getContextClassLoader()
+//            .getResource("./solr/ikasan/conf/managed-schema.xml");
+//        URL solrConfigUrl = Thread.currentThread().getContextClassLoader()
+//            .getResource("./solr/ikasan/conf/solrconfig.xml");
+//        URL solrConfigDir = Thread.currentThread().getContextClassLoader()
+//            .getResource("./solr/ikasan/conf");
+//
+//        System.out.println("Solr schema: " + schemaUrl.getPath());
+//        System.out.println("Solr config: " + solrConfigUrl.getPath());
+//        System.out.println("Solr configuration directory: " + solrConfigDir.getPath());
+//
+//        solr.withCommand("solr-precreate ikasan")
+//            .withCollection("ikasan")
+//            .withConfiguration("configset", solrConfigUrl)
+//            .withCopyFileToContainer(
+//                MountableFile.forHostPath(solrConfigDir.getPath()),
+//                "/var/solr/data/ikasan/conf"
+//            )
+//            .withFileSystemBind(solrConfigDir.getPath().toString(),
+//                "/var/solr/data/ikasan", BindMode.READ_WRITE)
+//            .withZookeeper(false)
+//            .withSchema(schemaUrl);
+//
+//        solr.start();
+//    }
+//
+//    @DynamicPropertySource
+//    static void properties(DynamicPropertyRegistry registry) {
+//        registry.add("solr.url", () -> "http://" + solr.getHost() + ":" + solr.getSolrPort() + "/solr");
+//    }
 
     @Autowired
     protected ApplicationContext ctx;
