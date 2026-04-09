@@ -5,13 +5,13 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import org.ikasan.dashboard.security.model.IkasanPrincipalImpl;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.security.dao.SolrIkasanPrincipalDaoImpl;
 import org.ikasan.security.dao.SolrPolicyDaoImpl;
 import org.ikasan.security.dao.SolrRoleDaoImpl;
 import org.ikasan.security.dao.SolrUserDaoImpl;
-import org.ikasan.security.initialisation.BaselineSecurityDataLoader;
+import org.ikasan.solr.initialisation.core.SolrDataJobException;
+import org.ikasan.solr.initialisation.security.BaselineSecurityDataLoader;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.service.SecurityService;
 import org.junit.After;
@@ -46,7 +46,11 @@ public class RoleManagementViewTest extends UITest
         BaselineSecurityDataLoader baselineSecurityDataLoader
             = new BaselineSecurityDataLoader(this.policyDao, this.roleDao,
                 this.principalDao, this.userDao);
-        baselineSecurityDataLoader.loadBaselineData();
+        try {
+            baselineSecurityDataLoader.execute();
+        } catch (SolrDataJobException e) {
+            throw new RuntimeException(e);
+        }
 
         IkasanPrincipal ikasanPrincipal = securityService.createPrincipal();
         ikasanPrincipal.setName("sample_group");

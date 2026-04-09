@@ -1,4 +1,4 @@
-package org.ikasan.security.initialisation;
+package org.ikasan.solr.initialisation.security;
 
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -72,7 +72,7 @@ public class BaselineSecurityDataLoaderTest extends SolrTestCaseJ4 {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);
             // Load baseline data
-            dataLoader.loadBaselineData();
+            dataLoader.execute();
 
             // Verify policies were loaded
             List<Policy> policies = policyDao.getAllPolicies();
@@ -140,7 +140,7 @@ public class BaselineSecurityDataLoaderTest extends SolrTestCaseJ4 {
     public void test_loadBaselineData_policies_include_expected_names() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);
-            dataLoader.loadBaselineData();
+            dataLoader.execute();
 
             // Verify specific policy names
             Assert.assertNotNull(policyDao.getPolicyById("ALL-securityPolicy"));
@@ -156,7 +156,7 @@ public class BaselineSecurityDataLoaderTest extends SolrTestCaseJ4 {
     public void test_loadBaselineData_roles_have_correct_policy_associations() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
             init(server);
-            dataLoader.loadBaselineData();
+            dataLoader.execute();
 
             // Verify RESTAccess role has WebServiceAdmin policy
             Role restAccessRole = roleDao.getRoleById("RESTAccess-securityRole");

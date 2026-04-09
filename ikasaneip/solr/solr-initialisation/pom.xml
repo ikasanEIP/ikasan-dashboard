@@ -36,12 +36,6 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- Logging -->
-<!--        <dependency>-->
-<!--            <groupId>org.slf4j</groupId>-->
-<!--            <artifactId>slf4j-api</artifactId>-->
-<!--        </dependency>-->
-
         <!-- Testing -->
         <dependency>
             <groupId>org.apache.solr</groupId>
@@ -91,13 +85,13 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-<!--            <scope>test</scope>-->
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-util</artifactId>
-<!--            <scope>test</scope>-->
+            <scope>test</scope>
         </dependency>
 
         <dependency>

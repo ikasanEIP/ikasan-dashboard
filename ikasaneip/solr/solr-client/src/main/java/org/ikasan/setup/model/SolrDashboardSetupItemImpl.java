@@ -1,0 +1,73 @@
+package org.ikasan.setup.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/**
+ * Solr implementation of DashboardSetupItem.
+ */
+public class SolrDashboardSetupItemImpl implements DashboardSetupItem {
+
+    private String name;
+
+    private String status;
+
+    private long executionTimestamp;
+
+    /**
+     * Default constructor for Jackson deserialization
+     */
+    public SolrDashboardSetupItemImpl() {
+    }
+
+    /**
+     * Constructor with all fields
+     *
+     * @param name the name of the setup item
+     * @param status the status of the setup item
+     * @param executionTimestamp the execution timestamp
+     */
+    public SolrDashboardSetupItemImpl(String name, String status, long executionTimestamp) {
+        this.name = name;
+        this.status = status;
+        this.executionTimestamp = executionTimestamp;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    @Override
+    public String getStatus() {
+        return status;
+    }
+
+    @Override
+    public void setExecutionTimestamp(long timestamp) {
+        this.executionTimestamp = timestamp;
+    }
+
+    @Override
+    public long getExecutionTimestamp() {
+        return executionTimestamp;
+    }
+
+    @Override
+    public String toString() {
+        return "SolrDashboardSetupItemImpl{" +
+            "name='" + name + '\'' +
+            ", status='" + status + '\'' +
+            ", executionTimestamp=" + executionTimestamp +
+            '}';
+    }
+}
