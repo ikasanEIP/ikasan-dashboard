@@ -46,6 +46,10 @@ import org.ikasan.scheduled.profile.service.SolrContextProfileServiceImpl;
 import org.ikasan.security.dao.*;
 import org.ikasan.security.service.SecurityServiceImpl;
 import org.ikasan.security.service.UserServiceImpl;
+import org.ikasan.setup.dao.SetupDao;
+import org.ikasan.setup.dao.SolrSetupDaoImpl;
+import org.ikasan.setup.service.SetupService;
+import org.ikasan.setup.service.SolrSetupServiceImpl;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.exclusion.ExclusionEvent;
@@ -611,6 +615,22 @@ public class SolrClientAutoConfiguration {
     public PasswordEncoder passwordEncoder()
     {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public SolrSetupDaoImpl setupDao() {
+        SolrSetupDaoImpl dao = new SolrSetupDaoImpl();
+        initializeDao(dao, SolrDaoBase.DO_NOT_EXPIRE);
+        return dao;
+    }
+
+    @Bean
+    public SolrSetupServiceImpl setupService(SolrSetupDaoImpl setupDao) {
+        SolrSetupServiceImpl service = new SolrSetupServiceImpl(setupDao);
+        service.setSolrUsername(this.solrUsername);
+        service.setSolrPassword(this.solrPassword);
+
+        return service;
     }
 
     /**

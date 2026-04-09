@@ -1,7 +1,10 @@
-package org.ikasan.security.initialisation;
+package org.ikasan.solr.initialisation.security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ikasan.solr.initialisation.core.SolrDataJob;
+import org.ikasan.solr.initialisation.core.SolrDataJobException;
+import org.ikasan.solr.initialisation.core.SolrInitialDataJobConstants;
 import org.ikasan.security.dao.SolrIkasanPrincipalDaoImpl;
 import org.ikasan.security.dao.SolrPolicyDaoImpl;
 import org.ikasan.security.dao.SolrRoleDaoImpl;
@@ -21,7 +24,7 @@ import java.io.InputStream;
 import java.util.*;
 
 @Service
-public class BaselineSecurityDataLoader {
+public class BaselineSecurityDataLoader implements SolrDataJob {
     private static final Logger logger = LoggerFactory.getLogger(BaselineSecurityDataLoader.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -30,6 +33,14 @@ public class BaselineSecurityDataLoader {
     private final SolrIkasanPrincipalDaoImpl principalDao;
     private final SolrUserDaoImpl userDao;
 
+    /**
+     * Constructor for BaselineSecurityDataLoader.
+     *
+     * @param policyDao the data access object for handling security policies.
+     * @param roleDao the data access object for managing roles.
+     * @param principalDao the data access object for working with principals.
+     * @param userDao the data access object for retrieving and managing users.
+     */
     public BaselineSecurityDataLoader(SolrPolicyDaoImpl policyDao,
                                      SolrRoleDaoImpl roleDao,
                                      SolrIkasanPrincipalDaoImpl principalDao,
@@ -40,126 +51,146 @@ public class BaselineSecurityDataLoader {
         this.userDao = userDao;
     }
 
-    public void loadBaselineData() throws IOException {
-        logger.info("Loading baseline security data into Solr...");
-
-        // Load data from JSON files
-        List<PolicyData> policyDataList = loadPolicies();
-        List<RoleData> roleDataList = loadRoles();
-        List<PrincipalData> principalDataList = loadPrincipals();
-        List<UserData> userDataList = loadUsers();
-
-        logger.info("Loaded {} policies, {} roles, {} principals, {} users from JSON files",
-            policyDataList.size(), roleDataList.size(), principalDataList.size(), userDataList.size());
-
-        // Create policy map for lookups
-        Map<String, SolrPolicyImpl> policyMap = new HashMap<>();
-
-        // Save policies to Solr
-        logger.info("Writing {} policies to Solr...", policyDataList.size());
-        for (PolicyData policyData : policyDataList) {
-            SolrPolicyImpl policy = new SolrPolicyImpl();
-            policy.setName(policyData.getName());
-            policy.setDescription(policyData.getDescription());
-            policy.setCreatedDateTime(new Date());
-            policy.setUpdatedDateTime(new Date());
-
-            policyDao.saveOrUpdatePolicy(policy);
-            policyMap.put(policy.getName(), policy);
-            logger.debug("Saved policy: {}", policy.getName());
-        }
-
-        // Save roles to Solr with their policies
-        logger.info("Writing {} roles to Solr...", roleDataList.size());
-        Map<String, SolrRoleImpl> roleMap = new HashMap<>();
-        for (RoleData roleData : roleDataList) {
-            SolrRoleImpl role = new SolrRoleImpl();
-            role.setName(roleData.getName());
-            role.setDescription(roleData.getDescription());
-            role.setCreatedDateTime(new Date());
-            role.setUpdatedDateTime(new Date());
-
-            // Add policies to role
-            if (roleData.getPolicyNames() != null) {
-                for (String policyName : roleData.getPolicyNames()) {
-                    SolrPolicyImpl policy = policyMap.get(policyName);
-                    if (policy != null) {
-                        role.addPolicy(policy);
-                    } else {
-                        logger.warn("Policy not found: {} for role: {}", policyName, role.getName());
-                    }
-                }
-            }
-
-            roleDao.saveOrUpdateRole(role);
-            roleMap.put(role.getName(), role);
-            logger.debug("Saved role: {} with {} policies", role.getName(),
-                roleData.getPolicyNames() != null ? roleData.getPolicyNames().size() : 0);
-        }
-
-        // Save principals to Solr with their roles
-        logger.info("Writing {} principals to Solr...", principalDataList.size());
-        Map<String, SolrIkasanPrincipalImpl> principalMap = new HashMap<>();
-        for (PrincipalData principalData : principalDataList) {
-            SolrIkasanPrincipalImpl principal = new SolrIkasanPrincipalImpl();
-            principal.setName(principalData.getName());
-            principal.setType(principalData.getPrincipalType());
-            principal.setDescription(principalData.getDescription());
-            principal.setCreatedDateTime(new Date());
-            principal.setUpdatedDateTime(new Date());
-
-            // Add roles to principal
-            if (principalData.getRoleNames() != null) {
-                for (String roleName : principalData.getRoleNames()) {
-                    SolrRoleImpl role = roleMap.get(roleName);
-                    if (role != null) {
-                        principal.addRole(role);
-                    } else {
-                        logger.warn("Role not found: {} for principal: {}", roleName, principal.getName());
-                    }
-                }
-            }
-
-            principalDao.saveOrUpdatePrincipal(principal);
-            principalMap.put(principal.getName(), principal);
-            logger.debug("Saved principal: {} with {} roles", principal.getName(),
-                principalData.getRoleNames() != null ? principalData.getRoleNames().size() : 0);
-        }
-
-        // Save users to Solr with their principals
-        logger.info("Writing {} users to Solr...", userDataList.size());
-        for (UserData userData : userDataList) {
-            SolrUserImpl user = new SolrUserImpl();
-            user.setUsername(userData.getUsername());
-            user.setPassword(userData.getPassword());
-            user.setEmail(userData.getEmail());
-            user.setFirstName(userData.getFirstName());
-            user.setSurname(userData.getSurname());
-            user.setDepartment(userData.getDepartment());
-            user.setEnabled(userData.isEnabled());
-
-            // Add principals to user
-            if (userData.getPrincipalNames() != null) {
-                Set<IkasanPrincipal> principals = new HashSet<>();
-                for (String principalName : userData.getPrincipalNames()) {
-                    SolrIkasanPrincipalImpl principal = principalMap.get(principalName);
-                    if (principal != null) {
-                        principals.add(principal);
-                    } else {
-                        logger.warn("Principal not found: {} for user: {}", principalName, user.getUsername());
-                    }
-                }
-                user.setPrincipals(principals);
-            }
-
-            userDao.save(user);
-            logger.debug("Saved user: {} with {} principals", user.getUsername(),
-                userData.getPrincipalNames() != null ? userData.getPrincipalNames().size() : 0);
-        }
-
-        logger.info("Baseline security data successfully loaded into Solr!");
+    @Override
+    public String getJobName() {
+        return SolrInitialDataJobConstants.SOLR_BASELINE_SECURITY_DATA_JOB_NAME;
     }
 
+    @Override
+    public void execute() throws SolrDataJobException {
+        logger.info("Loading baseline security data into Solr...");
+
+        try {
+            // Load data from JSON files
+            List<PolicyData> policyDataList = loadPolicies();
+            List<RoleData> roleDataList = loadRoles();
+            List<PrincipalData> principalDataList = loadPrincipals();
+            List<UserData> userDataList = loadUsers();
+
+            logger.info("Loaded {} policies, {} roles, {} principals, {} users from JSON files",
+                policyDataList.size(), roleDataList.size(), principalDataList.size(), userDataList.size());
+
+            // Create policy map for lookups
+            Map<String, SolrPolicyImpl> policyMap = new HashMap<>();
+
+            // Save policies to Solr
+            logger.info("Writing {} policies to Solr...", policyDataList.size());
+            for (PolicyData policyData : policyDataList) {
+                SolrPolicyImpl policy = new SolrPolicyImpl();
+                policy.setName(policyData.getName());
+                policy.setDescription(policyData.getDescription());
+                policy.setCreatedDateTime(new Date());
+                policy.setUpdatedDateTime(new Date());
+
+                policyDao.saveOrUpdatePolicy(policy);
+                policyMap.put(policy.getName(), policy);
+                logger.debug("Saved policy: {}", policy.getName());
+            }
+
+            // Save roles to Solr with their policies
+            logger.info("Writing {} roles to Solr...", roleDataList.size());
+            Map<String, SolrRoleImpl> roleMap = new HashMap<>();
+            for (RoleData roleData : roleDataList) {
+                SolrRoleImpl role = new SolrRoleImpl();
+                role.setName(roleData.getName());
+                role.setDescription(roleData.getDescription());
+                role.setCreatedDateTime(new Date());
+                role.setUpdatedDateTime(new Date());
+
+                // Add policies to role
+                if (roleData.getPolicyNames() != null) {
+                    for (String policyName : roleData.getPolicyNames()) {
+                        SolrPolicyImpl policy = policyMap.get(policyName);
+                        if (policy != null) {
+                            role.addPolicy(policy);
+                        } else {
+                            logger.warn("Policy not found: {} for role: {}", policyName, role.getName());
+                        }
+                    }
+                }
+
+                roleDao.saveOrUpdateRole(role);
+                roleMap.put(role.getName(), role);
+                logger.debug("Saved role: {} with {} policies", role.getName(),
+                    roleData.getPolicyNames() != null ? roleData.getPolicyNames().size() : 0);
+            }
+
+            // Save principals to Solr with their roles
+            logger.info("Writing {} principals to Solr...", principalDataList.size());
+            Map<String, SolrIkasanPrincipalImpl> principalMap = new HashMap<>();
+            for (PrincipalData principalData : principalDataList) {
+                SolrIkasanPrincipalImpl principal = new SolrIkasanPrincipalImpl();
+                principal.setName(principalData.getName());
+                principal.setType(principalData.getPrincipalType());
+                principal.setDescription(principalData.getDescription());
+                principal.setCreatedDateTime(new Date());
+                principal.setUpdatedDateTime(new Date());
+
+                // Add roles to principal
+                if (principalData.getRoleNames() != null) {
+                    for (String roleName : principalData.getRoleNames()) {
+                        SolrRoleImpl role = roleMap.get(roleName);
+                        if (role != null) {
+                            principal.addRole(role);
+                        } else {
+                            logger.warn("Role not found: {} for principal: {}", roleName, principal.getName());
+                        }
+                    }
+                }
+
+                principalDao.saveOrUpdatePrincipal(principal);
+                principalMap.put(principal.getName(), principal);
+                logger.debug("Saved principal: {} with {} roles", principal.getName(),
+                    principalData.getRoleNames() != null ? principalData.getRoleNames().size() : 0);
+            }
+
+            // Save users to Solr with their principals
+            logger.info("Writing {} users to Solr...", userDataList.size());
+            for (UserData userData : userDataList) {
+                SolrUserImpl user = new SolrUserImpl();
+                user.setUsername(userData.getUsername());
+                user.setPassword(userData.getPassword());
+                user.setEmail(userData.getEmail());
+                user.setFirstName(userData.getFirstName());
+                user.setSurname(userData.getSurname());
+                user.setDepartment(userData.getDepartment());
+                user.setEnabled(userData.isEnabled());
+
+                // Add principals to user
+                if (userData.getPrincipalNames() != null) {
+                    Set<IkasanPrincipal> principals = new HashSet<>();
+                    for (String principalName : userData.getPrincipalNames()) {
+                        SolrIkasanPrincipalImpl principal = principalMap.get(principalName);
+                        if (principal != null) {
+                            principals.add(principal);
+                        } else {
+                            logger.warn("Principal not found: {} for user: {}", principalName, user.getUsername());
+                        }
+                    }
+                    user.setPrincipals(principals);
+                }
+
+                userDao.save(user);
+                logger.debug("Saved user: {} with {} principals", user.getUsername(),
+                    userData.getPrincipalNames() != null ? userData.getPrincipalNames().size() : 0);
+            }
+
+            logger.info("Baseline security data successfully loaded into Solr!");
+        }
+        catch (Exception e) {
+            logger.error("Error loading baseline security data into Solr", e);
+            throw new SolrDataJobException("Failed to load baseline security data into Solr", e);
+        }
+    }
+
+    /**
+     * Loads policy data from the JSON file located at "baseline-security/policies.json".
+     * Reads each policy's details, including its name, description,
+     * and associated roles, and converts them into a list of PolicyData objects.
+     *
+     * @return a list of PolicyData objects populated with information from the JSON file
+     * @throws IOException if an error occurs during file reading or parsing
+     */
     private List<PolicyData> loadPolicies() throws IOException {
         logger.info("Loading policies from baseline-security/policies.json");
         List<PolicyData> policies = new ArrayList<>();
@@ -187,6 +218,15 @@ public class BaselineSecurityDataLoader {
         return policies;
     }
 
+    /**
+     * Loads a list of roles from the JSON file located at baseline-security/roles.json.
+     * The method reads the file, parses it into JSON nodes, and maps the data
+     * into a list of {@code RoleData} objects, including role names, descriptions,
+     * and associated policy names.
+     *
+     * @return a list of {@code RoleData} objects representing the roles defined in the JSON file.
+     * @throws IOException if an I/O error occurs while accessing or reading the JSON file.
+     */
     private List<RoleData> loadRoles() throws IOException {
         logger.info("Loading roles from baseline-security/roles.json");
         List<RoleData> roles = new ArrayList<>();
@@ -215,6 +255,15 @@ public class BaselineSecurityDataLoader {
         return roles;
     }
 
+    /**
+     * Loads a list of principal objects from a JSON file located at
+     * "baseline-security/principals.json" in the classpath. Each principal is
+     * mapped to a {@code PrincipalData} object, containing its name, type,
+     * description, and associated roles.
+     *
+     * @return a list of {@code PrincipalData} objects representing the loaded principals
+     * @throws IOException if an error occurs while reading the JSON file
+     */
     private List<PrincipalData> loadPrincipals() throws IOException {
         logger.info("Loading principals from baseline-security/principals.json");
         List<PrincipalData> principals = new ArrayList<>();
@@ -244,6 +293,12 @@ public class BaselineSecurityDataLoader {
         return principals;
     }
 
+    /**
+     * Loads user data by reading a JSON file and converting its content into a list of UserData objects.
+     *
+     * @return a list of UserData objects representing the users loaded from the JSON file.
+     * @throws IOException if an error occurs while reading the JSON file.
+     */
     private List<UserData> loadUsers() throws IOException {
         logger.info("Loading users from baseline-security/users.json");
         List<UserData> users = new ArrayList<>();
