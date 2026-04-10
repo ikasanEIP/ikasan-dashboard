@@ -27,7 +27,6 @@ import java.io.IOException;
 import static com.github.mvysny.kaributesting.v10.LocatorJ.*;
 import static com.github.mvysny.kaributesting.v10.GridKt.*;
 
-@Ignore
 public class RoleManagementViewTest extends UITest
 {
     @Resource

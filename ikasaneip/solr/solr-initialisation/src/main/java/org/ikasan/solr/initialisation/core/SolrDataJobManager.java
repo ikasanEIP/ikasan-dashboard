@@ -50,6 +50,7 @@ public class SolrDataJobManager {
                     item.getName().equals(solrDataJob.getJobName()) &&
                     item.getStatus() != null &&
                     item.getStatus().equals(SolrInitialDataJobStatusConstants.COMPLETE_SUCCESS))) {
+
                 solrDataJob.execute();
 
                 if(dashboardPlatformSetup == null) {
