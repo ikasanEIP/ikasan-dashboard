@@ -1,38 +1,44 @@
-package org.ikasan.rest.client;
+package org.ikasan.scheduled;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 import com.arjuna.ats.jta.UserTransaction;
-import org.ikasan.configurationService.ConfigurationServiceAutoConfiguration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportResource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
-@Import(value = {ConfigurationServiceAutoConfiguration.class})
-public class TestConfiguration
+@EnableTransactionManagement
+@ImportResource("/transactions.xml")
+public class HibernatePersistenceTestAutoConfiguration
 {
+    @Value("${postgres.url}")
+    private String postgresUrl;
+
     @Bean(name = {"ikasan.xads", "ikasan.ds"})
     public DataSource ikasanDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.h2.Driver");
-        dataSource.setUrl("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE");
-        dataSource.setUsername("sa");
-        dataSource.setPassword("sa");
+        dataSource.setDriverClassName("org.postgresql.Driver");
+        dataSource.setUrl(this.postgresUrl);
+        dataSource.setUsername("testuser");
+        dataSource.setPassword("testpass");
         return dataSource;
     }
 
     @Bean
     public PlatformTransactionManager transactionManager() {
         TransactionManagerImple transactionManagerImple = new TransactionManagerImple();
-        JtaTransactionManager jtaTransactionManager = new JtaTransactionManager(UserTransaction.userTransaction(), transactionManagerImple);
+        JtaTransactionManager jtaTransactionManager = new JtaTransactionManager
+            (UserTransaction.userTransaction(), transactionManagerImple);
 
         return jtaTransactionManager;
     }
