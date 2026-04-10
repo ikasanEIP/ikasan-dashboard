@@ -10,7 +10,6 @@ import java.io.IOException;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 
-@Ignore
 public class PolicyManagementViewTest extends UITest
 {
     @Override

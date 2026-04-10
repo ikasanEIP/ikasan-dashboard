@@ -155,7 +155,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
     }
 
     /**
-     * Re-create an instances that should be running as at now.
+     * Re-create any instances that should be running as at now.
      * Currently, if the end window for a job has passed, or the start window is future to now
      * (which is common of 1 * * ... i.e. every minute) then instances are not brought back to life, which means
      * events gathered on the agents for old instances will cause issues on the scheduler.

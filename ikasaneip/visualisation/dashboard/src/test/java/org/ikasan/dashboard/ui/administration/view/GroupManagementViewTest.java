@@ -18,7 +18,6 @@ import java.time.Duration;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 
-@Ignore
 public class GroupManagementViewTest extends UITest {
 
     @Override
