@@ -33,7 +33,7 @@ public abstract class AbstractDashboardSchedulerService {
     protected Map<String, DashboardJob> dashboardJobsMap;
 
     // JobName -> JobDetail
-     protected Map<String, JobDetail> dashboardJobDetailsMap;
+    protected Map<String, JobDetail> dashboardJobDetailsMap;
 
 
     public AbstractDashboardSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory)
