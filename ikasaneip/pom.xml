@@ -59,6 +59,7 @@
         <name>Ikasan</name>
         <url>http://www.ikasan.org</url>
     </organization>
+
     <inceptionYear>2007</inceptionYear>
 
     <scm>
@@ -397,6 +398,8 @@
         <version.google.gson>2.11.0</version.google.gson>
         <version.system.rules>1.19.0</version.system.rules>
         <version.micrometer>1.14.14</version.micrometer>
+        <version.org.hibernate>6.4.1.Final</version.org.hibernate>
+        <version.org.hibernate-validator>8.0.1.Final</version.org.hibernate-validator>
     </properties>
 
     <!-- Distribution for releases -->
@@ -752,6 +755,7 @@
                 <module>job-orchestration</module>
                 <module>quartz</module>
                 <module>developer</module>
+                <module>postgres</module>
             </modules>
         </profile>
         <profile>
@@ -1744,6 +1748,24 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-context</artifactId>
                 <version>${version.spring.cloud.config.client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${version.org.hibernate}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${version.org.hibernate-validator}</version>
             </dependency>
 
             <dependency>
