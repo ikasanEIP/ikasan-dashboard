@@ -73,7 +73,7 @@ public abstract class UITest {
                 MountableFile.forHostPath(solrConfigDir.getPath()),
                 "/var/solr/data/ikasan/conf"
             )
-            .withFileSystemBind(solrConfigDir.getPath().toString(),
+            .withFileSystemBind("/tmp/solr-data",
                 "/var/solr/data/ikasan", BindMode.READ_WRITE)
             .withZookeeper(false)
             .withSchema(schemaUrl);
@@ -89,7 +89,7 @@ public abstract class UITest {
     @Autowired
     protected ApplicationContext ctx;
 
-   @MockitoBean
+    @MockitoBean
     protected IkasanAuthentication ikasanAuthentication;
 
     @MockitoBean
