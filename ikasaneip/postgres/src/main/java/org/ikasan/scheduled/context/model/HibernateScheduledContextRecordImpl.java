@@ -46,7 +46,6 @@ public class HibernateScheduledContextRecordImpl implements ScheduledContextReco
     @JdbcTypeCode(SqlTypes.JSON)
     private String contextTemplateJson;
 
-//    @Transient
     private ContextTemplate contextTemplate;
 
     @Column(name = "timestamp", nullable = false)
