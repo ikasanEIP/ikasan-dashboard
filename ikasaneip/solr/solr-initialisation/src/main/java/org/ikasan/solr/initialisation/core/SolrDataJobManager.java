@@ -51,19 +51,41 @@ public class SolrDataJobManager {
                     item.getStatus() != null &&
                     item.getStatus().equals(SolrInitialDataJobStatusConstants.COMPLETE_SUCCESS))) {
 
-                solrDataJob.execute();
-
                 if(dashboardPlatformSetup == null) {
                     dashboardPlatformSetup = new SolrDashboardPlatformSetupImpl();
                 }
 
-                List<DashboardSetupItem> platformSetupItems = dashboardPlatformSetup.getPlatformSetupItems();
-                DashboardSetupItem dashboardSetupItem = new SolrDashboardSetupItemImpl(solrDataJob.getJobName()
-                    , SolrInitialDataJobStatusConstants.COMPLETE_SUCCESS, System.currentTimeMillis());
-                platformSetupItems.add(dashboardSetupItem);
-                dashboardPlatformSetup.setPlatformSetupItems(platformSetupItems);
-                this.setupService.save(dashboardPlatformSetup);
+                try {
+                    solrDataJob.execute();
+                }
+                catch (SolrDataJobException e) {
+                    logger.error("An error has occurred executing solr data job [{}]!", solrDataJob.getJobName(), e);
+                    this.updateDashboardPlatformSetup(dashboardPlatformSetup,
+                        solrDataJob.getJobName(), SolrInitialDataJobStatusConstants.ERROR);
+                    throw e;
+                }
+
+                this.updateDashboardPlatformSetup(dashboardPlatformSetup,
+                    solrDataJob.getJobName(), SolrInitialDataJobStatusConstants.COMPLETE_SUCCESS);
             }
         }
+    }
+
+    /**
+     * Updates the dashboard platform setup by adding a new platform setup item and saving the changes.
+     *
+     * @param dashboardPlatformSetup the {@code DashboardPlatformSetup} object containing the current
+     *                                platform setup details. Must not be {@code null}.
+     * @param jobName the name of the job to be added to the platform setup. Must not be {@code null}.
+     * @param status the status of the job to be added to the platform setup. Must not be {@code null}.
+     */
+    private void updateDashboardPlatformSetup(DashboardPlatformSetup dashboardPlatformSetup
+        , String jobName, String status) {
+        List<DashboardSetupItem> platformSetupItems = dashboardPlatformSetup.getPlatformSetupItems();
+        DashboardSetupItem dashboardSetupItem = new SolrDashboardSetupItemImpl(jobName
+            , status, System.currentTimeMillis());
+        platformSetupItems.add(dashboardSetupItem);
+        dashboardPlatformSetup.setPlatformSetupItems(platformSetupItems);
+        this.setupService.save(dashboardPlatformSetup);
     }
 }

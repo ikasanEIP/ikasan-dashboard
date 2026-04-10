@@ -242,6 +242,10 @@ public class SolrDataJobManagerTest {
             will(returnValue("FAILING_JOB"));
             oneOf(mockJob1).execute();
             will(throwException(new SolrDataJobException("Job failed")));
+            oneOf(mockJob1).getJobName();
+            will(returnValue("FAILING_JOB"));
+
+            oneOf(mockSetupService).save(with(any(DashboardPlatformSetup.class)));
         }});
 
         manager.execute();
