@@ -1,6 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.model;
 
-import org.ikasan.spec.metadata.ConfigurationMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 
 import java.util.List;
 

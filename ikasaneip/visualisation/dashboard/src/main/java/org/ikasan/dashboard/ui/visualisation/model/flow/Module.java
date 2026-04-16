@@ -1,7 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.spec.metadata.ConfigurationMetaData;
-import org.ikasan.spec.metadata.FlowElementMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationMetaData;
+import org.ikasan.spec.metadata.model.FlowElementMetaData;
 
 import java.util.ArrayList;
 import java.util.HashMap;

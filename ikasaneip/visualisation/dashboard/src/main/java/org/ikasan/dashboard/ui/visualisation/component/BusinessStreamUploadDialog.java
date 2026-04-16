@@ -17,8 +17,8 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 
 import java.io.IOException;
 import java.io.InputStream;

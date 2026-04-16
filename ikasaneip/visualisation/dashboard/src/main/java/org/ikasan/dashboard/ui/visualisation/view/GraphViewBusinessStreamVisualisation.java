@@ -1,13 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.view;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.shared.Registration;
-import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamStatusPanel;
@@ -18,10 +13,10 @@ import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.ConfigurationMetaDataService;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;

@@ -22,8 +22,8 @@ import org.ikasan.dashboard.ui.visualisation.component.filter.ModuleSearchFilter
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.DownloadLogFileService;
 import org.springframework.security.core.context.SecurityContextHolder;
 

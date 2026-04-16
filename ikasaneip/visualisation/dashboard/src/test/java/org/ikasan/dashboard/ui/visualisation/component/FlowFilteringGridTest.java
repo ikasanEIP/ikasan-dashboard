@@ -9,7 +9,7 @@ import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
 import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.model.RoleModule;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.ModuleType;
 import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
 import org.junit.Assert;

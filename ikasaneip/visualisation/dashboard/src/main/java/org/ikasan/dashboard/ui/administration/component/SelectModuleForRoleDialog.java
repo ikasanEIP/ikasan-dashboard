@@ -14,8 +14,8 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.model.RoleModule;
 import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 
 import java.util.Collection;
 import java.util.List;

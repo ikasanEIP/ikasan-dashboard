@@ -14,7 +14,7 @@ import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.configuration.PlatformConfigurationService;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;

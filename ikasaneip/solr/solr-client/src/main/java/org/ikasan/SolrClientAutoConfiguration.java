@@ -55,7 +55,7 @@ import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.exclusion.ExclusionEvent;
 import org.ikasan.spec.history.FlowInvocationMetric;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;

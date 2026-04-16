@@ -17,7 +17,7 @@ import org.ikasan.dashboard.ui.visualisation.model.flow.AbstractWiretapNode;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.rest.client.dto.TriggerDto;
 import org.ikasan.rest.client.util.UserUtil;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.TriggerService;

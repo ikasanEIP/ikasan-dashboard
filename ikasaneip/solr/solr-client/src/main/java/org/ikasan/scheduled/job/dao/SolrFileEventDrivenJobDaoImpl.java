@@ -64,7 +64,7 @@ public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJo
     }
 
     @Override
-    public SearchResults<? extends FileEventDrivenJobRecord> findAll(int limit, int offset) {
+    public SearchResults<FileEventDrivenJobRecord> findAll(int limit, int offset) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");
@@ -81,7 +81,7 @@ public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJo
 
 
     @Override
-    public SearchResults<? extends FileEventDrivenJobRecord> findByContext(String contextId, int limit, int offset) {
+    public SearchResults<FileEventDrivenJobRecord> findByContext(String contextId, int limit, int offset) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");

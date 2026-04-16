@@ -60,7 +60,7 @@ public class SolrGlobalEventJobDaoImpl extends SolrDaoBase<GlobalEventJobRecord>
     }
 
     @Override
-    public SearchResults<? extends GlobalEventJobRecord> findAll(int limit, int offset) {
+    public SearchResults<GlobalEventJobRecord> findAll(int limit, int offset) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB).append("\" ");
@@ -76,7 +76,7 @@ public class SolrGlobalEventJobDaoImpl extends SolrDaoBase<GlobalEventJobRecord>
     }
 
     @Override
-    public SearchResults<? extends GlobalEventJobRecord> findByContext(String contextId, int limit, int offset) {
+    public SearchResults<GlobalEventJobRecord> findByContext(String contextId, int limit, int offset) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB).append("\" ");

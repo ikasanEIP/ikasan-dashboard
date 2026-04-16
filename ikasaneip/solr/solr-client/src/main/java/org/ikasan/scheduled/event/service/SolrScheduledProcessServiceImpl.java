@@ -9,7 +9,7 @@ import org.ikasan.scheduled.event.model.ScheduleProcessConfigurationBucket;
 import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.event.model.UpcomingScheduledProcess;
-import org.ikasan.spec.metadata.*;
+import org.ikasan.spec.metadata.model.*;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.service.ScheduledProcessEventService;

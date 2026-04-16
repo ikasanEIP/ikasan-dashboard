@@ -5,7 +5,7 @@ import ch.qos.logback.classic.Logger;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapter;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
 import org.ikasan.vaadin.visjs.network.NetworkDiagram;

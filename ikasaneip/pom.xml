@@ -755,7 +755,7 @@
                 <module>job-orchestration</module>
                 <module>quartz</module>
                 <module>developer</module>
-                <module>postgres</module>
+                <module>db-relational</module>
             </modules>
         </profile>
         <profile>

@@ -8,7 +8,7 @@ import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.ResubmissionService;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;

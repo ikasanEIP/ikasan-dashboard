@@ -20,7 +20,7 @@ import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;

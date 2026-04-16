@@ -22,7 +22,7 @@ import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.rest.client.ReplayFailException;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayAuditEvent;

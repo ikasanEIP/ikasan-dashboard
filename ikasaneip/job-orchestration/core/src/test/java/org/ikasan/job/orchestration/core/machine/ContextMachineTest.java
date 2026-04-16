@@ -25,7 +25,7 @@ import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;

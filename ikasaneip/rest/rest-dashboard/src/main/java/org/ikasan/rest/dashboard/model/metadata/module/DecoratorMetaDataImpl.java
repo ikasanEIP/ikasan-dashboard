@@ -1,6 +1,6 @@
 package org.ikasan.rest.dashboard.model.metadata.module;
 
-import org.ikasan.spec.metadata.DecoratorMetaData;
+import org.ikasan.spec.metadata.model.DecoratorMetaData;
 
 public class DecoratorMetaDataImpl implements DecoratorMetaData
 {

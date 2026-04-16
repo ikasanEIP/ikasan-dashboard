@@ -25,7 +25,7 @@ import org.ikasan.scheduled.job.model.SolrGlobalEventJobImpl;
 import org.ikasan.scheduled.job.model.SolrGlobalEventJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;

@@ -59,7 +59,7 @@ public class SolrContextTerminalJobDaoImpl extends SolrDaoBase<ContextTerminalJo
     }
 
     @Override
-    public SearchResults<? extends ContextTerminalJobRecord> findAll(int limit, int offset) {
+    public SearchResults<ContextTerminalJobRecord> findAll(int limit, int offset) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.CONTEXT_TERMINAL_JOB).append("\" ");
@@ -75,7 +75,7 @@ public class SolrContextTerminalJobDaoImpl extends SolrDaoBase<ContextTerminalJo
     }
 
     @Override
-    public SearchResults<? extends ContextTerminalJobRecord> findByContext(String contextId, int limit, int offset) {
+    public SearchResults<ContextTerminalJobRecord> findByContext(String contextId, int limit, int offset) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.CONTEXT_TERMINAL_JOB).append("\" ");
