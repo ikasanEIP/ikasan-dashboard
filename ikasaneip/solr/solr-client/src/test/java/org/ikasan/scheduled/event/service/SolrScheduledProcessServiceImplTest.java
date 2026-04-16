@@ -7,7 +7,7 @@ import org.ikasan.scheduled.event.dao.SolrScheduledProcessEventDao;
 import org.ikasan.scheduled.event.model.SolrScheduledProcessEvent;
 import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.event.model.UpcomingScheduledProcess;
-import org.ikasan.spec.metadata.*;
+import org.ikasan.spec.metadata.model.*;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.solr.BatchInsertEvent;
 import org.ikasan.spec.solr.BatchInsertListener;

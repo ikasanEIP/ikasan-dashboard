@@ -13,7 +13,7 @@ import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;

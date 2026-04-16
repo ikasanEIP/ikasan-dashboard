@@ -2,8 +2,8 @@ package org.ikasan.dashboard.ui.visualisation.actions;
 
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamSaveAsDialog;
 import org.ikasan.designer.function.SaveAsFunction;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 
 public class BusinessStreamSaveAsFunction implements SaveAsFunction {
 

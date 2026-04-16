@@ -1,6 +1,6 @@
 package org.ikasan.rest.dashboard.model.metadata.module;
 
-import org.ikasan.spec.metadata.Transition;
+import org.ikasan.spec.metadata.model.Transition;
 
 public class TransitionImpl implements Transition
 {

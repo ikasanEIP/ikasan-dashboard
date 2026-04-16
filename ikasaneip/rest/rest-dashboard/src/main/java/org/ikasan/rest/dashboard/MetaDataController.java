@@ -7,7 +7,7 @@ import org.ikasan.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.rest.dashboard.model.metadata.configuration.ConfigurationMetaDataImpl;
 import org.ikasan.rest.dashboard.model.metadata.configuration.ConfigurationParameterMetaDataImpl;
 import org.ikasan.rest.dashboard.model.metadata.module.*;
-import org.ikasan.spec.metadata.*;
+import org.ikasan.spec.metadata.model.*;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

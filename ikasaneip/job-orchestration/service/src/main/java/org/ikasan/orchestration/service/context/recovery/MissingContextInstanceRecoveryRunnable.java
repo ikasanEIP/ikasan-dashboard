@@ -7,7 +7,7 @@ import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;

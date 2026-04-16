@@ -1,6 +1,7 @@
 package org.ikasan.module.metadata.model;
 
-import org.ikasan.spec.metadata.Transition;
+
+import org.ikasan.spec.metadata.model.Transition;
 
 public class SolrTransitionImpl implements Transition
 {

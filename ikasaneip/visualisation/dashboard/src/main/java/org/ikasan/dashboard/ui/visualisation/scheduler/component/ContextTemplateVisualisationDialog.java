@@ -12,7 +12,7 @@ import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.security.service.UserService;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;

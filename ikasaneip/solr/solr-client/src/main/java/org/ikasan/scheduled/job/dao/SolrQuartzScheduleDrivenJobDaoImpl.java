@@ -61,12 +61,12 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
     }
 
     @Override
-    public SearchResults<? extends QuartzScheduleDrivenJobRecord> findAll(int limit, int offset) {
+    public SearchResults<QuartzScheduleDrivenJobRecord> findAll(int limit, int offset) {
         return null;
     }
 
     @Override
-    public SearchResults<? extends QuartzScheduleDrivenJobRecord> findByContext(String contextId, int limit, int offset) {
+    public SearchResults<QuartzScheduleDrivenJobRecord> findByContext(String contextId, int limit, int offset) {
         return null;
     }
 

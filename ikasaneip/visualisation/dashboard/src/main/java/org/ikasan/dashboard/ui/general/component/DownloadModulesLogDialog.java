@@ -14,7 +14,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.server.StreamResource;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.DownloadLogFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

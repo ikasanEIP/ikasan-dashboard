@@ -8,7 +8,7 @@ import org.apache.solr.core.NodeConfig;
 import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataDao;
 import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
 import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
-import org.ikasan.spec.metadata.ConfigurationMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.junit.Assert;
 import org.junit.Test;

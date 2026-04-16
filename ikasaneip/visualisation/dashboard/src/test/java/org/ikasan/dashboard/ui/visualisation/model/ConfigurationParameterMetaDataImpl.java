@@ -1,6 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.model;
 
-import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationParameterMetaData;
 
 public class ConfigurationParameterMetaDataImpl implements ConfigurationParameterMetaData
 {

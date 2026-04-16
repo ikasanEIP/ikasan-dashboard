@@ -1,14 +1,14 @@
 package org.ikasan.configuration.metadata.service;
 
 import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataDao;
-import org.ikasan.spec.metadata.ConfigurationMetaData;
-import org.ikasan.spec.metadata.ConfigurationMetaDataService;
+import org.ikasan.spec.metadata.model.ConfigurationMetaData;
+import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrServiceBase;
 
 import java.util.List;
 
-public class SolrComponentConfigurationMetadataServiceImpl extends SolrServiceBase implements BatchInsert<ConfigurationMetaData>, ConfigurationMetaDataService
+public class SolrComponentConfigurationMetadataServiceImpl extends SolrServiceBase<ConfigurationMetaData> implements BatchInsert<ConfigurationMetaData>, ConfigurationMetaDataService
 {
     private SolrComponentConfigurationMetadataDao dao;
 

@@ -2,8 +2,8 @@ package org.ikasan.rest.dashboard;
 
 import org.ikasan.rest.dashboard.model.dto.BigQueueModuleDto;
 import org.ikasan.rest.dashboard.model.dto.MetadataModuleDto;
-import org.ikasan.spec.metadata.FlowMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.model.FlowMetaData;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.slf4j.Logger;

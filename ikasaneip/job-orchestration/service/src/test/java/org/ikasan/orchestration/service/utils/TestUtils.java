@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
 import org.springframework.test.util.ReflectionTestUtils;

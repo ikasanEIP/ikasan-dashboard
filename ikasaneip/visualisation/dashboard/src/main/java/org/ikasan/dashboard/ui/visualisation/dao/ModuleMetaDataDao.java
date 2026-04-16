@@ -1,6 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.dao;
 
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 
 import java.util.List;
 

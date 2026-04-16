@@ -7,7 +7,7 @@ import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecovery
 import org.ikasan.orchestration.service.context.register.ContextInstanceRegistrationServiceImpl;
 import org.ikasan.orchestration.service.context.reset.ContextResetServiceImpl;
 import org.ikasan.orchestration.service.context.status.ContextStatusServiceImpl;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceSchedulerService;

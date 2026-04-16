@@ -10,7 +10,7 @@ import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.util.Timeout;
 import org.ikasan.configurationService.metadata.ConfigurationMetaDataImpl;
 import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
-import org.ikasan.spec.metadata.ConfigurationMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;

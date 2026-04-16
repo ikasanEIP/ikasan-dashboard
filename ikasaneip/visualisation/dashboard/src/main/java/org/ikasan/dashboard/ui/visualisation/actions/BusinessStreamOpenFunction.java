@@ -5,9 +5,9 @@ import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamOpenDialog;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.function.OpenFunction;
 import org.ikasan.designer.json.DesignerDynamicImageManager;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package org.ikasan.rest.client;
 
-import org.ikasan.spec.metadata.FlowMetaData;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.FlowMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;

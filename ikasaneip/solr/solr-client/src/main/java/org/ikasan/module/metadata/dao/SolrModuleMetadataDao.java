@@ -10,7 +10,9 @@ import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.module.metadata.model.*;
-import org.ikasan.spec.metadata.*;
+import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.metadata.dao.ModuleMetadataDao;
+import org.ikasan.spec.metadata.model.*;
 import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -21,9 +23,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Solr implementation of ModuleMetadataDao.
+ *
+ * This class provides Solr-based persistence for module metadata, extending
+ * the base Solr DAO functionality and implementing the ModuleMetadataDao interface.
+ *
  * Created by Ikasan Development Team on 14/02/2017.
  */
-public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
+public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implements ModuleMetadataDao
 {
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrModuleMetadataDao.class);
@@ -93,6 +100,7 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
         return document;
     }
 
+    @Override
     public ModuleMetaData findById(String id)
     {
         SolrQuery query = super.buildIdQuery(id, MODULE_METADATA);
@@ -111,6 +119,7 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
         }
     }
 
+    @Override
     public void deleteById(String id)
     {
         String queryString = "id:\"" + id + "\" AND type:\"" + MODULE_METADATA + "\"";
@@ -120,6 +129,7 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
         super.deleteByQuery(queryString);
     }
 
+    @Override
     public List<ModuleMetaData> findAll(Integer startOffset, Integer resultSize)
     {
         String queryString = "type:\"" + MODULE_METADATA + "\"";
@@ -168,6 +178,7 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
      * @param resultSize
      * @return
      */
+    @Override
     public ModuleMetadataSearchResults find(List<String> modulesNames, Integer startOffset, Integer resultSize)
     {
         String queryString = "type:\"" + MODULE_METADATA + "\"";
@@ -217,6 +228,7 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
      * @param resultSize
      * @return
      */
+    @Override
     public ModuleMetadataSearchResults find(List<String> modulesNames, ModuleType moduleType, Integer startOffset, Integer resultSize)
     {
         String queryString = "type:\"" + MODULE_METADATA + "\"";

@@ -17,7 +17,7 @@ import org.ikasan.dashboard.ui.visualisation.model.flow.AbstractWiretapNode;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.metadata.DecoratorMetaData;
+import org.ikasan.spec.metadata.model.DecoratorMetaData;
 import org.ikasan.spec.module.client.TriggerService;
 import org.ikasan.spec.trigger.TriggerRelationship;
 import org.ikasan.vaadin.visjs.network.NetworkDiagram;

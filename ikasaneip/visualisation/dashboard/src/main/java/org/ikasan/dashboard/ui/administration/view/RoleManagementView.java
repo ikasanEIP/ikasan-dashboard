@@ -23,7 +23,7 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.security.service.UserService;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
