@@ -14,7 +14,7 @@ import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.model.designer.business.stream.Flow;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.ModuleType;
 
 public class FlowSelectDialog extends AbstractCloseableResizableDialog {

@@ -70,7 +70,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
     }
 
     @Override
-    public SearchResults<? extends InternalEventDrivenJobRecord> findAll(int limit, int offset) {
+    public SearchResults<InternalEventDrivenJobRecord> findAll(int limit, int offset) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
@@ -86,7 +86,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
     }
 
     @Override
-    public SearchResults<? extends InternalEventDrivenJobRecord> findByContext(String contextId, int limit, int offset) {
+    public SearchResults<InternalEventDrivenJobRecord> findByContext(String contextId, int limit, int offset) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");

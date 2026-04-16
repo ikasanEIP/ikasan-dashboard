@@ -2,7 +2,7 @@ package org.ikasan.dashboard.ui.visualisation.component.filter;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import org.ikasan.business.stream.metadata.model.BusinessStream;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 
 import java.util.Comparator;
 import java.util.List;

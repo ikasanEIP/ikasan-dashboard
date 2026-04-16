@@ -17,8 +17,8 @@ import org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchRe
 import org.ikasan.orchestration.service.utils.StubSchedulerJobInstanceServiceTestImpl;
 import org.ikasan.orchestration.service.utils.TestUtils;
 import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;

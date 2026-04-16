@@ -1,6 +1,6 @@
 package org.ikasan.configuration.metadata.model;
 
-import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationParameterMetaData;
 
 public class SolrConfigurationParameterMetaData implements ConfigurationParameterMetaData
 {

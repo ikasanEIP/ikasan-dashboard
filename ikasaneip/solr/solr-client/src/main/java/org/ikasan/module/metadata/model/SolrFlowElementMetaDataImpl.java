@@ -1,7 +1,8 @@
 package org.ikasan.module.metadata.model;
 
-import org.ikasan.spec.metadata.DecoratorMetaData;
-import org.ikasan.spec.metadata.FlowElementMetaData;
+
+import org.ikasan.spec.metadata.model.DecoratorMetaData;
+import org.ikasan.spec.metadata.model.FlowElementMetaData;
 
 import java.util.List;
 

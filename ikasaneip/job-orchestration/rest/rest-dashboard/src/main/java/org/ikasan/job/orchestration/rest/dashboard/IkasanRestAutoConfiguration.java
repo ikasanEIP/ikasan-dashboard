@@ -99,12 +99,6 @@ public class IkasanRestAutoConfiguration {
     private GlobalEventService globalEventService;
 
     @Bean
-    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
-    public ScheduledProcessEventController scheduledProcessEventController() {
-        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue, this.globalEventService);
-    }
-
-    @Bean
     SchedulerJobProvisionController schedulerJobProvisionController() {
         return new SchedulerJobProvisionController(this.jobProvisionService, schedulerJobService);
     }

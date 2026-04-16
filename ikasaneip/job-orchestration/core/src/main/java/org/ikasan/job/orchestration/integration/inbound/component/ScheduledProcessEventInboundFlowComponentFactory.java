@@ -88,7 +88,7 @@ import org.ikasan.job.orchestration.integration.inbound.component.endpoint.confi
 import org.ikasan.spec.component.endpoint.Consumer;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.ikasan.spec.error.reporting.ErrorReportingService;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.springframework.beans.factory.annotation.Value;

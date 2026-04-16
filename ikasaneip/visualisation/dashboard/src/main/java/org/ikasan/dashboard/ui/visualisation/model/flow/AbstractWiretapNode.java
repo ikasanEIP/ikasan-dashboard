@@ -1,6 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.spec.metadata.DecoratorMetaData;
+import org.ikasan.spec.metadata.model.DecoratorMetaData;
 import org.ikasan.vaadin.visjs.network.Node;
 import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
 import org.ikasan.vaadin.visjs.network.options.nodes.Nodes;

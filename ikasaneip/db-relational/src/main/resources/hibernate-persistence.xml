@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+  http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+             version="2.1">
+    <persistence-unit name="hibernate-persistence" transaction-type="JTA">
+        <class>org.ikasan.relational.persistence.scheduled.context.model.HibernateScheduledContextRecordImpl</class>
+        <class>org.ikasan.relational.persistence.scheduled.instance.model.HibernateScheduledContextInstanceRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.instance.model.HibernateSchedulerJobInstanceRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.instance.model.HibernateScheduledContextInstanceAuditAggregateRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.job.model.HibernateBridgingJobRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.job.model.HibernateContextStartJobRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.job.model.HibernateContextTerminalJobRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.job.model.HibernateFileEventDrivenJobRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.job.model.HibernateQuartzScheduleDrivenJobRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.job.model.HibernateGlobalEventJobRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.job.model.HibernateInternalEventDrivenJobRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.job.model.HibernateSchedulerJobRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.joblock.model.HibernateJobLockCacheRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.joblock.model.HibernateJobLockCacheAuditRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.notification.model.HibernateEmailNotificationContextRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.notification.model.HibernateEmailNotificationDetailsRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.notification.model.HibernateNotificationSendAuditRecord</class>
+        <class>org.ikasan.relational.persistence.scheduled.profile.model.HibernateContextProfileRecord</class>
+        <class>org.ikasan.relational.persistence.module.metadata.model.HibernateModuleMetaDataImpl</class>
+    </persistence-unit>
+</persistence>

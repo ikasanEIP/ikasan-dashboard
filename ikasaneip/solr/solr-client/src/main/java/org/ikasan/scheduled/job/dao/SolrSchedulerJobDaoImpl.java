@@ -26,7 +26,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     private static Logger logger = LoggerFactory.getLogger(SolrSchedulerJobDaoImpl.class);
 
     @Override
-    public SearchResults<? extends SchedulerJobRecord> findAll(int limit, int offset) {
+    public SearchResults<SchedulerJobRecord> findAll(int limit, int offset) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(OPEN_BRACKET);
         typeBuffer.append(TYPE + COLON);
@@ -56,7 +56,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     }
 
     @Override
-    public SearchResults<? extends SchedulerJobRecord> findByContext(String contextName, int limit, int offset) {
+    public SearchResults<SchedulerJobRecord> findByContext(String contextName, int limit, int offset) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(OPEN_BRACKET);
         queryBuffer.append(TYPE + COLON);
@@ -100,7 +100,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     }
 
     @Override
-    public SearchResults<? extends SchedulerJobRecord> findByAgent(String agentName, int limit, int offset) {
+    public SearchResults<SchedulerJobRecord> findByAgent(String agentName, int limit, int offset) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(OPEN_BRACKET);
         queryBuffer.append(TYPE + COLON);
@@ -136,7 +136,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     }
 
     @Override
-    public SearchResults<? extends SchedulerJobRecord> findByFilter(SchedulerJobSearchFilter filter, int limit, int offset, String sortColumn, String sortDirection) {
+    public SearchResults<SchedulerJobRecord> findByFilter(SchedulerJobSearchFilter filter, int limit, int offset, String sortColumn, String sortDirection) {
         StringBuffer queryBuffer = new StringBuffer();
 
         queryBuffer.append(OPEN_BRACKET);
@@ -309,10 +309,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
 
         logger.debug("query: " + solrQuery);
 
-        SearchResults<? extends SchedulerJobRecord> results
-            = this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class, offset, limit);
-
-        return results;
+        return this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class, offset, limit);
     }
 
     @Override

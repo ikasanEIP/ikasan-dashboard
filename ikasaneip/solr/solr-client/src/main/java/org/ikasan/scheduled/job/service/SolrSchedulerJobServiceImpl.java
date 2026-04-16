@@ -94,12 +94,12 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
-    public SearchResults<? extends SchedulerJobRecord> findByContext(String contextId, int limit, int offset) {
+    public SearchResults<SchedulerJobRecord> findByContext(String contextId, int limit, int offset) {
         return this.schedulerJobRecordDao.findByContext(contextId, limit, offset);
     }
 
     @Override
-    public SearchResults<? extends SchedulerJobRecord> findByFilter(SchedulerJobSearchFilter filter, int limit, int offset, String sortColumn, String sortDirection) {
+    public SearchResults<SchedulerJobRecord> findByFilter(SchedulerJobSearchFilter filter, int limit, int offset, String sortColumn, String sortDirection) {
         return this.schedulerJobRecordDao.findByFilter(filter, limit, offset, sortColumn, sortDirection);
     }
 

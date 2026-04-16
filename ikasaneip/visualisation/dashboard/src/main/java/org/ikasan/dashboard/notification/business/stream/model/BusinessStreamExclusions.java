@@ -1,6 +1,6 @@
 package org.ikasan.dashboard.notification.business.stream.model;
 
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 
 import java.util.List;
 

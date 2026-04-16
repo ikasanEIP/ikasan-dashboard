@@ -1,9 +1,9 @@
 package org.ikasan.module.metadata.service;
 
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrServiceBase;

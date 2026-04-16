@@ -1,7 +1,7 @@
 package org.ikasan.rest.dashboard.model.metadata.configuration;
 
-import org.ikasan.spec.metadata.ConfigurationMetaData;
-import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationParameterMetaData;
 
 import java.util.List;
 

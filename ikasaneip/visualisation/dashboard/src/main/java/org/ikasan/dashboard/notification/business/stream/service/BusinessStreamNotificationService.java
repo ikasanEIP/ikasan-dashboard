@@ -6,8 +6,8 @@ import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExc
 import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExclusions;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.json.JSONArray;
 import org.json.JSONObject;
