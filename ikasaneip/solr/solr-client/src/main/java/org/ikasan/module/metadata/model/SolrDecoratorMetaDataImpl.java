@@ -1,6 +1,6 @@
 package org.ikasan.module.metadata.model;
 
-import org.ikasan.spec.metadata.DecoratorMetaData;
+import org.ikasan.spec.metadata.model.DecoratorMetaData;
 
 public class SolrDecoratorMetaDataImpl implements DecoratorMetaData
 {

@@ -3,8 +3,8 @@ package org.ikasan.dashboard.ui.search.listener;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 
 import java.util.HashMap;
 import java.util.stream.Collectors;

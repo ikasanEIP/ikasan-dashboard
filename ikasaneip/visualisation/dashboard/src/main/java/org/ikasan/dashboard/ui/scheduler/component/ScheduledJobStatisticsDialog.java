@@ -15,7 +15,7 @@ import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 
 import java.time.Instant;

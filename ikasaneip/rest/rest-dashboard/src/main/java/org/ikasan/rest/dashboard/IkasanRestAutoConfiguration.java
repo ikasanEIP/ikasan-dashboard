@@ -45,7 +45,7 @@ import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagemen
 import org.ikasan.rest.dashboard.service.bigqueue.BigQueueDashboardServiceImpl;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;

@@ -59,7 +59,7 @@ public class SolrBridgingJobDaoImpl extends SolrDaoBase<BridgingJobRecord>
     }
 
     @Override
-    public SearchResults<? extends BridgingJobRecord> findAll(int limit, int offset) {
+    public SearchResults<BridgingJobRecord> findAll(int limit, int offset) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.BRIDGING_JOB).append("\" ");
@@ -75,7 +75,7 @@ public class SolrBridgingJobDaoImpl extends SolrDaoBase<BridgingJobRecord>
     }
 
     @Override
-    public SearchResults<? extends BridgingJobRecord> findByContext(String contextId, int limit, int offset) {
+    public SearchResults<BridgingJobRecord> findByContext(String contextId, int limit, int offset) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.BRIDGING_JOB).append("\" ");

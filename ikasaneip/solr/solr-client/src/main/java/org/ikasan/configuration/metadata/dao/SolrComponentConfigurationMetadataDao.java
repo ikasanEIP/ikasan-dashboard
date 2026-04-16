@@ -11,7 +11,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.configuration.metadata.model.SolrComponentConfiguration;
 import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
-import org.ikasan.spec.metadata.ConfigurationMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;

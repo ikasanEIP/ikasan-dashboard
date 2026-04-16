@@ -1,7 +1,7 @@
 package org.ikasan.rest.client;
 
 import jakarta.annotation.Resource;
-import org.ikasan.spec.metadata.ConfigurationMetaDataProvider;
+import org.ikasan.spec.metadata.model.ConfigurationMetaDataProvider;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.springframework.beans.factory.annotation.Value;

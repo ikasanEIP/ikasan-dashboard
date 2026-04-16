@@ -13,7 +13,8 @@ import org.ikasan.module.metadata.model.SolrFlowElementMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrTransitionImpl;
-import org.ikasan.spec.metadata.*;
+import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.metadata.model.*;
 import org.ikasan.spec.module.ModuleType;
 import org.junit.Assert;
 import org.junit.Before;
@@ -203,7 +204,9 @@ public class SolrModuleMetadataDaoTest extends SolrTestCaseJ4
             ModuleMetadataSearchResults moduleMetaDataRes = dao.find(moduleNames, 0, 3);
 
             Assert.assertEquals("Number of results 3",3, moduleMetaDataRes.getResultList().size());
-            Assert.assertEquals("Number of results total 4",4, moduleMetaDataRes.getTotalNumberOfResults());
+            Assert.assertEquals("Number of results total 4",
+                4,
+                moduleMetaDataRes.getTotalNumberOfResults());
 
             moduleNames = new ArrayList<>();
             moduleNames.add("bla*");

@@ -1,7 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.dao;
 
 import org.apache.commons.io.IOUtils;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
 

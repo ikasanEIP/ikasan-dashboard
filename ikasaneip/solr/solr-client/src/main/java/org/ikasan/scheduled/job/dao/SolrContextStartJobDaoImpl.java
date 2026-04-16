@@ -59,7 +59,7 @@ public class SolrContextStartJobDaoImpl extends SolrDaoBase<ContextStartJobRecor
     }
 
     @Override
-    public SearchResults<? extends ContextStartJobRecord> findAll(int limit, int offset) {
+    public SearchResults<ContextStartJobRecord> findAll(int limit, int offset) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.CONTEXT_START_JOB).append("\" ");
@@ -75,7 +75,7 @@ public class SolrContextStartJobDaoImpl extends SolrDaoBase<ContextStartJobRecor
     }
 
     @Override
-    public SearchResults<? extends ContextStartJobRecord> findByContext(String contextId, int limit, int offset) {
+    public SearchResults<ContextStartJobRecord> findByContext(String contextId, int limit, int offset) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.CONTEXT_START_JOB).append("\" ");

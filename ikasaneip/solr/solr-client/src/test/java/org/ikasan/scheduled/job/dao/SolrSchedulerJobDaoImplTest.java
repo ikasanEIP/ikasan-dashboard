@@ -223,7 +223,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             this.insertFileEventRecords(agentName, numRecords, contextId);
             server.commit();
 
-            SearchResults<SolrSchedulerJobRecordImpl> results = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByAgent("testAgentagentName0", 10, 0);
+            SearchResults<SchedulerJobRecord> results = this.dao.findByAgent("testAgentagentName0", 10, 0);
 
             Assert.assertNotNull(results);
             Assert.assertEquals(1, results.getResultList().size());
@@ -249,7 +249,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             // Test filtering by FileEventDrivenJob
             SolrSchedulerJobSearchFilterImpl filterFile = new SolrSchedulerJobSearchFilterImpl();
             filterFile.setJobTypeFilter(JobConstants.FILE_EVENT_DRIVEN_JOB);
-            SearchResults<SolrSchedulerJobRecordImpl> resultsFile = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filterFile, 10, 0, null, null);
+            SearchResults<SchedulerJobRecord> resultsFile = this.dao.findByFilter(filterFile, 10, 0, null, null);
             Assert.assertNotNull(resultsFile);
             Assert.assertEquals(3, resultsFile.getResultList().size());
             resultsFile.getResultList().forEach(record -> Assert.assertTrue(record.getJob() instanceof FileEventDrivenJob));
@@ -257,7 +257,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             // Test filtering by QuartzScheduleDrivenJob
             SolrSchedulerJobSearchFilterImpl filterQuartz = new SolrSchedulerJobSearchFilterImpl();
             filterQuartz.setJobTypeFilter(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB);
-            SearchResults<SolrSchedulerJobRecordImpl> resultsQuartz = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filterQuartz, 10, 0, null, null);
+            SearchResults<SchedulerJobRecord> resultsQuartz = this.dao.findByFilter(filterQuartz, 10, 0, null, null);
             Assert.assertNotNull(resultsQuartz);
             Assert.assertEquals(2, resultsQuartz.getResultList().size());
             resultsQuartz.getResultList().forEach(record -> Assert.assertTrue(record.getJob() instanceof QuartzScheduleDrivenJob));
@@ -265,7 +265,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             // Test filtering by InternalEventDrivenJob
             SolrSchedulerJobSearchFilterImpl filterInternal = new SolrSchedulerJobSearchFilterImpl();
             filterInternal.setJobTypeFilter(JobConstants.INTERNAL_EVENT_DRIVEN_JOB);
-            SearchResults<SolrSchedulerJobRecordImpl> resultsInternal = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filterInternal, 10, 0, null, null);
+            SearchResults<SchedulerJobRecord> resultsInternal = this.dao.findByFilter(filterInternal, 10, 0, null, null);
             Assert.assertNotNull(resultsInternal);
             Assert.assertEquals(4, resultsInternal.getResultList().size());
             resultsInternal.getResultList().forEach(record -> Assert.assertTrue(record.getJob() instanceof InternalEventDrivenJob));
@@ -273,7 +273,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             // Test filtering by GlobalEventJob
             SolrSchedulerJobSearchFilterImpl filterGlobal = new SolrSchedulerJobSearchFilterImpl();
             filterGlobal.setJobTypeFilter(JobConstants.GLOBAL_EVENT_JOB);
-            SearchResults<SolrSchedulerJobRecordImpl> resultsGlobal = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filterGlobal, 10, 0, null, null);
+            SearchResults<SchedulerJobRecord> resultsGlobal = this.dao.findByFilter(filterGlobal, 10, 0, null, null);
             Assert.assertNotNull(resultsGlobal);
             Assert.assertEquals(1, resultsGlobal.getResultList().size());
             resultsGlobal.getResultList().forEach(record -> Assert.assertTrue(record.getJob() instanceof GlobalEventJob));
@@ -295,7 +295,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             // Test filtering by a list of job types: FileEventDrivenJob and QuartzScheduleDrivenJob
             SolrSchedulerJobSearchFilterImpl filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setJobTypes(List.of(JobConstants.FILE_EVENT_DRIVEN_JOB, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB));
-            SearchResults<SolrSchedulerJobRecordImpl> results = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, 10, 0, null, null);
+            SearchResults<SchedulerJobRecord> results = this.dao.findByFilter(filter, 10, 0, null, null);
 
             Assert.assertNotNull(results);
             Assert.assertEquals(5, results.getResultList().size()); // 3 FileEventDriven + 2 QuartzScheduleDriven
@@ -306,14 +306,14 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             // Test filtering by a list including a non-existent job type
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setJobTypes(List.of(JobConstants.FILE_EVENT_DRIVEN_JOB, JobConstants.GLOBAL_EVENT_JOB));
-            results = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, 10, 0, null, null);
+            results = this.dao.findByFilter(filter, 10, 0, null, null);
             Assert.assertNotNull(results);
             Assert.assertEquals(4, results.getResultList().size()); // Only FileEventDrivenJob should be found
 
             // Test filtering by an empty list of job types (should return all)
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setJobTypes(new ArrayList<>());
-            results = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, 10, 0, null, null);
+            results = this.dao.findByFilter(filter, 10, 0, null, null);
             Assert.assertNotNull(results);
             Assert.assertEquals(10, results.getResultList().size()); // All 3+2+4+1 = 10 jobs
         }
@@ -372,7 +372,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             // Test filtering by targetsResidingContext = true
             SolrSchedulerJobSearchFilterImpl filterTrue = new SolrSchedulerJobSearchFilterImpl();
             filterTrue.setTargetResidingContextOnly(true);
-            SearchResults<SolrSchedulerJobRecordImpl> resultsTrue = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filterTrue, 10, 0, null, null);
+            SearchResults<SchedulerJobRecord> resultsTrue = this.dao.findByFilter(filterTrue, 10, 0, null, null);
             Assert.assertNotNull(resultsTrue);
             Assert.assertEquals(3, resultsTrue.getResultList().size());
             resultsTrue.getResultList().forEach(record -> {
@@ -384,7 +384,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             // Test filtering by targetsResidingContext = false
             SolrSchedulerJobSearchFilterImpl filterFalse = new SolrSchedulerJobSearchFilterImpl();
             filterFalse.setTargetResidingContextOnly(false);
-            SearchResults<SolrSchedulerJobRecordImpl> resultsFalse = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filterFalse, 10, 0, null, null);
+            SearchResults<SchedulerJobRecord> resultsFalse = this.dao.findByFilter(filterFalse, 10, 0, null, null);
             Assert.assertNotNull(resultsFalse);
             Assert.assertEquals(2, resultsFalse.getResultList().size());
             resultsFalse.getResultList().forEach(record -> {
@@ -410,25 +410,25 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             int totalExpectedRecords = 5 + 7 + 8 + 3; // 23 records
 
             // Test with limit 10, offset 0
-            SearchResults<SolrSchedulerJobRecordImpl> results1 = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findAll(10, 0);
+            SearchResults<SchedulerJobRecord> results1 = this.dao.findAll(10, 0);
             Assert.assertNotNull(results1);
             Assert.assertEquals(10, results1.getResultList().size());
             Assert.assertEquals(totalExpectedRecords, results1.getTotalNumberOfResults());
 
             // Test with limit 10, offset 10
-            SearchResults<SolrSchedulerJobRecordImpl> results2 = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findAll(10, 10);
+            SearchResults<SchedulerJobRecord> results2 = this.dao.findAll(10, 10);
             Assert.assertNotNull(results2);
             Assert.assertEquals(10, results2.getResultList().size());
             Assert.assertEquals(totalExpectedRecords, results2.getTotalNumberOfResults());
 
             // Test with limit 10, offset 20 (remaining 3 records)
-            SearchResults<SolrSchedulerJobRecordImpl> results3 = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findAll(10, 20);
+            SearchResults<SchedulerJobRecord> results3 = this.dao.findAll(10, 20);
             Assert.assertNotNull(results3);
             Assert.assertEquals(3, results3.getResultList().size());
             Assert.assertEquals(totalExpectedRecords, results3.getTotalNumberOfResults());
 
             // Test with limit 10, offset 30 (no records)
-            SearchResults<SolrSchedulerJobRecordImpl> results4 = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findAll(10, 30);
+            SearchResults<SchedulerJobRecord> results4 = this.dao.findAll(10, 30);
             Assert.assertNotNull(results4);
             Assert.assertEquals(0, results4.getResultList().size());
             Assert.assertEquals(totalExpectedRecords, results4.getTotalNumberOfResults());
@@ -494,9 +494,9 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             server.commit();
 
             // Verify initial state
-            SearchResults<SolrSchedulerJobRecordImpl> resultsToDelete = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByAgent(agentNameToDelete, 10, 0);
+            SearchResults<SchedulerJobRecord> resultsToDelete = this.dao.findByAgent(agentNameToDelete, 10, 0);
             Assert.assertEquals(5, resultsToDelete.getResultList().size()); // 3 file + 2 quartz
-            SearchResults<SolrSchedulerJobRecordImpl> resultsToKeep = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByAgent(agentToKeep, 10, 0);
+            SearchResults<SchedulerJobRecord> resultsToKeep = this.dao.findByAgent(agentToKeep, 10, 0);
             Assert.assertEquals(5, resultsToKeep.getResultList().size()); // 4 internal + 1 global
 
             // Perform deletion
@@ -504,9 +504,9 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             server.commit();
 
             // Verify state after deletion
-            resultsToDelete = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByAgent(agentNameToDelete, 10, 0);
+            resultsToDelete = this.dao.findByAgent(agentNameToDelete, 10, 0);
             Assert.assertEquals(0, resultsToDelete.getResultList().size());
-            resultsToKeep = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByAgent(agentToKeep, 10, 0);
+            resultsToKeep = this.dao.findByAgent(agentToKeep, 10, 0);
             Assert.assertEquals(5, resultsToKeep.getResultList().size());
         }
     }
@@ -530,9 +530,9 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             server.commit();
 
             // Verify initial state
-            SearchResults<SolrSchedulerJobRecordImpl> resultsToDelete = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByContext(contextNameToDelete, 10, 0);
+            SearchResults<SchedulerJobRecord> resultsToDelete = this.dao.findByContext(contextNameToDelete, 10, 0);
             Assert.assertEquals(5, resultsToDelete.getResultList().size()); // 3 file + 2 quartz
-            SearchResults<SolrSchedulerJobRecordImpl> resultsToKeep = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByContext(contextToKeep, 10, 0);
+            SearchResults<SchedulerJobRecord> resultsToKeep = this.dao.findByContext(contextToKeep, 10, 0);
             Assert.assertEquals(5, resultsToKeep.getResultList().size()); // 4 internal + 1 global
 
             // Perform deletion
@@ -540,9 +540,9 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             server.commit();
 
             // Verify state after deletion
-            resultsToDelete = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByContext(contextNameToDelete, 10, 0);
+            resultsToDelete = this.dao.findByContext(contextNameToDelete, 10, 0);
             Assert.assertEquals(0, resultsToDelete.getResultList().size());
-            resultsToKeep = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByContext(contextToKeep, 10, 0);
+            resultsToKeep = this.dao.findByContext(contextToKeep, 10, 0);
             Assert.assertEquals(5, resultsToKeep.getResultList().size());
         }
     }
@@ -577,7 +577,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter.setJobNameFilter("jobName100");
             filter.setContextSearchFilter("context2Idf");
 
-            SearchResults<SolrSchedulerJobRecordImpl> solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            SearchResults<SchedulerJobRecord> solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             SchedulerJob job = solrSchedulerJobRecords.getResultList().get(0).getJob();
 
             Assert.assertTrue(job instanceof SolrFileEventDrivenJobImpl);
@@ -586,7 +586,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter.setJobNameFilter("jobName100");
             filter.setContextSearchFilter("context2Idq");
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             job = solrSchedulerJobRecords.getResultList().get(0).getJob();
 
             Assert.assertTrue(job instanceof SolrQuartzScheduleDrivenJobImpl);
@@ -595,7 +595,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter.setJobNameFilter("jobName100");
             filter.setContextSearchFilter("context2Idi");
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             job = solrSchedulerJobRecords.getResultList().get(0).getJob();
 
             Assert.assertTrue(job instanceof SolrInternalEventDrivenJobImpl);
@@ -603,14 +603,14 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setHeld(true);
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
 
             Assert.assertTrue(solrSchedulerJobRecords.getTotalNumberOfResults() == 274);
 
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setSkipped(true);
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
 
             Assert.assertTrue(solrSchedulerJobRecords.getTotalNumberOfResults() == 548);
 
@@ -618,7 +618,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter.setJobNameFilter("jobName100");
             filter.setContextSearchFilter("context2Idg");
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             job = solrSchedulerJobRecords.getResultList().get(0).getJob();
 
             Assert.assertTrue(job instanceof SolrGlobalEventJobImpl);
@@ -626,15 +626,15 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setNotJobNameInFilter(List.of("jobName100"));
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
-            List<SolrSchedulerJobRecordImpl> resultList = solrSchedulerJobRecords.getResultList();
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
+            List<SchedulerJobRecord> resultList = solrSchedulerJobRecords.getResultList();
 
             Assert.assertEquals(6825, resultList.size());
 
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setDisplayNameFilter("displayName");
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             resultList = solrSchedulerJobRecords.getResultList();
 
             Assert.assertEquals(6835, resultList.size());
@@ -642,7 +642,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setDisplayNameFilter("displayName100");
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             resultList = solrSchedulerJobRecords.getResultList();
 
             Assert.assertEquals(10, resultList.size());
@@ -651,7 +651,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter.setDisplayNameFilter("displayName100");
             filter.setJobNameFilter("jobName100");
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             resultList = solrSchedulerJobRecords.getResultList();
 
             Assert.assertEquals(10, resultList.size());
@@ -659,7 +659,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setJobTypeFilter(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE);
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             resultList = solrSchedulerJobRecords.getResultList();
 
             Assert.assertEquals(1367, resultList.size());
@@ -667,7 +667,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setContextNames(List.of("context2Idi"));
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             resultList = solrSchedulerJobRecords.getResultList();
 
             Assert.assertEquals(2000, resultList.size());
@@ -675,7 +675,7 @@ public class SolrSchedulerJobDaoImplTest extends SolrTestCaseJ4 {
             filter = new SolrSchedulerJobSearchFilterImpl();
             filter.setContextNames(List.of("blah"));
 
-            solrSchedulerJobRecords = (SearchResults<SolrSchedulerJobRecordImpl>) this.dao.findByFilter(filter, -1, -1, null, null);
+            solrSchedulerJobRecords = this.dao.findByFilter(filter, -1, -1, null, null);
             resultList = solrSchedulerJobRecords.getResultList();
 
             Assert.assertEquals(0, resultList.size());

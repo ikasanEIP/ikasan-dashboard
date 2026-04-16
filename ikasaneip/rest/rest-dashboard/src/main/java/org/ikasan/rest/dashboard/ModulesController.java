@@ -41,7 +41,7 @@
 package org.ikasan.rest.dashboard;
 
 import org.ikasan.rest.dashboard.model.dto.MetadataModuleDto;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

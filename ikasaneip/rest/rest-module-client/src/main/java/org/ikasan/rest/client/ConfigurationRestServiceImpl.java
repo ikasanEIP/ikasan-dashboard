@@ -1,7 +1,7 @@
 package org.ikasan.rest.client;
 
-import org.ikasan.spec.metadata.ConfigurationMetaData;
-import org.ikasan.spec.metadata.ConfigurationMetaDataProvider;
+import org.ikasan.spec.metadata.model.ConfigurationMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationMetaDataProvider;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

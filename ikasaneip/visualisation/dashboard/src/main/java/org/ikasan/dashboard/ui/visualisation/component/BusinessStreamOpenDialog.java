@@ -12,9 +12,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.visualisation.component.filter.BusinessStreamSearchFilter;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 
 public class BusinessStreamOpenDialog extends AbstractCloseableResizableDialog {
 
