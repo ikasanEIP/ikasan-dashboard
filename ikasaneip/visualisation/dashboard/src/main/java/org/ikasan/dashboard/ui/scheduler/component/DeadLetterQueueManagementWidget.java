@@ -54,13 +54,11 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
 
     protected Grid<BigQueueMessage> bigQueueMessageGrid = new Grid<>();
     private ConfigurableFilterDataProvider<BigQueueMessage, Void, BigQueueFilter> filteredDataProvider;
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-    private ContextInstance contextInstance;
-    private SystemEventLogger systemEventLogger;
+    private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private final ContextInstance contextInstance;
+    private final SystemEventLogger systemEventLogger;
     private BigQueueManagementService bigQueueManagementService;
-    private ContextMachine contextMachine;
-    private BigQueueFilter bigQueueFilter = new BigQueueFilter();
-    private UI ui;
+    private final BigQueueFilter bigQueueFilter = new BigQueueFilter();
 
     /**
      * Constructor for DeadLetterQueueManagementWidget class.
@@ -77,7 +75,6 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
         if(this.systemEventLogger == null) {
             throw new IllegalArgumentException("systemEventLogger cannot be null!");
         }
-        this.ui = UI.getCurrent();
 
         if(ContextMachineCache.instance()
             .containsInstanceIdentifier(contextInstance.getId())) {
@@ -102,7 +99,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
      * based on the context instance ID and creating a new instance of BigQueueContextMachineManagementServiceImpl.
      */
     private void initialiseBigQueueManagementService() {
-        this.contextMachine = ContextMachineCache.instance()
+        ContextMachine contextMachine = ContextMachineCache.instance()
             .getByContextInstanceId(contextInstance.getId());
 
         this.bigQueueManagementService =
@@ -131,7 +128,6 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-        UI ui = UI.getCurrent();
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         resubmitAllButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -153,8 +149,10 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                     boolean error = false;
                     try {
                         int counter = 0;
-                        for (BigQueueMessage bigQueueMessage : this.bigQueueManagementService.getMessages(this.contextMachine.getDeadLetterQueueName())) {
-                            this.contextMachine.resubmitMessageFromDeadLetterQueue(bigQueueMessage.getMessageId());
+                        ContextMachine contextMachine = ContextMachineCache.instance()
+                            .getByContextInstanceId(contextInstance.getId());
+                        for (BigQueueMessage bigQueueMessage : this.bigQueueManagementService.getMessages(contextMachine.getDeadLetterQueueName())) {
+                            contextMachine.resubmitMessageFromDeadLetterQueue(bigQueueMessage.getMessageId());
                             counter++;
                         }
                         ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
@@ -164,21 +162,25 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                             , authentication.getName());
                     } catch (Exception e) {
                         error = true;
-                        ui.access(() -> {
-                            this.bigQueueMessageGrid.getDataProvider().refreshAll();
-                            progressIndicatorDialog.close();
-                            NotificationHelper.showErrorNotification((String.format(getTranslation
-                                ("error.unable-to-resubmit-all-dlq-messages"), e.getMessage())));
-                        });
+                        if(this.getUI().isPresent()) {
+                            this.getUI().get().access(() -> {
+                                this.bigQueueMessageGrid.getDataProvider().refreshAll();
+                                progressIndicatorDialog.close();
+                                NotificationHelper.showErrorNotification((String.format(getTranslation
+                                    ("error.unable-to-resubmit-all-dlq-messages"), e.getMessage())));
+                            });
+                        }
                     }
 
                     if (!error) {
-                        ui.access(() -> {
-                            this.bigQueueMessageGrid.getDataProvider().refreshAll();
-                            progressIndicatorDialog.close();
-                            NotificationHelper.showUserNotification(String.format(getTranslation
-                                ("message.successfully-resubmitted-all-dlq-messages")));
-                        });
+                        if(this.getUI().isPresent()) {
+                            this.getUI().get().access(() -> {
+                                this.bigQueueMessageGrid.getDataProvider().refreshAll();
+                                progressIndicatorDialog.close();
+                                NotificationHelper.showUserNotification(String.format(getTranslation
+                                    ("message.successfully-resubmitted-all-dlq-messages")));
+                            });
+                        }
                     }
                 });
             });
@@ -211,7 +213,9 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                 executor.execute(() -> {
                     boolean error = false;
                     try {
-                        bigQueueManagementService.deleteAllMessage(this.contextMachine.getDeadLetterQueueName());
+                        ContextMachine contextMachine = ContextMachineCache.instance()
+                            .getByContextInstanceId(contextInstance.getId());
+                        bigQueueManagementService.deleteAllMessage(contextMachine.getDeadLetterQueueName());
                         ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_ALL_DLQ_MESSAGES_DELETED
                             , String.format("Deleted all DLQ messages for job plan [%s] with instance id [%s]"
@@ -219,21 +223,25 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                             , authentication.getName());
                     } catch (Exception e) {
                         error = true;
-                        ui.access(() -> {
-                            this.bigQueueMessageGrid.getDataProvider().refreshAll();
-                            progressIndicatorDialog.close();
-                            NotificationHelper.showErrorNotification((String.format(getTranslation
-                                ("error.unable-to-delete-all-dlq-messages", e.getMessage()))));
-                        });
+                        if(this.getUI().isPresent()) {
+                            this.getUI().get().access(() -> {
+                                this.bigQueueMessageGrid.getDataProvider().refreshAll();
+                                progressIndicatorDialog.close();
+                                NotificationHelper.showErrorNotification((String.format(getTranslation
+                                    ("error.unable-to-delete-all-dlq-messages", e.getMessage()))));
+                            });
+                        }
                     }
 
                     if (!error) {
-                        ui.access(() -> {
-                            this.bigQueueMessageGrid.getDataProvider().refreshAll();
-                            progressIndicatorDialog.close();
-                            NotificationHelper.showUserNotification(String.format(getTranslation
-                                ("message.successfully-deleted-all-dlq-messages")));
-                        });
+                        if(this.getUI().isPresent()) {
+                            this.getUI().get().access(() -> {
+                                this.bigQueueMessageGrid.getDataProvider().refreshAll();
+                                progressIndicatorDialog.close();
+                                NotificationHelper.showUserNotification(String.format(getTranslation
+                                    ("message.successfully-deleted-all-dlq-messages")));
+                            });
+                        }
                     }
                 });
             });
@@ -256,7 +264,6 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
      * A header row is added to the grid for filtering purposes.
      */
     private void initialiseGrid() {
-        UI ui = UI.getCurrent();
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.bigQueueMessageGrid.setSizeFull();
         this.bigQueueMessageGrid.addColumn(new ComponentRenderer<>(bigQueueMessage -> {
@@ -340,7 +347,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
             Button resubmitButton = new Button(getTranslation("button.resubmit"));
             resubmitButton.getElement().setAttribute("title", getTranslation("tooltip.resubmit-from-dlq", UI.getCurrent().getLocale()));
 
-            ComponentSecurityVisibility.applySecurity(resubmitButton, SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.applySecurity(authentication, resubmitButton, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
@@ -363,7 +370,9 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                     executor.execute(() -> {
                         boolean error = false;
                         try {
-                            this.contextMachine.resubmitMessageFromDeadLetterQueue(bigQueueMessage.getMessageId());
+                            ContextMachine contextMachine = ContextMachineCache.instance()
+                                .getByContextInstanceId(contextInstance.getId());
+                            contextMachine.resubmitMessageFromDeadLetterQueue(bigQueueMessage.getMessageId());
                             ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
                             this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DLQ_MESSAGE_RESUBMITTED
                                 , String.format("Resubmitted DLQ message[%s], with content[%s] for job plan [%s] with instance id [%s]"
@@ -372,21 +381,25 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                                 , authentication.getName());
                         } catch (Exception e) {
                             error = true;
-                            ui.access(() -> {
-                                this.bigQueueMessageGrid.getDataProvider().refreshAll();
-                                progressIndicatorDialog.close();
-                                NotificationHelper.showErrorNotification((String.format(getTranslation
-                                    ("error.unable-to-resubmit-dlq-messages", e.getMessage()))));
-                            });
+                            if(this.getUI().isPresent()) {
+                                this.getUI().get().access(() -> {
+                                    this.bigQueueMessageGrid.getDataProvider().refreshAll();
+                                    progressIndicatorDialog.close();
+                                    NotificationHelper.showErrorNotification((String.format(getTranslation
+                                        ("error.unable-to-resubmit-dlq-messages", e.getMessage()))));
+                                });
+                            }
                         }
 
                         if (!error) {
-                            ui.access(() -> {
-                                this.bigQueueMessageGrid.getDataProvider().refreshAll();
-                                progressIndicatorDialog.close();
-                                NotificationHelper.showUserNotification(String.format(getTranslation
-                                    ("message.successfully-resubmitted-dlq-messages")));
-                            });
+                            if(this.getUI().isPresent()) {
+                                this.getUI().get().access(() -> {
+                                    this.bigQueueMessageGrid.getDataProvider().refreshAll();
+                                    progressIndicatorDialog.close();
+                                    NotificationHelper.showUserNotification(String.format(getTranslation
+                                        ("message.successfully-resubmitted-dlq-messages")));
+                                });
+                            }
                         }
                     });
                 });
@@ -395,7 +408,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
             Button deleteButton = new Button(getTranslation("button.delete"));
             deleteButton.getElement().setAttribute("title", getTranslation("tooltip.delete-from-dlq", UI.getCurrent().getLocale()));
 
-            ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.applySecurity(authentication, deleteButton, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
@@ -418,7 +431,9 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                     executor.execute(() -> {
                         boolean error = false;
                         try {
-                            this.bigQueueManagementService.deleteMessage(this.contextMachine.getDeadLetterQueueName(),
+                            ContextMachine contextMachine = ContextMachineCache.instance()
+                                .getByContextInstanceId(contextInstance.getId());
+                            this.bigQueueManagementService.deleteMessage(contextMachine.getDeadLetterQueueName(),
                                 bigQueueMessage.getMessageId());
                             ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
                             this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DLQ_MESSAGE_DELETED
@@ -428,21 +443,25 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                                 , authentication.getName());
                         } catch (Exception e) {
                             error = true;
-                            ui.access(() -> {
-                                this.bigQueueMessageGrid.getDataProvider().refreshAll();
-                                progressIndicatorDialog.close();
-                                NotificationHelper.showErrorNotification((String.format(getTranslation
-                                    ("error.unable-to-delete-dlq-messages", e.getMessage()))));
-                            });
+                            if(this.getUI().isPresent()) {
+                                this.getUI().get().access(() -> {
+                                    this.bigQueueMessageGrid.getDataProvider().refreshAll();
+                                    progressIndicatorDialog.close();
+                                    NotificationHelper.showErrorNotification((String.format(getTranslation
+                                        ("error.unable-to-delete-dlq-messages", e.getMessage()))));
+                                });
+                            }
                         }
 
                         if (!error) {
-                            ui.access(() -> {
-                                this.bigQueueMessageGrid.getDataProvider().refreshAll();
-                                progressIndicatorDialog.close();
-                                NotificationHelper.showUserNotification(String.format(getTranslation
-                                    ("message.successfully-deleted-dlq-messages")));
-                            });
+                            if(this.getUI().isPresent()) {
+                                this.getUI().get().access(() -> {
+                                    this.bigQueueMessageGrid.getDataProvider().refreshAll();
+                                    progressIndicatorDialog.close();
+                                    NotificationHelper.showUserNotification(String.format(getTranslation
+                                        ("message.successfully-deleted-dlq-messages")));
+                                });
+                            }
                         }
                     });
                 });
@@ -504,7 +523,9 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
 
     private List<BigQueueMessage> getResults(BigQueueFilter filter, int offset, int limit, String sortField, String sortDirection) {
         try {
-            List<BigQueueMessage> results = this.bigQueueManagementService.getMessages(this.contextMachine.getDeadLetterQueueName());
+            ContextMachine contextMachine = ContextMachineCache.instance()
+                .getByContextInstanceId(contextInstance.getId());
+            List<BigQueueMessage> results = this.bigQueueManagementService.getMessages(contextMachine.getDeadLetterQueueName());
 
             if(filter.getMessageId() != null && !filter.getMessageId().isEmpty()) {
                 results = results.stream()
@@ -585,26 +606,31 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        if(this.contextMachine != null) {
-            ContextInstanceDlqEventBroadcaster.register(this);
-            this.contextMachine.addContextInstanceDlqEventEventBroadcastListeners(this);
+        ContextInstanceDlqEventBroadcaster.register(this);
+        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            ContextMachine contextMachine = ContextMachineCache.instance()
+                .getByContextInstanceId(contextInstance.getId());
+            contextMachine.addContextInstanceDlqEventEventBroadcastListeners(this);
         }
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
-        if(this.contextMachine != null) {
-            ContextInstanceDlqEventBroadcaster.unregister(this);
-            this.contextMachine.removeContextInstanceDlqEventEventBroadcastListeners(this);
+        ContextInstanceDlqEventBroadcaster.unregister(this);
+        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            ContextMachine contextMachine = ContextMachineCache.instance()
+                .getByContextInstanceId(contextInstance.getId());
+            contextMachine.removeContextInstanceDlqEventEventBroadcastListeners(this);
         }
     }
 
     @Override
     public void receiveBroadcast(ContextInstance contextInstance) {
-        if(this.contextMachine != null) {
-            if (this.ui.isAttached()) {
-                this.ui.access(() -> {
+        if(this.contextInstance != null && contextInstance != null
+            && this.contextInstance.getId().equals(contextInstance.getId())) {
+            if (this.getUI().isPresent() && this.getUI().get().isAttached()) {
+                this.getUI().get().access(() -> {
                     this.bigQueueMessageGrid.getDataProvider().refreshAll();
                 });
             }
