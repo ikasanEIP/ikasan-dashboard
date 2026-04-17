@@ -6,6 +6,7 @@ import com.github.mvysny.kaributesting.v10.spring.MockSpringServlet;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.spring.SpringServlet;
 import kotlin.jvm.functions.Function0;
+import org.apache.commons.io.FileUtils;
 import org.ikasan.dashboard.Application;
 import org.ikasan.dashboard.cache.ModuleMetadataCache;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -39,8 +40,12 @@ import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.solr.SolrContainer;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
@@ -55,30 +60,36 @@ public abstract class UITest {
     static SolrContainer solr = new SolrContainer("solr:9.10.1");
 
     static {
-        URL schemaUrl = Thread.currentThread().getContextClassLoader()
-            .getResource("./solr/ikasan/conf/managed-schema.xml");
-        URL solrConfigUrl = Thread.currentThread().getContextClassLoader()
-            .getResource("./solr/ikasan/conf/solrconfig.xml");
-        URL solrConfigDir = Thread.currentThread().getContextClassLoader()
-            .getResource("./solr/ikasan/conf");
+        try {
+            FileUtils.deleteDirectory(new File("/tmp/solr-data"));
 
-        System.out.println("Solr schema: " + schemaUrl.getPath());
-        System.out.println("Solr config: " + solrConfigUrl.getPath());
-        System.out.println("Solr configuration directory: " + solrConfigDir.getPath());
+            URL schemaUrl = Thread.currentThread().getContextClassLoader()
+                .getResource("./solr/ikasan/conf/managed-schema.xml");
+            URL solrConfigUrl = Thread.currentThread().getContextClassLoader()
+                .getResource("./solr/ikasan/conf/solrconfig.xml");
+            URL solrConfigDir = Thread.currentThread().getContextClassLoader()
+                .getResource("./solr/ikasan/conf");
 
-        solr.withCommand("solr-precreate ikasan")
-            .withCollection("ikasan")
-            .withConfiguration("configset", solrConfigUrl)
-            .withCopyFileToContainer(
-                MountableFile.forHostPath(solrConfigDir.getPath()),
-                "/var/solr/data/ikasan/conf"
-            )
-            .withFileSystemBind("/tmp/solr-data",
-                "/var/solr/data/ikasan", BindMode.READ_WRITE)
-            .withZookeeper(false)
-            .withSchema(schemaUrl);
+            System.out.println("Solr schema: " + schemaUrl.getPath());
+            System.out.println("Solr config: " + solrConfigUrl.getPath());
+            System.out.println("Solr configuration directory: " + solrConfigDir.getPath());
 
-        solr.start();
+            solr.withCommand("solr-precreate ikasan")
+                .withCollection("ikasan")
+                .withConfiguration("configset", solrConfigUrl)
+                .withCopyFileToContainer(
+                    MountableFile.forHostPath(solrConfigDir.getPath()),
+                    "/var/solr/data/ikasan/conf"
+                )
+                .withFileSystemBind("/tmp/solr-data",
+                    "/var/solr/data/ikasan", BindMode.READ_WRITE)
+                .withZookeeper(false)
+                .withSchema(schemaUrl);
+
+            solr.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @DynamicPropertySource

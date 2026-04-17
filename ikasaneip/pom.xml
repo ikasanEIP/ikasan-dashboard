@@ -748,14 +748,12 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-                <module>solr</module>
                 <module>visualisation</module>
                 <module>rest</module>
                 <module>housekeeping</module>
                 <module>job-orchestration</module>
                 <module>quartz</module>
                 <module>developer</module>
-                <module>db-relational</module>
             </modules>
         </profile>
         <profile>
