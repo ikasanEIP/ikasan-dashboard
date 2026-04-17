@@ -2182,7 +2182,7 @@ public class ContextMachine {
     private void issueContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent event) {
         if(!event.getPreviousStatus().equals(event.getNewStatus())) {
             logger.debug("Issuing context instance state change event: " + event.getContextInstance().getName() + " " + event.getNewStatus());
-            this.statusListenerExecutor.submit(() -> this.contextInstanceStateChangeEventListeners
+            this.contextInstanceDlqEventListenerExecutor.submit(() -> this.contextInstanceStateChangeEventListeners
                 .forEach(listener -> listener.onContextInstanceStateChangeEvent(event)));
         }
     }

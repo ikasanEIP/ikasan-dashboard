@@ -137,7 +137,7 @@ public class DashboardComponentFactory
 
     @Component
     public static final class IkasanSessionListener implements SessionInitListener, SessionDestroyListener {
-        private static ConcurrentHashMap<String, VaadinSession> ACTIVE_SESSIONS = new ConcurrentHashMap<>();
+        private static final ConcurrentHashMap<String, VaadinSession> ACTIVE_SESSIONS = new ConcurrentHashMap<>();
 
         @Override
         public void sessionInit(SessionInitEvent event)
@@ -147,12 +147,7 @@ public class DashboardComponentFactory
 
         @Override
         public void sessionDestroy(SessionDestroyEvent event) {
-            // Remove the authentication from the context holder
             ACTIVE_SESSIONS.remove(event.getSession().getPushId());
-
-            if(VaadinSession.getCurrent().equals(event.getSession())) {
-                SecurityContextHolder.getContext().setAuthentication(null);
-            }
         }
 
         /**
