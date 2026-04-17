@@ -2193,7 +2193,7 @@ public class ContextMachineImpl implements ContextMachine {
      * This method is executed asynchronously using a separate thread to improve performance.
      */
     private void issueContextInstanceDlqEvent() {
-        this.statusListenerExecutor.submit(() -> this.contextInstanceDlqEventBroadcastListeners
+        this.contextInstanceDlqEventListenerExecutor.submit(() -> this.contextInstanceDlqEventBroadcastListeners
             .forEach(listener -> listener.receiveBroadcast(this.contextInstance)));
     }
 
