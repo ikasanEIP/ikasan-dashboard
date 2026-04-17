@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.ikasan</groupId>
+        <artifactId>ikasan-dashboard-build</artifactId>
+        <version>5.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ikasan-dashboard-persistence-parent</artifactId>
+    <name>Ikasan Dashboard Persistence Parent</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>solr</module>
+        <module>db-relational</module>
+<!--        <module>builder</module>-->
+<!--        <module>model</module>-->
+<!--        <module>provision</module>-->
+<!--        <module>rest</module>-->
+<!--        <module>service</module>-->
+<!--        <module>notification</module>-->
+<!--        <module>test</module>-->
+<!--        <module>broadcast</module>-->
+    </modules>
+
+</project>
