@@ -576,7 +576,7 @@ public class ContextMachine {
             this.deadLetterQueue.close();
             this.deadLetterQueue.removeAll();
             this.deadLetterQueue.gc();
-            bigQueueDirectoryManagementService.deleteQueue(getInboundQueueName());
+            bigQueueDirectoryManagementService.deleteQueue(getDeadLetterQueueName());
         }
     }
 
@@ -662,7 +662,7 @@ public class ContextMachine {
             if (this.deadLetterQueue != null) {
                 this.deadLetterQueue.removeAll();
                 this.deadLetterQueue.gc();
-                bigQueueDirectoryManagementService.deleteQueue(getInboundQueueName());
+                bigQueueDirectoryManagementService.deleteQueue(getDeadLetterQueueName());
             }
 
             this.inboundQueue = null;
