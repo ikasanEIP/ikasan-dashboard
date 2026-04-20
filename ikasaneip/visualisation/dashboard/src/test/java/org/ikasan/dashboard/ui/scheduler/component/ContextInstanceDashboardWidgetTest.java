@@ -456,7 +456,7 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
             , "02/01/1970 04:46:40.000 [Europe/London - GMT]", "N/A",
             "VerticalLayout[@style='width:100%;height:100%', @theme='padding spacing']");
 
-        GridKt._sortByKey(completedContextInstanceGrid, "name", SortDirection.DESCENDING);
+        GridKt._sortByKey(completedContextInstanceGrid, "moduleName", SortDirection.DESCENDING);
 
         GridKt.expectRow(completedContextInstanceGrid, 4, "contextName0", "contextInstanceId0"
             , "02/01/1970 04:46:40.000 [Europe/London - GMT]", "N/A",
@@ -492,7 +492,7 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
             , "02/01/1970 04:46:40.000 [Europe/London - GMT]", "N/A",
             "VerticalLayout[@style='width:100%;height:100%', @theme='padding spacing']");
 
-        GridKt._sortByKey(completedContextInstanceGrid, "name", SortDirection.ASCENDING);
+        GridKt._sortByKey(completedContextInstanceGrid, "moduleName", SortDirection.ASCENDING);
 
         GridKt.expectRow(completedContextInstanceGrid, 0, "contextName0", "contextInstanceId0"
             , "02/01/1970 04:46:40.000 [Europe/London - GMT]", "N/A",
@@ -735,7 +735,7 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
         Grid completedGrid = _get(Grid.class, spec -> spec.withId("completedContextInstanceGrid"));
 
         // Verify key columns exist
-        Assertions.assertNotNull(completedGrid.getColumnByKey("name"));
+        Assertions.assertNotNull(completedGrid.getColumnByKey("moduleName"));
         Assertions.assertNotNull(completedGrid.getColumnByKey("id"));
         Assertions.assertNotNull(completedGrid.getColumnByKey("startTime"));
         Assertions.assertNotNull(completedGrid.getColumnByKey("endTime"));
