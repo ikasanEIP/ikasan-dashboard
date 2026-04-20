@@ -3143,14 +3143,17 @@ public class ContextMachineTest extends AbstractTest {
 
         String outboundQueueName = "outbound-" + contextInstance.getId() + "-queue";
         String inboundQueueName = "inbound-" + contextInstance.getId() + "-queue";
+        String dlqQueueName = "dlq-" + contextInstance.getId() + "-queue";
 
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName)));
 
         contextMachine.teardown();
 
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName)));
     }
 
     @Test
@@ -3177,6 +3180,7 @@ public class ContextMachineTest extends AbstractTest {
 
         String outboundQueueName = "outbound-" + contextInstance.getId() + "-queue";
         String inboundQueueName = "inbound-" + contextInstance.getId() + "-queue";
+        String dlqQueueName = "dlq-" + contextInstance.getId() + "-queue";
 
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
@@ -3190,6 +3194,7 @@ public class ContextMachineTest extends AbstractTest {
 
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName)));
     }
 
     @Test
@@ -7538,11 +7543,15 @@ public class ContextMachineTest extends AbstractTest {
         String inboundQueueName = "inbound-" + contextInstance.getId() + "-queue";
         String outboundQueueName2 = "outbound-" + contextInstance2.getId() + "-queue";
         String inboundQueueName2 = "inbound-" + contextInstance2.getId() + "-queue";
+        String dlqQueueName = "dlq-" + contextInstance.getId() + "-queue";
+        String dlqQueueName2 = "dlq-" + contextInstance2.getId() + "-queue";
 
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName2)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName2)));
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName)));
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName2)));
 
         ContextMachineCache.instance().remove(contextMachine);
         ContextMachineCache.instance().remove(contextMachine2);
@@ -7553,6 +7562,8 @@ public class ContextMachineTest extends AbstractTest {
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName2)));
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName2)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName2)));
     }
 
     /**
@@ -7655,15 +7666,18 @@ public class ContextMachineTest extends AbstractTest {
 
         String outboundQueueName = "outbound-" + contextInstance.getId() + "-queue";
         String inboundQueueName = "inbound-" + contextInstance.getId() + "-queue";
+        String dlqQueueName = "dlq-" + contextInstance.getId() + "-queue";
 
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName)));
 
         ContextMachineCache.instance().remove(contextMachine);
         contextMachine.teardown();
 
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName)));
     }
 
     /**
@@ -7935,10 +7949,13 @@ public class ContextMachineTest extends AbstractTest {
         
         String outboundQueueName = "outbound-" + contextInstance.getId() + "-queue";
         String inboundQueueName = "inbound-" + contextInstance.getId() + "-queue";
+        String dlqQueueName = "dlq-" + contextInstance.getId() + "-queue";
         String outboundQueueName2 = "outbound-" + contextInstance2.getId() + "-queue";
         String inboundQueueName2 = "inbound-" + contextInstance2.getId() + "-queue";
+        String dlqQueueName2 = "inbound-" + contextInstance2.getId() + "-queue";
         String outboundQueueName3 = "outbound-" + contextInstance3.getId() + "-queue";
         String inboundQueueName3 = "inbound-" + contextInstance3.getId() + "-queue";
+        String dlqQueueName3 = "inbound-" + contextInstance3.getId() + "-queue";
 
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
@@ -7946,6 +7963,9 @@ public class ContextMachineTest extends AbstractTest {
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName2)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName3)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName3)));
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName)));
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName2)));
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName3)));
 
         ContextMachineCache.instance().remove(contextMachine);
         ContextMachineCache.instance().remove(contextMachine2);
@@ -7960,6 +7980,9 @@ public class ContextMachineTest extends AbstractTest {
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName2)));
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName3)));
         assertFalse(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName3)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName2)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + dlqQueueName3)));
     }
 
     @Test
