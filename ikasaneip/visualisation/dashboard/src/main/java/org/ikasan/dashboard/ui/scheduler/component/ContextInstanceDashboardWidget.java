@@ -1050,7 +1050,7 @@ public class ContextInstanceDashboardWidget extends Div
 
 
         this.completedContextInstanceGrid.addColumn(CompletedJobPlanInstance::getJobPlanName)
-            .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("name")
+            .setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale())).setKey("moduleName")
             .setFlexGrow(2)
             .setResizable(true)
             .setSortable(true);
@@ -1101,7 +1101,7 @@ public class ContextInstanceDashboardWidget extends Div
         this.completeContextInstanceIdTf = new TextField();
         this.completeContextInstanceIdTf.setId("completeContextInstanceIdTf");
         HeaderRow hr = this.completedContextInstanceGrid.appendHeaderRow();
-        this.addCompletedContextInstanceGridFiltering(hr, "name", this.completeContextNameTf, this.completeContextInstanceSearchFilter::setContextSearchFilter);
+        this.addCompletedContextInstanceGridFiltering(hr, "moduleName", this.completeContextNameTf, this.completeContextInstanceSearchFilter::setContextSearchFilter);
         this.addCompletedContextInstanceGridFiltering(hr, "id", this.completeContextInstanceIdTf, this.completeContextInstanceSearchFilter::setContextInstanceId);
         this.addDateTimeGridFiltering(hr, completeContextInstanceSearchFilter::setStartTime, completeContextInstanceSearchFilter::setEndTime,
             completeContextInstanceSearchFilter::setStartTimeStart, completeContextInstanceSearchFilter::setStartTimeEnd,"startTime", this.completedContextInstanceGrid);
