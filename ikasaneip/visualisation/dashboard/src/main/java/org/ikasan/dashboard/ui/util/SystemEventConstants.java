@@ -110,6 +110,8 @@ public class SystemEventConstants
     public static final String CONTEXT_INSTANCE_DLQ_MESSAGE_DELETED = "Job Plan Instance DLQ Message Deleted";
     public static final String CONTEXT_INSTANCE_ALL_DLQ_MESSAGES_RESUBMITTED = "Job Plan Instance All DLQ Messages Resubmitted";
     public static final String CONTEXT_INSTANCE_ALL_DLQ_MESSAGES_DELETED = "Job Plan Instance All DLQ Messages Deleted";
+    public static final String USER_SESSION_TERMINATED = "User Session Terminated";
+    public static final String ALL_USER_SESSIONS_TERMINATED = "All User Sessions Terminated";
 
     /**
      * Retrieves a list of string constants representing system events defined in the SystemEventConstants class.
