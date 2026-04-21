@@ -23,9 +23,9 @@ public class SystemEventLogger
 
     public void logEvent(String subject, String action, String actor)
     {
-        IkasanAuthentication ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         if(actor == null)
         {
+            IkasanAuthentication ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
             actor = ikasanAuthentication.getName();
             action += " - Performed by [" + ikasanAuthentication.getName() + "]";
         }
