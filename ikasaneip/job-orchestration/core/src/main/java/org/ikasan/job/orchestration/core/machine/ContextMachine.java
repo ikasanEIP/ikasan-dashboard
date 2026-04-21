@@ -13,6 +13,7 @@ import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
+import org.ikasan.job.orchestration.broadcaster.ContextInstanceDlqEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
@@ -82,7 +83,6 @@ public class ContextMachine {
     private JobLogicMachine jobLogicMachine;
     private ContextInstanceToContextInstanceStatusConverter statusConverter;
     private List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners;
-    private List<ContextInstanceDlqEventBroadcastListener> contextInstanceDlqEventBroadcastListeners;
     private ExecutorService statusListenerExecutor;
     private ExecutorService contextInstanceDlqEventListenerExecutor;
     private ExecutorService schedulerInitiatorEventRaisedListenerExecutor;
@@ -198,7 +198,6 @@ public class ContextMachine {
         this.queueDir = queueDir;
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
         this.contextInstanceStateChangeEventListeners = new ArrayList<>();
-        this.contextInstanceDlqEventBroadcastListeners = new ArrayList<>();
         this.statusListenerExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachine-StatusChangeListener"));
         this.contextInstanceDlqEventListenerExecutor = Executors
             .newSingleThreadExecutor(new JobThreadFactory("ContextMachine-ContextInstanceDlqEventListener"));
@@ -615,12 +614,6 @@ public class ContextMachine {
                 this.contextInstanceStateChangeEventListeners = null;
             }
 
-            if (contextInstanceDlqEventBroadcastListeners != null) {
-                contextInstanceDlqEventBroadcastListeners.clear();
-                this.contextInstanceDlqEventBroadcastListeners = null;
-            }
-
-
             this.statusListenerExecutor = null;
             this.contextInstanceDlqEventListenerExecutor = null;
             this.schedulerInitiatorEventRaisedListenerExecutor = null;
@@ -851,30 +844,6 @@ public class ContextMachine {
             this.contextInstanceStateChangeEventListeners.remove(listener);
         }
     }
-
-    /**
-     * Adds a ContextInstanceDlqEventBroadcastListener to the list of listeners.
-     *
-     * @param listener the ContextInstanceDlqEventBroadcastListener to add
-     */
-    public void addContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventBroadcastListener listener) {
-        if(!this.contextInstanceDlqEventBroadcastListeners.contains(listener)) {
-            this.contextInstanceDlqEventBroadcastListeners.add(listener);
-        }
-    }
-
-    /**
-     * Removes a specified ContextInstanceDlqEventBroadcastListener from the list of listeners.
-     *
-     * @param listener the listener to be removed from the list of listeners
-     */
-    public void removeContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventBroadcastListener listener) {
-        if(this.contextInstanceDlqEventBroadcastListeners.contains(listener)) {
-            this.contextInstanceDlqEventBroadcastListeners.remove(listener);
-        }
-    }
-
-
 
     /**
      * Sets the DryRunParameters for performing a dry run.
@@ -2182,7 +2151,7 @@ public class ContextMachine {
     private void issueContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent event) {
         if(!event.getPreviousStatus().equals(event.getNewStatus())) {
             logger.debug("Issuing context instance state change event: " + event.getContextInstance().getName() + " " + event.getNewStatus());
-            this.contextInstanceDlqEventListenerExecutor.submit(() -> this.contextInstanceStateChangeEventListeners
+            this.statusListenerExecutor.submit(() -> this.contextInstanceStateChangeEventListeners
                 .forEach(listener -> listener.onContextInstanceStateChangeEvent(event)));
         }
     }
@@ -2192,8 +2161,7 @@ public class ContextMachine {
      * This method is executed asynchronously using a separate thread to improve performance.
      */
     private void issueContextInstanceDlqEvent() {
-        this.statusListenerExecutor.submit(() -> this.contextInstanceDlqEventBroadcastListeners
-            .forEach(listener -> listener.receiveBroadcast(this.contextInstance)));
+        ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
     }
 
     /**
