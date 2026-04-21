@@ -23,14 +23,12 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.SessionDetailsDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.security.view.LoginView;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -58,6 +56,9 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
     private SessionFilter searchFilter;
     private Grid<VaadinSession> sessionGrid;
     private IkasanAuthentication ikasanAuthentication;
+
+    @Autowired
+    private SystemEventLogger systemEventLogger;
 
     /**
      * Constructor
@@ -99,11 +100,15 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 DashboardComponentFactory.IkasanSessionListener.getActiveSessions().values().forEach(session -> {
-                    if(!session.getSession().getAttribute(LoginView.USERNAME).equals(ikasanAuthentication.getName())) {
+                    if(session.getSession().getAttribute(LoginView.USERNAME) != null
+                        && !session.getSession().getAttribute(LoginView.USERNAME).equals(ikasanAuthentication.getName())) {
                         session.getSession().invalidate();
                     }
-                    NotificationHelper.showUserNotification(getTranslation("notification.all-sessions-ended"));
+
                 });
+                NotificationHelper.showUserNotification(getTranslation("notification.all-sessions-ended"));
+                this.systemEventLogger.logEvent(SystemEventConstants.ALL_USER_SESSIONS_TERMINATED,
+                    "All user sessions have been terminated!", ikasanAuthentication.getName());
                 this.sessionGrid.getDataProvider().refreshAll();
             });
         });
@@ -249,9 +254,13 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
                         confirmDialog.open();
 
                         confirmDialog.addConfirmListener(confirmEvent -> {
+                            String username = (String) session.getSession().getAttribute(LoginView.USERNAME);
                             session.getSession().invalidate();
                             NotificationHelper.showUserNotification(getTranslation("notification.session-ended"));
                             this.sessionGrid.getDataProvider().refreshAll();
+                            this.systemEventLogger.logEvent(SystemEventConstants.USER_SESSION_TERMINATED,
+                                String.format("User[%s] has had their session terminated!", username),
+                                ikasanAuthentication.getName());
                         });
                     });
                     verticalLayout.add(endSessionButton);
