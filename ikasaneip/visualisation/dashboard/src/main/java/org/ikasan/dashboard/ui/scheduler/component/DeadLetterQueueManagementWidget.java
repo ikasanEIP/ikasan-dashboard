@@ -607,22 +607,12 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         ContextInstanceDlqEventBroadcaster.register(this);
-        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-            ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextInstanceId(contextInstance.getId());
-            contextMachine.addContextInstanceDlqEventEventBroadcastListeners(this);
-        }
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
         ContextInstanceDlqEventBroadcaster.unregister(this);
-        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-            ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextInstanceId(contextInstance.getId());
-            contextMachine.removeContextInstanceDlqEventEventBroadcastListeners(this);
-        }
     }
 
     @Override

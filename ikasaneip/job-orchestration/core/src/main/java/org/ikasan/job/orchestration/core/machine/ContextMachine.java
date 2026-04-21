@@ -229,20 +229,6 @@ public interface ContextMachine {
     void removeContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventListener listener);
 
     /**
-     * Adds a listener for context instance dead letter queue events.
-     *
-     * @param listener the ContextInstanceDlqEventBroadcastListener to add
-     */
-    void addContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventBroadcastListener listener);
-
-    /**
-     * Removes a context instance DLQ event broadcast listener.
-     *
-     * @param listener the ContextInstanceDlqEventBroadcastListener to remove
-     */
-    void removeContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventBroadcastListener listener);
-
-    /**
      * Sets the dry run parameters for this context machine.
      *
      * @param dryRunParameters the DryRunParameters to set
