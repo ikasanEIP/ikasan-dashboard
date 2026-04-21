@@ -100,7 +100,8 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 DashboardComponentFactory.IkasanSessionListener.getActiveSessions().values().forEach(session -> {
-                    if(session.getSession().getAttribute(LoginView.USERNAME) != null
+                    if(session.getSession() != null
+                        && session.getSession().getAttribute(LoginView.USERNAME) != null
                         && !session.getSession().getAttribute(LoginView.USERNAME).equals(ikasanAuthentication.getName())) {
                         session.getSession().invalidate();
                     }
