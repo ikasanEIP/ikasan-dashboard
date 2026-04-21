@@ -1,6 +1,5 @@
-package org.ikasan.dashboard.ui.scheduler.util;
+package org.ikasan.job.orchestration.broadcaster;
 
-import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.job.orchestration.core.machine.ContextInstanceDlqEventBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 
@@ -9,7 +8,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ContextInstanceDlqEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("NewSchedulerJobEventBroadcaster"));
+    static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("DLQEventThread"));
 
     /**
      * A static WeakHashMap that holds instances of ContextInstanceDlqEventBroadcastListener as keys.

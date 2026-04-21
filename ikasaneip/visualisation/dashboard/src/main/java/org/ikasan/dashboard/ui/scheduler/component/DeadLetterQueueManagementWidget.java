@@ -24,7 +24,7 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
-import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceDlqEventBroadcaster;
+import org.ikasan.job.orchestration.broadcaster.ContextInstanceDlqEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextInstanceDlqEventBroadcastListener;
@@ -607,22 +607,12 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         ContextInstanceDlqEventBroadcaster.register(this);
-        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-            ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextInstanceId(contextInstance.getId());
-            contextMachine.addContextInstanceDlqEventEventBroadcastListeners(this);
-        }
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
         ContextInstanceDlqEventBroadcaster.unregister(this);
-        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-            ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextInstanceId(contextInstance.getId());
-            contextMachine.removeContextInstanceDlqEventEventBroadcastListeners(this);
-        }
     }
 
     @Override
