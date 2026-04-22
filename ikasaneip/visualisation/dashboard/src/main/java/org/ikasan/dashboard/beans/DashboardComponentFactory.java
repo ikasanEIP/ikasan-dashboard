@@ -53,9 +53,7 @@ import javax.annotation.Resource;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
@@ -137,17 +135,27 @@ public class DashboardComponentFactory
 
     @Component
     public static final class IkasanSessionListener implements SessionInitListener, SessionDestroyListener {
-        private static final ConcurrentHashMap<String, VaadinSession> ACTIVE_SESSIONS = new ConcurrentHashMap<>();
+        private static final Set<VaadinSession> ACTIVE_SESSIONS =
+            Collections.synchronizedSet(new HashSet<>());
 
         @Override
         public void sessionInit(SessionInitEvent event)
             throws ServiceException {
-            ACTIVE_SESSIONS.put(event.getSession().getPushId(), event.getSession());
+            String pathInfo = event.getRequest().getPathInfo();
+            if (pathInfo == null || !pathInfo.endsWith("/login")) {
+                event.getSession().access(() -> {
+                    event.getSession().getSession().invalidate();
+                    event.getSession().close();
+                });
+                return; // Ignore PWA service worker requests
+            }
+
+            ACTIVE_SESSIONS.add(event.getSession());
         }
 
         @Override
         public void sessionDestroy(SessionDestroyEvent event) {
-            ACTIVE_SESSIONS.remove(event.getSession().getPushId());
+            ACTIVE_SESSIONS.remove(event.getSession());
         }
 
         /**
@@ -155,8 +163,8 @@ public class DashboardComponentFactory
          *
          * @return A ConcurrentHashMap containing active Vaadin sessions, with session ID as key and VaadinSession as value.
          */
-        public static ConcurrentHashMap<String, VaadinSession> getActiveSessions() {
-            return ACTIVE_SESSIONS;
+        public static Set<VaadinSession> getActiveSessions() {
+            return new HashSet<>(ACTIVE_SESSIONS);
         }
     }
 

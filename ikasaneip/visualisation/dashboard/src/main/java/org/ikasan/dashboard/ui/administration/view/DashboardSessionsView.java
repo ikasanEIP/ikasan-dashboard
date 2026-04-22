@@ -99,11 +99,14 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                DashboardComponentFactory.IkasanSessionListener.getActiveSessions().values().forEach(session -> {
+                DashboardComponentFactory.IkasanSessionListener.getActiveSessions().forEach(session -> {
                     if(session.getSession() != null
                         && session.getSession().getAttribute(LoginView.USERNAME) != null
                         && !session.getSession().getAttribute(LoginView.USERNAME).equals(ikasanAuthentication.getName())) {
-                        session.getSession().invalidate();
+                        session.access(()-> {
+                            session.getSession().invalidate();
+                            session.close();
+                        });
                     }
 
                 });
@@ -255,13 +258,18 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
                         confirmDialog.open();
 
                         confirmDialog.addConfirmListener(confirmEvent -> {
-                            String username = (String) session.getSession().getAttribute(LoginView.USERNAME);
-                            session.getSession().invalidate();
-                            NotificationHelper.showUserNotification(getTranslation("notification.session-ended"));
-                            this.sessionGrid.getDataProvider().refreshAll();
-                            this.systemEventLogger.logEvent(SystemEventConstants.USER_SESSION_TERMINATED,
-                                String.format("User[%s] has had their session terminated!", username),
-                                ikasanAuthentication.getName());
+                            session.access(()-> {
+                                String username = (String) session.getSession().getAttribute(LoginView.USERNAME);
+
+                                session.getSession().invalidate();
+                                session.close();
+
+                                NotificationHelper.showUserNotification(getTranslation("notification.session-ended"));
+                                this.sessionGrid.getDataProvider().refreshAll();
+                                this.systemEventLogger.logEvent(SystemEventConstants.USER_SESSION_TERMINATED,
+                                    String.format("User[%s] has had their session terminated!", username),
+                                    ikasanAuthentication.getName());
+                            });
                         });
                     });
                     verticalLayout.add(endSessionButton);
@@ -359,8 +367,8 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
 
         try {
             items.addAll(DashboardComponentFactory.IkasanSessionListener
-                .getActiveSessions().values().stream().filter(s -> s.getSession() != null)
-                .collect(Collectors.toList()));
+                .getActiveSessions().stream().filter(s -> s.getSession() != null)
+                .toList());
             items = items.stream()
                 .filter(item -> item.getSession().getAttribute(LoginView.USERNAME) != null)
                 .collect(Collectors.toList());
