@@ -37,13 +37,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 @Import({HarvestingAutoConfiguration.class})
@@ -77,6 +75,20 @@ public class DashboardComponentFactory
 
     @Value("${module.metadata.cache.expiry.seconds:60}")
     private int moduleMetadataCacheExpirySeconds;
+
+    private static boolean invalidateNonLoginSessions = true;
+
+
+    /**
+     * This method is used to reset the state of the `invalidateNonLoginSessions` field to `false`.
+     * It may be intended for preparing or restoring a specific context state within the
+     * DashboardComponentFactory class.
+     *
+     * Note: The method does not accept parameters and has no return value.
+     */
+    public static void testContext() {
+        invalidateNonLoginSessions = false;
+    }
 
     @Bean
     public ContextHelper contextHelper() {
@@ -132,11 +144,13 @@ public class DashboardComponentFactory
             throws ServiceException {
             String pathInfo = event.getRequest().getPathInfo();
             if (pathInfo == null || !pathInfo.endsWith("/login")) {
-                event.getSession().access(() -> {
-                    event.getSession().getSession().invalidate();
-                    event.getSession().close();
-                });
-                return; // Ignore PWA service worker requests
+                if(invalidateNonLoginSessions) {
+                    event.getSession().access(() -> {
+                        event.getSession().getSession().invalidate();
+                        event.getSession().close();
+                    });
+                }
+                return;
             }
 
             ACTIVE_SESSIONS.add(event.getSession());
