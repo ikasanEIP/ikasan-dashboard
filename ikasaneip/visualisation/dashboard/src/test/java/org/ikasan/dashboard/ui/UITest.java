@@ -7,6 +7,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.spring.SpringServlet;
 import kotlin.jvm.functions.Function0;
 import org.ikasan.dashboard.Application;
+import org.ikasan.dashboard.beans.DashboardComponentFactory;
 import org.ikasan.dashboard.cache.ModuleMetadataCache;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
@@ -149,6 +150,8 @@ public abstract class UITest {
 
     @Before
     public void setup() throws IOException {
+        DashboardComponentFactory.testContext();
+
         this.setup_general_expectations();
         this.setup_expectations();
 
