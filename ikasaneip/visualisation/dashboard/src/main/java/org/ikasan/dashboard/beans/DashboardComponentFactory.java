@@ -1,17 +1,20 @@
 package org.ikasan.dashboard.beans;
 
 import com.vaadin.flow.server.*;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.cache.ModuleMetadataCache;
-import org.ikasan.dashboard.ui.scheduler.service.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
+import org.ikasan.dashboard.ui.scheduler.service.AggregateStatusCollector;
 import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.util.DashboardCacheAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceStateChangeEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.JobLockCacheEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.SchedulerJobStateChangeEventBroadcasterImpl;
+import org.ikasan.flow.configuration.FlowComponentInvokerSetupServiceConfiguration;
 import org.ikasan.flow.configuration.FlowPersistentConfiguration;
 import org.ikasan.harvesting.HarvestingAutoConfiguration;
 import org.ikasan.harvesting.HarvestingSchedulerServiceImpl;
@@ -20,7 +23,6 @@ import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
-import org.ikasan.security.SecurityAutoConfiguration;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.harvest.HarvestingJob;
 import org.ikasan.spec.harvest.HarvestingSchedulerService;
@@ -33,7 +35,6 @@ import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
-import org.ikasan.systemevent.SystemEventAutoConfiguration;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,16 +46,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.ikasan.flow.configuration.FlowComponentInvokerSetupServiceConfiguration;
 
 import javax.annotation.Resource;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 @Import({HarvestingAutoConfiguration.class})
@@ -88,6 +84,20 @@ public class DashboardComponentFactory
 
     @Value("${module.metadata.cache.expiry.seconds:60}")
     private int moduleMetadataCacheExpirySeconds;
+
+    private static boolean invalidateNonLoginSessions = true;
+
+
+    /**
+     * This method is used to reset the state of the `invalidateNonLoginSessions` field to `false`.
+     * It may be intended for preparing or restoring a specific context state within the
+     * DashboardComponentFactory class.
+     *
+     * Note: The method does not accept parameters and has no return value.
+     */
+    public static void testContext() {
+        invalidateNonLoginSessions = false;
+    }
 
     @Bean
     public ContextHelper contextHelper() {
@@ -143,11 +153,13 @@ public class DashboardComponentFactory
             throws ServiceException {
             String pathInfo = event.getRequest().getPathInfo();
             if (pathInfo == null || !pathInfo.endsWith("/login")) {
-                event.getSession().access(() -> {
-                    event.getSession().getSession().invalidate();
-                    event.getSession().close();
-                });
-                return; // Ignore PWA service worker requests
+                if(invalidateNonLoginSessions) {
+                    event.getSession().access(() -> {
+                        event.getSession().getSession().invalidate();
+                        event.getSession().close();
+                    });
+                }
+                return;
             }
 
             ACTIVE_SESSIONS.add(event.getSession());
