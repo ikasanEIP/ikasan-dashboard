@@ -102,10 +102,8 @@ public class IkasanAppLayout extends AppLayout {
             this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_LOGOUT_CONSTANTS
                 , SystemEventConstants.DASHBOARD_LOGOUT_CONSTANTS, authentication.getName());
             SecurityContextHolder.getContext().setAuthentication(null);
-            UI.getCurrent().navigate("");
-            VaadinSession.getCurrent().getSession().invalidate();
-            UI.getCurrent().getPage().executeJs("window.location.href=''");
-            UI.getCurrent().getSession().close();
+            VaadinSession.getCurrent().close();
+            UI.getCurrent().getPage().setLocation("/login");
         });
 
         this.swaggerUI = new Button();
