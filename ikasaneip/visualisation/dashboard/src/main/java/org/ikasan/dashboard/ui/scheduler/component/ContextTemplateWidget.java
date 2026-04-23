@@ -1023,6 +1023,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 for(ContextMachine contextMachine: contextMachines) {
                                     if (contextMachine != null) {
                                         ContextMachineCache.instance().remove(contextMachine);
+                                        contextMachine.killRunningJobs();
                                         contextMachine.teardown();
                                     }
                                 }
