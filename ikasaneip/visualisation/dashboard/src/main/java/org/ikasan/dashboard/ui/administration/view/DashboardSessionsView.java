@@ -36,6 +36,10 @@ import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -258,18 +262,25 @@ public class DashboardSessionsView extends VerticalLayout implements BeforeEnter
                         confirmDialog.open();
 
                         confirmDialog.addConfirmListener(confirmEvent -> {
-                            session.access(()-> {
-                                String username = (String) session.getSession().getAttribute(LoginView.USERNAME);
-
+                            String username = (String) session.getSession().getAttribute(LoginView.USERNAME);
+                            Future<Void> sessionCloseFuture = session.access(()-> {
                                 session.getSession().invalidate();
                                 session.close();
+                            });
 
+                            try {
+                                // Wait for a maximum of 5 seconds for the session to be terminated before notifying
+                                sessionCloseFuture.get(5000, TimeUnit.MILLISECONDS);
                                 NotificationHelper.showUserNotification(getTranslation("notification.session-ended"));
                                 this.sessionGrid.getDataProvider().refreshAll();
                                 this.systemEventLogger.logEvent(SystemEventConstants.USER_SESSION_TERMINATED,
                                     String.format("User[%s] has had their session terminated!", username),
                                     ikasanAuthentication.getName());
-                            });
+                            }
+                            catch (InterruptedException | ExecutionException | TimeoutException e) {
+                                logger.error("An error has occurred waiting for user session[{}] to " +
+                                    "be terminated!", username, e);
+                            }
                         });
                     });
                     verticalLayout.add(endSessionButton);
