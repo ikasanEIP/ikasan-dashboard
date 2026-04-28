@@ -17,7 +17,8 @@
     <modules>
         <module>solr</module>
         <module>db-relational</module>
-<!--        <module>builder</module>-->
+        <module>mongo</module>
+        <!--        <module>builder</module>-->
 <!--        <module>model</module>-->
 <!--        <module>provision</module>-->
 <!--        <module>rest</module>-->
