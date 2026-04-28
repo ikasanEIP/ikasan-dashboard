@@ -1017,7 +1017,7 @@ public class ContextMachine {
                         contextualisedScheduledProcessEvent.setContextName(job.getContextName());
                         contextualisedScheduledProcessEvent.setInternalEventDrivenJob
                             (this.internalEventDrivenJobInstances.get(job.getIdentifier() + "-" + job.getChildContextName()));
-                        contextualisedScheduledProcessEvent.setRaisedDueToFailureResubmission(true);
+                        contextualisedScheduledProcessEvent.setRaisedDueToFailureResubmission(false);
 
                         try {
                             getEventsThatCanRun(contextualisedScheduledProcessEvent).forEach(event -> {
@@ -1026,6 +1026,7 @@ public class ContextMachine {
                                 }
                             });
                         } catch (ContextMachineException e) {
+                            logger.info("Ignoring context machine exception {}!", e.getMessage());
                             // safe to ignore this exception
                         }
                     }
