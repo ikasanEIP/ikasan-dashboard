@@ -55,20 +55,24 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         this.contextParametersInstanceService = contextParametersInstanceService;
     }
 
+
     /**
-     * The method is responsible for determining if any job initiation events can be raised based on the receipt of a
-     * ContextualisedScheduledProcessEvent. It delegates to methods to assess the logic associated with the job dependencies.
+     * Retrieves a list of job initiation events based on the provided contextual parameters and job instance mappings.
      *
-     * @param scheduledProcessEvent
-     * @param contextInstance
-     * @param dryRunParameters
-     * @param globalEventJobInstanceMap
-     * @param internalEventDrivenJobs
-     * @param contextParameters
-     * @param parentContextInstance
-     * @param lockRaised
-     * @param markAsRaised
-     * @return
+     * @param scheduledProcessEvent The scheduled process event associated with the operation.
+     * @param contextInstance The context instance for which the job initiation events are being retrieved.
+     * @param dryRunParameters Parameters governing the behavior of the dry-run operation.
+     * @param globalEventJobInstanceMap A mapping of global event job instance names to their corresponding instances.
+     * @param internalEventDrivenJobs A mapping of internal event-driven job instance names to their corresponding instances.
+     * @param contextStartJobInstanceMap A mapping of context start job instance names to their corresponding instances.
+     * @param contextTerminalJobInstanceMap A mapping of context terminal job instance names to their corresponding instances.
+     * @param localEventJobInstanceMap A mapping of local event job instance names to their corresponding instances.
+     * @param bridgingJobInstanceMap A mapping of bridging job instance names to their corresponding instances.
+     * @param contextParameters A list of contextual parameter instances used to influence job initiation.
+     * @param parentContextInstance The parent context instance, if applicable, from which context is inherited.
+     * @param lockRaised A mutable boolean indicating whether a lock has been raised as part of the operation.
+     * @param markAsRaised A flag indicating whether to mark the relevant job events as raised.
+     * @return A list of {@code SchedulerJobInitiationEvent} objects representing the job initiation events derived from the input parameters.
      */
     protected List<SchedulerJobInitiationEvent> getJobInitiationEvents(ContextualisedScheduledProcessEvent scheduledProcessEvent
         , ContextInstance contextInstance, DryRunParameters dryRunParameters
@@ -82,6 +86,44 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         , ContextInstance parentContextInstance
         , MutableBoolean lockRaised
         , boolean markAsRaised) {
+        return this.getJobInitiationEvents(scheduledProcessEvent, contextInstance, dryRunParameters, globalEventJobInstanceMap,
+            internalEventDrivenJobs, contextStartJobInstanceMap, contextTerminalJobInstanceMap, localEventJobInstanceMap, bridgingJobInstanceMap,
+            contextParameters, parentContextInstance, lockRaised, markAsRaised, true);
+    }
+
+
+    /**
+     * Retrieves a list of job initiation events based on the provided scheduled process event and context data.
+     *
+     * @param scheduledProcessEvent The event representing the scheduled process that may trigger job initiation events.
+     * @param contextInstance The current context instance under which the jobs are being processed.
+     * @param dryRunParameters Parameters indicating if the operation is being performed as a dry run.
+     * @param globalEventJobInstanceMap A map of global event job instances keyed by their identifiers.
+     * @param internalEventDrivenJobs A map of internal event-driven job instances keyed by their identifiers.
+     * @param contextStartJobInstanceMap A map of context start job instances keyed by their identifiers.
+     * @param contextTerminalJobInstanceMap A map of context terminal job instances keyed by their identifiers.
+     * @param localEventJobInstanceMap A map of local event job instances keyed by their identifiers.
+     * @param bridgingJobInstanceMap A map of bridging job instances keyed by their identifiers.
+     * @param contextParameters A list of context parameter instances relevant to the current context.
+     * @param parentContextInstance The parent context instance of the current context.
+     * @param lockRaised A mutable boolean indicating whether a lock was raised during the job initiation process.
+     * @param markAsRaised A flag indicating whether the jobs should be marked as raised during processing.
+     * @param updateState A flag indicating whether the state of the context or jobs should be updated.
+     * @return A list of {@code SchedulerJobInitiationEvent} objects representing the job initiation events that were computed based on the input parameters.
+     */
+    protected List<SchedulerJobInitiationEvent> getJobInitiationEvents(ContextualisedScheduledProcessEvent scheduledProcessEvent
+        , ContextInstance contextInstance, DryRunParameters dryRunParameters
+        , Map<String, GlobalEventJobInstance> globalEventJobInstanceMap
+        , Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs
+        , Map<String, ContextStartJobInstance> contextStartJobInstanceMap
+        , Map<String, ContextTerminalJobInstance> contextTerminalJobInstanceMap
+        , Map<String, LocalEventJobInstance> localEventJobInstanceMap
+        , Map<String, BridgingJobInstance> bridgingJobInstanceMap
+        , List<ContextParameterInstance> contextParameters
+        , ContextInstance parentContextInstance
+        , MutableBoolean lockRaised
+        , boolean markAsRaised
+        , boolean updateState) {
         SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap()
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
 
@@ -99,6 +141,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 , contextInstance.getName(), parentContextInstance.getId(), childContextNames);
         }
 
+        InstanceStatus transientStatus = null;
+
         // Firstly the status of the job is set on the instance.
         if(schedulerJobInstance != null &&
             (scheduledProcessEvent.getChildContextNames() == null || scheduledProcessEvent.getChildContextNames().isEmpty()
@@ -111,8 +155,14 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             schedulerJobInstance.setChildContextName(contextInstance.getName());
             schedulerJobInstance.setContextInstanceId(parentContextInstance.getId());
 
-            if(scheduledProcessEvent.isRaisedDueToFailureResubmission()) {
-                if(scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName() != null
+            // We need to set a transient status to be able to get events that can be raised,
+            // then reset the job back to its original state.
+            if(!updateState) {
+                transientStatus = schedulerJobInstance.getStatus();
+            }
+
+            if (scheduledProcessEvent.isRaisedDueToFailureResubmission()) {
+                if (scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName() != null
                     && scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName().equals(contextInstance.getName())) {
                     if (!schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
                         throw new ContextMachineException(String.format("Job[%s], Context[%s], Child Context[%s] was in a State[%s] when attempting" +
@@ -122,8 +172,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                     // we temporarily set the job to complete so the downstream logic will be assessed
                     schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
                 }
-            }
-            else {
+            } else {
                 if (scheduledProcessEvent.isJobStarting()) {
                     if (schedulerJobInstance.isSkip()) {
                         schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_RUNNING);
@@ -132,7 +181,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                     }
                 } else if (scheduledProcessEvent.isSuccessful()) {
                     if (schedulerJobInstance.isSkip() || (scheduledProcessEvent.getOutcome() != null
-                            && scheduledProcessEvent.getOutcome().equals(Outcome.EXECUTION_INVOKED_IGNORED_DAY_OF_WEEK.name()))) {
+                        && scheduledProcessEvent.getOutcome().equals(Outcome.EXECUTION_INVOKED_IGNORED_DAY_OF_WEEK.name()))) {
                         schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_COMPLETE);
                     } else {
                         schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
@@ -158,9 +207,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 , parentContextInstance, schedulerJobInitiationEvents, lockRaised);
         }
 
-        if(scheduledProcessEvent.isRaisedDueToFailureResubmission()) {
+        if(schedulerJobInstance != null && scheduledProcessEvent.isRaisedDueToFailureResubmission()) {
             // we now revert this back to error
             schedulerJobInstance.setStatus(InstanceStatus.ERROR);
+        }
+
+        if(schedulerJobInstance != null && !updateState) {
+            schedulerJobInstance.setStatus(transientStatus);
         }
 
         return schedulerJobInitiationEvents;

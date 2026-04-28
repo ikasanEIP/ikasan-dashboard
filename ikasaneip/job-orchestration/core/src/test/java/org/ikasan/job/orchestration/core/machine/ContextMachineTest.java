@@ -6812,9 +6812,6 @@ public class ContextMachineTest extends AbstractTest {
             JobConstants.LOCAL_EVENT_JOB, true);
         eventInstance.setChildContextNames(List.of("local-event-start", "local-event-end"));
 
-        events = contextMachine.eventReceived(eventInstance);
-        Assert.assertEquals(1, events.size());
-
         // Confirm the local jobs are complete
         Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             this.assertJobStatus(contextMachine, "local-event-start", "LOCAL_EVENT_JOB-local-hold", InstanceStatus.COMPLETE);

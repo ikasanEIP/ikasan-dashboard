@@ -1564,7 +1564,7 @@ public class ContextMachineImpl implements ContextMachine {
             event.setRaisedDueToFailureResubmission(true);
 
             events.addAll(this.getInitiationEvents(this.contextInstance
-                , event, lockRaised, false));
+                , event, lockRaised, false, false));
         });
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
@@ -1668,7 +1668,7 @@ public class ContextMachineImpl implements ContextMachine {
                 " are ignored for this context.", scheduledProcessEvent.getJobName(), this.contextInstance.getName(), this.contextInstance.getId());
         }
         else {
-            events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent, lockRaised, true);
+            events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent, lockRaised, true, true);
         }
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
@@ -1884,35 +1884,41 @@ public class ContextMachineImpl implements ContextMachine {
         scheduledContextInstanceService.saveAudit(auditRecord, previousContextInstance, updatedContextInstance);
     }
 
+
     /**
-     * Helper method to determine if there are any SchedulerJobInitiationEvent to be raised. This method employs recursion to determine
-     * which context, if any, that the job associated with the scheduled process event is associated with. It then delegates to the
-     * JobLogicMachine to determine if there are any SchedulerJobInitiationEvent to raise.
+     * Retrieves a list of scheduler job initiation events based on the provided context and parameters.
      *
-     * @param contextInstance
-     * @param scheduledProcessEvent
-     * @return
+     * @param contextInstance The context instance associated with the initiation events.
+     * @param scheduledProcessEvent The scheduled process event to determine initiation events.
+     * @param lockRaised A mutable boolean that indicates whether a lock was raised during processing.
+     * @param markAsRaised A boolean indicating whether events should be marked as raised.
+     * @param updateState A boolean specifying whether the state should be updated during processing.
+     * @return A list of SchedulerJobInitiationEvent objects representing the initiation events.
      */
     private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent
-        , MutableBoolean lockRaised, boolean markAsRaised) {
+        , MutableBoolean lockRaised, boolean markAsRaised, boolean updateState) {
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
-        this.getInitiationEvents(results, contextInstance, scheduledProcessEvent, lockRaised, markAsRaised);
+        this.getInitiationEvents(results, contextInstance, scheduledProcessEvent, lockRaised, markAsRaised, updateState);
 
         return results;
     }
 
     /**
-     * Retrieves the SchedulerJobInitiationEvents for a given ContextInstance and ContextualisedScheduledProcessEvent.
+     * Determines and retrieves a list of {@code SchedulerJobInitiationEvent} based on the provided context instance
+     * and scheduled process event. It checks if initiation events need to be raised for the specified job and context,
+     * and recursively evaluates nested contexts for further events. It also updates the context status after event
+     * processing.
      *
-     * @param results The list to which the SchedulerJobInitiationEvents should be added.
-     * @param contextInstance The ContextInstance for which the SchedulerJobInitiationEvents are retrieved.
-     * @param scheduledProcessEvent The ContextualisedScheduledProcessEvent for which the SchedulerJobInitiationEvents are retrieved.
-     * @param lockRaised Indicates if the lock was raised for the job.
-     * @param markAsRaised Indicates if the events should be marked as raised.
+     * @param results A list to store the {@code SchedulerJobInitiationEvent} instances generated during processing.
+     * @param contextInstance The current {@code ContextInstance} to evaluate for initiation events.
+     * @param scheduledProcessEvent The {@code ContextualisedScheduledProcessEvent} representing the related scheduled job.
+     * @param lockRaised A {@code MutableBoolean} indicating whether a lock has been raised during processing.
+     * @param markAsRaised A boolean indicating whether events should be marked as raised after evaluation.
+     * @param updateState A boolean indicating whether to update the state of the context after event handling.
      */
     private void getInitiationEvents(List<SchedulerJobInitiationEvent> results, ContextInstance contextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent
-        , MutableBoolean lockRaised, boolean markAsRaised) {
+        , MutableBoolean lockRaised, boolean markAsRaised, boolean updateState) {
 
         if(contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
             + "-" + scheduledProcessEvent.getJobName())) {
@@ -1927,7 +1933,7 @@ public class ContextMachineImpl implements ContextMachine {
                 List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
                     , contextInstance, this.dryRunParameters, this.globalEventJobInstanceMap, this.internalEventDrivenJobInstances
                     , this.contextStartJobInstanceMap, this.contextTerminalJobInstanceMap, this.localEventJobInstanceMap, this.bridgingJobInstanceMap
-                    , this.contextInstance.getContextParameters(), this.contextInstance, lockRaised, markAsRaised);
+                    , this.contextInstance.getContextParameters(), this.contextInstance, lockRaised, markAsRaised, updateState);
 
                 // Update the context status after event received and attached
                 // to the job instance.
@@ -1940,7 +1946,7 @@ public class ContextMachineImpl implements ContextMachine {
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
             for(ContextInstance instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if any job initiation events need to be raised.
-                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised, markAsRaised));
+                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised, markAsRaised, true));
                 this.setContextStatus(contextInstance, false);
             }
         }
