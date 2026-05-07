@@ -54,7 +54,9 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextTemplateEnableDisableEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextTemplateSavedEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -86,8 +88,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventBroadcastListener
-    , ContextTemplateEnableDisableEventBroadcastListener, ContextTemplateSavedEventBroadcastListener {
+public class ContextTemplateWidget extends VerticalLayout implements ContextInstanceSavedEventLocalBroadcastListener
+    , ContextTemplateEnableDisableEventLocalBroadcastListener, ContextTemplateSavedEventLocalBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(ContextTemplateWidget.class);
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;

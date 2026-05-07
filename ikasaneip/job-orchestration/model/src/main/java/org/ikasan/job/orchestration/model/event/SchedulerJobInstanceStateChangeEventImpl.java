@@ -9,6 +9,9 @@ public class SchedulerJobInstanceStateChangeEventImpl extends StateChangeEventIm
     private SchedulerJobInstance schedulerJobInstance;
     private ContextInstance contextInstance;
 
+    public SchedulerJobInstanceStateChangeEventImpl() {
+    }
+
     public SchedulerJobInstanceStateChangeEventImpl(SchedulerJobInstance schedulerJobInstance, ContextInstance contextInstance, InstanceStatus previousStatus, InstanceStatus newStatus) {
         super(previousStatus, newStatus);
         this.schedulerJobInstance = schedulerJobInstance;
@@ -20,8 +23,16 @@ public class SchedulerJobInstanceStateChangeEventImpl extends StateChangeEventIm
         return schedulerJobInstance;
     }
 
+    public void setSchedulerJobInstance(SchedulerJobInstance schedulerJobInstance) {
+        this.schedulerJobInstance = schedulerJobInstance;
+    }
+
     @Override
     public ContextInstance getContextInstance() {
         return contextInstance;
+    }
+
+    public void setContextInstance(ContextInstance contextInstance) {
+        this.contextInstance = contextInstance;
     }
 }

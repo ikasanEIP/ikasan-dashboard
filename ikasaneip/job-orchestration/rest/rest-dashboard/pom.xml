@@ -172,6 +172,16 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-job-orchestration-broadcast</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-job-orchestration-rest-module-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
             <artifactId>ikasan-job-orchestration-provision</artifactId>
             <exclusions>
                 <exclusion>

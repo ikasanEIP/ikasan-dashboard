@@ -51,9 +51,9 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -85,8 +85,8 @@ import static com.cronutils.model.CronType.QUARTZ;
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
 public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInstanceActionWidget
-    implements ContextInstanceStateChangeEventBroadcastListener, SchedulerJobStateChangeEventBroadcastListener,
-    ContextInstanceSavedEventBroadcastListener {
+    implements ContextInstanceStateChangeEventLocalBroadcastListener, SchedulerJobStateChangeEventLocalBroadcastListener,
+    ContextInstanceSavedEventLocalBroadcastListener {
     private static final String PRECEDING_ITEM_COMPONENT = "PRECEDING_ITEM_COMPONENT";
     private static final String SKIP_ICON = "SKIP_ICON";
     private static final String ENABLE_ICON = "ENABLE_ICON";

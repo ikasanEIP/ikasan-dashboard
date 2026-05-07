@@ -56,9 +56,9 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationServ
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -89,7 +89,7 @@ import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoI
  * This class provides methods for initializing and managing the dashboard widget for context instances.
  */
 public class ContextInstanceDashboardWidget extends Div
-    implements SchedulerJobStateChangeEventBroadcastListener, ContextInstanceStateChangeEventBroadcastListener, ContextInstanceSavedEventBroadcastListener {
+    implements SchedulerJobStateChangeEventLocalBroadcastListener, ContextInstanceStateChangeEventLocalBroadcastListener, ContextInstanceSavedEventLocalBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(ContextInstanceDashboardWidget.class);
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
     private Grid<PreparedFutureJobPlanInstance> preparedFutureContextInstanceGrid;

@@ -14,7 +14,6 @@ import org.ikasan.spec.scheduled.core.listener.JobLockCacheEventListener;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -45,8 +44,6 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
     private final ConcurrentHashMap<String, JobLockCacheData> jobLockCacheDataMap;
 
     private JobLockCacheService jobLockCacheService;
-
-    private JobLockCacheEventBroadcaster jobLockCacheEventBroadcaster;
 
     private ExecutorService executor;
 
@@ -536,24 +533,12 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
 
     @Override
     public void onJobLockCacheEvent(JobLockCacheEvent jobLockCacheEvent) {
-        if(this.jobLockCacheEventBroadcaster != null) {
-            this.jobLockCacheEventBroadcaster.broadcast(jobLockCacheEvent);
-        }
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.broadcast(jobLockCacheEvent);
     }
 
     @Override
     public void addJobLockCacheEventListener(JobLockCacheEventListener listener) {
         this.jobLockCacheEventListeners.add(listener);
-    }
-
-
-    /**
-     * Sets the JobLockCacheEventBroadcaster for this JobLockCacheImpl instance.
-     *
-     * @param jobLockCacheEventBroadcaster the JobLockCacheEventBroadcaster to be set
-     */
-    public void setJobLockCacheEventBroadcaster(JobLockCacheEventBroadcaster jobLockCacheEventBroadcaster) {
-        this.jobLockCacheEventBroadcaster = jobLockCacheEventBroadcaster;
     }
 
 

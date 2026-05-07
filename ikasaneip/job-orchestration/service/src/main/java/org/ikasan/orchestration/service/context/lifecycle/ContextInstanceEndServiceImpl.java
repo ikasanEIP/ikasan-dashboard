@@ -9,7 +9,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceSchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -28,7 +28,7 @@ import org.ikasan.spec.systemevent.SystemEventService;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ContextInstanceEndServiceImpl extends ContextInstanceRegistrationServiceImpl implements ContextInstanceStateChangeEventBroadcastListener {
+public class ContextInstanceEndServiceImpl extends ContextInstanceRegistrationServiceImpl implements ContextInstanceStateChangeEventLocalBroadcastListener {
     private static final Log LOG = LogFactory.getLog(ContextInstanceEndServiceImpl.class);
     private final ContextInstanceSchedulerService contextInstanceSchedulerService;
 

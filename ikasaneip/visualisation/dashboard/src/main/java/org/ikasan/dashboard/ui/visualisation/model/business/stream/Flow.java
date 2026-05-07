@@ -1,9 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.model.business.stream;
 
-import org.ikasan.dashboard.ui.visualisation.correlate.Correlator;;
+import org.ikasan.dashboard.ui.visualisation.correlate.Correlator;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
 import org.ikasan.designer.pallet.DesignerItemIdentifier;
-import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
 
 import java.util.UUID;
 

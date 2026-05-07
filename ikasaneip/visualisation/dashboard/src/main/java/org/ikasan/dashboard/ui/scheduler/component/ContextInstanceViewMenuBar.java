@@ -12,13 +12,13 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.job.orchestration.broadcast.ContextViewUpdateEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextViewUpdateEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
@@ -28,8 +28,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 
-public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstanceStateChangeEventBroadcastListener
-    , ContextViewUpdateEventBroadcastListener {
+public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstanceStateChangeEventLocalBroadcastListener
+    , ContextViewUpdateEventLocalBroadcastListener {
 
     private ContextInstance contextInstance;
     private ContextProfileService contextProfileService;

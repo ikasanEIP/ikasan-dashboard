@@ -6,9 +6,9 @@ import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcast
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceAggregateJobStatus;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AggregateStatusCollector implements SchedulerJobStateChangeEventBroadcastListener,
-    ContextInstanceStateChangeEventBroadcastListener, ContextInstanceSavedEventBroadcastListener {
+public class AggregateStatusCollector implements SchedulerJobStateChangeEventLocalBroadcastListener,
+    ContextInstanceStateChangeEventLocalBroadcastListener, ContextInstanceSavedEventLocalBroadcastListener {
     private static AggregateStatusCollector instance;
 
     private SchedulerJobInstanceService schedulerJobInstanceService;

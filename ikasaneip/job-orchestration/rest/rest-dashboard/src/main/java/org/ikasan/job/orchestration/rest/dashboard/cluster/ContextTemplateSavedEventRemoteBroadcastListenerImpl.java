@@ -1,0 +1,27 @@
+package org.ikasan.job.orchestration.rest.dashboard.cluster;
+
+import org.ikasan.spec.scheduled.event.service.ContextTemplateSavedEventRemoteBroadcastListener;
+import org.ikasan.job.orchestration.rest.client.ClusterEventRestServiceImpl;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+
+import java.util.List;
+
+public class ContextTemplateSavedEventRemoteBroadcastListenerImpl
+    implements ContextTemplateSavedEventRemoteBroadcastListener {
+
+    private final ClusterEventRestServiceImpl clusterEventRestService;
+    private final List<String> clusterNodeUrls;
+
+    public ContextTemplateSavedEventRemoteBroadcastListenerImpl(ClusterEventRestServiceImpl clusterEventRestService,
+                                                                List<String> clusterNodeUrls) {
+        this.clusterEventRestService = clusterEventRestService;
+        this.clusterNodeUrls = clusterNodeUrls;
+    }
+
+    @Override
+    public void receiveContextTemplateSavedEventBroadcast(ContextTemplate contextTemplate) {
+        for (String nodeUrl : clusterNodeUrls) {
+            clusterEventRestService.broadcastContextTemplateSaved(nodeUrl, contextTemplate);
+        }
+    }
+}

@@ -16,9 +16,6 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -100,8 +97,6 @@ public class ContextInstanceRegistrationLifecycleTest {
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
     @Mock
     private TimeService timeService;
-    @Mock
-    private ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster;
     @Mock
     private SystemEventService systemEventService;
     @Mock

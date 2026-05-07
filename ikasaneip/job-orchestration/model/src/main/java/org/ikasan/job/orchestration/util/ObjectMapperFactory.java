@@ -5,27 +5,19 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.ikasan.job.orchestration.model.context.*;
-import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
-import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
-import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.job.orchestration.model.event.*;
 import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.profile.ContextProfileImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.spec.scheduled.context.model.*;
-import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
-import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.event.model.*;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class ObjectMapperFactory {
 
@@ -65,6 +57,8 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(GlobalEventJob.class, GlobalEventJobImpl.class)
             .addAbstractTypeMapping(ContextProfileRecord.class, ContextProfileRecordImpl.class)
             .addAbstractTypeMapping(ContextProfile.class, ContextProfileImpl.class)
+            .addAbstractTypeMapping(SchedulerJobInstanceStateChangeEvent.class, SchedulerJobInstanceStateChangeEventImpl.class)
+            .addAbstractTypeMapping(JobLockCacheEvent.class, JobLockCacheEventImpl.class)
             .addAbstractTypeMapping(ContextBundle.class, ContextBundleImpl.class)
             .addAbstractTypeMapping(JobLock.class, JobLockImpl.class)
             .addAbstractTypeMapping(JobLockInstance.class, JobLockInstanceImpl.class)

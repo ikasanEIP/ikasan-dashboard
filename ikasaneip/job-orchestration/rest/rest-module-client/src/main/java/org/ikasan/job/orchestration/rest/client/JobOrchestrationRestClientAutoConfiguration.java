@@ -40,4 +40,11 @@ public class JobOrchestrationRestClientAutoConfiguration {
         , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         return new JobUtilsServiceImpl(environment, httpComponentsClientHttpRequestFactory);
     }
+
+    @Bean
+    public ClusterEventRestServiceImpl clusterEventRestService(Environment environment
+        , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
+        return new ClusterEventRestServiceImpl(environment, httpComponentsClientHttpRequestFactory);
+    }
+
 }

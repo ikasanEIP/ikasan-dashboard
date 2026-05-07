@@ -8,6 +8,9 @@ public abstract class StateChangeEventImpl implements StateChangeEvent {
     protected InstanceStatus previousStatus;
     protected InstanceStatus newStatus;
 
+    public StateChangeEventImpl() {
+    }
+
     public StateChangeEventImpl(InstanceStatus previousStatus, InstanceStatus newStatus) {
         this.previousStatus = previousStatus;
         this.newStatus = newStatus;
@@ -17,7 +20,15 @@ public abstract class StateChangeEventImpl implements StateChangeEvent {
         return previousStatus;
     }
 
+    public void setPreviousStatus(InstanceStatus previousStatus) {
+        this.previousStatus = previousStatus;
+    }
+
     public InstanceStatus getNewStatus() {
         return newStatus;
+    }
+
+    public void setNewStatus(InstanceStatus newStatus) {
+        this.newStatus = newStatus;
     }
 }

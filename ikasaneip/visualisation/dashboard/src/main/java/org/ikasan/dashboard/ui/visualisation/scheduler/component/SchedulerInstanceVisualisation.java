@@ -33,8 +33,8 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.UUID;
 
 public abstract class SchedulerInstanceVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
-    , CanvasItemDoubleClickEventListener, CanvasInitialisedListener, CanvasItemSingleClickEventListener, ContextInstanceStateChangeEventBroadcastListener
-    , SchedulerJobStateChangeEventBroadcastListener {
+    , CanvasItemDoubleClickEventListener, CanvasInitialisedListener, CanvasItemSingleClickEventListener, ContextInstanceStateChangeEventLocalBroadcastListener
+    , SchedulerJobStateChangeEventLocalBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerInstanceVisualisation.class);
 
     protected DesignerCanvas designerCanvas;
