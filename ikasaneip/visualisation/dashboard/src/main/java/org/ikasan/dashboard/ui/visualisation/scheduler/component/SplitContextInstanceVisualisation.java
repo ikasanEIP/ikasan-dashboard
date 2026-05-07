@@ -32,8 +32,8 @@ import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -52,7 +52,7 @@ import java.util.Map;
 
 public class SplitContextInstanceVisualisation extends VerticalLayout
     implements ContextOpenedListener, ContextSelectedListener, CanvasInitialisedListener
-    , ContextInstanceStateChangeEventBroadcastListener, SchedulerJobStateChangeEventBroadcastListener {
+    , ContextInstanceStateChangeEventLocalBroadcastListener, SchedulerJobStateChangeEventLocalBroadcastListener {
     Logger logger = LoggerFactory.getLogger(SplitContextInstanceVisualisation.class);
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;

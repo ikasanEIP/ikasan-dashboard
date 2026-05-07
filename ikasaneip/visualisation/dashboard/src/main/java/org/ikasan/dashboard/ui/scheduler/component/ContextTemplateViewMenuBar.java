@@ -11,7 +11,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
-import org.ikasan.job.orchestration.broadcast.ContextViewUpdateEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextViewUpdateEventBroadcaster;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
@@ -24,7 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 
-public class ContextTemplateViewMenuBar extends MenuBar implements ContextViewUpdateEventBroadcastListener {
+public class ContextTemplateViewMenuBar extends MenuBar implements ContextViewUpdateEventLocalBroadcastListener {
     private ContextTemplate contextTemplate;
     private ContextProfileService contextProfileService;
     private SchedulerVisualisation schedulerVisualisation;

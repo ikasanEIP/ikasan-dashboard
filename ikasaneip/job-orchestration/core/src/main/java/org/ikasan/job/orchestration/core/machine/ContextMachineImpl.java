@@ -14,6 +14,7 @@ import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceDlqEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
@@ -83,6 +84,7 @@ public class ContextMachineImpl implements ContextMachine {
     private JobLogicMachine jobLogicMachine;
     private ContextInstanceToContextInstanceStatusConverter statusConverter;
     private List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners;
+    private List<ContextInstanceDlqEventLocalBroadcastListener> contextInstanceDlqEventBroadcastListeners;
     private ExecutorService statusListenerExecutor;
     private ExecutorService contextInstanceDlqEventListenerExecutor;
     private ExecutorService schedulerInitiatorEventRaisedListenerExecutor;
@@ -844,6 +846,30 @@ public class ContextMachineImpl implements ContextMachine {
             this.contextInstanceStateChangeEventListeners.remove(listener);
         }
     }
+
+
+    /**
+     * Adds a ContextInstanceDlqEventLocalBroadcastListener to the list of listeners.
+     *
+     * @param listener the ContextInstanceDlqEventLocalBroadcastListener to add
+     */
+    public void addContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventLocalBroadcastListener listener) {
+        if(!this.contextInstanceDlqEventBroadcastListeners.contains(listener)) {
+            this.contextInstanceDlqEventBroadcastListeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a specified ContextInstanceDlqEventLocalBroadcastListener from the list of listeners.
+     *
+     * @param listener the listener to be removed from the list of listeners
+     */
+    public void removeContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventLocalBroadcastListener listener) {
+        if(this.contextInstanceDlqEventBroadcastListeners.contains(listener)) {
+            this.contextInstanceDlqEventBroadcastListeners.remove(listener);
+        }
+    }
+
 
 
 

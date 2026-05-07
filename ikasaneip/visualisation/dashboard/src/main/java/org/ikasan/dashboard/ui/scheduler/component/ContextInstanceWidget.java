@@ -64,8 +64,8 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationServ
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -87,8 +87,8 @@ import java.util.concurrent.Executors;
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
 public class ContextInstanceWidget extends VerticalLayout
-    implements BeforeEnterObserver, ContextInstanceStateChangeEventBroadcastListener
-    , SchedulerJobStateChangeEventBroadcastListener {
+    implements BeforeEnterObserver, ContextInstanceStateChangeEventLocalBroadcastListener
+    , SchedulerJobStateChangeEventLocalBroadcastListener {
 
     private static Logger logger = LoggerFactory.getLogger(ContextInstanceWidget.class);
     public static final String TREE_TAB = "treeTab";

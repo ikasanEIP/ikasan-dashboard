@@ -29,7 +29,7 @@ import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -43,7 +43,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
-public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDialog implements SchedulerJobStateChangeEventBroadcastListener {
+public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDialog implements SchedulerJobStateChangeEventLocalBroadcastListener {
 
     Logger logger = LoggerFactory.getLogger(GlobalEventJobInstanceDialog.class);
 

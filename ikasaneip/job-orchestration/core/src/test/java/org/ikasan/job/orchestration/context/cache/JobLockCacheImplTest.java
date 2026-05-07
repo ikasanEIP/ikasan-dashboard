@@ -13,8 +13,7 @@ import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
-import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
@@ -4508,19 +4507,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
-        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
-            @Override
-            public void broadcast(JobLockCacheEvent message) {
-                jobLockCacheEvent.set(message);
-            }
-
-            @Override
-            public void register(JobLockCacheEventBroadcastListener listener) {
-
-            }
-        };
-
-        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+        JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.set(message);
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
 
@@ -4549,19 +4537,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
-        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
-            @Override
-            public void broadcast(JobLockCacheEvent message) {
-                jobLockCacheEvent.add(message);
-            }
-
-            @Override
-            public void register(JobLockCacheEventBroadcastListener listener) {
-
-            }
-        };
-
-        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+        JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.add(message);
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
         assertFalse(jlc.locked("jobIdentifier", "contextName", "another_environment"));
@@ -4599,19 +4576,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
-        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
-            @Override
-            public void broadcast(JobLockCacheEvent message) {
-                jobLockCacheEvent.add(message);
-            }
-
-            @Override
-            public void register(JobLockCacheEventBroadcastListener listener) {
-
-            }
-        };
-
-        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+        JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.add(message);
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
         assertFalse(jlc.locked("jobIdentifier", "contextName", null));
@@ -4825,18 +4791,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
-        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
-            @Override
-            public void broadcast(JobLockCacheEvent message) {
-                jobLockCacheEvent.set(message);
-            }
-
-            @Override
-            public void register(JobLockCacheEventBroadcastListener listener) {
-
-            }
-        };
-        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+        JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.set(message);
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
         // release the lock
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
@@ -4870,19 +4826,11 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         ArrayList<JobLockCacheEvent> obtainedEvents = new ArrayList<>();
         ArrayList<JobLockCacheEvent> releasedEvents = new ArrayList<>();
 
-        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
-            @Override
-            public void broadcast(JobLockCacheEvent message) {
-                if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
-                if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
-            }
-
-            @Override
-            public void register(JobLockCacheEventBroadcastListener listener) {
-
-            }
+        JobLockCacheEventLocalBroadcastListener broadcaster = message -> {
+            if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
+            if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
         };
-        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
         // lock it
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
@@ -4939,19 +4887,11 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         ArrayList<JobLockCacheEvent> obtainedEvents = new ArrayList<>();
         ArrayList<JobLockCacheEvent> releasedEvents = new ArrayList<>();
 
-        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
-            @Override
-            public void broadcast(JobLockCacheEvent message) {
-                if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
-                if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
-            }
-
-            @Override
-            public void register(JobLockCacheEventBroadcastListener listener) {
-
-            }
+        JobLockCacheEventLocalBroadcastListener broadcaster = message -> {
+            if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
+            if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
         };
-        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
         // lock it
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));

@@ -43,8 +43,8 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -66,7 +66,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class SchedulerJobInstanceGridWidget extends Div
-    implements SchedulerJobStateChangeEventBroadcastListener, ContextInstanceSavedEventBroadcastListener {
+    implements SchedulerJobStateChangeEventLocalBroadcastListener, ContextInstanceSavedEventLocalBroadcastListener {
 
     Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceGridWidget.class);
 

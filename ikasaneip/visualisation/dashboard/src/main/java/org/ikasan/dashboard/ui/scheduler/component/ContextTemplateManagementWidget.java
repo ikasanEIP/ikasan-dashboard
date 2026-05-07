@@ -37,7 +37,7 @@ import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
-import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextTemplateSavedEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
@@ -95,7 +95,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class ContextTemplateManagementWidget extends VerticalLayout
-    implements JobSynchronisationRequiredListener, ContextTemplateSavedEventBroadcastListener, BeforeEnterObserver {
+    implements JobSynchronisationRequiredListener, ContextTemplateSavedEventLocalBroadcastListener, BeforeEnterObserver {
 
     Logger logger = LoggerFactory.getLogger(ContextTemplateManagementWidget.class);
 

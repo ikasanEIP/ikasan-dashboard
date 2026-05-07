@@ -1,7 +1,7 @@
 package org.ikasan.job.orchestration.core.machine;
 
 import org.ikasan.bigqueue.IBigQueue;
-import org.ikasan.job.orchestration.broadcast.ContextInstanceDlqEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
@@ -227,6 +227,20 @@ public interface ContextMachine {
      * @param listener the ContextInstanceStateChangeEventListener to remove
      */
     void removeContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventListener listener);
+
+    /**
+     * Adds a listener for context instance dead letter queue events.
+     *
+     * @param listener the ContextInstanceDlqEventLocalBroadcastListener to add
+     */
+    void addContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventLocalBroadcastListener listener);
+
+    /**
+     * Removes a context instance DLQ event broadcast listener.
+     *
+     * @param listener the ContextInstanceDlqEventLocalBroadcastListener to remove
+     */
+    void removeContextInstanceDlqEventEventBroadcastListeners(ContextInstanceDlqEventLocalBroadcastListener listener);
 
     /**
      * Sets the dry run parameters for this context machine.

@@ -8,6 +8,9 @@ public class ContextInstanceStateChangeEventImpl extends StateChangeEventImpl im
     private ContextInstance contextInstance;
     private String contextInstanceId;
 
+    public ContextInstanceStateChangeEventImpl() {
+    }
+
     public ContextInstanceStateChangeEventImpl(String contextInstanceId, ContextInstance contextInstance
         , InstanceStatus previousStatus, InstanceStatus newStatus) {
         super(previousStatus, newStatus);
@@ -20,7 +23,15 @@ public class ContextInstanceStateChangeEventImpl extends StateChangeEventImpl im
         return contextInstanceId;
     }
 
+    public void setContextInstanceId(String contextInstanceId) {
+        this.contextInstanceId = contextInstanceId;
+    }
+
     public ContextInstance getContextInstance() {
         return contextInstance;
+    }
+
+    public void setContextInstance(ContextInstance contextInstance) {
+        this.contextInstance = contextInstance;
     }
 }

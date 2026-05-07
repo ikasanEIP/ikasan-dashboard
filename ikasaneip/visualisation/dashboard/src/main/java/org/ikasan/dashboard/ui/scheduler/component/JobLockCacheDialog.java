@@ -35,7 +35,7 @@ import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
-import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -57,7 +57,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class JobLockCacheDialog extends AbstractCloseableResizableDialog implements JobLockCacheEventBroadcastListener {
+public class JobLockCacheDialog extends AbstractCloseableResizableDialog implements JobLockCacheEventLocalBroadcastListener {
     Logger logger = LoggerFactory.getLogger(JobLockCacheDialog.class);
     private ContextInstance contextInstance;
     private ModuleMetaDataService moduleMetaDataService;

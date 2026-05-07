@@ -24,6 +24,9 @@ public class JobLockCacheEventImpl implements JobLockCacheEvent {
      * @param environment The environment in which the event occurs.
      * @param eventType The type of event being represented.
      */
+    public JobLockCacheEventImpl() {
+    }
+
     public JobLockCacheEventImpl(String lockName, String jobIdentifier, String contextName, String environment, EventType eventType) {
         this.lockName = lockName;
         this.jobIdentifier = jobIdentifier;
@@ -39,7 +42,11 @@ public class JobLockCacheEventImpl implements JobLockCacheEvent {
 
     @Override
     public String getLockName() {
-        return null;
+        return lockName;
+    }
+
+    public void setLockName(String lockName) {
+        this.lockName = lockName;
     }
 
     @Override
@@ -47,9 +54,17 @@ public class JobLockCacheEventImpl implements JobLockCacheEvent {
         return this.jobIdentifier;
     }
 
+    public void setJobIdentifier(String jobIdentifier) {
+        this.jobIdentifier = jobIdentifier;
+    }
+
     @Override
     public String getContextName() {
         return this.contextName;
+    }
+
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
     }
 
     @Override
@@ -57,9 +72,17 @@ public class JobLockCacheEventImpl implements JobLockCacheEvent {
         return this.environment;
     }
 
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
+
     @Override
     public EventType getEvent() {
         return eventType;
+    }
+
+    public void setEvent(EventType eventType) {
+        this.eventType = eventType;
     }
 
     @Override

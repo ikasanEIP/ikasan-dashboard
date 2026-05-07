@@ -21,9 +21,9 @@ import com.vaadin.flow.server.StreamResource;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
-import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextTemplateSavedEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
-import org.ikasan.job.orchestration.broadcast.NewSchedulerJobEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.NewSchedulerJobEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.NewSchedulerJobEventBroadcaster;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -59,8 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedEventBroadcastListener
-    , NewSchedulerJobEventBroadcastListener {
+public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedEventLocalBroadcastListener
+    , NewSchedulerJobEventLocalBroadcastListener {
 
     private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;

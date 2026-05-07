@@ -30,7 +30,7 @@ import org.ikasan.job.orchestration.service.JobLockCacheManagementServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
-import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 @PermitAll
 @PreserveOnRefresh
 @Component
-public class JobLockManagementView extends VerticalLayout implements BeforeEnterObserver, JobLockCacheEventBroadcastListener
+public class JobLockManagementView extends VerticalLayout implements BeforeEnterObserver, JobLockCacheEventLocalBroadcastListener
 {
     private Logger logger = LoggerFactory.getLogger(JobLockManagementView.class);
 

@@ -25,7 +25,7 @@ import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.job.orchestration.broadcast.ContextInstanceDlqEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceDlqEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -49,7 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class DeadLetterQueueManagementWidget extends VerticalLayout implements ContextInstanceDlqEventBroadcastListener {
+public class DeadLetterQueueManagementWidget extends VerticalLayout implements ContextInstanceDlqEventLocalBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(DeadLetterQueueManagementWidget.class);
 
     protected Grid<BigQueueMessage> bigQueueMessageGrid = new Grid<>();

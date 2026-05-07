@@ -22,7 +22,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 @JsModule("./dag-connector-flow.js")
 @Tag("dag-chart")
 @PreserveOnRefresh
-public class DagComponent extends VerticalLayout implements HasSize, ContextInstanceStateChangeEventBroadcastListener {
+public class DagComponent extends VerticalLayout implements HasSize, ContextInstanceStateChangeEventLocalBroadcastListener {
 
     Logger logger = LoggerFactory.getLogger(DagComponent.class);
 

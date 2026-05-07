@@ -30,8 +30,8 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
@@ -44,7 +44,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseableResizableDialog
-    implements SchedulerJobStateChangeEventBroadcastListener, ContextInstanceStateChangeEventBroadcastListener {
+    implements SchedulerJobStateChangeEventLocalBroadcastListener, ContextInstanceStateChangeEventLocalBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(RepeatingSchedulerJobExecutionHistoryDialog.class);
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ContextInstance contextInstance;
