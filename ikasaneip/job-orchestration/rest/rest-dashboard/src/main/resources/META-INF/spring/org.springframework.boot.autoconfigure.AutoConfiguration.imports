@@ -1,2 +1,2 @@
 org.ikasan.job.orchestration.rest.dashboard.IkasanRestAutoConfiguration
-org.ikasan.job.orchestration.rest.dashboard.cluster.ClusterBroadcastAutoConfiguration
+org.ikasan.job.orchestration.rest.dashboard.ClusterBroadcastAutoConfiguration
