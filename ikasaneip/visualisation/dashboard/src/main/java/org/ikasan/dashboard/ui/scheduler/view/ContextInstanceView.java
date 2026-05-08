@@ -17,7 +17,6 @@ import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceWidget;
 import org.ikasan.dashboard.ui.util.CookieUtil;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -63,9 +62,6 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
 
     @Resource
     private ConfigurationService configurationRestService;
-
-    @Resource
-    private ScheduledProcessManagementService scheduledProcessManagementService;
 
     @Resource
     private ModuleControlService moduleControlRestService;
@@ -165,13 +161,13 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
         else {
             if (this.selectedTab != null && (this.jobStatus != null || this.jobName != null)) {
                 this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
-                    , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                    , moduleMetaDataService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                     , this.jobUtilsService, this.scheduledContextService, this.selectedTab, this.jobStatus, this.jobName, this.globalEventService, this.contextInstanceRegistrationService
                     , this.contextInstanceSchedulerService, this.systemEventSearchService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
             } else {
                 this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
-                    , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                    , moduleMetaDataService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                     , this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventSearchService
                     , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);

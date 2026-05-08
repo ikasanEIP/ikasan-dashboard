@@ -145,4 +145,10 @@ public class HibernateContextStartJobDaoImpl implements ContextStartJobDao<Hiber
 
         logger.debug("Successfully saved ContextStartJobRecord: {}", hibernateRecord.getId());
     }
+
+    @Override
+    @Transactional
+    public void save(List<HibernateContextStartJobRecord> records) {
+        records.forEach(this::save);
+    }
 }

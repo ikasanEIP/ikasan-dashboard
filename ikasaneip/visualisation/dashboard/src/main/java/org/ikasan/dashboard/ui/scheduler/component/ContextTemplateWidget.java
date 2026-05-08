@@ -39,9 +39,6 @@ import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -70,6 +67,8 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,7 +127,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
      * @param scheduledContextService
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -148,7 +146,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
      * @param provisionJobs
      * @param contextInstanceRegistrationService
      */
-    public ContextTemplateWidget(ScheduledContextService scheduledContextService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextTemplateWidget(ScheduledContextService scheduledContextService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -241,7 +239,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
-            , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+            , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, scheduledContextInstanceService, schedulerJobInstanceService, jobInitiationService
             , userService, securityService);
 
@@ -357,7 +355,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
      *
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -370,7 +367,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
      * @param userService
      * @param securityService
      */
-    private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                               LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -423,7 +420,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                 ContextTemplateManagementDialog contextTemplateManagementDialog
                     = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                    , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, record.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
                     , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                     , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService

@@ -12,8 +12,8 @@ import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.search.component.SearchForm;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.error.reporting.service.SolrErrorReportingServiceImpl;
-import org.ikasan.replay.service.SolrReplayAuditServiceImpl;
+import org.ikasan.esb.service.error.reporting.ErrorReportingServiceImpl;
+import org.ikasan.esb.service.replay.ReplayAuditServiceImpl;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -39,7 +39,7 @@ import static org.mockito.ArgumentMatchers.eq;
 public class SearchResultTest extends UITest {
 
     @MockitoBean
-    private SolrErrorReportingServiceImpl solrErrorReportingService;
+    private ErrorReportingServiceImpl errorReportingService;
 
     @MockitoBean
     private HospitalAuditService hospitalAuditService;
@@ -52,7 +52,7 @@ public class SearchResultTest extends UITest {
 
 
     @MockitoBean
-    private SolrReplayAuditServiceImpl replayAuditService;
+    private ReplayAuditServiceImpl replayAuditService;
 
     @Resource
     private DateFormatter dateFormatter;

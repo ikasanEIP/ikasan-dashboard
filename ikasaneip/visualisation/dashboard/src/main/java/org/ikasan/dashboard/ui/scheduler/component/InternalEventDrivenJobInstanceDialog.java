@@ -7,7 +7,6 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
@@ -30,15 +29,14 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
-import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.designer.PositionedDialog;
+import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
@@ -76,7 +74,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
-    private ComboBox<String> agentCb;
+    private TextField agentTf;
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
@@ -103,7 +101,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private Button submitDownstreamJobsButton;
     private Button killButton;
 
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleMetaData agent;
     private ModuleControlService moduleControlRestService;
@@ -152,7 +149,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
      * Constructor
      *
      * @param agent
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -163,7 +159,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
      * @param moduleMetaDataService
      * @param logStreamingService
      */
-    public InternalEventDrivenJobInstanceDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+    public InternalEventDrivenJobInstanceDialog(ModuleMetaData agent,
                                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                                 SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance,
@@ -177,10 +173,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         if(this.agent ==  null) {
             throw new IllegalArgumentException("agent cannot be null!");
         }
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService ==  null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
-        }
+
         this.configurationRestService = configurationRestService;
         if(this.configurationRestService ==  null) {
             throw new IllegalArgumentException("configurationRestService cannot be null!");
@@ -601,20 +594,15 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             .bind(InternalEventDrivenJobInstance::getJobName, InternalEventDrivenJobInstance::setJobName);
         formLayout.add(jobNameTf);
 
-        this.agentCb = new ComboBox<>(getTranslation("label.agent", UI.getCurrent().getLocale()));
-        this.agentCb.setId("agentCb");
-        this.agentCb.setRequired(true);
-        this.agentCb.setClearButtonVisible(true);
-        this.agentCb.setEnabled(false);
-        this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
+        this.agentTf = new TextField(getTranslation("label.agent", UI.getCurrent().getLocale()));
         if(agent != null) {
-            this.agentCb.setValue(agent.getName());
-            this.agentCb.setEnabled(false);
+            this.agentTf.setValue(agent.getName());
+            this.agentTf.setEnabled(false);
         }
-        formBinder.forField(this.agentCb)
+        formBinder.forField(this.agentTf)
             .withValidator(agentValue -> agentValue != null && !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
             .bind(InternalEventDrivenJobInstance::getAgentName, InternalEventDrivenJobInstance::setAgentName);
-        formLayout.add(agentCb);
+        formLayout.add(agentTf);
 
         this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
         this.jobDescriptionTa.setRequired(true);

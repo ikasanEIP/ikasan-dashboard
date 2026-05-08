@@ -8,7 +8,6 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
@@ -30,7 +29,6 @@ import org.ikasan.spec.systemevent.SystemEventSearchService;
 public class SchedulerAgentDashboardView extends HorizontalLayout implements BeforeEnterObserver
 {
     private ModuleMetaDataService moduleMetadataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -62,20 +60,39 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
 
     private boolean initialised = false;
 
+
     /**
-     * Constructor
+     * Constructs an instance of the SchedulerAgentDashboardView class, initializing its dependencies and layout configuration.
      *
-     * @param moduleMetadataService
-     * @param scheduledProcessManagementService
-     * @param configurationRestService
-     * @param moduleControlRestService
-     * @param metaDataRestService
-     * @param systemEventLogger
-     * @param schedulerService
+     * @param moduleMetadataService Provides services related to module metadata operations.
+     * @param configurationRestService Handles configuration management through RESTful services.
+     * @param moduleControlRestService Manages module-level control operations through RESTful services.
+     * @param metaDataRestService Provides metadata-related services for the application.
+     * @param systemEventLogger Facilitates logging of system events.
+     * @param schedulerService Manages scheduling-related operations.
+     * @param schedulerJobService Handles job operations within the scheduler.
+     * @param schedulerJobInstanceService Provides services for managing job instances.
+     * @param scheduledContextInstanceService Handles scheduled context instance operations.
+     * @param dynamicImagePath The file path for dynamically generated images.
+     * @param moduleMetaDataService Facilitates additional module metadata-related operations.
+     * @param logStreamingService Provides services for streaming logs in real-time.
+     * @param jobInitiationService Handles job initiation and scheduling activities.
+     * @param contextProfileService Manages operations related to context profiles.
+     * @param jobUtilsService Provides utilities for job-related operations.
+     * @param scheduledContextService Handles scheduled context operations.
+     * @param globalEventService Manages global events across the application.
+     * @param contextInstanceRegistrationService Provides registration services for context instances.
+     * @param downloadLogFileService Handles services related to downloading log files.
+     * @param contextInstanceSchedulerService Manages scheduling for context instances.
+     * @param jobProvisionService Facilitates job provisioning and preparation.
+     * @param systemEventSearchService Provides search and query capabilities for system events.
+     * @param jobVisualisationVerticalSpacing The vertical spacing for job visualization on the dashboard.
+     * @param jobVisualisationHorizontalSpacing The horizontal spacing for job visualization on the dashboard.
+     * @param contextVisualisationLevelDistance The distance between visualization levels for contexts.
+     * @param contextVisualisationNodeDistance The distance between visualization nodes within the same context level.
      */
-    public SchedulerAgentDashboardView(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                       ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                                       SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService,
+    public SchedulerAgentDashboardView(ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                       MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService,
                                        SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
                                        ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                        JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
@@ -85,7 +102,6 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                                        SystemEventSearchService systemEventSearchService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
                                        double contextVisualisationNodeDistance) {
         this.moduleMetadataService = moduleMetadataService;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
@@ -122,12 +138,12 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         if(!initialised) {
-            board.addRow(new AgentWidget(this.moduleMetadataService, this.scheduledProcessManagementService
-                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
-                , this.schedulerService, this.jobProvisionService, this.schedulerJobService, this.downloadLogFileService, this.scheduledContextService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
+            board.addRow(new AgentWidget(this.moduleMetadataService, this.configurationRestService, this.moduleControlRestService
+                , this.metaDataRestService, this.systemEventLogger, this.schedulerService, this.jobProvisionService
+                , this.schedulerJobService, this.downloadLogFileService, this.scheduledContextService)
+                , new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
 
-            board.addRow(new ContextInstanceDashboardWidget(this.scheduledProcessManagementService
-                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
+            board.addRow(new ContextInstanceDashboardWidget(this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
                 , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
                 this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
                 this.jobUtilsService, this.scheduledContextService, false, this.globalEventService, this.contextInstanceRegistrationService,

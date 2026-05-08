@@ -257,7 +257,7 @@ public class HibernateFileEventDrivenJobDaoImplTest {
     @Test(expected = IllegalArgumentException.class)
     public void testSaveInvalidRecordType() {
         // When - should throw IllegalArgumentException
-        dao.save(null);
+        dao.save((HibernateFileEventDrivenJobRecord) null);
     }
 
     // Helper class for creating test FileEventDrivenJob instances

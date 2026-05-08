@@ -10,9 +10,6 @@ import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateManagementWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -29,6 +26,8 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextSe
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,9 +56,6 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
 
     @Resource
     private ConfigurationService configurationRestService;
-
-    @Resource
-    private ScheduledProcessManagementService scheduledProcessManagementService;
 
     @Resource
     private ModuleControlService moduleControlRestService;
@@ -184,7 +180,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
         }
         else {
             this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, ""
-                , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                , moduleMetaDataService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                 , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                 , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                 , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService

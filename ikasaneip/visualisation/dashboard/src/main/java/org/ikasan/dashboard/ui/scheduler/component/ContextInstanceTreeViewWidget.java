@@ -30,17 +30,16 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceSplitVisualisationDialog;
+import org.ikasan.designer.PositionedDialog;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.designer.PositionedDialog;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.local.LocalEventServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -104,7 +103,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private Logger logger = LoggerFactory.getLogger(ContextInstanceTreeViewWidget.class);
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ModuleMetaDataService moduleMetaDataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -147,7 +145,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      *
      * @param contextInstance
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -158,7 +155,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param jobUtilsService
      * @param scheduledContextService
      */
-    public ContextInstanceTreeViewWidget(ContextInstance contextInstance, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextInstanceTreeViewWidget(ContextInstance contextInstance, ModuleMetaDataService moduleMetaDataService,
                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                          SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
@@ -193,10 +190,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.moduleControlRestService = moduleControlRestService;
         if (this.moduleControlRestService == null) {
             throw new IllegalArgumentException("moduleControlRestService cannot be null!");
-        }
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if (this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
         this.metaDataRestService = metaDataRestService;
         if (this.metaDataRestService == null) {
@@ -1007,7 +1000,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation"
             , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
         visualisation.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-            JobInstanceSplitVisualisationDialog jobInstanceSplitVisualisationDialog = new JobInstanceSplitVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+            JobInstanceSplitVisualisationDialog jobInstanceSplitVisualisationDialog = new JobInstanceSplitVisualisationDialog(this.moduleMetaDataService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
                 this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
                 this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
@@ -1379,7 +1372,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             else if(refreshedRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
                 InternalEventDrivenJobInstanceDialog internalEventDrivenJobDialog
                     = new InternalEventDrivenJobInstanceDialog(this.moduleMetaDataService.findById(refreshedRecord.getSchedulerJobInstance().getAgentName())
-                    , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
+                    , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
                     , this.systemEventLogger, this.schedulerJobInstanceService, this.contextInstance, this.jobInitiationService, this.moduleMetaDataService
                     , this.logStreamingService, this.jobUtilsService, this.scheduledContextInstanceService);
                 internalEventDrivenJobDialog.setJob(refreshedRecord);

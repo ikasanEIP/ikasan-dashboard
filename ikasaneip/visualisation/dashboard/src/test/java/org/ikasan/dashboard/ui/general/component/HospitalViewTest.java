@@ -32,7 +32,7 @@ public class HospitalViewTest extends UITest {
     @MockitoBean
     private ResubmissionService resubmissionRestService;
 
-    @MockitoBean
+    @MockitoBean("hospitalEntityService")
     private HospitalAuditService hospitalAuditService;
 
     @Override

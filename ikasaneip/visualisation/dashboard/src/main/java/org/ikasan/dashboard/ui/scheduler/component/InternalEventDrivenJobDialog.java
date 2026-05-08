@@ -29,7 +29,6 @@ import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.scheduler.util.ControlCharacterUtils;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
@@ -70,7 +69,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private Checkbox isRepeatingJobCb;
     private Button saveButton;
     private Button cancelButton;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleMetaData agent;
     private ModuleControlService moduleControlRestService;
@@ -111,7 +109,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
      * Constructor for InternalEventDrivenJobDialog class.
      *
      * @param agent ModuleMetaData object representing the agent
-     * @param scheduledProcessManagementService Service for managing scheduled processes
      * @param configurationRestService Service for managing configurations
      * @param moduleControlRestService Service for controlling modules
      * @param metaDataRestService Service for managing metadata
@@ -121,7 +118,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
      * @param contextTemplate Context template
      * @param schedulerJobExecutionEnvironmentLabel Map representing the scheduler job execution environment label
      */
-    public InternalEventDrivenJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+    public InternalEventDrivenJobDialog(ModuleMetaData agent,
                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                         MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                         Context parentContextTemplate, Context contextTemplate, Map<String, String> schedulerJobExecutionEnvironmentLabel,
@@ -130,7 +127,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         super.title.setText(getTranslation("label.command-execution-job", UI.getCurrent().getLocale()));
 
         this.agent = agent;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
@@ -286,7 +282,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             templateJobButton.addClickListener(event -> {
                 this.close();
                 SchedulerJobRecord job = this.schedulerJobService.findByContextNameAndJobName(this.contextTemplate.getName(), this.internalEventDrivenJob.getTemplateName());
-                InternalEventDrivenJobTemplateDialog internalEventDrivenJobTemplateDialog = new InternalEventDrivenJobTemplateDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                InternalEventDrivenJobTemplateDialog internalEventDrivenJobTemplateDialog = new InternalEventDrivenJobTemplateDialog(null, this.configurationRestService,
                     this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
 
                 InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
@@ -315,7 +311,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.agentCb.setId("agentCb");
         this.agentCb.setRequired(true);
         this.agentCb.setClearButtonVisible(true);
-        this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
+        this.agentCb.setItems(this.schedulerJobService.getAllAgentNames());
         if(agent != null) {
             this.agentCb.setValue(agent.getName());
             this.agentCb.setEnabled(false);

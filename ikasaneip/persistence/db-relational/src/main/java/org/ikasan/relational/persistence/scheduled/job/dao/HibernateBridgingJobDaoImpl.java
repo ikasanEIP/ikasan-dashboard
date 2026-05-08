@@ -145,6 +145,12 @@ public class HibernateBridgingJobDaoImpl implements BridgingJobDao<HibernateBrid
         logger.debug("Successfully saved BridgingJobRecord: {}", hibernateRecord.getId());
     }
 
+    @Override
+    @Transactional
+    public void save(List<HibernateBridgingJobRecord> records) {
+        records.forEach(this::save);
+    }
+
     @Transactional
     public void delete(HibernateBridgingJobRecord record) {
         entityManager.remove(record);

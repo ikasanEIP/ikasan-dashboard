@@ -58,7 +58,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
 
     private SolrClient server = mockery.mock(SolrClient.class);
 
-    private SolrMetricsDao dao;
+    private SolrMetricsDaoImpl dao;
 
     private NodeConfig config;
 
@@ -85,7 +85,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         createRequest.setConfigSet("minimal");
         server.request(createRequest);
 
-        dao = new SolrMetricsDao(200);
+        dao = new SolrMetricsDaoImpl(200);
         dao.setSolrClient(server);
     }
 
@@ -103,7 +103,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
             }
         });
 
-        SolrMetricsDao dao = new SolrMetricsDao(200);
+        SolrMetricsDaoImpl dao = new SolrMetricsDaoImpl(200);
         dao.setSolrClient(server);
         dao.setDaysToKeep(0);
 
@@ -134,7 +134,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
 
     @Test
     public void test_convert_entity_to_solr_input_document() throws IOException, JSONException {
-        SolrMetricsDao dao = new SolrMetricsDao(200);
+        SolrMetricsDaoImpl dao = new SolrMetricsDaoImpl(200);
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -204,7 +204,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetrics.json")
@@ -224,7 +224,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
@@ -242,7 +242,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
@@ -276,7 +276,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetrics.json")
@@ -296,7 +296,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetrics.json")
@@ -322,7 +322,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetrics.json")
@@ -348,7 +348,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
@@ -382,7 +382,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
@@ -400,7 +400,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetrics.json")
@@ -425,7 +425,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetrics.json")
@@ -450,7 +450,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
@@ -484,7 +484,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")
@@ -502,7 +502,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
         {
             init(server);
 
-            dao = new SolrMetricsDao(200);
+            dao = new SolrMetricsDaoImpl(200);
             dao.setSolrClient(server);
 
             dao.save((List<FlowInvocationMetric>)mapper.readValue(this.loadDataFile("/data/flowInvocationMetricsLarge.json")

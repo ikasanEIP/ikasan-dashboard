@@ -95,7 +95,8 @@ public class SolrExclusionEventImpl implements ExclusionEvent<String>
      * @param timestamp
      * @param errorUri
      */
-    public SolrExclusionEventImpl(String id, String moduleName, String flowName, String identifier, String event, long timestamp, String errorUri) {
+    public SolrExclusionEventImpl(String id, String moduleName, String flowName
+        , String identifier, String event, long timestamp, String errorUri) {
         this.moduleName = moduleName;
         this.flowName = flowName;
         this.identifier = identifier;
@@ -183,7 +184,7 @@ public class SolrExclusionEventImpl implements ExclusionEvent<String>
 
         SolrExclusionEventImpl that = (SolrExclusionEventImpl) o;
 
-        if (id != that.id) return false;
+        if (!id.equals(that.id)) return false;
         if (!flowName.equals(that.flowName)) return false;
         if (!identifier.equals(that.identifier)) return false;
         if (!moduleName.equals(that.moduleName)) return false;

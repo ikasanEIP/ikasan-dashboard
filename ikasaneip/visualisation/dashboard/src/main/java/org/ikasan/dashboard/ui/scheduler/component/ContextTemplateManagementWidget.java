@@ -51,7 +51,6 @@ import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.security.service.UserService;
@@ -108,7 +107,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout
     private SecurityService securityService;
     private JobUtilsService jobUtilsService;
     private SchedulerJobService schedulerJobService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -184,7 +182,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param scheduledContextInstanceService
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -209,7 +206,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param removeTrailingPlanNameContextAfterUnderscore
      */
     public ContextTemplateManagementWidget(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
-                                           ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                           ModuleMetaDataService moduleMetaDataService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -274,10 +271,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout
         this.schedulerJobService = schedulerJobService;
         if (this.schedulerJobService == null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
-        }
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if (this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
         this.configurationRestService = configurationRestService;
         if (this.configurationRestService == null) {
@@ -363,7 +356,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param scheduledContextInstanceService the service for managing scheduled context instances
      * @param dynamicImagePath the path for dynamic images
      * @param moduleMetaDataService the service for module metadata
-     * @param scheduledProcessManagementService the service for managing scheduled processes
      * @param configurationRestService the service for configuration REST operations
      * @param moduleControlRestService the service for module control REST operations
      * @param metaDataRestService the service for metadata REST operations
@@ -394,7 +386,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param contextVisualisationLevelDistance distance between visualization levels for context
      * @param contextVisualisationNodeDistance distance between visualization*/
     public ContextTemplateManagementWidget(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
-                                           ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                           ModuleMetaDataService moduleMetaDataService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -408,7 +400,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
                                            double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance,
                                            double contextVisualisationNodeDistance, String selectedTab, String jobName) {
         this(scheduledContextService, scheduledContextInstanceService, dynamicImagePath,
-             moduleMetaDataService,  scheduledProcessManagementService,
+             moduleMetaDataService,
              configurationRestService,  moduleControlRestService,
              metaDataRestService,  systemEventLogger,  schedulerJobService,
              logStreamingService,  contextTemplate,  schedulerJobInstanceService,
@@ -431,7 +423,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      *
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -440,7 +431,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param logStreamingService
      * @param jobInitiationService
      */
-    private void init(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    private void init(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                       ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                       MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                       LogStreamingService logStreamingService, JobInitiationService jobInitiationService) {
@@ -631,13 +622,13 @@ public class ContextTemplateManagementWidget extends VerticalLayout
         });
 
         this.initialiseEditor();
-        this.initialiseVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.initialiseVisualisation(dynamicImagePath, moduleMetaDataService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
-        this.initialiseContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.initialiseContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService,
              configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService, jobInitiationService);
-        this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
-        this.initialiseContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.initialiseContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
         this.initialiseTabs();
         HorizontalLayout tabLayout = new HorizontalLayout();
@@ -721,7 +712,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      *
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -729,7 +719,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param schedulerJobService
      * @param logStreamingService
      */
-    protected void initialiseVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    protected void initialiseVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService) {
@@ -740,7 +730,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
         this.schedulerVisualisationDiv.setPadding(false);
 
         // todo need to sort out setting the pretty format from the context
-        this.schedulerVisualisation = new ContextSchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.schedulerVisualisation = new ContextSchedulerVisualisation(dynamicImagePath, moduleMetaDataService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
             , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
@@ -836,7 +826,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param scheduledContextInstanceService
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -845,11 +834,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param logStreamingService
      * @param jobInitiationService
      */
-    private void initialiseContextInstanceGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    private void initialiseContextInstanceGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                      LogStreamingService logStreamingService, JobInitiationService jobInitiationService) {
-        this.contextInstanceGridWidget = new ContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.contextInstanceGridWidget = new ContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate, this.schedulerJobInstanceService,
             jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventSearchService,
             this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
@@ -866,7 +855,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param scheduledContextInstanceService
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -874,11 +862,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param schedulerJobService
      * @param logStreamingService
      */
-    private void initialiseSchedulerJobGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    private void initialiseSchedulerJobGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                      LogStreamingService logStreamingService) {
-        this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate,
             this.jobInitiationService, this.jobProvisionService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextService,
             this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
@@ -896,7 +884,6 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param scheduledContextInstanceService
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -904,11 +891,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout
      * @param schedulerJobService
      * @param logStreamingService
      */
-    private void initialiseContextTemplateStatisticsWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    private void initialiseContextTemplateStatisticsWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                   LogStreamingService logStreamingService) {
-        this.contextTemplateStatisticsWidget = new ContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.contextTemplateStatisticsWidget = new ContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate);
         this.contextTemplateStatisticsWidget.setWidthFull();
         this.contextTemplateStatisticsWidget.setHeight("75vh");
@@ -1031,7 +1018,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
 
         actions.addItem(getTranslation("button.manage-job-locks", UI.getCurrent().getLocale()),
             menuItemClickEvent -> {
-                JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
+                JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService,
                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
                     this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
                     this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
@@ -1251,7 +1238,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
         SubMenu jobTypesSubMenu = jobTypeMenuItem.getSubMenu();
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job-template", UI.getCurrent().getLocale()), event -> {
-                InternalEventDrivenJobTemplateDialog internalEventDrivenJobTemplateDialog = new InternalEventDrivenJobTemplateDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                InternalEventDrivenJobTemplateDialog internalEventDrivenJobTemplateDialog = new InternalEventDrivenJobTemplateDialog(null, this.configurationRestService,
                     this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
 
                 InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
@@ -1273,7 +1260,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
         MenuItem newCommandExecutionJobMenuItem = jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
-                InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.configurationRestService,
                     this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate,
                     this.schedulerJobExecutionEnvironmentLabel, false);
 
@@ -1301,7 +1288,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
                     this.contextTemplate, "Select Command Execution Job Template", "Select Command Execution Job Template");
                 schedulerJobSelectDialog.open();
                 schedulerJobSelectDialog.addSchedulerJobSelectedListener(schedulerJob -> {
-                    InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                    InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.configurationRestService,
                         this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate,
                         this.schedulerJobExecutionEnvironmentLabel, false);
 
@@ -1324,7 +1311,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
         MenuItem newFileWatcherJobMenuItem = jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
-                FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.configurationRestService,
                     this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(),
                     this.contextTemplate, this.contextTemplate, false);
 
@@ -1349,7 +1336,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
-                QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
+                QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null,
                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
                     this.contextTemplate.isUseDisplayName(), this.contextTemplate, false);
 
@@ -1373,7 +1360,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.global-job", UI.getCurrent().getLocale()), event -> {
-                GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(null, this.scheduledProcessManagementService,
+                GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(null,
                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                     this.schedulerJobService, this.contextTemplate.isUseDisplayName());
 
@@ -1538,7 +1525,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
-        this.init("", moduleMetaDataService, scheduledProcessManagementService,
+        this.init("", moduleMetaDataService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, jobInitiationService);
         ContextTemplateSavedEventBroadcaster.register(this);

@@ -256,7 +256,7 @@ public class HibernateContextTerminalJobDaoImplTest {
         // Keeping it for consistency with the pattern
 
         // When - should throw IllegalArgumentException
-        dao.save(null);
+        dao.save((HibernateContextTerminalJobRecord) null);
     }
 
     // Helper class for creating test ContextTerminalJob instances

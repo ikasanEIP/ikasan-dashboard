@@ -85,7 +85,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
 
     private DateFormatter dateFormatter;
 
-    public HospitalView(HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
+    public HospitalView(@Qualifier("hospitalEntityService") HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
         , @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, SolrGeneralService solrGeneralService, DateFormatter dateFormatter)
     {
         this.hospitalAuditService = hospitalAuditService;

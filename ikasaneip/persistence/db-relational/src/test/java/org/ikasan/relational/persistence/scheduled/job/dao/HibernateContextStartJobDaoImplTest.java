@@ -257,7 +257,7 @@ public class HibernateContextStartJobDaoImplTest {
         // Keeping it for consistency with the pattern
 
         // When - should throw IllegalArgumentException
-        dao.save(null);
+        dao.save((HibernateContextStartJobRecord) null);
     }
 
     // Helper class for creating test ContextStartJob instances

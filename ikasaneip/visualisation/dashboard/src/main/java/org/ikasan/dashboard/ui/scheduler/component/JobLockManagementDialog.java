@@ -29,10 +29,7 @@ import org.ikasan.job.orchestration.builder.job.SchedulerJobLockParticipantBuild
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -47,6 +44,8 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -63,7 +62,6 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
     private ContextTemplate contextTemplate;
     private String dynamicImagePath = ".";
     private ModuleMetaDataService moduleMetaDataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -96,7 +94,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
     private double contextVisualisationNodeDistance;
 
 
-    public JobLockManagementDialog(ContextTemplate contextTemplate, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public JobLockManagementDialog(ContextTemplate contextTemplate, ModuleMetaDataService moduleMetaDataService,
                                    ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                    MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                    SchedulerJobService schedulerJobService, LogStreamingService logStreamingService,
@@ -115,11 +113,6 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
-        }
-
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
 
         this.configurationRestService = configurationRestService;
@@ -281,7 +274,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                             contextButton.setIcon(visualisation);
                             contextButton.addClickListener(event -> {
                                 try {
-                                    JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
+                                    JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService,
                                         configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
                                         jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService,
                                         schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,

@@ -28,10 +28,7 @@ import org.ikasan.job.orchestration.broadcast.NewSchedulerJobEventBroadcaster;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -50,6 +47,8 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
@@ -71,7 +70,6 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
     private JobInitiationService jobInitiationService;
     private ContextTemplate contextTemplate;
     private ModuleControlService moduleControlRestService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private MetaDataService metaDataRestService;
     private SchedulerJobService schedulerJobService;
@@ -105,7 +103,6 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
      * @param scheduledContextInstanceService
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -121,7 +118,6 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
      * @param scheduledContextService
      */
     public SchedulerJobGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
-                                  ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, ContextTemplate contextTemplate, JobInitiationService jobInitiationService,
@@ -153,10 +149,6 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         this.moduleControlRestService = moduleControlRestService;
         if (this.moduleControlRestService == null) {
             throw new IllegalArgumentException("moduleControlRestService cannot be null!");
-        }
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if (this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
         this.configurationRestService = configurationRestService;
         if (this.configurationRestService == null) {
@@ -206,7 +198,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        this.createGrid(moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService
+        this.createGrid(moduleMetaDataService, configurationRestService, moduleControlRestService
             , metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
 
         this.schedulerJobFilteringGrid.init();
@@ -222,19 +214,20 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         this.setSizeFull();
     }
 
+
     /**
-     * Create the scheduler job grid.
+     * Creates and configures the scheduling job filtering grid for displaying and managing scheduled jobs.
+     * This method sets up the grid columns, styles, and interactions for job-related operations.
      *
-     * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
-     * @param configurationRestService
-     * @param moduleControlRestService
-     * @param metaDataRestService
-     * @param systemEventLogger
-     * @param schedulerJobService
-     * @param logStreamingService
+     * @param moduleMetaDataService the service for handling module metadata operations
+     * @param configurationRestService the service for retrieving and managing configuration settings
+     * @param moduleControlRestService the service for controlling module operational states
+     * @param metaDataRestService the service for handling general metadata operations
+     * @param systemEventLogger the logger for recording system events
+     * @param schedulerJobService the service for accessing and managing scheduled job data
+     * @param logStreamingService the service for handling streaming logs related to job events
      */
-    private void createGrid(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    private void createGrid(ModuleMetaDataService moduleMetaDataService,
                             ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                             LogStreamingService logStreamingService) {
@@ -317,7 +310,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                     openTemplate.addClickListener(event -> {
                         SchedulerJobRecord job = this.schedulerJobService.findByContextNameAndJobName(this.contextTemplate.getName(), schedulerJobRecord.getJob().getTemplateName());
                         InternalEventDrivenJobTemplateDialog internalEventDrivenJobTemplateDialog
-                            = new InternalEventDrivenJobTemplateDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                            = new InternalEventDrivenJobTemplateDialog(null, this.configurationRestService,
                             this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate,
                             this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
 
@@ -355,7 +348,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             contextButton.setIcon(visualisation);
                             contextButton.addClickListener(event -> {
                                 try {
-                                    JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
+                                    JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService,
                                         configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
                                         jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService,
                                         schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
@@ -434,7 +427,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ)) {
                             lock.addClickListener(event -> {
-                                JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
+                                JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService,
                                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
                                     this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
                                     this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
@@ -797,7 +790,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         this.schedulerJobFilteringGrid.addItemDoubleClickListener(event -> {
             if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB)) {
                 FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                    , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, this.contextTemplate.isUseDisplayName(), this.contextTemplate, this.contextTemplate, false);
                 fileEventJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
@@ -811,7 +804,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             }
             else if(event.getItem().getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB)) {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
+                    , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
                     , this.contextTemplate.isUseDisplayName(), this.contextTemplate, true);
                 quartzDrivenScheduledJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
@@ -825,7 +818,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             }
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
+                    , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
                     , this.contextTemplate, this.contextTemplate, schedulerJobExecutionEnvironmentLabel, true);
                 internalEventDrivenJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
@@ -840,7 +833,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             }
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_TEMPLATE)) {
                 InternalEventDrivenJobTemplateDialog internalEventDrivenJobTemplateDialog = new InternalEventDrivenJobTemplateDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, contextTemplate, contextTemplate
+                    , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, contextTemplate, contextTemplate
                     , schedulerJobExecutionEnvironmentLabel);
 
                 internalEventDrivenJobTemplateDialog.setJob(event.getItem(), EditMode.EDIT);
@@ -855,7 +848,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             }
             else if(event.getItem().getType().equals(JobConstants.GLOBAL_EVENT_JOB)) {
                 GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
+                    , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
                     , this.contextTemplate.isUseDisplayName());
                 globalEventJobDialog.setJob(event.getItem(), EditMode.EDIT);
 

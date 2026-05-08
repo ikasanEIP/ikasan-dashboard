@@ -5,7 +5,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -27,7 +26,7 @@ import org.ikasan.spec.systemevent.SystemEventSearchService;
 public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
     private ContextInstanceWidget contextInstanceWidget;
 
-    public ContextInstanceDialog(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextInstanceDialog(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
@@ -36,7 +35,7 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
                                  ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, SystemEventSearchService systemEventSearchService,
                                  double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
-            , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+            , moduleMetaDataService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
             , jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService, contextInstanceSchedulerService, systemEventSearchService
             , jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
@@ -44,7 +43,7 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
         this.init();
     }
 
-    public ContextInstanceDialog(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextInstanceDialog(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
@@ -53,7 +52,7 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
                                  ContextInstanceRegistrationService contextInstanceRegistrationService, ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, SystemEventSearchService systemEventSearchService,
                                  double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
-            , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+            , moduleMetaDataService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
             , jobUtilsService, scheduledContextService, selectedTab, jobStatus, null, globalEventService, contextInstanceRegistrationService, contextInstanceSchedulerService,
             systemEventSearchService, jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);

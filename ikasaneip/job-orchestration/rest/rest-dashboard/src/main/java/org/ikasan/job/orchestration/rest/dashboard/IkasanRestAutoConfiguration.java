@@ -62,9 +62,6 @@ import javax.annotation.Resource;
 @Configuration
 public class IkasanRestAutoConfiguration {
 
-    @Resource
-    private BatchInsert scheduledProcessEventBatchInsert;
-
     @Autowired(required = false)
     private IBigQueue inboundQueue;
 
@@ -97,6 +94,12 @@ public class IkasanRestAutoConfiguration {
 
     @Resource
     private GlobalEventService globalEventService;
+
+    @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
+    public ScheduledProcessEventController scheduledProcessEventController() {
+        return new ScheduledProcessEventController(this.inboundQueue, this.globalEventService);
+    }
 
     @Bean
     SchedulerJobProvisionController schedulerJobProvisionController() {

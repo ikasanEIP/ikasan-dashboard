@@ -24,7 +24,6 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -63,7 +62,6 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     private Button cancelButton;
 
 
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleMetaData agent;
     private ModuleControlService moduleControlRestService;
@@ -96,13 +94,12 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
      * Constructor
      *
      * @param agent
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
      * @param systemEventLogger
      */
-    public QuartzDrivenScheduledJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+    public QuartzDrivenScheduledJobDialog(ModuleMetaData agent,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                           SchedulerJobService schedulerJobService, boolean showDisplayName, ContextTemplate contextTemplate,
@@ -111,7 +108,6 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         super.title.setText(getTranslation("label.scheduled-job", UI.getCurrent().getLocale()));
 
         this.agent = agent;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
@@ -240,7 +236,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.agentCb.setId("agentCb");
         this.agentCb.setRequired(true);
         this.agentCb.setClearButtonVisible(true);
-        this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
+        this.agentCb.setItems(this.schedulerJobService.getAllAgentNames());
         if(agent != null) {
             this.agentCb.setValue(agent.getName());
             this.agentCb.setEnabled(false);

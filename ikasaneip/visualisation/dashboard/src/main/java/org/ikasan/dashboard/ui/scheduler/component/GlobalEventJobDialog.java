@@ -20,7 +20,6 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrGlobalEventJobImpl;
 import org.ikasan.scheduled.job.model.SolrGlobalEventJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
@@ -34,6 +33,7 @@ import org.ikasan.spec.scheduled.job.model.GlobalEventJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,7 +41,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.ikasan.spec.search.SearchResults;
 
 public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
 
@@ -55,7 +54,6 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
     private Button cancelButton;
 
 
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleMetaData agent;
     private ModuleControlService moduleControlRestService;
@@ -76,13 +74,12 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
      * Constructor
      *
      * @param agent
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
      * @param systemEventLogger
      */
-    public GlobalEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+    public GlobalEventJobDialog(ModuleMetaData agent,
                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                 SchedulerJobService schedulerJobService, boolean showDisplayName) {
@@ -90,7 +87,6 @@ public class GlobalEventJobDialog extends AbstractCloseableResizableDialog {
         super.title.setText(getTranslation("header.global-job", UI.getCurrent().getLocale()));
 
         this.agent = agent;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;

@@ -24,7 +24,6 @@ import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBro
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -64,7 +63,6 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
     protected ContextInstanceDraw2dAdapter adapter;
 
     protected ModuleMetaDataService moduleMetaDataService;
-    protected ScheduledProcessManagementService scheduledProcessManagementService;
     protected ConfigurationService configurationRestService;
     protected ModuleControlService moduleControlRestService;
     protected MetaDataService metaDataRestService;
@@ -82,7 +80,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
     private List<CanvasInitialisedListener> canvasInitialisedListeners;
     private UI ui;
 
-    public SchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public SchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                           LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -98,11 +96,6 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("agent cannot be null!");
-        }
-
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
 
         this.configurationRestService = configurationRestService;

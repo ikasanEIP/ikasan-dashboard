@@ -1,5 +1,6 @@
 package org.ikasan.setup.service;
 
+import org.ikasan.setup.dao.SetupDao;
 import org.ikasan.setup.dao.SolrSetupDaoImpl;
 import org.ikasan.setup.model.DashboardPlatformSetup;
 import org.ikasan.spec.solr.SolrServiceBase;
@@ -13,14 +14,14 @@ public class SolrSetupServiceImpl extends SolrServiceBase implements SetupServic
 
     private static final Logger logger = LoggerFactory.getLogger(SolrSetupServiceImpl.class);
 
-    private SolrSetupDaoImpl setupDao;
+    private SetupDao setupDao;
 
     /**
      * Constructor
      *
      * @param setupDao the setup DAO implementation
      */
-    public SolrSetupServiceImpl(SolrSetupDaoImpl setupDao) {
+    public SolrSetupServiceImpl(SetupDao setupDao) {
         this.setupDao = setupDao;
         if (this.setupDao == null) {
             throw new IllegalArgumentException("setupDao cannot be null!");
@@ -30,11 +31,6 @@ public class SolrSetupServiceImpl extends SolrServiceBase implements SetupServic
     @Override
     public DashboardPlatformSetup getDashboardPlatformSetup() {
         logger.debug("Retrieving dashboard platform setup");
-
-        // Set credentials for Solr access
-        this.setupDao.setSolrUsername(this.solrUsername);
-        this.setupDao.setSolrPassword(this.solrPassword);
-
         return setupDao.getDashboardPlatformSetup();
     }
 
@@ -45,10 +41,6 @@ public class SolrSetupServiceImpl extends SolrServiceBase implements SetupServic
         }
 
         logger.debug("Saving dashboard platform setup: {}", dashboardPlatformSetup);
-
-        // Set credentials for Solr access
-        this.setupDao.setSolrUsername(this.solrUsername);
-        this.setupDao.setSolrPassword(this.solrPassword);
 
         setupDao.save(dashboardPlatformSetup);
     }

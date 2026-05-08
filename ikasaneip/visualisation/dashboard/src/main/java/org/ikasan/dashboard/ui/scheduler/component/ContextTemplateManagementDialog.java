@@ -5,9 +5,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -23,6 +20,8 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextSe
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 
 import java.util.Map;
@@ -37,7 +36,6 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
      * @param scheduledContextInstanceService The service for scheduled context instances.
      * @param dynamicImagePath The path for dynamic images.
      * @param moduleMetaDataService The service for module metadata.
-     * @param scheduledProcessManagementService The service for scheduled process management.
      * @param configurationRestService The configuration service.
      * @param moduleControlRestService The module control service.
      * @param metaDataRestService The metadata service.
@@ -67,7 +65,7 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
      * @param contextVisualisationLevelDistance The level distance for context visualization.
      * @param contextVisualisationNodeDistance The node distance for context visualization.
      */
-    public ContextTemplateManagementDialog(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextTemplateManagementDialog(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -78,7 +76,7 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
                                            SystemEventSearchService systemEventSearchService, boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                            double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath
-            , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+            , moduleMetaDataService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobProvisionService
             , userService, securityService, jobUtilsService, zipWorkingDirectory, emailNotificationDetailsService, emailNotificationContextService, schedulerJobExecutionEnvironmentLabel, globalEventService
             , contextInstanceRegistrationService, contextInstanceSchedulerService, springCloudConfigRefreshService, systemEventSearchService, removeTrailingPlanNameContextAfterUnderscore, jobPlanIntervalMultiple

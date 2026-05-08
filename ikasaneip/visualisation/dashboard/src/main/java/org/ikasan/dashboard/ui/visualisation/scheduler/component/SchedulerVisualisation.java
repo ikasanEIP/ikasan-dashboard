@@ -34,9 +34,6 @@ import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -52,6 +49,8 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -77,7 +76,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected ContextTemplateDraw2dAdapter adapter;
 
     protected ModuleMetaDataService moduleMetaDataService;
-    protected ScheduledProcessManagementService scheduledProcessManagementService;
     protected ConfigurationService configurationRestService;
     protected ModuleControlService moduleControlRestService;
     protected MetaDataService metaDataRestService;
@@ -115,7 +113,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
-    public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
@@ -131,11 +129,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("agent cannot be null!");
-        }
-
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
 
         this.configurationRestService = configurationRestService;
@@ -343,7 +336,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     private void openJobVisualisation(ContextTemplate contextTemplate) {
         try {
-            JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+            JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
                 this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
@@ -366,7 +359,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     private void openContextVisualisation(ContextTemplate contextTemplate) {
         try {
             ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
-                = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                = new ContextTemplateVisualisationDialog(this.moduleMetaDataService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
                 this.contextProfileService, this.userService, this.securityService, this.jobProvisionService,
@@ -426,7 +419,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
         if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
+                , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
                 , this.parentContextTemplate, this.contextTemplate, schedulerJobExecutionEnvironmentLabel, true);
 
             internalEventDrivenJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
@@ -435,7 +428,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             internalEventDrivenJobDialog.open();
         }
         else if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
-            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName()), this.scheduledProcessManagementService
+            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService
                 , this.contextTemplate.isUseDisplayName(), this.parentContextTemplate, this.getContextTemplate(), true);
             fileEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
@@ -445,7 +438,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         }
         else if(schedulerJobRecord.getJob() instanceof QuartzScheduleDrivenJob){
             QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
+                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
                 , systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(), this.getContextTemplate(), true);
             quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             this.jobSynchronisationRequiredListeners.forEach(listener ->
@@ -454,7 +447,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         }
         else {
             GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
+                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
                 , systemEventLogger, this.schedulerJobService, this.parentContextTemplate.isUseDisplayName());
             globalEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             globalEventJobDialog.open();

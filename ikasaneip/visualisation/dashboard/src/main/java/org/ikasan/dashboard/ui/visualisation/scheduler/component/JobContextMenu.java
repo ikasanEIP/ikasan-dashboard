@@ -1,16 +1,17 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 
-import java.util.List;
-import java.util.Map;
-
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.EditMode;
 import org.ikasan.dashboard.ui.scheduler.component.FileEventJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -23,15 +24,11 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
-import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import java.util.List;
+import java.util.Map;
 
 
 public class JobContextMenu extends Dialog {
@@ -55,7 +52,7 @@ public class JobContextMenu extends Dialog {
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
     public JobContextMenu(SchedulerJob schedulerJob, SystemEventLogger systemEventLogger,
-                          ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                          ModuleMetaDataService moduleMetaDataService,
                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                           SchedulerJobService schedulerJobService, ContextInstance rootContextInstance, ContextInstance currentInstance,
                           LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -84,7 +81,7 @@ public class JobContextMenu extends Dialog {
             }
             else if(job instanceof InternalEventDrivenJob) {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog
-                    = new InternalEventDrivenJobDialog(null, scheduledProcessManagementService, configurationRestService,
+                    = new InternalEventDrivenJobDialog(null, configurationRestService,
                     moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.rootContextInstance, this.currentInstance,
                     schedulerJobExecutionEnvironmentLabel, true);
                 internalEventDrivenJobDialog.setJob((InternalEventDrivenJob)job, EditMode.READONLY);
@@ -92,14 +89,14 @@ public class JobContextMenu extends Dialog {
             }
             else if(job instanceof FileEventDrivenJob) {
                 FileEventJobDialog fileEventJobDialog
-                    = new FileEventJobDialog(null, scheduledProcessManagementService, configurationRestService,
+                    = new FileEventJobDialog(null, configurationRestService,
                     moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.currentInstance.isUseDisplayName(), null, null, false);
                 fileEventJobDialog.setJob((FileEventDrivenJob) job, EditMode.READONLY);
                 fileEventJobDialog.open();
             }
             else if(job instanceof QuartzScheduleDrivenJob) {
                 QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog
-                    = new QuartzDrivenScheduledJobDialog(null, scheduledProcessManagementService, configurationRestService,
+                    = new QuartzDrivenScheduledJobDialog(null, configurationRestService,
                     moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, this.currentInstance.isUseDisplayName(),
                     null, false);
                 quartzDrivenScheduledJobDialog.setJob((QuartzScheduleDrivenJob) job, EditMode.READONLY);

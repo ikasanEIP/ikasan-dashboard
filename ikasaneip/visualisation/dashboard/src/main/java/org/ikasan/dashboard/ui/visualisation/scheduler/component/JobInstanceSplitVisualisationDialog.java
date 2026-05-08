@@ -8,7 +8,6 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -43,7 +42,6 @@ public class JobInstanceSplitVisualisationDialog extends AbstractCloseableResiza
     private String dynamicImagePath = ".";
 
     private ModuleMetaDataService moduleMetaDataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -65,7 +63,7 @@ public class JobInstanceSplitVisualisationDialog extends AbstractCloseableResiza
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
 
-    public JobInstanceSplitVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public JobInstanceSplitVisualisationDialog(ModuleMetaDataService moduleMetaDataService,
                                                ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                                SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                                JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
@@ -77,11 +75,6 @@ public class JobInstanceSplitVisualisationDialog extends AbstractCloseableResiza
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("agent cannot be null!");
-        }
-
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
 
         this.configurationRestService = configurationRestService;
@@ -175,7 +168,7 @@ public class JobInstanceSplitVisualisationDialog extends AbstractCloseableResiza
 
         this.layout.add(this.statusDiv);
 
-        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(this.scheduledContextInstanceService, this.moduleMetaDataService, this.scheduledProcessManagementService,
+        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(this.scheduledContextInstanceService, this.moduleMetaDataService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService, rootContextInstance, this.schedulerJobInstanceService,
             this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing,
             this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
