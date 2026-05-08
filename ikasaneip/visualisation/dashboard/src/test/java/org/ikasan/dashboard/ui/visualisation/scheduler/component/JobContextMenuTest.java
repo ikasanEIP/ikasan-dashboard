@@ -10,7 +10,6 @@ import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.rest.dashboard.model.metadata.module.ModuleMetaDataImpl;
 import org.ikasan.rest.dashboard.model.scheduled.ScheduledProcessEventImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -57,9 +56,6 @@ public class JobContextMenuTest extends UITest {
 
     @MockitoBean
     private SystemEventLogger systemEventLogger;
-
-    @MockitoBean
-    private ScheduledProcessManagementService scheduledProcessManagementService;
 
     @MockitoBean
     private ConfigurationService configurationRestService;
@@ -133,7 +129,7 @@ public class JobContextMenuTest extends UITest {
         currentInstance.getScheduledJobsMap().clear();
 
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
-            scheduledProcessManagementService, configurationRestService, moduleControlRestService,
+            configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService,
             this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
@@ -171,7 +167,7 @@ public class JobContextMenuTest extends UITest {
         instance.setScheduledProcessEvent(null);
 
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
-            scheduledProcessManagementService, configurationRestService, moduleControlRestService,
+            configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService,
             this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
@@ -206,7 +202,7 @@ public class JobContextMenuTest extends UITest {
         instance.setScheduledProcessEvent(scheduledProcessEvent);
 
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
-            scheduledProcessManagementService, configurationRestService, moduleControlRestService,
+            configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService
             , this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
@@ -243,7 +239,7 @@ public class JobContextMenuTest extends UITest {
         instance.setScheduledProcessEvent(scheduledProcessEvent);
 
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
-            scheduledProcessManagementService, configurationRestService, moduleControlRestService,
+            configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService,
             this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
@@ -280,7 +276,7 @@ public class JobContextMenuTest extends UITest {
         instance.setScheduledProcessEvent(scheduledProcessEvent);
 
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
-            scheduledProcessManagementService, configurationRestService, moduleControlRestService,
+            configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService
             , this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
@@ -317,7 +313,7 @@ public class JobContextMenuTest extends UITest {
 
         currentInstance.setStatus(status);
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
-            scheduledProcessManagementService, configurationRestService, moduleControlRestService,
+            configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService
             , this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
@@ -363,7 +359,7 @@ public class JobContextMenuTest extends UITest {
         currentInstance.getScheduledJobsMap().put("jobIdentifier", instance);
 
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
-            scheduledProcessManagementService, configurationRestService, moduleControlRestService,
+            configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService,
             this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 

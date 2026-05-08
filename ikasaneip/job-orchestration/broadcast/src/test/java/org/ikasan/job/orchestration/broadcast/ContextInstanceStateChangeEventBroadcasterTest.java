@@ -1,7 +1,7 @@
 package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,10 +21,10 @@ import static org.mockito.Mockito.*;
 public class ContextInstanceStateChangeEventBroadcasterTest {
 
     @Mock
-    private ContextInstanceStateChangeEventBroadcastListener listener1;
+    private ContextInstanceStateChangeEventLocalBroadcastListener listener1;
 
     @Mock
-    private ContextInstanceStateChangeEventBroadcastListener listener2;
+    private ContextInstanceStateChangeEventLocalBroadcastListener listener2;
 
     @Mock
     private ContextInstanceStateChangeEvent event;
@@ -32,7 +32,7 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = ContextInstanceStateChangeEventBroadcaster.class.getDeclaredField("listeners");
+        Field listenersField = ContextInstanceStateChangeEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
     }
@@ -94,12 +94,7 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
     public void testBroadcast_executesAsynchronously() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        ContextInstanceStateChangeEventBroadcastListener asyncListener = new ContextInstanceStateChangeEventBroadcastListener() {
-            @Override
-            public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-                latch.countDown();
-            }
-        };
+        ContextInstanceStateChangeEventLocalBroadcastListener asyncListener = event -> latch.countDown();
 
         ContextInstanceStateChangeEventBroadcaster.register(asyncListener);
         ContextInstanceStateChangeEventBroadcaster.broadcast(event);
@@ -143,12 +138,7 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
     public void testBroadcast_multipleEventsToSameListener() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(2);
 
-        ContextInstanceStateChangeEventBroadcastListener asyncListener = new ContextInstanceStateChangeEventBroadcastListener() {
-            @Override
-            public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-                latch.countDown();
-            }
-        };
+        ContextInstanceStateChangeEventLocalBroadcastListener asyncListener = event -> latch.countDown();
 
         ContextInstanceStateChangeEventBroadcaster.register(asyncListener);
         ContextInstanceStateChangeEventBroadcaster.broadcast(event);

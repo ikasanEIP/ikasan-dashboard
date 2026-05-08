@@ -17,7 +17,6 @@ import org.ikasan.designer.model.Image;
 import org.ikasan.designer.model.Rectangle;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -60,7 +59,6 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
      *
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -71,12 +69,12 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
      * @param jobUtilsService
      * @param scheduledContextService
      */
-    public JobSchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService
+    public JobSchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService
         , ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger
         , LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, JobUtilsService jobUtilsService
         , ScheduledContextService scheduledContextService, GlobalEventService globalEventService, ScheduledContextInstanceService scheduledContextInstanceService, double jobVisualisationVerticalSpacing
         , double jobVisualisationHorizontalSpacing, double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
-        super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService
+        super(dynamicImagePath, moduleMetaDataService, configurationRestService, moduleControlRestService, metaDataRestService
             , systemEventLogger, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService, scheduledContextService, globalEventService, jobVisualisationVerticalSpacing
             , jobVisualisationHorizontalSpacing, contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
@@ -348,7 +346,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
 
         InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog
             (moduleMetaDataService.findById(schedulerJobRecord.getSchedulerJobInstance().getAgentName()),
-                scheduledProcessManagementService, configurationRestService, moduleControlRestService,
+                configurationRestService, moduleControlRestService,
                 metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.parentContextInstance,
                 this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService,
                 this.scheduledContextInstanceService);

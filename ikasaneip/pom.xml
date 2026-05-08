@@ -748,6 +748,8 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
+                <module>persistence</module>
+                <module>esb</module>
                 <module>visualisation</module>
                 <module>rest</module>
                 <module>housekeeping</module>
@@ -793,6 +795,12 @@
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-spec-module</artifactId>
+                <version>${ikasan.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-spec-entity</artifactId>
                 <version>${ikasan.core.version}</version>
             </dependency>
 
@@ -1447,6 +1455,12 @@
                 <artifactId>ikasan-solr-distribution</artifactId>
                 <version>${project.version}</version>
                 <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-esb-service</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <!-- 3rd party dependencies -->

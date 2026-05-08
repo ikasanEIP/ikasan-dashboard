@@ -12,7 +12,6 @@ import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -37,7 +36,6 @@ public class ContextSchedulerInstanceVisualisation extends SchedulerInstanceVisu
      *
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -49,7 +47,6 @@ public class ContextSchedulerInstanceVisualisation extends SchedulerInstanceVisu
      * @param scheduledContextService
      */
     public ContextSchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
-                                                 ScheduledProcessManagementService scheduledProcessManagementService,
                                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                                  LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -57,7 +54,7 @@ public class ContextSchedulerInstanceVisualisation extends SchedulerInstanceVisu
                                                  ScheduledContextService scheduledContextService, ContextProfileService contextProfileService,
                                                  GlobalEventService globalEventService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                                  double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
-        super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        super(dynamicImagePath, moduleMetaDataService,
             configurationRestService, moduleControlRestService, metaDataRestService,
             systemEventLogger, logStreamingService, schedulerJobInstanceService,
             jobInitiationService, jobUtilsService, scheduledContextService, globalEventService,

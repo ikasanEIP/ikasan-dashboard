@@ -44,7 +44,7 @@ public class EventLifeIdDeepLinkView extends VerticalLayout implements HasUrlPar
 
     public EventLifeIdDeepLinkView(@Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
                                    SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
-                                   HospitalAuditService hospitalAuditService, ResubmissionRestServiceImpl resubmissionRestService,
+                                   @Qualifier("hospitalEntityService") HospitalAuditService hospitalAuditService, ResubmissionRestServiceImpl resubmissionRestService,
                                    ReplayRestServiceImpl replayRestService, @Qualifier("replayAuditService") BatchInsert replayAuditService, DateFormatter dateFormatter)
     {
         this.searchResults = new SearchResults(solrGeneralService, hospitalAuditService, resubmissionRestService

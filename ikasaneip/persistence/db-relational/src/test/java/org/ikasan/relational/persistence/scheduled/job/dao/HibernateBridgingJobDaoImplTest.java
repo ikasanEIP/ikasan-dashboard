@@ -256,7 +256,7 @@ public class HibernateBridgingJobDaoImplTest {
         // Keeping it for consistency with the pattern
 
         // When - should throw IllegalArgumentException
-        bridgingJobDao.save(null);
+        bridgingJobDao.save((HibernateBridgingJobRecord) null);
     }
 
     // Helper class for creating test BridgingJob instances

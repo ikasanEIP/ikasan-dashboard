@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.event.service.ContextTemplateSavedEventLocalBroadcastListener;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,10 +21,10 @@ import static org.mockito.Mockito.*;
 public class ContextTemplateSavedEventBroadcasterTest {
 
     @Mock
-    private ContextTemplateSavedEventBroadcastListener listener1;
+    private ContextTemplateSavedEventLocalBroadcastListener listener1;
 
     @Mock
-    private ContextTemplateSavedEventBroadcastListener listener2;
+    private ContextTemplateSavedEventLocalBroadcastListener listener2;
 
     @Mock
     private ContextTemplate contextTemplate;
@@ -31,7 +32,7 @@ public class ContextTemplateSavedEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = ContextTemplateSavedEventBroadcaster.class.getDeclaredField("listeners");
+        Field listenersField = ContextTemplateSavedEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
     }
@@ -93,12 +94,7 @@ public class ContextTemplateSavedEventBroadcasterTest {
     public void testBroadcast_executesAsynchronously() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        ContextTemplateSavedEventBroadcastListener asyncListener = new ContextTemplateSavedEventBroadcastListener() {
-            @Override
-            public void receiveContextTemplateSavedEventBroadcast(ContextTemplate contextTemplate) {
-                latch.countDown();
-            }
-        };
+        ContextTemplateSavedEventLocalBroadcastListener asyncListener = contextTemplate -> latch.countDown();
 
         ContextTemplateSavedEventBroadcaster.register(asyncListener);
         ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);

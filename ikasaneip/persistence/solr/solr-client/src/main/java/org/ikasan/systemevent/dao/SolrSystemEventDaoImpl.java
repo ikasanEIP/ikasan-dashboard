@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
+import org.ikasan.spec.entity.EsbEntityDao;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.ikasan.spec.systemevent.SystemEvent;
@@ -18,7 +19,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements SystemEventSearchDao
+public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements SystemEventSearchDao, EsbEntityDao<SystemEvent>
 {
     /**
      * Logger for this class

@@ -1,0 +1,329 @@
+package org.ikasan.configuration.metadata.dao;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.core.NodeConfig;
+import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
+import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationParameterMetaData;
+import org.ikasan.spec.solr.SolrDaoBase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.test.annotation.DirtiesContext;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+public class SolrComponentConfigurationMetadataDaoImplTest extends SolrTestCaseJ4
+{
+    private NodeConfig config;
+
+    private SolrComponentConfigurationMetadataDaoImpl dao;
+
+    @Before
+    public void setup()
+    {
+        config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
+            .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
+
+    }
+
+    private void init(EmbeddedSolrServer server) throws IOException, SolrServerException
+    {
+        CoreAdminRequest.Create createRequest = new CoreAdminRequest.Create();
+        createRequest.setCoreName("ikasan");
+        createRequest.setConfigSet("minimal");
+        server.request(createRequest);
+
+        dao = new SolrComponentConfigurationMetadataDaoImpl();
+        dao.setSolrClient(server);
+        dao.setDaysToKeep(0);
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_save_component_metadata_list() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+            SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+                = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+            List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+            solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+            SolrConfigurationMetaData event = new SolrConfigurationMetaData("configurationId", solrConfigurationParameterMetaDataList,
+                "description", "implementingClass");
+
+            List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
+            solrConfigurationMetaData.add(event);
+
+            // Saving twice as send is an update to the first
+            dao.save(solrConfigurationMetaData);
+            dao.save(solrConfigurationMetaData);
+
+            // Only one document on the index
+            assertEquals(1, server.query(new SolrQuery("*:*")).getResults().getNumFound());
+            assertEquals(1, server.query("ikasan", new SolrQuery("*:*")).getResults().getNumFound());
+
+            server.close();
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_find_by_id() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+                = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+            List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+            solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+            SolrConfigurationMetaData event = new SolrConfigurationMetaData("configurationId", solrConfigurationParameterMetaDataList,
+                "description", "implementingClass");
+
+            List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
+            solrConfigurationMetaData.add(event);
+
+            dao.save(solrConfigurationMetaData);
+
+            SolrConfigurationMetaData configurationMetaData = (SolrConfigurationMetaData)dao.findById("configurationId");
+
+            Assert.assertEquals("id equals","configurationId", configurationMetaData.getConfigurationId());
+            Assert.assertEquals("description equals","description", configurationMetaData.getDescription());
+            Assert.assertEquals("implementingClass equals","implementingClass", configurationMetaData.getImplementingClass());
+            Assert.assertEquals("1 configuration parameter", 1, configurationMetaData.getParameters().size());
+
+            server.close();
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_find_by_ids_large_result_set() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
+            List<String> ids = new ArrayList<>();
+            for(int i=0; i<100; i++) {
+                SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+                    = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+                List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+                solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+                String id = "configurationId"+i;
+                ids.add(id);
+                SolrConfigurationMetaData event = new SolrConfigurationMetaData(id, solrConfigurationParameterMetaDataList,
+                    "description", "implementingClass");
+                solrConfigurationMetaData.add(event);
+            }
+
+            dao.save(solrConfigurationMetaData);
+
+            List<ConfigurationMetaData> configurationMetaData = dao.findInIdList(ids);
+
+            Assert.assertEquals("expect 100 records",100, configurationMetaData.size());
+
+            server.close();
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_find_by_id_not_found() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+                = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+            List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+            solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+            SolrConfigurationMetaData event = new SolrConfigurationMetaData("configurationId", solrConfigurationParameterMetaDataList,
+                "description", "implementingClass");
+
+            List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
+            solrConfigurationMetaData.add(event);
+
+            dao.save(solrConfigurationMetaData);
+
+            SolrConfigurationMetaData configurationMetaData = (SolrConfigurationMetaData)dao.findById("bad id");
+
+            Assert.assertEquals(null, configurationMetaData);
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_find_all() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+                = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+            List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+            solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+            SolrConfigurationMetaData event = new SolrConfigurationMetaData("configurationId", solrConfigurationParameterMetaDataList,
+                "description", "implementingClass");
+
+            List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
+            solrConfigurationMetaData.add(event);
+
+            dao.save(solrConfigurationMetaData);
+
+            List<ConfigurationMetaData> configurationMetaData = dao.findAll();
+
+            Assert.assertEquals("id equals","configurationId", configurationMetaData.get(0).getConfigurationId());
+            Assert.assertEquals("description equals","description", configurationMetaData.get(0).getDescription());
+            Assert.assertEquals("implementingClass equals","implementingClass", configurationMetaData.get(0).getImplementingClass());
+            Assert.assertEquals("1 configuration parameter", 1, ((List<ConfigurationParameterMetaData>)configurationMetaData.get(0).getParameters()).size());
+
+            server.close();
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_find_all_large_result_set() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
+            List<String> ids = new ArrayList<>();
+            for(int i=0; i<100; i++) {
+                SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+                    = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+                List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+                solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+                String id = "configurationId"+i;
+                ids.add(id);
+                SolrConfigurationMetaData event = new SolrConfigurationMetaData(id, solrConfigurationParameterMetaDataList,
+                    "description", "implementingClass");
+                solrConfigurationMetaData.add(event);
+            }
+
+            dao.save(solrConfigurationMetaData);
+
+            List<ConfigurationMetaData> configurationMetaData = dao.findAll();
+
+            Assert.assertEquals("expect 100 records",100, configurationMetaData.size());
+
+            server.close();
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_find_by_ids() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+                = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+            List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+            solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+            SolrConfigurationMetaData event = new SolrConfigurationMetaData("configurationId1", solrConfigurationParameterMetaDataList,
+                "description", "implementingClass");
+
+            SolrConfigurationMetaData event2 = new SolrConfigurationMetaData("configurationId2", solrConfigurationParameterMetaDataList,
+                "description", "implementingClass");
+
+            SolrConfigurationMetaData event3 = new SolrConfigurationMetaData("configurationId3", solrConfigurationParameterMetaDataList,
+                "description", "implementingClass");
+
+            List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
+            solrConfigurationMetaData.add(event);
+            solrConfigurationMetaData.add(event2);
+            solrConfigurationMetaData.add(event3);
+
+            dao.save(solrConfigurationMetaData);
+
+            List<String> ids = new ArrayList<>();
+            ids.add("configurationId1");
+            ids.add("configurationId2");
+
+            List<ConfigurationMetaData> configurationMetaData = dao.findInIdList(ids);
+
+            Assert.assertEquals(2, configurationMetaData.size());
+
+            Assert.assertEquals("id equals","configurationId1", configurationMetaData.get(0).getConfigurationId());
+            Assert.assertEquals("description equals","description", configurationMetaData.get(0).getDescription());
+            Assert.assertEquals("implementingClass equals","implementingClass", configurationMetaData.get(0).getImplementingClass());
+            Assert.assertEquals("1 configuration parameter", 1, ((List<ConfigurationParameterMetaData>)configurationMetaData.get(0).getParameters()).size());
+
+            ids = new ArrayList<>();
+            ids.add("configurationId1");
+            ids.add("configurationId2");
+            ids.add("configurationId3");
+
+            configurationMetaData = dao.findInIdList(ids);
+
+            Assert.assertEquals(3, configurationMetaData.size());
+        }
+    }
+
+    @Test
+    public void test_convert_entity_to_solr_input_document() {
+
+        SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
+            = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
+        List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
+        solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
+
+        SolrConfigurationMetaData event = new SolrConfigurationMetaData("configurationId", solrConfigurationParameterMetaDataList,
+            "description", "implementingClass");
+
+        SolrComponentConfigurationMetadataDaoImpl dao = new SolrComponentConfigurationMetadataDaoImpl();
+        SolrInputDocument solrInputDocument = dao.convertEntityToSolrInputDocument(1L, event);
+
+        String metadata;
+        try
+        {
+            metadata = new ObjectMapper().writeValueAsString(event);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException("Unable to convert ["+event+"] to json format.");
+        }
+        Assert.assertEquals("configurationId", solrInputDocument.getFieldValue(SolrDaoBase.ID));
+        Assert.assertEquals("componentConfiguration", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
+        Assert.assertEquals(metadata, solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT));
+    }
+
+    public static String TEST_HOME() {
+        return getFile("solr/ikasan").getParent();
+    }
+
+    public static Path TEST_PATH() {
+        return getFile("solr/ikasan").getParentFile().toPath();
+    }
+}

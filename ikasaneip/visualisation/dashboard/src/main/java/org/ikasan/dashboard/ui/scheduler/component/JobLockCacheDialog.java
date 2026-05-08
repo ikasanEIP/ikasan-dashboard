@@ -24,7 +24,6 @@ import org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.service.JobLockCacheManagementServiceImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -61,7 +60,6 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
     Logger logger = LoggerFactory.getLogger(JobLockCacheDialog.class);
     private ContextInstance contextInstance;
     private ModuleMetaDataService moduleMetaDataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -90,7 +88,6 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
      *
      * @param contextInstance the context instance to be used
      * @param moduleMetaDataService the module metadata service to be used
-     * @param scheduledProcessManagementService the scheduled process management service to be used
      * @param configurationRestService the configuration REST service to be used
      * @param moduleControlRestService the module control REST service to be used
      * @param metaDataRestService the metadata REST service to be used
@@ -108,7 +105,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
      * @param contextVisualisationLevelDistance the distance between context visualization levels
      * @param contextVisualisationNodeDistance the distance between context visualization nodes
      */
-    public JobLockCacheDialog(ContextInstance contextInstance, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public JobLockCacheDialog(ContextInstance contextInstance, ModuleMetaDataService moduleMetaDataService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                               SchedulerJobInstanceService schedulerJobInstanceService, LogStreamingService logStreamingService,
@@ -124,11 +121,6 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
-        }
-
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
 
         this.configurationRestService = configurationRestService;
@@ -399,7 +391,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
 
                             lockHolderButton.addClickListener(event -> {
                                 try {
-                                    JobInstanceSplitVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceSplitVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                                    JobInstanceSplitVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceSplitVisualisationDialog(this.moduleMetaDataService,
                                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
                                         this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService,
                                         this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
@@ -519,7 +511,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog impleme
 
                                 queuedJobButton.addClickListener(event -> {
                                     try {
-                                        JobInstanceSplitVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceSplitVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                                        JobInstanceSplitVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceSplitVisualisationDialog(this.moduleMetaDataService,
                                             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
                                             this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
                                             this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,

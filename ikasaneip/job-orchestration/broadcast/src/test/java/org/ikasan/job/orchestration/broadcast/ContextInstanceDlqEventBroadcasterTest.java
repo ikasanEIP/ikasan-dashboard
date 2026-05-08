@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.broadcast;
 
+import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.junit.After;
 import org.junit.Assert;
@@ -20,10 +21,10 @@ import static org.mockito.Mockito.*;
 public class ContextInstanceDlqEventBroadcasterTest {
 
     @Mock
-    private ContextInstanceDlqEventBroadcastListener listener1;
+    private ContextInstanceDlqEventLocalBroadcastListener listener1;
 
     @Mock
-    private ContextInstanceDlqEventBroadcastListener listener2;
+    private ContextInstanceDlqEventLocalBroadcastListener listener2;
 
     @Mock
     private ContextInstance contextInstance;
@@ -32,7 +33,7 @@ public class ContextInstanceDlqEventBroadcasterTest {
     @After
     public void resetListeners() throws Exception {
         // Use reflection to reset the static listeners map
-        Field listenersField = ContextInstanceDlqEventBroadcaster.class.getDeclaredField("listeners");
+        Field listenersField = ContextInstanceDlqEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
     }
@@ -99,12 +100,7 @@ public class ContextInstanceDlqEventBroadcasterTest {
     public void testBroadcast_executesAsynchronously() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        ContextInstanceDlqEventBroadcastListener asyncListener = new ContextInstanceDlqEventBroadcastListener() {
-            @Override
-            public void receiveBroadcast(ContextInstance contextInstance) {
-                latch.countDown();
-            }
-        };
+        ContextInstanceDlqEventLocalBroadcastListener asyncListener = contextInstance -> latch.countDown();
 
         ContextInstanceDlqEventBroadcaster.register(asyncListener);
         ContextInstanceDlqEventBroadcaster.broadcast(contextInstance);

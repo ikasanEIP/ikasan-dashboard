@@ -2,8 +2,6 @@ package org.ikasan.job.orchestration.provision.job;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
-import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
 import org.ikasan.job.orchestration.AbstractTest;
 import org.ikasan.job.orchestration.builder.context.ContextParameterBuilder;
 import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
@@ -24,19 +22,17 @@ import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.IntStream;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -620,35 +616,6 @@ public class JobProvisionServiceTest extends AbstractTest {
     }
 
     private ModuleMetaData getModuleMetaData(String moduleMetaData) throws JsonProcessingException {
-        return this.objectMapper.readValue(moduleMetaData, SolrModuleMetaDataImpl.class);
-    }
-
-    private SolrConfigurationMetaData getConfigurarationMetaData() {
-        SolrConfigurationMetaData solrConfigurationMetaData = new SolrConfigurationMetaData();
-        solrConfigurationMetaData.setParameters(this.getConfigurationParameterMetaDataList());
-
-        return solrConfigurationMetaData;
-    }
-
-    private List<SolrConfigurationParameterMetaData> getConfigurationParameterMetaDataList() {
-        List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
-
-        SolrConfigurationParameterMetaData solrConfigurationParameterMetaData = new SolrConfigurationParameterMetaData();
-        solrConfigurationParameterMetaData.setName("flowDefinitions");
-        solrConfigurationParameterMetaData.setValue(new HashMap<String, String>());
-        solrConfigurationParameterMetaData.setImplementingClass(Map.class.getName());
-        solrConfigurationParameterMetaData.setDescription("description");
-
-        solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
-
-        solrConfigurationParameterMetaData = new SolrConfigurationParameterMetaData();
-        solrConfigurationParameterMetaData.setName("flowDefinitionProfiles");
-        solrConfigurationParameterMetaData.setValue(new HashMap<String, String>());
-        solrConfigurationParameterMetaData.setImplementingClass(Map.class.getName());
-        solrConfigurationParameterMetaData.setDescription("description");
-
-        solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
-
-        return solrConfigurationParameterMetaDataList;
+        return this.objectMapper.readValue(moduleMetaData, ModuleMetaDataImpl.class);
     }
 }

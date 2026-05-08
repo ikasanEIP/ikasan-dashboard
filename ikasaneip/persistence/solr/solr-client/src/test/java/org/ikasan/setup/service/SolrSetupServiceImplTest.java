@@ -53,8 +53,6 @@ public class SolrSetupServiceImplTest {
 
         // Set expectations
         mockery.checking(new Expectations() {{
-            oneOf(mockDao).setSolrUsername(null);
-            oneOf(mockDao).setSolrPassword(null);
             oneOf(mockDao).getDashboardPlatformSetup();
             will(returnValue(expectedSetup));
         }});
@@ -75,8 +73,6 @@ public class SolrSetupServiceImplTest {
     public void test_get_dashboard_platform_setup_returns_null() {
         // Set expectations
         mockery.checking(new Expectations() {{
-            oneOf(mockDao).setSolrUsername(null);
-            oneOf(mockDao).setSolrPassword(null);
             oneOf(mockDao).getDashboardPlatformSetup();
             will(returnValue(null));
         }});
@@ -103,8 +99,6 @@ public class SolrSetupServiceImplTest {
 
         // Set expectations
         mockery.checking(new Expectations() {{
-            oneOf(mockDao).setSolrUsername(null);
-            oneOf(mockDao).setSolrPassword(null);
             oneOf(mockDao).save(setup);
         }});
 
@@ -134,8 +128,6 @@ public class SolrSetupServiceImplTest {
 
         // Set expectations
         mockery.checking(new Expectations() {{
-            oneOf(mockDao).setSolrUsername("solrUser");
-            oneOf(mockDao).setSolrPassword("solrPassword");
             oneOf(mockDao).save(setup);
         }});
 
@@ -160,8 +152,6 @@ public class SolrSetupServiceImplTest {
 
         // Set expectations
         mockery.checking(new Expectations() {{
-            oneOf(mockDao).setSolrUsername("solrUser");
-            oneOf(mockDao).setSolrPassword("solrPassword");
             oneOf(mockDao).getDashboardPlatformSetup();
             will(returnValue(expectedSetup));
         }});
@@ -191,13 +181,9 @@ public class SolrSetupServiceImplTest {
 
         // Set expectations for save
         mockery.checking(new Expectations() {{
-            oneOf(mockDao).setSolrUsername(null);
-            oneOf(mockDao).setSolrPassword(null);
             oneOf(mockDao).save(setup);
 
             // Then for retrieve
-            oneOf(mockDao).setSolrUsername(null);
-            oneOf(mockDao).setSolrPassword(null);
             oneOf(mockDao).getDashboardPlatformSetup();
             will(returnValue(setup));
         }});

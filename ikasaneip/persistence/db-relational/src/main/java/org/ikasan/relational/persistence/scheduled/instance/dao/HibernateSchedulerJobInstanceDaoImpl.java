@@ -74,6 +74,12 @@ public class HibernateSchedulerJobInstanceDaoImpl implements SchedulerJobInstanc
     }
 
     @Override
+    @Transactional
+    public void save(List<SchedulerJobInstanceRecord> scheduledContextInstanceRecord) {
+        scheduledContextInstanceRecord.forEach(this::save);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public SearchResults<SchedulerJobInstanceRecord> getSchedulerJobInstancesByContextInstanceId(
             String contextInstanceId, int limit, int offset, String sortField, String sortDirection) {

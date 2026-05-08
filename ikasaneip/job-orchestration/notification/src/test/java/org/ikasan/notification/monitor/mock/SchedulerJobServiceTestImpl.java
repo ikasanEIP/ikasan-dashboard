@@ -258,4 +258,9 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     public void saveInternalEventDrivenJobTemplates(List quartzScheduleDrivenJobs, String actor) {
 
     }
+
+    @Override
+    public List<String> getAllAgentNames() {
+        return List.of();
+    }
 }

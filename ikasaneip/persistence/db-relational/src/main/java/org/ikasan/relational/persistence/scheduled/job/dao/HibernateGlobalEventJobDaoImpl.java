@@ -148,6 +148,12 @@ public class HibernateGlobalEventJobDaoImpl implements GlobalEventJobDao<Hiberna
 
     @Override
     @Transactional
+    public void save(List<HibernateGlobalEventJobRecord> records) {
+        records.forEach(this::save);
+    }
+
+    @Override
+    @Transactional
     public void skip(HibernateGlobalEventJobRecord jobRecord, List<String> childContextNames, String actor) {
         logger.debug("Skipping GlobalEventJobRecord: {} for childContexts: {} by actor: {}",
             jobRecord.getId(), childContextNames, actor);

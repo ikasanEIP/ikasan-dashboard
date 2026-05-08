@@ -1,6 +1,6 @@
 package org.ikasan.job.orchestration.broadcast;
 
-import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.junit.After;
 import org.junit.Assert;
@@ -21,10 +21,10 @@ import static org.mockito.Mockito.*;
 public class ContextInstanceSavedEventBroadcasterTest {
 
     @Mock
-    private ContextInstanceSavedEventBroadcastListener listener1;
+    private ContextInstanceSavedEventLocalBroadcastListener listener1;
 
     @Mock
-    private ContextInstanceSavedEventBroadcastListener listener2;
+    private ContextInstanceSavedEventLocalBroadcastListener listener2;
 
     @Mock
     private ContextInstance contextInstance;
@@ -32,7 +32,7 @@ public class ContextInstanceSavedEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = ContextInstanceSavedEventBroadcaster.class.getDeclaredField("listeners");
+        Field listenersField = ContextInstanceSavedEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
     }
@@ -94,12 +94,7 @@ public class ContextInstanceSavedEventBroadcasterTest {
     public void testBroadcast_executesAsynchronously() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        ContextInstanceSavedEventBroadcastListener asyncListener = new ContextInstanceSavedEventBroadcastListener() {
-            @Override
-            public void receiveBroadcast(ContextInstance contextInstance) {
-                latch.countDown();
-            }
-        };
+        ContextInstanceSavedEventLocalBroadcastListener asyncListener = contextInstance -> latch.countDown();
 
         ContextInstanceSavedEventBroadcaster.register(asyncListener);
         ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);

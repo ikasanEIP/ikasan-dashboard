@@ -25,9 +25,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.job.orchestration.model.job.ReplacementPairImpl;
 import org.ikasan.job.orchestration.service.ReplacementPairSpelBuilder;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -76,7 +74,6 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private Button saveButton;
     private Button cancelButton;
 
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleMetaData agent;
     private ModuleControlService moduleControlRestService;
@@ -108,13 +105,12 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
      * Constructor
      *
      * @param agent
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
      * @param systemEventLogger
      */
-    public FileEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+    public FileEventJobDialog(ModuleMetaData agent,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                               SchedulerJobService schedulerJobService, boolean showDisplayName, ContextTemplate parentContextTemplate,
@@ -123,7 +119,6 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         super.title.setText(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
 
         this.agent = agent;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
@@ -271,7 +266,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.agentCb.setId("agentCb");
         this.agentCb.setRequired(true);
         this.agentCb.setClearButtonVisible(true);
-        this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
+        this.agentCb.setItems(this.schedulerJobService.getAllAgentNames());
         if(agent != null) {
             this.agentCb.setValue(agent.getName());
             this.agentCb.setEnabled(false);

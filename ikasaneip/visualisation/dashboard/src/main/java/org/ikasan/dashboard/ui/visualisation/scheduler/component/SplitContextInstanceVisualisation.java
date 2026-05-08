@@ -15,12 +15,11 @@ import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.scheduler.listener.ContextOpenedListener;
 import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.designer.CanvasInitialisedListener;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.designer.CanvasInitialisedListener;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -64,7 +63,6 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
     private ModuleControlService moduleControlRestService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ModuleMetaDataService moduleMetaDataService;
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
@@ -91,7 +89,6 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
      *
      * @param scheduledContextInstanceService
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -104,7 +101,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
      * @param jobUtilsService
      * @param scheduledContextService
      */
-    public SplitContextInstanceVisualisation(ScheduledContextInstanceService scheduledContextInstanceService, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public SplitContextInstanceVisualisation(ScheduledContextInstanceService scheduledContextInstanceService, ModuleMetaDataService moduleMetaDataService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService, double jobVisualisationVerticalSpacing,
@@ -145,10 +142,6 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
         this.moduleControlRestService = moduleControlRestService;
         if (this.moduleControlRestService == null) {
             throw new IllegalArgumentException("moduleControlRestService cannot be null!");
-        }
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if (this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
         this.metaDataRestService = metaDataRestService;
         if (this.metaDataRestService == null) {
@@ -192,7 +185,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
                 this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
             }
 
-            this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation("", this.moduleMetaDataService, this.scheduledProcessManagementService,
+            this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation("", this.moduleMetaDataService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService
                 , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService, globalEventService,
                 this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
@@ -214,7 +207,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
                 this.visualisationSplitLayout.setHeightFull();
                 this.visualisationSplitLayout.setOrientation(SplitLayout.Orientation.VERTICAL);
 
-                this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService, scheduledProcessManagementService,
+                this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService,
                     configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
                     , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService
                     , this.globalEventService, this.scheduledContextInstanceService, this.jobVisualisationVerticalSpacing

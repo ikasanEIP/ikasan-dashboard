@@ -28,6 +28,12 @@ public class HibernateContextProfileDaoImpl implements ContextProfileDao {
 
     @Override
     @Transactional
+    public void save(List<ContextProfileRecord> records) {
+        records.forEach(this::save);
+    }
+
+    @Override
+    @Transactional
     public void deleteByContextName(String contextName) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaDelete<HibernateContextProfileRecord> delete = cb.createCriteriaDelete(HibernateContextProfileRecord.class);

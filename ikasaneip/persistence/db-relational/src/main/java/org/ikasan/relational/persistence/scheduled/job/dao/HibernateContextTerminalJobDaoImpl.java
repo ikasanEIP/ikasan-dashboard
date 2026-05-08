@@ -145,4 +145,10 @@ public class HibernateContextTerminalJobDaoImpl implements ContextTerminalJobDao
 
         logger.debug("Successfully saved ContextTerminalJobRecord: {}", hibernateRecord.getId());
     }
+
+    @Override
+    @Transactional
+    public void save(List<HibernateContextTerminalJobRecord> records) {
+        records.forEach(this::save);
+    }
 }

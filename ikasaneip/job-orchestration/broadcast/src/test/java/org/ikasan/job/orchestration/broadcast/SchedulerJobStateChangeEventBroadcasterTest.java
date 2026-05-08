@@ -1,7 +1,7 @@
 package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.junit.After;
@@ -23,10 +23,10 @@ import static org.mockito.Mockito.*;
 public class SchedulerJobStateChangeEventBroadcasterTest {
 
     @Mock
-    private SchedulerJobStateChangeEventBroadcastListener listener1;
+    private SchedulerJobStateChangeEventLocalBroadcastListener listener1;
 
     @Mock
-    private SchedulerJobStateChangeEventBroadcastListener listener2;
+    private SchedulerJobStateChangeEventLocalBroadcastListener listener2;
 
     @Mock
     private SchedulerJobInstanceStateChangeEvent event;
@@ -37,7 +37,7 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = SchedulerJobStateChangeEventBroadcaster.class.getDeclaredField("listeners");
+        Field listenersField = SchedulerJobStateChangeEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
     }
@@ -114,12 +114,7 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
 
         CountDownLatch latch = new CountDownLatch(1);
 
-        SchedulerJobStateChangeEventBroadcastListener asyncListener = new SchedulerJobStateChangeEventBroadcastListener() {
-            @Override
-            public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-                latch.countDown();
-            }
-        };
+        SchedulerJobStateChangeEventLocalBroadcastListener asyncListener = event -> latch.countDown();
 
         SchedulerJobStateChangeEventBroadcaster.register(asyncListener);
         SchedulerJobStateChangeEventBroadcaster.broadcast(event);

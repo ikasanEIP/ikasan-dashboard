@@ -306,7 +306,7 @@ public class HibernateGlobalEventJobDaoImplTest {
     @Test(expected = IllegalArgumentException.class)
     public void testSaveInvalidRecordType() {
         // When - should throw IllegalArgumentException
-        dao.save(null);
+        dao.save((HibernateGlobalEventJobRecord) null);
     }
 
     // Helper class for creating test GlobalEventJob instances

@@ -29,7 +29,6 @@ import org.ikasan.dashboard.ui.scheduler.component.validator.StringToDefaultLong
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
@@ -67,7 +66,6 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
     private ComboBox<String> executionEnvironmentPropertiesCb;
     private Button saveButton;
     private Button cancelButton;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleMetaData agent;
     private ModuleControlService moduleControlRestService;
@@ -104,7 +102,6 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
      * Constructor for InternalEventDrivenJobTemplateDialog.
      *
      * @param agent Module metadata for the agent
-     * @param scheduledProcessManagementService Service for managing scheduled processes
      * @param configurationRestService Service for configuration
      * @param moduleControlRestService Service for module control
      * @param metaDataRestService Service for metadata
@@ -114,7 +111,7 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
      * @param contextTemplate Context template
      * @param schedulerJobExecutionEnvironmentLabel Map of scheduler job execution environment labels
      */
-    public InternalEventDrivenJobTemplateDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+    public InternalEventDrivenJobTemplateDialog(ModuleMetaData agent,
                                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                 Context parentContextTemplate, Context contextTemplate, Map<String, String> schedulerJobExecutionEnvironmentLabel) {
@@ -122,7 +119,6 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
         super.title.setText(getTranslation("label.command-execution-job-template", UI.getCurrent().getLocale()));
 
         this.agent = agent;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
@@ -282,7 +278,7 @@ public class InternalEventDrivenJobTemplateDialog extends AbstractCloseableResiz
         this.agentCb.setId("agentCb");
         this.agentCb.setRequired(true);
         this.agentCb.setClearButtonVisible(true);
-        this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
+        this.agentCb.setItems(this.schedulerJobService.getAllAgentNames());
         if(agent != null) {
             this.agentCb.setValue(agent.getName());
             this.agentCb.setEnabled(false);

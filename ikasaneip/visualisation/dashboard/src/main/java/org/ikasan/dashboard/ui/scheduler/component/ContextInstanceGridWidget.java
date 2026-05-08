@@ -18,7 +18,6 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -68,7 +67,6 @@ public class ContextInstanceGridWidget extends Div {
      * @param scheduledContextInstanceService
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -82,7 +80,7 @@ public class ContextInstanceGridWidget extends Div {
      * @param jobUtilsService
      * @param scheduledContextService
      */
-    public ContextInstanceGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextInstanceGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                      LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -135,7 +133,7 @@ public class ContextInstanceGridWidget extends Div {
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.createGrid(dynamicImagePath, moduleMetaDataService
-            , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+            , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing,
             contextVisualisationLevelDistance, contextVisualisationNodeDistance);
 
@@ -157,7 +155,6 @@ public class ContextInstanceGridWidget extends Div {
      *
      * @param dynamicImagePath
      * @param moduleMetaDataService
-     * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
      * @param metaDataRestService
@@ -167,7 +164,7 @@ public class ContextInstanceGridWidget extends Div {
      * @param contextTemplate
      * @param schedulerJobInstanceService
      */
-    private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                             ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                             LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -209,7 +206,7 @@ public class ContextInstanceGridWidget extends Div {
 
             view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                    , configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextInstanceRecord.getContextInstance(), this.contextTemplate, schedulerJobInstanceService
                     , this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService
                     , this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventSearchService, jobVisualisationVerticalSpacing, jobVisualisationHorizontalSpacing,

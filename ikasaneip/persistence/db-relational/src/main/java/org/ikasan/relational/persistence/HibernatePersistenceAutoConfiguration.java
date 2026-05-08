@@ -1,43 +1,25 @@
 package org.ikasan.relational.persistence;
 
+import org.ikasan.relational.persistence.module.metadata.dao.HibernateModuleMetadataDaoImpl;
 import org.ikasan.relational.persistence.scheduled.context.dao.HibernateScheduledContextDaoImpl;
 import org.ikasan.relational.persistence.scheduled.instance.dao.HibernateScheduledContextInstanceAuditAggregateDaoImpl;
 import org.ikasan.relational.persistence.scheduled.instance.dao.HibernateScheduledContextInstanceAuditDaoImpl;
 import org.ikasan.relational.persistence.scheduled.instance.dao.HibernateScheduledContextInstanceDaoImpl;
 import org.ikasan.relational.persistence.scheduled.instance.dao.HibernateSchedulerJobInstanceDaoImpl;
-import org.ikasan.relational.persistence.scheduled.instance.service.HibernateScheduledContextInstanceServiceImpl;
-import org.ikasan.relational.persistence.scheduled.instance.service.HibernateSchedulerJobInstanceServiceImpl;
-import org.ikasan.relational.persistence.scheduled.job.dao.HibernateBridgingJobDaoImpl;
-import org.ikasan.relational.persistence.scheduled.job.dao.HibernateContextStartJobDaoImpl;
-import org.ikasan.relational.persistence.scheduled.job.dao.HibernateContextTerminalJobDaoImpl;
-import org.ikasan.relational.persistence.scheduled.job.dao.HibernateFileEventDrivenJobDaoImpl;
-import org.ikasan.relational.persistence.scheduled.job.dao.HibernateQuartzScheduleDrivenJobDaoImpl;
-import org.ikasan.relational.persistence.scheduled.job.dao.HibernateGlobalEventJobDaoImpl;
-import org.ikasan.relational.persistence.scheduled.job.dao.HibernateInternalEventDrivenJobDaoImpl;
-import org.ikasan.relational.persistence.scheduled.job.dao.HibernateSchedulerJobDaoImpl;
+import org.ikasan.relational.persistence.scheduled.job.dao.*;
 import org.ikasan.relational.persistence.scheduled.joblock.dao.HibernateJobLockCacheAuditDaoImpl;
 import org.ikasan.relational.persistence.scheduled.joblock.dao.HibernateJobLockCacheDaoImpl;
 import org.ikasan.relational.persistence.scheduled.notification.dao.HibernateEmailNotificationContextDaoImpl;
 import org.ikasan.relational.persistence.scheduled.notification.dao.HibernateEmailNotificationDetailsDaoImpl;
 import org.ikasan.relational.persistence.scheduled.notification.dao.HibernateNotificationSendAuditDaoImpl;
 import org.ikasan.relational.persistence.scheduled.profile.dao.HibernateContextProfileDaoImpl;
-import org.ikasan.relational.persistence.module.metadata.dao.HibernateModuleMetadataDaoImpl;
 import org.ikasan.spec.metadata.dao.ModuleMetadataDao;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
 import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.dao.BridgingJobDao;
-import org.ikasan.spec.scheduled.job.dao.ContextStartJobDao;
-import org.ikasan.spec.scheduled.job.dao.ContextTerminalJobDao;
-import org.ikasan.spec.scheduled.job.dao.FileEventDrivenJobDao;
-import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobDao;
-import org.ikasan.spec.scheduled.job.dao.GlobalEventJobDao;
-import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobDao;
-import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
+import org.ikasan.spec.scheduled.job.dao.*;
 import org.ikasan.spec.scheduled.joblock.dao.JobLockCacheAuditDao;
 import org.ikasan.spec.scheduled.joblock.dao.JobLockCacheDao;
 import org.ikasan.spec.scheduled.notification.dao.EmailNotificationContextDao;
@@ -190,23 +172,6 @@ public class HibernatePersistenceAutoConfiguration {
     @DependsOn("hibernateEntityManager")
     public ModuleMetadataDao moduleMetadataDao() {
         return new HibernateModuleMetadataDaoImpl();
-    }
-
-    @Bean(name = "scheduledContextInstanceService")
-    @DependsOn({"scheduledContextInstanceDao", "scheduledContextInstanceAuditDao", "scheduledContextInstanceAuditAggregateDao"})
-    public ScheduledContextInstanceService scheduledContextInstanceService(
-            ScheduledContextInstanceDao scheduledContextInstanceDao,
-            ScheduledContextInstanceAuditDao scheduledContextInstanceAuditDao,
-            ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao) {
-        return new HibernateScheduledContextInstanceServiceImpl(
-            scheduledContextInstanceDao, scheduledContextInstanceAuditDao, scheduledContextInstanceAuditAggregateDao);
-    }
-
-    @Bean(name = "schedulerJobInstanceService")
-    @DependsOn("schedulerJobInstanceDao")
-    public SchedulerJobInstanceService schedulerJobInstanceService(
-            SchedulerJobInstanceDao schedulerJobInstanceDao) {
-        return new HibernateSchedulerJobInstanceServiceImpl(schedulerJobInstanceDao);
     }
 
     @Bean

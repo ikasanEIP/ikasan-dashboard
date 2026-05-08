@@ -211,7 +211,7 @@ public class DashboardComponentFactory
     }
 
     @Bean
-    public ModuleMetadataCache moduleMetadataCache(@Qualifier("moduleMetadataService")ModuleMetaDataService moduleMetaDataService) {
+    public ModuleMetadataCache moduleMetadataCache(@Qualifier("moduleMetadataEntityService")ModuleMetaDataService moduleMetaDataService) {
         ModuleMetadataCache.init(moduleMetaDataService, moduleMetadataCacheExpirySeconds);
 
         return ModuleMetadataCache.instance();
@@ -228,7 +228,7 @@ public class DashboardComponentFactory
     }
 
     @Bean
-    public FlowStateCache flowStateCache(@Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService)
+    public FlowStateCache flowStateCache(@Qualifier("moduleMetadataEntityService") ModuleMetaDataService moduleMetadataService)
     {
         FlowStateCache flowStateCache = FlowStateCache.instance();
         flowStateCache.setModuleControlRestService(this.moduleControlRestService);
@@ -241,7 +241,6 @@ public class DashboardComponentFactory
     public ModuleMetaDataProvider<String> moduleMetaDataProvider() {
         return new JsonModuleMetaDataProvider(new JsonFlowMetaDataProvider());
     }
-
 
     @Bean(name = "flowConfigurations")
     @ConfigurationProperties(prefix = "ikasan.flow.configuration")

@@ -142,4 +142,10 @@ public class HibernateFileEventDrivenJobDaoImpl implements FileEventDrivenJobDao
 
         logger.debug("Successfully saved FileEventDrivenJobRecord: {}", record.getId());
     }
+
+    @Override
+    @Transactional
+    public void save(List<HibernateFileEventDrivenJobRecord> records) {
+        records.forEach(this::save);
+    }
 }

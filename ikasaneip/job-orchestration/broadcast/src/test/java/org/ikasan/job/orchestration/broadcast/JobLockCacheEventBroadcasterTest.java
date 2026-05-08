@@ -1,7 +1,7 @@
 package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
-import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventLocalBroadcastListener;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,10 +21,10 @@ import static org.mockito.Mockito.*;
 public class JobLockCacheEventBroadcasterTest {
 
     @Mock
-    private JobLockCacheEventBroadcastListener listener1;
+    private JobLockCacheEventLocalBroadcastListener listener1;
 
     @Mock
-    private JobLockCacheEventBroadcastListener listener2;
+    private JobLockCacheEventLocalBroadcastListener listener2;
 
     @Mock
     private JobLockCacheEvent event;
@@ -32,7 +32,7 @@ public class JobLockCacheEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = JobLockCacheEventBroadcaster.class.getDeclaredField("listeners");
+        Field listenersField = JobLockCacheEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
     }
@@ -94,12 +94,7 @@ public class JobLockCacheEventBroadcasterTest {
     public void testBroadcast_executesAsynchronously() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        JobLockCacheEventBroadcastListener asyncListener = new JobLockCacheEventBroadcastListener() {
-            @Override
-            public void receiveBroadcast(JobLockCacheEvent event) {
-                latch.countDown();
-            }
-        };
+        JobLockCacheEventLocalBroadcastListener asyncListener = event -> latch.countDown();
 
         JobLockCacheEventBroadcaster.register(asyncListener);
         JobLockCacheEventBroadcaster.broadcast(event);

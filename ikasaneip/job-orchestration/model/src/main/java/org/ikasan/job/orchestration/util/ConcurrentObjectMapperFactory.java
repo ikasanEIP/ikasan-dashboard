@@ -13,6 +13,8 @@ import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsRecordImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.spec.scheduled.context.model.*;
@@ -22,6 +24,8 @@ import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
@@ -73,6 +77,8 @@ public class ConcurrentObjectMapperFactory {
             .addAbstractTypeMapping(JobLockInstance.class, JobLockInstanceImpl.class)
             .addAbstractTypeMapping(List.class, CopyOnWriteArrayList.class)
             .addAbstractTypeMapping(JobLockHolder.class, JobLockHolderImpl.class)
+            .addAbstractTypeMapping(EmailNotificationDetailsRecord.class, EmailNotificationDetailsRecordImpl.class)
+            .addAbstractTypeMapping(EmailNotificationDetails.class, EmailNotificationDetailsImpl.class)
             .addAbstractTypeMapping(ReplacementPair.class, ReplacementPairImpl.class)
             .addAbstractTypeMapping(Map.class, ConcurrentHashMap.class)
             .addAbstractTypeMapping(Set.class, CopyOnWriteArraySet.class);

@@ -432,6 +432,13 @@ public class HibernateSchedulerJobDaoImpl implements SchedulerJobDao<HibernateSc
             "Please save child implementations of SchedulerJobRecord.");
     }
 
+    @Override
+    @Transactional
+    public void save(List<HibernateSchedulerJobRecord> records) {
+        throw new UnsupportedOperationException("It is not possible to save SchedulerJobRecord directly. " +
+            "Please save child implementations of SchedulerJobRecord.");
+    }
+
     /**
      * Find jobs by context and type
      *
@@ -541,5 +548,10 @@ public class HibernateSchedulerJobDaoImpl implements SchedulerJobDao<HibernateSc
             results.size(), totalCount, jobType);
 
         return new SearchResultsImpl<>(new ArrayList<>(results), totalCount, 0L);
+    }
+
+    @Override
+    public List<String> getAllAgentNames() {
+        return List.of();
     }
 }

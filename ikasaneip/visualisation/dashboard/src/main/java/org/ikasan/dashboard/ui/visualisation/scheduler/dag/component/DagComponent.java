@@ -14,7 +14,6 @@ import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBro
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -50,7 +49,6 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
     private boolean initialised = false;
 
     private ModuleMetaDataService moduleMetaDataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -77,7 +75,7 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
     private String ikasanDagNodeStyle = "width: 100%; height: 100%; border: 1px solid #8799c1; " +
         "position: relative; border-radius: 10px; display: flex;flex-direction: column;title: 'test hover';";
 
-    public DagComponent(String dagData, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public DagComponent(String dagData, ModuleMetaDataService moduleMetaDataService,
                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                         SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                         JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
@@ -92,11 +90,6 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("agent cannot be null!");
-        }
-
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
 
         this.configurationRestService = configurationRestService;
@@ -223,7 +216,7 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
         try {
             this.refreshContextInstance();
             ContextInstance child = ContextHelper.getChildContextInstance(contextId, this.parentContextInstance);
-            JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
+            JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(moduleMetaDataService,
                 configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
                 , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService
                 , this.scheduledContextInstanceService, contextProfileService, globalEventService, this.jobVisualisationVerticalSpacing

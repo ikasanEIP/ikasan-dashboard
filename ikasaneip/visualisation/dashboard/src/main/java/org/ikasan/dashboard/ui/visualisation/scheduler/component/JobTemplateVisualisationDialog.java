@@ -23,9 +23,6 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -38,6 +35,8 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +57,6 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
     private ContextTemplate contextTemplate;
     private String dynamicImagePath = ".";
     private ModuleMetaDataService moduleMetaDataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -86,7 +84,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
     private boolean showPrettyFormat;
 
-    public JobTemplateVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public JobTemplateVisualisationDialog(ModuleMetaDataService moduleMetaDataService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                           SchedulerJobService schedulerJobService, LogStreamingService logStreamingService,
@@ -103,11 +101,6 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("agent cannot be null!");
-        }
-
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
 
         this.configurationRestService = configurationRestService;
@@ -193,7 +186,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         this.initialised = false;
         initParentNavigation();
 
-        this.schedulerVisualisation = new JobSchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
+        this.schedulerVisualisation = new JobSchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
             this.logStreamingService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
             this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing,
@@ -226,7 +219,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                     try {
                         this.close();
                         JobTemplateVisualisationDialog contextTemplateVisualisationDialog
-                            = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
+                            = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.configurationRestService
                             , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                             , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
                             , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
@@ -253,7 +246,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                     try {
                         this.close();
                         JobTemplateVisualisationDialog contextTemplateVisualisationDialog
-                            = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
+                            = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.configurationRestService
                             , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                             , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
                             , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
@@ -282,7 +275,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                             try {
                                 this.close();
                                 ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
-                                    = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
+                                    = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                                     , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
                                     , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing
@@ -417,7 +410,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         SubMenu jobTypesSubMenu = jobTypeMenuItem.getSubMenu();
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
-            InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+            InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.configurationRestService,
                 this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.rootContextTemplate, this.contextTemplate,
                 this.schedulerJobExecutionEnvironmentLabel, true);
             internalEventDrivenJobDialog.addSchedulerJobSelectedListener(this);
@@ -435,7 +428,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                     this.rootContextTemplate, "Select Command Execution Job Template", "Select Command Execution Job Template");
                 schedulerJobSelectDialog.open();
                 schedulerJobSelectDialog.addSchedulerJobSelectedListener(schedulerJob -> {
-                    InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                    InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.configurationRestService,
                         this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate,
                         this.schedulerJobExecutionEnvironmentLabel, true);
 
@@ -455,7 +448,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
-            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.configurationRestService,
                 this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate.isUseDisplayName(),
                 this.rootContextTemplate, this.contextTemplate, true);
             fileEventJobDialog.addSchedulerJobSelectedListener(this);
@@ -469,7 +462,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             fileEventJobDialog.open();
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
-            QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
+            QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
                 this.contextTemplate.isUseDisplayName(), this.contextTemplate, true);
             quartzDrivenScheduledJobDialog.addSchedulerJobSelectedListener(this);
@@ -483,7 +476,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             quartzDrivenScheduledJobDialog.open();
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.global-job", UI.getCurrent().getLocale()), event -> {
-            GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(null, this.scheduledProcessManagementService,
+            GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(null,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.contextTemplate.isUseDisplayName());
 

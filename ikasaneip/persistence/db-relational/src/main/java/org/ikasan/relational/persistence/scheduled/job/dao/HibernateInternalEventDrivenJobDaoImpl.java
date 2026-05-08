@@ -150,6 +150,12 @@ public class HibernateInternalEventDrivenJobDaoImpl implements InternalEventDriv
 
     @Override
     @Transactional
+    public void save(List<HibernateInternalEventDrivenJobRecord> records) {
+        records.forEach(this::save);
+    }
+
+    @Override
+    @Transactional
     public void skip(HibernateInternalEventDrivenJobRecord jobRecord, List<String> childContextNames, String actor) {
         logger.debug("Skipping InternalEventDrivenJobRecord: {} for childContexts: {} by actor: {}",
             jobRecord.getId(), childContextNames, actor);
