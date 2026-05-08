@@ -13,7 +13,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.component.filter.ModuleSearchFilter;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -31,7 +30,6 @@ public class AgentWidget extends Div {
 
     private ScheduledAgentsFilteringGrid scheduledAgentsFilteringGrid;
     private ModuleMetaDataService moduleMetadataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private TextField filterTextField;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
@@ -46,12 +44,11 @@ public class AgentWidget extends Div {
     private JobProvisionService jobProvisionService;
 
 
-    public AgentWidget(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public AgentWidget(ModuleMetaDataService moduleMetadataService,
                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                        SystemEventLogger systemEventLogger, SchedulerService schedulerService, JobProvisionService jobProvisionService, SchedulerJobService schedulerJobService,
                        DownloadLogFileService downloadLogFileService, ScheduledContextService scheduledContextService) {
         this.moduleMetadataService = moduleMetadataService;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;

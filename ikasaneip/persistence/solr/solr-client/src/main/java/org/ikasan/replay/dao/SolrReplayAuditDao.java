@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.replay.model.SolrReplayAuditEvent;
+import org.ikasan.spec.entity.EsbEntityDao;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.replay.ReplayEvent;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class SolrReplayAuditDao extends SolrDaoBase<SolrReplayAuditEvent> implements BatchInsert<SolrReplayAuditEvent>
+public class SolrReplayAuditDao extends SolrDaoBase<SolrReplayAuditEvent>
+    implements BatchInsert<SolrReplayAuditEvent>, EsbEntityDao<SolrReplayAuditEvent>
 {
     private static Logger logger = LoggerFactory.getLogger(SolrReplayAuditDao.class);
 

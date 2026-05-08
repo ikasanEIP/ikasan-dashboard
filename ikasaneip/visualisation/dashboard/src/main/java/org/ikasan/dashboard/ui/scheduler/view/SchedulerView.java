@@ -27,11 +27,8 @@ import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
@@ -52,12 +49,13 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -85,9 +83,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private ConfigurationService configurationRestService;
-
-    @Resource
-    private ScheduledProcessManagementService scheduledProcessManagementService;
 
     @Resource
     private ModuleControlService moduleControlRestService;
@@ -216,7 +211,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
      */
     private void init() {
         this.schedulerAgentDashboardView = new SchedulerAgentDashboardView(this.moduleMetadataService
-            , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
+            , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
             , this.systemEventLogger, this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
             "", this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService,
             this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.downloadLogFileService, this.contextInstanceSchedulerService,
@@ -232,7 +227,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextDebugBoard.setVisible(false);
         this.contextDebugBoard.setId("contextDebugBoard");
 
-        this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
+        this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,

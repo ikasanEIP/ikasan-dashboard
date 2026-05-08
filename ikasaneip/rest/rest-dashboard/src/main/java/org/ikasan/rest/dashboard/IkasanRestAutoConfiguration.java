@@ -105,10 +105,11 @@ public class IkasanRestAutoConfiguration
     private ContextParametersInstanceService contextParametersInstanceService;
 
     @Resource
-    @Qualifier("moduleMetadataService")
+    @Qualifier("moduleMetadataEntityService")
     private ModuleMetaDataService moduleMetadataService;
 
-    @Resource
+    @Resource()
+    @Qualifier("metricsEntityService")
     private MetricsService metricsService;
 
     @Resource

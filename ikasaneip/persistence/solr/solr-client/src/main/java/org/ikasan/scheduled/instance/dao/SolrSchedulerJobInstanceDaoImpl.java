@@ -185,8 +185,8 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
         for(SchedulerJobInstanceRecord record: results.getResultList()) {
             SchedulerJobInstance instance = record.getSchedulerJobInstance();
-            if(instance instanceof SolrInternalEventDrivenJobInstanceImpl) {
-                if(((SolrInternalEventDrivenJobInstanceImpl)instance).isJobRepeatable()) {
+            if(instance instanceof InternalEventDrivenJobInstance) {
+                if(((InternalEventDrivenJobInstance)instance).isJobRepeatable()) {
                     return true;
                 }
             }

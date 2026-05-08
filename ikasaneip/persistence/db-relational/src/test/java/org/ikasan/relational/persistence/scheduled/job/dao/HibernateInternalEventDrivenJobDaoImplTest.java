@@ -368,7 +368,7 @@ public class HibernateInternalEventDrivenJobDaoImplTest {
     @Test(expected = IllegalArgumentException.class)
     public void testSaveInvalidRecordType() {
         // When - should throw IllegalArgumentException
-        dao.save(null);
+        dao.save((HibernateInternalEventDrivenJobRecord) null);
     }
 
     // Helper class for creating test InternalEventDrivenJob instances

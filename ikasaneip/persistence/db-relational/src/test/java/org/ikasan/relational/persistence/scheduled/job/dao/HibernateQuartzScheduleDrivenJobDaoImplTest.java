@@ -256,7 +256,7 @@ public class HibernateQuartzScheduleDrivenJobDaoImplTest {
     @Test(expected = IllegalArgumentException.class)
     public void testSaveInvalidRecordType() {
         // When - should throw IllegalArgumentException
-        dao.save(null);
+        dao.save((HibernateQuartzScheduleDrivenJobRecord) null);
     }
 
     // Helper class for creating test QuartzScheduleDrivenJob instances

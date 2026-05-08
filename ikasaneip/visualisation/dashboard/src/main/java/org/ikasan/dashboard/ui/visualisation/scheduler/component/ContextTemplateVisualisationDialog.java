@@ -9,9 +9,6 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.scheduler.component.ContextViewManagementDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -23,6 +20,8 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +42,6 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
     private String dynamicImagePath = ".";
 
     private ModuleMetaDataService moduleMetaDataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -69,7 +67,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
 
     private boolean showPrettyFormat;
 
-    public ContextTemplateVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextTemplateVisualisationDialog(ModuleMetaDataService moduleMetaDataService,
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                               LogStreamingService logStreamingService,
@@ -84,11 +82,6 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("agent cannot be null!");
-        }
-
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService == null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
         }
 
         this.configurationRestService = configurationRestService;
@@ -169,7 +162,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
         this.contextTemplate = contextTemplate;
         this.initialised = false;
 
-        this.schedulerVisualisation = new ContextSchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
+        this.schedulerVisualisation = new ContextSchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
             this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
@@ -202,7 +195,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                             try {
                                 this.close();
                                 ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
-                                    = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
+                                    = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                                     , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
                                     , this.schedulerJobExecutionEnvironmentLabel, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing

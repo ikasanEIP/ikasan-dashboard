@@ -1,1 +1,1 @@
-org.ikasan.orchestration.service.context.ContextServiceAutoConfiguration
+org.ikasan.orchestration.service.JobOrchestrationServiceAutoConfiguration

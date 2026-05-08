@@ -18,7 +18,9 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,6 +37,7 @@ public class HibernateModuleMetadataDaoImplTest {
 
     static {
         postgres = new PostgreSQLContainer<>("postgres:15-alpine")
+            .withStartupTimeout(Duration.ofSeconds(20))
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpass");

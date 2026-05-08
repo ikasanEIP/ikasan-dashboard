@@ -14,7 +14,6 @@ import org.ikasan.designer.event.FigureMovedEvent;
 import org.ikasan.designer.event.FigureMovedEventListener;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -45,7 +44,6 @@ public class ContextSchedulerVisualisation extends SchedulerVisualisation implem
      *
      * @param dynamicImagePath the dynamic image path
      * @param moduleMetaDataService service for module metadata
-     * @param scheduledProcessManagementService service for scheduled process management
      * @param configurationRestService configuration REST service
      * @param moduleControlRestService module control REST service
      * @param metaDataRestService metadata REST service
@@ -65,14 +63,14 @@ public class ContextSchedulerVisualisation extends SchedulerVisualisation implem
      * @param contextVisualisationNodeDistance distance between context visualisation nodes
      */
     public ContextSchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService
-        , ScheduledProcessManagementService scheduledProcessManagementService, ConfigurationService configurationRestService
+        , ConfigurationService configurationRestService
         , ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger
         , SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, JobInitiationService jobInitiationService
         , ContextProfileService contextProfileService, UserService userService, SecurityService securityService
         , JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService
         , Map<String, String> schedulerJobExecutionEnvironmentLabel, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing
         , double contextVisualisationLevelDistance, double contextVisualisationNodeDistance, boolean showPrettyFormattedDiagram) {
-        super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService
+        super(dynamicImagePath, moduleMetaDataService, configurationRestService
             , moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService
             , schedulerJobExecutionEnvironmentLabel, jobVisualisationVerticalSpacing

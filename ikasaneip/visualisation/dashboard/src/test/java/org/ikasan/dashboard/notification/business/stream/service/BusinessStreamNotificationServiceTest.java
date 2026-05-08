@@ -7,18 +7,15 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
-import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDao;
-import org.ikasan.business.stream.metadata.service.SolrBusinessStreamMetaDataServiceImpl;
+import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDaoImpl;
 import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExclusions;
-import org.ikasan.error.reporting.dao.SolrErrorReportingServiceDao;
+import org.ikasan.esb.service.business.stream.metadata.BusinessStreamMetaDataServiceImpl;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.FileSystemUtils;
 
@@ -207,15 +204,15 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
         SolrGeneralDaoImpl solrGeneralDao = new SolrGeneralDaoImpl();
         solrGeneralDao.setSolrClient(server);
 
-        SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao = new SolrBusinessStreamMetadataDao();
+        SolrBusinessStreamMetadataDaoImpl solrBusinessStreamMetadataDao = new SolrBusinessStreamMetadataDaoImpl();
         solrBusinessStreamMetadataDao.setSolrClient(server);
 
-        SolrErrorReportingServiceDao solrErrorReportingServiceDao = new SolrErrorReportingServiceDao();
+        SolrBusinessStreamMetadataDaoImpl solrErrorReportingServiceDao = new SolrBusinessStreamMetadataDaoImpl();
         solrErrorReportingServiceDao.setSolrClient(server);
 
         SolrGeneralServiceImpl solrGeneralService = new SolrGeneralServiceImpl(solrGeneralDao);
-        SolrBusinessStreamMetaDataServiceImpl solrBusinessStreamMetaDataService
-            = new SolrBusinessStreamMetaDataServiceImpl(solrBusinessStreamMetadataDao);
+        BusinessStreamMetaDataServiceImpl solrBusinessStreamMetaDataService
+            = new BusinessStreamMetaDataServiceImpl(solrBusinessStreamMetadataDao);
 
         return new BusinessStreamNotificationService(solrBusinessStreamMetaDataService,
             solrGeneralService);

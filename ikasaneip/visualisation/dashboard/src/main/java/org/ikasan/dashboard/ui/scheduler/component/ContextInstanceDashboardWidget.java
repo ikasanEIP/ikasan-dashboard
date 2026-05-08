@@ -43,7 +43,6 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -94,7 +93,6 @@ public class ContextInstanceDashboardWidget extends Div
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
     private Grid<PreparedFutureJobPlanInstance> preparedFutureContextInstanceGrid;
     private Grid<CompletedJobPlanInstance> completedContextInstanceGrid;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
@@ -162,7 +160,6 @@ public class ContextInstanceDashboardWidget extends Div
     /**
      * Creates an instance of the ContextInstanceDashboardWidget.
      *
-     * @param scheduledProcessManagementService       the scheduled process management service (must not be null)
      * @param configurationRestService                the configuration REST service (must not be null)
      * @param moduleControlRestService                the module control REST service (must not be null)
      * @param metaDataRestService                     the meta data REST service (must not be null)
@@ -184,8 +181,7 @@ public class ContextInstanceDashboardWidget extends Div
      * @param contextInstanceSchedulerService         the context instance scheduler service (must not be null)
      * @throws IllegalArgumentException               if any of the services are null
      */
-    public ContextInstanceDashboardWidget(ScheduledProcessManagementService scheduledProcessManagementService,
-                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
+    public ContextInstanceDashboardWidget(ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                           SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService,
                                           SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
                                           ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
@@ -195,10 +191,6 @@ public class ContextInstanceDashboardWidget extends Div
                                           SystemEventSearchService systemEventSearchService, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                           double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
 
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        if(this.scheduledProcessManagementService ==  null) {
-            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
-        }
         this.configurationRestService = configurationRestService;
         if(this.configurationRestService ==  null) {
             throw new IllegalArgumentException("configurationRestService cannot be null!");
@@ -1188,7 +1180,7 @@ public class ContextInstanceDashboardWidget extends Div
         ContextInstance contextInstance = this.scheduledContextInstanceService
             .findById(contextInstanceAggregateJobStatus.getContextInstanceId()+ "_" + SCHEDULED_CONTEXT_INSTANCE).getContextInstance();
         ContextTemplate contextTemplate = this.scheduledContextService.findByName(contextInstanceAggregateJobStatus.getContextInstanceName()).getContext();
-        ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
+        ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, this.dynamicImagePath, this.moduleMetaDataService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService, contextInstance, contextTemplate,
             this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, contextInstanceWidgetTab, status.name(), this.globalEventService,
             this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventSearchService , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,

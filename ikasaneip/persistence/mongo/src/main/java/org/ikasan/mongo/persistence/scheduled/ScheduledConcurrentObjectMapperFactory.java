@@ -8,17 +8,14 @@ import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
 import org.ikasan.job.orchestration.model.context.*;
 import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
-import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.QuartzScheduleDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
@@ -66,6 +63,7 @@ public class ScheduledConcurrentObjectMapperFactory {
             .addAbstractTypeMapping(FileEventDrivenJob.class, FileEventDrivenJobImpl.class)
             .addAbstractTypeMapping(QuartzScheduleDrivenJob.class, QuartzScheduleDrivenJobImpl.class)
             .addAbstractTypeMapping(GlobalEventJob.class, GlobalEventJobImpl.class)
+            .addAbstractTypeMapping(LocalEventJob.class, LocalEventJobImpl.class)
             .addAbstractTypeMapping(InternalEventDrivenJob.class, InternalEventDrivenJobImpl.class)
 //            .addAbstractTypeMapping(JobLockInstance.class, HibernateJobLockInstanceImpl.class)
 //            .addAbstractTypeMapping(ScheduledProcessEvent.class, HibernateContextualisedScheduledProcessEventImpl.class)
@@ -73,9 +71,17 @@ public class ScheduledConcurrentObjectMapperFactory {
 //            .addAbstractTypeMapping(ContextualisedSchedulerJobInitiationEvent.class, HibernateContextualisedSchedulerJobInitiationEventImpl.class)
 //            .addAbstractTypeMapping(SchedulerJobInitiationEvent.class, HibernateSchedulerJobInitiationEventImpl.class)
 //            .addAbstractTypeMapping(InternalEventDrivenJob.class, HibernateInternalEventDrivenJobImpl.class)
-//            .addAbstractTypeMapping(InternalEventDrivenJobInstance.class, HibernateInternalEventDrivenJobInstanceImpl.class)
-//            .addAbstractTypeMapping(FileEventDrivenJobInstance.class, HibernateFileEventDrivenJobInstanceImpl.class)
-//            .addAbstractTypeMapping(QuartzScheduleDrivenJobInstance.class, HibernateQuartzScheduleDrivenJobInstanceImpl.class)
+            .addAbstractTypeMapping(InternalEventDrivenJobInstance.class, InternalEventDrivenJobInstanceImpl.class)
+            .addAbstractTypeMapping(FileEventDrivenJobInstance.class, FileEventDrivenJobInstanceImpl.class)
+            .addAbstractTypeMapping(QuartzScheduleDrivenJobInstance.class, QuartzScheduleDrivenJobInstanceImpl.class)
+            .addAbstractTypeMapping(BridgingJobInstance.class, BridgingJobInstanceImpl.class)
+            .addAbstractTypeMapping(ContextStartJobInstance.class, ContextStartJobInstanceImpl.class)
+            .addAbstractTypeMapping(ContextTerminalJobInstance.class, ContextTerminalJobInstanceImpl.class)
+            .addAbstractTypeMapping(FileEventDrivenJobInstance.class, FileEventDrivenJobInstanceImpl.class)
+            .addAbstractTypeMapping(QuartzScheduleDrivenJobInstance.class, QuartzScheduleDrivenJobInstanceImpl.class)
+            .addAbstractTypeMapping(GlobalEventJobInstance.class, GlobalEventJobInstanceImpl.class)
+            .addAbstractTypeMapping(LocalEventJobInstance.class, LocalEventJobInstanceImpl.class)
+
             .addAbstractTypeMapping(JobLockHolder.class, JobLockHolderImpl.class)
             .addAbstractTypeMapping(JobLockCacheData.class, JobLockCacheDataImpl.class)
             .addAbstractTypeMapping(SchedulerJobLockParticipant.class, SchedulerJobLockParticipantImpl.class)

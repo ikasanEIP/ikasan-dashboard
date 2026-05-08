@@ -1,9 +1,9 @@
 package org.ikasan.dashboard.beans;
 
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.security.service.AuthenticationServiceImpl;
-import org.ikasan.security.service.LdapService;
-import org.ikasan.security.service.LdapServiceImpl;
+import org.ikasan.security.dao.SolrSecurityDaoImpl;
+import org.ikasan.security.dao.SolrUserDaoImpl;
+import org.ikasan.security.service.*;
 import org.ikasan.security.service.authentication.AuthenticationProviderFactory;
 import org.ikasan.security.service.authentication.AuthenticationProviderFactoryImpl;
 import org.ikasan.security.service.authentication.CustomAuthenticationProvider;
@@ -24,6 +24,7 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.sql.DataSource;
@@ -52,12 +53,45 @@ public class IkasanSecurityConfiguration
     @Value("${com.sun.jndi.ldap.read.timeout.milliseconds:60000}")
     private int ldapReadTimeoutMilliseconds;
 
-//    @Bean
-//    @Primary
-//    public UserService userService(UserDao userDao, SecurityService securityService, PasswordEncoder passwordEncoder)
-//    {
-//        return new UserServiceImpl(userDao, securityService, passwordEncoder, false);
-//    }
+    @Bean
+    public SecurityService securityService(SecurityDao securityDao) {
+        return new SecurityServiceImpl(securityDao);
+    }
+
+    @Bean
+    public UserService userService(UserDao userDao, SecurityService securityService)
+    {
+        return new UserServiceImpl(userDao, securityService, passwordEncoder(), false);
+    }
+
+    @Bean
+    public AuthenticationService authenticationService(SecurityService securityService, UserService userService) {
+
+        AuthenticationProviderFactory authenticationProviderFactory = new AuthenticationProviderFactoryImpl(userService,securityService);
+        return new AuthenticationServiceImpl(authenticationProviderFactory,securityService);
+    }
+
+    @Bean
+    public AuthenticationProvider ikasanAuthenticationProvider(AuthenticationService authenticationService) {
+        return new CustomAuthenticationProvider(authenticationService);
+    }
+
+    @Bean
+    public LdapService ldapService(SecurityDao securityDao, UserDao userDao, PasswordEncoder passwordEncoder) {
+        return new LdapServiceImpl(securityDao, userDao, passwordEncoder
+            , this.ldapReadTimeoutMilliseconds, this.ldapConnectTimeoutMilliseconds);
+    }
+
+    @Bean
+    public AuthenticationProviderFactory authenticationProviderFactory(UserService userService, SecurityService securityService) {
+        return new AuthenticationProviderFactoryImpl(userService, securityService);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder()
+    {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
 
     @Bean
     public SystemEventLogger systemEventLogger(SystemEventService systemEventService)
@@ -78,33 +112,6 @@ public class IkasanSecurityConfiguration
         localContainerEntityManagerFactoryBean.setPersistenceXmlLocation("classpath:/configuration-service-persistence.xml");
 
         return localContainerEntityManagerFactoryBean;
-    }
-
-    @Bean
-    public AuthenticationService authenticationService(SecurityService securityService, UserService userService){
-
-        AuthenticationProviderFactory authenticationProviderFactory = new AuthenticationProviderFactoryImpl(userService,securityService);
-        return new AuthenticationServiceImpl(authenticationProviderFactory,securityService);
-    }
-
-    @Bean
-    public AuthenticationProvider ikasanAuthenticationProvider(AuthenticationService authenticationService){
-
-        return new CustomAuthenticationProvider(authenticationService);
-
-    }
-
-    @Bean
-    public LdapService ldapService(SecurityDao securityDao, UserDao userDao, PasswordEncoder passwordEncoder)
-    {
-        return new LdapServiceImpl(securityDao, userDao, passwordEncoder
-            , this.ldapReadTimeoutMilliseconds, this.ldapConnectTimeoutMilliseconds);
-    }
-
-    @Bean
-    public AuthenticationProviderFactory authenticationProviderFactory(UserService userService, SecurityService securityService)
-    {
-        return new AuthenticationProviderFactoryImpl(userService, securityService);
     }
 
     @Bean

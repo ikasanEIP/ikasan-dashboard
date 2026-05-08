@@ -3,6 +3,7 @@ package org.ikasan.error.reporting.dao;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDaoImpl;
 import org.ikasan.error.reporting.model.SolrErrorOccurrence;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.jmock.Expectations;
@@ -44,7 +45,7 @@ public class SolrErrorReportingServiceDaoTest
             }
         });
 
-        SolrErrorReportingServiceDao dao = new SolrErrorReportingServiceDao();
+        SolrErrorReportingServiceDaoImpl dao = new SolrErrorReportingServiceDaoImpl();
         dao.setSolrClient(server);
         dao.setDaysToKeep(0);
 
@@ -57,7 +58,7 @@ public class SolrErrorReportingServiceDaoTest
 
     @Test
     public void test_convert_entity_to_solr_input_document() {
-        SolrErrorReportingServiceDao dao = new SolrErrorReportingServiceDao();
+        SolrErrorReportingServiceDaoImpl dao = new SolrErrorReportingServiceDaoImpl();
 
         SolrErrorOccurrence event = new SolrErrorOccurrence("uri", "moduleName", "flowName"
             , "componentName", "action", "detail", "message", "exceptionClass"

@@ -506,4 +506,18 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
 
         return solrQuery;
     }
+
+    /**
+     * Retrieves all the names of agents that are defined as scheduler agents.
+     *
+     * The method performs a Solr field facet query to extract all unique values
+     * from the "id" field of documents matching the query
+     * `type:"moduleMetaData" AND payload:"*\"type\":\"SCHEDULER_AGENT\"*"`.
+     *
+     * @return a list of agent names extracted from the Solr query results.
+     */
+    @Override
+    public List<String> getAllAgentNames() {
+        return super.fieldFacetQuery("type:\"moduleMetaData\" AND payload:\"*\\\"type\\\":\\\"SCHEDULER_AGENT\\\"*\"", "id");
+    }
 }

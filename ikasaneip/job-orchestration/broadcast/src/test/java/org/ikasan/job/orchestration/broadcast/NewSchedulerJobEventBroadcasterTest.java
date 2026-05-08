@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.broadcast;
 
+import org.ikasan.spec.scheduled.event.service.NewSchedulerJobEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.junit.After;
 import org.junit.Assert;
@@ -20,10 +21,10 @@ import static org.mockito.Mockito.*;
 public class NewSchedulerJobEventBroadcasterTest {
 
     @Mock
-    private NewSchedulerJobEventBroadcastListener listener1;
+    private NewSchedulerJobEventLocalBroadcastListener listener1;
 
     @Mock
-    private NewSchedulerJobEventBroadcastListener listener2;
+    private NewSchedulerJobEventLocalBroadcastListener listener2;
 
     @Mock
     private SchedulerJob schedulerJob;
@@ -31,7 +32,7 @@ public class NewSchedulerJobEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = NewSchedulerJobEventBroadcaster.class.getDeclaredField("listeners");
+        Field listenersField = NewSchedulerJobEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
     }
@@ -93,12 +94,7 @@ public class NewSchedulerJobEventBroadcasterTest {
     public void testBroadcast_executesAsynchronously() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        NewSchedulerJobEventBroadcastListener asyncListener = new NewSchedulerJobEventBroadcastListener() {
-            @Override
-            public void receiveBroadcast(SchedulerJob schedulerJob) {
-                latch.countDown();
-            }
-        };
+        NewSchedulerJobEventLocalBroadcastListener asyncListener = schedulerJob -> latch.countDown();
 
         NewSchedulerJobEventBroadcaster.register(asyncListener);
         NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);

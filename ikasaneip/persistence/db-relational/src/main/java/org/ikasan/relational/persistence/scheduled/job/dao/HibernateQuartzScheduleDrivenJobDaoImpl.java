@@ -145,4 +145,10 @@ public class HibernateQuartzScheduleDrivenJobDaoImpl implements QuartzScheduleDr
 
         logger.debug("Successfully saved QuartzScheduleDrivenJobRecord: {}", hibernateRecord.getId());
     }
+
+    @Override
+    @Transactional
+    public void save(List<HibernateQuartzScheduleDrivenJobRecord> records) {
+        records.forEach(this::save);
+    }
 }

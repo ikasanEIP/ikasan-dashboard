@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.event.service.ContextTemplateEnableDisableEventLocalBroadcastListener;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,10 +21,10 @@ import static org.mockito.Mockito.*;
 public class ContextTemplateEnableDisableEventBroadcasterTest {
 
     @Mock
-    private ContextTemplateEnableDisableEventBroadcastListener listener1;
+    private ContextTemplateEnableDisableEventLocalBroadcastListener listener1;
 
     @Mock
-    private ContextTemplateEnableDisableEventBroadcastListener listener2;
+    private ContextTemplateEnableDisableEventLocalBroadcastListener listener2;
 
     @Mock
     private ContextTemplate contextTemplate;
@@ -31,7 +32,7 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = ContextTemplateEnableDisableEventBroadcaster.class.getDeclaredField("listeners");
+        Field listenersField = ContextTemplateEnableDisableEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
     }
@@ -93,12 +94,7 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
     public void testBroadcast_executesAsynchronously() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        ContextTemplateEnableDisableEventBroadcastListener asyncListener = new ContextTemplateEnableDisableEventBroadcastListener() {
-            @Override
-            public void receiveBroadcast(ContextTemplate contextTemplate) {
-                latch.countDown();
-            }
-        };
+        ContextTemplateEnableDisableEventLocalBroadcastListener asyncListener = contextTemplate -> latch.countDown();
 
         ContextTemplateEnableDisableEventBroadcaster.register(asyncListener);
         ContextTemplateEnableDisableEventBroadcaster.broadcast(contextTemplate);

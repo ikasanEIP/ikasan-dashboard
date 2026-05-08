@@ -1,6 +1,7 @@
 package org.ikasan.replay.dao;
 
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.spec.entity.EsbEntityDao;
 import org.ikasan.spec.replay.ReplayEvent;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -9,7 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by Ikasan Development Team on 25/08/2017.
  */
-public class SolrReplayDao extends SolrDaoBase<ReplayEvent>
+public class SolrReplayDao extends SolrDaoBase<ReplayEvent> implements EsbEntityDao<ReplayEvent>
 {
     private static Logger logger = LoggerFactory.getLogger(SolrReplayDao.class);
 

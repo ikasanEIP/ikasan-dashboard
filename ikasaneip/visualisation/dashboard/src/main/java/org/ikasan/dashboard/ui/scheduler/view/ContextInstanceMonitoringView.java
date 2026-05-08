@@ -12,7 +12,6 @@ import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceDashboardWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -55,9 +54,6 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
 
     @Resource
     private ConfigurationService configurationRestService;
-
-    @Resource
-    private ScheduledProcessManagementService scheduledProcessManagementService;
 
     @Resource
     private ModuleControlService moduleControlRestService;
@@ -148,8 +144,8 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
      * Initialise the internals of the object.
      */
     private void init() {
-        this.contextInstanceDashboardWidget = new ContextInstanceDashboardWidget(this.scheduledProcessManagementService,
-            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService,
+        this.contextInstanceDashboardWidget = new ContextInstanceDashboardWidget(this.configurationRestService,
+            this.moduleControlRestService, this.metaDataRestService,
             this.systemEventLogger, this.schedulerService, this.schedulerJobService,
             this.schedulerJobInstanceService, this.scheduledContextInstanceService, "",
             this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,

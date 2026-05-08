@@ -36,8 +36,7 @@ import java.util.stream.Collectors;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
 
@@ -132,7 +131,7 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
         when(this.contextProfileService.findByFilter(any(), eq(-1), eq(-1), isNull(), isNull()))
             .thenReturn(super.getContextProfiles());
 
-        when(super.scheduledProcessManagementService.getAllAgentNames()).thenReturn(super.getAgents(2).getResultList()
+        when(super.schedulerJobService.getAllAgentNames()).thenReturn(super.getAgents(2).getResultList()
             .stream()
             .map(moduleMetaData -> moduleMetaData.getName())
             .collect(Collectors.toList()));
@@ -290,6 +289,7 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
         verify(this.schedulerJobService).findByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
         verify(this.schedulerJobService).findByContextNameAndJobName(anyString(), anyString());
         verify(this.schedulerJobService).saveFileEventDrivenJobRecord(any());
+        verify(this.schedulerJobService).getAllAgentNames();
 
         Mockito.verifyNoMoreInteractions(super.schedulerJobService);
 
@@ -474,6 +474,7 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
         verify(this.schedulerJobService).findByFilter(any(), anyInt(), anyInt(), isNull(), isNull());
         verify(this.schedulerJobService).findByContextNameAndJobName(anyString(), anyString());
         verify(this.schedulerJobService).saveFileEventDrivenJobRecord(any());
+        verify(this.schedulerJobService).getAllAgentNames();
 
         Mockito.verifyNoMoreInteractions(super.schedulerJobService);
 

@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.broadcast;
 
+import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventLocalBroadcastListener;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,17 +20,17 @@ import static org.mockito.Mockito.*;
 public class ContextViewUpdateEventBroadcasterTest {
 
     @Mock
-    private ContextViewUpdateEventBroadcastListener listener1;
+    private ContextViewUpdateEventLocalBroadcastListener listener1;
 
     @Mock
-    private ContextViewUpdateEventBroadcastListener listener2;
+    private ContextViewUpdateEventLocalBroadcastListener listener2;
 
     private String testMessage = "test message";
 
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = ContextViewUpdateEventBroadcaster.class.getDeclaredField("listeners");
+        Field listenersField = ContextViewUpdateEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
     }
@@ -91,12 +92,7 @@ public class ContextViewUpdateEventBroadcasterTest {
     public void testBroadcast_executesAsynchronously() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        ContextViewUpdateEventBroadcastListener asyncListener = new ContextViewUpdateEventBroadcastListener() {
-            @Override
-            public void receiveBroadcast(String message) {
-                latch.countDown();
-            }
-        };
+        ContextViewUpdateEventLocalBroadcastListener asyncListener = message -> latch.countDown();
 
         ContextViewUpdateEventBroadcaster.register(asyncListener);
         ContextViewUpdateEventBroadcaster.broadcast(testMessage);

@@ -9,7 +9,6 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.rest.dashboard.model.metadata.module.ModuleMetaDataImpl;
 import org.ikasan.scheduled.context.model.ScheduledContextRecordLiteImpl;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -52,8 +51,6 @@ public abstract class AbstractSchedulerViewTest extends UITest {
     protected SchedulerJobService schedulerJobService;
     @MockitoBean
     protected ContextProfileService contextProfileService;
-    @MockitoBean
-    protected ScheduledProcessManagementService scheduledProcessManagementService;
 
 
     protected SearchResults<SchedulerJobRecord> getSchedulerJobs() {
