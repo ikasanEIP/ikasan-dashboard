@@ -8,6 +8,13 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+/**
+ * Broadcaster for context instance saved events across cluster nodes.
+ * Maintains separate executors for local and remote broadcast operations.
+ * Uses WeakHashMap to prevent memory leaks from registered listeners.
+ *
+ * @author Ikasan Development Team
+ */
 public class ContextInstanceSavedEventBroadcaster {
     static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextInstanceSavedEventBroadcaster"));
     static Executor restExecutor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextInstanceSavedEventRestBroadcaster"));
@@ -17,27 +24,57 @@ public class ContextInstanceSavedEventBroadcaster {
     private static WeakHashMap<ContextInstanceSavedEventRemoteBroadcastListener, Object> remoteListeners =
         new WeakHashMap<>();
 
+    /**
+     * Registers a local broadcast listener.
+     *
+     * @param listener the local listener to register
+     */
     public static synchronized void register(ContextInstanceSavedEventLocalBroadcastListener listener) {
         localListeners.put(listener, null);
     }
 
+    /**
+     * Unregisters a local broadcast listener.
+     *
+     * @param listener the local listener to unregister
+     */
     public static synchronized void unregister(ContextInstanceSavedEventLocalBroadcastListener listener) {
         localListeners.remove(listener);
     }
 
+    /**
+     * Registers a remote broadcast listener.
+     *
+     * @param listener the remote listener to register
+     */
     public static synchronized void register(ContextInstanceSavedEventRemoteBroadcastListener listener) {
         remoteListeners.put(listener, null);
     }
 
+    /**
+     * Unregisters a remote broadcast listener.
+     *
+     * @param listener the remote listener to unregister
+     */
     public static synchronized void unregister(ContextInstanceSavedEventRemoteBroadcastListener listener) {
         remoteListeners.remove(listener);
     }
 
+    /**
+     * Broadcasts a context instance saved event to both local and remote listeners.
+     *
+     * @param contextInstance the context instance to broadcast
+     */
     public static synchronized void broadcast(final ContextInstance contextInstance) {
         localBroadcast(contextInstance);
         remoteBroadcast(contextInstance);
     }
 
+    /**
+     * Broadcasts a context instance saved event to remote listeners only.
+     *
+     * @param contextInstance the context instance to broadcast
+     */
     public static synchronized void remoteBroadcast(final ContextInstance contextInstance) {
         for (final ContextInstanceSavedEventRemoteBroadcastListener remoteListener : remoteListeners.keySet()) {
             restExecutor.execute(() -> remoteListener.receiveBroadcast(contextInstance));
@@ -47,6 +84,8 @@ public class ContextInstanceSavedEventBroadcaster {
     /**
      * Called when receiving an event from another cluster node.
      * Dispatches to local listeners only to prevent broadcast loops.
+     *
+     * @param contextInstance the context instance to broadcast locally
      */
     public static synchronized void localBroadcast(final ContextInstance contextInstance) {
         for (final ContextInstanceSavedEventLocalBroadcastListener listener: localListeners.keySet()) {
