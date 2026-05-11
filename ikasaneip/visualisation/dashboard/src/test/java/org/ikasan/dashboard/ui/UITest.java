@@ -62,7 +62,7 @@ public abstract class UITest {
 
     static {
         try {
-            FileUtils.deleteDirectory(new File("/tmp/solr-data"));
+            FileUtils.cleanDirectory(new File("/tmp/solr-data"));
 
             URL schemaUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("./solr/ikasan/conf/managed-schema.xml");
