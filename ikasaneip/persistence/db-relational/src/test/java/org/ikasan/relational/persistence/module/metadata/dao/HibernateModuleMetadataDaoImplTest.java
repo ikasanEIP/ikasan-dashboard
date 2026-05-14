@@ -9,6 +9,7 @@ import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.ModuleType;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -35,13 +35,13 @@ public class HibernateModuleMetadataDaoImplTest {
 
     public static PostgreSQLContainer<?> postgres;
 
-    static {
+    @BeforeClass
+    public static void startContainer() {
         postgres = new PostgreSQLContainer<>("postgres:15-alpine")
             .withStartupTimeout(Duration.ofSeconds(20))
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpass");
-
         postgres.start();
     }
 
