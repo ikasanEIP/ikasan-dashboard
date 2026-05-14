@@ -29,13 +29,15 @@ public class HibernateScheduledContextDaoImplTest {
 
     public static PostgreSQLContainer<?> postgres;
 
-    static {
+    @BeforeClass
+    public static void startContainer() {
         postgres = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpass");
 
         postgres.start();
+
     }
 
     @Autowired
@@ -44,6 +46,13 @@ public class HibernateScheduledContextDaoImplTest {
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
         registry.add("postgres.url", () -> postgres.getJdbcUrl());
+    }
+
+    @AfterClass
+    public static void stopContainer() {
+        if (postgres != null) {
+            postgres.stop();
+        }
     }
 
     @After

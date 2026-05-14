@@ -29,13 +29,15 @@ public class HibernateGlobalEventJobDaoImplTest {
 
     public static PostgreSQLContainer<?> postgres;
 
-    static {
+    @BeforeClass
+    public static void startContainer() {
         postgres = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpass");
 
         postgres.start();
+
     }
 
     @Autowired

@@ -8,6 +8,7 @@ import org.ikasan.spec.scheduled.job.model.BridgingJob;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,13 +33,15 @@ public class HibernateBridgingJobDaoImplTest {
 
     public static PostgreSQLContainer<?> postgres;
 
-    static {
+    @BeforeClass
+    public static void startContainer() {
         postgres = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpass");
 
         postgres.start();
+
     }
 
     @Autowired
