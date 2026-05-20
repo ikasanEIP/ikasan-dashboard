@@ -13,12 +13,12 @@
 }
 
 [theme~="ikasan-dialog"] header .dialog-title {
-    font-size: var(--material-font-size-s);
+    font-size: var(--aura-font-size-s);
     margin: 0 auto 0 5px;
 }
 
 [theme~="ikasan-dialog"] header vaadin-button:not(:last-child) {
-    margin-right: var(--material-space-xs);
+    margin-right: var(--aura-space-xs);
 }
 
 /* CONTENT */
@@ -28,7 +28,7 @@
 }
 
 [theme~="ikasan-dialog"] footer vaadin-button:not(:last-child) {
-    margin-right: var(--material-space-xs);
+    margin-right: var(--aura-space-xs);
 }
 
 [theme~="ikasan-dialog"] footer vaadin-button:last-child {

@@ -1,9 +1,7 @@
 package org.ikasan.rest.dashboard;
 
-
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,13 +31,13 @@ public class JwtAuthenticationControllerTest extends AbstractRestMvcTest
     public static final String AUTHENTICATION_URI = "/authenticate";
 
     protected MockMvc mvc;
+
     @Autowired
     WebApplicationContext webApplicationContext;
 
     @MockitoBean
     protected AuthenticationManager authenticationManager;
 
-    @BeforeEach
     @Before
     public void setUp()
     {

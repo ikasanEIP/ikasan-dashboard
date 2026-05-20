@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
@@ -28,25 +29,25 @@ public class JwtRequestFilterTest
 
     private JwtRequestFilter uut;
 
-    @Mock
+    @MockitoBean
     UserService userService;
 
-    @Mock
+    @MockitoBean
     JwtTokenUtil jwtTokenUtil;
 
-    @Mock
+    @MockitoBean
     HttpServletRequest request;
 
-    @Mock
+    @MockitoBean
     HttpServletResponse response;
 
-    @Mock
+    @MockitoBean
     FilterChain chain;
 
-    @Mock
+    @MockitoBean
     User userDetails;
 
-    @Mock
+    @MockitoBean
     SecurityContextRepository securityContextRepository;
 
     @Before

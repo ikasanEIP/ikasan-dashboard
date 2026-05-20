@@ -2,12 +2,12 @@ package org.ikasan.dashboard.security;
 
 import org.ikasan.rest.dashboard.JwtAuthenticationEntryPoint;
 import org.ikasan.rest.dashboard.JwtRequestFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,10 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-
-import javax.annotation.Resource;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  * Extended to handle multi-http security described by
@@ -33,7 +30,6 @@ import javax.annotation.Resource;
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity (prePostEnabled = true)
 @EnableMethodSecurity
 public class SecurityConfiguration
 {
@@ -45,10 +41,10 @@ public class SecurityConfiguration
 
     private static final String LOGOUT_SUCCESS_URL = "/login";
 
-    @Resource
+    @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    @Resource
+    @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
     @Bean(name = "authenticationManager")
@@ -67,7 +63,7 @@ public class SecurityConfiguration
     public class IkasanSecurityConfigurationAdapter
     {
 
-        @Resource
+        @Autowired
         AuthenticationManager authenticationManager;
 
         /**
@@ -103,6 +99,10 @@ public class SecurityConfiguration
                     .requestMatchers("/", "/VAADIN/**",
                         // the standard favicon URI
                         "/favicon.ico",
+                        // custom styles
+                        "/styles.css",
+                        // aura theme
+                        "/aura/** ",
                         // the robots exclusion standard
                         "/robots.txt",
                         // web application manifest
@@ -142,7 +142,7 @@ public class SecurityConfiguration
                 .logout(httpSecurityLogoutConfigurer -> {
                     httpSecurityLogoutConfigurer.logoutSuccessUrl(LOGOUT_SUCCESS_URL);
                 })
-                .exceptionHandling(e -> e.defaultAuthenticationEntryPointFor(jwtAuthenticationEntryPoint, new AntPathRequestMatcher("/rest/**")))
+                .exceptionHandling(e -> e.defaultAuthenticationEntryPointFor(jwtAuthenticationEntryPoint, PathPatternRequestMatcher.pathPattern("/rest/**")))
                 /**
                  * Session Management should be set to stateless for JWT token, but due to VAADIN utilising
                  * cookies we cannot do that
@@ -151,7 +151,7 @@ public class SecurityConfiguration
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(httpSecurityExceptionHandlingConfigurer
                     -> httpSecurityExceptionHandlingConfigurer.defaultAuthenticationEntryPointFor(new IkasanAuthenticationEntryPoint()
-                        , new AntPathRequestMatcher("/**")))
+                        , PathPatternRequestMatcher.pathPattern("/**")))
 
                 .securityContext((securityContext) -> {
                         securityContext.requireExplicitSave(true);

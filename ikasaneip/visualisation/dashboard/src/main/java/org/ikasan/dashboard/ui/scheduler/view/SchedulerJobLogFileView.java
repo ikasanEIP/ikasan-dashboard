@@ -12,9 +12,10 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 
 @Route(value = "schedulerJobLogFile")
@@ -29,13 +30,14 @@ public class SchedulerJobLogFileView extends VerticalLayout implements BeforeEnt
 {
     Logger logger = LoggerFactory.getLogger(SchedulerJobLogFileView.class);
 
-    @Resource(name = "moduleMetadataService")
+    @Autowired
+    @Qualifier("moduleMetadataService")
     private ModuleMetaDataService moduleMetaDataService;
 
-    @Resource
+    @Autowired
     private LogStreamingService logStreamingService;
 
-    @Resource
+    @Autowired
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
     private String uuid;

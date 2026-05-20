@@ -5,8 +5,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -15,7 +14,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamSaveFunction;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.slf4j.Logger;
@@ -56,7 +54,7 @@ public class BusinessStreamSaveAsDialog extends AbstractCloseableResizableDialog
         Image mrSquidImage = new Image("/frontend/images/mr-squid-head.png", "");
         mrSquidImage.setHeight("35px");
 
-        Label businessStreamHeader = new Label(String.format(getTranslation("label.upload-business-stream", UI.getCurrent().getLocale())));
+        NativeLabel businessStreamHeader = new NativeLabel(String.format(getTranslation("label.upload-business-stream", UI.getCurrent().getLocale())));
 
         HorizontalLayout header = new HorizontalLayout();
         header.setWidthFull();

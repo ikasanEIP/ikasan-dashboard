@@ -62,18 +62,17 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.security.service.model.AuthenticationMethodImpl;
-import org.ikasan.spec.security.model.AuthenticationMethod;
 import org.ikasan.security.service.LdapService;
-import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.security.service.authentication.AuthenticationProviderFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.security.model.AuthenticationMethod;
+import org.ikasan.spec.security.service.SecurityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,19 +96,19 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
 {
 	private Logger logger = LoggerFactory.getLogger(UserDirectoriesView.class);
 
-    @Resource
+    @Autowired
     private SecurityService securityService;
 
-    @Resource
+    @Autowired
     private LdapService ldapService;
 
-    @Resource
+    @Autowired
     private AuthenticationProviderFactory<AuthenticationMethod> authenticationProviderFactory;
 
-    @Resource
+    @Autowired
     private LdapDirectorySynchronisationSchedulerService ldapDirectorySynchronisationSchedulerService;
 
-    @Resource
+    @Autowired
     private SystemEventLogger systemEventLogger;
 
     private Grid<AuthenticationMethod> directoryTable;

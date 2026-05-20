@@ -1,13 +1,12 @@
 package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.Unit;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -22,42 +21,35 @@ import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 
 
-@CssImport("./styles/dashboard-view.css")
-public class BusinessStreamWidget extends Div {
+public class BusinessStreamWidget extends DashboardWidget {
 
     private BusinessStreamFilteringGrid businessStreamGrid;
 
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
     private ModuleMetaDataService moduleMetaDataService;
-    private TextField textField = new TextField();
+    private final TextField textField = new TextField();
 
     public BusinessStreamWidget(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
                                 ModuleMetaDataService moduleMetaDataService) {
         this.businessStreamMetaDataService = businessStreamMetaDataService;
         this.moduleMetaDataService = moduleMetaDataService;
         createGrid();
-        Div div = new Div();
-        div.addClassNames("card-counter");
-        div.setHeight("500px");
 
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
         textField.setPrefixComponent(icon);
         HorizontalLayout layout = new HorizontalLayout();
+        layout.setMargin(true);
+        layout.setWidth("100%");
         H4 modules = new H4(getTranslation("header.business-streams", UI.getCurrent().getLocale()));
         layout.add(modules, textField);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);
-
-        textField.getElement().getStyle().set("margin-left", "auto");
-
-        div.add(layout);
-        div.add(this.businessStreamGrid);
+        textField.getStyle().set("margin-left", "auto");
 
         this.businessStreamGrid.init();
 
-        this.add(div);
+        super.setHeaderContent(layout);
+        super.setContent(businessStreamGrid);
     }
 
     private void createGrid() {
@@ -68,7 +60,7 @@ public class BusinessStreamWidget extends Div {
         businessStreamGrid.removeAllColumns();
         businessStreamGrid.setVisible(true);
         businessStreamGrid.setWidthFull();
-        businessStreamGrid.setHeight("80%");
+        this.businessStreamGrid.setHeight(45, Unit.VH);
         businessStreamGrid.addColumn(LitRenderer.<BusinessStreamMetaData>of("<div style='white-space:normal'>${item.name}</div>")
             .withProperty("name", BusinessStreamMetaData::getName))
             .setHeader(getTranslation("table-header.business-stream-name", UI.getCurrent().getLocale()))
@@ -86,7 +78,6 @@ public class BusinessStreamWidget extends Div {
                 .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
             Anchor link = new Anchor(route, getTranslation("label.view", UI.getCurrent().getLocale()));
             link.setTarget("_blank");
-            add(link);
             horizontalLayout.add(link);
             link.getStyle().set("color", "blue");
 

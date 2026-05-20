@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.rest.dashboard.model.metrics.FlowInvocationMetricImpl;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +48,6 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
 
     private ObjectMapper objectMapper;
 
-    @BeforeEach
     @Before
     public void setUp()
     {

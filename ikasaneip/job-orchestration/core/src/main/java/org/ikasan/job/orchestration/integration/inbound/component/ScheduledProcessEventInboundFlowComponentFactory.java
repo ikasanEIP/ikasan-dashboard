@@ -91,13 +91,12 @@ import org.ikasan.spec.error.reporting.ErrorReportingService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.transaction.jta.JtaTransactionManager;
-
-import javax.annotation.Resource;
 
 /**
  * Scheduler Agent component factory.
@@ -111,7 +110,7 @@ public class ScheduledProcessEventInboundFlowComponentFactory
     @Value( "${module.name}" )
     private String moduleName;
 
-    @Resource
+    @Autowired
     private IBigQueue inboundQueue;
 
     @Value("${scheduler.inbound.producer.ignore.errors:false}")
@@ -120,22 +119,22 @@ public class ScheduledProcessEventInboundFlowComponentFactory
     @Value("${scheduler.inbound.producer.log.details:false}")
     private boolean schedulerInboundProducerLogDetails;
 
-    @Resource
+    @Autowired
     BuilderFactory builderFactory;
 
-    @Resource
+    @Autowired
     JtaTransactionManager transactionManager;
 
-    @Resource
+    @Autowired
     ErrorReportingService errorReportingService;
 
-    @Resource
+    @Autowired
     ScheduledContextInstanceService scheduledContextInstanceService;
 
-    @Resource
+    @Autowired
     ContextInstancePublicationService contextInstancePublicationService;
 
-    @Resource
+    @Autowired
     ModuleMetaDataService moduleMetadataService;
 
     @DependsOn("inboundQueue")

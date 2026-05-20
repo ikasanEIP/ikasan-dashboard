@@ -156,7 +156,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             }
         });
 
-        fileSubMenu.add(new Hr());
+        fileSubMenu.addItem(new Hr());
 
         MenuItem save = fileSubMenu.addItem(getTranslation("menu.save", UI.getCurrent().getLocale()));
         save.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent
@@ -174,9 +174,9 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         MenuItem saveAs = fileSubMenu.addItem(getTranslation("menu.save-as", UI.getCurrent().getLocale()));
         saveAs.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> this.designerCanvas.saveAs());
 
-        fileSubMenu.add(new Hr());
+        fileSubMenu.addItem(new Hr());
 
-        fileSubMenu.add(new Hr());
+        fileSubMenu.addItem(new Hr());
 
         MenuItem manage = fileSubMenu.addItem(getTranslation("menu.manage", UI.getCurrent().getLocale()));
         manage.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {

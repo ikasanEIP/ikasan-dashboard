@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.administration.view;
 
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -15,10 +14,10 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 
 @Route(value = "adminSearchView", layout = IkasanAppLayout.class)
@@ -31,14 +30,14 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
 {
     private Logger logger = LoggerFactory.getLogger(AdministrationSearchView.class);
 
-    @Resource
+    @Autowired
     private SystemEventSearchService systemEventSearchService;
 
     private Tabs tabs;
 
     private SystemEventSearchView systemEventSearchView;
 
-    @Resource
+    @Autowired
     private DateFormatter dateFormatter;
 
     @Value("${max.download.bytes:50000000}")

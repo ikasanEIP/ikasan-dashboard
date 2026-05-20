@@ -20,6 +20,7 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.imposters.ByteBuddyClassImposteriser;
 import org.jmock.lib.concurrent.Synchroniser;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,7 +92,7 @@ public class BusinessStreamNotificationJobTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    public void test_job_success_no_exclusions_found() throws JobExecutionException {
+    public void test_job_success_no_exclusions_found() throws JobExecutionException, JSONException {
         mockery.checking(new Expectations(){{
             oneOf(businessStreamNotification).isNewExclusionsOnlyNotification();
             will(returnValue(true));

@@ -12,32 +12,32 @@ import org.ikasan.security.dao.SolrRoleDaoImpl;
 import org.ikasan.security.dao.SolrUserDaoImpl;
 import org.ikasan.solr.initialisation.core.SolrDataJobException;
 import org.ikasan.solr.initialisation.security.BaselineSecurityDataLoader;
+import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.service.SecurityService;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.ikasan.spec.security.model.IkasanPrincipal;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 
-import static com.github.mvysny.kaributesting.v10.LocatorJ.*;
 import static com.github.mvysny.kaributesting.v10.GridKt.*;
+import static com.github.mvysny.kaributesting.v10.LocatorJ._click;
+import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 
 public class RoleManagementViewTest extends UITest
 {
-    @Resource
+    @Autowired
     private SecurityService securityService;
-    @Resource
+    @Autowired
     private SolrPolicyDaoImpl policyDao;
-    @Resource
+    @Autowired
     private SolrRoleDaoImpl roleDao;
-    @Resource
+    @Autowired
     private SolrIkasanPrincipalDaoImpl principalDao;
-    @Resource
+    @Autowired
     private SolrUserDaoImpl userDao;
 
     @Override

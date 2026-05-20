@@ -45,10 +45,10 @@ import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -79,10 +79,10 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
 
     private FlexLayout integratedSystemPalette;
 
-    @Resource
+    @Autowired
     private ModuleMetaDataService moduleMetadataService;
 
-    @Resource
+    @Autowired
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
 
     @Value(value = "${integrated.systems.image.path}")
@@ -489,7 +489,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
                 canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY());
             lineContextMenu.open();
         }
-        else if(canvasItemRightClickEvent.getFigure().getType().equals("draw2d.shape.basic.Label")) {
+        else if(canvasItemRightClickEvent.getFigure().getType().equals("draw2d.shape.basic.NativeLabel")) {
             LabelContextMenu lineContextMenu = new LabelContextMenu(this.businessStreamDesigner, canvasItemRightClickEvent.getFigure(),
                 canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY());
             lineContextMenu.open();

@@ -184,6 +184,7 @@ public class HibernatePersistenceAutoConfiguration {
         localContainerEntityManagerFactoryBean.setJpaProperties(platformJpaProperties);
         localContainerEntityManagerFactoryBean.setPersistenceUnitName("hibernate-persistence");
         localContainerEntityManagerFactoryBean.setPersistenceXmlLocation("classpath:hibernate-persistence.xml");
+        localContainerEntityManagerFactoryBean.setEntityManagerFactoryInterface(jakarta.persistence.EntityManagerFactory.class);
 
         return localContainerEntityManagerFactoryBean;
     }

@@ -1,21 +1,29 @@
 html {
-    --material-primary-color-10pct: rgba(241, 90, 35, 0.1);
-    --material-primary-color-50pct: rgba(241, 90, 35, 0.5);
-    --material-primary-color: rgba(241, 90, 35, 1.0);
-    --material-primary-contrast-color: #FFF;
-    --material-font-family: "Arial Bold", sans-serif;
-    --material-disabled-text-color: rgba(0, 0, 0, 0.65);
-
-    --lumo-primary-color-10pct: rgba(241, 90, 35, 0.1);
-    --lumo-primary-color-50pct: rgba(241, 90, 35, 0.5);
-    --lumo-primary-color: rgba(241, 90, 35, 1.0);
-    --lumo-primary-contrast-color: #FFF;
-    --lumo-font-family: "Arial Bold", sans-serif;
+    --aura-primary-color: var(--aura-orange);
+    --aura-accent-color-light: var(--aura-orange);
+    --aura-accent-color-dark: var(--aura-orange);
+    --aura-accent-color-light-contrast: #FFF;
+    --aura-background-color-light: #f3f1f1;
+    --vaadin-text-color-disabled:rgba(0, 0, 0, 0.65);
+    --vaadin-input-field-disabled-text-color: rgba(0, 0, 0, 0.65);
+    --vaadin-progress-bar-value-background:var(--aura-primary-color);
 }
 
-:host,[theme~="dark"] {
-    --material-primary-color: rgba(241, 90, 35, 1.0);
+/* Style specific hovered/active states */
+vaadin-side-nav-item::part(link):hover {
+    color: var(--aura-orange);
 }
+
+.v-loading-indicator {
+    color: var(--aura-orange) !important; /* Changes the loading bar color */
+    height: 4px; /* Optional: makes it thicker */
+}
+
+vaadin-grid::part(row):hover{
+    color: rgba(241, 90, 35, 1.0);;
+    background-color: rgba(241, 90, 35, 0.1);
+}
+
 
 :host([theme~="spacing-s"]) ::slotted(*) {
     margin-top: 0px !important;

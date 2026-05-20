@@ -2,7 +2,7 @@ package org.ikasan.job.orchestration.rest.dashboard;
 
 import org.ikasan.spec.scheduled.reset.ContextResetService;
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,7 +37,6 @@ public class ContextResetControllerTest {
     @MockitoBean
     private ContextResetService contextResetService;
 
-    @Autowired
     @Before
     public void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();

@@ -1,8 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.vaadin.visjs.network.Node;
-import org.ikasan.vaadin.visjs.network.options.nodes.Nodes;
-import org.ikasan.vaadin.visjs.network.util.Shape;
+
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Created by stewmi on 07/11/2018.
@@ -12,9 +11,14 @@ public class SftpLocation extends Node implements Destination
 	public static final String IMAGE = "frontend/images/sftp-location.png";
 
 
-	public SftpLocation(String id, String name)
+	public SftpLocation(DesignerItemIdentifier id, String name)
 	{
-        super(id, name, Nodes.builder().withShape(Shape.image).withImage(IMAGE));
+        super(id, -1, -1, IMAGE);
+//        super(id, name, Nodes.builder().withShape(Shape.image).withImage(IMAGE));
 	}
 
+    @Override
+    public void setX(Integer x) {
+
+    }
 }

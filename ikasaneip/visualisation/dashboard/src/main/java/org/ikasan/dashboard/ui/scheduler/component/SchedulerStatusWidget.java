@@ -2,9 +2,10 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -44,7 +45,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class SchedulerStatusWidget extends Div implements FlowStateBroadcastListener, CacheStateBroadcastListener {
+public class SchedulerStatusWidget extends DashboardWidget implements FlowStateBroadcastListener, CacheStateBroadcastListener {
     Logger logger = LoggerFactory.getLogger(SchedulerStatusWidget.class);
 
     private FlowListFilteringGrid flowsGrid;
@@ -91,11 +92,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
      * Create the view containing all the status icons.
      */
     private void createStatusView() {
-        this.removeAll();
-
         Div div = new Div();
-        div.addClassNames("card-counter");
-        div.setHeight("500px");
 
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
@@ -104,7 +101,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
         layout.setHeight("50px");
-        Label flows = new Label(getTranslation("label.scheduler-agent-status", UI.getCurrent().getLocale()));
+        NativeLabel flows = new NativeLabel(getTranslation("label.scheduler-agent-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
 
         Button refreshButton = new Button();
@@ -196,9 +193,10 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         });
         unknownDiv.add(unknownDivIcon);
 
-        div.add(layout, runningDiv, stoppedDiv, errorDiv, recoveringDiv, pausedDiv, unknownDiv);
+        div.add(runningDiv, stoppedDiv, errorDiv, recoveringDiv, pausedDiv, unknownDiv);
 
-        this.add(div);
+        this.setHeaderContent(layout);
+        this.setContent(div);
 
         ExecutorService executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("SchedulerStatusWidget"));
         executor.execute(() -> this.recalculate());
@@ -210,11 +208,6 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
      * @param flowsList
      */
     private void createGrid(List<FlowMetaData> flowsList) {
-        this.removeAll();
-        Div div = new Div();
-        div.addClassNames("card-counter");
-        div.setHeight("500px");
-
         TextField filerTextField = new TextField();
         filerTextField.setWidth("350px");
         Icon icon = VaadinIcon.SEARCH.create();
@@ -225,7 +218,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
         layout.setHeight("50px");
-        Label flows = new Label(getTranslation("label.scheduler-agent-status", UI.getCurrent().getLocale()));
+        NativeLabel flows = new NativeLabel(getTranslation("label.scheduler-agent-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
 
         Icon returnIcon = VaadinIcon.ARROW_CIRCLE_LEFT_O.create();
@@ -249,7 +242,7 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
         this.flowsGrid.removeAllColumns();
         this.flowsGrid.setVisible(true);
         this.flowsGrid.setWidthFull();
-        this.flowsGrid.setHeight("80%");
+        this.flowsGrid.setHeight("100%");
 
         this.flowsGrid.addColumn(FlowMetaData::getName)
             .setHeader(getTranslation("table-header.flow-name", UI.getCurrent().getLocale())).setKey("flowName")
@@ -262,18 +255,17 @@ public class SchedulerStatusWidget extends Div implements FlowStateBroadcastList
                 .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.FLOW.name() + ":" + moduleMetaData.getName());
             Anchor link = new Anchor(route, getTranslation("label.view", UI.getCurrent().getLocale()));
             link.setTarget("_blank");
-            add(link);
             horizontalLayout.add(link);
             link.getStyle().set("color", "blue");
 
             return horizontalLayout;
         }));
-        div.add(layout, this.flowsGrid);
         this.flowsGrid.addGridFiltering(filerTextField, this.flowSearchFilter::setFlowNameFilter);
 
         this.flowsGrid.init();
 
-        this.add(div);
+        this.setHeaderContent(layout);
+        this.setContent(this.flowsGrid);
     }
 
     /**

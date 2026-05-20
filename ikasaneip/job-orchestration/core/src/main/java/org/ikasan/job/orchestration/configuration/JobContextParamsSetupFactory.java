@@ -1,12 +1,12 @@
 package org.ikasan.job.orchestration.configuration;
 
 import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -26,7 +26,7 @@ import java.util.List;
 @Configuration
 public class JobContextParamsSetupFactory {
 
-    @Resource
+    @Autowired
     SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
     /**

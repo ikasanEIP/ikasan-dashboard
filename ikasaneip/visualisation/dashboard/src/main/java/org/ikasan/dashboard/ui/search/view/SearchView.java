@@ -13,8 +13,6 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.spec.security.model.User;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
@@ -23,14 +21,16 @@ import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.module.client.ResubmissionService;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.security.model.User;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import java.util.List;
 
@@ -44,28 +44,28 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
 {
     Logger logger = LoggerFactory.getLogger(SearchView.class);
 
-    @Resource
+    @Autowired
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
 
-    @Resource
+    @Autowired
     private HospitalAuditService hospitalAuditService;
 
-    @Resource
+    @Autowired
     private ResubmissionService resubmissionRestService;
 
-    @Resource
+    @Autowired
     private ReplayService replayRestService;
 
-    @Resource
+    @Autowired
     private ModuleMetaDataService moduleMetadataService;
 
-    @Resource
+    @Autowired
     private BatchInsert replayAuditService;
 
-    @Resource
+    @Autowired
     private UserService userService;
 
-    @Resource
+    @Autowired
     private DateFormatter dateFormatter;
 
     @Value("${max.download.bytes:50000000}")

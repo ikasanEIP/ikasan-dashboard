@@ -1,9 +1,10 @@
 package org.ikasan.rest.client;
 
-import jakarta.annotation.Resource;
 import org.ikasan.spec.metadata.model.ConfigurationMetaDataProvider;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.scheduled.general.SchedulerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,8 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
  */
 public class ModuleRestClientAutoConfiguration
 {
-    @Resource(name = "configurationMetaDataProvider")
+    @Autowired
+    @Qualifier("configurationMetaDataProvider")
     private ConfigurationMetaDataProvider configurationMetaDataProvider;
 
     @Value("${module.download.log.file.max.size:20971520}") // 20MB
@@ -30,7 +32,7 @@ public class ModuleRestClientAutoConfiguration
             = new HttpComponentsClientHttpRequestFactory();
 
         // all of the properties can be overwritten using spring properties.
-        httpComponentsClientHttpRequestFactory.setConnectTimeout(5000);
+        httpComponentsClientHttpRequestFactory.setReadTimeout(5000);
         httpComponentsClientHttpRequestFactory.setConnectionRequestTimeout(5000);
 
         return httpComponentsClientHttpRequestFactory;

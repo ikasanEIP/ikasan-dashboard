@@ -1,10 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.vaadin.visjs.network.Node;
-import org.ikasan.vaadin.visjs.network.options.nodes.Nodes;
-import org.ikasan.vaadin.visjs.network.util.Shape;
 
-import java.util.ArrayList;
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +13,7 @@ public class RecipientListRouter extends AbstractMultiTransition
 {
 	public static final String IMAGE = "frontend/images/recipient-list-router.png";
 
-	public RecipientListRouter(String id, String name)
+	public RecipientListRouter(DesignerItemIdentifier id, String name)
 	{
         super(id, name, IMAGE);
 		this.transitions = new HashMap<>();
@@ -42,10 +40,10 @@ public class RecipientListRouter extends AbstractMultiTransition
      */
     public static class RecipientListRouterBuilder
     {
-        private String id;
+        private DesignerItemIdentifier id;
         private String name;
 
-        public RecipientListRouterBuilder withId(String id)
+        public RecipientListRouterBuilder withId(DesignerItemIdentifier id)
         {
             this.id = id;
             return this;

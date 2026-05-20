@@ -4,7 +4,7 @@ import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
@@ -67,15 +67,15 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
 
     protected void init()
     {
-        Label runningLabel = new Label(getTranslation("status-label.running", UI.getCurrent().getLocale()));
+        NativeLabel runningLabel = new NativeLabel(getTranslation("status-label.running", UI.getCurrent().getLocale()));
         runningLabel.getStyle().set("font-size", "8pt");
-        Label stoppedLabel = new Label(getTranslation("status-label.stopped", UI.getCurrent().getLocale()));
+        NativeLabel stoppedLabel = new NativeLabel(getTranslation("status-label.stopped", UI.getCurrent().getLocale()));
         stoppedLabel.getStyle().set("font-size", "8pt");
-        Label stoppedInErrorLabel = new Label(getTranslation("status-label.stopped-in-error", UI.getCurrent().getLocale()));
+        NativeLabel stoppedInErrorLabel = new NativeLabel(getTranslation("status-label.stopped-in-error", UI.getCurrent().getLocale()));
         stoppedInErrorLabel.getStyle().set("font-size", "8pt");
-        Label recoveringLabel = new Label(getTranslation("status-label.recovering", UI.getCurrent().getLocale()));
+        NativeLabel recoveringLabel = new NativeLabel(getTranslation("status-label.recovering", UI.getCurrent().getLocale()));
         recoveringLabel.getStyle().set("font-size", "8pt");
-        Label pausedLabel = new Label(getTranslation("status-label.paused", UI.getCurrent().getLocale()));
+        NativeLabel pausedLabel = new NativeLabel(getTranslation("status-label.paused", UI.getCurrent().getLocale()));
         pausedLabel.getStyle().set("font-size", "8pt");
 
         this.runningDiv = new Div();
@@ -159,7 +159,7 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
      * @param label
      * @return
      */
-    private VerticalLayout createStatusButtonLayout(Button button, Label label)
+    private VerticalLayout createStatusButtonLayout(Button button, NativeLabel label)
     {
         VerticalLayout buttonLayout = new VerticalLayout();
         buttonLayout.setMargin(false);

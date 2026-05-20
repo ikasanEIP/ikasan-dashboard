@@ -75,39 +75,39 @@ public class ModuleVisjsAdapterTest
 
         Consumer consumer = flow.getConsumer();
 
-        Assertions.assertEquals("Test Consumer", consumer.getLabel(), "consumer label equals");
+        Assertions.assertEquals("Test Consumer", consumer.getId().getName(), "consumer label equals");
         Assertions.assertEquals("frontend/images/event-driven-consumer.png", consumer.getImage(), "consumer image equals");
-        Assertions.assertEquals("Test Consumer0", consumer.getId(), "consumer id equals");
+        Assertions.assertEquals("Test Consumer0", consumer.getId().getUuid(), "consumer id equals");
 
         Filter filter = (Filter)consumer.getTransition();
 
-        Assertions.assertEquals("Test Filter", filter.getLabel(), "filter label equals");
+        Assertions.assertEquals("Test Filter", filter.getId().getName(), "filter label equals");
         Assertions.assertEquals("frontend/images/message-filter.png", filter.getImage(), "filter image equals");
-        Assertions.assertEquals("Test Filter1", filter.getId(), "filter id equals");
+        Assertions.assertEquals("Test Filter1", filter.getId().getUuid(), "filter id equals");
 
         Splitter splitter = (Splitter)filter.getTransition();
 
-        Assertions.assertEquals("Test Splitter", splitter.getLabel(), "splitter label equals");
+        Assertions.assertEquals("Test Splitter", splitter.getId().getName(), "splitter label equals");
         Assertions.assertEquals("frontend/images/splitter.png", splitter.getImage(), "splitter image equals");
-        Assertions.assertEquals("Test Splitter2", splitter.getId(), "splitter id equals");
+        Assertions.assertEquals("Test Splitter2", splitter.getId().getUuid(), "splitter id equals");
 
         Broker broker = (Broker)splitter.getTransition();
 
-        Assertions.assertEquals("Test Broker", broker.getLabel(), "broker label equals");
+        Assertions.assertEquals("Test Broker", broker.getId().getName(), "broker label equals");
         Assertions.assertEquals("frontend/images/broker.png", broker.getImage(), "broker image equals");
-        Assertions.assertEquals("Test Broker3", broker.getId(), "broker id equals");
+        Assertions.assertEquals("Test Broker3", broker.getId().getUuid(), "broker id equals");
 
         MessageConverter messageConverter = (MessageConverter)broker.getTransition();
 
-        Assertions.assertEquals("Test Converter", messageConverter.getLabel(), "broker label equals");
+        Assertions.assertEquals("Test Converter", messageConverter.getId().getName(), "broker label equals");
         Assertions.assertEquals("frontend/images/message-translator.png", messageConverter.getImage(), "broker image equals");
-        Assertions.assertEquals("Test Converter4", messageConverter.getId(), "broker id equals");
+        Assertions.assertEquals("Test Converter4", messageConverter.getId().getUuid(), "broker id equals");
 
         MessageEndPoint messageEndpoint = (MessageEndPoint)messageConverter.getTransition();
 
-        Assertions.assertEquals("Test Producer", messageEndpoint.getLabel(), "broker label equals");
+        Assertions.assertEquals("Test Producer", messageEndpoint.getId().getName(), "broker label equals");
         Assertions.assertEquals("frontend/images/message-endpoint.png", messageEndpoint.getImage(), "broker image equals");
-        Assertions.assertEquals("Test Producer5", messageEndpoint.getId(), "broker id equals");
+        Assertions.assertEquals("Test Producer5", messageEndpoint.getId().getUuid(), "broker id equals");
 
     }
 
@@ -138,7 +138,7 @@ public class ModuleVisjsAdapterTest
         broker = (Broker) broker.getTransition();
         MessageProducer messageProducer = (MessageProducer) broker.getTransition();
         MessageChannel messageChannel = (MessageChannel) messageProducer.getTransition();
-        Assertions.assertEquals("target", messageChannel.getLabel());
+        Assertions.assertEquals("target", messageChannel.getId().getName());
     }
 
     @Test
@@ -167,7 +167,7 @@ public class ModuleVisjsAdapterTest
         broker = (Broker) broker.getTransition();
         MessageProducer messageProducer = (MessageProducer) broker.getTransition();
         MessageChannel messageChannel = (MessageChannel) messageProducer.getTransition();
-        Assertions.assertEquals("target", messageChannel.getLabel());
+        Assertions.assertEquals("target", messageChannel.getId().getName());
     }
 
     @Test
@@ -206,27 +206,27 @@ public class ModuleVisjsAdapterTest
 
         Consumer consumer = flow.getConsumer();
 
-        Assertions.assertEquals("Sftp Consumer", consumer.getLabel(), "consumer label equals");
+        Assertions.assertEquals("Sftp Consumer", consumer.getId().getName(), "consumer label equals");
         Assertions.assertEquals("frontend/images/sftp-consumer.png", consumer.getImage(), "consumer image equals");
-        Assertions.assertEquals("Sftp Consumer0", consumer.getId(), "consumer id equals");
+        Assertions.assertEquals("Sftp Consumer0", consumer.getId().getUuid(), "consumer id equals");
 
         MessageConverter converter = (MessageConverter)consumer.getTransition();
 
-        Assertions.assertEquals("Sftp Payload to Map\nConverter", converter.getLabel(), "converter label equals");
+        Assertions.assertEquals("Sftp Payload to Map Converter", converter.getId().getName(), "converter label equals");
         Assertions.assertEquals("frontend/images/message-translator.png", converter.getImage(), "converter image equals");
-        Assertions.assertEquals("Sftp Payload to Map Converter1", converter.getId(), "converter id equals");
+        Assertions.assertEquals("Sftp Payload to Map Converter1", converter.getId().getUuid(), "converter id equals");
 
         MessageProducer producer = (MessageProducer)converter.getTransition();
 
-        Assertions.assertEquals("Sftp Jms Producer", producer.getLabel(), "producer label equals");
+        Assertions.assertEquals("Sftp Jms Producer", producer.getId().getName(), "producer label equals");
         Assertions.assertEquals("frontend/images/channel-adapter.png", producer.getImage(), "producer image equals");
-        Assertions.assertEquals("Sftp Jms Producer2", producer.getId(), "producer id equals");
+        Assertions.assertEquals("Sftp Jms Producer2", producer.getId().getUuid(), "producer id equals");
 
         MessageChannel messageChannel = (MessageChannel)producer.getTransition();
 
-        Assertions.assertEquals("sftp.private.jms.queue", messageChannel.getLabel(), "messageChannel label equals");
+        Assertions.assertEquals("sftp.private.jms.queue", messageChannel.getId().getName(), "messageChannel label equals");
         Assertions.assertEquals("frontend/images/message-channel.png", messageChannel.getImage(), "messageChannel image equals");
-        Assertions.assertEquals("channel3", messageChannel.getId(), "messageChannel id equals");
+        Assertions.assertEquals("channel3", messageChannel.getId().getUuid(), "messageChannel id equals");
     }
 
     @Test

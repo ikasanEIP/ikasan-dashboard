@@ -44,10 +44,10 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
 {
     Logger logger = LoggerFactory.getLogger(GraphView.class);
 
-    @Resource
+    @Autowired
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
 
-    @Resource
+    @Autowired
     private ModuleControlService moduleControlRestService;
 
     @Autowired
@@ -59,34 +59,34 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
     @Autowired
     private TriggerService triggerRestService;
 
-    @Resource
+    @Autowired
     private ConfigurationMetaDataService configurationMetadataService;
 
-    @Resource
+    @Autowired
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
 
-    @Resource
+    @Autowired
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
 
-    @Resource
+    @Autowired
     private HospitalAuditService hospitalAuditService;
 
-    @Resource
+    @Autowired
     private ResubmissionRestServiceImpl resubmissionRestService;
 
-    @Resource
+    @Autowired
     private ReplayRestServiceImpl replayRestService;
 
-    @Resource
+    @Autowired
     private BatchInsert replayAuditService;
 
-    @Resource
+    @Autowired
     private MetaDataService metaDataApplicationRestService;
 
-    @Resource
+    @Autowired
     private BatchInsert<ModuleMetaData> moduleMetadataBatchInsert;
 
-    @Resource
+    @Autowired
     private DateFormatter dateFormatter;
 
     @Value(value = "${integrated.systems.image.path}")

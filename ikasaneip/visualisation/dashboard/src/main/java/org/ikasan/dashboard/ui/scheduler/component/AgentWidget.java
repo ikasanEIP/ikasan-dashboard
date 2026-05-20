@@ -2,12 +2,12 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.LitRenderer;
@@ -26,7 +26,7 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 
 import java.util.Map;
 
-public class AgentWidget extends Div {
+public class AgentWidget extends DashboardWidget {
 
     private ScheduledAgentsFilteringGrid scheduledAgentsFilteringGrid;
     private ModuleMetaDataService moduleMetadataService;
@@ -61,30 +61,23 @@ public class AgentWidget extends Div {
         this.filterTextField = new TextField();
         this.createGrid();
 
-        Div div = new Div();
-        div.addClassNames("card-counter");
-        div.setHeight("500px");
-
-
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
         filterTextField.setPrefixComponent(icon);
         filterTextField.setId("filterTextField");
         HorizontalLayout layout = new HorizontalLayout();
+        layout.setMargin(true);
+        layout.setWidth("100%");
         H4 modules = new H4(getTranslation("header.scheduler-agents", UI.getCurrent().getLocale()));
         layout.add(modules, filterTextField);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, filterTextField);
 
         filterTextField.getElement().getStyle().set("margin-left", "auto");
 
-        div.add(layout);
-        div.add(this.scheduledAgentsFilteringGrid);
-
         this.scheduledAgentsFilteringGrid.init();
 
-        this.add(div);
+        this.setHeaderContent(layout);
+        this.setContent(this.scheduledAgentsFilteringGrid);
     }
 
     private void createGrid() {
@@ -95,7 +88,7 @@ public class AgentWidget extends Div {
         this.scheduledAgentsFilteringGrid.removeAllColumns();
         this.scheduledAgentsFilteringGrid.setVisible(true);
         this.scheduledAgentsFilteringGrid.setWidthFull();
-        this.scheduledAgentsFilteringGrid.setHeight("80%");
+        this.scheduledAgentsFilteringGrid.setHeight(100, Unit.PERCENTAGE);
 
         scheduledAgentsFilteringGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")

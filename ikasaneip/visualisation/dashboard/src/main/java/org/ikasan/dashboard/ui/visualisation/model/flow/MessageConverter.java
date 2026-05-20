@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.vaadin.visjs.network.Node;
+
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Created by stewmi on 07/11/2018.
@@ -17,7 +18,7 @@ public class MessageConverter extends AbstractSingleTransition
      * @param transitionLabel
      * @param transition
      */
-	public MessageConverter(String id, String name, String transitionLabel, Node transition)
+	public MessageConverter(DesignerItemIdentifier id, String name, String transitionLabel, Node transition)
     {
         super(id, name, transition, transitionLabel, IMAGE);
     }
@@ -32,12 +33,12 @@ public class MessageConverter extends AbstractSingleTransition
      */
     public static class MessageConverterBuilder
     {
-        private String id;
+        private DesignerItemIdentifier id;
         private String name;
         private String transitionLabel;
         private Node transition;
 
-        public MessageConverterBuilder withId(String id)
+        public MessageConverterBuilder withId(DesignerItemIdentifier id)
         {
             this.id = id;
             return this;

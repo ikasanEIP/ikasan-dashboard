@@ -204,7 +204,7 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog impleme
             return controlPanel;
         })).setHeader(getTranslation("table-header.flow-control", UI.getCurrent().getLocale())).setKey("flowControl").setWidth("300px");
 
-        flowGrid.getColumnByKey("status").setClassNameGenerator(item -> {
+        flowGrid.getColumnByKey("status").setPartNameGenerator(item -> {
             FlowState flowState = FlowStateCache.instance().get(this.currentModule, item);
 
             State state = State.UNKNOWN_STATE;

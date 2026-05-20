@@ -75,7 +75,7 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
                                           @Qualifier("configurationMetadataService") ConfigurationMetaDataService configurationMetadataService,
                                           BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
                                           SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
-                                          HospitalAuditService hospitalAuditService,
+                                          @Qualifier("hospitalAuditService") HospitalAuditService hospitalAuditService,
                                           ResubmissionRestServiceImpl resubmissionRestService,
                                           ReplayRestServiceImpl replayRestService,
                                           @Qualifier("replayEventBatchInsert") BatchInsert replayAuditService,

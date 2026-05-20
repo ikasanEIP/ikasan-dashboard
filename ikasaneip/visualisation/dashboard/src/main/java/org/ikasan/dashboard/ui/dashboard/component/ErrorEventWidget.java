@@ -1,11 +1,13 @@
 package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
@@ -15,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TimeZone;
 
-public class ErrorEventWidget extends Div {
+public class ErrorEventWidget extends DashboardWidget {
 
     private static int REPORTING_INTERVAL = 60000;
 
@@ -26,12 +28,13 @@ public class ErrorEventWidget extends Div {
     public ErrorEventWidget(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService) {
         this.solrGeneralService = solrGeneralService;
 
-        Div div = new Div();
-        div.addClassNames("card-counter");
+        HorizontalLayout div = new HorizontalLayout();
+        div.setWidth("100%");
         div.setHeight("325px");
 
         final Chart chart = new Chart();
         chart.setClassName("live-errors");
+        chart.setHeight(35, Unit.VH);
 
         final Configuration configuration = chart.getConfiguration();
         configuration.getChart().setType(ChartType.SPLINE);
@@ -84,7 +87,7 @@ public class ErrorEventWidget extends Div {
 
         div.add(refreshButton, chart);
 
-        this.add(div);
+        this.setContent(div);
     }
 
     private void refresh() {

@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.vaadin.visjs.network.Node;
+
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Created by stewmi on 07/11/2018.
@@ -17,7 +18,7 @@ public class MessageProducer extends AbstractSingleTransition
      * @param transitionLabel
      * @param transition
      */
-	public MessageProducer(String id, String name, String transitionLabel, Node transition)
+	public MessageProducer(DesignerItemIdentifier id, String name, String transitionLabel, Node transition)
     {
         super(id, name, transition, transitionLabel, IMAGE);
     }
@@ -32,12 +33,12 @@ public class MessageProducer extends AbstractSingleTransition
      */
     public static class MessageProducerBuilder
     {
-        private String id;
+        private DesignerItemIdentifier id;
         private String name;
         private String transitionLabel;
         private Node transition;
 
-        public MessageProducerBuilder withId(String id)
+        public MessageProducerBuilder withId(DesignerItemIdentifier id)
         {
             this.id = id;
             return this;

@@ -9,13 +9,16 @@ import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.theme.aura.Aura;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.ikasan.dashboard.ui.administration.view.*;
 import org.ikasan.dashboard.ui.dashboard.view.DashboardView;
@@ -23,20 +26,18 @@ import org.ikasan.dashboard.ui.general.component.AboutIkasanDialog;
 import org.ikasan.dashboard.ui.general.component.SessionDetailsDialog;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.dashboard.ui.search.view.SearchView;
-import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.view.BusinessStreamDesignerView;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import javax.annotation.Resource;
-
-
-@JsModule("./styles/shared-styles.js")
-@CssImport("./styles/styles.css")
-@CssImport(value = "./styles/dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
 public class IkasanAppLayout extends AppLayout {
-    @Resource
+    @Autowired
     private SystemEventLogger systemEventLogger;
 
     @Value("${banner.text.message:}")
@@ -153,7 +154,17 @@ public class IkasanAppLayout extends AppLayout {
         addToNavbar(header);
         SideNav sideNav = this.getSideNav();
         sideNav.getElement().addEventListener("mouseleave", domEvent -> super.setDrawerOpened(false));
-        addToDrawer(sideNav);
+
+       Image mrSquid = new Image("frontend/images/mr-squid-head.png", "");
+       mrSquid.setHeight("50px");
+       mrSquid.getElement().getStyle().set("margin-bottom", "20px");
+
+       VerticalLayout sidebarContent = new VerticalLayout(mrSquid, sideNav);
+       sidebarContent.setPadding(true);
+       sidebarContent.setSpacing(true);
+       sidebarContent.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        addToDrawer(sidebarContent);
         super.setDrawerOpened(false);
         super.getStyle().set("--vaadin-app-layout-drawer-overlay", "true");
     }

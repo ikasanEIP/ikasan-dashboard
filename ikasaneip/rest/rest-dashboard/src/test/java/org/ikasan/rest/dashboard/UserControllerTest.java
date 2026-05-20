@@ -9,8 +9,9 @@ import org.ikasan.security.model.*;
 import org.ikasan.spec.security.model.*;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,15 +47,15 @@ import static org.junit.Assert.assertEquals;
 public class UserControllerTest extends  AbstractRestMvcTest
 {
     protected MockMvc mvc;
+
     @Autowired
     WebApplicationContext webApplicationContext;
 
-    @Resource
+    @Autowired
     TestUserService userService;
 
     private ObjectMapper objectMapper;
 
-    @BeforeEach
     @Before
     public void setUp()
     {

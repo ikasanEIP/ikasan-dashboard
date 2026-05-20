@@ -4,8 +4,8 @@ import org.ikasan.dashboard.cluster.service.LeaderElectionService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
 
 import static org.mockito.Mockito.*;
 

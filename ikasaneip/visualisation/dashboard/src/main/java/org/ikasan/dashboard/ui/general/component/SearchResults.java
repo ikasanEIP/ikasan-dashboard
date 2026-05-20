@@ -9,7 +9,7 @@ import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.Query;
@@ -54,7 +54,7 @@ public class SearchResults extends Div {
     private static Logger logger = LoggerFactory.getLogger(SearchResults.class);
 
     private SolrSearchFilteringGrid searchResultsGrid;
-    private Label resultsLabel = new Label();
+    private NativeLabel resultsLabel = new NativeLabel();
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
     private HorizontalLayout buttonLayout = new HorizontalLayout();
     private Registration replayEventRegistration;

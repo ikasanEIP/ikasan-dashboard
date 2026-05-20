@@ -7,7 +7,7 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextReco
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,7 +47,6 @@ public class EmailNotificationContextControllerTest extends AbstractRestMvcTest 
    @MockitoBean
     EmailNotificationContextService emailNotificationContextService;
 
-    @Autowired
     @Before
     public void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();

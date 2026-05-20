@@ -47,7 +47,7 @@ public class EsbServiceAutoConfiguration {
         return new BusinessStreamMetaDataServiceImpl(businessStreamMetadataDao);
     }
 
-    @Bean("componentConfigurationMetadataEntityService")
+    @Bean({"componentConfigurationMetadataEntityService", "configurationMetadataService"})
     public ConfigurationMetaDataService componentConfigurationMetadataEntityService(ComponentConfigurationMetadataDao componentConfigurationMetadataDao) {
         return new ConfigurationMetadataServiceImpl(componentConfigurationMetadataDao);
     }
@@ -137,8 +137,14 @@ public class EsbServiceAutoConfiguration {
         return new SystemEventServiceImpl(systemEventDao);
     }
 
+    @Bean("wiretapEventEntity")
+    public EsbEntityService<WiretapEvent> wiretapEventEntityService(@Qualifier("wiretapEsbEntityDao") EsbEntityDao wiretapEsbEntityDao
+        , ModuleService moduleService) {
+        return new WiretapServiceImpl(wiretapEsbEntityDao, moduleService);
+    }
+
     @Bean("wiretapEventBatchInsert")
-    public EsbEntityService<WiretapEvent> wiretapService(@Qualifier("wiretapEsbEntityDao") EsbEntityDao wiretapEsbEntityDao
+    public BatchInsert wiretapSBatchInsertService(@Qualifier("wiretapEsbEntityDao") EsbEntityDao wiretapEsbEntityDao
         , ModuleService moduleService) {
         return new WiretapServiceImpl(wiretapEsbEntityDao, moduleService);
     }

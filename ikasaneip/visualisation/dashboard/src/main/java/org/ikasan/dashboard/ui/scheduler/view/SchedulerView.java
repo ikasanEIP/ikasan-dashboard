@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.Icon;
@@ -9,7 +8,9 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.TabVariant;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -55,11 +56,11 @@ import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import java.util.HashMap;
 import java.util.List;
@@ -81,58 +82,59 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Autowired
     private ModuleMetaDataService moduleMetadataService;
 
-    @Resource
+    @Autowired
     private ConfigurationService configurationRestService;
 
-    @Resource
+    @Autowired
     private ModuleControlService moduleControlRestService;
 
-    @Resource
+    @Autowired
     private MetaDataService metaDataRestService;
 
-    @Resource
+    @Autowired
     private SystemEventLogger systemEventLogger;
 
-    @Resource
+    @Autowired
     private JobInitiationService jobInitiationService;
 
-    @Resource
+    @Autowired
     private ScheduledContextInstanceService scheduledContextInstanceService;
 
-    @Resource
+    @Autowired
     private ScheduledContextService scheduledContextService;
 
-    @Resource
+    @Autowired
     private JobLockCacheService jobLockCacheService;
 
-    @Resource
+    @Autowired
     private SchedulerJobService schedulerJobService;
 
-    @Resource
+    @Autowired
     private SchedulerService schedulerService;
 
-    @Resource(name = "moduleMetadataService")
+    @Autowired
+    @Qualifier("moduleMetadataService")
     private ModuleMetaDataService moduleMetaDataService;
 
     @Value("${job.plan.export.remove.trailing.plan.name.context.after.underscore:true}")
     private boolean removeTrailingPlanNameContextAfterUnderscore;
 
-    @Resource
+    @Autowired
     private LogStreamingService logStreamingService;
 
-    @Resource
+    @Autowired
     private DownloadLogFileService downloadLogFileService;
 
-    @Resource
+    @Autowired
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
-    @Resource
+    @Autowired
     private ContextProfileService contextProfileService;
 
-    @Resource
+    @Autowired
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
-    @Resource
+    @Autowired
     private EmailNotificationContextService emailNotificationContextService;
 
     @Value("${ikasan.dashboard.zip.working.directory:.}")
@@ -144,34 +146,34 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Value("${job.plan.interval.multiple:3}")
     private int jobPlanIntervalMultiple;
 
-    @Resource
+    @Autowired
     private ContextProvisionService contextProvisionService;
 
-    @Resource
+    @Autowired
     private JobProvisionService jobProvisionService;
 
-    @Resource
+    @Autowired
     private UserService userService;
 
-    @Resource
+    @Autowired
     private SecurityService securityService;
 
-    @Resource
+    @Autowired
     private JobUtilsService jobUtilsService;
 
-    @Resource
+    @Autowired
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
-    @Resource
+    @Autowired
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
-    @Resource
+    @Autowired
     private GlobalEventService globalEventService;
-    @Resource
+    @Autowired
     private SystemEventSearchService systemEventSearchService;
-    @Resource
+    @Autowired
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
-    @Resource
+    @Autowired
     private ContextParametersInstanceService contextParametersInstanceService;
 
     @Value("${scheduler.provision.jobs.on.upload:true}")
@@ -189,8 +191,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private ContextTemplateWidget contextTemplateWidget;
-
-    private Board contextDebugBoard;
 
     private Tab schedulerDashboardTab;
     private Tab contextTemplateTab;
@@ -221,12 +221,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.schedulerAgentDashboardView.setSizeFull();
         this.schedulerAgentDashboardView.setVisible(true);
 
-        this.contextDebugBoard = new Board();
-        this.contextDebugBoard.addClassName("styled");
-        this.contextDebugBoard.setSizeFull();
-        this.contextDebugBoard.setVisible(false);
-        this.contextDebugBoard.setId("contextDebugBoard");
-
         this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
@@ -243,6 +237,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextTemplateTab.setId("contextTemplateTab");
 
         this.tabs = new Tabs(schedulerDashboardTab, this.contextTemplateTab);
+        this.tabs.getElement().getStyle().set("margin-top", "10px");
+        this.tabs.addThemeVariants(TabsVariant.AURA_FILLED);
         this.tabs.setId("schedulerViewTabs");
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
@@ -307,13 +303,14 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         });
 
         HorizontalLayout globalJobSearchLayout = new HorizontalLayout(jobSearchTf, jobSeatchButton);
+        globalJobSearchLayout.setVerticalComponentAlignment(Alignment.END, jobSeatchButton);
         globalJobSearchLayout.getStyle().set("position", "absolute");
         globalJobSearchLayout.getStyle().set("top", "65px");
         globalJobSearchLayout.getStyle().set("right", "60px");
 
         tabsLayout.add(globalJobSearchLayout);
 
-        this.add(tabsLayout, this.schedulerAgentDashboardView, this.contextTemplateWidget, contextDebugBoard);
+        this.add(tabsLayout, this.schedulerAgentDashboardView, this.contextTemplateWidget);
         this.setSizeFull();
     }
 

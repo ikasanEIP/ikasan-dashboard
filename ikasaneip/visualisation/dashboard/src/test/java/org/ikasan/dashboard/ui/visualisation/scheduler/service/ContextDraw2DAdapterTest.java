@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 import org.ikasan.dashboard.AbstractTest;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.json.JSONException;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -16,7 +17,7 @@ public class ContextDraw2DAdapterTest extends AbstractTest {
     private ContextService contextService = new ContextService();
 
     @Test
-    public void test_adapt_success() throws IOException {
+    public void test_adapt_success() throws IOException, JSONException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/contexts/-1793100514.json"));
 
         ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();

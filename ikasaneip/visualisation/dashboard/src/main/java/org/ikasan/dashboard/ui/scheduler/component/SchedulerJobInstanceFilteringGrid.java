@@ -6,7 +6,7 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -142,7 +142,7 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
         endTimePicker.setLocale(Locale.UK);
         endTimePicker.getElement().getThemeList().add("always-float-label");
 
-        Label timeLabel = new Label();
+        NativeLabel timeLabel = new NativeLabel();
         Icon clearFilter = IconDecorator.decorate(VaadinIcon.CLOSE_SMALL.create(), getTranslation("tooltip.clear-filter", UI.getCurrent().getLocale()), "14px", "");
         clearFilter.setSize("14px");
         clearFilter.setVisible(false);

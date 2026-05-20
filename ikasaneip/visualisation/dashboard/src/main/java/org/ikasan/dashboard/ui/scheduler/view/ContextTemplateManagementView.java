@@ -31,11 +31,12 @@ import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import java.util.Map;
 import java.util.Set;
@@ -54,31 +55,32 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
 {
     Logger logger = LoggerFactory.getLogger(ContextTemplateManagementView.class);
 
-    @Resource
+    @Autowired
     private ConfigurationService configurationRestService;
 
-    @Resource
+    @Autowired
     private ModuleControlService moduleControlRestService;
 
-    @Resource
+    @Autowired
     private MetaDataService metaDataRestService;
 
-    @Resource
+    @Autowired
     private SystemEventLogger systemEventLogger;
 
-    @Resource
+    @Autowired
     private ScheduledContextInstanceService scheduledContextInstanceService;
 
-    @Resource
+    @Autowired
     private ScheduledContextService scheduledContextService;
 
-    @Resource
+    @Autowired
     private SchedulerJobService schedulerJobService;
 
-    @Resource(name = "moduleMetadataService")
+    @Autowired
+    @Qualifier("moduleMetadataService")
     private ModuleMetaDataService moduleMetaDataService;
 
-    @Resource
+    @Autowired
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
     @Value("${scheduled.job.context.queue.directory}")
@@ -96,44 +98,44 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Value("${job.plan.interval.multiple:3}")
     private int jobPlanIntervalMultiple;
 
-    @Resource
+    @Autowired
     private LogStreamingService logStreamingService;
 
-    @Resource
+    @Autowired
     private JobInitiationService jobInitiationService;
 
-    @Resource
+    @Autowired
     private ContextProfileService contextProfileService;
 
-    @Resource
+    @Autowired
     private JobProvisionService jobProvisionService;
 
-    @Resource
+    @Autowired
     private UserService userService;
 
-    @Resource
+    @Autowired
     private JobUtilsService jobUtilsService;
 
-    @Resource
+    @Autowired
     private SecurityService securityService;
 
-    @Resource
+    @Autowired
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
-    @Resource
+    @Autowired
     private EmailNotificationContextService emailNotificationContextService;
 
-    @Resource
+    @Autowired
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
-    @Resource
+    @Autowired
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
-    @Resource
+    @Autowired
     private GlobalEventService globalEventService;
-    @Resource
+    @Autowired
     private SystemEventSearchService systemEventSearchService;
-    @Resource
+    @Autowired
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
     @Value("${job.visualisation.vertical.spacing:120}")

@@ -1,7 +1,8 @@
 package org.ikasan.dashboard.ui.dashboard.view;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.board.Board;
+import com.vaadin.flow.component.dashboard.Dashboard;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -15,8 +16,6 @@ import org.ikasan.dashboard.ui.search.component.ChangePasswordDialog;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.spec.security.model.User;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
@@ -24,11 +23,12 @@ import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.DownloadLogFileService;
+import org.ikasan.spec.security.model.User;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 
 @Route(value = "", layout = IkasanAppLayout.class)
@@ -40,30 +40,33 @@ import javax.annotation.security.PermitAll;
 @PreserveOnRefresh
 public class DashboardView extends HorizontalLayout implements BeforeEnterObserver
 {
-    @Resource
+    @Autowired
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
 
     @Autowired
     private ModuleMetaDataService moduleMetadataService;
 
-    @Resource
+    @Autowired
     private DownloadLogFileService downloadLogFileService;
 
-    @Resource
+    @Autowired
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
 
-    @Resource
+    @Autowired
     private UserService userService;
 
-    private Board board;
+    private Dashboard board;
 
     private boolean initialised = false;
 
     public DashboardView()
     {
-        board = new Board();
-        board.addClassName("styled");
+        board = new Dashboard();
+        board.setMinimumColumnWidth("100px");
+        board.setDenseLayout(true);
         board.setSizeFull();
+        board.setMaximumColumnCount(12);
+        board.setMinimumRowHeight("100px");
 
         this.add(board);
     }
@@ -80,9 +83,25 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
         }
 
         if(!initialised) {
-            board.addRow(new BusinessStreamWidget(this.businessStreamMetaDataService, this.moduleMetadataService)
-                , new ModuleWidget(moduleMetadataService, downloadLogFileService), new StatusWidget(moduleMetadataService, UI.getCurrent()));
-            board.addRow(new HospitalEventsWidget(solrGeneralService), new ErrorEventWidget(solrGeneralService));
+            DashboardWidget businessStreams = new BusinessStreamWidget(this.businessStreamMetaDataService, this.moduleMetadataService);
+            businessStreams.setColspan(4);
+            board.add(businessStreams);
+
+            DashboardWidget modules = new ModuleWidget(moduleMetadataService, downloadLogFileService);
+            modules.setColspan(4);
+            board.add(modules);
+
+            DashboardWidget status = new StatusWidget(moduleMetadataService, UI.getCurrent());
+            status.setColspan(4);
+            board.add(status);
+
+            DashboardWidget hospital = new HospitalEventsWidget(solrGeneralService);
+            hospital.setColspan(6);
+            board.add(hospital);
+
+            DashboardWidget error = new ErrorEventWidget(solrGeneralService);
+            error.setColspan(6);
+            board.add(error);
 
             initialised = true;
 

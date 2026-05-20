@@ -1,16 +1,13 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -19,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -87,7 +85,7 @@ import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoI
  * A class representing the ContextInstanceDashboardWidget.
  * This class provides methods for initializing and managing the dashboard widget for context instances.
  */
-public class ContextInstanceDashboardWidget extends Div
+public class ContextInstanceDashboardWidget extends DashboardWidget
     implements SchedulerJobStateChangeEventLocalBroadcastListener, ContextInstanceStateChangeEventLocalBroadcastListener, ContextInstanceSavedEventLocalBroadcastListener {
     private Logger logger = LoggerFactory.getLogger(ContextInstanceDashboardWidget.class);
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
@@ -282,19 +280,19 @@ public class ContextInstanceDashboardWidget extends Div
         this.createPreparedFutureInstancesTab(fullscreen);
         this.createCompleteInstancesTab(fullscreen);
         this.initialiseTabs();
-        this.add(this.tabs, this.activeInstancesLayout, this.preparedFutureInstancesLayout, this.completedInstancesLayout);
-        this.addClassNames("card-counter");
+        Div layout = new Div();
+        layout.setWidth("100%");
+        layout.add(this.tabs, this.activeInstancesLayout, this.preparedFutureInstancesLayout, this.completedInstancesLayout);
+        this.setContent(layout);
+
         if(fullscreen) {
-            this.setHeight("90vh");
-            this.contextInstanceAggregateJobStatusGrid.setHeight("90%");
-            this.preparedFutureInstancesLayout.setHeight("90%");
-            this.completedContextInstanceGrid.setHeight("70%");
+            layout.setHeight(90, Unit.VH);
+//            this.contextInstanceAggregateJobStatusGrid.setHeight("90%");
+//            this.preparedFutureInstancesLayout.setHeight("90%");
+//            this.completedContextInstanceGrid.setHeight("70%");
         }
         else {
-            this.setHeight("800px");
-            this.contextInstanceAggregateJobStatusGrid.setHeight("60%");
-            this.preparedFutureContextInstanceGrid.setHeight("60%");
-            this.completedContextInstanceGrid.setHeight("60%");
+            layout.setHeight(45, Unit.VH);
         }
     }
 
@@ -310,6 +308,8 @@ public class ContextInstanceDashboardWidget extends Div
         this.completedJobPlanInstancesTab.setId("completedJobPlanInstances");
 
         this.tabs = new Tabs(this.activeJobPlanInstancesTab, this.preparedFutureJobPlanInstancesTab, this.completedJobPlanInstancesTab);
+        this.tabs.addThemeVariants(TabsVariant.AURA_FILLED);
+        this.tabs.setWidthFull();
         this.tabs.setId("contextInstancesTab");
 
         Map<Tab, Component> tabsToPages = new HashMap<>();
@@ -339,8 +339,6 @@ public class ContextInstanceDashboardWidget extends Div
         breakOut.getElement().getStyle().set("cursor", "pointer");
         breakOut.getElement().setAttribute("title", getTranslation("tooltip.breakout", UI.getCurrent().getLocale()));
         breakOut.setVisible(!fullscreen);
-        breakOut.setWidth("50px");
-        breakOut.setHeight("50px");
         breakOut.addClickListener(event -> {
             String route = RouteConfiguration.forSessionScope()
                 .getUrl(ContextInstanceMonitoringView.class);
@@ -379,8 +377,6 @@ public class ContextInstanceDashboardWidget extends Div
         helpIcon.getElement().appendChild(VaadinIcon.QUESTION.create().getElement());
         helpIcon.getElement().getStyle().set("cursor", "pointer");
         helpIcon.getElement().setAttribute("title", getTranslation("tooltip.help", UI.getCurrent().getLocale()));
-        helpIcon.setWidth("50px");
-        helpIcon.setHeight("50px");
         helpIcon.addClickListener(event ->{
             SchedulerDashboardHelpDialog dialog = new SchedulerDashboardHelpDialog();
             dialog.open();
@@ -448,6 +444,7 @@ public class ContextInstanceDashboardWidget extends Div
 
         preparedFutureInstancesLayout.add(layout);
         preparedFutureInstancesLayout.add(this.preparedFutureContextInstanceGrid);
+        preparedFutureInstancesLayout.setVisible(false);
     }
 
     /**
@@ -490,6 +487,7 @@ public class ContextInstanceDashboardWidget extends Div
 
         completedInstancesLayout.add(layout);
         completedInstancesLayout.add(this.completedContextInstanceGrid);
+        completedInstancesLayout.setVisible(false);
     }
 
     /**
@@ -1237,7 +1235,7 @@ public class ContextInstanceDashboardWidget extends Div
 
         HorizontalLayout waitingLayout = new HorizontalLayout(this.waitingFilterButton, this.waitingCheck);
         waitingLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.waitingCheck);
-        waitingLayout.getElement().getStyle().set("margin-bottom", "20px");
+//        waitingLayout.getElement().getStyle().set("margin-bottom", "20px");
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("waitingStatusCounts")).setComponent(waitingLayout);
 
@@ -1361,7 +1359,6 @@ public class ContextInstanceDashboardWidget extends Div
             , IkasanColours.SCHEDULER_ERROR, IkasanColours.WHITE, 5, "120px");
         this.errorFilterButton.setId("errorFilterButton");
         this.errorFilterButton.getElement().getStyle().set("cursor", "pointer");
-        this.errorFilterButton.getElement().getStyle().set("margin-bottom", "10px");
         this.errorFilterButton.getElement().setAttribute("title"
             , getTranslation("tooltip.click-to-filter", UI.getCurrent().getLocale()));
 
@@ -1498,7 +1495,7 @@ public class ContextInstanceDashboardWidget extends Div
         endTimePicker.setLocale(Locale.UK);
         endTimePicker.getElement().getThemeList().add("always-float-label");
 
-        Label timeLabel = new Label();
+        NativeLabel timeLabel = new NativeLabel();
         Icon closeIcon = IconDecorator.decorate(VaadinIcon.CLOSE_SMALL.create()
             , getTranslation("tooltip.close", UI.getCurrent().getLocale()), "14px", "");
         closeIcon.setSize("14px");

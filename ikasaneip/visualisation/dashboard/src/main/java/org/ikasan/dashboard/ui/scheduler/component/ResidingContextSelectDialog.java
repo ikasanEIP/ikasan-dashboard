@@ -4,7 +4,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -29,7 +29,7 @@ public class ResidingContextSelectDialog extends AbstractCloseableResizableDialo
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
 
-        Label label = new Label();
+        NativeLabel label = new NativeLabel();
         if(action.equals(Action.HOLD)) {
             label.setText(getTranslation("label.select-held-contexts", UI.getCurrent().getLocale()));
         }

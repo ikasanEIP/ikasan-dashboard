@@ -102,6 +102,10 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>jakarta.persistence</groupId>
+                    <artifactId>jakarta.persistence-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

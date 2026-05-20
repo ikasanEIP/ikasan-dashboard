@@ -28,6 +28,7 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,7 +40,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 
@@ -56,7 +56,7 @@ public class DashboardComponentFactory
     @Value("#{${org.atmosphere.cpr.configurations}}")
     private Map<String, String> atomosphereConfigurationMap;
 
-    @Resource
+    @Autowired
     private ModuleControlService moduleControlRestService;
 
     private static final String INBOUND_QUEUE = "dashboard-inbound-queue";

@@ -1,8 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.vaadin.visjs.network.Node;
-import org.ikasan.vaadin.visjs.network.options.nodes.Nodes;
-import org.ikasan.vaadin.visjs.network.util.Shape;
+
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 public class AbstractSingleTransition extends AbstractWiretapNode implements SingleTransition
 {
@@ -18,7 +17,7 @@ public class AbstractSingleTransition extends AbstractWiretapNode implements Sin
      * @param label
      * @param image
      */
-    public AbstractSingleTransition(String id,  String name, Node transition, String label, String image)
+    public AbstractSingleTransition(DesignerItemIdentifier id, String name, Node transition, String label, String image)
     {
         super(id, name, image);
         this.transition = transition;

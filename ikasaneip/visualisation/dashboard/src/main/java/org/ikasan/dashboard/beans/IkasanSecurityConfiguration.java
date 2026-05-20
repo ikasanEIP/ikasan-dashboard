@@ -110,6 +110,7 @@ public class IkasanSecurityConfiguration
         localContainerEntityManagerFactoryBean.setJpaProperties(platformJpaProperties);
         localContainerEntityManagerFactoryBean.setPersistenceUnitName("configuration-service");
         localContainerEntityManagerFactoryBean.setPersistenceXmlLocation("classpath:/configuration-service-persistence.xml");
+        localContainerEntityManagerFactoryBean.setEntityManagerFactoryInterface(jakarta.persistence.EntityManagerFactory.class);
 
         return localContainerEntityManagerFactoryBean;
     }

@@ -30,16 +30,16 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractSchedulerViewTest extends UITest {
 
-    @Resource
+    @Autowired
     protected ModuleMetaDataService moduleMetadataService;
     @MockitoBean
     protected  SchedulerJobInstanceService schedulerJobInstanceService;

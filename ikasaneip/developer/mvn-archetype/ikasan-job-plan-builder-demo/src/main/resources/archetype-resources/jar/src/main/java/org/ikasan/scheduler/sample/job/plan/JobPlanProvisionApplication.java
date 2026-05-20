@@ -29,7 +29,7 @@ public class JobPlanProvisionApplication implements CommandLineRunner {
     @Autowired
     private ApplicationContext applicationContext;
 
-    @Resource
+    @Autowired
     private ContextProvisionService contextProvisionService;
 
     @Value("${zip.output.dir}")

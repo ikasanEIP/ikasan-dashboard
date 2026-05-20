@@ -1,11 +1,9 @@
 package org.ikasan.rest.dashboard;
 
-
 import org.ikasan.rest.dashboard.util.TestBatchInsert;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,10 +43,9 @@ public class ExclusionControllerTest extends  AbstractRestMvcTest
     @Autowired
     WebApplicationContext webApplicationContext;
 
-    @Resource
+    @Autowired
     TestBatchInsert batchInsert;
 
-    @BeforeEach
     @Before
     public void setUp()
     {

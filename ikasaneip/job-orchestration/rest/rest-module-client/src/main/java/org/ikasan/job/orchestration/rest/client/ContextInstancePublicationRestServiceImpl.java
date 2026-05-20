@@ -43,8 +43,8 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
             //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
             // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
-            String message = String.format("Could not update context parameters for for agent url %s, instance %s, responseCode: %d, error: %s",
-                url, instance.getId(), e.getRawStatusCode(), e.getMessage());
+            String message = String.format("Could not update context parameters for for agent url %s, instance %s, responseCode: %s, error: %s",
+                url, instance.getId(), e.getStatusCode(), e.getMessage());
             LOGGER.warn(message, e);
         } catch (Exception e) {
             String message = String.format("Could not update context parameters for for agent url %s, instance %s, error: %s",
@@ -59,7 +59,7 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl + REST_URL_REMOVE;
         try {
-            String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
+            String urlTemplate = UriComponentsBuilder.fromUriString(url)
                 .queryParam("correlationId", "{correlationId}")
                 .encode()
                 .toUriString();
@@ -72,8 +72,8 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
             // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
             e.printStackTrace();
-            String message = String.format("Could not remove instance from agent for agent url %s, name %s, responseCode: %d, error: %s",
-                url, contextInstance.getName(), e.getRawStatusCode(), e.getMessage());
+            String message = String.format("Could not remove instance from agent for agent url %s, name %s, responseCode: %s, error: %s",
+                url, contextInstance.getName(), e.getStatusCode(), e.getMessage());
             LOGGER.warn(message);
         } catch (Exception e) {
             e.printStackTrace();
@@ -89,7 +89,7 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl + REST_URL_REMOVE_ALL;
         try {
-            String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
+            String urlTemplate = UriComponentsBuilder.fromUriString(url)
                 .encode()
                 .toUriString();
             Map<String, String> parameters = new HashMap<>();
@@ -99,8 +99,8 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
             // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
             e.printStackTrace();
-            String message = String.format("Could not remove all context instances from agent for agent url %s, responseCode: %d, error: %s",
-                url, e.getRawStatusCode(), e.getMessage());
+            String message = String.format("Could not remove all context instances from agent for agent url %s, responseCode: %s, error: %s",
+                url, e.getStatusCode(), e.getMessage());
             LOGGER.warn(message);
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.vaadin.visjs.network.Node;
+
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Created by stewmi on 08/11/2018.
@@ -18,7 +19,7 @@ public abstract class Consumer extends AbstractSingleTransition implements Singl
      * @param transition
      * @param image
      */
-	public Consumer(String id, String name, String transitionLabel, Node transition, String image, Node source)
+	public Consumer(DesignerItemIdentifier id, String name, String transitionLabel, Node transition, String image, Node source)
     {
         super(id, name, transition, transitionLabel, image);
 

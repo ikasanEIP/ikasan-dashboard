@@ -1272,7 +1272,7 @@ public class MetaDataRestServiceImplTest {
                         .build())
                 .build());
 
-        httpComponentsClientHttpRequestFactory.setConnectTimeout(1000);
+        httpComponentsClientHttpRequestFactory.setReadTimeout(1000);
         httpComponentsClientHttpRequestFactory.setConnectionRequestTimeout(1000);
 
         Environment environment = new StandardEnvironment();

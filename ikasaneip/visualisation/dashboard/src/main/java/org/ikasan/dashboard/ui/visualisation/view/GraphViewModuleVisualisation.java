@@ -4,7 +4,7 @@ import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -173,7 +173,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
             verticalLayout.add(icon);
             verticalLayout.setHorizontalComponentAlignment(Alignment.END, icon);
 
-            Label namelabel = new Label(item.getName());
+            NativeLabel namelabel = new NativeLabel(item.getName());
             namelabel.setWidth("500px");
 
             container.setVerticalComponentAlignment(Alignment.CENTER, namelabel);
@@ -202,7 +202,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
                                 .setRecording((Boolean) configurationParameterMetaData.getValue()));
                 }
 
-                this.moduleVisualisation.redraw();
+                this.moduleVisualisation.init();
 
                 this.fireModuleFlowChangeEvent();
                 logger.debug("Finished switching to flow {}", comboBoxFlowComponentValueChangeEvent.getValue().getName());
@@ -243,7 +243,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
             moduleMetaDataService);
         moduleVisualisation.addModule(module);
         moduleVisualisation.setCurrentFlow(module.getFlows().get(0));
-        moduleVisualisation.redraw();
+        moduleVisualisation.init();
         this.flowComboBox.setCurrentModule(module);
 
         this.statusPanel.setModuleVisualisation(this.moduleVisualisation);

@@ -1,9 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.layout;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.dashboard.ui.visualisation.model.flow.*;
-import org.ikasan.vaadin.visjs.network.Edge;
-import org.ikasan.vaadin.visjs.network.NetworkDiagram;
-import org.ikasan.vaadin.visjs.network.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +15,10 @@ public abstract class LayoutManagerBase
 {
     private Logger logger = LoggerFactory.getLogger(LayoutManagerBase.class);
 
-    protected NetworkDiagram networkDiagram;
-    protected List<Edge> edgeList;
+//    protected NetworkDiagram networkDiagram;
+//    protected List<Edge> edgeList;
+    protected ObjectMapper mapper = new ObjectMapper();
+
     protected List<Node> nodeList;
     protected List<Destination> destinations;
     protected Logo logo;
@@ -39,13 +39,11 @@ public abstract class LayoutManagerBase
     protected int ySpacing = 150;
 
 
-    public LayoutManagerBase(NetworkDiagram networkDiagram, Logo logo)
+    public LayoutManagerBase()
     {
-        this.networkDiagram = networkDiagram;
-        this.edgeList = new ArrayList<>();
         this.nodeList = new ArrayList<>();
         this.destinations = new ArrayList<>();
-        this.logo = logo;
+//        this.logo = logo;
     }
 
 
@@ -61,7 +59,7 @@ public abstract class LayoutManagerBase
     protected void manageTransition(Node transition, int x, int y)
     {
         nodeList.add(transition);
-        logger.debug("Adding component [{}] at [x={}] and [y={}]. ", transition.getLabel(), x, y);
+        logger.debug("Adding component [{}] at [x={}] and [y={}]. ", transition.getId(), x, y);
 
 
         if (transition instanceof SingleTransition && ((SingleTransition) transition).getTransition() != null)
@@ -69,7 +67,7 @@ public abstract class LayoutManagerBase
             transition.setX(x + xSpacing);
             transition.setY(y);
 
-            addEdge(transition.getId(), ((SingleTransition) transition).getTransition().getId(), ((SingleTransition) transition).getTransitionLabel());
+            addEdge(transition.getId().getUuid(), ((SingleTransition) transition).getTransition().getId().getUuid(), ((SingleTransition) transition).getTransitionLabel());
 
             manageTransition(((SingleTransition) transition).getTransition(), x + xSpacing, y);
         }
@@ -88,7 +86,7 @@ public abstract class LayoutManagerBase
                     key = "";
                 }
 
-                addEdge(transition.getId(), ((MultiTransition) transition).getTransitions().get(key).getId(), key);
+                addEdge(transition.getId().getUuid(), ((MultiTransition) transition).getTransitions().get(key).getId().getUuid(), key);
 
                 if(i > 0 && yExtent >= y)
                 {
@@ -129,10 +127,10 @@ public abstract class LayoutManagerBase
 
     protected void addEdge(String fromId, String toId, String label)
     {
-        logger.debug("Adding edge [{}] --> [{}] with label [{}]", fromId, toId, label);
-        Edge edge = new Edge(fromId, toId);
-        edge.setLabel(label);
-        this.edgeList.add(edge);
+//        logger.debug("Adding edge [{}] --> [{}] with label [{}]", fromId, toId, label);
+//        Edge edge = new Edge(fromId, toId);
+//        edge.setLabel(label);
+//        this.edgeList.add(edge);
     }
 
     public int getxSpacing()
