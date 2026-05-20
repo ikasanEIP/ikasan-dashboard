@@ -9,8 +9,7 @@ import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +52,7 @@ public class BigQueueModuleControllerTest {
     @Autowired
     protected WebApplicationContext webApplicationContext;
 
-    @BeforeEach
+
     @Before
     public void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();

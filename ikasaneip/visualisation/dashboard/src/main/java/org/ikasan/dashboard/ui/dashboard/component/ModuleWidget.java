@@ -1,6 +1,8 @@
 package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
@@ -27,7 +29,7 @@ import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.DownloadLogFileService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-public class ModuleWidget extends Div {
+public class ModuleWidget extends DashboardWidget {
 
     private ModuleFilteringGrid modulesGrid;
     private ModuleMetaDataService moduleMetadataService;
@@ -40,29 +42,22 @@ public class ModuleWidget extends Div {
         this.textField = new TextField();
         this.createGrid();
 
-        Div div = new Div();
-        div.addClassNames("card-counter");
-        div.setHeight("500px");
-
-
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
         textField.setPrefixComponent(icon);
         HorizontalLayout layout = new HorizontalLayout();
+        layout.setMargin(true);
+        layout.setWidth("100%");
         H4 modules = new H4(getTranslation("header.modules-and-agents", UI.getCurrent().getLocale()));
         layout.add(modules, textField);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);
 
         textField.getElement().getStyle().set("margin-left", "auto");
 
-        div.add(layout);
-        div.add(this.modulesGrid);
-
         this.modulesGrid.init();
 
-        this.add(div);
+        this.setHeaderContent(layout);
+        this.setContent(this.modulesGrid);
     }
 
     private void createGrid() {
@@ -72,7 +67,7 @@ public class ModuleWidget extends Div {
         modulesGrid.removeAllColumns();
         modulesGrid.setVisible(true);
         modulesGrid.setWidthFull();
-        modulesGrid.setHeight("80%");
+        modulesGrid.setHeight(45, Unit.VH);
 
         modulesGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
@@ -89,7 +84,7 @@ public class ModuleWidget extends Div {
                 .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.MODULE.name() + ":" + moduleMetaData.getName());
             Anchor link = new Anchor(route, getTranslation("label.view", UI.getCurrent().getLocale()));
             link.setTarget("_blank");
-            add(link);
+//            add(link);
             horizontalLayout.add(link);
             link.getStyle().set("color", "blue");
 
@@ -100,12 +95,9 @@ public class ModuleWidget extends Div {
                 downloadModulesLogDialog.open();
             });
 
-            add(downloadLogFileIcon);
-
             // wrap it in a router link
             RouterLink routerLinkLogFile = new RouterLink();
             routerLinkLogFile.add(downloadLogFileIcon);
-            add(routerLinkLogFile);
 
             ComponentSecurityVisibility.applySecurity((IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication(), routerLinkLogFile,
                 SecurityConstants.ALL_AUTHORITY,

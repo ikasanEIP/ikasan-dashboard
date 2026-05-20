@@ -23,11 +23,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -54,7 +54,7 @@ public class SearchResultTest extends UITest {
     @MockitoBean
     private ReplayAuditServiceImpl replayAuditService;
 
-    @Resource
+    @Autowired
     private DateFormatter dateFormatter;
 
     @Override

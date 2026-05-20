@@ -19,8 +19,7 @@ import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationServ
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -38,7 +37,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +57,7 @@ public class JobContextControllerTest extends AbstractRestMvcTest {
     protected MockMvc mvc;
     @Autowired
     WebApplicationContext webApplicationContext;
-    @Resource
+    @Autowired
     TestContextParametersInstanceService contextParametersInstanceService;
     @MockitoBean
     private ScheduledContextService scheduledContextService;
@@ -76,7 +74,6 @@ public class JobContextControllerTest extends AbstractRestMvcTest {
     private static final String AGENT = "scheduler-agent";
     private static final Map<String, ModuleMetaData> AGENTS_MAP = Map.of(AGENT, new ModuleMetaDataImpl());
 
-    @BeforeEach
     @Before
     public void setUp() throws Exception {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();

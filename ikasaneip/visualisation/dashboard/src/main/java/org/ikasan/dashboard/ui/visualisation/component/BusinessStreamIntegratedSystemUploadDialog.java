@@ -6,7 +6,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -47,7 +47,7 @@ public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseabl
         Image mrSquidImage = new Image("/frontend/images/mr-squid-head.png", "");
         mrSquidImage.setHeight("35px");
 
-        Label businessStreamHeader = new Label(getTranslation("label.add-integrated-system", UI.getCurrent().getLocale()));
+        NativeLabel businessStreamHeader = new NativeLabel(getTranslation("label.add-integrated-system", UI.getCurrent().getLocale()));
 
         HorizontalLayout header = new HorizontalLayout();
         header.setWidthFull();

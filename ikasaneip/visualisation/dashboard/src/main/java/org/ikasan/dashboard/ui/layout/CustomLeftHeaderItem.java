@@ -3,7 +3,7 @@ package org.ikasan.dashboard.ui.layout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class CustomLeftHeaderItem extends Composite<VerticalLayout>
@@ -23,17 +23,17 @@ public class CustomLeftHeaderItem extends Composite<VerticalLayout>
             content.add(new Component[]{image});
         }
 
-        Label subtitleLabel;
+        NativeLabel subtitleLabel;
         if (title != null)
         {
-            subtitleLabel = new Label(title);
+            subtitleLabel = new NativeLabel(title);
             subtitleLabel.setId("menu-header-title");
             content.add(new Component[]{subtitleLabel});
         }
 
         if (subtitle != null)
         {
-            subtitleLabel = new Label(subtitle);
+            subtitleLabel = new NativeLabel(subtitle);
             subtitleLabel.setId("menu-header-subtitle");
             content.add(new Component[]{subtitleLabel});
         }

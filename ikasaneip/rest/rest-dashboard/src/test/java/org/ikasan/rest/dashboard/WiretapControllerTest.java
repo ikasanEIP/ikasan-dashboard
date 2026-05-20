@@ -3,8 +3,7 @@ package org.ikasan.rest.dashboard;
 import org.ikasan.rest.dashboard.util.TestBatchInsert;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,8 +18,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-
-import javax.annotation.Resource;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -43,10 +40,9 @@ public class WiretapControllerTest extends  AbstractRestMvcTest
     @Autowired
     WebApplicationContext webApplicationContext;
 
-    @Resource
+    @Autowired
     TestBatchInsert batchInsert;
 
-    @BeforeEach
     @Before
     public void setUp()
     {

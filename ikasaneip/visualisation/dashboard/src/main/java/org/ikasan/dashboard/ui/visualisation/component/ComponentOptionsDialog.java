@@ -23,8 +23,6 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.TriggerService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.trigger.TriggerRelationship;
-import org.ikasan.vaadin.visjs.network.NetworkDiagram;
-import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +43,7 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
 
     protected String componentName;
 
-    protected NetworkDiagram networkDiagram;
+//    protected NetworkDiagram networkDiagram;
 
     protected AbstractWiretapNode abstractWiretapNode;
 
@@ -59,7 +57,7 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
 
     protected ComponentOptionsDialog(Module module, String flowName, String componentName, boolean configuredResource,
                                      ConfigurationService configurationRestService,
-                                     TriggerService triggerRestService, NetworkDiagram networkDiagram,
+                                     TriggerService triggerRestService, /*NetworkDiagram networkDiagram,*/
                                      AbstractWiretapNode abstractWiretapNode, MetaDataService metaDataApplicationRestService,
                                      BatchInsert<ModuleMetaData> moduleMetaDataService) {
         this.module = module;
@@ -68,7 +66,7 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
         this.configurationRestService = configurationRestService;
         this.configuredResource = configuredResource;
         this.triggerRestService = triggerRestService;
-        this.networkDiagram = networkDiagram;
+//        this.networkDiagram = networkDiagram;
         this.abstractWiretapNode = abstractWiretapNode;
         this.metaDataApplicationRestService = metaDataApplicationRestService;
         this.moduleMetaDataService = moduleMetaDataService;
@@ -240,32 +238,32 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
     }
 
     private void updateDiagramState(String job, String relationship) {
-        if (job.equals("wiretapJob")) {
-            if (relationship.equals(TriggerRelationship.AFTER.getDescription())) {
-                UI.getCurrent().access(() -> this.networkDiagram.addWiretapAfter(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getWiretapAfterImageX(),
-                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getWiretapAfterImageY(),
-                    this.abstractWiretapNode.getWiretapAfterImageW(), this.abstractWiretapNode.getWiretapAfterImageH()));
-                abstractWiretapNode.setWiretapAfterStatus(NodeFoundStatus.FOUND);
-            } else if (relationship.equals(TriggerRelationship.BEFORE.getDescription())) {
-                UI.getCurrent().access(() -> this.networkDiagram.addWiretapBefore(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getWiretapBeforeImageX(),
-                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getWiretapBeforeImageY(),
-                    this.abstractWiretapNode.getWiretapBeforeImageW(), this.abstractWiretapNode.getWiretapBeforeImageH()));
-                abstractWiretapNode.setWiretapBeforeStatus(NodeFoundStatus.FOUND);
-            }
-        } else if (job.equals("loggingJob")) {
-            if (relationship.equals(TriggerRelationship.AFTER.getDescription())) {
-                UI.getCurrent().access(() -> this.networkDiagram.addLogWiretapAfter(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getLogWiretapAfterImageX(),
-                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getLogWiretapAfterImageY(),
-                    this.abstractWiretapNode.getLogWiretapAfterImageW(), this.abstractWiretapNode.getLogWiretapAfterImageH()));
-                abstractWiretapNode.setLogWiretapAfterStatus(NodeFoundStatus.FOUND);
-            } else if (relationship.equals(TriggerRelationship.BEFORE.getDescription())) {
-                UI.getCurrent().access(() -> this.networkDiagram.addLogWiretapBefore(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getLogWiretapBeforeImageX(),
-                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getLogWiretapBeforeImageY(),
-                    this.abstractWiretapNode.getLogWiretapBeforeImageW(), this.abstractWiretapNode.getLogWiretapBeforeImageH()));
-                abstractWiretapNode.setLogWiretapBeforeStatus(NodeFoundStatus.FOUND);
-            }
-        }
-
-        UI.getCurrent().access(() -> this.networkDiagram.diagamRedraw());
+//        if (job.equals("wiretapJob")) {
+//            if (relationship.equals(TriggerRelationship.AFTER.getDescription())) {
+//                UI.getCurrent().access(() -> this.networkDiagram.addWiretapAfter(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getWiretapAfterImageX(),
+//                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getWiretapAfterImageY(),
+//                    this.abstractWiretapNode.getWiretapAfterImageW(), this.abstractWiretapNode.getWiretapAfterImageH()));
+//                abstractWiretapNode.setWiretapAfterStatus(NodeFoundStatus.FOUND);
+//            } else if (relationship.equals(TriggerRelationship.BEFORE.getDescription())) {
+//                UI.getCurrent().access(() -> this.networkDiagram.addWiretapBefore(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getWiretapBeforeImageX(),
+//                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getWiretapBeforeImageY(),
+//                    this.abstractWiretapNode.getWiretapBeforeImageW(), this.abstractWiretapNode.getWiretapBeforeImageH()));
+//                abstractWiretapNode.setWiretapBeforeStatus(NodeFoundStatus.FOUND);
+//            }
+//        } else if (job.equals("loggingJob")) {
+//            if (relationship.equals(TriggerRelationship.AFTER.getDescription())) {
+//                UI.getCurrent().access(() -> this.networkDiagram.addLogWiretapAfter(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getLogWiretapAfterImageX(),
+//                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getLogWiretapAfterImageY(),
+//                    this.abstractWiretapNode.getLogWiretapAfterImageW(), this.abstractWiretapNode.getLogWiretapAfterImageH()));
+//                abstractWiretapNode.setLogWiretapAfterStatus(NodeFoundStatus.FOUND);
+//            } else if (relationship.equals(TriggerRelationship.BEFORE.getDescription())) {
+//                UI.getCurrent().access(() -> this.networkDiagram.addLogWiretapBefore(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getLogWiretapBeforeImageX(),
+//                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getLogWiretapBeforeImageY(),
+//                    this.abstractWiretapNode.getLogWiretapBeforeImageW(), this.abstractWiretapNode.getLogWiretapBeforeImageH()));
+//                abstractWiretapNode.setLogWiretapBeforeStatus(NodeFoundStatus.FOUND);
+//            }
+//        }
+//
+//        UI.getCurrent().access(() -> this.networkDiagram.diagamRedraw());
     }
 }

@@ -44,6 +44,6 @@ public class FlowConfigurationDialog extends AbstractConfigurationDialog
             .findFirst()
             .ifPresent(configurationParameterMetaData -> flow.setRecording((Boolean) configurationParameterMetaData.getValue()));
 
-        this.moduleVisualisation.redraw();
+        this.moduleVisualisation.init();
     }
 }

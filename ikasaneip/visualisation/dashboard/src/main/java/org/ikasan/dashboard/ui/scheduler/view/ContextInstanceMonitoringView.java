@@ -1,6 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
-import com.vaadin.flow.component.board.Board;
+import com.vaadin.flow.component.dashboard.Dashboard;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -12,8 +12,6 @@ import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceDashboardWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -29,14 +27,14 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
-import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 
 @Route(value = "contextInstanceMonitoring", layout = IkasanAppLayout.class)
@@ -52,71 +50,57 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
 {
     Logger logger = LoggerFactory.getLogger(ContextInstanceMonitoringView.class);
 
-    @Resource
+    @Autowired
     private ConfigurationService configurationRestService;
 
-    @Resource
+    @Autowired
     private ModuleControlService moduleControlRestService;
 
-    @Resource
+    @Autowired
     private MetaDataService metaDataRestService;
 
-    @Resource
+    @Autowired
     private SystemEventLogger systemEventLogger;
 
-    @Resource
+    @Autowired
     private ScheduledContextInstanceService scheduledContextInstanceService;
 
-    @Resource
+    @Autowired
     private ScheduledContextService scheduledContextService;
 
-    @Resource
+    @Autowired
     private SchedulerJobService schedulerJobService;
 
-    @Resource(name = "moduleMetadataService")
+    @Autowired
+    @Qualifier("moduleMetadataService")
     private ModuleMetaDataService moduleMetaDataService;
 
-    @Resource
+    @Autowired
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
-    @Value("${scheduled.job.context.queue.directory}")
-    private String queueDirectory;
-
-    @Resource
+    @Autowired
     private LogStreamingService logStreamingService;
 
-    @Resource
+    @Autowired
     private JobInitiationService jobInitiationService;
 
-    @Resource
+    @Autowired
     private ContextProfileService contextProfileService;
 
-    @Resource
-    private JobProvisionService jobProvisionService;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
+    @Autowired
     private JobUtilsService jobUtilsService;
 
-    @Resource
-    private SecurityService securityService;
-
-    @Resource
-    private ModuleMetaDataService moduleMetadataService;
-
-    @Resource
+    @Autowired
     private GlobalEventService globalEventService;
 
-    @Resource
+    @Autowired
     private SchedulerService schedulerService;
 
-    @Resource
+    @Autowired
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
-    @Resource
+    @Autowired
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
-    @Resource
+    @Autowired
     private SystemEventSearchService systemEventSearchService;
 
     @Value("${job.visualisation.vertical.spacing:120}")
@@ -130,7 +114,9 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
 
     private ContextInstanceDashboardWidget contextInstanceDashboardWidget;
 
-    private Board board;
+    private Dashboard board;
+
+    private boolean initialised = false;
 
     /**
      * Constructor
@@ -154,18 +140,24 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
             this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
 
         this.getElement().getStyle().set("padding-top", "0px");
-        board = new Board();
-        board.addClassName("styled");
+        board = new Dashboard();
+        board.setMinimumColumnWidth("100px");
+        board.setDenseLayout(true);
         board.setSizeFull();
+        board.setMaximumColumnCount(1);
+        board.setMinimumRowHeight("100px");
 
-        board.addRow(this.contextInstanceDashboardWidget);
+        board.add(this.contextInstanceDashboardWidget);
 
         this.add(this.board);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        init();
+        if(!initialised) {
+            init();
+            initialised = true;
+        }
     }
 }
 

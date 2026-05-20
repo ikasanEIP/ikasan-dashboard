@@ -1,7 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
 
-import org.ikasan.vaadin.visjs.network.Node;
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Created by stewmi on 07/11/2018.
@@ -18,7 +18,7 @@ public class EventDrivenConsumer extends Consumer
      * @param transitionLabel
      * @param transition
      */
-	private EventDrivenConsumer(String id, String name, String transitionLabel, Node transition, Node source)
+	private EventDrivenConsumer(DesignerItemIdentifier id, String name, String transitionLabel, Node transition, Node source)
     {
         super(id, name, transitionLabel, transition, IMAGE, source);
     }
@@ -33,13 +33,13 @@ public class EventDrivenConsumer extends Consumer
      */
     public static class EventDrivenConsumerBuilder
     {
-        private String id;
+        private DesignerItemIdentifier id;
         private String name;
         private String transitionLabel;
         private Node transition;
         private Node source;
 
-        public EventDrivenConsumerBuilder withId(String id)
+        public EventDrivenConsumerBuilder withId(DesignerItemIdentifier id)
         {
             this.id = id;
             return this;

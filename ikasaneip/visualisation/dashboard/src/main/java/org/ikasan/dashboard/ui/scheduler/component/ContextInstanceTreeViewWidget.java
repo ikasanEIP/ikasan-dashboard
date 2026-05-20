@@ -12,7 +12,7 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -368,9 +368,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName()), image);
 
 
-                Label jobNameLabel =  new Label(((SchedulerJobInstance)value).getJobName());
+                NativeLabel jobNameLabel =  new NativeLabel(((SchedulerJobInstance)value).getJobName());
                 if(this.contextInstance.isUseDisplayName() && ((SchedulerJobInstance)value).getDisplayName() != null && !((SchedulerJobInstance)value).getDisplayName().isEmpty()) {
-                    Label jobDisplayNameLabel =  new Label(((SchedulerJobInstance)value).getDisplayName());
+                    NativeLabel jobDisplayNameLabel =  new NativeLabel(((SchedulerJobInstance)value).getDisplayName());
                     horizontalLayout.add(jobDisplayNameLabel);
                     horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
                 }
@@ -407,9 +407,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 this.jobImageMap.put(new ComponentKey(PRECEDING_ITEM_COMPONENT+this.contextInstance.getName()
                     , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName()), image);
 
-                Label jobNameLabel =  new Label(schedulerJobInstance.getJobName());
+                NativeLabel jobNameLabel =  new NativeLabel(schedulerJobInstance.getJobName());
                 if(this.contextInstance.isUseDisplayName() && schedulerJobInstance.getDisplayName() != null && !schedulerJobInstance.getDisplayName().isEmpty()) {
-                    Label jobDisplayNameLabel =  new Label((schedulerJobInstance.getDisplayName()
+                    NativeLabel jobDisplayNameLabel =  new NativeLabel((schedulerJobInstance.getDisplayName()
                         + " - " + schedulerJobInstance.getJobName()));
                     horizontalLayout.add(jobDisplayNameLabel);
                     horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
@@ -550,14 +550,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     if(schedulerJobInstanceRecord != null) {
                         if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance &&
                             !(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance)) {
-                            Label label;
+                            NativeLabel label;
 
                             if (((QuartzScheduleDrivenJobInstance) schedulerJobInstanceRecord
                                 .getSchedulerJobInstance()).getTimeZone() != null) {
-                                label = new Label(((QuartzScheduleDrivenJobInstance) schedulerJobInstanceRecord
+                                label = new NativeLabel(((QuartzScheduleDrivenJobInstance) schedulerJobInstanceRecord
                                     .getSchedulerJobInstance()).getTimeZone());
                             } else {
-                                label = new Label(TimeZone.getDefault().getID());
+                                label = new NativeLabel(TimeZone.getDefault().getID());
                             }
 
                             horizontalLayout.add(label);
@@ -929,7 +929,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         grid.addExpandListener(e -> this.expandedNodes.addAll(e.getItems()));
         grid.addCollapseListener(e -> this.expandedNodes.removeAll(e.getItems()));
 
-        grid.setClassNameGenerator(item -> {
+        grid.setPartNameGenerator(item -> {
             if(item instanceof PrecedingItem) {
                 return "precedingItem";
             }

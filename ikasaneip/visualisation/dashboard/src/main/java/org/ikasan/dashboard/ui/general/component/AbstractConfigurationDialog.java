@@ -7,7 +7,7 @@ import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -469,7 +469,7 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
             verticalLayout.add(layout);
         });
 
-        Label mapLabel = new Label(configurationParameterMetaData.getName());
+        NativeLabel mapLabel = new NativeLabel(configurationParameterMetaData.getName());
 
         HorizontalLayout topLayout = new HorizontalLayout();
         topLayout.setWidthFull();
@@ -550,7 +550,7 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
         verticalLayout.setSpacing(false);
         verticalLayout.setWidthFull();
 
-        Label listLabel = new Label(configurationParameterMetaData.getName());
+        NativeLabel listLabel = new NativeLabel(configurationParameterMetaData.getName());
         Button addButton = new Button(VaadinIcon.PLUS.create());
         this.addListItemButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(addButton, getTranslation("tooltip.add-configuration-list-item", UI.getCurrent().getLocale()));
         addButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->

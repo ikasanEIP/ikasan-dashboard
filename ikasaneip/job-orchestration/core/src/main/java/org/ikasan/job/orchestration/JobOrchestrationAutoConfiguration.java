@@ -26,6 +26,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -37,7 +38,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
-import javax.annotation.Resource;
 import java.util.Map;
 
 @Configuration
@@ -49,13 +49,13 @@ public class JobOrchestrationAutoConfiguration implements ApplicationListener<Co
         logger.info("Refreshing - JobOrchestrationAutoConfiguration");
     }
 
-    @Resource
+    @Autowired
     private ApplicationContext applicationContext;
 
-    @Resource
+    @Autowired
     ConfigurationService configurationService;
 
-    @Resource
+    @Autowired
     JtaTransactionManager transactionManager;
 
     @Value("${context.lifecycle.active:true}")
@@ -70,7 +70,7 @@ public class JobOrchestrationAutoConfiguration implements ApplicationListener<Co
     @Value("${scheduler.instance.registration.retry.interval,milliseconds:1000}")
     private int registrationJobRetryInterval;
 
-    @Resource
+    @Autowired
     private JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration;
 
     /**

@@ -2,10 +2,13 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
+import com.vaadin.flow.component.dashboard.Dashboard;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import org.ikasan.dashboard.ui.dashboard.component.BusinessStreamWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -56,7 +59,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private double contextVisualisationLevelDistance;
     private double contextVisualisationNodeDistance;
 
-    private Board board;
+    private Dashboard board;
 
     private boolean initialised = false;
 
@@ -128,9 +131,12 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
         this.systemEventSearchService = systemEventSearchService;
 
-        board = new Board();
-        board.addClassName("styled");
+        board = new Dashboard();
+        board.setMinimumColumnWidth("100px");
+        board.setDenseLayout(true);
         board.setSizeFull();
+        board.setMaximumColumnCount(2);
+        board.setMinimumRowHeight("100px");
 
         this.add(board);
     }
@@ -138,17 +144,38 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         if(!initialised) {
-            board.addRow(new AgentWidget(this.moduleMetadataService, this.configurationRestService, this.moduleControlRestService
+            DashboardWidget agentWidget = new AgentWidget(this.moduleMetadataService, this.configurationRestService, this.moduleControlRestService
                 , this.metaDataRestService, this.systemEventLogger, this.schedulerService, this.jobProvisionService
-                , this.schedulerJobService, this.downloadLogFileService, this.scheduledContextService)
-                , new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
+                , this.schedulerJobService, this.downloadLogFileService, this.scheduledContextService);
+            agentWidget.setColspan(1);
+            board.add(agentWidget);
 
-            board.addRow(new ContextInstanceDashboardWidget(this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
+            DashboardWidget statusWidget =  new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent());
+            statusWidget.setColspan(1);
+            board.add(statusWidget);
+
+            DashboardWidget jobPlanInstances = new ContextInstanceDashboardWidget(this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
                 , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
                 this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
                 this.jobUtilsService, this.scheduledContextService, false, this.globalEventService, this.contextInstanceRegistrationService,
                 this.contextInstanceSchedulerService, this.systemEventSearchService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
-                this.contextVisualisationNodeDistance));
+                this.contextVisualisationNodeDistance);
+
+            jobPlanInstances.setColspan(2);
+            jobPlanInstances.getStyle().set("flex-grow", "1");
+            board.add(jobPlanInstances);
+
+//            board.addRow(new AgentWidget(this.moduleMetadataService, this.configurationRestService, this.moduleControlRestService
+//                , this.metaDataRestService, this.systemEventLogger, this.schedulerService, this.jobProvisionService
+//                , this.schedulerJobService, this.downloadLogFileService, this.scheduledContextService)
+//                , new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
+//
+//            board.addRow(new ContextInstanceDashboardWidget(this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
+//                , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
+//                this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
+//                this.jobUtilsService, this.scheduledContextService, false, this.globalEventService, this.contextInstanceRegistrationService,
+//                this.contextInstanceSchedulerService, this.systemEventSearchService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
+//                this.contextVisualisationNodeDistance));
 
             initialised = true;
         }

@@ -17,6 +17,7 @@ import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -30,7 +31,6 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
-import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -40,25 +40,25 @@ import java.util.concurrent.Executors;
 @Import({EmailNotificationParamsFactory.class})
 public class NotificationConfiguration {
 
-    @Resource
+    @Autowired
     private SchedulerJobService schedulerJobService;
 
-    @Resource
+    @Autowired
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
-    @Resource
+    @Autowired
     private InternalEventDrivenJobService internalEventDrivenJobService;
 
-    @Resource
+    @Autowired
     private EmailNotificationContextService emailNotificationContextService;
 
-    @Resource
+    @Autowired
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
-    @Resource
+    @Autowired
     private NotificationSendAuditService notificationSendAuditService;
 
-    @Resource
+    @Autowired
     private EmailNotificationParamsConfiguration emailNotificationParamsConfiguration;
 
     @Value("${scheduler.notification.file.overdue.tolerance.minutes:0}")

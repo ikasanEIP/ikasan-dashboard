@@ -41,7 +41,6 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
 import org.ikasan.bigqueue.IBigQueue;
-import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
@@ -57,42 +56,40 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.Resource;
-
 @Configuration
 public class IkasanRestAutoConfiguration {
 
     @Autowired(required = false)
     private IBigQueue inboundQueue;
 
-    @Resource
+    @Autowired
     private JobProvisionService jobProvisionService;
 
-    @Resource
+    @Autowired
     private ContextProvisionService contextProvisionService;
 
-    @Resource
+    @Autowired
     private ContextStatusService contextStatusService;
 
-    @Resource
+    @Autowired
     private ContextResetService contextResetService;
 
-    @Resource
+    @Autowired
     private ScheduledContextService scheduledContextService;
 
-    @Resource
+    @Autowired
     private SchedulerJobService schedulerJobService;
 
-    @Resource
+    @Autowired
     private EmailNotificationContextService emailNotificationContextService;
 
-    @Resource
+    @Autowired
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
-    @Resource
+    @Autowired
     private ContextProfileService contextProfileService;
 
-    @Resource
+    @Autowired
     private GlobalEventService globalEventService;
 
     @Bean

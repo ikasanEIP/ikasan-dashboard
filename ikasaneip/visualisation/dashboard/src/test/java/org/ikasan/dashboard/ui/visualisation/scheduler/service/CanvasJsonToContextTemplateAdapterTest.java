@@ -2,12 +2,10 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.dashboard.AbstractTest;
-import org.ikasan.dashboard.ui.visualisation.scheduler.model.Tree;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.CanvasJsonToContextTemplateAdapter;
-import org.ikasan.designer.model.Image;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.json.JSONException;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -21,7 +19,7 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
     ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     @Test
-    public void test_sample_context_with_multiple_and_roots() throws IOException {
+    public void test_sample_context_with_multiple_and_roots() throws IOException, JSONException {
         String canvasJson = loadDataFile("/data/contexts/context-multiple-and-roots.json");
         CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
         ContextTemplate contextTemplate = adapter.adapt("CONTEXT-1892741766", canvasJson);
@@ -35,7 +33,7 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_and_single_job_with_nested_or() throws IOException {
+    public void test_context_and_single_job_with_nested_or() throws IOException, JSONException {
         String canvasJson = loadDataFile("/data/contexts/context-and-single-job-with-nested-or.json");
         CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
         ContextTemplate contextTemplate = adapter.adapt("CONTEXT--1209755884", canvasJson);
@@ -49,7 +47,7 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
     }
 
     @Test
-    public void test_sample_context_with_parallel_jobs() throws IOException {
+    public void test_sample_context_with_parallel_jobs() throws IOException, JSONException {
         String canvasJson = loadDataFile("/data/contexts/sample-context-parallel-jobs.json");
         CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
         ContextTemplate contextTemplate = adapter.adapt("CONTEXT-1892741766", canvasJson);
@@ -63,7 +61,7 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
     }
 
     @Test
-    public void test_sample_context_with_repeating_jobs() throws IOException {
+    public void test_sample_context_with_repeating_jobs() throws IOException, JSONException {
         String canvasJson = loadDataFile("/data/contexts/context-with-repeating-jobs.json");
         CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
         ContextTemplate contextTemplate = adapter.adapt("CONTEXT-1892741766", canvasJson);
@@ -77,7 +75,7 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
     }
 
     @Test
-    public void test_sample_context_with_start_and_end_jobs() throws IOException {
+    public void test_sample_context_with_start_and_end_jobs() throws IOException, JSONException {
         String canvasJson = loadDataFile("/data/contexts/draw2d-json-with-start-and-end-jobs.json");
         CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
         ContextTemplate contextTemplate = adapter.adapt("child-8", canvasJson);
@@ -91,7 +89,7 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
     }
 
     @Test
-    public void test_sample_context_with_start_or_with_2_jobs() throws IOException {
+    public void test_sample_context_with_start_or_with_2_jobs() throws IOException, JSONException {
         String canvasJson = loadDataFile("/data/contexts/results/context-with-2-jobs-in-or-at-start-result.json");
         CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
         ContextTemplate contextTemplate = adapter.adapt("DEMO-WITH_UPPER_CASE", canvasJson);
@@ -105,7 +103,7 @@ public class CanvasJsonToContextTemplateAdapterTest extends AbstractTest {
     }
 
     @Test
-    public void test_sample_parent_context() throws IOException {
+    public void test_sample_parent_context() throws IOException, JSONException {
         String canvasJson = loadDataFile("/data/contexts/parent-context-draw2d.json");
         String contextJson = loadDataFile("/data/contexts/parent-context.json");
 

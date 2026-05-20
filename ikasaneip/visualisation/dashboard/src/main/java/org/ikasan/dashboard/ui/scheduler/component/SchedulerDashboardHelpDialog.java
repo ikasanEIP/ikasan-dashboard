@@ -4,7 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -79,7 +79,7 @@ public class SchedulerDashboardHelpDialog extends AbstractCloseableResizableDial
         helpLayout.setWidthFull();
         helpLayout.setMargin(false);
         helpLayout.setSpacing(true);
-        Label headerLabel = new Label(header);
+        NativeLabel headerLabel = new NativeLabel(header);
         headerLabel.getElement().getStyle().set("font-size", "20pt");
         HorizontalLayout headerLayout = new HorizontalLayout();
         headerLayout.add(helpImage);

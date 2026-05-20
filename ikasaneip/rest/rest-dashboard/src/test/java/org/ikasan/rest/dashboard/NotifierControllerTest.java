@@ -7,8 +7,7 @@ import org.ikasan.rest.dashboard.util.TestCacheAdapter;
 import org.ikasan.spec.flow.FlowState;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,12 +46,11 @@ public class NotifierControllerTest extends  AbstractRestMvcTest
     @Autowired
     WebApplicationContext webApplicationContext;
 
-    @Resource
+    @Autowired
     TestCacheAdapter cacheAdapter;
 
     private ObjectMapper mapper;
 
-    @BeforeEach
     @Before
     public void setUp()
     {

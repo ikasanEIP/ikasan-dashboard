@@ -43,12 +43,12 @@ package org.ikasan.job.orchestration.integration.inbound.flow;
 import org.ikasan.builder.BuilderFactory;
 import org.ikasan.job.orchestration.integration.inbound.component.ScheduledProcessEventInboundFlowComponentFactory;
 import org.ikasan.spec.flow.Flow;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 
 /**
@@ -63,10 +63,10 @@ public class ScheduledProcessEventInboundFlowFactory
     @Value( "${module.name}" )
     String moduleName;
 
-    @Resource
+    @Autowired
     BuilderFactory builderFactory;
 
-    @Resource
+    @Autowired
     ScheduledProcessEventInboundFlowComponentFactory scheduledProcessEventInboundFlowComponentFactory;
 
     // Default TTL to one week - 60 * 60 * 24 * 7 * 1000 = 604800000

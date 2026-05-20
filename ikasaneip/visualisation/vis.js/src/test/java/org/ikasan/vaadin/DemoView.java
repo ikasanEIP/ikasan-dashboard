@@ -9,7 +9,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.vaadin.visjs.network.Edge;
 import org.ikasan.vaadin.visjs.network.NetworkDiagram;
-import org.ikasan.vaadin.visjs.network.Node;
+
 import org.ikasan.vaadin.visjs.network.options.Options;
 
 import java.util.Arrays;

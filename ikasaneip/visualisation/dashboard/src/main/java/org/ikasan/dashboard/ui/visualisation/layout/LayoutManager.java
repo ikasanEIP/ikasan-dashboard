@@ -5,5 +5,5 @@ public interface LayoutManager
     /**
      * Method to perform the layout.
      */
-    public void layout();
+    String layout();
 }

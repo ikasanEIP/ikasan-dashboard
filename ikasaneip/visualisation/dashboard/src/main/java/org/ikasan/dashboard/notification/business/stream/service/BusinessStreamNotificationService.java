@@ -10,6 +10,7 @@ import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.*;
@@ -26,7 +27,7 @@ public class BusinessStreamNotificationService {
         this.solrGeneralService = solrGeneralService;
     }
 
-    public Optional<BusinessStreamExclusions> getBusinessStreamExclusions(String businessStreamName, Long startTimestamp, Integer resultSize) {
+    public Optional<BusinessStreamExclusions> getBusinessStreamExclusions(String businessStreamName, Long startTimestamp, Integer resultSize) throws JSONException {
         BusinessStreamMetaData<BusinessStream> businessStreamMetaData = this.businessStreamMetaDataService
             .findById(businessStreamName);
 

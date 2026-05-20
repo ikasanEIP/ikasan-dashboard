@@ -1,10 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.spec.metadata.model.DecoratorMetaData;
-import org.ikasan.vaadin.visjs.network.Node;
-import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
-import org.ikasan.vaadin.visjs.network.options.nodes.Nodes;
-import org.ikasan.vaadin.visjs.network.util.Shape;
 
 import java.util.List;
 
@@ -12,10 +9,10 @@ public abstract class AbstractWiretapNode extends Node {
     private static final String WIRETAP_IMAGE = "frontend/images/wiretap.png";
     private static final String LOG_WIRETAP_IMAGE = "frontend/images/log-wiretap.png";
 
-    private String wiretapBeforeStatus = NodeFoundStatus.EMPTY;
-    private String wiretapAfterStatus = NodeFoundStatus.EMPTY;
-    private String logWiretapBeforeStatus = NodeFoundStatus.EMPTY;
-    private String logWiretapAfterStatus = NodeFoundStatus.EMPTY;
+    private String wiretapBeforeStatus = "NodeFoundStatus.EMPTY";
+    private String wiretapAfterStatus = "NodeFoundStatus.EMPTY";
+    private String logWiretapBeforeStatus = "NodeFoundStatus.EMPTY";
+    private String logWiretapAfterStatus = "NodeFoundStatus.EMPTY";
 
     protected double wiretapBeforeImageX = -80;
     protected double wiretapBeforeImageY = -40;
@@ -40,8 +37,8 @@ public abstract class AbstractWiretapNode extends Node {
 
     private List<DecoratorMetaData> decoratorMetaDataList;
 
-    public AbstractWiretapNode(String id,  String name, String image) {
-        super(id, name, Nodes.builder().withShape(Shape.image).withImage(image));
+    public AbstractWiretapNode(DesignerItemIdentifier id, String name, String image) {
+        super(id, 0, 0, image);
     }
 
     public String getWiretapBeforeStatus() {
@@ -206,64 +203,64 @@ public abstract class AbstractWiretapNode extends Node {
 
     public boolean wiretapBeforeClickedOn(double x, double y)
     {
-        if(this.getWiretapBeforeStatus().equals(NodeFoundStatus.FOUND))
-        {
-            if(x >= super.getX() + this.wiretapBeforeImageX
-                && x <= super.getX() + this.wiretapBeforeImageX + this.wiretapBeforeImageW
-                && y >= super.getY() + this.wiretapBeforeImageY
-                && y <= super.getY() + this.wiretapBeforeImageY + this.wiretapBeforeImageH)
-            {
-                return true;
-            }
-        }
+//        if(this.getWiretapBeforeStatus().equals("NodeFoundStatus.FOUND"))
+//        {
+//            if(x >= super.getX() + this.wiretapBeforeImageX
+//                && x <= super.getX() + this.wiretapBeforeImageX + this.wiretapBeforeImageW
+//                && y >= super.getY() + this.wiretapBeforeImageY
+//                && y <= super.getY() + this.wiretapBeforeImageY + this.wiretapBeforeImageH)
+//            {
+//                return true;
+//            }
+//        }
 
         return false;
     }
 
     public boolean wiretapAfterClickedOn(double x, double y)
     {
-        if(this.getWiretapAfterStatus().equals(NodeFoundStatus.FOUND))
-        {
-            if(x >= super.getX() + this.wiretapAfterImageX
-                && x <= super.getX() + this.wiretapAfterImageX + this.wiretapAfterImageW
-                && y >= super.getY() + this.wiretapAfterImageY
-                && y <= super.getY() + this.wiretapAfterImageY + this.wiretapAfterImageH)
-            {
-                return true;
-            }
-        }
+//        if(this.getWiretapAfterStatus().equals(NodeFoundStatus.FOUND))
+//        {
+//            if(x >= super.getX() + this.wiretapAfterImageX
+//                && x <= super.getX() + this.wiretapAfterImageX + this.wiretapAfterImageW
+//                && y >= super.getY() + this.wiretapAfterImageY
+//                && y <= super.getY() + this.wiretapAfterImageY + this.wiretapAfterImageH)
+//            {
+//                return true;
+//            }
+//        }
 
         return false;
     }
 
     public boolean logWiretapBeforeClickedOn(double x, double y)
     {
-        if(this.getLogWiretapBeforeStatus().equals(NodeFoundStatus.FOUND))
-        {
-            if(x >= super.getX() + this.getLogWiretapBeforeImageX()
-                && x <= super.getX() + this.getLogWiretapBeforeImageX() + this.logWiretapBeforeImageW
-                && y >= super.getY() + this.getLogWiretapBeforeImageY()
-                && y <= super.getY() + this.getLogWiretapBeforeImageY() + this.logWiretapBeforeImageH)
-            {
-                return true;
-            }
-        }
+//        if(this.getLogWiretapBeforeStatus().equals(NodeFoundStatus.FOUND))
+//        {
+//            if(x >= super.getX() + this.getLogWiretapBeforeImageX()
+//                && x <= super.getX() + this.getLogWiretapBeforeImageX() + this.logWiretapBeforeImageW
+//                && y >= super.getY() + this.getLogWiretapBeforeImageY()
+//                && y <= super.getY() + this.getLogWiretapBeforeImageY() + this.logWiretapBeforeImageH)
+//            {
+//                return true;
+//            }
+//        }
 
         return false;
     }
 
     public boolean logWiretapAfterClickedOn(double x, double y)
     {
-        if(this.getLogWiretapAfterStatus().equals(NodeFoundStatus.FOUND))
-        {
-            if(x >= super.getX() + this.getLogWiretapAfterImageX()
-                && x <= super.getX() + this.getLogWiretapAfterImageX() + this.logWiretapAfterImageW
-                && y >= super.getY() + this.getLogWiretapAfterImageY()
-                && y <= super.getY() + this.getLogWiretapAfterImageY() + this.logWiretapAfterImageH)
-            {
-                return true;
-            }
-        }
+//        if(this.getLogWiretapAfterStatus().equals(NodeFoundStatus.FOUND))
+//        {
+//            if(x >= super.getX() + this.getLogWiretapAfterImageX()
+//                && x <= super.getX() + this.getLogWiretapAfterImageX() + this.logWiretapAfterImageW
+//                && y >= super.getY() + this.getLogWiretapAfterImageY()
+//                && y <= super.getY() + this.getLogWiretapAfterImageY() + this.logWiretapAfterImageH)
+//            {
+//                return true;
+//            }
+//        }
 
         return false;
     }

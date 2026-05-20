@@ -1,9 +1,9 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.InetAddress;
@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@ExtendWith(MockitoExtension.class)
+@RunWith(MockitoJUnitRunner.class)
 public class ClusterBroadcastAutoConfigurationTest {
 
     // Numeric IPs are used for peer URLs throughout these tests so that InetAddress.getAllByName()
@@ -25,7 +25,7 @@ public class ClusterBroadcastAutoConfigurationTest {
 
     private ClusterBroadcastAutoConfiguration uut;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         uut = new ClusterBroadcastAutoConfiguration();
         ReflectionTestUtils.setField(uut, "serverPort", 9090);

@@ -31,9 +31,9 @@ import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -48,19 +48,19 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
 {
     private Logger logger = LoggerFactory.getLogger(UserManagementView.class);
 
-    @Resource
+    @Autowired
     private UserService userService;
 
-    @Resource
+    @Autowired
     private SecurityService securityService;
 
-    @Resource
+    @Autowired
     private SystemEventService systemEventService;
 
-    @Resource
+    @Autowired
     private SystemEventLogger systemEventLogger;
 
-    @Resource
+    @Autowired
     private  DateFormatter dateFormatter;
 
     private Grid<User> userGrid;

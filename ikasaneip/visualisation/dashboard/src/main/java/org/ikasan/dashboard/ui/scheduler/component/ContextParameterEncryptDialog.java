@@ -7,7 +7,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H5;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
@@ -50,7 +50,7 @@ public class ContextParameterEncryptDialog extends AbstractCloseableResizableDia
         valueToEncrypt.getElement().getStyle().set("margin-top", "30px");
         formLayout.add(valueToEncrypt);
 
-        Label hiddenLabel = new Label();
+        NativeLabel hiddenLabel = new NativeLabel();
         formLayout.add(hiddenLabel);
 
 

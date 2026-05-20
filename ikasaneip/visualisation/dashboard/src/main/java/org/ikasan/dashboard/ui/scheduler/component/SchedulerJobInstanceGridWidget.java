@@ -8,7 +8,7 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -258,10 +258,10 @@ public class SchedulerJobInstanceGridWidget extends Div
                     HorizontalLayout horizontalLayout = new HorizontalLayout();
 
                     if (schedulerJobInstanceRecord.getDisplayName() != null && !schedulerJobInstanceRecord.getDisplayName().isEmpty()) {
-                        Label displayNameLabel = new Label(schedulerJobInstanceRecord.getDisplayName());
+                        NativeLabel displayNameLabel = new NativeLabel(schedulerJobInstanceRecord.getDisplayName());
                         horizontalLayout.add(displayNameLabel);
                     } else {
-                        Label displayNameLabel = new Label(getTranslation("label.not-defined", UI.getCurrent().getLocale()));
+                        NativeLabel displayNameLabel = new NativeLabel(getTranslation("label.not-defined", UI.getCurrent().getLocale()));
                         horizontalLayout.add(displayNameLabel);
                     }
 
@@ -276,7 +276,7 @@ public class SchedulerJobInstanceGridWidget extends Div
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Label jobNameLabel = new Label(schedulerJobInstanceRecord.getJobName());
+            NativeLabel jobNameLabel = new NativeLabel(schedulerJobInstanceRecord.getJobName());
             horizontalLayout.add(jobNameLabel);
 
             if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&

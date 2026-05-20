@@ -260,8 +260,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         HorizontalLayout actionButtonLayout = new HorizontalLayout();
         actionButtonLayout.setMargin(false);
 
-        MenuBar quickAccessMenu = this.createQuickAccessMenu();
-
         Icon uploadIcon = VaadinIcon.UPLOAD_ALT.create();
         Button uploadJobPlan = new Button(getTranslation("button.upload-job-plan", UI.getCurrent().getLocale()), uploadIcon);
         uploadJobPlan.setIconAfterText(true);
@@ -332,11 +330,12 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
             , SecurityConstants.SCHEDULER_ALL_ADMIN);
 
-        actionButtonLayout.add(refreshContextParamButton, newContextButton, uploadJobPlan, quickAccessMenu, refreshJobPlansButton);
+        actionButtonLayout.add(refreshContextParamButton, newContextButton, uploadJobPlan, refreshJobPlansButton);
         actionButtonLayout.getElement().getStyle().set("position", "absolute");
         actionButtonLayout.getElement().getStyle().set("right", "30px");
 
         headerLayout.add(actionButtonLayout);
+        headerLayout.getElement().getStyle().set("margin-bottom", "10px");
 
         div.add(headerLayout, this.contextTemplateFilteringGrid);
 
@@ -380,7 +379,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         contextTemplateFilteringGrid.removeAllColumns();
         contextTemplateFilteringGrid.setVisible(true);
         contextTemplateFilteringGrid.setWidthFull();
-        contextTemplateFilteringGrid.setHeightFull();
 
 
         contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
@@ -1135,27 +1133,6 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
             getUI().ifPresent(ui -> ui.getPage().open(route));
         }
-    }
-
-    /**
-     * Helper method to create the quick action menu bar.
-     *
-     * @return
-     */
-    private MenuBar createQuickAccessMenu() {
-        MenuBar quickStartMenuBar = new MenuBar();
-        quickStartMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
-
-        MenuItem quickAccess = createQuickActionMenuItem(quickStartMenuBar
-            , VaadinIcon.COG, getTranslation("menu-item.quick-access", UI.getCurrent().getLocale()));
-
-        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
-        MenuItem activeContexts = activeContextInstancesSubMenu
-            .addItem(getTranslation("menu-item.active-contexts", UI.getCurrent().getLocale()));
-        this.activeContextSubMenu = activeContexts.getSubMenu();
-        this.updateActiveContextMenu();
-
-        return quickStartMenuBar;
     }
 
     /**

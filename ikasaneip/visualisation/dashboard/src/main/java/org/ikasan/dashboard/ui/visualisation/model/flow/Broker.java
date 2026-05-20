@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.vaadin.visjs.network.Node;
+
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Created by stewmi on 07/11/2018.
@@ -10,7 +11,7 @@ public class Broker extends AbstractSingleTransition
 	public static final String IMAGE = "frontend/images/broker.png";
 
 
-	public Broker(String id, String name, String transitionLabel, Node transition)
+	public Broker(DesignerItemIdentifier id, String name, String transitionLabel, Node transition)
 	{
 		super(id, name, transition, transitionLabel, IMAGE);
 	}
@@ -25,12 +26,12 @@ public class Broker extends AbstractSingleTransition
      */
     public static class BrokerBuilder
     {
-        private String id;
+        private DesignerItemIdentifier id;
         private String name;
         private String transitionLabel;
         private Node transition;
 
-        public BrokerBuilder withId(String id)
+        public BrokerBuilder withId(DesignerItemIdentifier id)
         {
             this.id = id;
             return this;

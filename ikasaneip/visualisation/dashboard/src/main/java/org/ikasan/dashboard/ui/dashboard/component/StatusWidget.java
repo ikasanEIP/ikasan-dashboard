@@ -2,12 +2,15 @@ package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -40,7 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-public class StatusWidget extends Div implements FlowStateBroadcastListener, CacheStateBroadcastListener {
+public class StatusWidget extends DashboardWidget implements FlowStateBroadcastListener, CacheStateBroadcastListener {
     Logger logger = LoggerFactory.getLogger(StatusWidget.class);
 
     private FlowListFilteringGrid flowsGrid;
@@ -79,34 +82,26 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
     }
 
     private void createStatusView() {
-        this.removeAll();
-
         Div div = new Div();
-        div.addClassNames("card-counter");
-        div.setHeight("500px");
+        div.setHeight(45, Unit.VH);
 
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
-        Div layout = new Div();
-        layout.getElement().getStyle().set("margin-top", "20px");
-        layout.getElement().getStyle().set("margin-left", "10px");
-        layout.setHeight("50px");
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.setMargin(true);
+        layout.setWidth("100%");
+
+        H4 flows = new H4(getTranslation("label.flow-status", UI.getCurrent().getLocale()));
+        layout.add(flows);
 
         Button refreshButton = new Button();
-        refreshButton.getStyle().set("position", "absolute");
-        refreshButton.getStyle().set("top", "10px");
-        refreshButton.getStyle().set("right", "10px");
-
+        refreshButton.getElement().getStyle().set("margin-left", "auto");
         refreshButton.addClickListener(buttonClickEvent -> this.recalculate());
         refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
 
         layout.add(refreshButton);
 
-        Label flows = new Label(getTranslation("label.flow-status", UI.getCurrent().getLocale()));
-        flows.getElement().getStyle().set("font-size", "16pt");
-
-        layout.add(flows);
 
         this.runningDiv = new Div();
         this.runningDiv.addClassNames("card-counter", "running");
@@ -179,19 +174,15 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
         });
         unknownDiv.add(unknownDivIcon);
 
-        div.add(layout, runningDiv, stoppedDiv, errorDiv, recoveringDiv, pausedDiv, unknownDiv);
+        div.add(runningDiv, stoppedDiv, errorDiv, recoveringDiv, pausedDiv, unknownDiv);
 
-        this.add(div);
+        this.setHeaderContent(layout);
+        this.setContent(div);
 
         this.recalculate();
     }
 
     private void createGrid(List<FlowMetaData> flowsList) {
-        this.removeAll();
-        Div div = new Div();
-        div.addClassNames("card-counter");
-        div.setHeight("500px");
-
         TextField statusTextField = new TextField();
         statusTextField.setWidth("300px");
 
@@ -199,13 +190,12 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
         icon.setSize("12pt");
 
         statusTextField.setPrefixComponent(icon);
-        Div layout = new Div();
-        layout.getElement().getStyle().set("margin-top", "20px");
-        layout.getElement().getStyle().set("margin-left", "10px");
-        layout.setHeight("50px");
-        Label flows = new Label(getTranslation("label.flow-status", UI.getCurrent().getLocale()));
-        flows.getElement().getStyle().set("font-size", "16pt");
 
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.setWidth("100%");
+        layout.setMargin(true);
+
+        H4 flows = new H4(getTranslation("label.flow-status", UI.getCurrent().getLocale()));
 
         Icon returnIcon = VaadinIcon.ARROW_CIRCLE_LEFT_O.create();
         returnIcon.getElement().getStyle().set("margin-left", "5px");
@@ -226,7 +216,8 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
         this.flowsGrid.removeAllColumns();
         this.flowsGrid.setVisible(true);
         this.flowsGrid.setWidthFull();
-        this.flowsGrid.setHeight("80%");
+        this.flowsGrid.setAllRowsVisible(false);
+        this.flowsGrid.setHeight(45, Unit.VH);
 
         this.flowsGrid.addColumn(FlowMetaData::getName)
             .setHeader(getTranslation("table-header.flow-name", UI.getCurrent().getLocale())).setKey("flowName")
@@ -239,18 +230,21 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
                 .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.FLOW.name() + ":" + moduleMetaData.getName());
             Anchor link = new Anchor(route, getTranslation("label.view", UI.getCurrent().getLocale()));
             link.setTarget("_blank");
-            add(link);
             horizontalLayout.add(link);
             link.getStyle().set("color", "blue");
 
             return horizontalLayout;
         }));
-        div.add(layout, this.flowsGrid);
 
         this.flowsGrid.init();
         this.flowsGrid.addGridFiltering(statusTextField, this.flowSearchFilter::setFlowNameFilter);
 
-        this.add(div);
+        Scroller scroller = new Scroller(this.flowsGrid);
+        scroller.addThemeName("overflow-indicators");
+        scroller.setMaxHeight(45, Unit.VH);
+
+        this.setHeaderContent(layout);
+        this.setContent(scroller);
 
         this.recalculate();
     }

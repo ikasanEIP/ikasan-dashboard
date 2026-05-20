@@ -76,49 +76,57 @@ public class IkasanRestAutoConfiguration
     @Value("${user.service.user.cache.timeout.seconds:300}")
     private int userServiceUserCacheTimeoutSeconds;
 
-    @Resource(name="errorOccurrenceBatchInsert")
+    @Autowired
+    @Qualifier("errorOccurrenceBatchInsert")
     private BatchInsert errorOccurrenceBatchInsert;
 
-    @Resource(name="replayEventBatchInsert")
+    @Autowired
+    @Qualifier("replayEventBatchInsert")
     private BatchInsert replayEventBatchInsert;
 
-    @Resource(name="exclusionEventBatchInsert")
+    @Autowired
+    @Qualifier("exclusionEventBatchInsert")
     private BatchInsert exclusionEventBatchInsert;
 
-    @Resource(name="wiretapEventBatchInsert")
+    @Autowired
+    @Qualifier("wiretapEventBatchInsert")
     private BatchInsert wiretapEventBatchInsert;
 
-    @Resource(name="systemEventBatchInsert")
+    @Autowired
+    @Qualifier("systemEventBatchInsert")
     private BatchInsert systemEventBatchInsert;
 
-    @Resource(name="moduleMetadataBatchInsert")
+    @Autowired
+    @Qualifier("moduleMetadataBatchInsert")
     private BatchInsert moduleMetadataBatchInsert;
 
-    @Resource(name="configurationMetadataBatchInsert")
+    @Autowired
+    @Qualifier("configurationMetadataBatchInsert")
     private BatchInsert configurationMetadataBatchInsert;
 
-    @Resource(name="flowInvocationMetricBatchInsert")
+    @Autowired
+    @Qualifier("flowInvocationMetricBatchInsert")
     private BatchInsert flowInvocationMetricBatchInsert;
 
 
-    @Resource
+    @Autowired
     private ContextParametersInstanceService contextParametersInstanceService;
 
-    @Resource
+    @Autowired
     @Qualifier("moduleMetadataEntityService")
     private ModuleMetaDataService moduleMetadataService;
 
-    @Resource()
+    @Autowired
     @Qualifier("metricsEntityService")
     private MetricsService metricsService;
 
-    @Resource
+    @Autowired
     private BigQueueModuleService bigQueueModuleService;
 
     @Autowired(required = false)
     private IBigQueue inboundQueue;
 
-    @Resource
+    @Autowired
     private FlowStateCacheAdapter cacheAdapter;
 
     @Bean

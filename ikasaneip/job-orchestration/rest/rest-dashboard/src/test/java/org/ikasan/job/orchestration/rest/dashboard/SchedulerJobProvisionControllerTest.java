@@ -13,7 +13,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +57,7 @@ public class SchedulerJobProvisionControllerTest {
     @MockitoBean
     private SchedulerJobRecord<FileEventDrivenJob> schedulerJobRecord;
 
-    @Autowired
+
     @Before
     public void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();

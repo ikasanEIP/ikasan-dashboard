@@ -1,7 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
 
-import org.ikasan.vaadin.visjs.network.Node;
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Created by stewmi on 07/11/2018.
@@ -18,7 +18,7 @@ public class FtpConsumer extends Consumer
      * @param transitionLabel
      * @param transition
      */
-	private FtpConsumer(String id, String name, String transitionLabel, Node transition, Node source)
+	private FtpConsumer(DesignerItemIdentifier id, String name, String transitionLabel, Node transition, Node source)
     {
         super(id, name, transitionLabel, transition, IMAGE, source);
     }
@@ -33,13 +33,13 @@ public class FtpConsumer extends Consumer
      */
     public static class FtpConsumerBuilder
     {
-        private String id;
+        private DesignerItemIdentifier id;
         private String name;
         private String transitionLabel;
         private Node transition;
         private Node source;
 
-        public FtpConsumerBuilder withId(String id)
+        public FtpConsumerBuilder withId(DesignerItemIdentifier id)
         {
             this.id = id;
             return this;

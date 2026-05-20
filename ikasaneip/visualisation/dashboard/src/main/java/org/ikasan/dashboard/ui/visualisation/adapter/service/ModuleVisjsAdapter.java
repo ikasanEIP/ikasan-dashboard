@@ -1,8 +1,9 @@
 package org.ikasan.dashboard.ui.visualisation.adapter.service;
 
 import org.apache.commons.text.WordUtils;
-import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.dashboard.ui.visualisation.model.flow.*;
+import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.spec.component.endpoint.Broker;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.ikasan.spec.component.filter.Filter;
@@ -15,7 +16,6 @@ import org.ikasan.spec.metadata.model.*;
 import org.ikasan.spec.module.StartupType;
 import org.ikasan.spec.trigger.TriggerJobType;
 import org.ikasan.spec.trigger.TriggerRelationship;
-import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,22 +182,22 @@ public class ModuleVisjsAdapter
             flowElement.getDecorators().forEach(decoratorMetaData -> {
                 if (decoratorMetaData.getType().equals(TriggerJobType.WIRETAP.getDescription()) && decoratorMetaData.getName()
                     .startsWith(TriggerRelationship.BEFORE.getDescription().toUpperCase())) {
-                    node.setWiretapBeforeStatus(NodeFoundStatus.FOUND);
+//                    node.setWiretapBeforeStatus(NodeFoundStatus.FOUND);
                     node.setDecoratorMetaDataList(flowElement.getDecorators());
                 }
                 else if (decoratorMetaData.getType().equals(TriggerJobType.WIRETAP.getDescription()) && decoratorMetaData.getName()
                     .startsWith(TriggerRelationship.AFTER.getDescription().toUpperCase())) {
-                    node.setWiretapAfterStatus(NodeFoundStatus.FOUND);
+//                    node.setWiretapAfterStatus(NodeFoundStatus.FOUND);
                     node.setDecoratorMetaDataList(flowElement.getDecorators());
                 }
                 else if (decoratorMetaData.getType().equals(TriggerJobType.LOG_WIRETAP.getDescription()) && decoratorMetaData.getName()
                     .startsWith(TriggerRelationship.BEFORE.getDescription().toUpperCase())) {
-                    node.setLogWiretapBeforeStatus(NodeFoundStatus.FOUND);
+//                    node.setLogWiretapBeforeStatus(NodeFoundStatus.FOUND);
                     node.setDecoratorMetaDataList(flowElement.getDecorators());
                 }
                 else if (decoratorMetaData.getType().equals(TriggerJobType.LOG_WIRETAP.getDescription()) && decoratorMetaData.getName()
                     .startsWith(TriggerRelationship.AFTER.getDescription().toUpperCase())) {
-                    node.setLogWiretapAfterStatus(NodeFoundStatus.FOUND);
+//                    node.setLogWiretapAfterStatus(NodeFoundStatus.FOUND);
                     node.setDecoratorMetaDataList(flowElement.getDecorators());
                 }
             });
@@ -363,7 +363,7 @@ public class ModuleVisjsAdapter
      */
     private AbstractWiretapNode manageProducers(FlowElementMetaData flowElement, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {
-        String nodeId = flowElement.getComponentName() + identifier++;
+        DesignerItemIdentifier nodeId = new DesignerItemIdentifier(flowElement.getComponentType(), flowElement.getComponentName(), flowElement.getComponentName() + identifier++);
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
         if(flowElement.getImplementingClass().equals("org.ikasan.component.endpoint.util.producer.DevNull"))
@@ -380,11 +380,14 @@ public class ModuleVisjsAdapter
             ConfigurationMetaData configurationMetaData = configurationMetaDataMap.get(flowElement.getConfigurationId());
             String destinationName = this.getConfigurationParameterMetaData("destinationJndiName", configurationMetaData);
 
+            DesignerItemIdentifier messageChannelId = new DesignerItemIdentifier("MESSAGE_CHANNEL"
+                , destinationName, "channel" + identifier++);
+
             return MessageProducer.messageProducerBuilder()
                 .withId(nodeId)
                 .withName(WordUtils.wrap(flowElement.getComponentName(), 25))
                 .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
-                .withTransition(new MessageChannel("channel"+identifier++, WordUtils.wrap(destinationName, 25, "\n", true, "\\."), false))
+                .withTransition(new MessageChannel(messageChannelId, WordUtils.wrap(destinationName, 25, "\n", true, "\\."), false))
                 .build();
         }
         else if(flowElement.getImplementingClass().equals("org.ikasan.endpoint.ftp.producer.FtpProducer"))
@@ -392,11 +395,14 @@ public class ModuleVisjsAdapter
             ConfigurationMetaData configurationMetaData = configurationMetaDataMap.get(flowElement.getConfigurationId());
             String remoteHost = this.getConfigurationParameterMetaData("remoteHost", configurationMetaData);
 
+            DesignerItemIdentifier ftpId = new DesignerItemIdentifier("FTP_LOCATION"
+                , remoteHost, "channel" + identifier++);
+
             return MessageEndPoint.messageEndPointBuilder()
                 .withId(nodeId)
                 .withName(WordUtils.wrap(flowElement.getComponentName(), 25))
                 .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
-                .withTransition(new FtpLocation("channel"+identifier++, remoteHost))
+                .withTransition(new FtpLocation(ftpId, remoteHost))
                 .build();
         }
         else if(flowElement.getImplementingClass().equals("org.ikasan.endpoint.sftp.producer.SftpProducer"))
@@ -404,19 +410,25 @@ public class ModuleVisjsAdapter
             ConfigurationMetaData configurationMetaData = configurationMetaDataMap.get(flowElement.getConfigurationId());
             String remoteHost = this.getConfigurationParameterMetaData("remoteHost", configurationMetaData);
 
+            DesignerItemIdentifier sftpId = new DesignerItemIdentifier("SFTP_LOCATION"
+                , remoteHost, "channel" + identifier++);
+
             return MessageEndPoint.messageEndPointBuilder()
                 .withId(nodeId)
                 .withName(WordUtils.wrap(flowElement.getComponentName(), 25))
                 .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
-                .withTransition(new SftpLocation("channel"+identifier++, remoteHost))
+                .withTransition(new SftpLocation(sftpId, remoteHost))
                 .build();
         }
+
+        DesignerItemIdentifier fileLocationId = new DesignerItemIdentifier("FILE_LOCATION"
+            , "default", "fileLocation" + identifier++);
 
         return MessageEndPoint.messageEndPointBuilder()
             .withId(nodeId)
             .withName(WordUtils.wrap(flowElement.getComponentName(), 25))
             .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
-            .withTransition(new FileLocation("fileLocation"+ identifier++, ""))
+            .withTransition(new FileLocation(fileLocationId, ""))
             .build();
     }
 
@@ -435,7 +447,8 @@ public class ModuleVisjsAdapter
     {
         ConfigurationMetaData configurationMetaData = configurationMetaDataMap.get(flowElement.getConfigurationId());
 
-        String nodeId = flowElement.getComponentName() + identifier++;
+        DesignerItemIdentifier nodeId = new DesignerItemIdentifier(flowElement.getComponentType()
+            , flowElement.getComponentName(), flowElement.getComponentName() + identifier++);
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
         if(flowElement.getImplementingClass().startsWith("org.ikasan.component.endpoint.quartz.consumer.ScheduledConsumer"))
@@ -444,12 +457,15 @@ public class ModuleVisjsAdapter
             {
                 String remoteHost = this.getConfigurationParameterMetaData("remoteHost", configurationMetaData);
 
+                DesignerItemIdentifier ftpLocationId = new DesignerItemIdentifier("FTP_REMOTE_HOST"
+                    , remoteHost, "ftpLocation" + identifier);
+
                 return FtpConsumer.ftpConsumerBuilder()
                     .withId(nodeId)
                     .withName(WordUtils.wrap(flowElement.getComponentName(), 25))
                     .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
                     .withTransition(manageFlowElement(flowElementMetaData, transitions, flowElements, configurationMetaDataMap))
-                    .withSource(new FtpLocation("ftpLocation"+ identifier++, remoteHost))
+                    .withSource(new FtpLocation(ftpLocationId, remoteHost))
                     .build();
 
             }
@@ -457,35 +473,44 @@ public class ModuleVisjsAdapter
             {
                 String remoteHost = this.getConfigurationParameterMetaData("remoteHost", configurationMetaData);
 
+                DesignerItemIdentifier sftpLocationId = new DesignerItemIdentifier("SFTP_REMOTE_HOST"
+                    , remoteHost, "sftpLocation" + identifier);
+
                 return SftpConsumer.sftpConsumerBuilder()
                     .withId(nodeId)
                     .withName(WordUtils.wrap(flowElement.getComponentName(), 25))
                     .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
                     .withTransition(manageFlowElement(flowElementMetaData, transitions, flowElements, configurationMetaDataMap))
-                    .withSource(new SftpLocation("sftpLocation"+ identifier++, remoteHost))
+                    .withSource(new SftpLocation(sftpLocationId, remoteHost))
                     .build();
             }
             else
             {
+                DesignerItemIdentifier fileLocationId = new DesignerItemIdentifier("POLLING_CONSUMER"
+                    , flowElement.getComponentType(), "fileLocation" + identifier);
+
                 return PollingConsumer.pollingConsumerBuilder()
                     .withId(nodeId)
                     .withName(WordUtils.wrap(flowElement.getComponentName(), 25))
                     .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
                     .withTransition(manageFlowElement(flowElementMetaData, transitions, flowElements, configurationMetaDataMap))
-                    .withSource(new FileLocation("fileLocation"+ identifier++, ""))
+                    .withSource(new FileLocation(fileLocationId, ""))
                     .build();
             }
         }
 
         String destinationName = this.getConfigurationParameterMetaData("destinationJndiName", configurationMetaData);
 
+        DesignerItemIdentifier eventDrivenConsumerId = new DesignerItemIdentifier("EVENT_DRIVEN_CONSUMER"
+            , destinationName, "destination" + identifier);
 
         return EventDrivenConsumer.eventDrivenConsumerBuilder()
             .withId(nodeId)
             .withName(WordUtils.wrap(flowElement.getComponentName(), 25))
             .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
             .withTransition(manageFlowElement(flowElementMetaData, transitions, flowElements, configurationMetaDataMap))
-            .withSource(new MessageChannel("messageChannel"+ identifier++, WordUtils.wrap(destinationName, 25, "\n", true, "\\."), false))
+            .withSource(new MessageChannel(eventDrivenConsumerId, WordUtils.wrap(destinationName
+                , 25, "\n", true, "\\."), false))
             .build();
     }
 
@@ -501,7 +526,8 @@ public class ModuleVisjsAdapter
      */
     private AbstractWiretapNode manageConverter(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions, Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {
-        String nodeId = flowElement.getComponentName() + identifier++;
+        DesignerItemIdentifier nodeId = new DesignerItemIdentifier(flowElement.getComponentType()
+            , flowElement.getComponentName(), flowElement.getComponentName() + identifier++);
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
         return MessageConverter.messageConverterBuilder()
@@ -510,6 +536,7 @@ public class ModuleVisjsAdapter
             .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
             .withTransition(manageFlowElement(flowElementMetaData, transitions, flowElements, configurationMetaDataMap))
             .build();
+
     }
 
     /**
@@ -525,7 +552,8 @@ public class ModuleVisjsAdapter
     private AbstractWiretapNode manageTranslator(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions,
                                  Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {
-        String nodeId = flowElement.getComponentName() + identifier++;
+        DesignerItemIdentifier nodeId = new DesignerItemIdentifier(flowElement.getComponentType()
+            , flowElement.getComponentName(), flowElement.getComponentName() + identifier++);
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
         return MessageTranslator.messageConverterBuilder()
@@ -549,7 +577,8 @@ public class ModuleVisjsAdapter
     private AbstractWiretapNode manageSplitter(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions,
                                   Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {
-        String nodeId = flowElement.getComponentName() + identifier++;
+        DesignerItemIdentifier nodeId = new DesignerItemIdentifier(flowElement.getComponentType()
+            , flowElement.getComponentName(), flowElement.getComponentName() + identifier++);
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
         return org.ikasan.dashboard.ui.visualisation.model.flow.Splitter.splitterBuilder()
@@ -573,7 +602,8 @@ public class ModuleVisjsAdapter
     private AbstractWiretapNode manageFilter(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions,
                                 Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {
-        String nodeId = flowElement.getComponentName() + identifier++;
+        DesignerItemIdentifier nodeId = new DesignerItemIdentifier(flowElement.getComponentType()
+            , flowElement.getComponentName(), flowElement.getComponentName() + identifier++);
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
         return org.ikasan.dashboard.ui.visualisation.model.flow.Filter.filterBuilder()
@@ -597,7 +627,8 @@ public class ModuleVisjsAdapter
     private AbstractWiretapNode manageBroker(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions,
                               Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {
-        String nodeId = flowElement.getComponentName() + identifier++;
+        DesignerItemIdentifier nodeId = new DesignerItemIdentifier(flowElement.getComponentType()
+            , flowElement.getComponentName(), flowElement.getComponentName() + identifier++);
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
         return org.ikasan.dashboard.ui.visualisation.model.flow.Broker.brokerBuilder()
@@ -622,7 +653,8 @@ public class ModuleVisjsAdapter
                                              Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap,
                                              List<FlowElementMetaData> flowElementMetaDataTransitions)
     {
-        String nodeId = flowElement.getComponentName() + identifier++;
+        DesignerItemIdentifier nodeId = new DesignerItemIdentifier(flowElement.getComponentType()
+            , flowElement.getComponentName(), flowElement.getComponentName() + identifier++);
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
         org.ikasan.dashboard.ui.visualisation.model.flow.SingleRecipientRouter router =
@@ -652,7 +684,8 @@ public class ModuleVisjsAdapter
                                              Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap,
                                              List<FlowElementMetaData> flowElementMetaDataTransitions)
     {
-        String nodeId = flowElement.getComponentName() + identifier++;
+        DesignerItemIdentifier nodeId = new DesignerItemIdentifier(flowElement.getComponentType()
+            , flowElement.getComponentName(), flowElement.getComponentName() + identifier++);
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
         org.ikasan.dashboard.ui.visualisation.model.flow.RecipientListRouter router =
@@ -702,15 +735,15 @@ public class ModuleVisjsAdapter
      * @param configurationMetaDataMap
      * @param flowElement
      */
-    private void manageModuleMaps(String nodeId, Map<String, ConfigurationMetaData> configurationMetaDataMap, FlowElementMetaData flowElement)
+    private void manageModuleMaps(DesignerItemIdentifier nodeId, Map<String, ConfigurationMetaData> configurationMetaDataMap, FlowElementMetaData flowElement)
     {
-        this.componentMap.put(nodeId, flowElement);
+        this.componentMap.put(nodeId.getUuid(), flowElement);
 
         ConfigurationMetaData configurationMetaData = configurationMetaDataMap.get(flowElement.getConfigurationId());
 
         if(configurationMetaData != null)
         {
-            this.configurationMetaDataHashMap.put(nodeId, configurationMetaData);
+            this.configurationMetaDataHashMap.put(nodeId.getUuid(), configurationMetaData);
         }
     }
 }

@@ -2,12 +2,14 @@ package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.events.PointClickEvent;
 import com.vaadin.flow.component.charts.model.*;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.dashboard.DashboardWidget;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
@@ -24,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
+public class HospitalEventsWidget extends DashboardWidget implements BeforeEnterObserver {
 
     private static long MILLI_IN_DAY = 1000 * 60 * 60 * 24;
 
@@ -46,13 +48,13 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
     }
 
     private void init() {
-        this.removeAll();
-        Div div = new Div();
-        div.addClassNames("card-counter");
+        HorizontalLayout div = new HorizontalLayout();
+        div.setWidth("100%");
         div.setHeight("325px");
 
         chart = new Chart();
         chart.setClassName("ikasan-charts");
+        chart.setHeight(35, Unit.VH);
 
         Configuration configuration = chart.getConfiguration();
 
@@ -125,7 +127,7 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
 
         div.add(refreshButton, chart);
 
-        this.add(div);
+        this.setContent(div);
     }
 
     private void refresh(){

@@ -47,15 +47,21 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
 
         min = new Button(VaadinIcon.DOWNLOAD_ALT.create());
         min.getIcon().getElement().getStyle().set("color", "#FFFFFF");
+        min.getIcon().getElement().getStyle().set("background-color", "#232F34");
+        min.getStyle().set("background-color", "#232F34");
         min.addClickListener(event -> minimise());
         this.min.setVisible(false);
 
         max = new Button(VaadinIcon.COMPRESS_SQUARE.create());
         max.getIcon().getElement().getStyle().set("color", "#FFFFFF");
+        max.getIcon().getElement().getStyle().set("background-color", "#232F34");
+        max.getStyle().set("background-color", "#232F34");
         max.addClickListener(event -> maximise());
 
         close = new Button(VaadinIcon.CLOSE_SMALL.create());
         close.getIcon().getElement().getStyle().set("color", "#FFFFFF");
+        close.getIcon().getElement().getStyle().set("background-color", "#232F34");
+        close.getStyle().set("background-color", "#232F34");
         close.addClickListener(event -> close());
 
         title.addClassName("dialog-title");

@@ -3,7 +3,7 @@ package org.ikasan.dashboard.ui.search.component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
@@ -43,13 +43,13 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
     private long resultSize = 0;
     private long queryTime = 0;
 
-    private Label resultsLabel;
+    private NativeLabel resultsLabel;
 
     /**
      * Constructors
      */
     public SolrSearchFilteringGrid(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService,
-                                   SearchFilter searchFilter, Label resultsLabel)
+                                   SearchFilter searchFilter, NativeLabel resultsLabel)
     {
         this.solrSearchService = solrSearchService;
         if(this.solrSearchService ==  null)

@@ -14,8 +14,7 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationTemplatePar
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,7 +55,6 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
     @Autowired
     EmailNotificationDetailsService emailNotificationDetailsService;
 
-    @BeforeEach
     @Before
     public void setUp()
     {

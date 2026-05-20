@@ -3,13 +3,12 @@ package org.ikasan.dashboard.backup;
 import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.solr.SolrGeneralService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 @Component
 public class SolrIndexBackupConfiguration {
@@ -26,7 +25,7 @@ public class SolrIndexBackupConfiguration {
     private int indexValidityRetryInterval;
     @Value("${solr.backup.terminate.application.if.index.corrupted:true}")
     private boolean terminateApplicationIfIndexCorrupted;
-    @Resource
+    @Autowired
     private ApplicationContext applicationContext;
 
     @Bean

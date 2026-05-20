@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.model.flow;
 
-import org.ikasan.vaadin.visjs.network.Node;
+
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 /**
  * Created by stewmi on 07/11/2018.
@@ -18,7 +19,7 @@ public class Filter extends AbstractSingleTransition
      * @param transitionLabel
      * @param transition
      */
-	public Filter(String id, String name, String transitionLabel, Node transition)
+	public Filter(DesignerItemIdentifier id, String name, String transitionLabel, Node transition)
     {
         super(id, name, transition, transitionLabel, IMAGE);
     }
@@ -33,12 +34,12 @@ public class Filter extends AbstractSingleTransition
      */
     public static class FilterBuilder
     {
-        private String id;
+        private DesignerItemIdentifier id;
         private String name;
         private String transitionLabel;
         private Node transition;
 
-        public FilterBuilder withId(String id)
+        public FilterBuilder withId(DesignerItemIdentifier id)
         {
             this.id = id;
             return this;

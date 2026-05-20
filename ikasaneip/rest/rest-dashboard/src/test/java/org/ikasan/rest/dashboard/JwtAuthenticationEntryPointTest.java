@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
@@ -20,10 +21,10 @@ public class JwtAuthenticationEntryPointTest
 
     private JwtAuthenticationEntryPoint uut;
 
-    @Mock
+    @MockitoBean
     HttpServletRequest request;
 
-    @Mock
+    @MockitoBean
     HttpServletResponse response;
 
 

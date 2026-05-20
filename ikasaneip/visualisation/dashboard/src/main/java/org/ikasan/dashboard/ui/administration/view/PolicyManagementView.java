@@ -21,9 +21,9 @@ import org.ikasan.spec.security.model.Policy;
 import org.ikasan.spec.security.service.SecurityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import java.util.List;
 
@@ -37,10 +37,10 @@ public class PolicyManagementView extends VerticalLayout implements BeforeEnterO
 {
     private Logger logger = LoggerFactory.getLogger(PolicyManagementView.class);
 
-    @Resource
+    @Autowired
     private SecurityService securityService;
 
-    @Resource
+    @Autowired
     private SystemEventLogger systemEventLogger;
 
     private FilteringGrid<Policy> policyGrid;

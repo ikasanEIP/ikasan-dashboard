@@ -2,7 +2,6 @@ package org.ikasan.rest.client;
 
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import jakarta.annotation.Resource;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
@@ -16,6 +15,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.HttpHeaders;
@@ -45,7 +45,7 @@ public class ConfigurationRestServiceImplTest
 
     private String contexBaseUrl;
 
-    @Resource
+    @Autowired
     private JsonConfigurationMetaDataProvider jsonConfigurationMetaDataProvider;
 
     @Before
@@ -262,7 +262,7 @@ public class ConfigurationRestServiceImplTest
                 .build());
 
         httpComponentsClientHttpRequestFactory.setConnectionRequestTimeout(1000);
-        httpComponentsClientHttpRequestFactory.setConnectTimeout(1000);
+        httpComponentsClientHttpRequestFactory.setReadTimeout(1000);
 
         Environment environment = new StandardEnvironment();
         uut = new ConfigurationRestServiceImpl(environment, jsonConfigurationMetaDataProvider, httpComponentsClientHttpRequestFactory);

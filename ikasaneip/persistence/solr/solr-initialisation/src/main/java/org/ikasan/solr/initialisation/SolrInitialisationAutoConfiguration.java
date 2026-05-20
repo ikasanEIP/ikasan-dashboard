@@ -1,6 +1,5 @@
 package org.ikasan.solr.initialisation;
 
-import jakarta.annotation.Resource;
 import org.ikasan.security.dao.SolrIkasanPrincipalDaoImpl;
 import org.ikasan.security.dao.SolrPolicyDaoImpl;
 import org.ikasan.security.dao.SolrRoleDaoImpl;
@@ -9,6 +8,7 @@ import org.ikasan.setup.service.SetupService;
 import org.ikasan.solr.initialisation.core.SolrDataJob;
 import org.ikasan.solr.initialisation.core.SolrDataJobManager;
 import org.ikasan.solr.initialisation.security.BaselineSecurityDataLoader;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,15 +18,15 @@ import java.util.List;
 @Configuration
 public class SolrInitialisationAutoConfiguration     {
 
-    @Resource
+    @Autowired
     private SolrPolicyDaoImpl policyDao;
-    @Resource
+    @Autowired
     private SolrRoleDaoImpl roleDao;
-    @Resource
+    @Autowired
     private SolrIkasanPrincipalDaoImpl principalDao;
-    @Resource
+    @Autowired
     private SolrUserDaoImpl userDao;
-    @Resource
+    @Autowired
     private SetupService setupService;
 
     private SolrDataJobManager solrDataJobManager;

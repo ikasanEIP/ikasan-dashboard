@@ -37,11 +37,12 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import java.util.Locale;
 import java.util.Optional;
@@ -60,58 +61,59 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
 {
     Logger logger = LoggerFactory.getLogger(ContextInstanceView.class);
 
-    @Resource
+    @Autowired
     private ConfigurationService configurationRestService;
 
-    @Resource
+    @Autowired
     private ModuleControlService moduleControlRestService;
 
-    @Resource
+    @Autowired
     private MetaDataService metaDataRestService;
 
-    @Resource
+    @Autowired
     private SystemEventLogger systemEventLogger;
 
-    @Resource
+    @Autowired
     private ScheduledContextInstanceService scheduledContextInstanceService;
 
-    @Resource
+    @Autowired
     private ScheduledContextService scheduledContextService;
 
-    @Resource
+    @Autowired
     private SchedulerJobService schedulerJobService;
 
-    @Resource(name = "moduleMetadataService")
+    @Autowired
+    @Qualifier("moduleMetadataService")
     private ModuleMetaDataService moduleMetaDataService;
 
     @Value("${scheduled.job.context.queue.directory}")
     private String queueDirectory;
 
-    @Resource
+    @Autowired
     private LogStreamingService logStreamingService;
 
-    @Resource
+    @Autowired
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
-    @Resource
+    @Autowired
     private ContextProfileService contextProfileService;
 
-    @Resource
+    @Autowired
     private JobInitiationService jobInitiationService;
 
-    @Resource
+    @Autowired
     private JobUtilsService jobUtilsService;
 
-    @Resource
+    @Autowired
     private GlobalEventService globalEventService;
 
-    @Resource
+    @Autowired
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
-    @Resource
+    @Autowired
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
 
-    @Resource
+    @Autowired
     private SystemEventSearchService systemEventSearchService;
 
     @Value("${job.visualisation.vertical.spacing:120}")

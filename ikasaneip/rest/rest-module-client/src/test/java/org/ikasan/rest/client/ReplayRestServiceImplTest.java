@@ -105,7 +105,7 @@ public class ReplayRestServiceImplTest
                         )
                         .build())
                 .build());
-        httpComponentsClientHttpRequestFactory.setConnectTimeout(1000);
+        httpComponentsClientHttpRequestFactory.setReadTimeout(1000);
         httpComponentsClientHttpRequestFactory.setConnectionRequestTimeout(1000);
 
         uut = new ReplayRestServiceImpl(httpComponentsClientHttpRequestFactory);

@@ -24,10 +24,10 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.EnumSet;
 
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.*;
 @Ignore // pointless until we reach a point of maturity in the dashboard implementation.
 public class JobContextMenuTest extends UITest {
 
-    @Resource
+    @Autowired
     private NotificationHelper notificationHelper;
 
     @MockitoBean

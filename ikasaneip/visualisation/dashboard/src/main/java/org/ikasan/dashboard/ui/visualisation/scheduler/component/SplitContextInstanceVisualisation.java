@@ -5,7 +5,7 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -72,7 +72,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
     private ContextInstance contextInstance;
     private ContextInstance childContextInstance;
     private SchedulerStatusDiv childJobPlansStatusDiv;
-    private Label childJobPlanName;
+    private NativeLabel childJobPlanName;
     private IkasanAuthentication authentication;
 
     private boolean initialised = false;
@@ -245,7 +245,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
                 splitLayoutManagerButtonLayout.getStyle().set("position", "absolute");
                 splitLayoutManagerButtonLayout.getStyle().set("right", "10px");
 
-                childJobPlanName = new Label();
+                childJobPlanName = new NativeLabel();
                 childJobPlanName.getElement().getStyle().set("margin-top", "10px");
                 childJobPlanName.setVisible(false);
 
@@ -279,7 +279,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
                 this.visualisationSplitLayout.addToPrimary(this.schedulerInstanceVisualisation);
                 this.visualisationSplitLayout.addToSecondary(jobVisLayout);
 
-                this.visualisationSplitLayout.addSplitterDragendListener(event -> {
+                this.visualisationSplitLayout.addSplitterDragEndListener(event -> {
                     jobVisualisation.setVisible(true);
                 });
 

@@ -4,6 +4,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeLabel;
@@ -19,6 +20,8 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.spring.annotation.UIScope;
+import com.vaadin.flow.theme.aura.Aura;
+import com.vaadin.flow.theme.lumo.Lumo;
 import jakarta.servlet.http.Cookie;
 import org.ikasan.dashboard.internationalisation.IkasanI18NProvider;
 import org.ikasan.dashboard.security.ContextCache;
@@ -27,6 +30,7 @@ import org.ikasan.spec.security.model.User;
 import org.ikasan.spec.security.service.AuthenticationService;
 import org.ikasan.spec.security.service.AuthenticationServiceException;
 import org.ikasan.spec.security.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.Authentication;
@@ -35,12 +39,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+@StyleSheet(Aura.STYLESHEET)
+//@StyleSheet("styles.css")
 @Tag("sa-login-view")
 @Route(LoginView.ROUTE)
 @PageTitle("Ikasan - Login")
@@ -53,16 +58,16 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
     public static final String ROUTE = "login";
     public static final String USERNAME = "USERNAME";
 
-        @Resource
+    @Autowired
     private AuthenticationService authenticationService;
 
-    @Resource
+    @Autowired
     private UserService userService;
 
-    @Resource
+    @Autowired
     private SystemEventLogger systemEventLogger;
 
-    @Resource
+    @Autowired
     private SecurityContextRepository securityContextRepository;
 
     @Value("${banner.text.message:}")
@@ -89,6 +94,8 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
 
         login.setForgotPasswordButtonVisible(false);
         login.setI18n(this.getI18n());
+        login.getStyle().set("vaadin-button-text-color", "white");
+
 
         Image ikasan = new Image(new StreamResource("Mr Squid",
             () -> LoginView.class.getResourceAsStream("/META-INF/resources/frontend/images/mr_squid_titling_dashboard.png")), "Mr Squid");
