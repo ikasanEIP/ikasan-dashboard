@@ -128,6 +128,8 @@ public class ContextMachineImpl implements ContextMachine {
     private boolean tornDown = false;
     private int executorWaitTimeoutSeconds = 30;
     private int blackListedMessageMaxRetries = 5;
+    private long errorRetrySleepInterval = 500L;
+    private boolean publishRaiseEventsAfterJobPlanInstanceFlush = false;
 
     /**
      * Initializes a new instance of ContextMachineImpl with the provided parameters.
@@ -342,6 +344,31 @@ public class ContextMachineImpl implements ContextMachine {
         if(blackListedMessageMaxRetries > 0) {
             this.blackListedMessageMaxRetries = blackListedMessageMaxRetries;
         }
+    }
+
+    /**
+     * Sets the interval, in milliseconds, to wait before retrying an operation after an error occurs.
+     *
+     * @param errorRetrySleepInterval the duration in milliseconds to wait between retry attempts.
+     *                                Must be greater than 0.
+     */
+    public void setErrorRetrySleepInterval(long errorRetrySleepInterval) {
+        if(errorRetrySleepInterval > 0) {
+            this.errorRetrySleepInterval = errorRetrySleepInterval;
+        }
+    }
+
+    /**
+     * Sets the flag that determines whether to publish raise events
+     * after the job plan instance flush operation.
+     *
+     * @param publishRaiseEventsAfterJobPlanInstanceFlush
+     *        A boolean value indicating whether to enable or disable
+     *        the publishing of raise events after a job plan instance
+     *        has been flushed.
+     */
+    public void setPublishRaiseEventsAfterJobPlanInstanceFlush(boolean publishRaiseEventsAfterJobPlanInstanceFlush) {
+        this.publishRaiseEventsAfterJobPlanInstanceFlush = publishRaiseEventsAfterJobPlanInstanceFlush;
     }
 
     /**
@@ -2526,7 +2553,12 @@ public class ContextMachineImpl implements ContextMachine {
         @Override
         public void run() {
             BigQueueMessage<ContextualisedScheduledProcessEvent> bigQueueMessage = null;
+            String jobPlanInstance = null;
+            List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = null;
+            boolean inError = false;
             try {
+                jobPlanInstance = objectMapper.writeValueAsString(contextInstance);
+
                 if (!this.running.get()) {
                     return;
                 }
@@ -2542,29 +2574,10 @@ public class ContextMachineImpl implements ContextMachine {
                 ContextualisedScheduledProcessEvent scheduledProcessEvent
                     = objectMapper.readValue(String.valueOf(bigQueueMessage.getMessage()), ContextualisedScheduledProcessEventImpl.class);
 
-                List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
+                schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
 
-                for(SchedulerJobInitiationEvent schedulerJobInitiationEvent: schedulerJobInitiationEvents) {
-
-                    if (schedulerJobInitiationEvent.getInternalEventDrivenJob() != null) {
-                        publishJobInitiationEvent(schedulerJobInitiationEvent);
-                    } else {
-                        if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.GLOBAL_EVENT)) {
-                            broadcastGlobalEvents(schedulerJobInitiationEvent, false, false);
-                        }
-                        else if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.CONTEXT_START_JOB)) {
-                            broadcastLocalEvent(schedulerJobInitiationEvent);
-                        }
-                        else if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
-                            broadcastLocalEvent(schedulerJobInitiationEvent);
-                        }
-                        else if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
-                            broadcastLocalEvent(schedulerJobInitiationEvent);
-                        }
-                        else if(schedulerJobInitiationEvent.getAgentName().equals(JobConstants.BRIDGING_JOB)) {
-                            broadcastLocalEvent(schedulerJobInitiationEvent);
-                        }
-                    }
+                if(!publishRaiseEventsAfterJobPlanInstanceFlush) {
+                    publishOutbondEvents(schedulerJobInitiationEvents);
                 }
 
                 saveContext();
@@ -2580,6 +2593,7 @@ public class ContextMachineImpl implements ContextMachine {
                 }
             }
             catch (Exception e) {
+                inError = true;
                 logger.error(String.format("An error has occurred attempting process scheduled process event [%s]"
                     , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
 
@@ -2588,20 +2602,23 @@ public class ContextMachineImpl implements ContextMachine {
                 // exceeds blackListedMessageMaxRetries at which point the offending message is placed onto the associated
                 // dead letter queue.
                 try {
-                    inboundQueue.dequeue();
-                    inboundQueue.gc();
+                    // restore the job pln instance
+                    if(jobPlanInstance != null) {
+                        contextInstance = objectMapper.readValue(jobPlanInstance, ContextInstance.class);
+                    }
 
                     if(!bigQueueMessageBlacklist.containsKey(bigQueueMessage.getMessageId())) {
                         bigQueueMessageBlacklist.put(bigQueueMessage.getMessageId(), 0);
+                        this.backOffSleep(bigQueueMessage);
                         logger.info("Successfully black listed message[{}] for context instance[{}] with id[{}]." +
                                 " Adding the blacklisted message to the blacklist map.", bigQueueMessage.getMessageId(),
                             contextInstance.getName(), contextInstance.getId());
                     }
 
                     if(bigQueueMessageBlacklist.get(bigQueueMessage.getMessageId()) < blackListedMessageMaxRetries) {
-                        inboundQueue.enqueue(objectMapper.writeValueAsBytes(bigQueueMessage));
                         Integer retryCount = bigQueueMessageBlacklist.get(bigQueueMessage.getMessageId());
                         bigQueueMessageBlacklist.put(bigQueueMessage.getMessageId(), ++retryCount);
+                        this.backOffSleep(bigQueueMessage);
                         logger.info("Re-enqueued black listed message[{}] for context instance[{}] with id[{}]." +
                                 " Retry count[{}].", bigQueueMessage.getMessageId()
                             , contextInstance.getName(), contextInstance.getId()
@@ -2610,6 +2627,9 @@ public class ContextMachineImpl implements ContextMachine {
                     else {
                         // Adding the message to the DLQ
                         deadLetterQueue.enqueue(objectMapper.writeValueAsBytes(bigQueueMessage));
+                        // Given the message is on the DLQ, we need to dequeue it from the inbound queue!
+                        inboundQueue.dequeue();
+                        inboundQueue.gc();
                         bigQueueMessageBlacklist.remove(bigQueueMessage.getMessageId());
                         issueContextInstanceDlqEvent();
                         logger.info("Successfully moved black listed message[{}] for context instance[{}] with id[{}] " +
@@ -2619,13 +2639,71 @@ public class ContextMachineImpl implements ContextMachine {
                     }
                 }
                 catch (Exception ex) {
-                    logger.error(String.format("IOException - An error has occurred attempting to dequeue inbound message [%s]"
+                    logger.error(String.format("An error has occurred attempting to manage an error associated with inbound message [%s]"
                         , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), ex);
                 }
             }
             finally {
+                try {
+                    if (schedulerJobInitiationEvents != null && !inError && publishRaiseEventsAfterJobPlanInstanceFlush) {
+                        publishOutbondEvents(schedulerJobInitiationEvents);
+                    }
+                }
+                catch (IOException e) {
+                    logger.error(String.format("An error has occurred attempting publish job initiation events for process event [%s]"
+                        , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
+                }
                 addInboundListener();
             }
+        }
+
+        /**
+         * Processes a list of {@code SchedulerJobInitiationEvent} objects and publishes the respective outbound events
+         * based on the attributes of each event. The method determines the type of event and delegates the handling
+         * to the appropriate publishing or broadcasting method.
+         *
+         * @param schedulerJobInitiationEvents A list of {@code SchedulerJobInitiationEvent} instances to be processed
+         *                                     and published as outbound events.
+         * @throws IOException If an error occurs during the publishing process, such as serialization or queue handling.
+         */
+        private void publishOutbondEvents(List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents) throws IOException {
+            for (SchedulerJobInitiationEvent schedulerJobInitiationEvent : schedulerJobInitiationEvents) {
+
+                if (schedulerJobInitiationEvent.getInternalEventDrivenJob() != null) {
+                    publishJobInitiationEvent(schedulerJobInitiationEvent);
+                } else {
+                    if (schedulerJobInitiationEvent.getAgentName().equals(JobConstants.GLOBAL_EVENT)) {
+                        broadcastGlobalEvents(schedulerJobInitiationEvent, false, false);
+                    } else if (schedulerJobInitiationEvent.getAgentName().equals(JobConstants.CONTEXT_START_JOB)) {
+                        broadcastLocalEvent(schedulerJobInitiationEvent);
+                    } else if (schedulerJobInitiationEvent.getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)) {
+                        broadcastLocalEvent(schedulerJobInitiationEvent);
+                    } else if (schedulerJobInitiationEvent.getAgentName().equals(JobConstants.LOCAL_EVENT_JOB)) {
+                        broadcastLocalEvent(schedulerJobInitiationEvent);
+                    } else if (schedulerJobInitiationEvent.getAgentName().equals(JobConstants.BRIDGING_JOB)) {
+                        broadcastLocalEvent(schedulerJobInitiationEvent);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Puts the current thread to sleep for a specified duration to handle backoff logic
+         * when retrying the processing of a message from the queue. This helps manage
+         * processing delays for messages that encountered errors or need to be retried.
+         *
+         * @param bigQueueMessage The message being processed, containing details about the
+         *                        event and its associated context. This message keeps track
+         *                        of retry attempts and is used to log relevant information.
+         * @throws InterruptedException If the thread is interrupted while sleeping, this
+         *                              exception is propagated to allow proper handling.
+         */
+        private void backOffSleep(BigQueueMessage<ContextualisedScheduledProcessEvent> bigQueueMessage) throws InterruptedException {
+            logger.info("Putting inbound processing thread to sleep for interval[{}], message[{}] for context instance[{}] with id[{}]. " +
+                    "The maximum retry count is [{}] and current retry [{}]!", errorRetrySleepInterval, bigQueueMessage.getMessageId(),
+                contextInstance.getName(), contextInstance.getId(), blackListedMessageMaxRetries, bigQueueMessageBlacklist.get(bigQueueMessage.getMessageId()));
+
+            Thread.sleep(errorRetrySleepInterval);
         }
 
         public void stop() {
