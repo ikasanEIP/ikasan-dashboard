@@ -320,6 +320,9 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                         this.schedulerJobService);
                     missingContextInstanceRecoveryRunnable.setContextMachineExecutorWaitTimeoutSeconds(super.contextMachineExecutorWaitTimeoutSeconds);
                     missingContextInstanceRecoveryRunnable.setBlackListedMessageMaxRetries(super.blackListedMessageMaxRetries);
+                    missingContextInstanceRecoveryRunnable.setErrorRetrySleepInterval(super.errorRetrySleepInterval);
+                    missingContextInstanceRecoveryRunnable.setPublishRaiseEventsAfterJobPlanInstanceFlush(super.publishRaiseEventsAfterJobPlanInstanceFlush);
+
                     executor.execute(missingContextInstanceRecoveryRunnable);
                 }
             }

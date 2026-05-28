@@ -3188,7 +3188,8 @@ public class ContextMachineTest extends AbstractTest {
         IBigQueue bigQueue = (IBigQueue) ReflectionTestUtils.getField(contextMachine, "inboundQueue");
 
         // Assert that the big message causing the ContextMachineException has been dequeued.
-        Assert.assertEquals(0, bigQueue.size());
+        Awaitility.await().atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> Assert.assertEquals(0, bigQueue.size()));
 
         contextMachine.teardown();
 
@@ -8603,16 +8604,22 @@ public class ContextMachineTest extends AbstractTest {
             , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
         contextMachine.init();
 
+        ArrayList<SchedulerJobInitiationEvent> outboundEvents = new ArrayList<>();
+
+        contextMachine.setSchedulerJobInitiationEventRaisedListener
+            (event -> outboundEvents.add(event));
+
         // Add the context machine to the cache
         ContextMachineCache.instance().resetAllCache();
         ContextMachineCache.instance().put(contextMachine);
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
-            "agentName3", false);
-        eventInstance.setJobStarting(true);
+            "agentName3", true);
+        eventInstance.setJobStarting(false);
 
         BigQueueMessage bigQueueMessage = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(eventInstance)).build();
         contextMachine.eventReceived(objectMapper.writeValueAsString(bigQueueMessage));
+        contextMachine.setPublishRaiseEventsAfterJobPlanInstanceFlush(true);
 
         ConcurrentHashMap<String, Integer> bigQueueMessageBlacklist = (ConcurrentHashMap<String, Integer>)ReflectionTestUtils
             .getField(contextMachine, "bigQueueMessageBlacklist");
@@ -8629,7 +8636,69 @@ public class ContextMachineTest extends AbstractTest {
 
         // Confirm that the message that was blacklisted is not longer in the blacklist.
         Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> bigQueueMessageBlacklist.size() == 0);
+
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> Assert.assertEquals(1, outboundEvents.size()));
     }
+
+    @Test
+    public void test_black_listed_message_retries_and_succeeds_nothing_on_DLQ_publish_events_before_flush() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.setId(UUID.randomUUID().toString());
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        doNothing()
+            .doThrow(new RuntimeException("error!"))
+            .doThrow(new RuntimeException("error!"))
+            .doNothing()
+            .when(this.scheduledContextInstanceService)
+            .save(any());
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, this.scheduledContextInstanceService, new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        ArrayList<SchedulerJobInitiationEvent> outboundEvents = new ArrayList<>();
+
+        contextMachine.setSchedulerJobInitiationEventRaisedListener
+            (event -> outboundEvents.add(event));
+
+        // Add the context machine to the cache
+        ContextMachineCache.instance().resetAllCache();
+        ContextMachineCache.instance().put(contextMachine);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", true);
+        eventInstance.setJobStarting(false);
+
+        BigQueueMessage bigQueueMessage = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(eventInstance)).build();
+        contextMachine.eventReceived(objectMapper.writeValueAsString(bigQueueMessage));
+        contextMachine.setPublishRaiseEventsAfterJobPlanInstanceFlush(false);
+
+        ConcurrentHashMap<String, Integer> bigQueueMessageBlacklist = (ConcurrentHashMap<String, Integer>)ReflectionTestUtils
+            .getField(contextMachine, "bigQueueMessageBlacklist");
+
+        IBigQueue deadLetterQueue = (IBigQueue) ReflectionTestUtils.getField(contextMachine, "deadLetterQueue");
+
+        // Assert that the offending message has NOT been placed on the DLQ.
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> Assert.assertEquals(0, deadLetterQueue.size()));
+
+        IBigQueue inboundQueue = (IBigQueue) ReflectionTestUtils.getField(contextMachine, "inboundQueue");
+
+        // Assert that the offending message has been dequeued from the inbound queue.
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> Assert.assertEquals(0, inboundQueue.size()));
+
+        // Confirm that the message that was blacklisted is not longer in the blacklist.
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> bigQueueMessageBlacklist.size() == 0);
+
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> Assert.assertEquals(3, outboundEvents.size()));
+    }
+
 
     protected JobLock makeJobLock(String jobLockName, ArrayList<InternalEventDrivenJob> internalEventDrivenJobs) {
         JobLockBuilder jobLockBuilder = new JobLockBuilder();

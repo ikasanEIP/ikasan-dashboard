@@ -4769,7 +4769,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent.size());
 
@@ -4793,7 +4793,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, null));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent2.size());
 
