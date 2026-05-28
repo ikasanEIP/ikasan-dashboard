@@ -2228,6 +2228,7 @@ public class ContextMachine {
         if(contextInstance.getScheduledJobsMap() != null && contextInstance.getScheduledJobsMap().containsKey(jobIdentifier)
             && contextInstance.getName().equals(childContextName)) {
             SchedulerJobInstance jobInstance =  contextInstance.getScheduledJobsMap().get(jobIdentifier);
+            jobInstance.setContextInstanceId(this.contextInstance.getId());
             return jobInstance;
         }
         else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
