@@ -48,6 +48,12 @@ public class ContextServiceAutoConfiguration {
     @Value("${context.machine.blacklisted.message.max.retries:5}")
     private int contextMachineBlackListedMessageMaxRetries = 5;
 
+    @Value("${context.machine.error.retry.sleep.interval:500}")
+    private long contextMachineErrorRetrySleepInterval;
+
+    @Value("${context.machine.publish.raise.events.after.job.plan.instance.flush:false}")
+    private boolean publishRaiseEventsAfterJobPlanInstanceFlush;
+
     @Bean
     public JobLockCacheInitialisationService jobLockCacheInitialisationService(JobLockCacheService jobLockCacheService) {
         return new JobLockCacheInitialisationServiceImpl(jobLockCacheService);
@@ -103,6 +109,9 @@ public class ContextServiceAutoConfiguration {
         );
         contextInstanceRecoveryService.setContextMachineExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
         contextInstanceRecoveryService.setBlackListedMessageMaxRetries(this.contextMachineBlackListedMessageMaxRetries);
+        contextInstanceRecoveryService.setErrorRetrySleepInterval(this.contextMachineErrorRetrySleepInterval);
+        contextInstanceRecoveryService.setPublishRaiseEventsAfterJobPlanInstanceFlush(this.publishRaiseEventsAfterJobPlanInstanceFlush);
+
         return contextInstanceRecoveryService;
     }
 
@@ -150,6 +159,8 @@ public class ContextServiceAutoConfiguration {
         );
         contextInstanceRegistrationService.setContextMachineExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
         contextInstanceRegistrationService.setBlackListedMessageMaxRetries(this.contextMachineBlackListedMessageMaxRetries);
+        contextInstanceRegistrationService.setErrorRetrySleepInterval(this.contextMachineErrorRetrySleepInterval);
+        contextInstanceRegistrationService.setPublishRaiseEventsAfterJobPlanInstanceFlush(this.publishRaiseEventsAfterJobPlanInstanceFlush);
 
         return contextInstanceRegistrationService;
     }
@@ -200,6 +211,8 @@ public class ContextServiceAutoConfiguration {
         );
         contextInstanceEndService.setContextMachineExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
         contextInstanceEndService.setBlackListedMessageMaxRetries(this.contextMachineBlackListedMessageMaxRetries);
+        contextInstanceEndService.setErrorRetrySleepInterval(this.contextMachineErrorRetrySleepInterval);
+        contextInstanceEndService.setPublishRaiseEventsAfterJobPlanInstanceFlush(this.publishRaiseEventsAfterJobPlanInstanceFlush);
 
         return contextInstanceEndService;
     }
