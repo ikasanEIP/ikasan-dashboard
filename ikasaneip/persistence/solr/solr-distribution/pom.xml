@@ -81,7 +81,7 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://archive.apache.org/dist/solr/solr/${version.org.apache.solr}/solr-${version.org.apache.solr}.tgz</url>
+                            <url>https://downloads.apache.org/solr/solr/${version.org.apache.solr}/solr-${version.org.apache.solr}.tgz</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                         </configuration>

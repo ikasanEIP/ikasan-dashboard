@@ -801,6 +801,51 @@ public class ContextHelperTest {
     }
 
     @Test
+    public void test_determine_if_jobs_transition_from_other_contexts_job_target_residing_context() throws IOException {
+        String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
+            "context/TEST_IK_GLOB.json");
+
+        ContextTemplate context = this.contextService.getContextTemplate(contextJson);
+
+        List<InternalEventDrivenJob> internalEventDrivenJobs = this.loadInternalEventDrivenJobInstanceMap
+            ("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal",
+                "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/internal");
+        internalEventDrivenJobs.forEach(internalEventDrivenJob
+            -> internalEventDrivenJob.setTargetResidingContextOnly(true));
+
+        List<ContextTerminalJob> contextTerminalJobs = loadContextTerminalJobInstanceMap
+            ("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/terminal",
+                "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/terminal");
+
+        List<ContextStartJob> contextStartJobs = loadContextStartJobInstanceMap
+            ("./src/test/resources/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/start",
+                "/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/jobs/start");
+
+        List<SchedulerJob> allJobs = new ArrayList<>();
+        allJobs.addAll(internalEventDrivenJobs);
+        allJobs.addAll(contextStartJobs);
+        allJobs.addAll(contextTerminalJobs);
+
+        // Assert all child context names are empty.
+        allJobs.forEach(schedulerJob -> Assert.assertTrue(schedulerJob.getChildContextNames().isEmpty()));
+
+        ContextHelper.populateChildContextNamesOnSchedulerJobs(context, allJobs);
+
+        List<ContextTransition> contextTransitions = ContextHelper.determineIfSchedulerJobsTransitionFromOtherContexts(context
+            , "TEST_IK_JOB_18"
+            , "TEST_IK_EVENT1 Step 1"
+            , allJobs.stream().collect(Collectors.toMap(job -> job.getIdentifier() + "-" + job.getContextName()
+                , Function.identity(), (key1, key2)-> key2)));
+
+        Assert.assertTrue(contextTransitions.size() > 0);
+
+        LinkedList<List<SchedulerJob>> trace = ContextHelper.traceJobThroughContext(context, "TEST_IK_JOB_16"
+            , "TEST_IK_EVENT1 Step 1");
+
+        Assert.assertNotNull(trace);
+    }
+
+    @Test
     public void test_get_jobs_outside_logical_grouping_duplicate_jobs() throws IOException {
         String contextJson = loadDataFile("/data/context_duplicate_jobs.json");
 
