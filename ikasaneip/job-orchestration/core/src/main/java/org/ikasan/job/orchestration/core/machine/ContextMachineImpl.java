@@ -2259,6 +2259,7 @@ public class ContextMachineImpl implements ContextMachine {
                 SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance1, childContextName, jobIdentifier);
 
                 if(schedulerJobInstance != null) {
+                    schedulerJobInstance.setContextInstanceId(this.contextInstance.getId());
                     return schedulerJobInstance;
                 }
             }
