@@ -107,6 +107,25 @@ public interface ContextMachine {
     void setBlackListedMessageMaxRetries(int blackListedMessageMaxRetries);
 
     /**
+     * Sets the interval, in milliseconds, to wait before retrying an operation after an error occurs.
+     *
+     * @param errorRetrySleepInterval the duration in milliseconds to wait between retry attempts.
+     *                                Must be greater than 0.
+     */
+    void setErrorRetrySleepInterval(long errorRetrySleepInterval);
+
+    /**
+     * Sets the flag that determines whether to publish raise events
+     * after the job plan instance flush operation.
+     *
+     * @param publishRaiseEventsAfterJobPlanInstanceFlush
+     *        A boolean value indicating whether to enable or disable
+     *        the publishing of raise events after a job plan instance
+     *        has been flushed.
+     */
+    void setPublishRaiseEventsAfterJobPlanInstanceFlush(boolean publishRaiseEventsAfterJobPlanInstanceFlush);
+
+    /**
      * Resets the context instance with the specified parameters.
      *
      * @param holdCommandJobs flag to determine if command jobs should be held

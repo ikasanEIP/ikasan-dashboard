@@ -74,7 +74,8 @@ public abstract class ContextInstanceServiceBase {
     protected final ObjectMapper objectMapper;
     protected int contextMachineExecutorWaitTimeoutSeconds = -1;
     protected int blackListedMessageMaxRetries = -1;
-
+    protected long errorRetrySleepInterval = -1;
+    protected boolean publishRaiseEventsAfterJobPlanInstanceFlush = false;
 
 
 
@@ -192,6 +193,25 @@ public abstract class ContextInstanceServiceBase {
      */
     public void setBlackListedMessageMaxRetries(int blackListedMessageMaxRetries) {
         this.blackListedMessageMaxRetries = blackListedMessageMaxRetries;
+    }
+
+    /**
+     * Set the context machine error retry sleep interval.
+     *
+     * @param errorRetrySleepInterval
+     */
+    public void setErrorRetrySleepInterval(long errorRetrySleepInterval) {
+        this.errorRetrySleepInterval = errorRetrySleepInterval;
+    }
+
+    /**
+     * Sets the value for whether to publish raise events after the job plan instance flush.
+     *
+     * @param publishRaiseEventsAfterJobPlanInstanceFlush a boolean indicating whether to enable or disable
+     *                                                   publishing raise events after the job plan instance flush
+     */
+    public void setPublishRaiseEventsAfterJobPlanInstanceFlush(boolean publishRaiseEventsAfterJobPlanInstanceFlush) {
+        this.publishRaiseEventsAfterJobPlanInstanceFlush = publishRaiseEventsAfterJobPlanInstanceFlush;
     }
 
     /**
@@ -335,6 +355,8 @@ public abstract class ContextInstanceServiceBase {
             this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine.setExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
         contextMachine.setBlackListedMessageMaxRetries(this.blackListedMessageMaxRetries);
+        contextMachine.setErrorRetrySleepInterval(this.errorRetrySleepInterval);
+        contextMachine.setPublishRaiseEventsAfterJobPlanInstanceFlush(this.publishRaiseEventsAfterJobPlanInstanceFlush);
         contextMachine.init();
 
         // We add the listener to write initiation events to the agents.
@@ -463,6 +485,8 @@ public abstract class ContextInstanceServiceBase {
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService, this.jobUtilsService);
         contextMachine.setExecutorWaitTimeoutSeconds(this.contextMachineExecutorWaitTimeoutSeconds);
         contextMachine.setBlackListedMessageMaxRetries(this.blackListedMessageMaxRetries);
+        contextMachine.setErrorRetrySleepInterval(this.errorRetrySleepInterval);
+        contextMachine.setPublishRaiseEventsAfterJobPlanInstanceFlush(this.publishRaiseEventsAfterJobPlanInstanceFlush);
         // We add a listener to update scheduler job instances when a state change occurs.
         contextMachine.addSchedulerJobStateChangeEventListener(event ->
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
