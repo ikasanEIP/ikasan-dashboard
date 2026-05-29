@@ -9,20 +9,18 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Broadcaster for context instance DLQ (Dead Letter Queue) events across cluster nodes.
- * Maintains separate executors for local and remote broadcast operations.
- * Uses WeakHashMap to prevent memory leaks from registered listeners.
+ * Broadcaster for context instance DLQ (Dead Letter Queue) events across multiple local listeners (UI widgets) and
+ * remote listener (one PeerBroadcastChannel per cluster peer).
+ * Uses WeakHashMap to prevent memory leaks from registered local listeners.
  *
  * @author Ikasan Development Team
  */
 public class ContextInstanceDlqEventBroadcaster {
     static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextInstanceDlqEventBroadcaster"));
-    static Executor restExecutor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextInstanceDlqEventRestBroadcaster"));
 
-    private static WeakHashMap<ContextInstanceDlqEventLocalBroadcastListener, Object> localListeners =
+    private static final WeakHashMap<ContextInstanceDlqEventLocalBroadcastListener, Object> localListeners =
         new WeakHashMap<>();
-    private static WeakHashMap<ContextInstanceDlqEventRemoteBroadcastListener, Object> remoteListeners =
-        new WeakHashMap<>();
+    private static ContextInstanceDlqEventRemoteBroadcastListener remoteListener;
 
     /**
      * Registers a local broadcast listener.
@@ -43,22 +41,14 @@ public class ContextInstanceDlqEventBroadcaster {
     }
 
     /**
-     * Registers a remote broadcast listener.
+     * Registers the remote broadcast listener. The remote listener has a list of dashboard nodes so only 1 remote braodcast listener is required.
      *
      * @param listener the remote listener to register
      */
-    public static synchronized void register(ContextInstanceDlqEventRemoteBroadcastListener listener) {
-        remoteListeners.put(listener, null);
+    public static synchronized void setRemoteListener(ContextInstanceDlqEventRemoteBroadcastListener listener) {
+        remoteListener = listener;
     }
 
-    /**
-     * Unregisters a remote broadcast listener.
-     *
-     * @param listener the remote listener to unregister
-     */
-    public static synchronized void unregister(ContextInstanceDlqEventRemoteBroadcastListener listener) {
-        remoteListeners.remove(listener);
-    }
 
     /**
      * Broadcasts a context instance DLQ event to both local and remote listeners.
@@ -76,8 +66,8 @@ public class ContextInstanceDlqEventBroadcaster {
      * @param contextInstance the context instance to broadcast
      */
     public static synchronized void remoteBroadcast(final ContextInstance contextInstance) {
-        for (final ContextInstanceDlqEventRemoteBroadcastListener remoteListener : remoteListeners.keySet()) {
-            restExecutor.execute(() -> remoteListener.receiveBroadcast(contextInstance));
+        if (remoteListener != null) {
+            remoteListener.receiveBroadcast(contextInstance);
         }
     }
 

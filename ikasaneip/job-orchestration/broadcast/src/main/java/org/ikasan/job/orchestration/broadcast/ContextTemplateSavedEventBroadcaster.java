@@ -9,20 +9,18 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Broadcaster for context template saved events across cluster nodes.
- * Maintains separate executors for local and remote broadcast operations.
- * Uses WeakHashMap to prevent memory leaks from registered listeners.
+ * Broadcaster for context template saved events across multiple local listeners (UI widgets) and
+ * remote listener (one PeerBroadcastChannel per cluster peer).
+ * Uses WeakHashMap to prevent memory leaks from registered local listeners.
  *
  * @author Ikasan Development Team
  */
 public class ContextTemplateSavedEventBroadcaster {
     static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextTemplateSavedEventBroadcaster"));
-    static Executor restExecutor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextTemplateSavedEventRestBroadcaster"));
 
-    private static WeakHashMap<ContextTemplateSavedEventLocalBroadcastListener, Object> localListeners =
+    private static final WeakHashMap<ContextTemplateSavedEventLocalBroadcastListener, Object> localListeners =
         new WeakHashMap<>();
-    private static WeakHashMap<ContextTemplateSavedEventRemoteBroadcastListener, Object> remoteListeners =
-        new WeakHashMap<>();
+    private static ContextTemplateSavedEventRemoteBroadcastListener remoteListener;
 
     /**
      * Registers a local broadcast listener.
@@ -43,22 +41,14 @@ public class ContextTemplateSavedEventBroadcaster {
     }
 
     /**
-     * Registers a remote broadcast listener.
+     * Registers the remote broadcast listener. The remote listener has a list of dashboard nodes so only 1 remote braodcast listener is required.
      *
      * @param listener the remote listener to register
      */
-    public static synchronized void register(ContextTemplateSavedEventRemoteBroadcastListener listener) {
-        remoteListeners.put(listener, null);
+    public static synchronized void setRemoteListener(ContextTemplateSavedEventRemoteBroadcastListener listener) {
+        remoteListener = listener;
     }
 
-    /**
-     * Unregisters a remote broadcast listener.
-     *
-     * @param listener the remote listener to unregister
-     */
-    public static synchronized void unregister(ContextTemplateSavedEventRemoteBroadcastListener listener) {
-        remoteListeners.remove(listener);
-    }
 
     /**
      * Broadcasts a context template saved event to both local and remote listeners.
@@ -76,8 +66,8 @@ public class ContextTemplateSavedEventBroadcaster {
      * @param contextTemplate the context template to broadcast
      */
     public static synchronized void remoteBroadcast(final ContextTemplate contextTemplate) {
-        for (final ContextTemplateSavedEventRemoteBroadcastListener remoteListener : remoteListeners.keySet()) {
-            restExecutor.execute(() -> remoteListener.receiveContextTemplateSavedEventBroadcast(contextTemplate));
+        if (remoteListener != null) {
+            remoteListener.receiveContextTemplateSavedEventBroadcast(contextTemplate);
         }
     }
 

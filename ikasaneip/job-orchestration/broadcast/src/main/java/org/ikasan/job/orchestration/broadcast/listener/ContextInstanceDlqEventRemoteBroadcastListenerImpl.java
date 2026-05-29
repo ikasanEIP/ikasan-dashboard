@@ -1,40 +1,31 @@
 package org.ikasan.job.orchestration.broadcast.listener;
 
-import org.ikasan.spec.scheduled.event.service.ClusterEventService;
+import org.ikasan.job.orchestration.broadcast.ClusterEventBroadcastChannel;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventRemoteBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 
 import java.util.List;
 
 /**
- * Implementation of remote broadcast listener for context instance DLQ events.
- * Forwards received broadcasts to all configured cluster event services.
+ * Implementation of a remote broadcast listener for context instance DLQ events.
+ * Forwards received broadcasts to all configured cluster peers via their dedicated
+ * {@link ClusterEventBroadcastChannel} execution lanes.
  *
  * @author Ikasan Development Team
  */
 public class ContextInstanceDlqEventRemoteBroadcastListenerImpl
     implements ContextInstanceDlqEventRemoteBroadcastListener {
 
-    private final List<ClusterEventService> clusterEventServices;
+    private final List<ClusterEventBroadcastChannel> channels;
 
-    /**
-     * Constructor
-     *
-     * @param clusterEventServices list of cluster event services to broadcast to
-     */
-    public ContextInstanceDlqEventRemoteBroadcastListenerImpl(List<ClusterEventService> clusterEventServices) {
-        this.clusterEventServices = clusterEventServices;
+    public ContextInstanceDlqEventRemoteBroadcastListenerImpl(List<ClusterEventBroadcastChannel> channels) {
+        this.channels = channels;
     }
 
-    /**
-     * Receives a context instance DLQ broadcast and forwards it to all cluster event services.
-     *
-     * @param contextInstance the context instance to broadcast
-     */
     @Override
     public void receiveBroadcast(ContextInstance contextInstance) {
-        for (ClusterEventService service : clusterEventServices) {
-            service.broadcastContextInstanceDlq(contextInstance);
+        for (ClusterEventBroadcastChannel channel : channels) {
+            channel.submit(() -> channel.service().broadcastContextInstanceDlq(contextInstance));
         }
     }
 }

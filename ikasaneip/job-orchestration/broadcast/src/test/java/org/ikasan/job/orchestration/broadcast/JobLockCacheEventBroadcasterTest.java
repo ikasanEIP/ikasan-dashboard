@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventRemoteBroadcastListener;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,12 +30,18 @@ public class JobLockCacheEventBroadcasterTest {
     @Mock
     private JobLockCacheEvent event;
 
+    @Mock
+    private JobLockCacheEventRemoteBroadcastListener remoteListener;
+
     @Before
     @After
     public void resetListeners() throws Exception {
         Field listenersField = JobLockCacheEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
+        Field remoteListenerField = JobLockCacheEventBroadcaster.class.getDeclaredField("remoteListener");
+        remoteListenerField.setAccessible(true);
+        remoteListenerField.set(null, null);
     }
 
     @Test
@@ -116,6 +123,19 @@ public class JobLockCacheEventBroadcasterTest {
         }
 
         verify(listener1, atLeastOnce()).receiveBroadcast(null);
+    }
+
+    @Test
+    public void testBroadcast_forwardsEventToRemoteListener() {
+        JobLockCacheEventBroadcaster.setRemoteListener(remoteListener);
+        JobLockCacheEventBroadcaster.broadcast(event);
+        verify(remoteListener).receiveBroadcast(event);
+    }
+
+    @Test
+    public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
+        // no remote listener set — must not throw
+        JobLockCacheEventBroadcaster.remoteBroadcast(event);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventRemoteBroadcastListener;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,12 +28,18 @@ public class ContextViewUpdateEventBroadcasterTest {
 
     private String testMessage = "test message";
 
+    @Mock
+    private ContextViewUpdateEventRemoteBroadcastListener remoteListener;
+
     @Before
     @After
     public void resetListeners() throws Exception {
         Field listenersField = ContextViewUpdateEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
+        Field remoteListenerField = ContextViewUpdateEventBroadcaster.class.getDeclaredField("remoteListener");
+        remoteListenerField.setAccessible(true);
+        remoteListenerField.set(null, null);
     }
 
     @Test
@@ -129,6 +136,19 @@ public class ContextViewUpdateEventBroadcasterTest {
         }
 
         verify(listener1, atLeastOnce()).receiveBroadcast("");
+    }
+
+    @Test
+    public void testBroadcast_forwardsEventToRemoteListener() {
+        ContextViewUpdateEventBroadcaster.setRemoteListener(remoteListener);
+        ContextViewUpdateEventBroadcaster.broadcast(testMessage);
+        verify(remoteListener).receiveBroadcast(testMessage);
+    }
+
+    @Test
+    public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
+        // no remote listener set — must not throw
+        ContextViewUpdateEventBroadcaster.remoteBroadcast(testMessage);
     }
 
     @Test

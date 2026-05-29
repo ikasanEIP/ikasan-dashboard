@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventRemoteBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.junit.After;
@@ -34,12 +35,18 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
     @Mock
     private SchedulerJobInstance schedulerJobInstance;
 
+    @Mock
+    private SchedulerJobStateChangeEventRemoteBroadcastListener remoteListener;
+
     @Before
     @After
     public void resetListeners() throws Exception {
         Field listenersField = SchedulerJobStateChangeEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
+        Field remoteListenerField = SchedulerJobStateChangeEventBroadcaster.class.getDeclaredField("remoteListener");
+        remoteListenerField.setAccessible(true);
+        remoteListenerField.set(null, null);
     }
 
     @Test
@@ -188,6 +195,22 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
         }
 
         verify(listener1, atLeastOnce()).receiveBroadcast(event);
+    }
+
+    @Test
+    public void testBroadcast_forwardsEventToRemoteListener() {
+        when(event.getSchedulerJobInstance()).thenReturn(schedulerJobInstance);
+        when(schedulerJobInstance.getAgentName()).thenReturn("TestAgent");
+
+        SchedulerJobStateChangeEventBroadcaster.setRemoteListener(remoteListener);
+        SchedulerJobStateChangeEventBroadcaster.broadcast(event);
+        verify(remoteListener).receiveBroadcast(event);
+    }
+
+    @Test
+    public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
+        // no remote listener set — must not throw
+        SchedulerJobStateChangeEventBroadcaster.remoteBroadcast(event);
     }
 
     @Test
