@@ -10,20 +10,18 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Broadcaster for scheduler job state change events across cluster nodes.
- * Maintains separate executors for local (multi-threaded) and remote (single-threaded) broadcast operations.
- * Uses WeakHashMap to prevent memory leaks from registered listeners.
+ * Broadcaster for scheduler job state change events across multiple local listeners (UI widgets) and
+ * remote listener (one PeerBroadcastChannel per cluster peer).
+ * Uses WeakHashMap to prevent memory leaks from registered local listeners.
  *
  * @author Ikasan Development Team
  */
 public class SchedulerJobStateChangeEventBroadcaster {
     static Executor executor = Executors.newFixedThreadPool(10, new BroadcasterThreadFactory("SchedulerJobStateChangeEventBroadcaster"));
-    static Executor restExecutor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("SchedulerJobStateChangeEventRestBroadcaster"));
 
-    private static WeakHashMap<SchedulerJobStateChangeEventLocalBroadcastListener, Object> localListeners =
+    private static final WeakHashMap<SchedulerJobStateChangeEventLocalBroadcastListener, Object> localListeners =
         new WeakHashMap<>();
-    private static WeakHashMap<SchedulerJobStateChangeEventRemoteBroadcastListener, Object> remoteListeners =
-        new WeakHashMap<>();
+    private static SchedulerJobStateChangeEventRemoteBroadcastListener remoteListener;
 
     /**
      * Registers a local broadcast listener.
@@ -44,22 +42,14 @@ public class SchedulerJobStateChangeEventBroadcaster {
     }
 
     /**
-     * Registers a remote broadcast listener.
+     * Registers the remote broadcast listener. The remote listener has a list of dashboard nodes so only 1 remote braodcast listener is required.
      *
      * @param listener the remote listener to register
      */
-    public static synchronized void register(SchedulerJobStateChangeEventRemoteBroadcastListener listener) {
-        remoteListeners.put(listener, null);
+    public static synchronized void setRemoteListener(SchedulerJobStateChangeEventRemoteBroadcastListener listener) {
+        remoteListener = listener;
     }
 
-    /**
-     * Unregisters a remote broadcast listener.
-     *
-     * @param listener the remote listener to unregister
-     */
-    public static synchronized void unregister(SchedulerJobStateChangeEventRemoteBroadcastListener listener) {
-        remoteListeners.remove(listener);
-    }
 
     /**
      * Broadcasts a scheduler job state change event to both local and remote listeners.
@@ -83,8 +73,8 @@ public class SchedulerJobStateChangeEventBroadcaster {
      * @param event the state change event to broadcast
      */
     public static synchronized void remoteBroadcast(final SchedulerJobInstanceStateChangeEvent event) {
-        for (final SchedulerJobStateChangeEventRemoteBroadcastListener remoteListener : remoteListeners.keySet()) {
-            restExecutor.execute(() -> remoteListener.receiveBroadcast(event));
+        if (remoteListener != null) {
+            remoteListener.receiveBroadcast(event);
         }
     }
 

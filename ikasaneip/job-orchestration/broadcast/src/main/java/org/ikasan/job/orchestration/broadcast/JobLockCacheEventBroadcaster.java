@@ -9,20 +9,18 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Broadcaster for job lock cache events across cluster nodes.
- * Maintains separate executors for local and remote broadcast operations.
- * Uses WeakHashMap to prevent memory leaks from registered listeners.
+ * Broadcaster for job lock cache events across multiple local listeners (UI widgets) and
+ * remote listener (one PeerBroadcastChannel per cluster peer).
+ * Uses WeakHashMap to prevent memory leaks from registered local listeners.
  *
  * @author Ikasan Development Team
  */
 public class JobLockCacheEventBroadcaster {
     static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("JobLockCacheEventBroadcaster"));
-    static Executor restExecutor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("JobLockCacheEventRestBroadcaster"));
 
-    private static WeakHashMap<JobLockCacheEventLocalBroadcastListener, Object> localListeners =
+    private static final WeakHashMap<JobLockCacheEventLocalBroadcastListener, Object> localListeners =
         new WeakHashMap<>();
-    private static WeakHashMap<JobLockCacheEventRemoteBroadcastListener, Object> remoteListeners =
-        new WeakHashMap<>();
+    private static JobLockCacheEventRemoteBroadcastListener remoteListener;
 
     /**
      * Registers a local broadcast listener.
@@ -43,22 +41,14 @@ public class JobLockCacheEventBroadcaster {
     }
 
     /**
-     * Registers a remote broadcast listener.
+     * Registers the remote broadcast listener. The remote listener has a list of dashboard nodes so only 1 remote braodcast listener is required.
      *
      * @param listener the remote listener to register
      */
-    public static synchronized void register(JobLockCacheEventRemoteBroadcastListener listener) {
-        remoteListeners.put(listener, null);
+    public static synchronized void setRemoteListener(JobLockCacheEventRemoteBroadcastListener listener) {
+        remoteListener = listener;
     }
 
-    /**
-     * Unregisters a remote broadcast listener.
-     *
-     * @param listener the remote listener to unregister
-     */
-    public static synchronized void unregister(JobLockCacheEventRemoteBroadcastListener listener) {
-        remoteListeners.remove(listener);
-    }
 
     /**
      * Broadcasts a job lock cache event to both local and remote listeners.
@@ -76,8 +66,8 @@ public class JobLockCacheEventBroadcaster {
      * @param event the job lock cache event to broadcast
      */
     public static synchronized void remoteBroadcast(final JobLockCacheEvent event) {
-        for (final JobLockCacheEventRemoteBroadcastListener remoteListener : remoteListeners.keySet()) {
-            restExecutor.execute(() -> remoteListener.receiveBroadcast(event));
+        if (remoteListener != null) {
+            remoteListener.receiveBroadcast(event);
         }
     }
 

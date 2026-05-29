@@ -1,40 +1,31 @@
 package org.ikasan.job.orchestration.broadcast.listener;
 
+import org.ikasan.job.orchestration.broadcast.ClusterEventBroadcastChannel;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ClusterEventService;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventRemoteBroadcastListener;
 
 import java.util.List;
 
 /**
- * Implementation of remote broadcast listener for scheduler job state change events.
- * Forwards received broadcasts to all configured cluster event services.
+ * Implementation of a remote broadcast listener for scheduler job state change events.
+ * Forwards received broadcasts to all configured cluster peers via their dedicated
+ * {@link ClusterEventBroadcastChannel} execution lanes.
  *
  * @author Ikasan Development Team
  */
 public class SchedulerJobStateChangeEventRemoteBroadcastListenerImpl
     implements SchedulerJobStateChangeEventRemoteBroadcastListener {
 
-    private final List<ClusterEventService> clusterEventServices;
+    private final List<ClusterEventBroadcastChannel> channels;
 
-    /**
-     * Constructor
-     *
-     * @param clusterEventServices list of cluster event services to broadcast to
-     */
-    public SchedulerJobStateChangeEventRemoteBroadcastListenerImpl(List<ClusterEventService> clusterEventServices) {
-        this.clusterEventServices = clusterEventServices;
+    public SchedulerJobStateChangeEventRemoteBroadcastListenerImpl(List<ClusterEventBroadcastChannel> channels) {
+        this.channels = channels;
     }
 
-    /**
-     * Receives a scheduler job state change broadcast and forwards it to all cluster event services.
-     *
-     * @param event the state change event to broadcast
-     */
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        for (ClusterEventService service : clusterEventServices) {
-            service.broadcastSchedulerJobStateChange(event);
+        for (ClusterEventBroadcastChannel channel : channels) {
+            channel.submit(() -> channel.service().broadcastSchedulerJobStateChange(event));
         }
     }
 }

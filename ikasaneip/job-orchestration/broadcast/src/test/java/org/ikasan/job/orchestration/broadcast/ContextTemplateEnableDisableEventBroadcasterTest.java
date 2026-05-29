@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.broadcast;
 
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.service.ContextTemplateEnableDisableEventLocalBroadcastListener;
+import org.ikasan.spec.scheduled.event.service.ContextTemplateEnableDisableEventRemoteBroadcastListener;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,12 +30,18 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
     @Mock
     private ContextTemplate contextTemplate;
 
+    @Mock
+    private ContextTemplateEnableDisableEventRemoteBroadcastListener remoteListener;
+
     @Before
     @After
     public void resetListeners() throws Exception {
         Field listenersField = ContextTemplateEnableDisableEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
         listenersField.set(null, new WeakHashMap<>());
+        Field remoteListenerField = ContextTemplateEnableDisableEventBroadcaster.class.getDeclaredField("remoteListener");
+        remoteListenerField.setAccessible(true);
+        remoteListenerField.set(null, null);
     }
 
     @Test
@@ -116,6 +123,19 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
         }
 
         verify(listener1, atLeastOnce()).receiveBroadcast(null);
+    }
+
+    @Test
+    public void testBroadcast_forwardsEventToRemoteListener() {
+        ContextTemplateEnableDisableEventBroadcaster.setRemoteListener(remoteListener);
+        ContextTemplateEnableDisableEventBroadcaster.broadcast(contextTemplate);
+        verify(remoteListener).receiveBroadcast(contextTemplate);
+    }
+
+    @Test
+    public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
+        // no remote listener set — must not throw
+        ContextTemplateEnableDisableEventBroadcaster.remoteBroadcast(contextTemplate);
     }
 
     @Test
