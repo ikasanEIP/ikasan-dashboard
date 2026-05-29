@@ -538,9 +538,9 @@ public class SchedulerJobInstanceGridWidget extends Div
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                                , this.authentication.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
 
                             schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
                             schedulerJobInstanceService.save(schedulerJobInstanceRecord);
@@ -571,9 +571,9 @@ public class SchedulerJobInstanceGridWidget extends Div
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                                , this.authentication.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
 
                             schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
                             schedulerJobInstanceService.save(schedulerJobInstanceRecord);
@@ -604,9 +604,9 @@ public class SchedulerJobInstanceGridWidget extends Div
                             this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
                                 this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                                , this.authentication.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
 
                             globalEventJobInstance.setStatus(InstanceStatus.COMPLETE);
                             schedulerJobInstanceRecord.setSchedulerJobInstance(globalEventJobInstance);
@@ -639,9 +639,9 @@ public class SchedulerJobInstanceGridWidget extends Div
                             localEventService.raiseLocalEventJob(localEventJobInstance,
                                 this.contextInstance.getId(), SecurityContextHolder.getContext().getAuthentication().getName());
 
-                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                                , this.authentication.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
 
                             localEventJobInstance.setStatus(InstanceStatus.COMPLETE);
                             schedulerJobInstanceRecord.setSchedulerJobInstance(localEventJobInstance);
@@ -1098,12 +1098,14 @@ public class SchedulerJobInstanceGridWidget extends Div
                 , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), true);
             this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.SKIPPED);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
-                , this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(String.format("And error has occurred skipping job - Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), e);
             NotificationHelper.showErrorNotification(getTranslation("error.skipped-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -1129,12 +1131,14 @@ public class SchedulerJobInstanceGridWidget extends Div
             contextMachine.skipJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), false);
             this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.WAITING);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), false)
-                , this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_ENABLED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(String.format("And error has occurred enabling job - Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), e);
             NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -1160,12 +1164,14 @@ public class SchedulerJobInstanceGridWidget extends Div
             contextMachine.holdJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
             this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.ON_HOLD);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Held[%s]"
-                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
-                , this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(String.format("And error has occurred holding job - Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), e);
             NotificationHelper.showErrorNotification(getTranslation("error.held-general-error", UI.getCurrent().getLocale()));
             return false;
         }
@@ -1191,12 +1197,14 @@ public class SchedulerJobInstanceGridWidget extends Div
             contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
             this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.WAITING);
 
-            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Released[%s]"
-                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
-                , this.authentication.getName());
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), this.authentication.getName());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(String.format("An error has occurrent releasing job - Agent Name[%s], Scheduled Job Name[%s], Skipped[%s], Job Plan Name[%s], Job Plan Id[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true, schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextInstanceId()), e);
             NotificationHelper.showErrorNotification(getTranslation("error.released-general-error", UI.getCurrent().getLocale()));
             return false;
         }
