@@ -98,6 +98,10 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
 
         HttpEntity request = new HttpEntity(valueToEncrypt, headers);
         String configServiceUrl = environment.getProperty("spring.config.server.url");
+        if (configServiceUrl == null || configServiceUrl.isBlank()) {
+            LOGGER.warn("Cannot encrypt value: property 'spring.config.server.url' is not configured.");
+            throw new RestClientException("spring.config.server.url is not configured — cannot encrypt value");
+        }
         String url = configServiceUrl + ENCRYPTED_URL;
 
         try {

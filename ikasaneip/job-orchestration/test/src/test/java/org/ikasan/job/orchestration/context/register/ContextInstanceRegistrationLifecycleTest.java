@@ -95,16 +95,19 @@ public class ContextInstanceRegistrationLifecycleTest {
 
     @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
-    @Mock
-    private TimeService timeService;
+
+    private LocalDateTime stubbedLocalDateTime;
+    private final TimeService timeService = new TimeService() {
+        @Override
+        public LocalDateTime getLocalDateNow() { return stubbedLocalDateTime; }
+    };
+
     @Mock
     private SystemEventService systemEventService;
     @Mock
     private JobUtilsService jobUtilsService;
-    @Mock
-    private JobExecutionContext jobExecutionContext;
-    @Mock
-    private JobDetail endJobDetail;
+    private JobExecutionContext jobExecutionContext = null;
+    private JobDetailImpl endJobDetail = new JobDetailImpl();
     @Mock
     private JobProvisionService jobProvisionService;
     @Mock
@@ -184,12 +187,12 @@ public class ContextInstanceRegistrationLifecycleTest {
         when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull())).thenReturn(contextInstanceSearchResults);
         when(schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull())).thenReturn(internalEventDrivenJobRecordSearchResults);
         when(moduleMetadataService.find(any(), any(), anyInt(), anyInt())).thenReturn(agentSearchResults);
+        this.endJobDetail.setName(contextTemplate.getName());
         when(this.scheduledJobFactory.createJobDetail(any(), any(), anyString(), anyString())).thenReturn(this.endJobDetail);
-        when(this.endJobDetail.getKey()).thenReturn(new JobKey(contextTemplate.getName()));
         mockStatic.when(() -> AbstractDashboardSchedulerService.showAllTriggers(scheduler)).thenReturn("triggers");
 
         // We will pivot off the current time being 1st March 2099 - 14:15:00
-        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2099, 3, 1, 14, 15, 0));
+        this.stubbedLocalDateTime = LocalDateTime.of(2099, 3, 1, 14, 15, 0);
         createJobDetailAndSetStub(contextTemplate.getName(), CONTEXT_START_GROUP);
         when(scheduler.scheduleJob(any(), any())).thenReturn(new Date());
 
@@ -210,7 +213,7 @@ public class ContextInstanceRegistrationLifecycleTest {
         assertEquals("0 17 14 3 3 ? 2099", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
 
         // Now wee will pivot off the current time being 4th March 2099 - 14:17:00 which is when the quartz job fires
-        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2099, 3, 4, 14,17, 0));
+        this.stubbedLocalDateTime = LocalDateTime.of(2099, 3, 4, 14, 17, 0);
 
         // The act of executing the job will also schedule the job plan to run on the 2nd weekday of the next month.
         dashboardJobsMap.get("context start.CONTEXT-1436221681").execute(this.jobExecutionContext);
@@ -283,12 +286,12 @@ public class ContextInstanceRegistrationLifecycleTest {
         when(scheduledContextInstanceService.getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull())).thenReturn(contextInstanceSearchResults);
         when(schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), anyInt(), anyInt(), isNull(), isNull())).thenReturn(internalEventDrivenJobRecordSearchResults);
         when(moduleMetadataService.find(any(), any(), anyInt(), anyInt())).thenReturn(agentSearchResults);
+        this.endJobDetail.setName(contextTemplate.getName());
         when(this.scheduledJobFactory.createJobDetail(any(), any(), anyString(), anyString())).thenReturn(this.endJobDetail);
-        when(this.endJobDetail.getKey()).thenReturn(new JobKey(contextTemplate.getName()));
         mockStatic.when(() -> AbstractDashboardSchedulerService.showAllTriggers(scheduler)).thenReturn("triggers");
 
         // We will pivot off the current time being 4th March 2099 - 14:25:00
-        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2099, 3, 4, 14, 25, 0));
+        this.stubbedLocalDateTime = LocalDateTime.of(2099, 3, 4, 14, 25, 0);
 
         createJobDetailAndSetStub(contextTemplate.getName(), CONTEXT_START_GROUP);
         when(scheduler.scheduleJob(any(), any())).thenReturn(new Date());
@@ -310,7 +313,7 @@ public class ContextInstanceRegistrationLifecycleTest {
         assertEquals("0 17 14 2 4 ? 2099", dashboardJobsMap.get("context start.CONTEXT-1436221681").getCronExpression());
 
         // Now wee will pivot off the current time being 2nd April 2099 - 14:17:00 which is when the quartz job fires
-        when(this.timeService.getLocalDateNow()).thenReturn(LocalDateTime.of(2099, 4, 2, 14,17, 0));
+        this.stubbedLocalDateTime = LocalDateTime.of(2099, 4, 2, 14, 17, 0);
 
         // The act of executing the job will also schedule the job plan to run on the 2nd weekday of the next month.
         dashboardJobsMap.get("context start.CONTEXT-1436221681").execute(this.jobExecutionContext);

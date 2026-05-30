@@ -38,7 +38,7 @@ public class ContextInstanceSavedEventBroadcasterTest {
     public void resetListeners() throws Exception {
         Field listenersField = ContextInstanceSavedEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
-        listenersField.set(null, new WeakHashMap<>());
+        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
         Field remoteListenerField = ContextInstanceSavedEventBroadcaster.class.getDeclaredField("remoteListener");
         remoteListenerField.setAccessible(true);
         remoteListenerField.set(null, null);

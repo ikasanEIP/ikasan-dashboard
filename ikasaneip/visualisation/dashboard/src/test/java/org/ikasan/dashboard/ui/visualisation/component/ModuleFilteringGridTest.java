@@ -25,11 +25,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -67,16 +65,12 @@ public class ModuleFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(new HashSet<RoleModule>().iterator(), new HashSet<RoleModule>().iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>();
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
 
         Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING))
             , Mockito.anyInt(), Mockito.anyInt()))
@@ -109,16 +103,12 @@ public class ModuleFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator(), Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator(), Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator(), Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("moduleName0");
 
         Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("moduleName0"))

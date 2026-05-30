@@ -8,6 +8,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.ikasan.dashboard.cluster.config.ZooKeeperLeaderElectionProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PreDestroy;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
  * ZooKeeper-based implementation of the LeaderElectionService using Apache Curator.
  */
 @Service
+@ConditionalOnProperty(name = "ikasan.dashboard.cluster.provider", havingValue = "zookeeper", matchIfMissing = true)
 public class ZooKeeperLeaderElectionService implements LeaderElectionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZooKeeperLeaderElectionService.class);
@@ -76,9 +78,19 @@ public class ZooKeeperLeaderElectionService implements LeaderElectionService {
 
         LOGGER.info("Connected to ZooKeeper");
 
-        // Create unique ID for this instance
-        String instanceId = InetAddress.getLocalHost().getHostName() +
-            "-" + System.currentTimeMillis();
+        // Use the configured node URL as the participant ID so peers can resolve the leader's
+        // URL directly from ZooKeeper. Fall back to hostname-timestamp if not configured, but
+        // warn because leader-directed routing will not work without a nodeUrl.
+        String nodeUrl = properties.getNodeUrl();
+        String instanceId;
+        if (nodeUrl != null && !nodeUrl.isBlank()) {
+            instanceId = nodeUrl.toLowerCase();
+        } else {
+            instanceId = InetAddress.getLocalHost().getHostName() + "-" + System.currentTimeMillis();
+            LOGGER.warn("ikasan.dashboard.cluster.zookeeper.node-url is not configured. " +
+                "Leader-directed REST routing will fall back to fan-out. " +
+                "Set this to the base URL of this node (e.g. http://node1:9090).");
+        }
 
         // Create leader latch
         leaderLatch = new LeaderLatch(
@@ -106,6 +118,17 @@ public class ZooKeeperLeaderElectionService implements LeaderElectionService {
         started = true;
 
         LOGGER.info("Leader election service started with ID: {}", instanceId);
+    }
+
+    @Override
+    public String getLeaderUrl() {
+        if (!properties.isEnabled() || leaderLatch == null) return null;
+        try {
+            return leaderLatch.getLeader().getId();
+        } catch (Exception e) {
+            LOGGER.warn("Failed to retrieve leader URL from ZooKeeper: {}", e.getMessage());
+            return null;
+        }
     }
 
     @Override

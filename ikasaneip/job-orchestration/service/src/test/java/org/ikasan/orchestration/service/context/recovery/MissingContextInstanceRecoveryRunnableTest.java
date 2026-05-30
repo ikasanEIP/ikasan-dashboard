@@ -817,7 +817,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
     public void plan_that_end_upon_completion_but_NOT_create_context_instances_result_inside_time_window() throws Exception {
         this.context.setEndJobPlanUponCompletion(true);
         this.context.setTimeWindowStart("0 0 0 * * ?");
-        this.context.setContextTtlMilliseconds(24L * 50L * 60L * 1000L);
+        this.context.setContextTtlMilliseconds(24L * 60L * 60L * 1000L);
         this.context.setTimezone(ZoneId.systemDefault().getId());
         this.record.setContext(context);
 

@@ -13,9 +13,12 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
-import org.springframework.web.client.RestClientException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContextParameterEncryptDialog extends AbstractCloseableResizableDialog {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ContextParameterEncryptDialog.class);
 
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
@@ -67,7 +70,8 @@ public class ContextParameterEncryptDialog extends AbstractCloseableResizableDia
             try {
                 String encryptedStringResponse = springCloudConfigRefreshService.encrypt(valueToEncrypt.getValue());
                 encryptedValue.setValue(encryptedStringResponse);
-            } catch (RestClientException e) {
+            } catch (Exception e) {
+                LOG.warn("Failed to encrypt value: {}", e.getMessage(), e);
                 NotificationHelper.showUserNotification(getTranslation("message.unable-to-encrypt-value", UI.getCurrent().getLocale()));
             }
         });

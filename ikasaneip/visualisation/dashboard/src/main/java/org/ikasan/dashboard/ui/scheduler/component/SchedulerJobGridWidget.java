@@ -508,7 +508,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 }
             });
 
-            ComponentSecurityVisibility.applySecurity(delete, SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
@@ -529,6 +529,17 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT)
                 , getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            StreamResource streamResource = new StreamResource(schedulerJobRecord.getJobName()+".json"
+                , () -> {
+                try {
+                    return new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter()
+                        .writeValueAsBytes(schedulerJobRecord.getJob()));
+                }
+                catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
 
             Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
                     -> new DownloadResponse(new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter()
@@ -558,6 +569,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             !residingContextSelectDialog.getSelectedContexts().isEmpty()) {
                             this.schedulerJobService.skip(schedulerJobRecord, residingContextSelectDialog.getSelectedContexts(), this.authentication.getName());
                             this.refresh();
+                            ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
 
                             String action = String.format("Targeted Scheduler Job[%s], Parent Job Plan[%s], was skipped in the following Child Contexts [%s]."
                                 , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(residingContextSelectDialog.getSelectedContexts().toArray(), ","));
@@ -581,6 +593,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, action, authentication.getName());
                     }
                     this.refresh();
+                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
                 }
 
             });
@@ -588,13 +601,13 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             if((schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB))
                 && !schedulerJobRecord.isSkipped()
                 && !schedulerJobRecord.isHeld()) {
-                ComponentSecurityVisibility.applySecurity(skip, SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.applySecurity(this.authentication, skip, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
             }
             else if(schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB) &&
                 !schedulerJobRecord.getJob().getSkippedContexts().containsKey(this.contextTemplate.getName())) {
-                ComponentSecurityVisibility.applySecurity(skip, SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.applySecurity(this.authentication, skip, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
             }
@@ -610,6 +623,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             enable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 this.schedulerJobService.enable(schedulerJobRecord, this.contextTemplate.getName(), this.authentication.getName());
                 refresh();
+                ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
 
                 String action = String.format("Scheduler Job[%s], Parent Job Plan[%s], has been enabled."
                     , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
@@ -618,7 +632,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
             if((schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) ||
                 schedulerJobRecord.getType().equals(JobConstants.GLOBAL_EVENT_JOB))) {
-                ComponentSecurityVisibility.applySecurity(enable, SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.applySecurity(this.authentication, enable, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
             }
@@ -648,6 +662,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             !residingContextSelectDialog.getSelectedContexts().isEmpty()) {
                             this.schedulerJobService.hold(schedulerJobRecord, residingContextSelectDialog.getSelectedContexts(), this.authentication.getName());
                             this.refresh();
+                            ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
 
                             String action = String.format("Targeted Scheduler Job[%s], Parent Context[%s], was held in the following Child Contexts [%s]."
                                 , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(residingContextSelectDialog.getSelectedContexts().toArray(), ","));
@@ -658,6 +673,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 else {
                     this.schedulerJobService.hold(schedulerJobRecord, schedulerJobRecord.getJob().getChildContextNames(), this.authentication.getName());
                     this.refresh();
+                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
 
                     String action = String.format("Scheduler Job[%s], Parent Context[%s], was held in the following Child Contexts [%s]."
                         , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(schedulerJobRecord.getJob().getChildContextNames().toArray(), ","));
@@ -666,7 +682,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             });
 
             if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
-                ComponentSecurityVisibility.applySecurity(hold, SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.applySecurity(this.authentication, hold, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
             }
@@ -683,6 +699,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             release.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 this.schedulerJobService.release(schedulerJobRecord, this.authentication.getName());
                 refresh();
+                ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
 
                 String action = String.format("Scheduler Job[%s], Parent Context[%s], has been released."
                     , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
@@ -690,7 +707,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             });
 
             if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
-                ComponentSecurityVisibility.applySecurity(release, SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.applySecurity(this.authentication, release, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
             }
@@ -916,6 +933,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         String.format("Enabling all skipped jobs for job plan. Job Plan Name[%s]", this.contextTemplate.getName())
                         , this.authentication.getName());
                     this.refresh();
+                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -957,6 +975,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         String.format("Holding all jobs for job plan. Job Plan Name[%s]", this.contextTemplate.getName())
                         , this.authentication.getName());
                     this.refresh();
+                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -998,6 +1017,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         String.format("All scheduled jobs released. Job Plan Name[%s]", this.contextTemplate.getName())
                         , this.authentication.getName());
                     this.refresh();
+                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
                 }
                 catch (Exception e) {
                     e.printStackTrace();

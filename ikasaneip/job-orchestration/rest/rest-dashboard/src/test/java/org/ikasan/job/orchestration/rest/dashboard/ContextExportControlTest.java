@@ -78,7 +78,6 @@ public class ContextExportControlTest extends AbstractRestMvcTest {
 
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
-    @Autowired
     @Before
     public void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();

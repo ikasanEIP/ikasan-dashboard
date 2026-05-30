@@ -97,10 +97,10 @@ public class BridgingJobPositionedDialog extends PositionedDialog {
                 confirmDialog.open();
 
                 confirmDialog.addConfirmListener(confirmEvent -> {
-                    if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                    ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                    if (contextMachine != null) {
                         boolean error = false;
                         try {
-                            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
                             contextMachine.broadcastLocalEvent(this.createSchedulerJobInitiationEvent((BridgingJobInstance) this.schedulerJobInstanceRecord.getSchedulerJobInstance()
                                 , contextMachine.getContext()));
                             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED
@@ -142,10 +142,10 @@ public class BridgingJobPositionedDialog extends PositionedDialog {
                 confirmDialog.open();
 
                 confirmDialog.addConfirmListener(confirmEvent -> {
-                    if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                    ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                    if (contextMachine != null) {
                         boolean error = false;
                         try {
-                            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
                             contextMachine.resetJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
                                 schedulerJobInstanceRecord.getChildContextName());
                             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET

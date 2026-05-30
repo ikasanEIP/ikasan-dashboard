@@ -29,12 +29,10 @@ import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroad
 import org.ikasan.job.orchestration.broadcast.ContextInstanceDlqEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.service.BigQueueContextMachineManagementServiceImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.rest.dashboard.model.scheduled.ScheduledProcessEventImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
-import org.ikasan.spec.bigqueue.service.BigQueueManagementService;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.slf4j.Logger;
@@ -57,7 +55,6 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
     private final ContextInstance contextInstance;
     private final SystemEventLogger systemEventLogger;
-    private BigQueueManagementService bigQueueManagementService;
     private final BigQueueFilter bigQueueFilter = new BigQueueFilter();
 
     /**
@@ -76,9 +73,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
             throw new IllegalArgumentException("systemEventLogger cannot be null!");
         }
 
-        if(ContextMachineCache.instance()
-            .containsInstanceIdentifier(contextInstance.getId())) {
-            this.initialiseBigQueueManagementService();
+        if(ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId()) != null) {
             this.initialiseButtons();
             this.initialiseGrid();
             this.initDataProvider();
@@ -92,21 +87,6 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
             this.add(noDLQManagementLayout);
         }
         this.setSizeFull();
-    }
-
-    /**
-     * Initialise the BigQueueManagementService by retrieving the context machine from the ContextMachineCache
-     * based on the context instance ID and creating a new instance of BigQueueContextMachineManagementServiceImpl.
-     */
-    private void initialiseBigQueueManagementService() {
-        ContextMachine contextMachine = ContextMachineCache.instance()
-            .getByContextInstanceId(contextInstance.getId());
-
-        this.bigQueueManagementService =
-            new BigQueueContextMachineManagementServiceImpl(contextMachine.getInboundQueueName(),
-                contextMachine.getInboundQueue(), contextMachine.getOutboundQueueName(),
-                contextMachine.getOutboundQueue(), contextMachine.getDeadLetterQueueName(),
-                contextMachine.getDeadLetterQueue());
     }
 
     /**
@@ -151,7 +131,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                         int counter = 0;
                         ContextMachine contextMachine = ContextMachineCache.instance()
                             .getByContextInstanceId(contextInstance.getId());
-                        for (BigQueueMessage bigQueueMessage : this.bigQueueManagementService.getMessages(contextMachine.getDeadLetterQueueName())) {
+                        for (BigQueueMessage bigQueueMessage : contextMachine.getDlqMessages()) {
                             contextMachine.resubmitMessageFromDeadLetterQueue(bigQueueMessage.getMessageId());
                             counter++;
                         }
@@ -215,7 +195,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                     try {
                         ContextMachine contextMachine = ContextMachineCache.instance()
                             .getByContextInstanceId(contextInstance.getId());
-                        bigQueueManagementService.deleteAllMessage(contextMachine.getDeadLetterQueueName());
+                        contextMachine.deleteAllDlqMessages();
                         ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_ALL_DLQ_MESSAGES_DELETED
                             , String.format("Deleted all DLQ messages for job plan [%s] with instance id [%s]"
@@ -433,8 +413,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                         try {
                             ContextMachine contextMachine = ContextMachineCache.instance()
                                 .getByContextInstanceId(contextInstance.getId());
-                            this.bigQueueManagementService.deleteMessage(contextMachine.getDeadLetterQueueName(),
-                                bigQueueMessage.getMessageId());
+                            contextMachine.deleteDlqMessage(bigQueueMessage.getMessageId());
                             ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
                             this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DLQ_MESSAGE_DELETED
                                 , String.format("Deleted DLQ message[%s], with content[%s] for job plan [%s] with instance id [%s]"
@@ -525,7 +504,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
         try {
             ContextMachine contextMachine = ContextMachineCache.instance()
                 .getByContextInstanceId(contextInstance.getId());
-            List<BigQueueMessage> results = this.bigQueueManagementService.getMessages(contextMachine.getDeadLetterQueueName());
+            List<BigQueueMessage> results = contextMachine.getDlqMessages();
 
             if(filter.getMessageId() != null && !filter.getMessageId().isEmpty()) {
                 results = results.stream()

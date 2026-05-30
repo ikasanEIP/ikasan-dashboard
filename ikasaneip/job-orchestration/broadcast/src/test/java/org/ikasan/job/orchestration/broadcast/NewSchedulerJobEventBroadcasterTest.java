@@ -38,7 +38,7 @@ public class NewSchedulerJobEventBroadcasterTest {
     public void resetListeners() throws Exception {
         Field listenersField = NewSchedulerJobEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
-        listenersField.set(null, new WeakHashMap<>());
+        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
         Field remoteListenerField = NewSchedulerJobEventBroadcaster.class.getDeclaredField("remoteListener");
         remoteListenerField.setAccessible(true);
         remoteListenerField.set(null, null);

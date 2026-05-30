@@ -175,6 +175,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     @Autowired
     private ContextParametersInstanceService contextParametersInstanceService;
+    @Resource
+    private org.ikasan.dashboard.cluster.service.LeaderElectionService leaderElectionService;
 
     @Value("${scheduler.provision.jobs.on.upload:true}")
     private boolean uploadProvisionJobs;
@@ -228,6 +230,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
             this.contextInstanceSchedulerService, this.contextParametersInstanceService, this.systemEventSearchService, removeTrailingPlanNameContextAfterUnderscore,
             this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationLevelDistance);
+        this.contextTemplateWidget.setLeaderElectionService(leaderElectionService);
         this.contextTemplateWidget.setVisible(false);
 
 

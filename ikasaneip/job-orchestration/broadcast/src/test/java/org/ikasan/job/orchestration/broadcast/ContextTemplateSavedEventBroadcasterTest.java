@@ -38,7 +38,7 @@ public class ContextTemplateSavedEventBroadcasterTest {
     public void resetListeners() throws Exception {
         Field listenersField = ContextTemplateSavedEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
-        listenersField.set(null, new WeakHashMap<>());
+        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
         Field remoteListenerField = ContextTemplateSavedEventBroadcaster.class.getDeclaredField("remoteListener");
         remoteListenerField.setAccessible(true);
         remoteListenerField.set(null, null);

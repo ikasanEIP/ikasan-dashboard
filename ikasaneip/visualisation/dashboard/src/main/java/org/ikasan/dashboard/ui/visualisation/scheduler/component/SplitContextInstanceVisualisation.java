@@ -19,6 +19,7 @@ import org.ikasan.designer.CanvasInitialisedListener;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -181,8 +182,10 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
             this.setPadding(false);
             this.setMargin(false);
 
-            if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+            ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+            if(machine != null) {
+                ContextInstance refreshed = machine.getContext();
+                if(refreshed != null) this.contextInstance = refreshed;
             }
 
             this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation("", this.moduleMetaDataService,
@@ -370,7 +373,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
         if(event.getContextInstance() != null && this.childContextInstance != null && this.childContextInstance.getId().equals(event.getContextInstance().getId())) {
             if(this.ui != null && this.ui.isAttached()) {
                 this.ui.access(() -> {
-                    if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                    if (ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())) {
                         this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                     }
 
@@ -386,7 +389,7 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
         if(this.ui != null && this.ui.isAttached() && event.getContextInstance().getId().equals(this.contextInstance.getId())) {
             this.ui.access(() -> {
-                if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                if (ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())) {
                     this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                 }
             });

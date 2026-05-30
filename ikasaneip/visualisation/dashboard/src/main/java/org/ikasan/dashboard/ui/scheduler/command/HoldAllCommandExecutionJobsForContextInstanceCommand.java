@@ -8,22 +8,14 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
-import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
-import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -31,7 +23,6 @@ public class HoldAllCommandExecutionJobsForContextInstanceCommand {
     private Logger logger = LoggerFactory.getLogger(HoldAllCommandExecutionJobsForContextInstanceCommand.class);
     private ContextInstance contextInstance;
     private SchedulerJobInstanceService schedulerJobInstanceService;
-    private ScheduledContextInstanceService scheduledContextInstanceService;
     private SystemEventLogger systemEventLogger;
     private IkasanAuthentication ikasanAuthentication;
 
@@ -62,7 +53,7 @@ public class HoldAllCommandExecutionJobsForContextInstanceCommand {
                 this.ikasanI18NProvider.getTranslation("progress-dialog.hold-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
             final UI current = UI.getCurrent();
-            Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ContextInstanceTreeViewWidget"));
+            Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("HoldAllCommand"));
             executor.execute(() -> {
                 ContextMachine contextMachine = ContextMachineCache.instance()
                     .getByContextInstanceId(this.contextInstance.getId());
@@ -70,23 +61,14 @@ public class HoldAllCommandExecutionJobsForContextInstanceCommand {
                 if (contextMachine != null) {
                     boolean error = false;
                     try {
-                        List<SchedulerJobInstanceRecord> updatedRecords = this.schedulerJobInstanceService
-                            .holdJobsWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
-
-                        if (updatedRecords.size() > 0) {
-                            updatedRecords.forEach(schedulerJobInstanceRecord -> {
-                                SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
-                                    = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
-                                    contextMachine.getContext(), InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
-                                SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
-                            });
-                        }
-
-                        ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                            , contextMachine.getContext().getName(), contextMachine.getContext().getId()), this.ikasanAuthentication.getName());
+                        contextMachine.holdJobs(this.contextInstance.getName());
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS,
+                            String.format("Job Plan Name[%s], Job Plan Identifier[%s]",
+                                this.contextInstance.getName(), this.contextInstance.getId()),
+                            this.ikasanAuthentication.getName());
                     } catch (Exception e) {
-                        logger.error(String.format("An error has occurred holding all jobs for job plan[%s] with instance id[%s]!", contextInstance.getName(), contextInstance.getId()), e);
+                        logger.error(String.format("An error has occurred holding all jobs for job plan[%s] with instance id[%s]!",
+                            contextInstance.getName(), contextInstance.getId()), e);
                         error = true;
                     } finally {
                         boolean finalError = error;

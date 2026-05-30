@@ -127,16 +127,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(new HashSet<RoleModule>().iterator(), new HashSet<RoleModule>().iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>();
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING)),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
@@ -170,16 +166,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(new HashSet<RoleModule>().iterator(), new HashSet<RoleModule>().iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>();
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING)),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
@@ -216,16 +208,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -390,16 +378,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -564,16 +548,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
@@ -743,16 +723,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
@@ -926,16 +902,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -1104,16 +1076,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -1282,16 +1250,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
@@ -1465,16 +1429,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
@@ -1648,16 +1608,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -1826,16 +1782,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -2004,16 +1956,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
@@ -2187,16 +2135,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
@@ -2370,16 +2314,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -2548,16 +2488,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -2726,16 +2662,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
@@ -2909,16 +2841,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
@@ -3093,16 +3021,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -3295,16 +3219,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
@@ -3496,16 +3416,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
@@ -3576,16 +3492,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
@@ -3656,16 +3568,12 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
+        Set<IkasanPrincipal> principals = new HashSet<>(Set.of(this.principal));
+        Set<Role> roles = new HashSet<>(Set.of(this.role));
+        Set<RoleModule> roleModules = new HashSet<>(Set.of(this.roleModule));
+        Mockito.when(super.user.getPrincipals()).thenReturn(principals);
+        Mockito.when(this.principal.getRoles()).thenReturn(roles);
+        Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),

@@ -14,6 +14,7 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -29,6 +30,7 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.dashboard.cluster.service.LeaderElectionService;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateEnableDisableEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
@@ -113,6 +115,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private SubMenu activeContextSubMenu;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
+    private LeaderElectionService leaderElectionService;
     private UI ui;
     private boolean removeTrailingPlanNameContextAfterUnderscore;
     private int jobPlanIntervalMultiple;
@@ -552,6 +555,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             }
 
             enableQuartzScheduledJobsButton.addClickListener(event -> {
+                if (showFollowerNodeNotSupportedDialog()) return;
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.enable-scheduled-jobs-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog.enable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
@@ -587,6 +591,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             });
 
             disableQuartzScheduledJobsButton.addClickListener(event -> {
+                if (showFollowerNodeNotSupportedDialog()) return;
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.disable-scheduled-jobs-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog.disable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
@@ -712,6 +717,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
             ComponentSecurityVisibility.applySecurity(this.authentication, newContextInstance, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
                 , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
             newContextInstance.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if (showFollowerNodeNotSupportedDialog()) return;
                 ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                 if((!record.getContext().isAbleToRunConcurrently()
                     && ((ContextMachineCache.instance().getFirstByContextName(scheduledContextRecord.getContextName()) != null
@@ -840,6 +846,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 UI ui = UI.getCurrent();
 
                 enabled.addClickListener(event -> {
+                    if (showFollowerNodeNotSupportedDialog()) return;
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm.enable-context-header", UI.getCurrent().getLocale()));
                     confirmDialog.setText(getTranslation("confirm.enable-context-body", UI.getCurrent().getLocale()));
@@ -869,7 +876,12 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 this.scheduledContextService.save(refreshedScheduledContextRecord);
                                 this.contextInstanceSchedulerService.registerStartJobAndTrigger(contextTemplate,
                                     contextTemplate.getTimezone());
-                                contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                                // ui.access() required: this lambda runs on the widget's background executor thread,
+                                // not the Vaadin event thread. Calling refreshAll() directly from a non-Vaadin
+                                // thread is a threading violation in Vaadin Flow 24.x.
+                                if(ui != null && ui.isAttached()) {
+                                    ui.access(() -> contextTemplateFilteringGrid.getDataProvider().refreshAll());
+                                }
                                 this.updateActiveContextMenu();
 
                                 String action = String.format("Job plan [%s] has been enabled.", scheduledContextRecord.getContextName());
@@ -912,6 +924,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     , SecurityConstants.SCHEDULER_ALL_ADMIN);
 
                 disabled.addClickListener(event -> {
+                    if (showFollowerNodeNotSupportedDialog()) return;
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm.disable-context-header", UI.getCurrent().getLocale()));
                     confirmDialog.setText(getTranslation("confirm.disable-context-body", UI.getCurrent().getLocale()));
@@ -952,7 +965,12 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 JobLockCacheImpl.instance().removeJobsLocksForContext(contextTemplate);
 
                                 this.scheduledContextService.save(record);
-                                contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                                // ui.access() required: this lambda runs on the widget's background executor thread,
+                                // not the Vaadin event thread. Calling refreshAll() directly from a non-Vaadin
+                                // thread is a threading violation in Vaadin Flow 24.x.
+                                if(ui != null && ui.isAttached()) {
+                                    ui.access(() -> contextTemplateFilteringGrid.getDataProvider().refreshAll());
+                                }
                                 this.updateActiveContextMenu();
 
                                 String action = String.format("Job plan [%s] has been disabled.", scheduledContextRecord.getContextName());
@@ -1008,6 +1026,25 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
         this.contextTemplateFilteringGrid.addGridFiltering(hr, contextSearchFilter::setContextName, "moduleName");
+    }
+
+    public void setLeaderElectionService(LeaderElectionService leaderElectionService) {
+        this.leaderElectionService = leaderElectionService;
+    }
+
+    /**
+     * Shows a dialog explaining that the requested operation is not available on follower nodes.
+     * Returns true if the dialog was shown (i.e. this node is not the leader), so callers can
+     * short-circuit: {@code if (showFollowerNodeNotSupportedDialog()) return;}
+     */
+    private boolean showFollowerNodeNotSupportedDialog() {
+        if (leaderElectionService == null || leaderElectionService.isLeader()) return false;
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader("Operation Not Available");
+        dialog.setText("This operation is not currently supported on follower nodes. Please perform this action on the cluster leader.");
+        dialog.setConfirmText("Close");
+        dialog.open();
+        return true;
     }
 
     /**
@@ -1179,20 +1216,43 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
     @Override
     public void receiveBroadcast(ContextInstance event) {
-        this.updateActiveContextMenu();
+        // ui.access() required: receiveBroadcast is called from the broadcaster's background executor
+        // thread. Vaadin Flow 24.x requires all UI mutations to run on the Vaadin event thread
+        // (or via ui.access()). The null-check guards the race window between onDetach() setting
+        // ui=null and unregister() removing this listener.
+        if(this.ui != null && this.ui.isAttached()) {
+            this.ui.access(this::updateActiveContextMenu);
+        }
     }
 
     @Override
     public void receiveContextTemplateSavedEventBroadcast(ContextTemplate contextTemplate) {
-        if(this.ui.isAttached()) {
-            this.ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
+        // ui.access() required: called from a background broadcaster thread — see receiveBroadcast(ContextInstance).
+        // init() is called first because the widget lazily initialises its data provider only when the user
+        // first clicks the "Job Plans" tab. Before that, refreshAll() would be a no-op on the default
+        // empty ListDataProvider. init() is idempotent (guarded by if(!initialised)) so calling it again
+        // after the tab has already been opened is safe.
+        if(this.ui != null && this.ui.isAttached()) {
+            this.ui.access(() -> {
+                this.init();
+                this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
+            });
         }
     }
 
     @Override
     public void receiveBroadcast(ContextTemplate contextTemplate) {
-        if(this.ui.isAttached()) {
-            this.ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
+        // Primary fix for asymmetric cluster broadcast (node1→node2 enable/disable not reflected on node2 UI).
+        // Root cause: if the user on this node has not yet clicked the "Job Plans" tab, init() has not been
+        // called, so the grid still has Vaadin's default empty ListDataProvider and refreshAll() is a no-op.
+        // Calling init() here (idempotent — guarded by if(!initialised)) ensures the backend data provider
+        // (DataProvider.fromFilteringCallbacks → Solr) is wired up before refreshAll() triggers a re-query.
+        // ui.access() required: called from a background broadcaster thread — see receiveBroadcast(ContextInstance).
+        if(this.ui != null && this.ui.isAttached()) {
+            this.ui.access(() -> {
+                this.init();
+                this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
+            });
         }
     }
 }

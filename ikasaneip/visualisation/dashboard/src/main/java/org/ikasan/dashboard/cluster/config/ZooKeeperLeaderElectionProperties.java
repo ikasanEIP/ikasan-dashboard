@@ -17,6 +17,26 @@ public class ZooKeeperLeaderElectionProperties {
     private String namespace = "ikasan";
     private String leaderPath = "/leader";
 
+    /**
+     * The base URL of this node (e.g. http://node1:9090). Registered as the LeaderLatch
+     * participant ID so that follower nodes can resolve the leader's URL directly from ZooKeeper
+     * rather than fan-out probing every peer. Must match one of the peer URLs configured on
+     * other nodes' ikasan.dashboard.cluster.node-urls. Required when ZooKeeper clustering is enabled.
+     */
+    private String nodeUrl;
+
+    /**
+     * How many times a follower will re-query ZooKeeper for the current leader URL and retry
+     * the REST call when the targeted leader returns no result (e.g. during a leadership
+     * transition). Defaults to 3.
+     */
+    private int leaderLookupRetries = 3;
+
+    /**
+     * Milliseconds to wait between leader lookup retries. Defaults to 500ms.
+     */
+    private long leaderLookupRetryIntervalMs = 500;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -79,5 +99,29 @@ public class ZooKeeperLeaderElectionProperties {
 
     public void setLeaderPath(String leaderPath) {
         this.leaderPath = leaderPath;
+    }
+
+    public String getNodeUrl() {
+        return nodeUrl;
+    }
+
+    public void setNodeUrl(String nodeUrl) {
+        this.nodeUrl = nodeUrl;
+    }
+
+    public int getLeaderLookupRetries() {
+        return leaderLookupRetries;
+    }
+
+    public void setLeaderLookupRetries(int leaderLookupRetries) {
+        this.leaderLookupRetries = leaderLookupRetries;
+    }
+
+    public long getLeaderLookupRetryIntervalMs() {
+        return leaderLookupRetryIntervalMs;
+    }
+
+    public void setLeaderLookupRetryIntervalMs(long leaderLookupRetryIntervalMs) {
+        this.leaderLookupRetryIntervalMs = leaderLookupRetryIntervalMs;
     }
 }

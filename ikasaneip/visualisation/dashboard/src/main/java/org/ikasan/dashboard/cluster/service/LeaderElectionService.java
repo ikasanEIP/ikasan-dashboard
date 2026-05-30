@@ -25,6 +25,15 @@ public interface LeaderElectionService {
     boolean isLeader();
 
     /**
+     * Returns the base URL of the current cluster leader as registered in the leader election
+     * mechanism, or null if leadership has not been established or this implementation does not
+     * support URL-based leader discovery (e.g. fixed-role mode).
+     *
+     * @return the leader's base URL, or null
+     */
+    String getLeaderUrl();
+
+    /**
      * Block until this instance becomes the leader.
      *
      * @throws InterruptedException if the thread is interrupted while waiting
