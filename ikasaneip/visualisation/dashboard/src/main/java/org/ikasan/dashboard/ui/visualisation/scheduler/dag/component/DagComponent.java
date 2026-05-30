@@ -12,6 +12,7 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -248,8 +249,10 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
     }
 
     private void refreshContextInstance() {
-        if (ContextMachineCache.instance().containsInstanceIdentifier(this.parentContextInstance.getId())) {
-            this.parentContextInstance = ContextMachineCache.instance().getByContextInstanceId(this.parentContextInstance.getId()).getContext();
+        ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(this.parentContextInstance.getId());
+        if(machine != null) {
+            ContextInstance refreshed = machine.getContext();
+            if(refreshed != null) this.parentContextInstance = refreshed;
         }
     }
 

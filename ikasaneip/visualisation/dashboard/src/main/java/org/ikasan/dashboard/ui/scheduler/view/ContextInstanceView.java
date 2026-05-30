@@ -116,6 +116,9 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     @Autowired
     private SystemEventSearchService systemEventSearchService;
 
+    @Resource
+    private org.ikasan.dashboard.cluster.service.LeaderElectionService leaderElectionService;
+
     @Value("${job.visualisation.vertical.spacing:120}")
     protected double jobVisualisationVerticalSpacing;
     @Value("${job.visualisation.horizontal.spacing:400}")
@@ -174,6 +177,7 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
                     , this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService, this.contextInstanceSchedulerService, this.systemEventSearchService
                     , this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance, this.contextVisualisationNodeDistance);
             }
+            this.contextInstanceWidget.setLeaderElectionService(leaderElectionService);
 
             this.getStyle().set("padding-top", "0px");
             this.add(this.contextInstanceWidget);

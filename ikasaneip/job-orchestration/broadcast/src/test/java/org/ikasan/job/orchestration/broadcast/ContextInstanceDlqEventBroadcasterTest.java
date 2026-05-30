@@ -36,10 +36,11 @@ public class ContextInstanceDlqEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        // Use reflection to reset the static listeners map
+        // localListeners is static final — clear the existing instance rather than replacing it,
+        // since Java 17 refuses reflective writes to final fields.
         Field listenersField = ContextInstanceDlqEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
-        listenersField.set(null, new WeakHashMap<>());
+        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
         Field remoteListenerField = ContextInstanceDlqEventBroadcaster.class.getDeclaredField("remoteListener");
         remoteListenerField.setAccessible(true);
         remoteListenerField.set(null, null);

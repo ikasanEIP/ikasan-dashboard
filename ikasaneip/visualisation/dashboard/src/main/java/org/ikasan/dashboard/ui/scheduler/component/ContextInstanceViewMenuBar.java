@@ -12,6 +12,7 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextViewUpdateEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -85,8 +86,10 @@ public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstan
             contextProfileRecord.getContextProfile().getSubContexts().forEach(s -> {
                 subMenu.addItem(s, menuItemClickEvent -> {
                     try {
-                        if(ContextMachineCache.instance().containsInstanceIdentifier(contextInstance.getId())) {
-                            this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId()).getContext();
+                        ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId());
+                        if(machine != null) {
+                            ContextInstance refreshed = machine.getContext();
+                            if(refreshed != null) this.contextInstance = refreshed;
                         }
 
                         if (this.contextInstance.getName().equals(s)) {
@@ -122,8 +125,10 @@ public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstan
             contextProfileRecord.getContextProfile().getSubContexts().forEach(s -> {
                 myMenuItemSubMenuItem.addItem(s, menuItemClickEvent -> {
                     try {
-                        if(ContextMachineCache.instance().containsInstanceIdentifier(contextInstance.getId())) {
-                            this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId()).getContext();
+                        ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId());
+                        if(machine != null) {
+                            ContextInstance refreshed = machine.getContext();
+                            if(refreshed != null) this.contextInstance = refreshed;
                         }
 
                         if (this.contextInstance.getName().equals(s)) {

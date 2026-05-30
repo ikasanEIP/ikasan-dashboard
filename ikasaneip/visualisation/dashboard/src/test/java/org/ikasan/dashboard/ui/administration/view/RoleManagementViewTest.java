@@ -29,6 +29,8 @@ import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 
 public class RoleManagementViewTest extends UITest
 {
+    private static volatile boolean baselineDataLoaded = false;
+
     @Autowired
     private SecurityService securityService;
     @Autowired
@@ -42,13 +44,16 @@ public class RoleManagementViewTest extends UITest
 
     @Override
     public void setup_expectations() throws IOException {
-        BaselineSecurityDataLoader baselineSecurityDataLoader
-            = new BaselineSecurityDataLoader(this.policyDao, this.roleDao,
-                this.principalDao, this.userDao);
-        try {
-            baselineSecurityDataLoader.execute();
-        } catch (SolrDataJobException e) {
-            throw new RuntimeException(e);
+        if (!baselineDataLoaded) {
+            BaselineSecurityDataLoader baselineSecurityDataLoader
+                = new BaselineSecurityDataLoader(this.policyDao, this.roleDao,
+                    this.principalDao, this.userDao);
+            try {
+                baselineSecurityDataLoader.execute();
+                baselineDataLoaded = true;
+            } catch (SolrDataJobException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         IkasanPrincipal ikasanPrincipal = securityService.createPrincipal();

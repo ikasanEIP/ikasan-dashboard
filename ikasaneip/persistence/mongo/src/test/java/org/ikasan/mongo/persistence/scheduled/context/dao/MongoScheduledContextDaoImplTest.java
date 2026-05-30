@@ -10,6 +10,7 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,8 @@ public class MongoScheduledContextDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
-    static {
+    @BeforeClass
+    public static void startContainer() {
         mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:7.0"));
         mongoDBContainer.start();
     }

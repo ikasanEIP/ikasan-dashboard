@@ -88,8 +88,16 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                 return;
             }
 
+            // This producer is the terminal step of the inbound event flow: scheduling agents send
+            // completion events to the dashboard node they are configured to reach, which must be
+            // the leader. If the machine is not local (null), the event
+            // is either stale (context already ENDED/COMPLETE in Solr) and is discarded, or it is
+            // an error that is raised to the hospital for investigation. Switching to isLeaderForContextInstance
+            // would make a stale-former-leader scenario worse by stranding live events in the hospital
+            // rather than attempting local processing; the correct fix for mis-routed events is at
+            // the agent configuration / load-balancer layer, not here.
             ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
+                .getLocalByContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
 
             if(contextMachine == null) {
 

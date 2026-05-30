@@ -11,6 +11,7 @@ import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -223,8 +224,10 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
         try {
             this.close();
             logger.info("context " + context);
-            if(ContextMachineCache.instance().containsInstanceIdentifier(this.rootContextInstance.getId())) {
-                this.rootContextInstance = ContextMachineCache.instance().getByContextInstanceId(this.rootContextInstance.getId()).getContext();
+            ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(this.rootContextInstance.getId());
+            if(machine != null) {
+                ContextInstance refreshed = machine.getContext();
+                if(refreshed != null) this.rootContextInstance = refreshed;
             }
             ContextInstance child = ContextHelper.getChildContextInstance(context.getName(), this.rootContextInstance);
             JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(moduleMetaDataService,

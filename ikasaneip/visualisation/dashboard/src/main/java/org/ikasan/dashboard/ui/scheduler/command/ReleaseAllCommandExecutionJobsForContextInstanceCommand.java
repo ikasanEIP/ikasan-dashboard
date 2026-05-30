@@ -8,19 +8,19 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
-import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ReleaseAllCommandExecutionJobsForContextInstanceCommand {
+    private Logger logger = LoggerFactory.getLogger(ReleaseAllCommandExecutionJobsForContextInstanceCommand.class);
     private ContextInstance contextInstance;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private SystemEventLogger systemEventLogger;
@@ -39,50 +39,41 @@ public class ReleaseAllCommandExecutionJobsForContextInstanceCommand {
     }
 
     public void execute() {
-        ContextMachine contextMachine = ContextMachineCache.instance()
-            .getByContextInstanceId(this.contextInstance.getId());
-        if (contextMachine != null) {
-            List<SchedulerJobInstanceRecord> jobsToReleaseWithinContext = this.schedulerJobInstanceService
-                .getJobsToReleaseWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
+        ConfirmDialog confirmDialog = new ConfirmDialog();
+        confirmDialog.setHeader(this.ikasanI18NProvider.getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
+        confirmDialog.setText(String.format(this.ikasanI18NProvider.getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale()), "all"));
+        confirmDialog.setConfirmText(this.ikasanI18NProvider.getTranslation("button.ok", UI.getCurrent().getLocale()));
+        confirmDialog.setCancelText(this.ikasanI18NProvider.getTranslation("button.cancel", UI.getCurrent().getLocale()));
+        confirmDialog.setCancelable(true);
+        confirmDialog.open();
 
-            ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader(this.ikasanI18NProvider.getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
-            confirmDialog.setText(String.format(this.ikasanI18NProvider.getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale())
-                , jobsToReleaseWithinContext.size()));
-            confirmDialog.setConfirmText(this.ikasanI18NProvider.getTranslation("button.ok", UI.getCurrent().getLocale()));
-            confirmDialog.setCancelText(this.ikasanI18NProvider.getTranslation("button.cancel", UI.getCurrent().getLocale()));
-            confirmDialog.setCancelable(true);
-            confirmDialog.open();
+        confirmDialog.addConfirmListener(confirmEvent -> {
+            ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+            dialog.open(this.ikasanI18NProvider.getTranslation("progress-dialog.release-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                this.ikasanI18NProvider.getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
 
-            confirmDialog.addConfirmListener(confirmEvent -> {
-                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                dialog.open(this.ikasanI18NProvider.getTranslation("progress-dialog.release-all-jobs-jobs-header", UI.getCurrent().getLocale()),
-                    this.ikasanI18NProvider.getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
+            final UI current = UI.getCurrent();
+            Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ReleaseAllCommand"));
+            executor.execute(() -> {
+                ContextMachine contextMachine = ContextMachineCache.instance()
+                    .getByContextInstanceId(this.contextInstance.getId());
 
-                final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("ReleaseAllCommand"));
-                executor.execute(() -> {
+                if (contextMachine != null) {
                     boolean error = false;
                     try {
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                            ,  contextMachine.getContext().getName(), contextMachine.getContext().getId()), this.ikasanAuthentication.getName());
-                        if (jobsToReleaseWithinContext.size() > 0) {
-                            for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : jobsToReleaseWithinContext) {
-                                contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
-                                    schedulerJobInstanceRecord.getChildContextName());
-                            }
-                        }
-                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
-                            , contextMachine.getContext().getName(), contextMachine.getContext().getId()), this.ikasanAuthentication.getName());
-                        ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
+                        contextMachine.releaseJobs(this.contextInstance.getName());
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END,
+                            String.format("Job Plan Name[%s], Job Plan Identifier[%s]",
+                                this.contextInstance.getName(), this.contextInstance.getId()),
+                            this.ikasanAuthentication.getName());
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error(String.format("An error has occurred releasing all jobs for job plan[%s] with instance id[%s]!",
+                            contextInstance.getName(), contextInstance.getId()), e);
                         error = true;
                     } finally {
                         boolean finalError = error;
                         current.access(() -> {
                             dialog.close();
-
                             if (finalError) {
                                 NotificationHelper.showErrorNotification(this.ikasanI18NProvider.getTranslation("notification.all-jobs-released-error"
                                     , UI.getCurrent().getLocale()));
@@ -92,8 +83,8 @@ public class ReleaseAllCommandExecutionJobsForContextInstanceCommand {
                             }
                         });
                     }
-                });
+                }
             });
-        }
+        });
     }
 }

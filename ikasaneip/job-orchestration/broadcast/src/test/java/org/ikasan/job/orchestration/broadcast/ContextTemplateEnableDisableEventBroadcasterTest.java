@@ -38,7 +38,7 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
     public void resetListeners() throws Exception {
         Field listenersField = ContextTemplateEnableDisableEventBroadcaster.class.getDeclaredField("localListeners");
         listenersField.setAccessible(true);
-        listenersField.set(null, new WeakHashMap<>());
+        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
         Field remoteListenerField = ContextTemplateEnableDisableEventBroadcaster.class.getDeclaredField("remoteListener");
         remoteListenerField.setAccessible(true);
         remoteListenerField.set(null, null);

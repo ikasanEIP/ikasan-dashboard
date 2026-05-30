@@ -12,7 +12,7 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +25,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -39,7 +37,8 @@ public class MongoSchedulerJobInstanceDaoImplTest {
 
     public static MongoDBContainer mongoDBContainer;
 
-    static {
+    @BeforeClass
+    public static void startContainer() {
         mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:7.0"));
         mongoDBContainer.start();
     }

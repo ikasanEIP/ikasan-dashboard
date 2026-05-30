@@ -1006,6 +1006,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
                                 .findByName(this.contextTemplate.getName());
                             scheduledContextRecord.setContext(this.contextTemplate);
                             this.scheduledContextService.save(scheduledContextRecord);
+                            ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
                         }
                     });
                 })

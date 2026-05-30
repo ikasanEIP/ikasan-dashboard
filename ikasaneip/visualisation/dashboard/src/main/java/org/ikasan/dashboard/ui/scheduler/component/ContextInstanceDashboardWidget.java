@@ -39,6 +39,7 @@ import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBro
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
@@ -905,11 +906,8 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
                 layout.setPadding(false);
                 layout.setSizeFull();
 
-                ContextInstance instance = null;
-
-                if(ContextMachineCache.instance().containsInstanceIdentifier(preparedFutureJobPlanInstance.getContextInstanceId())) {
-                    instance = ContextMachineCache.instance().getByContextInstanceId(preparedFutureJobPlanInstance.getContextInstanceId()).getContext();
-                }
+                ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(preparedFutureJobPlanInstance.getContextInstanceId());
+                ContextInstance instance = machine != null ? machine.getContext() : null;
 
                 if(instance != null) {
                     AggregateContextInstanceStatus aggregateContextInstanceStatus =

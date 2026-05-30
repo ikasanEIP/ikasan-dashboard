@@ -53,11 +53,16 @@ import java.util.stream.IntStream;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class UITest {
 
+    // Docker Desktop on Linux only shares /home by default, so keep the data dir there.
+    private static final String SOLR_DATA_DIR = System.getProperty("user.home") + "/solr-data";
+
     static SolrContainer solr = new SolrContainer("solr:9.10.1");
 
     static {
         try {
-            FileUtils.cleanDirectory(new File("/tmp/solr-data"));
+            File solrDataDir = new File(SOLR_DATA_DIR);
+            FileUtils.forceMkdir(solrDataDir);
+            FileUtils.cleanDirectory(solrDataDir);
 
             URL schemaUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("./solr/ikasan/conf/managed-schema.xml");
@@ -77,7 +82,7 @@ public abstract class UITest {
                     MountableFile.forHostPath(solrConfigDir.getPath()),
                     "/var/solr/data/ikasan/conf"
                 )
-                .withFileSystemBind("/tmp/solr-data",
+                .withFileSystemBind(SOLR_DATA_DIR,
                     "/var/solr/data/ikasan", BindMode.READ_WRITE)
                 .withZookeeper(false)
                 .withSchema(schemaUrl);

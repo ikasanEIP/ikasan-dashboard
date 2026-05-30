@@ -21,8 +21,8 @@ import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -67,7 +67,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.*;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -1168,6 +1167,90 @@ public class ContextMachineTest extends AbstractTest {
         // Make sure the downstream job is initialised which indicates an event was raised to tell it to run!
         Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() ->
             jobName.get().equals("fw-hold"));
+    }
+
+    @Test
+    public void test_hold_jobs_delegates_to_service_and_fires_state_change_events() throws IOException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.holdJobsWithinContext(any(), any()))
+            .thenReturn(List.of(schedulerJobInstanceRecord));
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.holdJobs("Context3");
+
+        verify(schedulerJobInstanceService).holdJobsWithinContext(any(), eq("Context3"));
+    }
+
+    @Test
+    public void test_release_jobs_releases_held_jobs_returned_by_service() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+            .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ON_HOLD);
+
+        InternalEventDrivenJobInstanceImpl jobInstance = new InternalEventDrivenJobInstanceImpl();
+        jobInstance.setIdentifier("agentName1-jobName1");
+
+        when(this.schedulerJobInstanceService.getJobsToReleaseWithinContext(any(), any()))
+            .thenReturn(List.of(schedulerJobInstanceRecord));
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance()).thenReturn(jobInstance);
+        when(this.schedulerJobInstanceRecord.getChildContextName()).thenReturn("Context3");
+        lenient().when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        contextMachine.releaseJobs("Context3");
+
+        Assert.assertEquals(InstanceStatus.WAITING,
+            contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
+                .getScheduledJobsMap().get("agentName1-jobName1").getStatus());
+    }
+
+    @Test
+    public void test_update_context_parameters_sets_parameters_on_context_and_saves() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        ContextParameterInstanceImpl param1 = new ContextParameterInstanceImpl();
+        param1.setName("param1");
+        param1.setValue("value1");
+        ContextParameterInstanceImpl param2 = new ContextParameterInstanceImpl();
+        param2.setName("param2");
+        param2.setValue("value2");
+        List<ContextParameterInstance> parameters = List.of(param1, param2);
+
+        contextMachine.updateContextParameters(parameters);
+
+        Assert.assertEquals(parameters, contextMachine.getContext().getContextParameters());
     }
 
     @Test
@@ -8580,6 +8663,63 @@ public class ContextMachineTest extends AbstractTest {
 
         // Assert that the offending message has been processed from the inbound queue.
         Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> Assert.assertEquals(0, inboundQueue.size()));
+    }
+
+    @Test
+    public void test_get_and_delete_dlq_message() throws IOException, JSONException, InvalidContextTemplateException, BigQueueNotFoundException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.setId(UUID.randomUUID().toString());
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, this.scheduledContextInstanceService, new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        IBigQueue deadLetterQueue = (IBigQueue) ReflectionTestUtils.getField(contextMachine, "deadLetterQueue");
+        BigQueueMessage<String> bigQueueMessage = new BigQueueMessageBuilder<String>().withMessage("dlq-message").build();
+        deadLetterQueue.enqueue(objectMapper.writeValueAsBytes(bigQueueMessage));
+
+        List<BigQueueMessage> messages = contextMachine.getDlqMessages();
+
+        Assert.assertEquals(1, messages.size());
+        Assert.assertEquals(bigQueueMessage.getMessageId(), messages.get(0).getMessageId());
+        Assert.assertFalse(contextMachine.deleteDlqMessage("bad-message-id"));
+        Assert.assertEquals(1, contextMachine.getDlqMessages().size());
+        Assert.assertTrue(contextMachine.deleteDlqMessage(bigQueueMessage.getMessageId()));
+        Assert.assertTrue(contextMachine.getDlqMessages().isEmpty());
+    }
+
+    @Test
+    public void test_delete_all_dlq_messages() throws IOException, JSONException, InvalidContextTemplateException, BigQueueNotFoundException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.setId(UUID.randomUUID().toString());
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachineImpl contextMachine = new ContextMachineImpl(context, contextInstance, this.scheduledContextInstanceService, new HashMap<>(), new HashMap<>()
+            , internalEventDrivenJobs, new HashMap<>(), new HashMap<>(), new HashMap<>(), new HashMap<>(), this.queueDir, new HashMap<>(), moduleMetadataService, JobLockCacheImpl.instance()
+            , contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, contextInstancePublicationService, this.jobUtilsService);
+        contextMachine.init();
+
+        IBigQueue deadLetterQueue = (IBigQueue) ReflectionTestUtils.getField(contextMachine, "deadLetterQueue");
+        deadLetterQueue.enqueue(objectMapper.writeValueAsBytes(new BigQueueMessageBuilder<String>().withMessage("dlq-message-1").build()));
+        deadLetterQueue.enqueue(objectMapper.writeValueAsBytes(new BigQueueMessageBuilder<String>().withMessage("dlq-message-2").build()));
+
+        Assert.assertEquals(2, contextMachine.getDlqMessages().size());
+
+        contextMachine.deleteAllDlqMessages();
+
+        Assert.assertTrue(contextMachine.getDlqMessages().isEmpty());
     }
 
     @Test

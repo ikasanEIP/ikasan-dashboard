@@ -23,6 +23,7 @@ import org.ikasan.designer.event.*;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -221,9 +222,10 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
             String identifier = ContextHelper.getIdentifier(canvasItemDoubleClickEvent.getFigure()
                 .getUserData().getIdentifier());
 
-            if(ContextMachineCache.instance().containsInstanceIdentifier(this.parentContextInstance.getId())) {
-                this.parentContextInstance = ContextMachineCache.instance()
-                    .getByContextInstanceId(this.parentContextInstance.getId()).getContext();
+            ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(this.parentContextInstance.getId());
+            if(machine != null) {
+                ContextInstance refreshed = machine.getContext();
+                if(refreshed != null) this.parentContextInstance = refreshed;
             }
 
             ContextInstance contextInstance = ContextHelper.getChildContextInstance(identifier,

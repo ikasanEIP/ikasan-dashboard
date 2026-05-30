@@ -42,6 +42,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateTo
 import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.dashboard.cluster.service.LeaderElectionService;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
@@ -61,6 +62,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventLocalBroadcastListener;
@@ -152,6 +154,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private Button contextInstanceEndButton;
     private Button ignoreContextInstanceEndButton;
     private Button resetContextButton;
+    private LeaderElectionService leaderElectionService;
     private Button contextInstanceParameterButton;
     private Button jobLockDashboard;
     private Tab treeTab;
@@ -960,19 +963,20 @@ public class ContextInstanceWidget extends VerticalLayout
         this.disableQuartzScheduledJobsButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+        ContextInstance liveContext = contextMachine != null ? contextMachine.getContext() : null;
 
-        if(contextMachine == null) {
+        if(liveContext == null) {
             this.enableQuartzScheduledJobsButton.setVisible(false);
             this.disableQuartzScheduledJobsButton.setVisible(false);
         }
-        else if(contextMachine.getContext().isQuartzScheduleDrivenJobsDisabledForContext()
+        else if(liveContext.isQuartzScheduleDrivenJobsDisabledForContext()
             && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
             enableQuartzScheduledJobsButton.setVisible(true);
             disableQuartzScheduledJobsButton.setVisible(false);
         }
-        else if(!contextMachine.getContext().isQuartzScheduleDrivenJobsDisabledForContext()
+        else if(!liveContext.isQuartzScheduleDrivenJobsDisabledForContext()
             && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
@@ -982,6 +986,9 @@ public class ContextInstanceWidget extends VerticalLayout
 
         enableQuartzScheduledJobsButton.addClickListener(event -> {
             actionPopup.close();
+            if (showFollowerNodeNotSupportedDialog()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.enable-scheduled-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.enable-scheduled-jobs-body", UI.getCurrent().getLocale()));
@@ -1022,6 +1029,9 @@ public class ContextInstanceWidget extends VerticalLayout
 
         disableQuartzScheduledJobsButton.addClickListener(event -> {
             actionPopup.close();
+            if (showFollowerNodeNotSupportedDialog()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.disable-scheduled-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.disable-scheduled-jobs-body", UI.getCurrent().getLocale()));
@@ -1128,9 +1138,9 @@ public class ContextInstanceWidget extends VerticalLayout
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 try {
-                    if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                        ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId())
-                            .runContextUntilManuallyEnded();
+                    ContextMachine runUntilMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                    if(runUntilMachine != null) {
+                        runUntilMachine.runContextUntilManuallyEnded();
                         ignoreContextInstanceEndButton.setVisible(false);
                         contextInstanceEndButton.setVisible(true);
 
@@ -1156,6 +1166,9 @@ public class ContextInstanceWidget extends VerticalLayout
         this.resetContextButton.setEnabled(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         this.resetContextButton.addClickListener(event -> {
             actionPopup.close();
+            if (showFollowerNodeNotSupportedDialog()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.reset-context", UI.getCurrent().getLocale()));
             confirmDialog.setConfirmText(getTranslation("button.ok"));
@@ -1197,12 +1210,9 @@ public class ContextInstanceWidget extends VerticalLayout
             contextInstanceParameterDialog.addOpenedChangeListener(openedChangeEvent -> {
                 if(!openedChangeEvent.isOpened() && contextInstanceParameterDialog.isSaveClose()) {
                     try {
-                        if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                            ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId())
-                                .getContext().setContextParameters(contextInstanceParameterDialog.getContextParameters());
-                            ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId())
-                                .saveContext();
-
+                        ContextMachine paramMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                        if (paramMachine != null) {
+                            paramMachine.updateContextParameters(contextInstanceParameterDialog.getContextParameters());
                             NotificationHelper.showUserNotification(getTranslation("notification.job-plan-instance-parameters-updated-successfully"
                                 , UI.getCurrent().getLocale()));
                         } else {
@@ -1226,6 +1236,9 @@ public class ContextInstanceWidget extends VerticalLayout
 
         Button synchronisePlanWithAgentButton = new Button(getTranslation("button.synchronise-instance-with-agent"), VaadinIcon.REFRESH.create());
         synchronisePlanWithAgentButton.addClickListener(event -> {
+            if (showFollowerNodeNotSupportedDialog()) {
+                return;
+            }
             try {
                 contextMachine.propagateContextInstanceToAgents();
             }
@@ -1285,6 +1298,42 @@ public class ContextInstanceWidget extends VerticalLayout
         return wrapper;
     }
 
+    public void setLeaderElectionService(LeaderElectionService leaderElectionService) {
+        this.leaderElectionService = leaderElectionService;
+    }
+
+    /**
+     * Shows a dialog explaining that the requested operation is not available on follower nodes.
+     * Returns true if the dialog was shown so callers can short-circuit:
+     * {@code if (showFollowerNodeNotSupportedDialog()) return;}
+     *
+     * Strategy (two-layer):
+     * 1. ZooKeeper via the registered LeaderProvider — authoritative; correctly handles the
+     *    stale-former-leader case where local cache entries still exist after losing leadership.
+     *    Available when clustering is properly configured (fixed-role or ZooKeeper).
+     * 2. LeaderElectionService injected directly (setter) — used when available, same authority.
+     * 3. isLocal() fallback — reliable for deployments where neither leader-election source has
+     *    been wired in (e.g. default ZooKeeper config with ZooKeeper disabled). Misses the
+     *    stale-former-leader case but is safe for standard single/unconfigured setups.
+     */
+    private boolean showFollowerNodeNotSupportedDialog() {
+        boolean isFollower = !ContextMachineCache.instance().isLeader();
+        if (!isFollower && leaderElectionService != null) {
+            isFollower = !leaderElectionService.isLeader();
+        }
+        if (!isFollower) {
+            ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+            isFollower = machine != null && !machine.isLocal();
+        }
+        if (!isFollower) return false;
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader("Operation Not Available");
+        dialog.setText("This operation is not currently supported on follower nodes. Please perform this action on the cluster leader.");
+        dialog.setConfirmText("Close");
+        dialog.open();
+        return true;
+    }
+
     /**
      * Helper method to reset the context instance with modified context parameters.
      *
@@ -1292,6 +1341,7 @@ public class ContextInstanceWidget extends VerticalLayout
      * @param initiateSameParams - init the new context instance with parameters from the one it is replacing.
      */
     private void resetContextInstanceWithModifiedContextParams(boolean hold, boolean initiateSameParams) {
+        if (!ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())) return;
         ContextMachine machine = ContextMachineCache.instance()
             .getByContextInstanceId(this.contextInstance.getId());
         if (machine != null) {
@@ -1315,13 +1365,20 @@ public class ContextInstanceWidget extends VerticalLayout
      * @param initiateSameParams - init the new context instance with parameters from the one it is replacing.
      */
     private void resetContextInstance(boolean hold, boolean initiateSameParams, List<ContextParameterInstance> contextParameterInstances) {
+        if (!ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())) return;
         ContextMachine machine = ContextMachineCache.instance()
             .getByContextInstanceId(this.contextInstance.getId());
         if (machine != null) {
             try {
                 machine.setDryRunParameters(null);
                 machine.getContext().setEndTime(System.currentTimeMillis());
+                InstanceStatus previousStatus = machine.getContext().getStatus();
                 this.saveContextInstance(machine.getContext(), InstanceStatus.ENDED);
+                // saveContextInstance sets status=ENDED on the in-memory object, so the internal
+                // state-change event inside resetContextInstance() sees (ENDED→ENDED) and is
+                // suppressed. Broadcast explicitly here so cluster peers see the ENDED transition.
+                ContextInstanceStateChangeEventBroadcaster.broadcast(new ContextInstanceStateChangeEventImpl(
+                    machine.getContext().getId(), machine.getContext(), previousStatus, InstanceStatus.ENDED));
                 machine.getContext().getAllNestedJobLocks().forEach(jobLockInstance -> {
                     JobLockCacheImpl.instance().resetLock(jobLockInstance.getName(), this.contextInstance.getEnvironmentGroup());
                 });

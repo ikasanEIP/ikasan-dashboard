@@ -727,8 +727,10 @@ public class SchedulerJobInstanceGridWidget extends Div
                     this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
                     this.contextVisualisationNodeDistance);
 
-                if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                    this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                if(machine != null) {
+                    ContextInstance refreshed = machine.getContext();
+                    if(refreshed != null) this.contextInstance = refreshed;
                 }
 
                 ContextInstance childContext = ContextHelper.getChildContextInstance(schedulerJobInstanceRecord.getChildContextName(), this.contextInstance);
@@ -1024,7 +1026,7 @@ public class SchedulerJobInstanceGridWidget extends Div
      * @return
      */
     private boolean canPerformAction() {
-        if(!ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+        if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()) == null) {
             if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
                 NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
                     , UI.getCurrent().getLocale()));

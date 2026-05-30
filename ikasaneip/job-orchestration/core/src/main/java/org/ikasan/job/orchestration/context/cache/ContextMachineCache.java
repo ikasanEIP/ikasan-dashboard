@@ -116,12 +116,16 @@ public class ContextMachineCache
         return contextMachines;
     }
 
+
     /**
      * Retrieves the ContextMachineImpl object corresponding to the given context instance ID.
+     * If the ID is not in the local cache and a {@link FallbackProvider} has been registered,
+     * the fallback is consulted before returning null.
      *
      * @param contextInstanceId The ID of the context instance to retrieve.
      * @return The ContextMachineImpl object associated with the given context instance ID,
-     *         or null if the context instance ID is null or does not exist in the cache.
+     *         or null if the context instance ID is null or does not exist in the cache (and
+     *         the fallback, if any, also returns null).
      */
     public ContextMachine getByContextInstanceId(String contextInstanceId)
     {
@@ -130,7 +134,11 @@ public class ContextMachineCache
 
         if(contextInstanceId == null) return null;
 
-        return this.contextInstanceByContextInstanceIdCache.get(contextInstanceId);
+        ContextMachine local = this.contextInstanceByContextInstanceIdCache.get(contextInstanceId);
+        if (local != null) return local;
+
+        FallbackProvider provider = this.fallbackProvider;
+        return provider != null ? provider.get(contextInstanceId) : null;
     }
 
     /**
@@ -178,19 +186,30 @@ public class ContextMachineCache
     }
 
     /**
-     * Checks if the given context instance identifier exists in the cache.
+     * Checks if the given context instance identifier is accessible — either in the local cache
+     * or, if a {@link FallbackProvider} is registered (cluster follower scenario), resolvable via
+     * the fallback (i.e. the instance lives on the leader node and operations can be proxied).
+     *
+     * UI action gates should use this method so that follower nodes can act on instances owned
+     * by the leader via the REST proxy. Event-processing paths that must only touch locally-owned
+     * instances should use {@link #getLocalByContextInstanceId} instead.
      *
      * @param contextInstanceId The context instance identifier to check.
-     * @return true if the context instance identifier exists in the cache, false otherwise.
+     * @return true if the context instance identifier exists locally or is resolvable via the fallback.
      */
     public boolean containsInstanceIdentifier(String contextInstanceId)
     {
         if(contextInstanceId == null) return false;
 
-        boolean result = this.contextInstanceByContextInstanceIdCache.containsKey(contextInstanceId);
+        if (this.contextInstanceByContextInstanceIdCache.containsKey(contextInstanceId)) {
+            logger.debug("Check contains[{}] - result [true] (local cache)", contextInstanceId);
+            return true;
+        }
 
-        logger.debug(String.format("Check contains[%s] - result [%s]"
-            , contextInstanceId, result));
+        FallbackProvider provider = this.fallbackProvider;
+        boolean result = provider != null && provider.get(contextInstanceId) != null;
+        logger.debug("Check contains[{}] - result [{}] ({})", contextInstanceId, result,
+            provider != null ? "fallback" : "no fallback registered");
         return result;
     }
 
@@ -249,5 +268,108 @@ public class ContextMachineCache
 
         cacheContexts.append("]");
         return cacheContexts.toString();
+    }
+
+    // Most of the changes below are just to help with testing. The exact mechanism for leader election and
+    // failover will be dealt with as a separate piece of work, but in the meantime these allow us to
+    // simulate the behaviour in tests without needing to set up a full cluster environment.
+
+    /**
+     * @TODO - This is a temporary method to help with testing. The real mechanism for leader
+     * election and failover will be dealt with as a separate piece of work.
+     * Optional fallback invoked by {@link #getByContextInstanceId} when the contextInstanceId
+     * is not present in the local cache. Allows the dashboard cluster layer to transparently
+     * proxy operations to the node that owns the context instance.
+     */
+    @FunctionalInterface
+    public interface FallbackProvider {
+        ContextMachine get(String contextInstanceId);
+    }
+
+    /**
+     * @TODO - This is a temporary method to help with testing. The real mechanism for leader
+     * election and failover will be dealt with as a separate piece of work.
+     * Supplier of the authoritative cluster-leader flag. Registered by the dashboard cluster
+     * layer so that {@link #isLeaderForContextInstance} can consult ZooKeeper rather than relying solely
+     * on local cache state (which may be stale after a leadership transfer).
+     */
+    @FunctionalInterface
+    public interface LeaderProvider {
+        boolean isLeader();
+    }
+
+    private volatile FallbackProvider fallbackProvider;
+    private volatile LeaderProvider leaderProvider;
+
+    /**
+     * @TODO - This is a temporary method to help with testing. The real mechanism for leader
+     * election and failover will be dealt with as a separate piece of work.
+     * Registers a fallback provider that is called when a contextInstanceId is not in the
+     * local cache. The dashboard cluster layer uses this to proxy operations to the owning node.
+     *
+     * @param provider the fallback provider; passing null clears any existing registration
+     */
+    public void registerFallbackProvider(FallbackProvider provider) {
+        this.fallbackProvider = provider;
+    }
+
+    /**
+     * @TODO - This is a temporary method to help with testing. The real mechanism for leader
+     * election and failover will be dealt with as a separate piece of work.
+     * Registers the authoritative leader-check supplier. Should be called by the dashboard
+     * cluster layer on startup so that {@link #isLeaderForContextInstance} can consult ZooKeeper rather
+     * than inferring leadership purely from local cache state.
+     *
+     * @param provider the leader provider; passing null clears any existing registration
+     */
+    public void registerLeaderProvider(LeaderProvider provider) {
+        this.leaderProvider = provider;
+    }
+
+    /**
+     * @TODO - This is a temporary method to help with testing. The real mechanism for leader
+     * election and failover will be dealt with as a separate piece of work.
+     * Returns true if this node is the current cluster leader AND owns the given context instance
+     * locally. Uses the registered {@link LeaderProvider} (ZooKeeper) as the authoritative source;
+     * falls back to a local-cache-only check when no provider has been registered (e.g. tests or
+     * single-node deployments).
+     *
+     * @param contextInstanceId the context instance to check
+     * @return true if this node is the cluster leader for the given context instance
+     */
+    public boolean isLeaderForContextInstance(String contextInstanceId) {
+        if (contextInstanceId == null) return false;
+        LeaderProvider provider = this.leaderProvider;
+        boolean leader = provider != null ? provider.isLeader()
+            : this.contextInstanceByContextInstanceIdCache.containsKey(contextInstanceId);
+        return leader && this.contextInstanceByContextInstanceIdCache.containsKey(contextInstanceId);
+    }
+
+    /**
+     * @TODO - This is a temporary method to help with testing. The real mechanism for leader
+     * election and failover will be dealt with as a separate piece of work.
+     * Returns true if this node is currently the cluster leader. Uses the registered
+     * {@link LeaderProvider} (ZooKeeper) as the authoritative source; returns true when no
+     * provider has been registered (single-node or test deployments).
+     */
+    public boolean isLeader() {
+        LeaderProvider provider = this.leaderProvider;
+        return provider == null || provider.isLeader();
+    }
+
+    /**
+     * @TODO - This is a temporary method to help with testing. The real mechanism for leader
+     * election and failover will be dealt with as a separate piece of work.
+     * Retrieves the ContextMachine from the LOCAL cache only, never consulting the fallback.
+     * Use this when the caller must have a real, local ContextMachineImpl — for example,
+     * event-processing paths that call lifecycle methods (eventReceived, getContext, etc.)
+     * that are not supported by the REST proxy.
+     *
+     * @param contextInstanceId The ID of the context instance to retrieve.
+     * @return The local ContextMachine, or null if not present locally.
+     */
+    public ContextMachine getLocalByContextInstanceId(String contextInstanceId) {
+        if (contextInstanceId == null) return null;
+        return this.contextInstanceByContextInstanceIdCache.get(contextInstanceId);
     }
 }

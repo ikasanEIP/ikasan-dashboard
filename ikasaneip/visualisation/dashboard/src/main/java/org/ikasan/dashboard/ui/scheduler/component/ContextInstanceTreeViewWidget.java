@@ -37,7 +37,6 @@ import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBro
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.local.LocalEventServiceImpl;
@@ -259,8 +258,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Button refreshTreeButton = new Button(getTranslation("button.refresh", UI.getCurrent().getLocale()), VaadinIcon.REFRESH.create());
         refreshTreeButton.setIconAfterText(true);
         refreshTreeButton.addClickListener(event -> {
-            if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+            ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+            if(machine != null) {
+                ContextInstance refreshed = machine.getContext();
+                if(refreshed != null) this.contextInstance = refreshed;
             }
             this.grid.getDataProvider().refreshAll();
         });
@@ -315,7 +316,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                 ComponentKey componentKey = new ComponentKey(contextInstance.getName()
                     , ((ContextInstance)value).getId(), ((ContextInstance)value).getName());
-                if(ContextMachineCache.instance().containsInstanceIdentifier(contextInstance.getId())) {
+                if(ContextMachineCache.instance().isLeaderForContextInstance(contextInstance.getId())) {
                     value = ContextHelper.getChildContextInstance(((ContextInstance) value).getName(),
                         ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
                 }
@@ -624,7 +625,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
                 if(value instanceof  ContextInstance) {
                     ContextInstance instance;
-                    if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                    if(ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())) {
                         instance = ContextHelper.getChildContextInstance(((ContextInstance) value).getName()
                             , ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
                     }
@@ -1006,10 +1007,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 this.contextProfileService, this.globalEventService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
                 this.contextVisualisationNodeDistance);
 
-            if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                this.contextInstance = ContextMachineCache.instance()
-                    .getByContextInstanceId(this.contextInstance.getId()).getContext();
-                ContextHelper.enrichJobs(this.contextInstance);
+            ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+            if(machine != null) {
+                ContextInstance refreshed = machine.getContext();
+                if(refreshed != null) {
+                    this.contextInstance = refreshed;
+                    ContextHelper.enrichJobs(this.contextInstance);
+                }
             }
 
             ContextInstance childContext = ContextHelper.getChildContextInstance(contextInstance.getName(), this.contextInstance);
@@ -1093,33 +1097,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 executor.execute(() -> {
                     boolean error = false;
                     try {
-                        if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                            List<SchedulerJobInstanceRecord> updatedJobs = schedulerJobInstanceService.holdJobsWithinContext(ContextMachineCache
-                                .instance().getByContextInstanceId(this.contextInstance.getId()).getContext(), contextInstance.getName());
-
-                            if (updatedJobs.size() > 0) {
-                                updatedJobs.forEach(schedulerJobInstanceRecord -> {
-                                    SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(schedulerJobInstanceRecord.getJobName(),
-                                        schedulerJobInstanceRecord.getChildContextName(), ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
-                                    if(schedulerJobInstance != null) {
-                                        schedulerJobInstance.setStatus(InstanceStatus.ON_HOLD);
-                                        SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
-                                            = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
-                                            this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
-                                        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
-                                    }
-                                    else {
-                                        logger.info("Could not update job [{}] to ON_HOLD for context instance name[{}], context instance id[{}], child context[{}]",
-                                            schedulerJobInstanceRecord.getJobName(), this.contextInstance.getName(), this.contextInstance.getId()
-                                            , schedulerJobInstanceRecord.getChildContextName());
-                                    }
-                                });
-                                ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
-                                contextMachine.saveContext();
-                                ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
-                                this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS, String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]"
-                                    ,this.contextInstance.getName() , contextInstance.getName(), this.contextInstance.getId()), this.authentication.getName());
-                            }
+                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                        if (contextMachine != null) {
+                            contextMachine.holdJobs(contextInstance.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_HOLDING_ALL_JOBS,
+                                String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]",
+                                    this.contextInstance.getName(), contextInstance.getName(), this.contextInstance.getId()),
+                                this.authentication.getName());
                         }
                     } catch (Exception e) {
                         logger.error(String.format("An error has occurred holding all jobs for job plan[%s] with instance id[%s]!", contextInstance.getName(), contextInstance.getId()), e);
@@ -1153,14 +1137,20 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             if(!this.canPerformAction(true)) {
                 return;
             }
-            List<SchedulerJobInstanceRecord> jobsToReleaseWithinContext = schedulerJobInstanceService.getJobsToReleaseWithinContext(ContextMachineCache
-                .instance().getByContextInstanceId(this.contextInstance.getId()).getContext(), contextInstance.getName());
+            SchedulerJobInstanceSearchFilter releaseCountFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+            releaseCountFilter.setContextInstanceId(this.contextInstance.getId());
+            releaseCountFilter.setStatus(InstanceStatus.ON_HOLD.name());
+            long releaseCount = schedulerJobInstanceService
+                .getScheduledContextInstancesByFilter(releaseCountFilter, -1, -1, null, null)
+                .getResultList().stream()
+                .filter(record -> contextInstance.getName().equals(record.getChildContextName()))
+                .count();
 
-            if(jobsToReleaseWithinContext.size() > 0) {
+            if(releaseCount > 0) {
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(String.format(getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale())
-                    , jobsToReleaseWithinContext.size()));
+                    , releaseCount));
                 confirmDialog.setConfirmText(getTranslation("button.ok"));
                 confirmDialog.setCancelText(getTranslation("button.cancel"));
                 confirmDialog.setCancelable(true);
@@ -1176,21 +1166,20 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     executor.execute(() -> {
                         boolean error = false;
                         try {
-                            if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                                this.systemEventLogger.logEvent(SystemEventConstants.CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START, String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]"
-                                    , this.contextInstance.getName(), contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                                if (jobsToReleaseWithinContext.size() > 0) {
-                                    for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : jobsToReleaseWithinContext) {
-                                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
-                                        contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
-                                            schedulerJobInstanceRecord.getChildContextName());
-                                    }
-                                }
-                                this.systemEventLogger.logEvent(SystemEventConstants.CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END, String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]"
-                                    , this.contextInstance.getName(), contextInstance.getName(), this.contextInstance.getId()), this.authentication.getName());
+                            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                            if (contextMachine != null) {
+                                this.systemEventLogger.logEvent(SystemEventConstants.CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_START,
+                                    String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]",
+                                        this.contextInstance.getName(), contextInstance.getName(), contextInstance.getId()),
+                                    this.authentication.getName());
+                                contextMachine.releaseJobs(contextInstance.getName());
+                                this.systemEventLogger.logEvent(SystemEventConstants.CHILD_CONTEXT_INSTANCE_RELEASING_ALL_JOBS_END,
+                                    String.format("Job Plan Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s]",
+                                        this.contextInstance.getName(), contextInstance.getName(), this.contextInstance.getId()),
+                                    this.authentication.getName());
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.error(String.format("An error has occurred releasing all jobs for job plan[%s] with instance id[%s]!", contextInstance.getName(), contextInstance.getId()), e);
                             error = true;
                         } finally {
                             boolean finalError = error;
@@ -1862,6 +1851,21 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @return
      */
     private boolean canPerformAction(boolean isAllowedWhenPrepared) {
+        ContextMachine machine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+        if(machine != null) {
+            // Leader: get live in-memory context. Follower: get live context from leader via REST.
+            ContextInstance live = machine.getContext();
+            if(live != null) this.contextInstance = live;
+        } else {
+            // Not in the cluster cache — re-fetch from DB for authoritative status.
+            this.contextInstance = this.scheduledContextInstanceService
+                .findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE).getContextInstance();
+        }
+        if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
+            NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
+                , UI.getCurrent().getLocale()));
+            return false;
+        }
         if(!ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
             this.contextInstance = this.scheduledContextInstanceService
                 .findById(this.contextInstance.getId()+ "_" + SCHEDULED_CONTEXT_INSTANCE).getContextInstance();
@@ -2079,12 +2083,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
         logger.debug("received ContextInstanceStateChangeEvent event");
         if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
-            if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            if(ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())) {
                 this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                 this.manageContextInstanceStateChangeEvent(this.ui, event);
                 manageContextStatusIndicators(this.ui);
             }
             else {
+                this.contextInstance.setStatus(event.getNewStatus());
                 this.manageContextInstanceStateChangeEvent(this.ui, event);
                 manageContextStatusIndicators(this.ui);
             }
@@ -2432,6 +2437,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(jobInstanceStateChangeEvent.getContextInstance().getId()
             , jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
 
+        // Keep the widget's contextInstance in sync so manageContextStatusIndicators works on the follower node.
+        SchedulerJobInstance contextJob = ContextHelper.getSchedulerJobInstance(
+            jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(),
+            jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
+            this.contextInstance);
+        if (contextJob != null) {
+            contextJob.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+        }
 
         Image statusImage = this.jobImageMap.get(key);
 
@@ -2628,36 +2641,39 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Map<String, QuartzScheduleDrivenJobInstance> quartzSchedulerJobMap
             = this.getQuartzSchedulerJobInstancesForContextInstance(contextInstance.getId());
 
+        // Leader: use authoritative in-memory context. Follower: use widget's contextInstance (kept
+        // up-to-date via receiveBroadcast) — avoids a REST call on every status change event.
+        ContextInstance contextRoot = ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())
+            ? ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext()
+            : this.contextInstance;
+
         this.statusIconDivMap.keySet().forEach(componentKey -> {
-            if (ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()) != null) {
-                ContextInstance instance = (ContextInstance) ContextHelper.getChildContext(componentKey.getChildContextName()
-                    , ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
+            ContextInstance instance = (ContextInstance) ContextHelper.getChildContext(componentKey.getChildContextName(), contextRoot);
 
-                if (instance != null) {
-                    AggregateContextInstanceStatus aggregateContextInstanceStatus
-                        = ContextHelper.getAggregateContextInstanceStatus(instance
-                        , internalEventDrivenJobMap, quartzSchedulerJobMap, this.contextInstance);
+            if (instance != null) {
+                AggregateContextInstanceStatus aggregateContextInstanceStatus
+                    = ContextHelper.getAggregateContextInstanceStatus(instance
+                    , internalEventDrivenJobMap, quartzSchedulerJobMap, this.contextInstance);
 
-                    if (componentKey.getJobName().equals(InstanceStatus.ON_HOLD.name())) {
-                        if (aggregateContextInstanceStatus.isHeldJobs()) {
-                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
-                        } else {
-                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
-                        }
-                    } else if (componentKey.getJobName().equals(InstanceStatus.SKIPPED.name())
-                        || componentKey.getJobName().equals(InstanceStatus.SKIPPED_COMPLETE.name())
-                        || componentKey.getJobName().equals(InstanceStatus.SKIPPED_RUNNING.name())) {
-                        if (aggregateContextInstanceStatus.isSkippedJobs()) {
-                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
-                        } else {
-                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
-                        }
-                    } else if (componentKey.getJobName().equals(InstanceStatus.DISABLED.name())) {
-                        if (aggregateContextInstanceStatus.isDisabledJobs()) {
-                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
-                        } else {
-                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
-                        }
+                if (componentKey.getJobName().equals(InstanceStatus.ON_HOLD.name())) {
+                    if (aggregateContextInstanceStatus.isHeldJobs()) {
+                        ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
+                    } else {
+                        ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
+                    }
+                } else if (componentKey.getJobName().equals(InstanceStatus.SKIPPED.name())
+                    || componentKey.getJobName().equals(InstanceStatus.SKIPPED_COMPLETE.name())
+                    || componentKey.getJobName().equals(InstanceStatus.SKIPPED_RUNNING.name())) {
+                    if (aggregateContextInstanceStatus.isSkippedJobs()) {
+                        ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
+                    } else {
+                        ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
+                    }
+                } else if (componentKey.getJobName().equals(InstanceStatus.DISABLED.name())) {
+                    if (aggregateContextInstanceStatus.isDisabledJobs()) {
+                        ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
+                    } else {
+                        ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
                     }
                 }
             }

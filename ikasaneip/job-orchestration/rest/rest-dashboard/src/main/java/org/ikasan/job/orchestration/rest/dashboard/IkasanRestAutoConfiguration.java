@@ -134,4 +134,9 @@ public class IkasanRestAutoConfiguration {
             , emailNotificationContextService, contextProfileService);
     }
 
+    @Bean
+    public ContextMachineController contextMachineController() {
+        return new ContextMachineController();
+    }
+
 }

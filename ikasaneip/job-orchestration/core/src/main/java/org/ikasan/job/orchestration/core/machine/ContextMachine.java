@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.core.machine;
 
 import org.ikasan.bigqueue.IBigQueue;
+import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
@@ -26,6 +27,16 @@ import java.util.Map;
  * enabling both local and remote (cluster) invocations.
  */
 public interface ContextMachine {
+
+    /**
+     * Returns true if this instance is a real local implementation, false if it is a remote
+     * REST proxy. UI components use this to decide whether to show "not supported on follower"
+     * dialogs without relying on ZooKeeper/leader-provider state. It is designed to be overridden
+     * when necessary.
+     */
+    default boolean isLocal() {
+        return true;
+    }
 
     /**
      * Initializes the context machine by setting up inbound, outbound, and dead letter queues.
@@ -308,6 +319,22 @@ public interface ContextMachine {
     void skipJobs(String childContextName, boolean skipFlag);
 
     /**
+     * Holds all WAITING/RELEASED jobs within the named child context and broadcasts the state
+     * changes to all cluster nodes.
+     *
+     * @param childContextName the name of the child context whose jobs should be held
+     */
+    void holdJobs(String childContextName);
+
+    /**
+     * Releases all ON_HOLD jobs within the named child context and broadcasts the state
+     * changes to all cluster nodes.
+     *
+     * @param childContextName the name of the child context whose jobs should be released
+     */
+    void releaseJobs(String childContextName);
+
+    /**
      * Holds a specific job, preventing it from executing.
      *
      * @param jobIdentifier the identifier of the job to hold
@@ -377,6 +404,13 @@ public interface ContextMachine {
     void saveContext();
 
     /**
+     * Atomically replaces the context parameters on the live context and persists the change.
+     *
+     * @param contextParameterInstances the new parameter list to apply
+     */
+    void updateContextParameters(List<ContextParameterInstance> contextParameterInstances);
+
+    /**
      * Broadcasts global events to all nodes in the environment.
      *
      * @param schedulerJobInitiationEvent the event to broadcast
@@ -404,6 +438,31 @@ public interface ContextMachine {
      * @throws BigQueueNotFoundException if the big queue is not found
      */
     boolean resubmitMessageFromDeadLetterQueue(String messageId) throws IOException, BigQueueNotFoundException;
+
+    /**
+     * Returns all messages currently in the dead letter queue.
+     *
+     * @return list of messages in the DLQ, empty if none or on error
+     */
+    List<BigQueueMessage> getDlqMessages();
+
+    /**
+     * Deletes a single message from the dead letter queue.
+     *
+     * @param messageId the ID of the message to delete
+     * @return true if the message was found and deleted, false if not found
+     * @throws IOException if an I/O error occurs
+     * @throws BigQueueNotFoundException if the big queue is not found
+     */
+    boolean deleteDlqMessage(String messageId) throws IOException, BigQueueNotFoundException;
+
+    /**
+     * Deletes all messages from the dead letter queue.
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws BigQueueNotFoundException if the big queue is not found
+     */
+    void deleteAllDlqMessages() throws IOException, BigQueueNotFoundException;
 
     /**
      * Publishes a job initiation event.

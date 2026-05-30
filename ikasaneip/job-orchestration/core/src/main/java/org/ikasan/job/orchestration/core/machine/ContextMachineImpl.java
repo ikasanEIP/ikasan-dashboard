@@ -898,8 +898,6 @@ public class ContextMachineImpl implements ContextMachine {
     }
 
 
-
-
     /**
      * Sets the DryRunParameters for performing a dry run.
      *
@@ -1154,6 +1152,23 @@ public class ContextMachineImpl implements ContextMachine {
         }
     }
 
+    @Override
+    public void holdJobs(String childContextName) {
+        List<SchedulerJobInstanceRecord> updatedRecords =
+            this.schedulerJobInstanceService.holdJobsWithinContext(this.contextInstance, childContextName);
+        updatedRecords.forEach(record -> jobLogicMachine.issueSchedulerJobStateChangeEvent(
+            new SchedulerJobInstanceStateChangeEventImpl(record.getSchedulerJobInstance(),
+                this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD)));
+    }
+
+    @Override
+    public void releaseJobs(String childContextName) {
+        List<SchedulerJobInstanceRecord> jobsToRelease =
+            this.schedulerJobInstanceService.getJobsToReleaseWithinContext(this.contextInstance, childContextName);
+        jobsToRelease.forEach(record -> this.releaseJob(
+            record.getSchedulerJobInstance().getIdentifier(), record.getChildContextName()));
+    }
+
     /**
      * Do the heavy lifting for holding a job!
      *
@@ -1177,6 +1192,7 @@ public class ContextMachineImpl implements ContextMachine {
             SchedulerJobInstance dbInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
             dbInstance.setHeld(true);
             dbInstance.setStatus(InstanceStatus.ON_HOLD);
+            schedulerJobInstanceRecord.setStatus(InstanceStatus.ON_HOLD.name());
             schedulerJobInstanceRecord.setSchedulerJobInstance(dbInstance);
             this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
@@ -2245,6 +2261,12 @@ public class ContextMachineImpl implements ContextMachine {
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
     }
 
+    @Override
+    public void updateContextParameters(List<ContextParameterInstance> contextParameterInstances) {
+        this.contextInstance.setContextParameters(contextParameterInstances == null ? null : new ArrayList<>(contextParameterInstances));
+        this.saveContext();
+    }
+
     /**
      * Retrieves the SchedulerJobInstance with the given job identifier from the specified child context within the provided context instance.
      *
@@ -2538,6 +2560,50 @@ public class ContextMachineImpl implements ContextMachine {
                 messageId, this.contextInstance.getId());
             return false;
         }
+    }
+
+    @Override
+    public List<BigQueueMessage> getDlqMessages() {
+        try {
+            BigQueueManagementService bigQueueManagementService =
+                new BigQueueContextMachineManagementServiceImpl(this.getInboundQueueName(),
+                    this.inboundQueue, this.getOutboundQueueName(), this.outboundQueue,
+                    this.getDeadLetterQueueName(), this.deadLetterQueue);
+            BigQueueDirectoryManagementService svc =
+                new BigQueueDirectoryManagementServiceImpl(bigQueueManagementService, this.queueDir);
+            return svc.getMessages(this.getDeadLetterQueueName());
+        } catch (Exception e) {
+            logger.warn("getDlqMessages failed for contextInstance [{}]", this.contextInstance.getId(), e);
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public boolean deleteDlqMessage(String messageId) throws IOException, BigQueueNotFoundException {
+        BigQueueManagementService bigQueueManagementService =
+            new BigQueueContextMachineManagementServiceImpl(this.getInboundQueueName(),
+                this.inboundQueue, this.getOutboundQueueName(), this.outboundQueue,
+                this.getDeadLetterQueueName(), this.deadLetterQueue);
+        BigQueueDirectoryManagementService svc =
+            new BigQueueDirectoryManagementServiceImpl(bigQueueManagementService, this.queueDir);
+        List<BigQueueMessage> messages = svc.getMessages(this.getDeadLetterQueueName());
+        boolean found = messages.stream().anyMatch(m -> m.getMessageId().equals(messageId));
+        if (found) {
+            svc.deleteMessage(this.getDeadLetterQueueName(), messageId);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void deleteAllDlqMessages() throws IOException, BigQueueNotFoundException {
+        BigQueueManagementService bigQueueManagementService =
+            new BigQueueContextMachineManagementServiceImpl(this.getInboundQueueName(),
+                this.inboundQueue, this.getOutboundQueueName(), this.outboundQueue,
+                this.getDeadLetterQueueName(), this.deadLetterQueue);
+        BigQueueDirectoryManagementService svc =
+            new BigQueueDirectoryManagementServiceImpl(bigQueueManagementService, this.queueDir);
+        svc.deleteAllMessage(this.getDeadLetterQueueName());
     }
 
     /**
