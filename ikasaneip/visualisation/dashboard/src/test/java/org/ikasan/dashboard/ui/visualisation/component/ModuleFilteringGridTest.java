@@ -32,6 +32,7 @@ import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class ModuleFilteringGridTest extends UITest {
     
@@ -39,19 +40,19 @@ public class ModuleFilteringGridTest extends UITest {
     private ModuleMetadataSearchResults moduleMetadataSearchResults;
 
     @MockitoBean
-    private Set<IkasanPrincipal> principals;
+    private HashSet<IkasanPrincipal> principals;
 
     @MockitoBean
     private IkasanPrincipal principal;
 
     @MockitoBean
-    private Set<Role> roles;
+    private HashSet<Role> roles;
 
     @MockitoBean
     private Role role;
 
     @MockitoBean
-    private Set<RoleModule> roleModules;
+    private HashSet<RoleModule> roleModules;
 
     @MockitoBean
     private RoleModule roleModule;

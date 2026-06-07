@@ -253,6 +253,49 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         /**
+         * Adds an image figure to the designer canvas at the specified x and y coordinates.
+         *
+         * @function
+         * @param {String} imageUrl - The URL of the image to be added as a figure.
+         * @param {Number} x - The x-coordinate where the image figure will be placed.
+         * @param {Number} y - The y-coordinate where the image figure will be placed.
+         * @returns {Object} The newly added image figure object.
+         */
+        designer.$connector.addImageFigureWithXY = function (image) {
+            let attributes = JSON.parse(image);
+            let icon = new draw2d.shape.basic.Image(attributes);
+
+            attributes.ports.forEach(function (port, index) {
+                let type = "hybrid";
+
+                if(port.type != null) {
+                    if(port.type == "draw2d.InputPort") {
+                        type = "input";
+                    }
+                    if(port.type == "draw2d.OutputPort") {
+                        type = "output";
+                    }
+                }
+
+                if(port.locator === "draw2d.layout.locator.RightLocator") {
+                    icon.createPort(type, new draw2d.layout.locator.RightLocator());
+                }
+                else if(port.locator === "draw2d.layout.locator.LeftLocator") {
+                    icon.createPort(type, new draw2d.layout.locator.LeftLocator());
+                }
+                else if(port.locator === "draw2d.layout.locator.TopLocator") {
+                    icon.createPort(type, new draw2d.layout.locator.TopLocator());
+                }
+                else if(port.locator === "draw2d.layout.locator.BottomLocator") {
+                    icon.createPort(type, new draw2d.layout.locator.BottomLocator());
+                }
+            });
+
+            let command = new draw2d.command.CommandAdd(_this, icon, icon.x, icon.y);
+            _this.getCommandStack().execute(command);
+        }
+
+        /**
          * Adds a new connection to the designer interface.
          */
         designer.$connector.addConnection = function (connectionAttributes) {
@@ -486,6 +529,30 @@ window.Vaadin.Flow.designerConnector = {
             });
 
             let command = new draw2d.command.CommandAdd(_this, boundary, _x, _y);
+            _this.getCommandStack().execute(command);
+
+            _this.getFigure(id).toBack();
+        }
+
+        designer.$connector.addBoundaryStyledXY = function (id, x, y, h, w, dashArray, colour, stroke, radius) {
+            debugger;
+            let boundary =  new draw2d.shape.basic.Rectangle({
+                bgColor:"rgba(255,255,255,0)",
+                x: x,
+                y: y,
+                width: w,
+                height: h,
+                radius: radius,
+                id: id,
+                dasharray: dashArray,
+                color: colour,
+                stroke: stroke,
+                resizable:true,
+                selectable:true,
+                draggable:true
+            });
+
+            let command = new draw2d.command.CommandAdd(_this, boundary, x, y);
             _this.getCommandStack().execute(command);
 
             _this.getFigure(id).toBack();

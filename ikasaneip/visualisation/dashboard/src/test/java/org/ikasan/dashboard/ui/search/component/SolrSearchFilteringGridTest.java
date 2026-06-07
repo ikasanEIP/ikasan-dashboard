@@ -31,19 +31,19 @@ import static org.mockito.ArgumentMatchers.*;
 public class SolrSearchFilteringGridTest extends UITest {
 
     @MockitoBean
-    private Set<IkasanPrincipal> principals;
+    private HashSet<IkasanPrincipal> principals;
 
     @MockitoBean
     private IkasanPrincipal principal;
 
     @MockitoBean
-    private Set<Role> roles;
+    private HashSet<Role> roles;
 
     @MockitoBean
     private Role role;
 
     @MockitoBean
-    private Set<RoleModule> roleModules;
+    private HashSet<RoleModule> roleModules;
 
     @MockitoBean
     private RoleModule roleModule;

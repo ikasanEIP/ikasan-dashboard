@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -14,7 +16,12 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.model.flow.AbstractWiretapNode;
+import org.ikasan.dashboard.ui.visualisation.model.flow.FlowItemTypes;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
+import org.ikasan.dashboard.ui.visualisation.model.flow.NodeFoundStatus;
+import org.ikasan.designer.DesignerCanvas;
+import org.ikasan.designer.builder.ImageBuilder;
+import org.ikasan.designer.builder.UserDataBuilder;
 import org.ikasan.rest.client.dto.TriggerDto;
 import org.ikasan.rest.client.util.UserUtil;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
@@ -53,13 +60,15 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
 
     protected boolean configuredResource;
 
-    private Button componentConfigurationButton;
+    protected DesignerCanvas designerCanvas;
 
     protected ComponentOptionsDialog(Module module, String flowName, String componentName, boolean configuredResource,
                                      ConfigurationService configurationRestService,
                                      TriggerService triggerRestService, /*NetworkDiagram networkDiagram,*/
-                                     AbstractWiretapNode abstractWiretapNode, MetaDataService metaDataApplicationRestService,
-                                     BatchInsert<ModuleMetaData> moduleMetaDataService) {
+                                     AbstractWiretapNode abstractWiretapNode,
+                                     MetaDataService metaDataApplicationRestService,
+                                     BatchInsert<ModuleMetaData> moduleMetaDataService,
+                                     DesignerCanvas designerCanvas) {
         this.module = module;
         this.flowName = flowName;
         this.componentName = componentName;
@@ -70,6 +79,7 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
         this.abstractWiretapNode = abstractWiretapNode;
         this.metaDataApplicationRestService = metaDataApplicationRestService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.designerCanvas = designerCanvas;
         showResize(false);
         init();
     }
@@ -91,7 +101,7 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
         verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, header);
 
         if (this.configuredResource) {
-            componentConfigurationButton = new Button(
+            Button componentConfigurationButton = new Button(
                 getTranslation("button.component-configuration", UI.getCurrent().getLocale()));
             componentConfigurationButton.setWidthFull();
             componentConfigurationButton.addClickListener((ComponentEventListener<ClickEvent<Button>>)
@@ -207,27 +217,34 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
             job, ttl, UserUtil.getUser());
         boolean success = this.triggerRestService.create(this.module.getUrl(), triggeDto);
         if (success) {
-            this.updateDiagramState(job, relationship);
-            NotificationHelper
-                .showUserNotification(getTranslation("message.wiretap-save-successful", UI.getCurrent().getLocale()));
+            try {
+                Optional<ModuleMetaData> moduleMetaDataOptional = this.metaDataApplicationRestService.getModuleMetadata(module.getUrl(), module.getName());
 
-            Optional<ModuleMetaData> moduleMetaDataOptional = this.metaDataApplicationRestService.getModuleMetadata(module.getUrl(), module.getName());
+                moduleMetaDataOptional.ifPresent(moduleMetaData -> {
 
-            moduleMetaDataOptional.ifPresent(moduleMetaData -> {
+                    moduleMetaData.getFlows().stream().filter(flow -> flowName.equals(flow.getName())).findFirst().ifPresent(flowMetaData -> {
+                        logger.info(flowMetaData.toString());
 
-                moduleMetaData.getFlows().stream().filter(flow -> flowName.equals(flow.getName())).findFirst().ifPresent(flowMetaData -> {
-                    logger.info(flowMetaData.toString());
+                        flowMetaData.getFlowElements().stream()
+                            .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals(this.componentName))
+                            .findFirst().ifPresent(decorators -> {
+                                this.abstractWiretapNode.setDecoratorMetaDataList(decorators.getDecorators());
+                            });
+                    });
 
-                    flowMetaData.getFlowElements().stream()
-                        .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals(this.componentName))
-                        .findFirst().ifPresent(decorators -> this.abstractWiretapNode.setDecoratorMetaDataList(decorators.getDecorators()));
+                    List<ModuleMetaData> entities = new ArrayList<>();
+                    entities.add(moduleMetaData);
+
+                    this.moduleMetaDataService.insert(entities);
                 });
 
-                List<ModuleMetaData> entities = new ArrayList<>();
-                entities.add(moduleMetaData);
-
-                this.moduleMetaDataService.insert(entities);
-            });
+                this.updateDiagramState(job, relationship);
+                NotificationHelper
+                    .showUserNotification(getTranslation("message.wiretap-save-successful", UI.getCurrent().getLocale()));
+            }
+            catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
 
         } else {
             NotificationHelper.showErrorNotification(
@@ -237,33 +254,87 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
         this.close();
     }
 
-    private void updateDiagramState(String job, String relationship) {
-//        if (job.equals("wiretapJob")) {
-//            if (relationship.equals(TriggerRelationship.AFTER.getDescription())) {
-//                UI.getCurrent().access(() -> this.networkDiagram.addWiretapAfter(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getWiretapAfterImageX(),
-//                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getWiretapAfterImageY(),
-//                    this.abstractWiretapNode.getWiretapAfterImageW(), this.abstractWiretapNode.getWiretapAfterImageH()));
-//                abstractWiretapNode.setWiretapAfterStatus(NodeFoundStatus.FOUND);
-//            } else if (relationship.equals(TriggerRelationship.BEFORE.getDescription())) {
-//                UI.getCurrent().access(() -> this.networkDiagram.addWiretapBefore(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getWiretapBeforeImageX(),
-//                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getWiretapBeforeImageY(),
-//                    this.abstractWiretapNode.getWiretapBeforeImageW(), this.abstractWiretapNode.getWiretapBeforeImageH()));
-//                abstractWiretapNode.setWiretapBeforeStatus(NodeFoundStatus.FOUND);
-//            }
-//        } else if (job.equals("loggingJob")) {
-//            if (relationship.equals(TriggerRelationship.AFTER.getDescription())) {
-//                UI.getCurrent().access(() -> this.networkDiagram.addLogWiretapAfter(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getLogWiretapAfterImageX(),
-//                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getLogWiretapAfterImageY(),
-//                    this.abstractWiretapNode.getLogWiretapAfterImageW(), this.abstractWiretapNode.getLogWiretapAfterImageH()));
-//                abstractWiretapNode.setLogWiretapAfterStatus(NodeFoundStatus.FOUND);
-//            } else if (relationship.equals(TriggerRelationship.BEFORE.getDescription())) {
-//                UI.getCurrent().access(() -> this.networkDiagram.addLogWiretapBefore(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getLogWiretapBeforeImageX(),
-//                    this.abstractWiretapNode.getY() + this.abstractWiretapNode.getLogWiretapBeforeImageY(),
-//                    this.abstractWiretapNode.getLogWiretapBeforeImageW(), this.abstractWiretapNode.getLogWiretapBeforeImageH()));
-//                abstractWiretapNode.setLogWiretapBeforeStatus(NodeFoundStatus.FOUND);
-//            }
-//        }
-//
-//        UI.getCurrent().access(() -> this.networkDiagram.diagamRedraw());
+    private void updateDiagramState(String job, String relationship) throws JsonProcessingException {
+        if (job.equals("wiretapJob")) {
+            if (relationship.equals(TriggerRelationship.AFTER.getDescription())) {
+                ImageBuilder wiretapBuilder = new ImageBuilder()
+                    .withId(this.abstractWiretapNode.getId().getUuid() + "after-wiretap")
+                    .withWidth(this.abstractWiretapNode.getWiretapAfterImageW())
+                    .withHeight(this.abstractWiretapNode.getWiretapAfterImageH())
+                    .withX(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getWiretapAfterImageX())
+                    .withY(this.abstractWiretapNode.getY() + this.abstractWiretapNode.getWiretapAfterImageY())
+                    .withSelectable(true)
+                    .withUserData(new UserDataBuilder().withItemType(FlowItemTypes.BEFORE_WIRETAP)
+                        .withIdentifier(this.abstractWiretapNode.getDecoratorMetaDataList().stream()
+                            .filter(decoratorMetaData -> decoratorMetaData.getType().equals("Wiretap")
+                                && decoratorMetaData.getName().startsWith("AFTER")).findFirst().get().getConfigurationId())
+                        .withComponentName(this.abstractWiretapNode.getName())
+                        .build())
+                    .withPath(AbstractWiretapNode.WIRETAP_IMAGE);
+                abstractWiretapNode.setWiretapAfterStatus(NodeFoundStatus.FOUND);
+
+                this.designerCanvas.addImageFigureWithXYOfImageProvided(new ObjectMapper().writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(wiretapBuilder.build()));
+            } else if (relationship.equals(TriggerRelationship.BEFORE.getDescription())) {
+                ImageBuilder wiretapBuilder = new ImageBuilder()
+                    .withId(this.abstractWiretapNode.getId().getUuid() + "before-wiretap")
+                    .withWidth(this.abstractWiretapNode.getWiretapBeforeImageW())
+                    .withHeight(this.abstractWiretapNode.getWiretapBeforeImageH())
+                    .withX(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getWiretapBeforeImageX())
+                    .withY(this.abstractWiretapNode.getY() + this.abstractWiretapNode.getWiretapBeforeImageY())
+                    .withSelectable(true)
+                    .withUserData(new UserDataBuilder().withItemType(FlowItemTypes.BEFORE_WIRETAP)
+                        .withIdentifier(this.abstractWiretapNode.getDecoratorMetaDataList().stream()
+                            .filter(decoratorMetaData -> decoratorMetaData.getType().equals("Wiretap")
+                                && decoratorMetaData.getName().startsWith("BEFORE")).findFirst().get().getConfigurationId())
+                        .withComponentName(this.abstractWiretapNode.getName())
+                        .build())
+                    .withPath(AbstractWiretapNode.WIRETAP_IMAGE);
+                abstractWiretapNode.setWiretapAfterStatus(NodeFoundStatus.FOUND);
+
+                this.designerCanvas.addImageFigureWithXYOfImageProvided(new ObjectMapper().writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(wiretapBuilder.build()));
+            }
+        } else if (job.equals("loggingJob")) {
+            if (relationship.equals(TriggerRelationship.AFTER.getDescription())) {
+                ImageBuilder wiretapBuilder = new ImageBuilder()
+                    .withId(this.abstractWiretapNode.getId().getUuid() + "after-log-wiretap")
+                    .withWidth(this.abstractWiretapNode.getLogWiretapAfterImageW())
+                    .withHeight(this.abstractWiretapNode.getLogWiretapAfterImageH())
+                    .withX(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getLogWiretapAfterImageX())
+                    .withY(this.abstractWiretapNode.getY() + this.abstractWiretapNode.getLogWiretapAfterImageY())
+                    .withSelectable(true)
+                    .withUserData(new UserDataBuilder().withItemType(FlowItemTypes.BEFORE_WIRETAP)
+                        .withIdentifier(this.abstractWiretapNode.getDecoratorMetaDataList().stream()
+                            .filter(decoratorMetaData -> decoratorMetaData.getType().equals("LogWiretap")
+                                && decoratorMetaData.getName().startsWith("AFTER")).findFirst().get().getConfigurationId())
+                        .withComponentName(this.abstractWiretapNode.getName())
+                        .build())
+                    .withPath(AbstractWiretapNode.LOG_WIRETAP_IMAGE);
+                abstractWiretapNode.setWiretapAfterStatus(NodeFoundStatus.FOUND);
+
+                this.designerCanvas.addImageFigureWithXYOfImageProvided(new ObjectMapper().writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(wiretapBuilder.build()));
+            } else if (relationship.equals(TriggerRelationship.BEFORE.getDescription())) {
+                ImageBuilder wiretapBuilder = new ImageBuilder()
+                    .withId(this.abstractWiretapNode.getId().getUuid() + "before-log-wiretap")
+                    .withWidth(this.abstractWiretapNode.getLogWiretapBeforeImageW())
+                    .withHeight(this.abstractWiretapNode.getLogWiretapBeforeImageH())
+                    .withX(this.abstractWiretapNode.getX() + this.abstractWiretapNode.getLogWiretapBeforeImageX())
+                    .withY(this.abstractWiretapNode.getY() + this.abstractWiretapNode.getLogWiretapBeforeImageY())
+                    .withSelectable(true)
+                    .withUserData(new UserDataBuilder().withItemType(FlowItemTypes.BEFORE_WIRETAP)
+                        .withIdentifier(this.abstractWiretapNode.getDecoratorMetaDataList().stream()
+                            .filter(decoratorMetaData -> decoratorMetaData.getType().equals("LogWiretap")
+                                && decoratorMetaData.getName().startsWith("BEFORE")).findFirst().get().getConfigurationId())
+                        .withComponentName(this.abstractWiretapNode.getName())
+                        .build())
+                    .withPath(AbstractWiretapNode.LOG_WIRETAP_IMAGE);
+                abstractWiretapNode.setWiretapAfterStatus(NodeFoundStatus.FOUND);
+
+                this.designerCanvas.addImageFigureWithXYOfImageProvided(new ObjectMapper().writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(wiretapBuilder.build()));
+            }
+        }
     }
 }

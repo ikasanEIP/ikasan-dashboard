@@ -162,6 +162,7 @@ public class ModuleVisjsAdapter
         {
             AbstractWiretapNode node =  manageSingleTransition(flowElement, transitions, flowElements, configurationMetaDataMap);
             this.decorateWiretap(flowElement, node);
+            node.setName(flowElement.getComponentName());
             return node;
         }
         else if (flowElement.getComponentType().equals(SingleRecipientRouter.class.getName())||
@@ -169,6 +170,7 @@ public class ModuleVisjsAdapter
         {
             AbstractWiretapNode node = manageMultiTransition(flowElement, transitions, flowElements, configurationMetaDataMap);
             this.decorateWiretap(flowElement, node);
+            node.setName(flowElement.getComponentName());
             return node;
         }
         else
@@ -182,22 +184,22 @@ public class ModuleVisjsAdapter
             flowElement.getDecorators().forEach(decoratorMetaData -> {
                 if (decoratorMetaData.getType().equals(TriggerJobType.WIRETAP.getDescription()) && decoratorMetaData.getName()
                     .startsWith(TriggerRelationship.BEFORE.getDescription().toUpperCase())) {
-//                    node.setWiretapBeforeStatus(NodeFoundStatus.FOUND);
+                    node.setWiretapBeforeStatus(NodeFoundStatus.FOUND);
                     node.setDecoratorMetaDataList(flowElement.getDecorators());
                 }
                 else if (decoratorMetaData.getType().equals(TriggerJobType.WIRETAP.getDescription()) && decoratorMetaData.getName()
                     .startsWith(TriggerRelationship.AFTER.getDescription().toUpperCase())) {
-//                    node.setWiretapAfterStatus(NodeFoundStatus.FOUND);
+                    node.setWiretapAfterStatus(NodeFoundStatus.FOUND);
                     node.setDecoratorMetaDataList(flowElement.getDecorators());
                 }
                 else if (decoratorMetaData.getType().equals(TriggerJobType.LOG_WIRETAP.getDescription()) && decoratorMetaData.getName()
                     .startsWith(TriggerRelationship.BEFORE.getDescription().toUpperCase())) {
-//                    node.setLogWiretapBeforeStatus(NodeFoundStatus.FOUND);
+                    node.setLogWiretapBeforeStatus(NodeFoundStatus.FOUND);
                     node.setDecoratorMetaDataList(flowElement.getDecorators());
                 }
                 else if (decoratorMetaData.getType().equals(TriggerJobType.LOG_WIRETAP.getDescription()) && decoratorMetaData.getName()
                     .startsWith(TriggerRelationship.AFTER.getDescription().toUpperCase())) {
-//                    node.setLogWiretapAfterStatus(NodeFoundStatus.FOUND);
+                    node.setLogWiretapAfterStatus(NodeFoundStatus.FOUND);
                     node.setDecoratorMetaDataList(flowElement.getDecorators());
                 }
             });
@@ -737,7 +739,7 @@ public class ModuleVisjsAdapter
      */
     private void manageModuleMaps(DesignerItemIdentifier nodeId, Map<String, ConfigurationMetaData> configurationMetaDataMap, FlowElementMetaData flowElement)
     {
-        this.componentMap.put(nodeId.getUuid(), flowElement);
+        this.componentMap.put(nodeId.getName(), flowElement);
 
         ConfigurationMetaData configurationMetaData = configurationMetaDataMap.get(flowElement.getConfigurationId());
 

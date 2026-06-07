@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeLabel;
@@ -241,9 +242,9 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
                     }
                 }
             }
-            else if(component instanceof RadioButtonGroup)
+            else if(component instanceof Checkbox)
             {
-               metaData.setValue(((RadioButtonGroup)component).getValue());
+               metaData.setValue(((Checkbox)component).getValue());
             }
             else if(component instanceof PasswordField)
             {
@@ -315,14 +316,18 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
 
-        RadioButtonGroup<Boolean> radioButtonGroup = new RadioButtonGroup();
-        radioButtonGroup.setItems(true, false);
-        radioButtonGroup.setLabel(configurationParameterMetaData.getName());
-        radioButtonGroup.setValue((Boolean) configurationParameterMetaData.getValue());
+//        RadioButtonGroup<String> radioButtonGroup = new RadioButtonGroup<>();
+//        radioButtonGroup.setItems(Boolean.TRUE.toString(), Boolean.FALSE.toString());
+//        radioButtonGroup.setLabel(configurationParameterMetaData.getName());
+////        radioButtonGroup.setValue((Boolean) configurationParameterMetaData.getValue());
+//        radioButtonGroup.setWidthFull();
 
-        layout.add(radioButtonGroup);
+        Checkbox checkbox = new Checkbox();
+        checkbox.setLabel(configurationParameterMetaData.getName());
+        checkbox.setValue((Boolean) configurationParameterMetaData.getValue());
+        layout.add(checkbox);
 
-        this.parameterMetaDataComponentMap.put(configurationParameterMetaData, radioButtonGroup);
+        this.parameterMetaDataComponentMap.put(configurationParameterMetaData, checkbox);
 
         return layout;
     }

@@ -139,10 +139,19 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
 
         Assertions.assertNotNull(contextInstanceAggregateJobStatusGrid);
 
+        Tabs contextInstancesTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab preparedFutureJobPlanInstancesTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+
+        contextInstancesTabs.setSelectedTab(preparedFutureJobPlanInstancesTab);
+
         Grid preparedFutureContextInstanceGrid
             = _get(Grid.class, spec -> spec.withId("preparedFutureContextInstanceGrid"));
 
         Assertions.assertNotNull(preparedFutureContextInstanceGrid);
+
+        Tab completedJobPlanInstancesTab = _get(Tab.class, spec -> spec.withId("completedJobPlanInstances"));
+
+        contextInstancesTabs.setSelectedTab(completedJobPlanInstancesTab);
 
         Grid completedContextInstanceGrid
             = _get(Grid.class, spec -> spec.withId("completedContextInstanceGrid"));
@@ -755,8 +764,17 @@ public class ContextInstanceDashboardWidgetTest extends AbstractSchedulerViewTes
 
         Grid<ContextInstanceAggregateJobStatus> activeGrid = _get(Grid.class,
             spec -> spec.withId("contextInstanceAggregateJobStatusGrid"));
+
+        Tabs contextInstancesTabs = _get(Tabs.class, spec -> spec.withId("contextInstancesTab"));
+        Tab preparedFutureJobPlanInstancesTab = _get(Tab.class, spec -> spec.withId("preparedFutureJobPlanInstancesTab"));
+        contextInstancesTabs.setSelectedTab(preparedFutureJobPlanInstancesTab);
+
         Grid preparedGrid = _get(Grid.class,
             spec -> spec.withId("preparedFutureContextInstanceGrid"));
+
+        Tab completedJobPlanInstancesTab = _get(Tab.class, spec -> spec.withId("completedJobPlanInstances"));
+        contextInstancesTabs.setSelectedTab(completedJobPlanInstancesTab);
+
         Grid completedGrid = _get(Grid.class,
             spec -> spec.withId("completedContextInstanceGrid"));
 

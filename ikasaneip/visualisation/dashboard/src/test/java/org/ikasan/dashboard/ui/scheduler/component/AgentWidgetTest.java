@@ -136,8 +136,6 @@ public class AgentWidgetTest extends AbstractSchedulerViewTest {
 
         // Verify the horizontal layout containing header and filter exists within the widget
         List<HorizontalLayout> layouts = agentWidget.getChildren()
-            .filter(c -> c instanceof Div)
-            .flatMap(d -> d.getChildren())
             .filter(c -> c instanceof HorizontalLayout)
             .map(c -> (HorizontalLayout) c)
             .collect(java.util.stream.Collectors.toList());
@@ -187,7 +185,7 @@ public class AgentWidgetTest extends AbstractSchedulerViewTest {
         // Verify grid configuration
         Assert.assertTrue(grid.isVisible());
         Assert.assertEquals("100%", grid.getWidth());
-        Assert.assertEquals("80%", grid.getHeight());
+        Assert.assertEquals("100.0%", grid.getHeight());
 
         // Verify grid has columns configured
         Assert.assertEquals(2, grid.getColumns().size());

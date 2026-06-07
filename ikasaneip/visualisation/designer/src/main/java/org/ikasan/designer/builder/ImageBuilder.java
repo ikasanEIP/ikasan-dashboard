@@ -25,7 +25,7 @@ public class ImageBuilder {
     private UserData userData;
     private String composite;
 
-    protected ImageBuilder() {
+    public ImageBuilder() {
 
     }
 

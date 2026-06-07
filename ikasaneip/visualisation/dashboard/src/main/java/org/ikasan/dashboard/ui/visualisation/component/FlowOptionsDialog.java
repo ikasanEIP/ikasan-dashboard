@@ -14,6 +14,7 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
+import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.spec.module.client.ConfigurationService;
 
 public class FlowOptionsDialog extends AbstractCloseableResizableDialog
@@ -21,15 +22,15 @@ public class FlowOptionsDialog extends AbstractCloseableResizableDialog
     protected ConfigurationService configurationRestService;
     protected Module module;
     protected Flow flow;
-    private ModuleVisualisation moduleVisualisation;
+    private DesignerCanvas designerCanvas;
 
     protected FlowOptionsDialog(Module module, Flow flow, ConfigurationService configurationRestService
-        , ModuleVisualisation moduleVisualisation)
+        , DesignerCanvas designerCanvas)
     {
         this.module = module;
         this.flow = flow;
         this.configurationRestService = configurationRestService;
-        this.moduleVisualisation = moduleVisualisation;
+        this.designerCanvas = designerCanvas;
         super.showResize(false);
 
         init();
@@ -72,7 +73,7 @@ public class FlowOptionsDialog extends AbstractCloseableResizableDialog
     private void openFlowConfigurationDialog()
     {
         FlowConfigurationDialog flowConfigurationDialog = new FlowConfigurationDialog(this.module, this.flow, this.configurationRestService
-            , this.moduleVisualisation);
+            , this.designerCanvas);
         flowConfigurationDialog.open();
         this.close();
     }

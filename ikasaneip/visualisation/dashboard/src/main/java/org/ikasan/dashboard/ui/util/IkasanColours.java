@@ -16,9 +16,14 @@ public class IkasanColours {
     public static final String SCHEDULER_AND ="#5A23F1";
     public static final String SCHEDULER_OR ="rgba(241, 90, 35, 1.0)";
     public static final String SCHEDULER_EVENT_YELLOW = "rgba(255, 215, 59, 0.2)";
-    public static final String WHITE ="rgba(255, 255, 255, 1.0)";
-    public static final String BLACK ="rgba(0, 0, 0, 1.0)";
+    public static final String WHITE = "rgba(255, 255, 255, 1.0)";
+    public static final String BLACK = "rgba(0, 0, 0, 1.0)";
     public static final String LIGHT_GREY ="rgba(236, 236, 236, 0.5)";
 
     public static final String TRANSPARENT ="rgba(255, 255, 255, 0)";
+
+    public static final String FLOW_RUNNING = "#66bb6a";
+    public static final String FLOW_RECOVERING = "rgba(241, 90, 35, 1.0)";
+    public static final String FLOW_ERROR = "#ef5350";
+    public static final String FLOW_STOPPED = "rgba(0, 0, 0, 1.0)";
 }
