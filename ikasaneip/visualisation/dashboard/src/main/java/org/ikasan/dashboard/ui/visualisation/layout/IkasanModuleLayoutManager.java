@@ -1,8 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.layout;
 
 
+import org.ikasan.dashboard.ui.visualisation.model.flow.Draw2DLayout;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
-import org.ikasan.dashboard.ui.visualisation.model.flow.Logo;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ public class IkasanModuleLayoutManager extends LayoutManagerBase implements Layo
         this.module = module;
     }
 
-    public String layout()
+    public Draw2DLayout layout()
     {
         int x = xStart;
         int y = yStart;
@@ -42,7 +42,8 @@ public class IkasanModuleLayoutManager extends LayoutManagerBase implements Layo
 
             nodeList.add(flow.getConsumer());
 
-            addEdge(flow.getConsumer().getId().getUuid(), flow.getConsumer().getTransition().getId().getUuid(), flow.getConsumer().getTransitionLabel());
+            addEdge(flow.getConsumer().getId().getUuid(), flow.getConsumer().getTransition().getId().getUuid(), flow.getConsumer().getTransitionLabel(),
+                -1, -1);
 
             manageTransition(flow.getConsumer().getTransition(), x, y);
 
@@ -53,8 +54,7 @@ public class IkasanModuleLayoutManager extends LayoutManagerBase implements Layo
 
         this.destinations.forEach(destination -> destination.setX(xExtentFinal + 300));
 
-        return "";
-
+        return null;
     }
 
 }

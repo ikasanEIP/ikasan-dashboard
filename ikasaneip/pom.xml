@@ -368,7 +368,7 @@
         <version.opentest4j>1.2.0</version.opentest4j>
         <version.app.layout.addon>4.0.0</version.app.layout.addon>
         <version.vaadin.css.grid>2.0.0.beta3</version.vaadin.css.grid>
-        <version.karibu.testing.v10>2.4.2</version.karibu.testing.v10>
+        <version.karibu.testing.v10>2.7.0</version.karibu.testing.v10>
         <version.superfields>0.19.0-vaadin14</version.superfields>
         <version.zjsonpatch>0.4.11</version.zjsonpatch>
         <version.swagger>2.9.2</version.swagger>
@@ -385,7 +385,7 @@
         <version.cron.utils>9.1.6</version.cron.utils>
         <version.tech.huffman.re-retrying>3.0.0</version.tech.huffman.re-retrying>
         <version.jmock.imposters>2.12.0</version.jmock.imposters>
-        <version.net.bytebuddy.byte-buddy>1.12.19</version.net.bytebuddy.byte-buddy>
+        <version.net.bytebuddy.byte-buddy>1.17.8</version.net.bytebuddy.byte-buddy>
         <version.io.jsonwebtoken.jjwt>0.9.1</version.io.jsonwebtoken.jjwt>
         <version.explorer-tree-grid-flow>4.0.0</version.explorer-tree-grid-flow>
         <version.jtgraph>1.5.1</version.jtgraph>

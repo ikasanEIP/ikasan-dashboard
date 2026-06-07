@@ -189,7 +189,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
         initConnector();
 
-        if(this.canvasJson != null && ! connectorInitialised) {
+        if(this.canvasJson != null && !connectorInitialised) {
             this.importJson(this.toBack);
         }
 
@@ -281,7 +281,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      *
      * @param identifier the identifier to assign to the boundary.
      * @param w the width of the boundary
-     * @param h he height of the boundary
+     * @param h the height of the boundary
      * @param dashArray the format of the line of the boundary
      * @param colour the colour of the boundary to render
      * @param stroke the line stroke of the boundary
@@ -290,6 +290,26 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addBoundaryStyled"
                 , identifier, w, h, dashArray, colour, stroke));
+        this.saved = false;
+    }
+
+    /**
+     * Adds a boundary with specified style and position based on the provided parameters.
+     *
+     * @param identifier A unique identifier for the boundary.
+     * @param w The width of the boundary.
+     * @param h The height of the boundary.
+     * @param x The x-coordinate of the boundary's position.
+     * @param y The y-coordinate of the boundary's position.
+     * @param dashArray The dash style for the boundary stroke (e.g., "5,5").
+     * @param colour The color of the boundary stroke.
+     * @param stroke The thickness of the boundary stroke.
+     * @param radius The border radius of the boundary.
+     */
+    public void addBoundaryStyledXY(String identifier, double x, double y, double w, double h, String dashArray, String colour, int stroke, int radius) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addBoundaryStyledXY"
+                , identifier, x, y, h, w, dashArray, colour, stroke, radius));
         this.saved = false;
     }
 
@@ -358,6 +378,18 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     public void addImageFigure(String image) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addImageFigure", image));
+        this.saved = false;
+    }
+
+    /**
+     * Adds an image figure to the UI using the coordinates provided with the image.
+     * The `saved` state is set to false after adding the image.
+     *
+     * @param image the path or identifier of the image to be added
+     */
+    public void addImageFigureWithXYOfImageProvided(String image) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addImageFigureWithXY", image));
         this.saved = false;
     }
 
@@ -710,7 +742,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param listener the CanvasItemRightClickEventListener to be added
      */
     public void addCanvasItemRightClickEventListener(CanvasItemRightClickEventListener listener) {
-        this.canvasItemRightClickEventListeners.add(listener);
+        if(!this.canvasItemRightClickEventListeners.contains(listener)) {
+            this.canvasItemRightClickEventListeners.add(listener);
+        }
     }
 
     /**
@@ -719,7 +753,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param listener the CanvasItemDoubleClickEventListener to be added
      */
     public void addCanvasItemDoubleClickEventListener(CanvasItemDoubleClickEventListener listener) {
-        this.canvasItemDoubleClickEventListeners.add(listener);
+        if(!this.canvasItemDoubleClickEventListeners.contains(listener)) {
+            this.canvasItemDoubleClickEventListeners.add(listener);
+        }
     }
 
     /**
@@ -728,7 +764,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param listener the listener to be added
      */
     public void addCanvasItemSingleClickEventListener(CanvasItemSingleClickEventListener listener) {
-        this.canvasItemSingleClickEventListeners.add(listener);
+        if(!this.canvasItemSingleClickEventListeners.contains(listener)) {
+            this.canvasItemSingleClickEventListeners.add(listener);
+        }
     }
 
     /**
@@ -737,7 +775,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param listener the ConnectorEventListener to be added
      */
     public void addConnectorEventListener(ConnectorEventListener listener) {
-        this.connectorEventListeners.add(listener);
+        if(!this.connectorEventListeners.contains(listener)) {
+            this.connectorEventListeners.add(listener);
+        }
     }
 
     /**
@@ -746,7 +786,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param listener the FigureDeleteEventListener to be added
      */
     public void addFigureDeleteEventListeners(FigureDeleteEventListener listener) {
-        this.figureDeleteEventListeners.add(listener);
+        if(!this.figureDeleteEventListeners.contains(listener)) {
+            this.figureDeleteEventListeners.add(listener);
+        }
     }
 
 
@@ -756,7 +798,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param listener the FigureMovedEventListener to be added
      */
     public void addFigureMovedEventListeners(FigureMovedEventListener listener) {
-        this.figureMovedEventListeners.add(listener);
+        if(!this.figureMovedEventListeners.contains(listener)) {
+            this.figureMovedEventListeners.add(listener);
+        }
     }
 
     /**
@@ -765,7 +809,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param jobMouseOverListener the listener to be added
      */
     public void addJobMouseOverEventListener(JobMouseOverListener jobMouseOverListener) {
-        this.jobMouseOverListeners.add(jobMouseOverListener);
+        if(!this.jobMouseOverListeners.contains(jobMouseOverListener)) {
+            this.jobMouseOverListeners.add(jobMouseOverListener);
+        }
     }
 
     /**
@@ -774,7 +820,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param listener the FigureUndoDeleteEventListener to add
      */
     public void addFigureUndoDeleteEventListeners(FigureUndoDeleteEventListener listener) {
-        this.figureUndoDeleteEventListeners.add(listener);
+        if(!this.figureUndoDeleteEventListeners.contains(listener)) {
+            this.figureUndoDeleteEventListeners.add(listener);
+        }
     }
 
     /**
@@ -783,7 +831,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
      * @param listener The listener to be added.
      */
     public void addCanvasUpdatedListener(CanvasUpdatedListener listener) {
-        this.canvasUpdatedListeners.add(listener);
+        if(!this.canvasUpdatedListeners.contains(listener)) {
+            this.canvasUpdatedListeners.add(listener);
+        }
     }
 
     @ClientCallable
@@ -962,6 +1012,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
             this.saved = true;
             this.clear();
             getElement().callJsFunction("$connector.importJson", this.canvasJson, toBack);
+            this.connectorInitialised = true;
         }
     }
 

@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.visualisation.layout;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.dashboard.ui.visualisation.model.flow.*;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dAdapterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +12,7 @@ import java.util.List;
 /**
  * Base abstract class used to assist in the layout of ikasan flow and module diagrams.
  */
-public abstract class LayoutManagerBase
+public abstract class LayoutManagerBase extends Draw2dAdapterBase
 {
     private Logger logger = LoggerFactory.getLogger(LayoutManagerBase.class);
 
@@ -29,14 +30,14 @@ public abstract class LayoutManagerBase
     protected int xExtent = 0;
     protected int yExtent = 0;
     protected int xExtentFinal = 0;
-    protected int xStart = 0;
-    protected int yStart = 0;
+    protected int xStart = 300;
+    protected int yStart = 300;
 
     // These values are constant and used to determine the relative location
     // of the various components. Defaults are provided however these can
     // overwritten by setter methods.
-    protected int xSpacing = 200;
-    protected int ySpacing = 150;
+    protected int xSpacing = 300;
+    protected int ySpacing = 200;
 
 
     public LayoutManagerBase()
@@ -67,7 +68,7 @@ public abstract class LayoutManagerBase
             transition.setX(x + xSpacing);
             transition.setY(y);
 
-            addEdge(transition.getId().getUuid(), ((SingleTransition) transition).getTransition().getId().getUuid(), ((SingleTransition) transition).getTransitionLabel());
+//            addEdge(transition.getId().getUuid(), ((SingleTransition) transition).getTransition().getId().getUuid(), ((SingleTransition) transition).getTransitionLabel());
 
             manageTransition(((SingleTransition) transition).getTransition(), x + xSpacing, y);
         }
@@ -86,7 +87,7 @@ public abstract class LayoutManagerBase
                     key = "";
                 }
 
-                addEdge(transition.getId().getUuid(), ((MultiTransition) transition).getTransitions().get(key).getId().getUuid(), key);
+//                addEdge(transition.getId().getUuid(), ((MultiTransition) transition).getTransitions().get(key).getId().getUuid(), key);
 
                 if(i > 0 && yExtent >= y)
                 {
@@ -125,12 +126,48 @@ public abstract class LayoutManagerBase
         }
     }
 
-    protected void addEdge(String fromId, String toId, String label)
+    protected void manageEdges(Node transition)
     {
-//        logger.debug("Adding edge [{}] --> [{}] with label [{}]", fromId, toId, label);
-//        Edge edge = new Edge(fromId, toId);
-//        edge.setLabel(label);
-//        this.edgeList.add(edge);
+        if (transition instanceof SingleTransition && ((SingleTransition) transition).getTransition() != null)
+        {
+            addEdge(transition.getId().getUuid(), ((SingleTransition) transition).getTransition().getId().getUuid(), ((SingleTransition) transition).getTransitionLabel(),
+                ((SingleTransition) transition).getTransition().getX(), ((SingleTransition) transition).getTransition().getY());
+
+            manageEdges(((SingleTransition) transition).getTransition());
+        }
+        else if (transition instanceof MultiTransition)
+        {
+            int i=0;
+
+            for (String key: ((MultiTransition) transition).getTransitions().keySet())
+            {
+                if(key.equals(((MultiTransition) transition).getTransitions().get(key)))
+                {
+                    key = "";
+                }
+
+                addEdge(transition.getId().getUuid(), ((MultiTransition) transition).getTransitions().get(key).getId().getUuid(), key,
+                    ((MultiTransition) transition).getTransitions().get(key).getX(), ((MultiTransition) transition).getTransitions().get(key).getY());
+
+                manageEdges(((MultiTransition) transition).getTransitions().get(key));
+
+                i++;
+            }
+        }
+        else if(transition instanceof Node)
+        {
+            if(transition instanceof Destination)
+            {
+                this.destinations.add((Destination)transition);
+            }
+        }
+    }
+
+    protected void addEdge(String fromId, String toId, String label, double labelX, double labelY)
+    {
+        this.addConnectionWithLabel(fromId, CONNECTOR_RIGHT_HYBRID_SOURCE, toId
+            , CONNECTOR_LEFT_HYBRID_TARGET, diagramBuilder, label, labelX, labelY);
+
     }
 
     public int getxSpacing()

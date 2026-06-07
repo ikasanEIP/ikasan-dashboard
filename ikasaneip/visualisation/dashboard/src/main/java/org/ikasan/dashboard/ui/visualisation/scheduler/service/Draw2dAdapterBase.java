@@ -77,15 +77,17 @@ public abstract class Draw2dAdapterBase {
        this.contextVisualisationNodeDistance = contextVisualisationNodeDistance;
     }
 
+
     /**
-     * Base method to adapt a context that contains jobs to a draw2d model. This method will cater for a mix of
-     * contexts and jobs to indicate when boundaries between contexts are crossed.
+     * Adapts jobs from the provided context to prepare them for visual representation and job scheduling.
      *
-     * @param parentContext
-     * @param context
-     * @param schedulerJobs
-     * @param schedulerJobsMap
-     * @return
+     * @param parentContext The parent context containing overarching scheduling information.
+     * @param context The current context containing job details to be adapted.
+     * @param schedulerJobs A mapping of job names to their corresponding {@code SchedulerJob} instances.
+     * @param schedulerJobsMap A mapping of job identifiers to {@code SchedulerJob} instances for cross-reference within the context.
+     * @param schedulerJobsImageMap A mapping of job identifiers to {@code Image} objects for visual representation.
+     * @param logicalBoundaries A mapping of visual representation identifiers to their {@code Rectangle} boundaries.
+     * @return An {@code ArrayList} containing adapted job objects prepared for further processing or visualization.
      */
     protected ArrayList<Object> _adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs,
                                            Map<String, SchedulerJob> schedulerJobsMap, Map<String, Image> schedulerJobsImageMap,
@@ -465,11 +467,18 @@ public abstract class Draw2dAdapterBase {
         return null;
     }
 
+
     /**
-     * Base method to adapt a context to a draw2d model.
+     * Adapts the given context into a visual representation by building a structured graph,
+     * diagram, and associated metadata. This method processes the main context and its nested
+     * sub-contexts recursively to generate corresponding graphical elements and layout information.
      *
-     * @param context
-     * @return
+     * @param context The root context to adapt into a structured representation. It contains
+     *                sub-contexts, identifiers, and metadata utilized for generating the graph
+     *                and diagram layout.
+     * @return A list of objects representing the items, groups, and labels derived from the
+     *         adapted context. This list includes both visual items (such as images and
+     *         rectangles) and associated metadata elements (such as labels and group definitions).
      */
     protected ArrayList<Object> _adaptContext(Context context) {
         this.setDiagramVisualisationLayoutConfiguration(context);
@@ -603,14 +612,20 @@ public abstract class Draw2dAdapterBase {
         return items;
     }
 
+
     /**
-     * Recursive method to work our way though a context and all of its child contexts
-     * and add them to the diagram.
+     * Manages a given context by recursively processing its child contexts, updating the graph structure,
+     * generating diagram items, and storing context information in a map. This method processes the provided
+     * context and its hierarchy to build a directed graph and populate a diagram representation.
      *
-     * @param context
-     * @param graph
-     * @param diagramBuilder
-     * @param contextInstanceMap
+     * @param context            The root context to be managed. This context may have child contexts that are
+     *                           retrieved and processed recursively.
+     * @param graph              A directed graph representing the relationship between contexts. Vertices and
+     *                           edges are added to this graph to reflect the structure of the hierarchy.
+     * @param diagramBuilder     The builder object used to construct and populate the diagram representation.
+     *                           Diagram items are created and added to the builder based on the context structure.
+     * @param contextInstanceMap A map that stores the relationship between context names and their corresponding
+     *                           context instances. This map is updated with all processed contexts for later reference.
      */
     protected void manageContext(Context context, DefaultDirectedGraph<Object, DefaultEdge> graph,
                                  DiagramBuilder diagramBuilder, Map<String, Context> contextInstanceMap) {
@@ -646,13 +661,15 @@ public abstract class Draw2dAdapterBase {
         }
     }
 
+
     /**
-     * Helper method to get the cell map from the JGraphXAdapter which is used to create the
-     * layout of the diagram. The cell map is keyed based on the item identifier and contains
-     * all coordinate information relating to the layout of the diagram.
+     * Retrieves a map of vertex cells from the given JGraphXAdapter.
+     * The key in the returned map corresponds to the string representation
+     * of the cell value and the value is the associated mxCell object.
+     * Only vertex cells are included in the map.
      *
-     * @param jGraphXAdapter
-     * @return
+     * @param jGraphXAdapter the JGraphXAdapter instance containing the graph structure
+     * @return a map containing vertex cells with their values as keys
      */
     protected Map<String, mxCell> getCellMap(JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter) {
         Map<String, mxCell> cellMap = new HashMap<>();
@@ -672,15 +689,16 @@ public abstract class Draw2dAdapterBase {
         return cellMap;
     }
 
+
     /**
-     * This method is responsible for recursively creating connections between jobs that reside within
-     * any LogicalGroupings.
+     * Recursively processes the logical grouping structure and manages the connections between job identifiers
+     * in the directed graph, based on the relationships defined within the logical grouping object.
      *
-     * @param context
-     * @param jobIdentifier
-     * @param logicalGrouping
-     * @param diagramBuilder
-     * @param graph
+     * @param context         The context object holding information about the scheduled jobs and other relevant data.
+     * @param jobIdentifier   The identifier of the job currently being processed.
+     * @param logicalGrouping The logical grouping object that defines the hierarchical grouping and connections.
+     * @param diagramBuilder  The diagram builder used to create and manage the visual representation of the connections.
+     * @param graph           The directed graph structure representing logical connections between job identifiers.
      */
     protected void manageLogicalGroupings(Context context, String jobIdentifier, LogicalGrouping logicalGrouping
         , DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph) {
@@ -728,16 +746,15 @@ public abstract class Draw2dAdapterBase {
      * the method getLinkedContexts, which builds a org.ikasan.dashboard.ui.visualisation.scheduler.model.Tree
      * which contains nodes of identifiers of in a tree structure with the root being the start of the linking
      * and nested branches containing the linkage path.
-     *
      * Once the tree has been constructed, this method then delegates to addLinkingsToDiagram which recursively
      * adds all linking context transitions to the diagram.
      *
-     * @param context
-     * @param parentContext
-     * @param internalEventDrivenJobMap
-     * @param diagramBuilder
-     * @param graph
-     * @return
+     * @param context the current context containing information about transitions and states
+     * @param parentContext the parent context of the current context, used for hierarchical linking
+     * @param internalEventDrivenJobMap a map of job identifiers to event-driven scheduler jobs
+     * @param diagramBuilder an object responsible for constructing diagrams based on the context and relationships
+     * @param graph a directed graph representing relationships and dependencies between objects
+     * @return a list of strings representing created linking connections
      */
     protected List<String> manageLinkingContextTransitions(Context context, Context parentContext, Map<String, SchedulerJob> internalEventDrivenJobMap,
                                                            DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph) {
@@ -754,12 +771,12 @@ public abstract class Draw2dAdapterBase {
     }
 
     /**
-     * Helper method to recursively add all context links to the diagram.
+     * Recursively adds links and constructs connections from a tree structure to a diagram, while updating the internal graph and diagram builder.
      *
-     * @param treeNode
-     * @param linkingConnections
-     * @param diagramBuilder
-     * @param graph
+     * @param treeNode The current node in the tree to process links for. It contains branches that may need to be added to the diagram.
+     * @param linkingConnections A list to collect and track connections being created. It accumulates the identifiers of connected nodes.
+     * @param diagramBuilder The builder object responsible for constructing and managing the diagram representation to which links are added.
+     * @param graph The directed graph that maintains the relationships (edges) between nodes (vertices) for the processed tree structure.
      */
     protected void addLinksToDiagram(TreeNode<String> treeNode, List<String> linkingConnections, DiagramBuilder diagramBuilder
         , DefaultDirectedGraph<Object, DefaultEdge> graph) {
@@ -799,13 +816,16 @@ public abstract class Draw2dAdapterBase {
     }
 
     /**
-     * Manage the case where a subsequent context has a job dependency that the current context is
-     * responsible for starting a job in the subsequent context.
+     * Manages the transitions of outbound contexts and establishes connections between jobs, contexts, and diagrams.
+     * This method processes context transitions to generate and add context vertices to the graph, while ensuring proper linking
+     * and relationships are maintained based on preceding job identifiers and contextual data.
      *
-     * @param contextTransitions
-     * @param diagramBuilder
-     * @param graph
-     * @param linkingConnections
+     * @param contextTransitions List of {@code ContextTransition} objects that represent the transitions between contexts
+     *                           and their associated jobs.
+     * @param diagramBuilder     The {@code DiagramBuilder} instance used to build and modify the diagram representation.
+     * @param graph              The {@code DefaultDirectedGraph} used as the structural representation of contexts and jobs.
+     * @param linkingConnections List of strings representing context connection identifiers that should be maintained.
+     * @param parentContext      The {@code Context} representing the parent context in the hierarchy for child context resolution.
      */
     protected void manageOutboundContextTransitions(List<ContextTransition> contextTransitions, DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph,
                                                     List<String> linkingConnections, Context parentContext) {
@@ -860,13 +880,17 @@ public abstract class Draw2dAdapterBase {
     }
 
     /**
-     * Manage the case where a previous context has a job dependency that is the catalyst for a job
-     * starting in the context that the diagram is being rendered for.
+     * Manages the inbound context transitions, adding context nodes and connections to the specified directed graph,
+     * updating the diagram builder for visual representation, and maintaining subsequent job identifiers.
      *
-     * @param contextTransitions
-     * @param diagramBuilder
-     * @param graph
-     * @param linkingConnections
+     * @param contextTransitions a list of context transitions, each representing the relationship between preceding
+     *                            and subsequent jobs and the associated contexts.
+     * @param diagramBuilder the diagram builder instance used to visually represent the context transitions.
+     * @param graph the directed graph where context nodes and their connections will be added.
+     * @param linkingConnections a list of connection identifiers indicating existing context links to avoid duplication.
+     * @param schedulerJobsMap a map of scheduler job identifiers to their corresponding `SchedulerJob` instances, which
+     *                         contain metadata for job contexts and configurations.
+     * @return a list of identifiers for subsequent jobs that occurred in context transitions.
      */
     protected List<String> manageInboundContextTransitions(List<ContextTransition> contextTransitions
         , DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object
@@ -935,13 +959,7 @@ public abstract class Draw2dAdapterBase {
     }
 
     /**
-     * Method to get a tree of linked contexts for contexts that have child contexts where job dependencies
-     * occur between the parent and any of its children.
      *
-     * @param context
-     * @param parentContext
-     * @param schedulerJobMap
-     * @return
      */
     private Tree<String> getLinkedContexts(Context context, Context parentContext, Map<String, SchedulerJob> schedulerJobMap) {
         Tree<String> tree = new Tree<>(new TreeNode<>(context.getName()));
@@ -1195,15 +1213,28 @@ public abstract class Draw2dAdapterBase {
     }
 
 
+
     /**
-     * Method to calculate the x and y coordinate extents of all job within a VisualisationLogicalGrouping.
+     * Calculates the minimum and maximum extents (x and y) for a given visualisation
+     * logical grouping and its related job identifiers. This method also adjusts
+     * the geometry of cells based on scheduler job images and updates the maximum
+     * extents of the jobs as required.
      *
-     * @param visualisationLogicalGrouping
-     * @param xMinExtent
-     * @param xMaxExtent
-     * @param yMinExtent
-     * @param yMaxExtent
-     * @param cellMap
+     * @param visualisationLogicalGrouping The logical grouping object containing nested
+     *                                     groupings and job identifiers to evaluate.
+     * @param xMinExtent                   An AtomicReference holding the minimum x-axis extent,
+     *                                     which will be updated during calculation.
+     * @param xMaxExtent                   An AtomicReference holding the maximum x-axis extent,
+     *                                     which will be updated during calculation.
+     * @param yMinExtent                   An AtomicReference holding the minimum y-axis extent,
+     *                                     which will be updated during calculation.
+     * @param yMaxExtent                   An AtomicReference holding the maximum y-axis extent,
+     *                                     which will be updated during calculation.
+     * @param cellMap                      A map containing job identifiers as keys and their
+     *                                     corresponding mxCell objects as values.
+     * @param schedulerJobsImageMap        A map containing job identifiers as keys and their
+     *                                     corresponding Image objects as values, used for
+     *                                     adjusting cell geometry.
      */
     protected void calculateExtents(VisualisationLogicalGrouping visualisationLogicalGrouping, AtomicReference<Double> xMinExtent, AtomicReference<Double> xMaxExtent,
                                     AtomicReference<Double> yMinExtent, AtomicReference<Double> yMaxExtent, Map<String, mxCell> cellMap, Map<String, Image> schedulerJobsImageMap) {
@@ -1413,16 +1444,9 @@ public abstract class Draw2dAdapterBase {
         diagramBuilder.addItem(jobBuilder.build());
     }
 
-    /**
-     * Helper method to add a connection between 2 items.
-     *
-     * @param sourceIdentifier
-     * @param sourcePort
-     * @param targetIdentifier
-     * @param targetPort
-     * @param diagramBuilder
-     */
-    protected void addConnection(String sourceIdentifier, String sourcePort, String targetIdentifier, String targetPort, DiagramBuilder diagramBuilder) {
+
+    protected void addConnection(String sourceIdentifier, String sourcePort, String targetIdentifier, String targetPort
+        , DiagramBuilder diagramBuilder) {
         ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
         connectionBuilder.withSource(
             diagramBuilder.getConnectionDetailsBuilder()
@@ -1439,6 +1463,44 @@ public abstract class Draw2dAdapterBase {
         );
 
         diagramBuilder.addItem(connectionBuilder.build());
+    }
+
+    protected void addConnectionWithLabel(String sourceIdentifier, String sourcePort, String targetIdentifier, String targetPort
+        , DiagramBuilder diagramBuilder, String labelText, double labelX, double labelY) {
+        ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
+        connectionBuilder.withSource(
+            diagramBuilder.getConnectionDetailsBuilder()
+                .withNode(sourceIdentifier)
+                .withPort(sourcePort)
+                .build()
+        );
+        connectionBuilder.withTarget(
+            diagramBuilder.getConnectionDetailsBuilder()
+                .withNode(targetIdentifier)
+                .withPort(targetPort)
+                .withDecoration("draw2d.decoration.connection.ArrowDecorator")
+                .build()
+        );
+
+        diagramBuilder.addItem(connectionBuilder.build());
+
+        if(labelText != null && !labelText.isEmpty()) {
+            int maxLength = labelText.length();
+            if (labelText.contains("\n")) {
+                maxLength = Arrays.stream(labelText.split("\n"))
+                    .mapToInt(String::length)
+                    .max()
+                    .orElse(labelText.length());
+            }
+            double labelLength = maxLength * 8 * 0.65;
+
+            Label label = new LabelBuilder().withText(labelText)
+                .withX(labelX - labelLength - 25)
+                .withY(labelY)
+                .withFontSize("pt")
+                .build();
+            diagramBuilder.addItem(label);
+        }
     }
 
     /**

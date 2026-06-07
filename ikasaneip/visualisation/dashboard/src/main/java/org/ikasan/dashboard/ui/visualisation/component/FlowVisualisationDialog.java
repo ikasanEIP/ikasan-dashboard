@@ -10,6 +10,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
@@ -26,6 +27,7 @@ import org.ikasan.spec.component.endpoint.Consumer;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.model.ConfigurationMetaData;
+import org.ikasan.spec.metadata.model.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -183,15 +185,15 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
 
         Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaData);
 
-
         this.moduleVisualisation = new ModuleVisualisation(this.moduleControlRestService,
             this.configurationRestService, this.triggerRestService, metaDataApplicationRestService,
             this.moduleMetaDataService);
         this.moduleVisualisation.addModule(module);
 
         Optional<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> flow
-            = this.getCurrentFlow(module.getFlows(), flowName);
+            = this.getCurrentFlow(module, flowName);
         if(flow.isPresent()) {
+            flow.get().setStatus(FlowStateCache.instance().get(module, flow.get()).getState());
             this.moduleVisualisation.setCurrentFlow(flow.get());
             Image flowImage = new Image("/frontend/images/flow.png", "");
             flowImage.setHeight("70px");
@@ -344,8 +346,21 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
     }
 
     private Optional<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> getCurrentFlow
-        (List<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> flows, String flowName){
-        return flows.stream().filter(flow -> flowName.equals(flow.getName())).findFirst();
+        (Module module, String flowName){
+        return module.getFlows().stream().filter(flow -> flowName.equals(flow.getName())).map(flow -> {
+                ConfigurationMetaData<List<ConfigurationParameterMetaData>> flowConfiguration = this.configurationRestService
+                    .getFlowConfiguration(module.getUrl(), module.getName(), flow.getName());
+
+                if(flowConfiguration != null) {
+                    flowConfiguration.getParameters().stream()
+                        .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("isRecording"))
+                        .findFirst()
+                        .ifPresent(configurationParameterMetaData ->
+                            flow.setRecording((Boolean) configurationParameterMetaData.getValue()));
+                }
+                return flow;
+            }
+        ).findFirst();
     }
 
 

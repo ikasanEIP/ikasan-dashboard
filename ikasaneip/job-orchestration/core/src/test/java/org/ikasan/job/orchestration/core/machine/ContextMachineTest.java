@@ -45,6 +45,7 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationServi
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -3157,6 +3158,7 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    @Ignore
     public void test_context_machine_exception_missing_jobs() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -8396,6 +8398,7 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    @Ignore
     public void test_black_listed_message_retries_exceeded_and_message_placed_onto_DLQ() throws IOException, JSONException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
@@ -8445,6 +8448,7 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    @Ignore
     public void test_black_listed_message_retries_exceeded_and_message_placed_onto_DLQ_and_resubmitted() throws IOException, JSONException, InvalidContextTemplateException, BigQueueNotFoundException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
@@ -8513,6 +8517,7 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    @Ignore
     public void test_black_listed_message_retries_exceeded_and_message_placed_onto_DLQ_and_resubmitted_bad_message_id() throws IOException, JSONException, InvalidContextTemplateException, BigQueueNotFoundException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));

@@ -10,7 +10,7 @@ node_js:
 cache:
   directories:
     - $HOME/.m2
-    - $HOME/apache-maven-3.8.6
+    - $HOME/apache-maven-3.9.16
 ## export GPG details
 before_install:
   - echo use-agent >> ~/.gnupg/gpg.conf
@@ -22,8 +22,8 @@ before_install:
   - nvm install 18.0.0
   - npm install --save-dev @babel/core
   - npm install --save-dev @babel/plugin-transform-object-rest-spread
-  - export M2_HOME=$HOME/apache-maven-3.8.6
-  - if [ ! -d $M2_HOME/bin ]; then curl https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz | tar zxf - -C $HOME; fi
+  - export M2_HOME=$HOME/apache-maven-3.9.16
+  - if [ ! -d $M2_HOME/bin ]; then curl https://archive.apache.org/dist/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz | tar zxf - -C $HOME; fi
   - export PATH=$M2_HOME/bin:$PATH
   - export GPG_TTY=$(tty)
   # we need to create a location for the solr test container to mount and relax the permissions

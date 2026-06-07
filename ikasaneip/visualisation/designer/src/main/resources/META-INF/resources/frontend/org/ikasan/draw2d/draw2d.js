@@ -21017,7 +21017,9 @@ _packages2.default.io.json.Reader = _packages2.default.io.Reader.extend(
           figure = canvas.getLine(element.id);
         }
         var group = canvas.getFigure(element.composite);
-        group.assignFigure(figure);
+        if(group != null && figure != null) {
+            group.assignFigure(figure);
+        }
       }
     });
 
@@ -21028,13 +21030,13 @@ _packages2.default.io.json.Reader = _packages2.default.io.Reader.extend(
     //   line.svgPathString = null;
     //   line.repaint();
     // });
-      console.log("linesToRepaintAfterDragDrop " + performance.now());
+    console.log("linesToRepaintAfterDragDrop " + performance.now());
     canvas.linesToRepaintAfterDragDrop = canvas.getLines().clone();
 
-      console.log("canvas.showDecoration() " + performance.now());
+    console.log("canvas.showDecoration() " + performance.now());
     canvas.showDecoration();
 
-      console.log("return result " + performance.now());
+    console.log("return result " + performance.now());
     return result;
   },
 

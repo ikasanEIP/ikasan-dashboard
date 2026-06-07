@@ -25,6 +25,7 @@ import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 import org.ikasan.spec.metadata.model.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
+import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
@@ -188,7 +189,26 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
                 logger.debug("Switching to flow {}", comboBoxFlowComponentValueChangeEvent.getValue().getName());
                 this.currentFlow = comboBoxFlowComponentValueChangeEvent.getValue();
 
-                this.moduleVisualisation.setCurrentFlow(comboBoxFlowComponentValueChangeEvent.getValue());
+                ModuleMetaData moduleMetaData = ((ModuleMetaDataService)this.moduleMetaDataService).findById(this.currentModule.getName());
+
+                List<String> configurationIds = moduleMetaData.getFlows().stream()
+                    .map(flowMetaData -> flowMetaData.getFlowElements()).flatMap(List::stream)
+                    .map(flowElementMetaData -> flowElementMetaData.getConfigurationId())
+                    .filter(id -> id != null)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+                List<ConfigurationMetaData> configurationMetaData
+                    = this.configurationMetadataService.findByIdList(configurationIds);
+
+                ModuleVisjsAdapter adapter = new ModuleVisjsAdapter();
+                Module module = adapter.adapt(moduleMetaData, configurationMetaData);
+                Flow selectedFlow = module.getFlows().stream()
+                        .filter(flow -> flow.getName().equals(comboBoxFlowComponentValueChangeEvent.getValue().getName()))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Selected flow not found"));
+                selectedFlow.setStatus(FlowStateCache.instance().get(currentModule, selectedFlow).getState());
+                this.moduleVisualisation.setCurrentFlow(selectedFlow);
 
                 ConfigurationMetaData<List<ConfigurationParameterMetaData>> flowConfiguration = this.configurationRestService
                     .getFlowConfiguration(this.currentModule.getUrl(), this.currentModule.getName(), this.currentFlow.getName());
@@ -202,7 +222,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
                                 .setRecording((Boolean) configurationParameterMetaData.getValue()));
                 }
 
-                this.moduleVisualisation.init();
+//                this.moduleVisualisation.init();
 
                 this.fireModuleFlowChangeEvent();
                 logger.debug("Finished switching to flow {}", comboBoxFlowComponentValueChangeEvent.getValue().getName());
@@ -242,8 +262,9 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
             this.configurationRestService, this.triggerRestService, metaDataApplicationRestService,
             moduleMetaDataService);
         moduleVisualisation.addModule(module);
-        moduleVisualisation.setCurrentFlow(module.getFlows().get(0));
-        moduleVisualisation.init();
+        Flow flow = module.getFlows().get(0);
+        flow.setStatus(FlowStateCache.instance().get(currentModule, flow).getState());
+        moduleVisualisation.setCurrentFlow(flow);
         this.flowComboBox.setCurrentModule(module);
 
         this.statusPanel.setModuleVisualisation(this.moduleVisualisation);
@@ -268,6 +289,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
 
     public void setCurrentFlow(Flow flow) {
         this.flowComboBox.setValue(flow);
+        flow.setStatus(FlowStateCache.instance().get(currentModule, flow).getState());
         this.moduleVisualisation.setCurrentFlow(flow);
     }
 }

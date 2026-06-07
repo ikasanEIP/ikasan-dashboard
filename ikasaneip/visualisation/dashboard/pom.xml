@@ -228,6 +228,10 @@
                     <groupId>io.projectreactor</groupId>
                     <artifactId>reactor-core</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -795,6 +799,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.stefanbirkner</groupId>
+            <artifactId>system-lambda</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.mvysny.kaributesting</groupId>
             <artifactId>karibu-testing-v10-spring</artifactId>
             <exclusions>
@@ -899,6 +909,10 @@
                 <exclusion>
                     <groupId>com.carrotsearch.randomizedtesting</groupId>
                     <artifactId>randomizedtesting-runner</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
                 </exclusion>
             </exclusions>
             <scope>test</scope>
