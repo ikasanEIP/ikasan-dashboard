@@ -3748,7 +3748,7 @@ public class ContextMachineTest extends AbstractTest {
         status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.ERROR, status);
         status = contextMachine.getContextStatus("Context4");
-        Assert.assertEquals(InstanceStatus.ERROR, status);
+        Assert.assertEquals(InstanceStatus.WAITING, status);
         Assert.assertEquals(InstanceStatus.ERROR, contextMachine.getJobStatus("Context3", "agentName6-jobName6"));
         Assert.assertEquals(InstanceStatus.ERROR, contextMachine.getJobStatus("Context4", "agentName6-jobName6"));
 
@@ -3772,7 +3772,7 @@ public class ContextMachineTest extends AbstractTest {
         status = contextMachine.getContextStatus("Context2");
         Assert.assertEquals(InstanceStatus.ERROR, status);
         status = contextMachine.getContextStatus("Context4");
-        Assert.assertEquals(InstanceStatus.ERROR, status);
+        Assert.assertEquals(InstanceStatus.WAITING, status);
         status = contextMachine.getContextStatus("Context5");
         Assert.assertEquals(InstanceStatus.WAITING, status);
         status = contextMachine.getContextStatus("Context1");
@@ -4494,7 +4494,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
@@ -4602,7 +4602,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
@@ -4872,7 +4872,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
@@ -5207,7 +5207,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
@@ -5436,7 +5436,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
@@ -5680,7 +5680,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1409548854"),
@@ -5921,7 +5921,7 @@ public class ContextMachineTest extends AbstractTest {
                 ,"scheduler-agent", "STPMUR.GLOBAL_BATCH_DONE", true).size());
 
         this.assertContextStatus(contextMachine, "PARALLEL_SAMPLE", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "MUREX_RESTART", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "MUREX_RESTART", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "WEEKLY_PURGES", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "ETF_BSKT_PURGE", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "LOGICAL_PURGES", InstanceStatus.WAITING);
@@ -5947,7 +5947,7 @@ public class ContextMachineTest extends AbstractTest {
 
         this.assertContextStatus(contextMachine, "PARALLEL_SAMPLE", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "MUREX_RESTART", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "WEEKLY_PURGES", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "WEEKLY_PURGES", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "ETF_BSKT_PURGE", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "LOGICAL_PURGES", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "WAREHOUSE_REBUILD", InstanceStatus.WAITING);
@@ -5998,7 +5998,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "PARALLEL_SAMPLE", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "MUREX_RESTART", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "WEEKLY_PURGES", InstanceStatus.RUNNING);
-        this.assertContextStatus(contextMachine, "ETF_BSKT_PURGE", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "ETF_BSKT_PURGE", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "LOGICAL_PURGES", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "WAREHOUSE_REBUILD", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "WEEKEND_LIVEBOOKS", InstanceStatus.WAITING);
@@ -6032,7 +6032,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "WEEKLY_PURGES", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "ETF_BSKT_PURGE", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "LOGICAL_PURGES", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "WAREHOUSE_REBUILD", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "WAREHOUSE_REBUILD", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "WEEKEND_LIVEBOOKS", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CLEAN_RBPL", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "NEWRUN_RBPL", InstanceStatus.WAITING);
@@ -6126,7 +6126,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "WAREHOUSE_REBUILD", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "WEEKEND_LIVEBOOKS", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "CLEAN_RBPL", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "NEWRUN_RBPL", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "NEWRUN_RBPL", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "LIQ_MUREX_REC", InstanceStatus.WAITING);
 
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
@@ -6178,7 +6178,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "WEEKEND_LIVEBOOKS", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CLEAN_RBPL", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "NEWRUN_RBPL", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "LIQ_MUREX_REC", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "LIQ_MUREX_REC", InstanceStatus.WAITING);
 
         Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "PARALLEL_SAMPLE", null,"scheduler-agent", "BF_SETTLED_POS", true).size());
