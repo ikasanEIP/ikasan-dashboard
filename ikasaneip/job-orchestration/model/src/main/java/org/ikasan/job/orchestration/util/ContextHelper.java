@@ -1282,10 +1282,10 @@ public class ContextHelper {
 
             if (schedulerJob.isEmpty()) continue;
 
-            if(schedulerJobMap.containsKey(schedulerJob.get().getIdentifier())
-                && schedulerJobMap.get(schedulerJob.get().getIdentifier()) instanceof InternalEventDrivenJob) {
+            if(schedulerJobMap.containsKey(schedulerJob.get().getIdentifier() + "-" + name)
+                && schedulerJobMap.get(schedulerJob.get().getIdentifier() + "-" + name) instanceof InternalEventDrivenJob) {
                 InternalEventDrivenJob instance = (InternalEventDrivenJob)
-                    schedulerJobMap.get(schedulerJob.get().getIdentifier());
+                    schedulerJobMap.get(schedulerJob.get().getIdentifier() + "-" + name);
 
                 if (instance.isTargetResidingContextOnly()) continue;
             }
