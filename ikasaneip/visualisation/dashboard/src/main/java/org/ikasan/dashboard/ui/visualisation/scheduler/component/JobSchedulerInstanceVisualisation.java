@@ -166,7 +166,8 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
         this.schedulerJobInstanceService
             .getSchedulerJobInstancesByContextInstanceId(contextInstanceId, -1, -1, null, null)
             .getResultList()
-            .forEach(entry -> result.put(entry.getSchedulerJobInstance().getIdentifier(), entry.getSchedulerJobInstance()));
+            .forEach(entry -> result.put(entry.getSchedulerJobInstance().getIdentifier() + "-" + entry.getSchedulerJobInstance().getChildContextName()
+                , entry.getSchedulerJobInstance()));
 
         return result;
     }

@@ -564,7 +564,7 @@ public class ContextMachineImpl implements ContextMachine {
             } else {
                 url = agentMetaFromSolr.getUrl();
             }
-            logger.warn(String.format("Publishing context instance[%s] with id[%s] to url[%s]!",
+            logger.info(String.format("Publishing context instance[%s] with id[%s] to url[%s]!",
                 contextInstance.getName(), contextInstance.getId(), url));
             this.contextInstancePublicationService.publish(url, this.contextInstance);
         }
