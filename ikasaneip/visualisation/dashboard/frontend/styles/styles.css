@@ -2,6 +2,7 @@ html {
     --aura-primary-color: var(--aura-orange);
     --aura-accent-color-light: var(--aura-orange);
     --aura-accent-color-dark: var(--aura-orange);
+    --lumo-primary-color: var(--aura-orange);
     --aura-accent-color-light-contrast: #FFF;
     --aura-background-color-light: #f3f1f1;
     --vaadin-text-color-disabled:rgba(0, 0, 0, 0.65);
@@ -20,10 +21,13 @@ vaadin-side-nav-item::part(link):hover {
 }
 
 vaadin-grid::part(row):hover{
-    color: rgba(241, 90, 35, 1.0);;
+    color: rgba(241, 90, 35, 1.0);
     background-color: rgba(241, 90, 35, 0.1);
 }
 
+vaadin-grid::part(cell) {
+    color: rgba(0, 0, 0, 1);
+}
 
 :host([theme~="spacing-s"]) ::slotted(*) {
     margin-top: 0px !important;

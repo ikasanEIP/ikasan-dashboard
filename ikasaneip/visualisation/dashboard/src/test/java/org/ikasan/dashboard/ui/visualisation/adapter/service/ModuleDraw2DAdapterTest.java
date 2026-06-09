@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-public class ModuleVisjsAdapterTest
+public class ModuleDraw2DAdapterTest
 {
     public static final String MODULE_JSON = "/data/graph/module.json";
 
@@ -59,9 +59,9 @@ public class ModuleVisjsAdapterTest
         ModuleMetaData moduleMetaData = this.jsonModuleMetaDataProvider
             .deserialiseModule(loadDataFile(MODULE_JSON));
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, new ArrayList<>());
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, new ArrayList<>());
 
         Assertions.assertEquals("module name", module.getName(), "module name equals");
         Assertions.assertEquals("module version", module.getVersion(), "module version equals");
@@ -125,9 +125,9 @@ public class ModuleVisjsAdapterTest
         configurationMetaData = this.getConfigurationMetadata(JMS_CONSUMER_CONFIGURATION);
         configurationMetaDataList.add(configurationMetaData);
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("sample-boot-jms", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
@@ -155,9 +155,9 @@ public class ModuleVisjsAdapterTest
         configurationMetaData = this.getConfigurationMetadata(JMS_CONSUMER_CONFIGURATION);
         configurationMetaDataList.add(configurationMetaData);
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("sample-boot-jms", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
@@ -190,9 +190,9 @@ public class ModuleVisjsAdapterTest
         configurationMetaData = this.getConfigurationMetadata(SFTP_PRODUCER_CONFIGURATION);
         configurationMetaDataList.add(configurationMetaData);
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("sample-boot-sftp-jms", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
@@ -249,9 +249,9 @@ public class ModuleVisjsAdapterTest
         configurationMetaData = this.getConfigurationMetadata(SFTP_PRODUCER_CONFIGURATION_NO_REMOTE_HOST);
         configurationMetaDataList.add(configurationMetaData);
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("sample-boot-sftp-jms", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
@@ -267,9 +267,9 @@ public class ModuleVisjsAdapterTest
 
         ArrayList<ConfigurationMetaData> configurationMetaDataList = new ArrayList<>();
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("bloomberg-trade", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
@@ -285,9 +285,9 @@ public class ModuleVisjsAdapterTest
 
         ArrayList<ConfigurationMetaData> configurationMetaDataList = new ArrayList<>();
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("espeed-trade", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
@@ -303,9 +303,9 @@ public class ModuleVisjsAdapterTest
 
         ArrayList<ConfigurationMetaData> configurationMetaDataList = new ArrayList<>();
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("ion-jgbTrade", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
@@ -321,9 +321,9 @@ public class ModuleVisjsAdapterTest
 
         ArrayList<ConfigurationMetaData> configurationMetaDataList = new ArrayList<>();
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("electronicTrade", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
@@ -339,9 +339,9 @@ public class ModuleVisjsAdapterTest
 
         ArrayList<ConfigurationMetaData> configurationMetaDataList = new ArrayList<>();
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("trading-place-trade-sa", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");
@@ -357,9 +357,9 @@ public class ModuleVisjsAdapterTest
 
         ArrayList<ConfigurationMetaData> configurationMetaDataList = new ArrayList<>();
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaDataList);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaDataList);
 
         Assertions.assertEquals("tt-trade", module.getName(), "module name equals");
         Assertions.assertEquals(null, module.getVersion(), "module version equals");

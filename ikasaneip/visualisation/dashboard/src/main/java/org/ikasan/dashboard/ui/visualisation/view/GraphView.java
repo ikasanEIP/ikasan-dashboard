@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
 import java.util.List;
 
@@ -113,6 +112,11 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
         this.getElement().getThemeList().remove("spacing");
     }
 
+    /**
+     * Initializes the GraphView component by creating and configuring an instance of the GraphVisualisation
+     * class with the necessary services and dependencies. The initialized GraphVisualisation instance is then
+     * added to the current layout, and the initialised flag is set to true to indicate that the setup is complete.
+     */
     private void init() {
         this.graphVisualisation = new GraphVisualisation(this.solrSearchService,
             this.moduleControlRestService, this.moduleMetadataService, this.configurationRestService,

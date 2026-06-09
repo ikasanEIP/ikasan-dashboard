@@ -25,9 +25,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class ModuleVisjsAdapter
+public class ModuleDraw2DAdapter
 {
-    Logger logger = LoggerFactory.getLogger(ModuleVisjsAdapter.class);
+    Logger logger = LoggerFactory.getLogger(ModuleDraw2DAdapter.class);
 
     private int identifier;
     private HashMap<String, String> fromTransitionLabelMap = new HashMap<>();
@@ -37,11 +37,11 @@ public class ModuleVisjsAdapter
 
 
     /**
-     * Adapt module meta data into a Module structure suitable for rendering to a VisJs visualisation.
+     * Adapts the provided module metadata and configuration metadata into a Module instance.
      *
-     * @param moduleMetaData
-     * @param configurationMetaData
-     * @return
+     * @param moduleMetaData The metadata that describes the module to be adapted.
+     * @param configurationMetaData A list of configuration metadata used to further define the module structure.
+     * @return A fully configured Module instance based on the provided metadata.
      */
     public Module adapt(ModuleMetaData moduleMetaData, List<ConfigurationMetaData> configurationMetaData)
     {
@@ -68,10 +68,11 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to manage flows.
+     * Manages the creation of a Flow instance based on the provided metadata and configuration.
      *
-     * @param flowMetaData
-     * @return
+     * @param flowMetaData The metadata containing all details about the flow, including flow elements, transitions, consumer, and startup type.
+     * @param configurationMetaDataMap A map of configuration metadata keyed by configuration name, used to configure flow elements.
+     * @return A fully constructed Flow instance based on the input metadata and configurations.
      */
     protected Flow manageFlow(FlowMetaData flowMetaData, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {
@@ -104,12 +105,14 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Help us narrow a distinct list
+     * Returns a list containing distinct elements from the provided list based on
+     * the specified key extractors. The distinctiveness is determined using the keys
+     * extracted from the elements by the provided functions.
      *
-     * @param list
-     * @param keyExtractors
-     * @param <T>
-     * @return
+     * @param <T> the type of elements in the list
+     * @param list the list of elements to process for distinct elements
+     * @param keyExtractors the functions used to extract keys for determining distinctiveness
+     * @return a list containing distinct elements based on the extracted keys
      */
     private static <T> List<T> distinctList(List<T> list, Function<? super T, ?>... keyExtractors)
     {
@@ -120,11 +123,14 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Predicate to help narrow a distinct list.
+     * Returns a predicate that maintains state to ensure that each combination of keys extracted
+     * by the provided key extractors is encountered only once. This can be used to filter a stream
+     * of objects based on distinct combinations of properties.
      *
-     * @param keyExtractors
-     * @param <T>
-     * @return
+     * @param <T> the type of input to the predicate
+     * @param keyExtractors one or more functions to extract keys from the input object
+     * @return a predicate that returns true if the combination of keys has not been encountered before,
+     *         otherwise false
      */
     private static <T> Predicate<T> distinctByKeys(Function<? super T, ?>... keyExtractors)
     {
@@ -142,12 +148,16 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to manage flow elements
+     * Manages the creation and decoration of a wiretap node for a given flow element based on its component type.
+     * Handles single and multi-transition flow elements, applying appropriate processing for each type.
      *
-     * @param flowElement
-     * @param transitions
-     * @param flowElements
-     * @return
+     * @param flowElement the flow element metadata object that represents the component within the flow
+     * @param transitions the list of transitions associated with the flow element
+     * @param flowElements a map of flow element names to flow element metadata, representing all elements in the flow
+     * @param configurationMetaDataMap a map of configuration names to configuration metadata objects, providing configuration details
+     *                                  for the components within the flow
+     * @return an instance of {@link AbstractWiretapNode} representing the wiretap node for the given flow element
+     * @throws IllegalArgumentException if the component type of the flow element is unknown or unsupported
      */
     protected AbstractWiretapNode manageFlowElement(FlowElementMetaData flowElement, List<Transition> transitions,
                                      Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
@@ -179,6 +189,13 @@ public class ModuleVisjsAdapter
         }
     }
 
+    /**
+     * Decorates the given wiretap node based on the decorators present in the flow element metadata.
+     * It checks for specific decorator types and names and updates the wiretap node's status accordingly.
+     *
+     * @param flowElement the metadata of the flow element containing decorators to be evaluated
+     * @param node the wiretap node to be decorated and updated based on the matched decorators
+     */
     private void decorateWiretap(FlowElementMetaData flowElement, AbstractWiretapNode node) {
         if(flowElement.getDecorators() != null) {
             flowElement.getDecorators().forEach(decoratorMetaData -> {
@@ -207,12 +224,12 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Get a list of transitions in the form of FlowElementMetaData.
+     * Retrieves the list of transition target flow elements originating from the given flow element.
      *
-     * @param flowElement
-     * @param transitions
-     * @param flowElements
-     * @return
+     * @param flowElement the current flow element for which transitions are being determined
+     * @param transitions the list of transitions connecting flow elements
+     * @param flowElements a mapping of flow element names to their metadata
+     * @return a list of flow element metadata objects representing the target elements of transitions
      */
     protected List<FlowElementMetaData> getTransitions(FlowElementMetaData flowElement, List<Transition> transitions,
                                                        Map<String, FlowElementMetaData> flowElements)
@@ -224,9 +241,14 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Build the from transition label map.
+     * Populates the fromTransitionLabelMap with concatenated transition names associated
+     * with their respective "from" states. If a "from" state already exists as a key in
+     * the map, the transition name is appended to the existing value, separated by a comma.
+     * If the "from" state does not exist in the map, a new key-value pair is added.
      *
-     * @param transitions
+     * @param transitions A list of Transition objects from which to build the
+     *                    fromTransitionLabelMap. Each Transition contains "from" and
+     *                    "name" attributes used for constructing the map.
      */
     protected void buildFromTransitionLabelMap(List<Transition> transitions)
     {
@@ -251,9 +273,13 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Build the to transition label map.
+     * Builds a mapping of transition targets to their corresponding labels.
+     * For each transition, if its target already exists in the map, its name is appended
+     * to the existing label for that target. If the target does not exist in the map,
+     * it is added with its current transition name as the label. The labels are
+     * wrapped to a maximum length of 15 characters.
      *
-     * @param transitions
+     * @param transitions the list of transitions to be processed and added to the map
      */
     protected void buildToTransitionLabelMap(List<Transition> transitions)
     {
@@ -278,12 +304,16 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Manage single transition flow elements.
+     * Manages the transition logic for a single transition scenario in a flow element.
+     * Based on the type of the flow element (e.g., Producer, Consumer, Converter, etc.),
+     * this method delegates the processing to the corresponding handler method.
      *
-     * @param flowElement
-     * @param transitions
-     * @param flowElements
-     * @return
+     * @param flowElement the metadata of the flow element being processed
+     * @param transitions the list of transitions available for the flow
+     * @param flowElements a map of flow element names to their metadata
+     * @param configurationMetaDataMap a map of configuration names to their metadata
+     * @return an instance of {@code AbstractWiretapNode} after processing the flow element
+     * @throws IllegalArgumentException if the component type of the flow element is unknown
      */
     protected AbstractWiretapNode manageSingleTransition(FlowElementMetaData flowElement, List<Transition> transitions,
                                                       Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
@@ -329,12 +359,15 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Manage multi transition flow elements.
+     * Manages transitions for a flow element and determines the appropriate processing
+     * logic based on the component type of the flow element.
      *
-     * @param flowElement
-     * @param transitions
-     * @param flowElements
-     * @return
+     * @param flowElement the flow element whose transitions need to be managed.
+     * @param transitions the list of transitions associated with the flow element.
+     * @param flowElements a map of all flow elements, where the keys are their identifiers.
+     * @param configurationMetaDataMap a map of configuration metadata, where the keys are configuration names.
+     * @return an instance of {@code AbstractWiretapNode} resulting from the processing of the flow element's transitions.
+     * @throws IllegalArgumentException if the component type of the flow element is unknown.
      */
     protected AbstractWiretapNode manageMultiTransition(FlowElementMetaData flowElement, List<Transition> transitions,
                                                     Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
@@ -357,11 +390,15 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to manage producers.
+     * Manages the creation of producer nodes in the application flow based on the
+     * metadata of the provided flow element. Determines the type of producer and
+     * constructs the corresponding node, handling specific implementations such as
+     * JMS producers, FTP/SFTP producers, or other endpoints.
      *
-     * @param flowElement
-     * @param configurationMetaDataMap
-     * @return
+     * @param flowElement the flow element metadata representing the producer in the flow.
+     * @param configurationMetaDataMap a map of configuration metadata, keyed by configuration ID,
+     *                                  providing additional configuration details for components.
+     * @return an instance of AbstractWiretapNode representing the configured producer node for the flow.
      */
     private AbstractWiretapNode manageProducers(FlowElementMetaData flowElement, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {
@@ -435,14 +472,17 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to manage consumers.
+     * Manages the creation and configuration of consumer nodes within a flow based on the provided metadata,
+     * transitions, and configuration data. Determines the appropriate consumer type to use (FTP, SFTP, polling,
+     * or event-driven) and builds the corresponding node with its associated parameters.
      *
-     * @param flowElement
-     * @param flowElementMetaData
-     * @param transitions
-     * @param flowElements
-     * @param configurationMetaDataMap
-     * @return
+     * @param flowElement the metadata for the current flow element being processed
+     * @param flowElementMetaData the metadata for the parent or associated flow element
+     * @param transitions the list of transitions associated with the current flow element
+     * @param flowElements a map of all flow elements within the flow, keyed by their identifiers
+     * @param configurationMetaDataMap a map of configuration metadata, keyed by configuration IDs
+     * @return the constructed consumer node of type {@code AbstractWiretapNode} configured based on the type
+     *         and parameters of the flow element
      */
     private AbstractWiretapNode manageConsumers(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions,
                                  Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
@@ -517,14 +557,14 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to manage converters.
+     * Manages the creation and configuration of a message converter for a specific flow element.
      *
-     * @param flowElement
-     * @param flowElementMetaData
-     * @param transitions
-     * @param flowElements
-     * @param configurationMetaDataMap
-     * @return
+     * @param flowElement the metadata of the flow element for which the converter is being managed
+     * @param flowElementMetaData additional metadata of the flow element for detailed processing
+     * @param transitions a list of transitions associated with the flow element
+     * @param flowElements a map containing all flow elements in the process, keyed by their identifiers
+     * @param configurationMetaDataMap a map of configuration metadata for the associated elements
+     * @return an AbstractWiretapNode configured with the specified properties and transitions
      */
     private AbstractWiretapNode manageConverter(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions, Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
     {
@@ -542,14 +582,14 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to manage translators.
+     * Manages the creation and configuration of a translator node for wiretap purposes in a flow.
      *
-     * @param flowElement
-     * @param flowElementMetaData
-     * @param transitions
-     * @param flowElements
-     * @param configurationMetaDataMap
-     * @return
+     * @param flowElement              The metadata of the current flow element for which the translator is being managed.
+     * @param flowElementMetaData      The metadata of the next flow element connected to the current flow element.
+     * @param transitions              A list of transitions associated with the flow elements.
+     * @param flowElements             A map containing flow element metadata keyed by their unique identifiers.
+     * @param configurationMetaDataMap A map of configuration metadata keyed by their unique identifiers.
+     * @return An {@code AbstractWiretapNode} that represents the configured wiretap translator node.
      */
     private AbstractWiretapNode manageTranslator(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions,
                                  Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
@@ -567,14 +607,16 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to manage splitters.
+     * Manages the creation of an AbstractWiretapNode for a splitter within the flow
+     * visualization model. This method handles the module mappings and builds the
+     * splitter node with the specified properties from the provided metadata and transitions.
      *
-     * @param flowElement
-     * @param flowElementMetaData
-     * @param transitions
-     * @param flowElements
-     * @param configurationMetaDataMap
-     * @return
+     * @param flowElement the metadata of the current flow element representing the splitter
+     * @param flowElementMetaData the metadata of the parent or related flow element
+     * @param transitions the list of transitions associated with the flow elements
+     * @param flowElements a map containing all flow elements in the current visualization, keyed by their identifiers
+     * @param configurationMetaDataMap a map of configuration metadata required for managing module-specific mappings
+     * @return an instance of AbstractWiretapNode representing the configured splitter in the visualization model
      */
     private AbstractWiretapNode manageSplitter(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions,
                                   Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
@@ -592,14 +634,14 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to manage filters.
+     * Manages the creation of a filter node in the flow visualization representation.
      *
-     * @param flowElement
-     * @param flowElementMetaData
-     * @param transitions
-     * @param flowElements
-     * @param configurationMetaDataMap
-     * @return
+     * @param flowElement The metadata of the flow element defining the current component.
+     * @param flowElementMetaData The metadata of the adjoining flow element.
+     * @param transitions A list of transitions associated with the flow element.
+     * @param flowElements A map of all flow elements keyed by their identifiers.
+     * @param configurationMetaDataMap A map of configuration metadata keyed by their identifiers.
+     * @return An AbstractWiretapNode representing the filter node in the flow visualization.
      */
     private AbstractWiretapNode manageFilter(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions,
                                 Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
@@ -617,14 +659,14 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to manage brokers.
+     * Manages the creation and configuration of a broker node in the flow diagram.
      *
-     * @param flowElement
-     * @param flowElementMetaData
-     * @param transitions
-     * @param flowElements
-     * @param configurationMetaDataMap
-     * @return
+     * @param flowElement the metadata of the current flow element being processed
+     * @param flowElementMetaData the metadata of the corresponding flow element connected to this flow element
+     * @param transitions the list of transitions associated with the flow element
+     * @param flowElements a map of all flow elements by their IDs
+     * @param configurationMetaDataMap a map of configuration metadata by their IDs
+     * @return the constructed wiretap node representing the broker in the flow diagram
      */
     private AbstractWiretapNode manageBroker(FlowElementMetaData flowElement, FlowElementMetaData flowElementMetaData, List<Transition> transitions,
                               Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
@@ -642,14 +684,14 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Manage single recipient routers.
+     * Manages the creation and configuration of a single recipient router node in a flow visualization.
      *
-     * @param flowElement
-     * @param transitions
-     * @param flowElements
-     * @param configurationMetaDataMap
-     * @param flowElementMetaDataTransitions
-     * @return
+     * @param flowElement The metadata of the flow element that represents the single recipient router.
+     * @param transitions The list of transitions between flow elements in the flow.
+     * @param flowElements A map of flow element IDs to their metadata within the overall flow configuration.
+     * @param configurationMetaDataMap A map of configuration identifiers to their associated metadata.
+     * @param flowElementMetaDataTransitions The list of metadata for flow elements that represent transitions originating from the single recipient router.
+     * @return An instance of {@code AbstractWiretapNode} representing the configured single recipient router in the visualization model.
      */
     private AbstractWiretapNode manageSingleRecipientRouter(FlowElementMetaData flowElement, List<Transition> transitions,
                                              Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap,
@@ -673,14 +715,15 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Manage single recipient routers.
+     * Manages the construction and configuration of a multi-recipient router node in the flow,
+     * including the establishment of transitions to subsequent flow elements.
      *
-     * @param flowElement
-     * @param transitions
-     * @param flowElements
-     * @param configurationMetaDataMap
-     * @param flowElementMetaDataTransitions
-     * @return
+     * @param flowElement The meta-data associated with the flow element representing the router.
+     * @param transitions The list of transitions in the flow configuration that connect flow elements.
+     * @param flowElements A map containing the meta-data of all flow elements in the flow, keyed by their identifiers.
+     * @param configurationMetaDataMap A map representing the configurations associated with individual flow elements, keyed by configuration identifiers.
+     * @param flowElementMetaDataTransitions A list of meta-data objects representing the transitions for the current flow element.
+     * @return An instance of {@code AbstractWiretapNode} representing the configured multi-recipient router.
      */
     private AbstractWiretapNode manageMultiRecipientRouter(FlowElementMetaData flowElement, List<Transition> transitions,
                                              Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap,
@@ -704,11 +747,12 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Get a parameter value in the form of a String.
+     * Retrieves the metadata value for a specific configuration parameter from the provided {@code ConfigurationMetaData}.
      *
-     * @param parameter
-     * @param configurationMetaData
-     * @return
+     * @param parameter The name of the configuration parameter whose metadata value is to be retrieved.
+     * @param configurationMetaData An instance of {@code ConfigurationMetaData} containing a list of parameter metadata.
+     * @return The metadata value of the specified configuration parameter as a {@code String}, or an empty string
+     *         if the parameter does not exist, its metadata is undefined, or its value is null.
      */
     protected String getConfigurationParameterMetaData(String parameter, ConfigurationMetaData configurationMetaData)
     {
@@ -731,11 +775,12 @@ public class ModuleVisjsAdapter
     }
 
     /**
-     * Helper method to associate configuration meta data with the node identifier.
+     * Manages the mapping of module data by associating flow elements with their configuration metadata
+     * and storing them in internal maps.
      *
-     * @param nodeId
-     * @param configurationMetaDataMap
-     * @param flowElement
+     * @param nodeId the identifier of the designer item, used as a key for mapping flow elements
+     * @param configurationMetaDataMap the map containing configuration metadata, where keys are configuration IDs
+     * @param flowElement the flow element metadata associated with the given designer item identifier
      */
     private void manageModuleMaps(DesignerItemIdentifier nodeId, Map<String, ConfigurationMetaData> configurationMetaDataMap, FlowElementMetaData flowElement)
     {
