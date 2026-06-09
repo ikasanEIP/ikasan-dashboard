@@ -12,7 +12,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.cache.FlowStateCache;
-import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapter;
+import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleDraw2DAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.ControlPanel;
 import org.ikasan.dashboard.ui.visualisation.component.FlowComboBox;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleVisualisation;
@@ -64,7 +64,9 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
 
     private MetaDataService metaDataApplicationRestService;
 
-    private BatchInsert<ModuleMetaData> moduleMetaDataService;
+    private BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert;
+
+    private ModuleMetaDataService moduleMetaDataService;
 
     /**
      * Constructor
@@ -74,7 +76,8 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
         , TriggerService triggerRestService
         , ConfigurationMetaDataService configurationMetadataService
         , MetaDataService metaDataApplicationRestService
-        , BatchInsert<ModuleMetaData> moduleMetaDataService) {
+        , BatchInsert<ModuleMetaData> moduleMetaBatchInsert
+        , ModuleMetaDataService moduleMetaDataService) {
 
         this.graphViewChangeListeners = new ArrayList<>();
 
@@ -97,6 +100,10 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
         this.metaDataApplicationRestService = metaDataApplicationRestService;
         if(this.metaDataApplicationRestService == null){
             throw new IllegalArgumentException("metaDataApplicationRestService cannot be null!");
+        }
+        this.moduleMetaDataBatchInsert = moduleMetaBatchInsert;
+        if(this.moduleMetaDataBatchInsert == null){
+            throw new IllegalArgumentException("moduleMetaBatchInsert cannot be null!");
         }
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null){
@@ -131,7 +138,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
 
         moduleVisualisation = new ModuleVisualisation(this.moduleControlRestService,
             this.configurationRestService, this.triggerRestService, this.metaDataApplicationRestService,
-            this.moduleMetaDataService);
+            this.moduleMetaDataBatchInsert);
 
         statusPanel = new StatusPanel(this.moduleControlRestService, this.moduleVisualisation);
 
@@ -189,7 +196,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
                 logger.debug("Switching to flow {}", comboBoxFlowComponentValueChangeEvent.getValue().getName());
                 this.currentFlow = comboBoxFlowComponentValueChangeEvent.getValue();
 
-                ModuleMetaData moduleMetaData = ((ModuleMetaDataService)this.moduleMetaDataService).findById(this.currentModule.getName());
+                ModuleMetaData moduleMetaData = this.moduleMetaDataService.findById(this.currentModule.getName());
 
                 List<String> configurationIds = moduleMetaData.getFlows().stream()
                     .map(flowMetaData -> flowMetaData.getFlowElements()).flatMap(List::stream)
@@ -201,7 +208,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
                 List<ConfigurationMetaData> configurationMetaData
                     = this.configurationMetadataService.findByIdList(configurationIds);
 
-                ModuleVisjsAdapter adapter = new ModuleVisjsAdapter();
+                ModuleDraw2DAdapter adapter = new ModuleDraw2DAdapter();
                 Module module = adapter.adapt(moduleMetaData, configurationMetaData);
                 Flow selectedFlow = module.getFlows().stream()
                         .filter(flow -> flow.getName().equals(comboBoxFlowComponentValueChangeEvent.getValue().getName()))
@@ -221,8 +228,6 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
                             comboBoxFlowComponentValueChangeEvent.getValue()
                                 .setRecording((Boolean) configurationParameterMetaData.getValue()));
                 }
-
-//                this.moduleVisualisation.init();
 
                 this.fireModuleFlowChangeEvent();
                 logger.debug("Finished switching to flow {}", comboBoxFlowComponentValueChangeEvent.getValue().getName());
@@ -246,7 +251,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
         List<ConfigurationMetaData> configurationMetaData
             = this.configurationMetadataService.findByIdList(configurationIds);
 
-        ModuleVisjsAdapter adapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter adapter = new ModuleDraw2DAdapter();
         Module module = adapter.adapt(moduleMetaData, configurationMetaData);
 
         if (this.moduleVisualisation != null) {
@@ -260,7 +265,7 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
 
         this.moduleVisualisation = new ModuleVisualisation(this.moduleControlRestService,
             this.configurationRestService, this.triggerRestService, metaDataApplicationRestService,
-            moduleMetaDataService);
+            moduleMetaDataBatchInsert);
         moduleVisualisation.addModule(module);
         Flow flow = module.getFlows().get(0);
         flow.setStatus(FlowStateCache.instance().get(currentModule, flow).getState());

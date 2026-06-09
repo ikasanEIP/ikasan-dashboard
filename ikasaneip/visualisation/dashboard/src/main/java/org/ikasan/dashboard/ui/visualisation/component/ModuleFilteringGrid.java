@@ -97,8 +97,6 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
 
     public void init()
     {
-        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-
         dataProvider = DataProvider.fromFilteringCallbacks(query ->
         {
             Optional<ModuleSearchFilter> filter = query.getFilter();

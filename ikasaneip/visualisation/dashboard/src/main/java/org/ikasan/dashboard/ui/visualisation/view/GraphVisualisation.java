@@ -34,7 +34,7 @@ import org.ikasan.dashboard.ui.search.listener.SearchListener;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapter;
+import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleDraw2DAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamUploadDialog;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGrid;
@@ -402,8 +402,8 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                     this.moduleLabel.setText(moduleMetaData.getName());
                     this.businessStreamVisualisation = null;
 
-                    ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
-                    Module module = moduleVisjsAdapter.adapt(moduleMetaData, null);
+                    ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
+                    Module module = moduleDraw2DAdapter.adapt(moduleMetaData, null);
 
                     Optional<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> flow
                         = module.getFlows().stream().filter(f -> flowName.equals(f.getName())).findFirst();
@@ -458,7 +458,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
 
         this.moduleVisualisation = new GraphViewModuleVisualisation(this.moduleControlRestService,
             this.configurationRestService, this.triggerRestService, this.configurationMetadataService,
-            this.metaDataApplicationRestService, this.moduleMetadataBatchInsert);
+            this.metaDataApplicationRestService, this.moduleMetadataBatchInsert, this.moduleMetadataService);
 
         this.moduleVisualisation.createModuleVisualisation(moduleMetaData);
         this.add(moduleVisualisation);

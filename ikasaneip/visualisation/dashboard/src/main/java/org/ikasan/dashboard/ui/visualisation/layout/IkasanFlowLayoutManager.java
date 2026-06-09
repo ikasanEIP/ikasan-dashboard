@@ -25,8 +25,6 @@ public class IkasanFlowLayoutManager extends LayoutManagerBase implements Layout
 {
     Logger logger = LoggerFactory.getLogger(IkasanFlowLayoutManager.class);
 
-//    protected DiagramBuilder diagramBuilder = new DiagramBuilder();
-
     private Flow flow;
 
     public IkasanFlowLayoutManager(Flow flow)
@@ -48,8 +46,6 @@ public class IkasanFlowLayoutManager extends LayoutManagerBase implements Layout
         nodeList.add(flow.getConsumer().getSource());
 
         manageTransition(flow.getConsumer(), x, y);
-
-//        flow.setBorder(x + 100, y - 150, xExtent - x , yExtent + 250 - y);
 
         RectangleBuilder rb = diagramBuilder.getRectangleBuilder();
         rb.withId(flow.getName() + "_status")
@@ -104,20 +100,20 @@ public class IkasanFlowLayoutManager extends LayoutManagerBase implements Layout
             .withUserData(new UserDataBuilder().withItemType(FlowItemTypes.FLOW_START_UP_CONTROL)
                 .build());
 
-        if(flow.getStartupType().equals(StartupType.MANUAL)) {
-            startupBuilder
-                .withPath(FlowStartup.FLOW_MANUAL_IMAGE);
-            diagramBuilder.addItem(startupBuilder.build());
-        }
-        else if(flow.getStartupType().equals(StartupType.AUTOMATIC)) {
-            startupBuilder
-                .withPath(FlowStartup.FLOW_AUTO_IMAGE);
-            diagramBuilder.addItem(startupBuilder.build());
-        }
-        else if(flow.getStartupType().equals(StartupType.DISABLED)) {
-            startupBuilder
-                .withPath(FlowStartup.FLOW_DISABLED_IMAGE);
-            diagramBuilder.addItem(startupBuilder.build());
+        if(flow.getStartupType() != null) {
+            if (flow.getStartupType().equals(StartupType.MANUAL)) {
+                startupBuilder
+                    .withPath(FlowStartup.FLOW_MANUAL_IMAGE);
+                diagramBuilder.addItem(startupBuilder.build());
+            } else if (flow.getStartupType().equals(StartupType.AUTOMATIC)) {
+                startupBuilder
+                    .withPath(FlowStartup.FLOW_AUTO_IMAGE);
+                diagramBuilder.addItem(startupBuilder.build());
+            } else if (flow.getStartupType().equals(StartupType.DISABLED)) {
+                startupBuilder
+                    .withPath(FlowStartup.FLOW_DISABLED_IMAGE);
+                diagramBuilder.addItem(startupBuilder.build());
+            }
         }
 
         if(flow.isRecording()) {

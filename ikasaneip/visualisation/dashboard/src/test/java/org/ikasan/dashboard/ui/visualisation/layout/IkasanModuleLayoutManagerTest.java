@@ -86,7 +86,7 @@ public class IkasanModuleLayoutManagerTest
 //        ModuleMetaData moduleMetaData = this.jsonModuleMetaDataProvider
 //            .deserialiseModule(loadDataFile(MODULE_FOUR_JSON));
 //
-//        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+//        ModuleDraw2DAdapter moduleVisjsAdapter = new ModuleDraw2DAdapter();
 //
 //        Module module = moduleVisjsAdapter.adapt(moduleMetaData, new ArrayList<>());
 //
@@ -151,7 +151,7 @@ public class IkasanModuleLayoutManagerTest
 //        ModuleMetaData moduleMetaData = this.jsonModuleMetaDataProvider
 //            .deserialiseModule(loadDataFile(MODULE_FOUR_JSON));
 //
-//        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+//        ModuleDraw2DAdapter moduleVisjsAdapter = new ModuleDraw2DAdapter();
 //
 //        Module module = moduleVisjsAdapter.adapt(moduleMetaData, new ArrayList<>());
 //

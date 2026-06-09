@@ -28,7 +28,7 @@ import org.ikasan.dashboard.ui.scheduler.view.SchedulerViewTest;
 import org.ikasan.dashboard.ui.search.component.SearchFormTest;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGridTest;
 import org.ikasan.dashboard.ui.search.view.SearchViewTest;
-import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapterTest;
+import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleDraw2DAdapterTest;
 import org.ikasan.dashboard.ui.visualisation.component.ComponentConfigurationDialogTest;
 import org.ikasan.dashboard.ui.visualisation.component.FlowFilteringGridTest;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGridTest;
@@ -74,7 +74,7 @@ import org.junit.runners.Suite;
     SearchViewTest.class,
     SolrSearchFilteringGridTest.class,
     SearchFormTest.class,
-    ModuleVisjsAdapterTest.class,
+    ModuleDraw2DAdapterTest.class,
     ModuleMetaDataDaoImplTest.class,
     IkasanFlowLayoutManagerTest.class,
     IkasanModuleLayoutManagerTest.class,

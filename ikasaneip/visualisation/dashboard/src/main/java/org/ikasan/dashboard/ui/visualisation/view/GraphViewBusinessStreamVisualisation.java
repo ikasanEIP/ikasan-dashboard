@@ -73,7 +73,25 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
     private int maxDownloadBytes;
 
     /**
-     * Constructor
+     * Constructs a GraphViewBusinessStreamVisualisation object to provide the visualization and
+     * management of business stream data.
+     *
+     * @param solrSearchService the service used for search communication with Solr. Must not be null.
+     * @param moduleControlRestService the service for handling module control actions. Must not be null.
+     * @param moduleMetadataService the service for managing module metadata. Must not be null.
+     * @param configurationRestService the service for configuration management. Must not be null.
+     * @param triggerRestService the service for managing triggers within the application. Must not be null.
+     * @param configurationMetadataService the service for accessing configuration metadata. Must not be null.
+     * @param hospitalAuditService the service for handling hospital audit data. Must not be null.
+     * @param resubmissionRestService the service to handle resubmission operations. Must not be null.
+     * @param replayRestService the service to manage replay operations. Must not be null.
+     * @param replayAuditService the batch insert service for managing replay audits. Must not be null.
+     * @param metaDataApplicationRestService the service for metadata operations within the application. Must not be null.
+     * @param moduleMetaDataBatchInsert the batch insert service for module metadata. Must not be null.
+     * @param dynamicImagePath the path for storing dynamic images. Must not be null.
+     * @param dateFormatter the formatter for date operations. Must not be null.
+     * @param maxDownloadBytes the maximum allowed bytes for download operations.
+     * @throws IllegalArgumentException if any of the parameters are null.
      */
     public GraphViewBusinessStreamVisualisation(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService
         , ModuleControlService moduleControlRestService, ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService
@@ -148,6 +166,14 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         init();
     }
 
+    /**
+     * Initializes the component by removing specific CSS theme styles.
+     *
+     * This method modifies the theme configuration of the component by removing
+     * the "padding" and "spacing" themes from the theme list. This adjustment
+     * ensures that the component does not use these default themes, allowing for
+     * custom styling or layout adjustments.
+     */
     private void init() {
         this.getThemeList().remove("padding");
         this.getThemeList().remove("spacing");

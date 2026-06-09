@@ -35,7 +35,6 @@ public class Flow extends Node
         this.height = height;
     }
 
-
     private void changeNodeStatusColour()
     {
         if(state == null)

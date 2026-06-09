@@ -16,7 +16,7 @@ import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.search.SearchConstants;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapter;
+import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleDraw2DAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
@@ -181,9 +181,9 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
         List<ConfigurationMetaData> configurationMetaData
             = this.configurationMetadataService.findByIdList(configurationIds);
 
-        ModuleVisjsAdapter moduleVisjsAdapter = new ModuleVisjsAdapter();
+        ModuleDraw2DAdapter moduleDraw2DAdapter = new ModuleDraw2DAdapter();
 
-        Module module = moduleVisjsAdapter.adapt(moduleMetaData, configurationMetaData);
+        Module module = moduleDraw2DAdapter.adapt(moduleMetaData, configurationMetaData);
 
         this.moduleVisualisation = new ModuleVisualisation(this.moduleControlRestService,
             this.configurationRestService, this.triggerRestService, metaDataApplicationRestService,

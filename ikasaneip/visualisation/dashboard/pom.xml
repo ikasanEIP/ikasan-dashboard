@@ -802,6 +802,7 @@
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-lambda</artifactId>
             <version>1.2.1</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -856,6 +857,12 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
