@@ -2,7 +2,7 @@ dist: focal
 sudo: false
 language: java
 jdk:
-  - openjdk17
+  - openjdk26
 services:
   - docker
 node_js:
