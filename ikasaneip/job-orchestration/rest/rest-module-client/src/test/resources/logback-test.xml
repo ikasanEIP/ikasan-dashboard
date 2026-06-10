@@ -4,5 +4,5 @@
     <logger name="wiremock.org" level="ERROR"/>
     <logger name="WireMock" level="WARN"/>
     <!-- wiremock has per endpoint servlet logging -->
-    <logger name="/" level="WARN"/>
+    <logger name="/" level="ERROR"/>
 </configuration>
