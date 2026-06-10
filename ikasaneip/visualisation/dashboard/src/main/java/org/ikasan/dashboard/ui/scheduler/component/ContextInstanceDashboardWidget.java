@@ -287,9 +287,6 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
 
         if(fullscreen) {
             layout.setHeight(90, Unit.VH);
-//            this.contextInstanceAggregateJobStatusGrid.setHeight("90%");
-//            this.preparedFutureInstancesLayout.setHeight("90%");
-//            this.completedContextInstanceGrid.setHeight("70%");
         }
         else {
             layout.setHeight(45, Unit.VH);
@@ -1235,7 +1232,6 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
 
         HorizontalLayout waitingLayout = new HorizontalLayout(this.waitingFilterButton, this.waitingCheck);
         waitingLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.waitingCheck);
-//        waitingLayout.getElement().getStyle().set("margin-bottom", "20px");
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey("waitingStatusCounts")).setComponent(waitingLayout);
 

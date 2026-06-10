@@ -15,11 +15,7 @@ import java.util.List;
 public abstract class LayoutManagerBase extends Draw2dAdapterBase
 {
     private Logger logger = LoggerFactory.getLogger(LayoutManagerBase.class);
-
-//    protected NetworkDiagram networkDiagram;
-//    protected List<Edge> edgeList;
     protected ObjectMapper mapper = new ObjectMapper();
-
     protected List<Node> nodeList;
     protected List<Destination> destinations;
     protected Logo logo;
@@ -40,22 +36,24 @@ public abstract class LayoutManagerBase extends Draw2dAdapterBase
     protected int ySpacing = 200;
 
 
+    /**
+     * Default constructor for the LayoutManagerBase class.
+     * Initializes the nodeList and destinations as empty ArrayLists.
+     */
     public LayoutManagerBase()
     {
         this.nodeList = new ArrayList<>();
         this.destinations = new ArrayList<>();
-//        this.logo = logo;
     }
 
 
     /**
-     * This method recursively works its way through a flow with all of its
-     * various transitions and lays out the flow in a left to right, top
-     * to bottom fashion.
+     * Manages the transition layout by positioning nodes and handling their relationships.
+     * Updates the coordinates and maintains layout configuration for various types of nodes.
      *
-     * @param transition
-     * @param x
-     * @param y
+     * @param transition the current node to be positioned and processed, represented as a {@code Node}
+     * @param x the x-coordinate where the node is to be positioned, an integer value
+     * @param y the y-coordinate where the node is to be positioned, an integer value
      */
     protected void manageTransition(Node transition, int x, int y)
     {
@@ -67,8 +65,6 @@ public abstract class LayoutManagerBase extends Draw2dAdapterBase
         {
             transition.setX(x + xSpacing);
             transition.setY(y);
-
-//            addEdge(transition.getId().getUuid(), ((SingleTransition) transition).getTransition().getId().getUuid(), ((SingleTransition) transition).getTransitionLabel());
 
             manageTransition(((SingleTransition) transition).getTransition(), x + xSpacing, y);
         }
@@ -86,8 +82,6 @@ public abstract class LayoutManagerBase extends Draw2dAdapterBase
                 {
                     key = "";
                 }
-
-//                addEdge(transition.getId().getUuid(), ((MultiTransition) transition).getTransitions().get(key).getId().getUuid(), key);
 
                 if(i > 0 && yExtent >= y)
                 {
@@ -126,6 +120,13 @@ public abstract class LayoutManagerBase extends Draw2dAdapterBase
         }
     }
 
+    /**
+     * Manages the edges between nodes by recursively processing transitions and updating the edge data.
+     * Depending on the type of the given transition, this method adds edges to the layout
+     * and processes their respective relationships.
+     *
+     * @param transition the current node to process and determine its edges, represented as a {@code Node}
+     */
     protected void manageEdges(Node transition)
     {
         if (transition instanceof SingleTransition && ((SingleTransition) transition).getTransition() != null)
@@ -163,30 +164,20 @@ public abstract class LayoutManagerBase extends Draw2dAdapterBase
         }
     }
 
+    /**
+     * Adds a connecting edge between two nodes identified by their unique IDs.
+     * The edge can include an optional label with specified coordinates.
+     *
+     * @param fromId the unique identifier of the source node from which the edge originates
+     * @param toId the unique identifier of the target node to which the edge connects
+     * @param label the text label for the edge, providing additional context or information
+     * @param labelX the x-coordinate for positioning the label associated with the edge
+     * @param labelY the y-coordinate for positioning the label associated with the edge
+     */
     protected void addEdge(String fromId, String toId, String label, double labelX, double labelY)
     {
         this.addConnectionWithLabel(fromId, CONNECTOR_RIGHT_HYBRID_SOURCE, toId
             , CONNECTOR_LEFT_HYBRID_TARGET, diagramBuilder, label, labelX, labelY);
 
-    }
-
-    public int getxSpacing()
-    {
-        return xSpacing;
-    }
-
-    public void setxSpacing(int xSpacing)
-    {
-        this.xSpacing = xSpacing;
-    }
-
-    public int getySpacing()
-    {
-        return ySpacing;
-    }
-
-    public void setySpacing(int ySpacing)
-    {
-        this.ySpacing = ySpacing;
     }
 }

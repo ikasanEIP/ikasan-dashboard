@@ -138,18 +138,6 @@
             <version>4.8.175</version> <!-- Use the latest stable version -->
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>io.netty</groupId>-->
-<!--            <artifactId>netty-resolver-dns</artifactId>-->
-<!--            <version>4.2.13.Final</version>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>io.netty</groupId>-->
-<!--            <artifactId>netty-codec-http</artifactId>-->
-<!--            <version>4.2.13.Final</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin</artifactId>
@@ -381,17 +369,6 @@
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-security-service</artifactId>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.ikasan</groupId>-->
-<!--            <artifactId>ikasan-vis.js</artifactId>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>com.vaadin.external.json</groupId>-->
-<!--            <artifactId>json</artifactId>-->
-<!--            <version>0.0.20080701</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.ikasan</groupId>

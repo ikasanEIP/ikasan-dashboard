@@ -165,18 +165,6 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
             jobPlanInstances.getStyle().set("flex-grow", "1");
             board.add(jobPlanInstances);
 
-//            board.addRow(new AgentWidget(this.moduleMetadataService, this.configurationRestService, this.moduleControlRestService
-//                , this.metaDataRestService, this.systemEventLogger, this.schedulerService, this.jobProvisionService
-//                , this.schedulerJobService, this.downloadLogFileService, this.scheduledContextService)
-//                , new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
-//
-//            board.addRow(new ContextInstanceDashboardWidget(this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
-//                , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
-//                this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
-//                this.jobUtilsService, this.scheduledContextService, false, this.globalEventService, this.contextInstanceRegistrationService,
-//                this.contextInstanceSchedulerService, this.systemEventSearchService, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationLevelDistance,
-//                this.contextVisualisationNodeDistance));
-
             initialised = true;
         }
     }

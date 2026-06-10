@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
+import java.io.IOException;
+
 
 /**
  * HttpSessionRequestCache that avoids saving internal framework requests.

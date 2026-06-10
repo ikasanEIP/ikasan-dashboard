@@ -45,7 +45,6 @@ import java.util.Locale;
 import java.util.Optional;
 
 @StyleSheet(Aura.STYLESHEET)
-//@StyleSheet("styles.css")
 @Tag("sa-login-view")
 @Route(LoginView.ROUTE)
 @PageTitle("Ikasan - Login")

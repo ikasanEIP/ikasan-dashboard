@@ -2544,8 +2544,6 @@ public class ContextMachineImpl implements ContextMachine {
 
                 List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
 
-//                saveContext();
-
                 for(SchedulerJobInitiationEvent schedulerJobInitiationEvent: schedulerJobInitiationEvents) {
 
                     if (schedulerJobInitiationEvent.getInternalEventDrivenJob() != null) {
@@ -2590,8 +2588,8 @@ public class ContextMachineImpl implements ContextMachine {
                 // exceeds blackListedMessageMaxRetries at which point the offending message is placed onto the associated
                 // dead letter queue.
                 try {
-//                    inboundQueue.dequeue();
-//                    inboundQueue.gc();
+                    inboundQueue.dequeue();
+                    inboundQueue.gc();
 
                     if(!bigQueueMessageBlacklist.containsKey(bigQueueMessage.getMessageId())) {
                         bigQueueMessageBlacklist.put(bigQueueMessage.getMessageId(), 0);
@@ -2601,7 +2599,7 @@ public class ContextMachineImpl implements ContextMachine {
                     }
 
                     if(bigQueueMessageBlacklist.get(bigQueueMessage.getMessageId()) < blackListedMessageMaxRetries) {
-//                        inboundQueue.enqueue(objectMapper.writeValueAsBytes(bigQueueMessage));
+                        inboundQueue.enqueue(objectMapper.writeValueAsBytes(bigQueueMessage));
                         Integer retryCount = bigQueueMessageBlacklist.get(bigQueueMessage.getMessageId());
                         bigQueueMessageBlacklist.put(bigQueueMessage.getMessageId(), ++retryCount);
                         logger.info("Re-enqueued black listed message[{}] for context instance[{}] with id[{}]." +
@@ -2611,7 +2609,7 @@ public class ContextMachineImpl implements ContextMachine {
                     }
                     else {
                         // Adding the message to the DLQ
-//                        deadLetterQueue.enqueue(objectMapper.writeValueAsBytes(bigQueueMessage));
+                        deadLetterQueue.enqueue(objectMapper.writeValueAsBytes(bigQueueMessage));
                         bigQueueMessageBlacklist.remove(bigQueueMessage.getMessageId());
                         issueContextInstanceDlqEvent();
                         logger.info("Successfully moved black listed message[{}] for context instance[{}] with id[{}] " +

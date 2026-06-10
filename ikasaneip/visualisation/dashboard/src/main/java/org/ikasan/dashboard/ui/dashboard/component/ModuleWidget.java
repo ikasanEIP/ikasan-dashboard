@@ -84,7 +84,7 @@ public class ModuleWidget extends DashboardWidget {
                 .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.MODULE.name() + ":" + moduleMetaData.getName());
             Anchor link = new Anchor(route, getTranslation("label.view", UI.getCurrent().getLocale()));
             link.setTarget("_blank");
-//            add(link);
+
             horizontalLayout.add(link);
             link.getStyle().set("color", "blue");
 
