@@ -293,7 +293,6 @@
         <version.joda-time>2.10.5</version.joda-time>
         <version.javax.mail>1.4.3</version.javax.mail>
         <version.xmlunit>1.5</version.xmlunit>
-<!--        <version.net.sf.json-lib>2.4</version.net.sf.json-lib>-->
         <version.org.json>20231013</version.org.json>
         <version.xerces>2.12.2</version.xerces>
         <version.com.io7m.xom>1.2.10</version.com.io7m.xom>
@@ -1924,13 +1923,6 @@
                 <artifactId>cloning</artifactId>
                 <version>${version.uk.com.robust-it.cloning}</version>
             </dependency>
-
-<!--            <dependency>-->
-<!--                <groupId>net.sf.json-lib</groupId>-->
-<!--                <artifactId>json-lib</artifactId>-->
-<!--                <version>${version.net.sf.json-lib}</version>-->
-<!--                <classifier>jdk15</classifier>-->
-<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.json</groupId>

@@ -18,16 +18,6 @@ import java.util.List;
 @Configuration
 public class TestComponentFactory
 {
-//    @Bean
-//    public TomcatServletWebServerFactory tomcatFactory() {
-//        return new TomcatServletWebServerFactory() {
-//            @Override
-//            protected void postProcessContext(Context context) {
-//                ((StandardJarScanner) context.getJarScanner()).setScanManifest(false);
-//            }
-//        };
-//    }
-
     @Bean({"moduleMetadataService"})
     public ModuleMetaDataService moduleMetadataService()
     {

@@ -19,6 +19,12 @@ public class IkasanAuthenticationEntryPoint implements AuthenticationEntryPoint 
         }
 
         ContextCache.addContext(request.getSession().getId(), context);
-        response.sendRedirect("/");
+
+        if(!SecurityUtils.isUserLoggedIn()) {
+            response.sendRedirect("/login");
+        }
+        else {
+            response.sendRedirect("/");
+        }
     }
 }

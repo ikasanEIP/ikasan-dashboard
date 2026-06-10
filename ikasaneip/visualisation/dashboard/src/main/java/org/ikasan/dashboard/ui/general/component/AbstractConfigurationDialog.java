@@ -316,12 +316,6 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
 
-//        RadioButtonGroup<String> radioButtonGroup = new RadioButtonGroup<>();
-//        radioButtonGroup.setItems(Boolean.TRUE.toString(), Boolean.FALSE.toString());
-//        radioButtonGroup.setLabel(configurationParameterMetaData.getName());
-////        radioButtonGroup.setValue((Boolean) configurationParameterMetaData.getValue());
-//        radioButtonGroup.setWidthFull();
-
         Checkbox checkbox = new Checkbox();
         checkbox.setLabel(configurationParameterMetaData.getName());
         checkbox.setValue((Boolean) configurationParameterMetaData.getValue());

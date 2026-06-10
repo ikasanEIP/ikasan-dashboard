@@ -50,8 +50,6 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
 
     protected String componentName;
 
-//    protected NetworkDiagram networkDiagram;
-
     protected AbstractWiretapNode abstractWiretapNode;
 
     private MetaDataService metaDataApplicationRestService;
@@ -75,7 +73,6 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
         this.configurationRestService = configurationRestService;
         this.configuredResource = configuredResource;
         this.triggerRestService = triggerRestService;
-//        this.networkDiagram = networkDiagram;
         this.abstractWiretapNode = abstractWiretapNode;
         this.metaDataApplicationRestService = metaDataApplicationRestService;
         this.moduleMetaDataService = moduleMetaDataService;
