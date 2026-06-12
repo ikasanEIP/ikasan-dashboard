@@ -28,7 +28,8 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
@@ -37,7 +38,6 @@ import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
-import org.ikasan.spec.scheduled.event.service.ContextTemplateSavedEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
@@ -52,8 +52,6 @@ import org.ikasan.job.orchestration.provision.job.JobProvisionLockException;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
-import org.ikasan.spec.security.service.SecurityService;
-import org.ikasan.spec.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -65,6 +63,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.service.ContextTemplateSavedEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
@@ -76,6 +75,8 @@ import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.security.service.SecurityService;
+import org.ikasan.spec.security.service.UserService;
 import org.ikasan.spec.systemevent.SystemEventSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1039,15 +1040,16 @@ public class ContextTemplateManagementWidget extends VerticalLayout
             VerticalLayout verticalLayout = new VerticalLayout();
             verticalLayout.setWidthFull();
 
-            Anchor downloadNotSplitAnchor = new Anchor(new StreamResource(this.contextTemplate.getName() + ".zip", ()
-                -> this.getContextBundleStreamResource(false, this.contextTemplate.getName(), false))
-                , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
-            downloadNotSplitAnchor.getElement().setAttribute("download", true);
+            Anchor downloadNotSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                -> new DownloadResponse(this.getContextBundleStreamResource(false, this.contextTemplate.getName(), false)
+                , this.contextTemplate.getName() + ".zip",
+                "application/zip", -1)), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
 
-            Anchor downloadSplitAnchor = new Anchor(new StreamResource(this.contextTemplate.getName() + ".zip", ()
-                -> this.getContextBundleStreamResource(false, this.contextTemplate.getName(), true))
-                , getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
-            downloadSplitAnchor.getElement().setAttribute("download", true);
+            Anchor downloadSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                -> new DownloadResponse(this.getContextBundleStreamResource(false, this.contextTemplate.getName(), true)
+                , this.contextTemplate.getName() + ".zip",
+                "application/zip", -1)), getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+
 
             verticalLayout.add(downloadNotSplitAnchor, downloadSplitAnchor);
             verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitAnchor, downloadSplitAnchor);
@@ -1068,15 +1070,17 @@ public class ContextTemplateManagementWidget extends VerticalLayout
             VerticalLayout verticalLayout = new VerticalLayout();
             verticalLayout.setWidthFull();
 
-            Anchor downloadNotSplitAnchor = new Anchor(new StreamResource(finalDownloadFileName + ".zip", ()
-                -> this.getContextBundleStreamResource(true, finalDownloadFileName, false))
-                , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
-            downloadNotSplitAnchor.getElement().setAttribute("download", true);
+            Anchor downloadNotSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                -> new DownloadResponse(this.getContextBundleStreamResource(false, finalDownloadFileName, false)
+                , finalDownloadFileName + ".zip",
+                "application/zip", -1)), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
 
-            Anchor downloadSplitAnchor = new Anchor(new StreamResource(finalDownloadFileName + ".zip", ()
-                -> this.getContextBundleStreamResource(true, finalDownloadFileName, true))
-                , getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
-            downloadSplitAnchor.getElement().setAttribute("download", true);
+
+            Anchor downloadSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                -> new DownloadResponse(this.getContextBundleStreamResource(false, finalDownloadFileName, true)
+                , finalDownloadFileName + ".zip",
+                "application/zip", -1)), getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
+
 
             verticalLayout.add(downloadNotSplitAnchor, downloadSplitAnchor);
             verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitAnchor, downloadSplitAnchor);

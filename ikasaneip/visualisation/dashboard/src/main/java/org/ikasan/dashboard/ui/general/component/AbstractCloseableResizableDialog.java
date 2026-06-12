@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.general.component;
 
 
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -34,7 +35,7 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
         this.setWidth("1px");
         this.setSizeFull();
         setDraggable(true);
-        setModal(false);
+        setModality(ModalityMode.STRICT);
         setResizable(true);
         setCloseOnEsc(true);
 
@@ -80,7 +81,7 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
         content.setAlignItems(FlexComponent.Alignment.STRETCH);
 
         this.add(content);
-        this.setModal(true);
+        this.setModality(ModalityMode.STRICT);
         this.setCloseOnEsc(true);
         this.setCloseOnOutsideClick(false);
     }

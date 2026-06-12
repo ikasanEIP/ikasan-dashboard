@@ -1,7 +1,7 @@
 package org.ikasan.designer.pallet;
 
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 public abstract class DesignerPalletImageItem extends Image implements DesignerPalletItem<Image>  {
     private String identifier;
@@ -28,16 +28,16 @@ public abstract class DesignerPalletImageItem extends Image implements DesignerP
     }
 
     /**
-     * Constructor
+     * Constructs a DesignerPalletImageItem that represents an image-based item on the designer pallet.
      *
-     * @param streamResource
-     * @param designerPalletItemType
-     * @param canvasAddAction
-     * @param itemWidth
-     * @param itemHeight
+     * @param downloadHandler the handler used to retrieve or manage the image source as a downloadable resource
+     * @param designerPalletItemType the type of the designer pallet item (e.g., ICON, RECTANGLE, CIRCLE)
+     * @param canvasAddAction the action to be executed when the item is added to the canvas
+     * @param itemWidth the width of the item in pixels
+     * @param itemHeight the height of the item in pixels
      */
-    public DesignerPalletImageItem(StreamResource streamResource, DesignerPalletItemType designerPalletItemType, CanvasAddAction canvasAddAction, int itemWidth, int itemHeight) {
-        super(streamResource, "");
+    public DesignerPalletImageItem(DownloadHandler downloadHandler, DesignerPalletItemType designerPalletItemType, CanvasAddAction canvasAddAction, int itemWidth, int itemHeight) {
+        super(downloadHandler, "");
         this.designerPalletItemType = designerPalletItemType;
         this.canvasAddAction = canvasAddAction;
         this.itemWidth = itemWidth;

@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.visualisation.component;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
@@ -11,12 +12,11 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.server.streams.UploadHandler;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -40,7 +40,7 @@ public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseabl
 
     private void init()
     {
-        this.setModal(true);
+        this.setModality(ModalityMode.STRICT);
 
         VerticalLayout verticalLayout = new VerticalLayout();
 
@@ -59,24 +59,11 @@ public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseabl
         verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, header);
 
 
-        MemoryBuffer fileBuffer = new MemoryBuffer();
-        Upload upload = new Upload(fileBuffer);
-        upload.setMaxFiles(1);
-        upload.addFinishedListener(event -> {
-            InputStream inputStream =
-                fileBuffer.getInputStream();
-
-            try
-            {
-                this.businessStreamFile = new byte[inputStream.available()];
-                inputStream.read(businessStreamFile);
-                this.filename = event.getFileName();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
+        UploadHandler inMemoryHandler = UploadHandler.inMemory((metadata, dataStream) -> {
+            businessStreamFile = dataStream;
         });
+        Upload upload = new Upload(inMemoryHandler);
+        upload.setMaxFiles(1);
 
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->

@@ -5,6 +5,7 @@ import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -18,7 +19,8 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
@@ -37,15 +39,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.Optional;
 
-//@HtmlImport("frontend://styles/shared-styles.html")
-//@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
-//@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-//@Theme(themeClass = Material.class)
 @PreserveOnRefresh
 @Route(value = "exclusion")
 @UIScope
@@ -60,9 +57,6 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
     private TextField errorUriTf;
     private TextField errorActionTf;
     private TextField dateTimeTf;
-
-    private StreamResource streamResource;
-    private FileDownloadWrapper buttonWrapper;
 
     private IkasanSolrDocument errorOccurrence;
     private String exclusionPayload;
@@ -162,11 +156,12 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
         downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
         downloadButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(downloadButton, getTranslation("tooltip.download-hospital-event", UI.getCurrent().getLocale()));
 
-        this.streamResource = new StreamResource("exclusion.txt"
-            , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes()));
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(super.aceEditor.getValue().getBytes())
+            , "exclusion.txt",
+            "text/plain", -1)), "");
 
-        buttonWrapper = new FileDownloadWrapper(this.streamResource);
-        buttonWrapper.wrapComponent(downloadButton);
+        downloadAnchor.add(downloadButton);
 
         resubmitButton = new Button(getTranslation("button.resubmit", UI.getCurrent().getLocale()));
         resubmitButton.setId("hospitalViewResubmitButton");
@@ -281,8 +276,8 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
             , SecurityConstants.ALL_AUTHORITY);
 
         VerticalLayout layout = new VerticalLayout();
-        layout.add(headerLayout, formLayout, buttonWrapper, buttonLayout, downloadButtonTooltip);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper);
+        layout.add(headerLayout, formLayout, downloadAnchor, buttonLayout, downloadButtonTooltip);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, downloadAnchor);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
 
         Tab exclusionTab = new Tab(getTranslation("tab-label.exclusion", UI.getCurrent().getLocale()));

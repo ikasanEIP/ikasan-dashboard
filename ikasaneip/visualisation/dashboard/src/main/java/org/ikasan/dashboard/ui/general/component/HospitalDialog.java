@@ -6,6 +6,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -15,7 +16,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
@@ -32,7 +34,6 @@ import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ResubmissionService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.time.ZonedDateTime;
@@ -48,9 +49,6 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private TextField errorUriTf;
     private TextField errorActionTf;
     private TextField dateTimeTf;
-
-    private StreamResource streamResource;
-    private FileDownloadWrapper buttonWrapper;
 
     private IkasanSolrDocument errorOccurrence;
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
@@ -161,11 +159,11 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         downloadButton.getElement().setAttribute("title"
             , getTranslation("tooltip.download-hospital-event", UI.getCurrent().getLocale()));
 
-        this.streamResource = new StreamResource("exclusion.txt"
-            , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes()));
-
-        buttonWrapper = new FileDownloadWrapper(this.streamResource);
-        buttonWrapper.wrapComponent(downloadButton);
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(super.aceEditor.getValue().getBytes())
+            , "exclusion.txt",
+            "plain/test", -1)), "");
+        downloadAnchor.add(downloadButton);
 
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -329,9 +327,9 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             }
         });
         HorizontalLayout iconLayout = new HorizontalLayout();
-        iconLayout.add(super.select, buttonWrapper, newWindowButton);
+        iconLayout.add(super.select, downloadAnchor, newWindowButton);
         iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
-        iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
+        iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, downloadAnchor, newWindowButton);
 
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, formLayout, iconLayout, buttonLayout);

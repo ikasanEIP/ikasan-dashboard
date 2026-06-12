@@ -6,7 +6,8 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.InputStreamFactory;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 
@@ -119,8 +120,10 @@ public class LazyDownloadButton extends Button {
                         optionalUI.ifPresent(ui -> {
                             if (ui.isAttached()) {
                                 ui.access(() -> {
-                                    StreamResource href = new StreamResource(fileNameCallback.get(), () -> inputStream);
-                                    href.setCacheTime(0);
+                                    DownloadHandler href = DownloadHandler.fromInputStream(downloadEvent
+                                        -> new DownloadResponse(inputStream
+                                        , fileNameCallback.get(),
+                                        "", -1));
                                     anchor.setHref(href);
                                     anchor.getElement().callJsFunction("click");
                                 });

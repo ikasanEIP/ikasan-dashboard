@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -14,7 +15,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
@@ -23,7 +25,6 @@ import org.ikasan.dashboard.ui.visualisation.component.filter.BusinessStreamSear
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 
@@ -105,16 +106,16 @@ public class BusinessStreamManageDialog extends AbstractCloseableResizableDialog
         businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->
         {
             Button downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
-            StreamResource streamResource = new StreamResource(businessStreamMetaData.getName().concat(".json")
-                , () -> new ByteArrayInputStream(businessStreamMetaData.getJson().getBytes()));
-
-            FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-            buttonWrapper.wrapComponent(downloadButton);
+            Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                -> new DownloadResponse(new ByteArrayInputStream(businessStreamMetaData.getJson().getBytes())
+                , businessStreamMetaData.getName().concat(".json"),
+                "application/json", -1)), "");
+            downloadAnchor.add(downloadButton);
 
             VerticalLayout layout = new VerticalLayout();
             layout.setSizeFull();
-            layout.add(buttonWrapper);
-            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonWrapper);
+            layout.add(downloadAnchor);
+            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadAnchor);
             return layout;
         })).setWidth("30px");
         businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->

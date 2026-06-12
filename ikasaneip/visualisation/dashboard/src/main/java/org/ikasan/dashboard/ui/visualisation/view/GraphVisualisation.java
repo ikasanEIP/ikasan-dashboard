@@ -14,6 +14,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
@@ -25,7 +26,8 @@ import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.SearchResults;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
@@ -49,9 +51,9 @@ import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
@@ -62,7 +64,6 @@ import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
-import org.vaadin.olli.FileDownloadWrapper;
 import org.vaadin.tabs.PagedTabs;
 
 import java.io.ByteArrayInputStream;
@@ -206,16 +207,17 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             Icon downloadButton = VaadinIcon.DOWNLOAD.create();
             downloadButton.setSize("12pt");
             byte[] finalMetaData = metaData;
-            StreamResource streamResource = new StreamResource(moduleMetaData.getName().concat(".json")
-                , () -> new ByteArrayInputStream(finalMetaData));
 
-            FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-            buttonWrapper.wrapComponent(downloadButton);
+            Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                -> new DownloadResponse(new ByteArrayInputStream(finalMetaData), moduleMetaData.getName().concat(".json"),
+                    "application/json", -1)), "");
+
+            downloadAnchor.add(downloadButton);
 
             VerticalLayout layout = new VerticalLayout();
             layout.setSizeFull();
-            layout.add(buttonWrapper);
-            layout.setHorizontalComponentAlignment(Alignment.CENTER, buttonWrapper);
+            layout.add(downloadAnchor);
+            layout.setHorizontalComponentAlignment(Alignment.CENTER, downloadAnchor);
             return layout;
         })).setWidth("30px");
         modulesGrid.addColumn(new ComponentRenderer<>(moduleMetaData->
@@ -300,16 +302,18 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         {
             Icon downloadButton = VaadinIcon.DOWNLOAD.create();
             downloadButton.setSize("12pt");
-            StreamResource streamResource = new StreamResource(businessStreamMetaData.getName().concat(".json")
-                , () -> new ByteArrayInputStream(businessStreamMetaData.getJson().getBytes()));
 
-            FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-            buttonWrapper.wrapComponent(downloadButton);
+            Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                -> new DownloadResponse(new ByteArrayInputStream(businessStreamMetaData.getJson().getBytes())
+                    , businessStreamMetaData.getName().concat(".json"),
+                "application/json", -1)), "");
+
+            downloadAnchor.add(downloadButton);
 
             VerticalLayout layout = new VerticalLayout();
             layout.setSizeFull();
-            layout.add(buttonWrapper);
-            layout.setHorizontalComponentAlignment(Alignment.CENTER, buttonWrapper);
+            layout.add(downloadAnchor);
+            layout.setHorizontalComponentAlignment(Alignment.CENTER, downloadAnchor);
             return layout;
         })).setWidth("30px");
         businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->

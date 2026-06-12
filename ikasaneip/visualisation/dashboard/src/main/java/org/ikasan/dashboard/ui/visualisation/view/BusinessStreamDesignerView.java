@@ -15,7 +15,8 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
@@ -53,7 +54,6 @@ import javax.annotation.security.PermitAll;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -420,21 +420,12 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             e.printStackTrace();
         }
 
-        StreamResource res = new StreamResource(file.getFileName().toString(), () -> {
-            // eg. load image data from classpath (src/main/resources/images/image.png)
-            try {
-                return new FileInputStream(file.toFile());
-            }
-            catch (FileNotFoundException e) {
-                return null;
-            }
-            catch (IOException e) {
-                return null;
-            }
-        });
+        DownloadHandler downloadHandler = DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new FileInputStream(file.toFile())
+            , file.getFileName().toString(),
+            "text/plain", -1));
 
-
-        DesignerPalletImageItem palletIconItem = new DesignerPalletIconImageItem(res, designerPalletItem -> {
+        DesignerPalletImageItem palletIconItem = new DesignerPalletIconImageItem(downloadHandler, designerPalletItem -> {
             designerPalletItem.setIdentifier(new DesignerItemIdentifier(type,
                 DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
             this.businessStreamDesigner.addItemToCanvas(designerPalletItem);

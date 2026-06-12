@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
@@ -9,6 +8,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
@@ -20,7 +20,8 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToLongConverter;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
@@ -58,7 +59,6 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -766,21 +766,15 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         Button downloadButton = new Button(getTranslation("button.download", UI.getCurrent().getLocale()), new Icon(VaadinIcon.DOWNLOAD_ALT));
         downloadButton.setIconAfterText(true);
-        StreamResource streamResource = new StreamResource(this.internalEventDrivenJobInstance.getJobName()+".json"
-            , () -> {
-            try {
-                return new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(this.internalEventDrivenJobInstance));
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
 
-        FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-        buttonWrapper.wrapComponent(downloadButton);
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(this.internalEventDrivenJobInstance))
+            , this.internalEventDrivenJobInstance.getJobName()+".json",
+            "application/json", -1)), "");
 
-        ComponentSecurityVisibility.applySecurity(buttonWrapper, SecurityConstants.ALL_AUTHORITY,
+        downloadAnchor.add(downloadButton);
+
+        ComponentSecurityVisibility.applySecurity(downloadAnchor, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
@@ -795,7 +789,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         wrapperLayout.setMargin(false);
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
-        horizontalLayout.add(buttonWrapper);
+        horizontalLayout.add(downloadAnchor);
 
         VerticalLayout newButtonLayout = new VerticalLayout();
         newButtonLayout.setWidth("100%");

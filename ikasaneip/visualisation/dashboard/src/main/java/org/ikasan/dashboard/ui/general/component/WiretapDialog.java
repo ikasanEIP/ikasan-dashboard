@@ -13,10 +13,10 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 
@@ -27,9 +27,6 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private TextField flowNameTf;
     private TextField eventIdTf;
     private TextField dateTimeTf;
-
-    private StreamResource streamResource;
-    private  FileDownloadWrapper buttonWrapper;
 
     private Button downloadButton;
 
@@ -83,20 +80,21 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         downloadButton.getElement().setAttribute("title",
             getTranslation("tooltip.download-wiretap-event", UI.getCurrent().getLocale()));
 
-        this.streamResource = new StreamResource("wiretap.txt"
-            , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes()));
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(super.aceEditor.getValue().getBytes())
+            , "wiretap.txt",
+            "text/plain", -1)), "");
 
-        buttonWrapper = new FileDownloadWrapper(this.streamResource);
-        buttonWrapper.wrapComponent(downloadButton);
+        downloadAnchor.add(downloadButton);
 
         Button newWindowButton = new TableButton(VaadinIcon.EXTERNAL_LINK.create());
         newWindowButton.addClickListener(buttonClickEvent -> {
             EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Wiretap " + wiretapEvent.getEventId());
             entityContentsViewDialog.populate(this.wiretapEvent);
         });
-        HorizontalLayout buttonLayout = new HorizontalLayout(super.select, buttonWrapper, newWindowButton);
+        HorizontalLayout buttonLayout = new HorizontalLayout(super.select, downloadAnchor, newWindowButton);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
-        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
+        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, downloadAnchor, newWindowButton);
 
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, formLayout, buttonLayout);

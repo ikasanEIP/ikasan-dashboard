@@ -6,6 +6,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -14,8 +15,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditEventImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayAuditImpl;
 import org.ikasan.dashboard.ui.search.model.replay.ReplayDialogDto;
@@ -30,7 +32,6 @@ import org.ikasan.spec.replay.ReplayAuditEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -48,9 +49,6 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private TextField flowNameTf;
     private TextField eventIdTf;
     private TextField dateTimeTf;
-
-    private StreamResource streamResource;
-    private FileDownloadWrapper buttonWrapper;
 
     private Button downloadButton;
 
@@ -116,11 +114,12 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         downloadButton.getElement().setAttribute("title"
             , getTranslation("tooltip.download-replay-event", UI.getCurrent().getLocale()));
 
-        this.streamResource = new StreamResource("replay.txt"
-            , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes()));
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(super.aceEditor.getValue().getBytes())
+            , "replay.txt",
+            "text/plain", -1)), "");
 
-        buttonWrapper = new FileDownloadWrapper(this.streamResource);
-        buttonWrapper.wrapComponent(downloadButton);
+        downloadAnchor.add(downloadButton);
 
         Button replayButton = new Button(getTranslation("button.replay", UI.getCurrent().getLocale(), null));
         replayButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
@@ -218,9 +217,9 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             entityContentsViewDialog.populate(this.replayEvent);
         });
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(super.select, buttonWrapper, newWindowButton);
+        buttonLayout.add(super.select, downloadAnchor, newWindowButton);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
-        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
+        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, downloadAnchor, newWindowButton);
 
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, formLayout, buttonLayout, replayButton);

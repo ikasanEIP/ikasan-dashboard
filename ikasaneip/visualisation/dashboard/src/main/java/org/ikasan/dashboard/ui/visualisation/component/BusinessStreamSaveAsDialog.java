@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.visualisation.component;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
@@ -47,7 +48,7 @@ public class BusinessStreamSaveAsDialog extends AbstractCloseableResizableDialog
 
     private void init(String businessStreamJson)
     {
-        this.setModal(true);
+        this.setModality(ModalityMode.STRICT);
 
         VerticalLayout verticalLayout = new VerticalLayout();
 
