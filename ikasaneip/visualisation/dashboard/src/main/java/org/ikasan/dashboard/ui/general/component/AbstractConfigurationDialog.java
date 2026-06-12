@@ -1,11 +1,11 @@
 package org.ikasan.dashboard.ui.general.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeLabel;
@@ -13,10 +13,10 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
@@ -26,7 +26,6 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;
@@ -92,26 +91,17 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
         downloadButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(downloadButton, getTranslation("tooltip.download-configuration", UI.getCurrent().getLocale()));
 
         ObjectMapper objectMapper = new ObjectMapper();
-        StreamResource streamResource = new StreamResource("configuration-"+ this.configurationMetaData.getConfigurationId() + ".txt", () ->
-        {
-            try
-            {
-                return new ByteArrayInputStream(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this.configurationMetaData).getBytes());
-            }
-            catch (JsonProcessingException e)
-            {
-                logger.warn("Could not create download button: " + e.getMessage());
-            }
-            return null;
-        });
 
-        FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-        buttonWrapper.wrapComponent(downloadButton);
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this.configurationMetaData).getBytes())
+            , "configuration-"+ this.configurationMetaData.getConfigurationId() + ".txt",
+            "text/plain", -1)), "");
+        downloadAnchor.add(downloadButton);
 
         HorizontalLayout headerLayout = new HorizontalLayout();
         headerLayout.setSpacing(true);
-        headerLayout.add(configurationImage, configurationLabel, buttonWrapper, downloadButtonTooltip);
-        headerLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, configurationLabel, buttonWrapper);
+        headerLayout.add(configurationImage, configurationLabel, downloadAnchor, downloadButtonTooltip);
+        headerLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, configurationLabel, downloadAnchor);
 
 
         layout.add(headerLayout);

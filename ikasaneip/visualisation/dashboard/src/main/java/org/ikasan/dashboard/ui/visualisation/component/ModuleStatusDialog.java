@@ -63,7 +63,7 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog impleme
         this.flowGrid.setItems(currentModule.getFlows());
 
         super.content.add(verticalLayout);
-        this.setModal(true);
+        this.setModality(ModalityMode.STRICT);
         this.setWidth("1100px");
         this.setMinWidth("950px");
     }

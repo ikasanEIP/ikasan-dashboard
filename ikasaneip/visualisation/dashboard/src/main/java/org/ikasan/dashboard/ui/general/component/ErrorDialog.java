@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -13,10 +14,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.Optional;
@@ -31,9 +32,6 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private TextField dateTimeTf;
     private TextField errorUriTf;
     private TextField errorClassTf;
-
-    private StreamResource streamResource;
-    private FileDownloadWrapper buttonWrapper;
 
     private String errorEvent;
     private String errorDetails;
@@ -99,11 +97,11 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         downloadButton.getElement().setAttribute("title"
             , getTranslation("tooltip.download-error-event", UI.getCurrent().getLocale()));
 
-        this.streamResource = new StreamResource("error.txt"
-            , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes() ));
-
-        buttonWrapper = new FileDownloadWrapper(this.streamResource);
-        buttonWrapper.wrapComponent(downloadButton);
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(super.aceEditor.getValue().getBytes() )
+            , "error.txt",
+            "application/json", -1)), "");
+        downloadAnchor.add(downloadButton);
 
 
         Tab errorTab = new Tab(getTranslation("tab-label.error", UI.getCurrent().getLocale()));
@@ -145,9 +143,9 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             }
         });
         HorizontalLayout iconLayout = new HorizontalLayout();
-        iconLayout.add(super.select, buttonWrapper, newWindowButton);
+        iconLayout.add(super.select, downloadAnchor, newWindowButton);
         iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
-        iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
+        iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, downloadAnchor, newWindowButton);
 
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, formLayout, iconLayout);

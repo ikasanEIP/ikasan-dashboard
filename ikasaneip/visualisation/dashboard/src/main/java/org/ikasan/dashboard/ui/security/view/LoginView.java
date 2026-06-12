@@ -19,9 +19,10 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.aura.Aura;
-import com.vaadin.flow.theme.lumo.Lumo;
 import jakarta.servlet.http.Cookie;
 import org.ikasan.dashboard.internationalisation.IkasanI18NProvider;
 import org.ikasan.dashboard.security.ContextCache;
@@ -95,9 +96,12 @@ public class LoginView extends VerticalLayout implements LocaleChangeObserver
         login.setI18n(this.getI18n());
         login.getStyle().set("vaadin-button-text-color", "white");
 
-
-        Image ikasan = new Image(new StreamResource("Mr Squid",
-            () -> LoginView.class.getResourceAsStream("/META-INF/resources/frontend/images/mr_squid_titling_dashboard.png")), "Mr Squid");
+        Image ikasan = new Image(DownloadHandler.fromInputStream(event -> new DownloadResponse(
+            LoginView.class.getResourceAsStream("/META-INF/resources/frontend/images/mr_squid_titling_dashboard.png"),
+            "mr_squid_titling_dashboard.png",
+            "image/png",
+            -1
+        )), "Mr Squid");
         ikasan.setHeight("180px");
 
         this.environmentLabel = new H3();

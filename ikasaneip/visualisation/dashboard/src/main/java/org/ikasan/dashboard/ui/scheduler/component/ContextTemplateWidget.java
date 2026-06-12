@@ -14,14 +14,14 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
-import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
@@ -29,7 +29,9 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.job.orchestration.broadcast.*;
+import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
+import org.ikasan.job.orchestration.broadcast.ContextTemplateEnableDisableEventBroadcaster;
+import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
@@ -79,6 +81,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -639,55 +642,15 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     VerticalLayout verticalLayout = new VerticalLayout();
                     verticalLayout.setWidthFull();
 
-                    Anchor downloadNotSplitAnchor = new Anchor( new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
-                        try {
-                            ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
-                            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                                SerializationUtils.clone(record.getContext()),
-                                scheduledContextRecord.getContextName(),
-                                scheduledContextRecord.getContextName(),
-                                this.zipWorkingDirectory,
-                                this.schedulerJobService,
-                                this.emailNotificationDetailsService,
-                                this.emailNotificationContextService,
-                                this.contextProfileService,
-                                50, // limit to loop searching solr
-                                false,
-                                false
-                            );
-                            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
-                            return null;
-                        }
-                    }), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
-                    downloadNotSplitAnchor.getElement().setAttribute("download", true);
+                Anchor downloadNotSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                    -> new DownloadResponse( getZipContentsInputStream(scheduledContextRecord.getContextName(), false, false)
+                    , ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()),
+                    "application/zip", -1)), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
 
-                    Anchor downloadSplitAnchor = new Anchor(new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
-                        try {
-                            ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
-                            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                                SerializationUtils.clone(record.getContext()),
-                                scheduledContextRecord.getContextName(),
-                                scheduledContextRecord.getContextName(),
-                                this.zipWorkingDirectory,
-                                this.schedulerJobService,
-                                this.emailNotificationDetailsService,
-                                this.emailNotificationContextService,
-                                this.contextProfileService,
-                                50, // limit to loop searching solr
-                                false,
-                                true
-                            );
-                            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
-                            return null;
-                        }
-                    }), getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
-                    downloadSplitAnchor.getElement().setAttribute("download", true);
+                    Anchor downloadSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                    -> new DownloadResponse( getZipContentsInputStream(scheduledContextRecord.getContextName(), false, true)
+                    , ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()),
+                    "application/zip", -1)), getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
 
                     verticalLayout.add(downloadNotSplitAnchor, downloadSplitAnchor);
                     verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitAnchor, downloadSplitAnchor);
@@ -714,55 +677,15 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                 VerticalLayout verticalLayout = new VerticalLayout();
                 verticalLayout.setWidthFull();
 
-                Anchor downloadNotSplitAnchor = new Anchor(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
-                    try {
-                        ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
-                        ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                            SerializationUtils.clone(record.getContext()),
-                            scheduledContextRecord.getContextName(),
-                            finalDownloadName,
-                            this.zipWorkingDirectory,
-                            this.schedulerJobService,
-                            this.emailNotificationDetailsService,
-                            this.emailNotificationContextService,
-                            this.contextProfileService,
-                            50, // limit to loop searching solr
-                            true,
-                            false
-                        );
-                        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
-                        return null;
-                    }
-                }), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
-                downloadNotSplitAnchor.getElement().setAttribute("download", true);
+                Anchor downloadNotSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                    -> new DownloadResponse( getZipContentsInputStream(scheduledContextRecord.getContextName(), true, false)
+                    , ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()),
+                    "application/zip", -1)), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
 
-                Anchor downloadSplitAnchor = new Anchor(new StreamResource(ContextExportZipUtils.getExportZipFileName(finalDownloadName), () -> {
-                    try {
-                        ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
-                        ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
-                            SerializationUtils.clone(record.getContext()),
-                            scheduledContextRecord.getContextName(),
-                            finalDownloadName,
-                            this.zipWorkingDirectory,
-                            this.schedulerJobService,
-                            this.emailNotificationDetailsService,
-                            this.emailNotificationContextService,
-                            this.contextProfileService,
-                            50, // limit to loop searching solr
-                            true,
-                            true
-                        );
-                        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
-                        return null;
-                    }
-                }), getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
-                downloadSplitAnchor.getElement().setAttribute("download", true);
+                Anchor downloadSplitAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                    -> new DownloadResponse( getZipContentsInputStream(scheduledContextRecord.getContextName(), true, true)
+                    , ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()),
+                    "application/zip", -1)), getTranslation("button.download_split-context-template", UI.getCurrent().getLocale()));
 
                 verticalLayout.add(downloadNotSplitAnchor, downloadSplitAnchor);
                 verticalLayout.setHorizontalComponentAlignment(Alignment.CENTER, downloadNotSplitAnchor, downloadSplitAnchor);
@@ -1085,6 +1008,39 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
         HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
         this.contextTemplateFilteringGrid.addGridFiltering(hr, contextSearchFilter::setContextName, "moduleName");
+    }
+
+    /**
+     * Generates an InputStream containing the contents of a ZIP file for a specified context.
+     * The ZIP file may include tokens and split context data based on the provided parameters.
+     *
+     * @param contextName the name of the context for which the ZIP file will be generated.
+     * @param withTokens a flag indicating whether to include tokens in the ZIP file.
+     * @param splitContext a flag indicating whether to split the context data in the ZIP file.
+     * @return an InputStream of the generated ZIP file, or {@code null} if an error occurs during generation.
+     */
+    private InputStream getZipContentsInputStream(String contextName, boolean withTokens, boolean splitContext) {
+        try {
+            ScheduledContextRecord record = this.scheduledContextService.findByName(contextName);
+            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                SerializationUtils.clone(record.getContext()),
+                contextName,
+                contextName,
+                this.zipWorkingDirectory,
+                this.schedulerJobService,
+                this.emailNotificationDetailsService,
+                this.emailNotificationContextService,
+                this.contextProfileService,
+                50, // limit to loop searching solr
+                withTokens,
+                splitContext
+            );
+            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        } catch (Exception e) {
+            logger.error("An error has occurred downloading context bundle for context[{}]!", contextName, e);
+            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
+            return null;
+        }
     }
 
     /**

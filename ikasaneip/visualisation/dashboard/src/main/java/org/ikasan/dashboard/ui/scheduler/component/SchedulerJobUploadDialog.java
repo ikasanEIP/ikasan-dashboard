@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -12,7 +13,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.server.streams.UploadHandler;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
@@ -26,9 +27,6 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(SchedulerJobUploadDialog.class);
@@ -72,7 +70,7 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
 
     private void init()
     {
-        this.setModal(true);
+        this.setModality(ModalityMode.STRICT);
 
         VerticalLayout verticalLayout = new VerticalLayout();
 
@@ -89,23 +87,11 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
 
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        MemoryBuffer fileBuffer = new MemoryBuffer();
-        Upload upload = new Upload(fileBuffer);
-        upload.setMaxFiles(1);
-        upload.addFinishedListener(event -> {
-            InputStream inputStream =
-                fileBuffer.getInputStream();
-
-            try
-            {
-                uploadedJob = new byte[inputStream.available()];
-                inputStream.read(uploadedJob);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
+        UploadHandler inMemoryHandler = UploadHandler.inMemory((metadata, dataStream) -> {
+            uploadedJob = dataStream;
         });
+        Upload upload = new Upload(inMemoryHandler);
+        upload.setMaxFiles(1);
 
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {

@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -14,6 +15,8 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.client.DownloadLogFileService;
 import org.slf4j.Logger;
@@ -56,19 +59,14 @@ public class DownloadModulesLogDialog extends AbstractCloseableResizableDialog {
 
                 Button downloadLogFileButton = new Button(logFile.getKey());
 
-                StreamResource streamResource = new StreamResource(logFile.getKey(), () -> {
-                    try {
-                        byte[] file = downloadLogFileService.downloadLogFile(moduleMetaData.getUrl(), logFile.getValue());
-                        return new ByteArrayInputStream(file);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                });
+                Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+                    -> new DownloadResponse(new ByteArrayInputStream(downloadLogFileService.downloadLogFile(moduleMetaData.getUrl(), logFile.getValue()))
+                    , logFile.getKey(),
+                    "plain/test", -1)), "");
+                downloadAnchor.add(downloadLogFileButton);
 
-                FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
-                exportWrapper.wrapComponent(downloadLogFileButton);
-                verticalLayout.add(exportWrapper);
-                verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, exportWrapper);
+                verticalLayout.add(downloadAnchor);
+                verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadAnchor);
 
                 return verticalLayout;
             })).setFlexGrow(4).setKey("download")

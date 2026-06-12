@@ -4,12 +4,12 @@ import com.cronutils.descriptor.CronDescriptor;
 import com.cronutils.model.Cron;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.componentfactory.explorer.ExplorerTreeGrid;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeLabel;
@@ -22,8 +22,9 @@ import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.apache.commons.lang3.time.StopWatch;
 import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
@@ -69,7 +70,6 @@ import org.ikasan.systemevent.model.SolrSystemEventSearchFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -1668,25 +1668,19 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale())
             , "14pt", "rgba(0, 0, 0, 1.0)");
-        StreamResource streamResource = new StreamResource(schedulerJobInstanceRecord.getJobName()+".json"
-            , () -> {
-            try {
-                return new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(schedulerJobInstanceRecord.getSchedulerJobInstance()));
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-                NotificationHelper.showErrorNotification(getTranslation("error.downloading-job", UI.getCurrent().getLocale()));
-                return null;
-            }
-        });
 
-        ComponentSecurityVisibility.applySecurity(export, SecurityConstants.ALL_AUTHORITY,
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter()
+            .writeValueAsBytes(schedulerJobInstanceRecord.getSchedulerJobInstance()))
+            , schedulerJobInstanceRecord.getJobName()+".json",
+            "application/json", -1)), "");
+        downloadAnchor.add(export);
+
+        ComponentSecurityVisibility.applySecurity(downloadAnchor, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
-        FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
-        exportWrapper.wrapComponent(export);
-        layout.add(exportWrapper);
+        layout.add(downloadAnchor);
 
         Icon logFile;
 

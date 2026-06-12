@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
@@ -9,6 +8,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -18,7 +18,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.*;
@@ -41,7 +42,6 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 
@@ -196,29 +196,22 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
         });
 
         Button export = new Button(getTranslation("button.download", UI.getCurrent().getLocale()), VaadinIcon.DOWNLOAD_ALT.create());
-        StreamResource streamResource = new StreamResource(schedulerJobInstanceRecord.getJobName()+".json"
-            , () -> {
-            try {
-                return new ByteArrayInputStream(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(schedulerJobInstanceRecord.getSchedulerJobInstance()));
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(schedulerJobInstanceRecord.getSchedulerJobInstance()))
+            , schedulerJobInstanceRecord.getJobName()+".json",
+            "application/json", -1)), "");
 
-        FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
-        exportWrapper.wrapComponent(export);
+        downloadAnchor.add(export);
 
-        ComponentSecurityVisibility.applySecurity(exportWrapper, SecurityConstants.ALL_AUTHORITY,
+        ComponentSecurityVisibility.applySecurity(downloadAnchor, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(submitButton, this.viewProcessEventButton, exportWrapper);
+        actionsLayout.add(submitButton, this.viewProcessEventButton, downloadAnchor);
         actionsLayout.setMargin(false);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, submitButton);
-        actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, exportWrapper);
+        actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, downloadAnchor);
 
         VerticalLayout actionsButtonLayout = new VerticalLayout();
         actionsButtonLayout.setWidth("100%");

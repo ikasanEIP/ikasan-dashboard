@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.visualisation.component;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
@@ -14,6 +15,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.server.streams.UploadHandler;
 import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
@@ -61,7 +63,7 @@ public class BusinessStreamUploadDialog extends AbstractCloseableResizableDialog
 
     private void init(BusinessStreamMetaData businessStreamMetaData)
     {
-        this.setModal(true);
+        this.setModality(ModalityMode.STRICT);
 
         VerticalLayout verticalLayout = new VerticalLayout();
 
@@ -96,23 +98,11 @@ public class BusinessStreamUploadDialog extends AbstractCloseableResizableDialog
             this.businessStreamFile = businessStreamMetaData.getJson().getBytes();
         }
 
-        MemoryBuffer fileBuffer = new MemoryBuffer();
-        Upload upload = new Upload(fileBuffer);
+        UploadHandler inMemoryHandler = UploadHandler.inMemory((metadata, dataStream) -> {
+            businessStreamFile = dataStream;
+        });;
+        Upload upload = new Upload(inMemoryHandler);
         upload.setMaxFiles(1);
-        upload.addFinishedListener(event -> {
-            InputStream inputStream =
-                fileBuffer.getInputStream();
-
-            try
-            {
-                businessStreamFile = new byte[inputStream.available()];
-                inputStream.read(businessStreamFile);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        });
 
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->

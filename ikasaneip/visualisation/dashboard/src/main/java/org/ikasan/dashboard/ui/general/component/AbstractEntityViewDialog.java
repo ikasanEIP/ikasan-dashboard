@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.general.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.select.Select;
 import de.f0rce.ace.AceEditor;
@@ -40,7 +41,7 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
         this.setWidth("1px");
         this.setSizeFull();
         setDraggable(true);
-        setModal(false);
+        setModality(ModalityMode.STRICT);
         setResizable(true);
         setCloseOnEsc(true);
 

@@ -8,12 +8,14 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.administration.util.ConfigurationChangedSystemEventFormatter;
 import org.ikasan.dashboard.ui.administration.util.SystemEventFormatter;
 import org.ikasan.dashboard.ui.general.component.AbstractEntityViewDialog;
@@ -21,11 +23,9 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.systemevent.model.SolrSystemEvent;
 import org.ikasan.systemevent.model.SystemEventImpl;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 
@@ -34,9 +34,6 @@ public class SystemEventDialog extends AbstractEntityViewDialog<SystemEvent>
     private TextField actionedByTf;
     private TextField contextTf;
     private TextField dateTimeTf;
-
-    private StreamResource streamResource;
-    private  FileDownloadWrapper buttonWrapper;
 
     private Button downloadButton;
     private Tooltip downloadButtonTooltip;
@@ -75,15 +72,15 @@ public class SystemEventDialog extends AbstractEntityViewDialog<SystemEvent>
         downloadButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(downloadButton
             , getTranslation("tooltip.download-system-event", UI.getCurrent().getLocale()));
 
-        this.streamResource = new StreamResource("system-event.txt"
-            , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes() ));
-
-        buttonWrapper = new FileDownloadWrapper(this.streamResource);
-        buttonWrapper.wrapComponent(downloadButton);
+        Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
+            -> new DownloadResponse(new ByteArrayInputStream(super.aceEditor.getValue().getBytes())
+            , "system-event.txt",
+            "plain/test", -1)), "");
+        downloadAnchor.add(downloadButton);
 
         VerticalLayout layout = new VerticalLayout();
-        layout.add(wiretapLabel, formLayout, buttonWrapper, downloadButtonTooltip);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper);
+        layout.add(wiretapLabel, formLayout, downloadAnchor, downloadButtonTooltip);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, downloadAnchor);
         layout.setWidthFull();
         return layout;
     }
