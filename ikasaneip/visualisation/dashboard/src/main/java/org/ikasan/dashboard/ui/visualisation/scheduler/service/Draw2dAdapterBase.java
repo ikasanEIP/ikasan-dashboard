@@ -430,7 +430,18 @@ public abstract class Draw2dAdapterBase {
                 }
             }
 
-            items.addAll(imageOverlay);
+            if(parentContext.isRenderOrLogicalBoundariesOnly()) {
+                imageOverlay.forEach(image -> {
+                    // We are only going to add the OR image overlay boundaries to the
+                    // diagram when renderOrLogicalBoundariesOnly is set to true.
+                    if(image instanceof Rectangle && ((Rectangle)image).getId().startsWith("OR")) {
+                        items.add(image);
+                    }
+                });
+            }
+            else {
+                items.addAll(imageOverlay);
+            }
             items.addAll(labels);
             items.addAll(groups);
 

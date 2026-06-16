@@ -46,6 +46,20 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
             , contextVisualisationLevelDistance, contextVisualisationNodeDistance);
     }
 
+    /**
+     * Adapts a collection of scheduler jobs along with their associated data into a JSON representation
+     * that adheres to the draw2d graphical format. This method processes jobs, maps them to their respective
+     * graphical elements, and serializes the result for further visualization.
+     *
+     * @param parentContext The parent context to which the jobs belong.
+     * @param context The current context for which adaptation is being performed.
+     * @param schedulerJobs A map containing scheduler jobs identified by their unique names.
+     * @param schedulerJobsMapByIdentifier A map containing scheduler jobs identified by unique identifiers.
+     * @param schedulerJobsImageMap A map associating scheduler jobs with their respective graphical images.
+     * @param logicalBoundaries A map defining the boundaries of the logical layout for each scheduler job.
+     * @return A JSON string representing the adapted jobs in the draw2d graphical format.
+     * @throws Draw2dAdapterException If an error occurs during the adaptation or serialization process.
+     */
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
         , Map<String, SchedulerJob> schedulerJobsMapByIdentifier, Map<String, Image> schedulerJobsImageMap, Map<String, Rectangle> logicalBoundaries) {
             try {

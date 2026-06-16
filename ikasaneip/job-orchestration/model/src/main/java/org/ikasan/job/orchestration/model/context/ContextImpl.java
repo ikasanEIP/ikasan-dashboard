@@ -54,6 +54,7 @@ public abstract class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM extends
     protected Integer contextVisualisationNodeDistance;
     protected Integer visualisationFontSize;
     protected Boolean renderLogicalBoundaries = true;
+    protected Boolean renderOrLogicalBoundariesOnly = false;
     protected Boolean useAutoLayout = true;
     protected String userGeneratedLayout;
     protected Boolean endJobPlanUponCompletion = false;
@@ -291,6 +292,16 @@ public abstract class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM extends
     @Override
     public void setRenderLogicalBoundaries(Boolean renderLogicalBoundaries) {
         this.renderLogicalBoundaries = renderLogicalBoundaries;
+    }
+
+    @Override
+    public Boolean isRenderOrLogicalBoundariesOnly() {
+        return renderOrLogicalBoundariesOnly;
+    }
+
+    @Override
+    public void setRenderOrLogicalBoundariesOnly(Boolean renderOrLogicalBoundariesOnly) {
+        this.renderOrLogicalBoundariesOnly = renderOrLogicalBoundariesOnly;
     }
 
     @Override
