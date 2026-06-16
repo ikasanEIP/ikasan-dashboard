@@ -8,6 +8,7 @@
   "useDisplayName" : false,
   "ordinal" : -1,
   "renderLogicalBoundaries" : true,
+  "renderOrLogicalBoundariesOnly" : false,
   "useAutoLayout" : true,
   "endJobPlanUponCompletion" : false,
   "customWeekDayOfMonth" : false,
