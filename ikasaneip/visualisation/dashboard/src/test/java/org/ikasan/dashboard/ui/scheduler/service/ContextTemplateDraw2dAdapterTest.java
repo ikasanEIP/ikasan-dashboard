@@ -4,6 +4,7 @@ import org.ikasan.dashboard.AbstractTest;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.Draw2dCanvasJsonHelper;
 import org.ikasan.designer.model.Image;
+import org.ikasan.designer.model.Rectangle;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
@@ -99,6 +100,161 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
         Assert.assertEquals(1100.5, imageMap.get("scheduler-agent-ch1").getX(), 5);
         Assert.assertEquals(870, imageMap.get("scheduler-agent-ch1").getY(), 5);
         Assert.assertEquals("scheduler-agent-ch1", imageMap.get("scheduler-agent-ch1").getId());
+
+        Map<String, Rectangle> logicalGroups = Draw2dCanvasJsonHelper.getLogicalBoundariesFromCanvasJson(result);
+
+        Assert.assertNotNull(logicalGroups);
+        Assert.assertEquals(3, logicalGroups.size());
+    }
+
+    @Test
+    public void test_context_with_2_jobs_in_leading_or_only_render_or() throws IOException {
+        ContextTemplate contextTemplate = this.contextService.getContextTemplate(loadDataFile("/data/contexts/context-with-2-jobs-in-or-at-start.json"));
+        contextTemplate.setRenderOrLogicalBoundariesOnly(true);
+        ContextTemplate child = ContextHelper.getChildContextTemplate("DEMO-WITH_UPPER_CASE", contextTemplate);
+
+        List<SchedulerJob> schedulerJobs = ContextHelper.getAllJobs(contextTemplate);
+
+        schedulerJobs = schedulerJobs.stream()
+            .map(schedulerJob -> {
+                if(schedulerJob.getJobName().startsWith("sc")) {
+                    QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
+                    quartzScheduleDrivenJob.setJobName(schedulerJob.getJobName());
+                    quartzScheduleDrivenJob.setAgentName(schedulerJob.getAgentName());
+                    quartzScheduleDrivenJob.setIdentifier(schedulerJob.getIdentifier());
+
+                    return quartzScheduleDrivenJob;
+                }
+                else if(schedulerJob.getJobName().startsWith("fw")) {
+                    FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
+                    fileEventDrivenJob.setJobName(schedulerJob.getJobName());
+                    fileEventDrivenJob.setAgentName(schedulerJob.getAgentName());
+                    fileEventDrivenJob.setIdentifier(schedulerJob.getIdentifier());
+
+                    return fileEventDrivenJob;
+                }
+                else if(schedulerJob.getJobName().startsWith("ch")) {
+                    InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+                    internalEventDrivenJob.setJobName(schedulerJob.getJobName());
+                    internalEventDrivenJob.setAgentName(schedulerJob.getAgentName());
+                    internalEventDrivenJob.setIdentifier(schedulerJob.getIdentifier());
+
+                    return internalEventDrivenJob;
+                }
+
+                return schedulerJob;
+            }).collect(Collectors.toList());
+
+        String result = adapter.adaptJobs(contextTemplate, child,
+            schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)),
+            schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))
+            , new HashMap<>(), null);
+
+        Map<String, Image> imageMap  = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson(result);
+        Assert.assertFalse(imageMap.isEmpty());
+        Assert.assertEquals(2102.5, imageMap.get("scheduler-agent-ch7").getX(), 5);
+        Assert.assertEquals(735, imageMap.get("scheduler-agent-ch7").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch7", imageMap.get("scheduler-agent-ch7").getId());
+
+        Assert.assertEquals(1601.5, imageMap.get("scheduler-agent-ch3").getX(), 5);
+        Assert.assertEquals(600, imageMap.get("scheduler-agent-ch3").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch3", imageMap.get("scheduler-agent-ch3").getId());
+
+        Assert.assertEquals(600, imageMap.get("scheduler-agent-sc1").getX(), 5);
+        Assert.assertEquals(600, imageMap.get("scheduler-agent-sc1").getY(), 5);
+        Assert.assertEquals("scheduler-agent-sc1", imageMap.get("scheduler-agent-sc1").getId());
+
+        Assert.assertEquals(1601.5, imageMap.get("scheduler-agent-ch5").getX(), 5);
+        Assert.assertEquals(870, imageMap.get("scheduler-agent-ch5").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch5", imageMap.get("scheduler-agent-ch5").getId());
+
+        Assert.assertEquals(1100.5, imageMap.get("scheduler-agent-ch2").getX(), 5);
+        Assert.assertEquals(600, imageMap.get("scheduler-agent-ch2").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch2", imageMap.get("scheduler-agent-ch2").getId());
+
+        Assert.assertEquals(1100.5, imageMap.get("scheduler-agent-ch1").getX(), 5);
+        Assert.assertEquals(870, imageMap.get("scheduler-agent-ch1").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch1", imageMap.get("scheduler-agent-ch1").getId());
+
+        Map<String, Rectangle> logicalGroups = Draw2dCanvasJsonHelper.getLogicalBoundariesFromCanvasJson(result);
+
+        Assert.assertNotNull(logicalGroups);
+        Assert.assertEquals(2, logicalGroups.size());
+    }
+
+    @Test
+    public void test_context_with_2_jobs_in_leading_or_render_no_logical_groupings() throws IOException {
+        ContextTemplate contextTemplate = this.contextService.getContextTemplate(loadDataFile("/data/contexts/context-with-2-jobs-in-or-at-start.json"));
+        contextTemplate.setRenderOrLogicalBoundariesOnly(false);
+        contextTemplate.setRenderLogicalBoundaries(false);
+        ContextTemplate child = ContextHelper.getChildContextTemplate("DEMO-WITH_UPPER_CASE", contextTemplate);
+
+        List<SchedulerJob> schedulerJobs = ContextHelper.getAllJobs(contextTemplate);
+
+        schedulerJobs = schedulerJobs.stream()
+            .map(schedulerJob -> {
+                if(schedulerJob.getJobName().startsWith("sc")) {
+                    QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
+                    quartzScheduleDrivenJob.setJobName(schedulerJob.getJobName());
+                    quartzScheduleDrivenJob.setAgentName(schedulerJob.getAgentName());
+                    quartzScheduleDrivenJob.setIdentifier(schedulerJob.getIdentifier());
+
+                    return quartzScheduleDrivenJob;
+                }
+                else if(schedulerJob.getJobName().startsWith("fw")) {
+                    FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
+                    fileEventDrivenJob.setJobName(schedulerJob.getJobName());
+                    fileEventDrivenJob.setAgentName(schedulerJob.getAgentName());
+                    fileEventDrivenJob.setIdentifier(schedulerJob.getIdentifier());
+
+                    return fileEventDrivenJob;
+                }
+                else if(schedulerJob.getJobName().startsWith("ch")) {
+                    InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+                    internalEventDrivenJob.setJobName(schedulerJob.getJobName());
+                    internalEventDrivenJob.setAgentName(schedulerJob.getAgentName());
+                    internalEventDrivenJob.setIdentifier(schedulerJob.getIdentifier());
+
+                    return internalEventDrivenJob;
+                }
+
+                return schedulerJob;
+            }).collect(Collectors.toList());
+
+        String result = adapter.adaptJobs(contextTemplate, child,
+            schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2)),
+            schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2))
+            , new HashMap<>(), null);
+
+        Map<String, Image> imageMap  = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson(result);
+        Assert.assertFalse(imageMap.isEmpty());
+        Assert.assertEquals(2102.5, imageMap.get("scheduler-agent-ch7").getX(), 5);
+        Assert.assertEquals(735, imageMap.get("scheduler-agent-ch7").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch7", imageMap.get("scheduler-agent-ch7").getId());
+
+        Assert.assertEquals(1601.5, imageMap.get("scheduler-agent-ch3").getX(), 5);
+        Assert.assertEquals(600, imageMap.get("scheduler-agent-ch3").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch3", imageMap.get("scheduler-agent-ch3").getId());
+
+        Assert.assertEquals(600, imageMap.get("scheduler-agent-sc1").getX(), 5);
+        Assert.assertEquals(600, imageMap.get("scheduler-agent-sc1").getY(), 5);
+        Assert.assertEquals("scheduler-agent-sc1", imageMap.get("scheduler-agent-sc1").getId());
+
+        Assert.assertEquals(1601.5, imageMap.get("scheduler-agent-ch5").getX(), 5);
+        Assert.assertEquals(870, imageMap.get("scheduler-agent-ch5").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch5", imageMap.get("scheduler-agent-ch5").getId());
+
+        Assert.assertEquals(1100.5, imageMap.get("scheduler-agent-ch2").getX(), 5);
+        Assert.assertEquals(600, imageMap.get("scheduler-agent-ch2").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch2", imageMap.get("scheduler-agent-ch2").getId());
+
+        Assert.assertEquals(1100.5, imageMap.get("scheduler-agent-ch1").getX(), 5);
+        Assert.assertEquals(870, imageMap.get("scheduler-agent-ch1").getY(), 5);
+        Assert.assertEquals("scheduler-agent-ch1", imageMap.get("scheduler-agent-ch1").getId());
+
+        Map<String, Rectangle> logicalGroups = Draw2dCanvasJsonHelper.getLogicalBoundariesFromCanvasJson(result);
+
+        Assert.assertNull(logicalGroups);
     }
 
     @Test

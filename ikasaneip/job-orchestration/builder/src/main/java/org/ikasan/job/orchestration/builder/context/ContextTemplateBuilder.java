@@ -22,6 +22,8 @@ public class ContextTemplateBuilder {
     protected boolean customWeekDayOfMonth = false;
     private boolean delayAgentSynchronisationUntilNextInstance = false;
     protected long contextTtlMilliseconds;
+    protected boolean renderLogicalBoundaries = true;
+    protected boolean renderOrLogicalBoundariesOnly = false;
     protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
     protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
     protected List<JobLock> jobLocks = new ArrayList<>();
@@ -158,6 +160,16 @@ public class ContextTemplateBuilder {
 
     public ContextTemplateBuilder withCustomWeekDayOfMonth(boolean customWeekDayOfMonth) {
         this.customWeekDayOfMonth = customWeekDayOfMonth;
+        return this;
+    }
+
+    public ContextTemplateBuilder withRenderLogicalBoundaries(boolean renderLogicalBoundaries) {
+        this.renderLogicalBoundaries = renderLogicalBoundaries;
+        return this;
+    }
+
+    public ContextTemplateBuilder withRenderOrLogicalBoundariesOnly(boolean renderOrLogicalBoundariesOnly) {
+        this.renderOrLogicalBoundariesOnly = renderOrLogicalBoundariesOnly;
         return this;
     }
 
@@ -390,6 +402,8 @@ public class ContextTemplateBuilder {
         contextTemplate.setUseDisplayName(this.useDisplayName);
         contextTemplate.setOrdinal(this.ordinal);
         contextTemplate.setDelayAgentSynchronisationUntilNextInstance(this.delayAgentSynchronisationUntilNextInstance);
+        contextTemplate.setRenderLogicalBoundaries(this.renderLogicalBoundaries);
+        contextTemplate.setRenderOrLogicalBoundariesOnly(this.renderOrLogicalBoundariesOnly);
         return contextTemplate;
     }
 
