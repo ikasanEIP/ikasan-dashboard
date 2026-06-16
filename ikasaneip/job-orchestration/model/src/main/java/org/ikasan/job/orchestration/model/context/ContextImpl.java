@@ -58,8 +58,6 @@ public abstract class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM extends
     protected String userGeneratedLayout;
     protected Boolean endJobPlanUponCompletion = false;
 
-
-
     @Override
     public String getName() {
         return name;

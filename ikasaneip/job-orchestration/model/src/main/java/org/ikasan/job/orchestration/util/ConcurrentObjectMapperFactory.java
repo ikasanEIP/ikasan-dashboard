@@ -84,6 +84,7 @@ public class ConcurrentObjectMapperFactory {
             .addAbstractTypeMapping(Set.class, CopyOnWriteArraySet.class);
 
         objectMapper.registerModule(simpleModule);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 

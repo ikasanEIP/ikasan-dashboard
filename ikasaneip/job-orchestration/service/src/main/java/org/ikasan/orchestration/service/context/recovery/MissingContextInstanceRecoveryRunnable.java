@@ -138,7 +138,7 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
 
         } catch (Exception e) {
             // TODO hook in notification here
-            LOG.error(String.format("Got error back filling context [%s]. Error: %s", this.scheduledContextRecord.getContextName(), e));
+            LOG.error(String.format("Got error back filling context [%s]. Error: %s", this.scheduledContextRecord.getContextName(), e), e);
         }
     }
 
