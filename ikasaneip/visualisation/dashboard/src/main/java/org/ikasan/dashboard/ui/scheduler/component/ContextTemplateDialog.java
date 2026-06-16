@@ -83,6 +83,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private Checkbox isAbleToRunConcurrentlyCb;
     private Checkbox useDisplayNameCb;
     private Checkbox renderLogicalBoundariesCb;
+    private Checkbox renderOrLogicalBoundariesOnlyCb;
     private Checkbox useAutoformattingCb;
     private Checkbox delayJobSynchronisationUntilNextInstanceCb;
 
@@ -366,6 +367,11 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         binder.forField(this.renderLogicalBoundariesCb)
             .bind(ContextTemplate::isRenderLogicalBoundaries, ContextTemplate::setRenderLogicalBoundaries);
 
+        this.renderOrLogicalBoundariesOnlyCb = new Checkbox(getTranslation("label.render-or-logical-boundaries-only"));
+        this.renderOrLogicalBoundariesOnlyCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.renderOrLogicalBoundariesOnlyCb)
+            .bind(ContextTemplate::isRenderOrLogicalBoundariesOnly, ContextTemplate::setRenderOrLogicalBoundariesOnly);
+
         this.useAutoformattingCb = new Checkbox(getTranslation("label.use-auto-formatting"));
         this.useAutoformattingCb.getElement().getThemeList().add("always-float-label");
         binder.forField(this.useAutoformattingCb)
@@ -468,7 +474,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.formLayout.setHeightFull();
 
         VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
-            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb
+            , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb, this.renderOrLogicalBoundariesOnlyCb
             , this.delayJobSynchronisationUntilNextInstanceCb, this.endJobPlanWhenComplete);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");

@@ -140,6 +140,7 @@ public class ContextInstanceWidget extends VerticalLayout
     private Checkbox isAbleToRunConcurrentlyCb;
     private Checkbox useDisplayNameCb;
     private Checkbox renderLogicalBoundariesCb;
+    private Checkbox renderOrLogicalBoundariesOnlyCb;
     private Checkbox useAutoformattingCb;
     private Checkbox endJobPlanWhenComplete;
     private CollapsableLayout contextInstanceDetailsCollapsableLayout;
@@ -420,6 +421,12 @@ public class ContextInstanceWidget extends VerticalLayout
             .bind(ContextInstance::isRenderLogicalBoundaries, ContextInstance::setRenderLogicalBoundaries);
         this.renderLogicalBoundariesCb.setEnabled(false);
 
+        this.renderOrLogicalBoundariesOnlyCb = new Checkbox(getTranslation("label.render-or-logical-boundaries-only"));
+        this.renderOrLogicalBoundariesOnlyCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.renderOrLogicalBoundariesOnlyCb)
+            .bind(ContextInstance::isRenderOrLogicalBoundariesOnly, ContextInstance::setRenderOrLogicalBoundariesOnly);
+        this.renderOrLogicalBoundariesOnlyCb.setEnabled(false);
+
         this.useAutoformattingCb = new Checkbox(getTranslation("label.use-auto-formatting"));
         this.useAutoformattingCb.getElement().getThemeList().add("always-float-label");
         binder.forField(this.useAutoformattingCb)
@@ -509,7 +516,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
         VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
             , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb
-            , this.endJobPlanWhenComplete);
+            , this.renderOrLogicalBoundariesOnlyCb, this.endJobPlanWhenComplete);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");

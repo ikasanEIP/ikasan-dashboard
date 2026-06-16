@@ -156,6 +156,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
     private Checkbox isAbleToRunConcurrentlyCb;
     private Checkbox useDisplayNameCb;
     private Checkbox renderLogicalBoundariesCb;
+    private Checkbox renderOrLogicalBoundariesOnlyCb;
     private Checkbox useAutoformattingCb;
     private Checkbox delayJobSynchronisationUntilNextInstanceCb;
     private Checkbox endJobPlanWhenComplete;
@@ -515,6 +516,12 @@ public class ContextTemplateManagementWidget extends VerticalLayout
             .bind(ContextTemplate::isRenderLogicalBoundaries, ContextTemplate::setRenderLogicalBoundaries);
         this.renderLogicalBoundariesCb.setEnabled(false);
 
+        this.renderOrLogicalBoundariesOnlyCb = new Checkbox(getTranslation("label.render-or-logical-boundaries-only"));
+        this.renderOrLogicalBoundariesOnlyCb.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.renderOrLogicalBoundariesOnlyCb)
+            .bind(ContextTemplate::isRenderOrLogicalBoundariesOnly, ContextTemplate::setRenderOrLogicalBoundariesOnly);
+        this.renderOrLogicalBoundariesOnlyCb.setEnabled(false);
+
         this.useAutoformattingCb = new Checkbox(getTranslation("label.use-auto-formatting"));
         this.useAutoformattingCb.getElement().getThemeList().add("always-float-label");
         binder.forField(this.useAutoformattingCb)
@@ -574,7 +581,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
 
         VerticalLayout cbLayout = new VerticalLayout(this.isAbleToRunConcurrentlyCb
             , this.useDisplayNameCb, this.useAutoformattingCb, this.renderLogicalBoundariesCb
-            , this.delayJobSynchronisationUntilNextInstanceCb, this.endJobPlanWhenComplete);
+            , this.renderOrLogicalBoundariesOnlyCb, this.delayJobSynchronisationUntilNextInstanceCb, this.endJobPlanWhenComplete);
         cbLayout.setMargin(false);
         cbLayout.getElement().getThemeList().remove("padding");
         cbLayout.getElement().getThemeList().remove("spacing");

@@ -43,6 +43,21 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
             , contextVisualisationLevelDistance, contextVisualisationNodeDistance);
     }
 
+    /**
+     * Adapts scheduler jobs to a draw2d compatible data format for context visualization.
+     * This method processes job data, applies visual characteristics, and ensures various
+     * items within the adapted dataset are either selectable and draggable or not, based on their type.
+     *
+     * @param parentContext the parent context associated with the current context
+     * @param context the current context for which the jobs are being visualized
+     * @param schedulerJobs a map of job identifiers to their corresponding scheduler job objects
+     * @param schedulerJobsMapByIdentifier a map of alternate job identifiers to scheduler job objects
+     * @param schedulerJobsImageMap a map of job identifiers to their visual representations as images
+     * @param logicalBoundaries a map of job identifiers to their respective logical boundaries as rectangles
+     *
+     * @return a JSON-formatted string representation of the adapted jobs and visual components
+     * @throws Draw2dAdapterException if an error occurs while processing or translating the jobs into the draw2d format
+     */
     public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
         , Map<String, SchedulerJob> schedulerJobsMapByIdentifier, Map<String, Image> schedulerJobsImageMap, Map<String, Rectangle> logicalBoundaries) {
 
@@ -66,6 +81,15 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
             }
     }
 
+    /**
+     * Adds status rectangles to the provided list of items based on the context and parent context.
+     * This method processes items in the list, checking their type and corresponding status,
+     * and generates status rectangles which are appended to the item list.
+     *
+     * @param items         the list of objects to which status rectangles will be added
+     * @param context       the current context used to determine the status of items
+     * @param parentContext the parent context used to fetch additional context information
+     */
     private void addStatusRectangles(List<Object> items, Context context, Context parentContext) {
         ArrayList<Object> statusRectangles = new ArrayList<>();
 
@@ -119,6 +143,15 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
         items.addAll(statusRectangles);
     }
 
+    /**
+     * Adapts the given context into a JSON-formatted string representation compatible with the draw2d visualization framework.
+     * This method processes the context hierarchy and visual elements, such as images, to include additional status indicators
+     * in the form of rectangles representing context statuses.
+     *
+     * @param context the context to be adapted into the draw2d format
+     * @return a JSON-formatted string representation of the adapted context with status indicators
+     * @throws Draw2dAdapterException if an error occurs during the adaptation or JSON processing
+     */
     public String adaptContext(Context context) {
         Map<String, Context> contextMap = ContextHelper.getAllContexts(context);
 
