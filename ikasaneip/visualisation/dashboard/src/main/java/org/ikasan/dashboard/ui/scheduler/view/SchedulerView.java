@@ -18,6 +18,7 @@ import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.cluster.service.JobParameterRefreshService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateWidget;
@@ -168,6 +169,10 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
     @Autowired
+    private JobParameterRefreshService jobParameterRefreshService;
+    @Autowired
+    private org.ikasan.dashboard.cluster.service.LeaderElectionService leaderElectionService;
+    @Autowired
     private GlobalEventService globalEventService;
     @Autowired
     private SystemEventSearchService systemEventSearchService;
@@ -175,8 +180,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService;
     @Autowired
     private ContextParametersInstanceService contextParametersInstanceService;
-    @Resource
-    private org.ikasan.dashboard.cluster.service.LeaderElectionService leaderElectionService;
+
 
     @Value("${scheduler.provision.jobs.on.upload:true}")
     private boolean uploadProvisionJobs;
@@ -227,7 +231,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
-            this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
+            this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.jobParameterRefreshService, this.globalEventService,
             this.contextInstanceSchedulerService, this.contextParametersInstanceService, this.systemEventSearchService, removeTrailingPlanNameContextAfterUnderscore,
             this.jobPlanIntervalMultiple, this.jobVisualisationVerticalSpacing, this.jobVisualisationHorizontalSpacing, this.contextVisualisationNodeDistance, this.contextVisualisationLevelDistance);
         this.contextTemplateWidget.setLeaderElectionService(leaderElectionService);

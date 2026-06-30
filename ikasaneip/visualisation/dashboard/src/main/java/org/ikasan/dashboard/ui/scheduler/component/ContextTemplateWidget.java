@@ -31,6 +31,7 @@ import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.cluster.service.LeaderElectionService;
+import org.ikasan.dashboard.cluster.service.JobParameterRefreshService;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateEnableDisableEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.ContextTemplateSavedEventBroadcaster;
@@ -115,6 +116,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private SubMenu activeContextSubMenu;
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
+    private JobParameterRefreshService jobParameterRefreshService;
     private LeaderElectionService leaderElectionService;
     private UI ui;
     private boolean removeTrailingPlanNameContextAfterUnderscore;
@@ -162,7 +164,8 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
-                                 Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService,
+                                 Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService,
+                                 JobParameterRefreshService jobParameterRefreshService, GlobalEventService globalEventService,
                                  ContextInstanceSchedulerServiceImpl contextInstanceSchedulerService, ContextParametersInstanceService contextParametersInstanceService, SystemEventSearchService systemEventSearchService,
                                  boolean removeTrailingPlanNameContextAfterUnderscore, int jobPlanIntervalMultiple, double jobVisualisationVerticalSpacing, double jobVisualisationHorizontalSpacing,
                                  double contextVisualisationLevelDistance, double contextVisualisationNodeDistance) {
@@ -206,6 +209,10 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         this.springCloudConfigRefreshService = springCloudConfigRefreshService;
         if (this.springCloudConfigRefreshService == null) {
             throw new IllegalArgumentException("springCloudConfigRefreshService cannot be null!");
+        }
+        this.jobParameterRefreshService = jobParameterRefreshService;
+        if (this.jobParameterRefreshService == null) {
+            throw new IllegalArgumentException("jobParameterRefreshService cannot be null!");
         }
         this.globalEventService = globalEventService;
         if (this.globalEventService == null) {
@@ -311,8 +318,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         Button refreshContextParamButton = new Button(getTranslation("button.refresh-job-params", UI.getCurrent().getLocale()), refreshIcon);
         refreshContextParamButton.setIconAfterText(true);
         refreshContextParamButton.addClickListener(buttonClickEvent -> {
+            if (showFollowerNodeNotSupportedDialog()) return;
             try {
-                springCloudConfigRefreshService.actuatorRefresh();
+                jobParameterRefreshService.refreshLocalAndPropagateBestEffort();
                 NotificationHelper.showUserNotification(getTranslation("message.refresh-job-params-successful", UI.getCurrent().getLocale()));
             } catch (RestClientException e) {
                 NotificationHelper.showUserNotification(getTranslation("message.refresh-job-params-unsuccessful", UI.getCurrent().getLocale()));
@@ -462,6 +470,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                     executor.execute(() -> {
                         Exception exception = null;
                         try {
+                            ScheduledContextRecord record = this.scheduledContextService.findByName(scheduledContextRecord.getContextName());
                             this.jobProvisionService.removeJobs(scheduledContextRecord.getContextName());
                             this.schedulerJobService.deleteByContextName(scheduledContextRecord.getContextName());
                             this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
@@ -472,6 +481,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
 
                             String action = String.format("Job plan [%s] has been deleted.", scheduledContextRecord.getContextName());
                             this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_DELETED, action, authentication.getName());
+                            // Reuse the existing context-template refresh event; peer widgets re-query the backing store,
+                            // so a deleted plan disappears without adding a delete-specific REST broadcast.
+                            ContextTemplateSavedEventBroadcaster.broadcast(record.getContext());
 
                             current.access(() -> {
                                 this.contextTemplateFilteringGrid.getDataProvider().refreshAll();

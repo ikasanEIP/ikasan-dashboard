@@ -120,20 +120,13 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
     
     @Override
     public void actuatorRefresh() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        actuatorRefreshAtUrl(environment.getProperty("ikasan.dashboard.extract.base.url"));
+    }
 
-        // Get credentials for ikasan dashboard to perform refresh
-        String credentials = environment.getProperty("ikasan.dashboard.extract.username") + ":" + environment.getProperty("ikasan.dashboard.extract.password");
-        String basicToken = new String(Base64.encodeBase64(credentials.getBytes()));
-        headers.set(HttpHeaders.AUTHORIZATION, "Basic " + basicToken);
-        
-        HttpEntity entity = new HttpEntity(headers);
-
-        String dashboardUrl = environment.getProperty("ikasan.dashboard.extract.base.url");
-        String url = dashboardUrl + ACTUATOR_REFRESH;
-
+    @Override
+    public void actuatorRefreshAtUrl(String baseUrl) {
+        HttpEntity entity = new HttpEntity(buildActuatorRefreshHeaders());
+        String url = baseUrl + ACTUATOR_REFRESH;
         try {
             LOGGER.info("Actuator Refresh will start now. URL called: [{}]", url);
             restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
@@ -142,5 +135,14 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
             LOGGER.error("Issue with Actuator Refresh. URL called: [{}] with response [{}]", url, e.getLocalizedMessage(), e);
             throw new RestClientException("Issue with Actuator Refresh");
         }
+    }
+
+    private HttpHeaders buildActuatorRefreshHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        String credentials = environment.getProperty("ikasan.dashboard.extract.username") + ":" + environment.getProperty("ikasan.dashboard.extract.password");
+        headers.set(HttpHeaders.AUTHORIZATION, "Basic " + new String(Base64.encodeBase64(credentials.getBytes())));
+        return headers;
     }
 }
