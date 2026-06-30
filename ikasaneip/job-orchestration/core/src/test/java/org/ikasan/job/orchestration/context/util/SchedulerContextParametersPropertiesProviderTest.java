@@ -166,10 +166,11 @@ public class SchedulerContextParametersPropertiesProviderTest {
                 //Do Nothing
             }
 
-            @Override
-            public void actuatorRefreshAtUrl(String baseUrl) {
-                //Do Nothing
-            }
+// @TODO commented out until Ikasan5 core is updated
+//            @Override
+//            public void actuatorRefreshAtUrl(String baseUrl) {
+//                //Do Nothing
+//            }
         },
             Arrays.asList("configRepo1", "configRepo2"), "http://someurl.com");
         jobContextParamsSetupConfiguration.setLocation(null); // force a config repo to dummy refresh
