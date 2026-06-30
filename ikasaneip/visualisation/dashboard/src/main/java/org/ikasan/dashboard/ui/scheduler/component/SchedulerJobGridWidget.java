@@ -529,18 +529,6 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
 
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT)
                 , getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-            StreamResource streamResource = new StreamResource(schedulerJobRecord.getJobName()+".json"
-                , () -> {
-                try {
-                    return new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter()
-                        .writeValueAsBytes(schedulerJobRecord.getJob()));
-                }
-                catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            });
-
             Anchor downloadAnchor = new Anchor(DownloadHandler.fromInputStream(downloadEvent
                     -> new DownloadResponse(new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter()
                     .writeValueAsBytes(schedulerJobRecord.getJob()))

@@ -388,6 +388,10 @@ public class ContextMachineRestImpl implements ContextMachine {
         throw new UnsupportedOperationException("setBlackListedMessageMaxRetries is not supported by the REST proxy");
     }
 
+    @Override public void setErrorRetrySleepInterval(long errorRetrySleepInterval) {
+        throw new UnsupportedOperationException("setErrorRetrySleepInterval is not supported by the REST proxy");
+    }
+
     @Override public void resetContextInstance(boolean holdCommandJobs, boolean initiateWithSameParameters,
                                                List<ContextParameterInstance> contextParameterInstances)
             throws IOException, SchedulerJobInstanceInitialisationException, BigQueueNotFoundException {
@@ -448,5 +452,9 @@ public class ContextMachineRestImpl implements ContextMachine {
 
     @Override public Map<String, InternalEventDrivenJobInstance> getInternalEventDrivenJobInstancesMap() {
         throw new UnsupportedOperationException("getInternalEventDrivenJobInstancesMap is not supported by the REST proxy");
+    }
+
+    @Override public void setPublishRaiseEventsAfterJobPlanInstanceFlush(boolean publishRaiseEventsAfterJobPlanInstanceFlush) {
+        throw new UnsupportedOperationException("setPublishRaiseEventsAfterJobPlanInstanceFlush is not supported by the REST proxy");
     }
 }

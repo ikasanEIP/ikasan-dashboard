@@ -165,6 +165,11 @@ public class SchedulerContextParametersPropertiesProviderTest {
             public void actuatorRefresh() {
                 //Do Nothing
             }
+
+            @Override
+            public void actuatorRefreshAtUrl(String baseUrl) {
+                //Do Nothing
+            }
         },
             Arrays.asList("configRepo1", "configRepo2"), "http://someurl.com");
         jobContextParamsSetupConfiguration.setLocation(null); // force a config repo to dummy refresh
