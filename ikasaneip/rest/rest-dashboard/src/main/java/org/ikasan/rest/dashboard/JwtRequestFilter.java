@@ -103,7 +103,7 @@ public class JwtRequestFilter extends OncePerRequestFilter
             }
             else
             {
-                logger.warn(
+                logger.debug(
                     "[Authorization] header does not begin with Bearer String on url [" + requestServletUrl + "]");
             }
         }

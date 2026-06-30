@@ -82,7 +82,7 @@ public class ClusterBroadcastAutoConfiguration {
 
     /** Comma-separated URLs of peer dashboard nodes, excluding this node's own URL. */
     @Value("${ikasan.dashboard.cluster.peer-urls:}")
-    private String clusterPeerUrlsProperty;
+    private String clusterPeerUrls;
 
     @Value("${server.port:9090}")
     private int serverPort;
@@ -338,7 +338,7 @@ public class ClusterBroadcastAutoConfiguration {
      */
     List<String> clusterPeerUrls() {
         List<InetAddress> selfAddresses = selfAddresses();
-        List<String> urls = Arrays.stream(clusterPeerUrlsProperty.split(","))
+        List<String> urls = Arrays.stream(clusterPeerUrls.split(","))
             .map(String::trim)
             .map(String::toLowerCase)
             .filter(s -> !s.isEmpty())
