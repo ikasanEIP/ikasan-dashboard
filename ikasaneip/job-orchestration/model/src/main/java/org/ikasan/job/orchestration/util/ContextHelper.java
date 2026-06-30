@@ -704,17 +704,20 @@ public class ContextHelper {
     public static List<ContextParameterInstance> getUniqueContextParameterInstancesFromJobs(Map<String, InternalEventDrivenJob> internalJobs) {
         List<ContextParameterInstance> contextParameterInstances = new ArrayList<>();
 
-        internalJobs.entrySet().forEach(entry ->
-            contextParameterInstances.addAll(entry.getValue().getContextParameters().stream()
-                .map(contextParameter -> {
-                    ContextParameterInstance contextParameterInstance = new ContextParameterInstanceImpl();
-                    contextParameterInstance.setName(contextParameter.getName());
-                    contextParameterInstance.setValue(contextParameter.getDefaultValue());
-                    contextParameterInstance.setDefaultValue(contextParameter.getDefaultValue());
+        internalJobs.entrySet().forEach(entry -> {
+            if(entry.getValue().getContextParameters() != null) {
+                contextParameterInstances.addAll(entry.getValue().getContextParameters().stream()
+                    .map(contextParameter -> {
+                        ContextParameterInstance contextParameterInstance = new ContextParameterInstanceImpl();
+                        contextParameterInstance.setName(contextParameter.getName());
+                        contextParameterInstance.setValue(contextParameter.getDefaultValue());
+                        contextParameterInstance.setDefaultValue(contextParameter.getDefaultValue());
 
-                    return contextParameterInstance;
-                })
-                .collect(Collectors.toList())));
+                        return contextParameterInstance;
+                    })
+                    .collect(Collectors.toList()));
+            }
+        });
 
         return contextParameterInstances.stream()
             .filter(distinctByKey(contextParameterInstance -> contextParameterInstance.getName()))

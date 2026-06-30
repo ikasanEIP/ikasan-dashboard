@@ -348,7 +348,10 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.filenameTf = new TextField(getTranslation("label.file-name", UI.getCurrent().getLocale()));
         this.filenameTf.setRequired(true);
         this.filenameTf.setId("filePathTf");
-        this.filenameTf.setValue(this.fileEventDrivenJobInstance.getFilenames().get(0));
+        if(this.fileEventDrivenJobInstance.getFilenames() != null
+            && !this.fileEventDrivenJobInstance.getFilenames().isEmpty()) {
+            this.filenameTf.setValue(this.fileEventDrivenJobInstance.getFilenames().get(0));
+        }
         this.formLayout.add(filenameTf, 2);
 
         this.filenamePairs = new MultiSelectComboBox<>(getTranslation("label.file-name-replacements"));
