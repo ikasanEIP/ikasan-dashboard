@@ -261,16 +261,17 @@
         <version.kryo>4.0.2</version.kryo>
         <version.kryo.cli>5.0.3</version.kryo.cli>  <!-- currently only using latest version for CLI/shell -->
         <version.ow2.asm>9.5</version.ow2.asm>
-        <version.org.springframework>7.0.7</version.org.springframework>
+        <version.org.springframework>7.0.8</version.org.springframework>
         <version.org.springframework.security>7.0.5</version.org.springframework.security>
         <version.org.springframework.ldap>3.2.8</version.org.springframework.ldap>
         <version.org.springframework.ldap.ldif>2.3.2.RELEASE</version.org.springframework.ldap.ldif>
         <version.org.springframework.webflow>3.0.0</version.org.springframework.webflow>
         <version.org.springframework.data>3.5.2</version.org.springframework.data>
-        <version.spring.cloud.config.client>5.0.3</version.spring.cloud.config.client>
+        <version.spring.cloud.config.client>5.0.4</version.spring.cloud.config.client>
+        <version.spring.cloud.context>5.0.1</version.spring.cloud.context>
         <version.org.springframework.webflow-spring-js>2.4.8.RELEASE</version.org.springframework.webflow-spring-js>
-        <version.org.springboot>4.0.6</version.org.springboot>
-        <version.org.springframework.shell>2.0.1.RELEASE</version.org.springframework.shell>
+        <version.org.springboot>4.1.0</version.org.springboot>
+        <version.org.springframework.shell>3.2.1</version.org.springframework.shell>
         <version.io.springfox.swagger>2.9.2</version.io.springfox.swagger>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.jmock.imposters>2.12.0</version.jmock.imposters>
@@ -339,10 +340,10 @@
         <version.com.jcraft.jsch>0.1.55</version.com.jcraft.jsch>
         <version.org.mockftpserver>2.6</version.org.mockftpserver>
         <version.org.apache.sshd>2.1.0</version.org.apache.sshd>
-        <version.com.fasterxml.jackson.core>2.21.1</version.com.fasterxml.jackson.core>
-        <version.com.fasterxml.jackson.core.annotations>2.21</version.com.fasterxml.jackson.core.annotations>
-        <version.com.fasterxml.jackson.core.databind>2.19.1</version.com.fasterxml.jackson.core.databind>
-        <version.vaadin>25.1.7</version.vaadin>
+        <version.com.fasterxml.jackson.core>2.22.0</version.com.fasterxml.jackson.core>
+        <version.com.fasterxml.jackson.core.annotations>2.22</version.com.fasterxml.jackson.core.annotations>
+        <version.com.fasterxml.jackson.core.databind>2.22.0</version.com.fasterxml.jackson.core.databind>
+        <version.vaadin>25.2.1</version.vaadin>
         <version.org.vaadin.tabs>1.2.0</version.org.vaadin.tabs>
         <version.com.vaadin.componentfactory>1.2.2</version.com.vaadin.componentfactory>
         <version.org.vaadin.olli>7.0.0</version.org.vaadin.olli>
@@ -380,6 +381,7 @@
         <version.spring.webflux>7.0.7</version.spring.webflux>
         <version.reactor>3.7.9</version.reactor>
         <version.reactor.netty>1.3.5</version.reactor.netty>
+        <version.netty.all>4.2.13.Final</version.netty.all>
         <version.okhttp3>5.3.2</version.okhttp3>
         <version.cron.utils>9.1.6</version.cron.utils>
         <version.tech.huffman.re-retrying>3.0.0</version.tech.huffman.re-retrying>
@@ -396,11 +398,13 @@
         <version.carrotsearch.randomizedtesting>2.8.3</version.carrotsearch.randomizedtesting>
         <version.google.gson>2.11.0</version.google.gson>
         <version.system.rules>1.19.0</version.system.rules>
-        <version.micrometer>1.16.5</version.micrometer>
+        <version.micrometer>1.16.6</version.micrometer>
         <version.org.hibernate>6.4.1.Final</version.org.hibernate>
         <version.org.hibernate-validator>8.0.1.Final</version.org.hibernate-validator>
         <version.apache.zookeeper>3.9.5</version.apache.zookeeper>
         <version.postgres>42.7.11</version.postgres>
+        <version.classgraph>4.8.175</version.classgraph>
+        <version.org.glassfish.hk2>3.1.1</version.org.glassfish.hk2>
     </properties>
 
     <!-- Distribution for releases -->
@@ -1776,7 +1780,7 @@
                         <artifactId>spring-boot-http-converter</artifactId>
                     </exclusion>
                 </exclusions>
-                <version>5.0.1</version>
+                <version>${version.spring.cloud.context}</version>
             </dependency>
 
             <dependency>
@@ -1920,6 +1924,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>hk2-api</artifactId>
+                <version>${version.org.glassfish.hk2}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.objenesis</groupId>
                 <artifactId>objenesis</artifactId>
                 <version>${version.org.objenesis}</version>
@@ -2016,6 +2026,12 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-core</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.micrometer</groupId>
+                        <artifactId>micrometer-observation</artifactId>
+                    </exclusion>
+                </exclusions>
                 <version>${version.org.springframework.security}</version>
             </dependency>
 
@@ -2228,6 +2244,19 @@
                 <groupId>org.vaadin.stefan</groupId>
                 <artifactId>fullcalendar2</artifactId>
                 <version>${version.fullcalendar2}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${version.netty.all}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.classgraph</groupId>
+                <artifactId>classgraph</artifactId>
+                <version>${version.classgraph}</version> <!-- Use the latest stable version -->
             </dependency>
 
             <dependency>

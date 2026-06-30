@@ -37,17 +37,12 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.shaded.org.awaitility.Awaitility;
 import org.testcontainers.solr.SolrContainer;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
@@ -88,7 +83,9 @@ public abstract class UITest {
                 .withSchema(schemaUrl);
 
             solr.start();
+            System.out.println("Solr started!");
         } catch (IOException e) {
+            System.out.println("Error starting SOLR! " + e.getMessage());
             throw new RuntimeException(e);
         }
     }

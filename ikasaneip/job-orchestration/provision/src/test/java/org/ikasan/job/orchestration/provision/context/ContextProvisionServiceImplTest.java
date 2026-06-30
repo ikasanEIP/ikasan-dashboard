@@ -61,8 +61,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.junit.Assert.*;
 import static org.mockito.AdditionalAnswers.answersWithDelay;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextProvisionServiceImplTest extends AbstractTest {
@@ -302,6 +302,73 @@ public class ContextProvisionServiceImplTest extends AbstractTest {
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
             emailNotificationDetailsService, emailNotificationContextService, securityService);
     }
+
+    @Test
+    public void should_upload_provision_jobs_and_create_context_null_context_parameters_on_command_execution_job() {
+        ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
+        String contextName = "ContextName";
+        contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
+        contextTemplate.setName(contextName);
+
+        List<SchedulerJob> contextJobs = new ArrayList<>();
+        FileEventDrivenJob fileJobRecord = new FileEventDrivenJobImpl();
+        fileJobRecord.setAgentName("agentName1");
+        QuartzScheduleDrivenJob quartzDrivenJob = new QuartzScheduleDrivenJobImpl();
+        quartzDrivenJob.setAgentName("agentName1");
+        GlobalEventJob globalEventJob = new GlobalEventJobImpl();
+        globalEventJob.setAgentName("agentName1");
+        InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob.setAgentName("agentName1");
+        internalEventDrivenJob.setContextParameters(null);
+        InternalEventDrivenJob internalEventDrivenJobTemplate = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobTemplate.setAgentName("agentName1");
+        internalEventDrivenJobTemplate.setTemplateJob(true);
+        internalEventDrivenJobTemplate.setContextParameters(null);
+
+        contextJobs.add(fileJobRecord);
+        contextJobs.add(quartzDrivenJob);
+        contextJobs.add(internalEventDrivenJob);
+        contextJobs.add(internalEventDrivenJobTemplate);
+
+        // Does not get provision
+        contextJobs.add(globalEventJob);
+
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
+        when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
+
+        List<String> roleList = List.of("role1", "role2");
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, roleList);
+        service.provisionContext(contextBundle);
+
+        verify(schedulerJobService).deleteByContextName(contextName);
+        verify(contextProfileService).deleteByContextName(contextName);
+        verify(emailNotificationDetailsService).deleteByContextName(contextName);
+        verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName, this.contextInstanceSchedulerService);
+        verify(schedulerJobService).save(contextJobs, "system");
+
+        ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
+        verify(scheduledContextService).save(contextCaptor.capture());
+        ScheduledContextRecord actualContextRecord = contextCaptor.getValue();
+        assertEquals(contextName, actualContextRecord.getContextName());
+        assertNull(null, actualContextRecord.getId());
+        assertNotNull(actualContextRecord.getContext());
+        assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
+        verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+        verify(securityService).setJobPlanRoles(contextTemplate.getName(), roleList);
+
+        verifyNoMoreInteractions(
+            scheduledContextService, moduleMetadataService, schedulerJobService,
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService,
+            emailNotificationDetailsService, emailNotificationContextService, securityService);
+    }
+
 
     @Test(expected = JobProvisionLockException.class)
     public void should_upload_provision_jobs_and_create_context_exception_rest_agent_lock_exception() throws JsonProcessingException {

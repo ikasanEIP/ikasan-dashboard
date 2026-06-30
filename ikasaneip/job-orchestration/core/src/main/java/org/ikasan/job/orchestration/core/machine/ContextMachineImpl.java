@@ -14,7 +14,6 @@ import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceDlqEventBroadcaster;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.CronUtils;
@@ -33,8 +32,8 @@ import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitiali
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.BigQueueContextMachineManagementServiceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.bigqueue.service.BigQueueManagementService;
@@ -51,6 +50,7 @@ import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
@@ -1254,6 +1254,7 @@ public class ContextMachineImpl implements ContextMachine {
                             // if the initiation event is for a local event job, we remove any held jobs for all
                             // child contexts in the plan that the local event job may exist in.
                             ContextHelper.getAllContexts(this.contextInstance).keySet().forEach(contextName -> {
+                                if(this.contextInstance.getHeldJobs() == null) return;
                                 if (this.contextInstance.getHeldJobs().containsKey(event.getAgentName() + "-" + event.getJobName() + "_" + contextName)) {
                                     logger.info(String.format("Removing held job [%s] in job plan [%s] with id [%s] in child context [%s]," +
                                             " due to scheduler job [%s] being reset!", event.getJobName(), contextInstance.getName(), contextInstance.getId()
@@ -1264,6 +1265,7 @@ public class ContextMachineImpl implements ContextMachine {
                         }
                         else if(event.getChildContextNames() != null) {
                             event.getChildContextNames().forEach(child -> {
+                                if(this.contextInstance.getHeldJobs() == null) return;
                                 if (this.contextInstance.getHeldJobs().containsKey(event.getAgentName() + "-" + event.getJobName() + "_" + child)) {
                                     logger.info(String.format("Removing held job [%s] in job plan [%s] with id [%s] in child context [%s]," +
                                             " due to scheduler job [%s] being reset!", event.getJobName(), contextInstance.getName(), contextInstance.getId()
@@ -1392,7 +1394,7 @@ public class ContextMachineImpl implements ContextMachine {
      */
     private void _releaseJob(List<SchedulerJobInstance> jobs) {
         jobs.forEach(schedulerJobInstance -> {
-            if(schedulerJobInstance.getChildContextName() == null) return;
+            if(schedulerJobInstance.getChildContextName() == null || this.contextInstance.getHeldJobs() == null) return;
             SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(schedulerJobInstance.getIdentifier() + "_" + schedulerJobInstance.getChildContextName());
             if(event != null) {
                 InternalEventDrivenJobInstance instance = this.internalEventDrivenJobInstances.get(schedulerJobInstance.getIdentifier());
@@ -1732,6 +1734,7 @@ public class ContextMachineImpl implements ContextMachine {
                     event.getInternalEventDrivenJob().getIdentifier());
 
                 if (schedulerJobInstance != null && schedulerJobInstance.isHeld()) {
+                    if(this.contextInstance.getHeldJobs() == null) this.contextInstance.setHeldJobs(new HashMap<>());
                     this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier()
                         + "_" + event.getInternalEventDrivenJob().getChildContextName(), event);
                 } else {
@@ -1745,6 +1748,7 @@ public class ContextMachineImpl implements ContextMachine {
                     event.getAgentName() + "-" + event.getJobName()).isHeld()) {
                 SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, scheduledProcessEvent.getChildContextNames().get(0).toString(),
                     event.getAgentName() + "-" + event.getJobName());
+                if(this.contextInstance.getHeldJobs() == null) this.contextInstance.setHeldJobs(new HashMap<>());
                 this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier()
                     + "_" + schedulerJobInstance.getChildContextName(), event);
             } else {

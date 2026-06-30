@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.backup.schedule;
 
-import com.github.stefanbirkner.systemlambda.SystemLambda;
 import org.ikasan.dashboard.backup.SolrIndexBackupJob;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.solr.SolrGeneralService;
@@ -8,18 +7,12 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.imposters.ByteBuddyClassImposteriser;
 import org.jmock.lib.concurrent.Synchroniser;
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.internal.NoExitSecurityManager;
-import org.junit.jupiter.api.BeforeEach;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.boot.ExitCodeEvent;
 import org.springframework.context.ApplicationContext;
 
 import java.util.List;
-import java.util.Map;
 
 public class SolrIndexBackupJobTest {
 
@@ -100,32 +93,6 @@ public class SolrIndexBackupJobTest {
         }});
 
         job.execute(jobExecutionContext);
-    }
-
-    @Test
-    @Ignore // todo fix test that calls system exit
-    public void test_backup_system_exit_invalid_index() throws Exception {
-        SolrIndexBackupJob job = new SolrIndexBackupJob(solrGeneralService,
-            "backup-path", "cron", this.applicationContext
-            , 2, 5, 200, true);
-
-        mockery.checking(new Expectations(){{
-            exactly(5).of(solrGeneralService).search(with(any(String.class)), with(any(Long.class)), with(any(Long.class))
-                , with(any(Integer.class)), with(any(Integer.class)), with(any(List.class)), with(any(Boolean.class))
-                , with(aNull(String.class)), with(aNull(String.class)));
-            will(throwException(new RuntimeException("invalid index!")));
-            exactly(1).of(applicationContext).getBeansOfType(with(any(Class.class)));
-            returnValue(Map.of());
-            exactly(1).of(applicationContext).publishEvent(with(any(ExitCodeEvent.class)));
-        }});
-
-        int status = SystemLambda.catchSystemExit(() -> {
-            job.execute(jobExecutionContext);
-        });
-
-        Assert.assertEquals(1, status);
-
-        mockery.assertIsSatisfied();
     }
 
     @Test
