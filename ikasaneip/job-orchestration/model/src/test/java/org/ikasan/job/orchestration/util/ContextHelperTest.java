@@ -544,6 +544,24 @@ public class ContextHelperTest {
     }
 
     @Test
+    public void test_get_unique_context_parameters_from_jobs_null_context_params() throws IOException {
+        ContextTemplate contextTemplate = this.contextService
+            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
+
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = createInternalJobsMap(contextTemplate);
+
+        for(InternalEventDrivenJob instance: internalEventDrivenJobMap.values()) {
+            instance.setContextParameters(null);
+        }
+
+        List<ContextParameterInstance> contextParameterInstances
+            = ContextHelper.getUniqueContextParameterInstancesFromJobs(internalEventDrivenJobMap);
+
+        Assert.assertTrue(contextParameterInstances.size() == 0);
+
+    }
+
+    @Test
     public void test_get_context_start_jobs_from_context() throws IOException {
         String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
             "context/TEST_IK_GLOB.json");

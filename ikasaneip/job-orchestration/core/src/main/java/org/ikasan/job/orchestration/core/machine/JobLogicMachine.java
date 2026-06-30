@@ -605,27 +605,28 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                                                                      InternalEventDrivenJobInstance internalEventDrivenJob,
                                                                      List<ContextParameterInstance> contextParameters,
                                                                      ContextInstance parentContextInstance) {
-        schedulerJobInitiationEvent.setContextParameters(internalEventDrivenJob.getContextParameters().stream()
-            .map(contextParameter -> {
-                AtomicReference<ContextParameterInstance> instance = new AtomicReference<>();
-                contextParameters.forEach(contextParameterInstance -> {
-                    if(contextParameter.getName().equals(contextParameterInstance.getName())) {
-                        instance.set(contextParameterInstance);
+        if(internalEventDrivenJob.getContextParameters() != null) {
+            schedulerJobInitiationEvent.setContextParameters(internalEventDrivenJob.getContextParameters().stream()
+                .map(contextParameter -> {
+                    AtomicReference<ContextParameterInstance> instance = new AtomicReference<>();
+                    contextParameters.forEach(contextParameterInstance -> {
+                        if (contextParameter.getName().equals(contextParameterInstance.getName())) {
+                            instance.set(contextParameterInstance);
+                        }
+                    });
+
+                    if (instance.get() != null) {
+                        return this.replaceParamIfNotSet(parentContextInstance.getName(), instance.get());
+                    } else {
+                        ContextParameterInstance defaultInstance = new ContextParameterInstanceImpl();
+                        defaultInstance.setName(contextParameter.getName());
+                        defaultInstance.setValue(contextParameter.getDefaultValue());
+                        defaultInstance.setDefaultValue(contextParameter.getDefaultValue());
+
+                        return defaultInstance;
                     }
-                });
-
-                if(instance.get() != null) {
-                    return this.replaceParamIfNotSet(parentContextInstance.getName(), instance.get());
-                }
-                else {
-                    ContextParameterInstance defaultInstance = new ContextParameterInstanceImpl();
-                    defaultInstance.setName(contextParameter.getName());
-                    defaultInstance.setValue(contextParameter.getDefaultValue());
-                    defaultInstance.setDefaultValue(contextParameter.getDefaultValue());
-
-                    return defaultInstance;
-                }
-            }).collect(Collectors.toList()));
+                }).collect(Collectors.toList()));
+        }
     }
 
     /**

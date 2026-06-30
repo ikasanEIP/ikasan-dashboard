@@ -100,19 +100,20 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
 
         contextParameterInstances = new ArrayList<>();
 
-        ((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).getContextParameters().forEach(param -> {
-            if(this.contextParameterInstanceMap.containsKey(param.getName())) {
-                contextParameterInstances.add((ContextParameterInstance) SerializationUtils
-                    .clone(this.contextParameterInstanceMap.get(param.getName())));
-            }
-            else {
-                ContextParameterInstance contextParameterInstance = new ContextParameterInstanceImpl();
-                contextParameterInstance.setName(param.getName());
-                contextParameterInstance.setValue(param.getDefaultValue());
+        if(((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).getContextParameters() != null) {
+            ((InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance()).getContextParameters().forEach(param -> {
+                if (this.contextParameterInstanceMap.containsKey(param.getName())) {
+                    contextParameterInstances.add((ContextParameterInstance) SerializationUtils
+                        .clone(this.contextParameterInstanceMap.get(param.getName())));
+                } else {
+                    ContextParameterInstance contextParameterInstance = new ContextParameterInstanceImpl();
+                    contextParameterInstance.setName(param.getName());
+                    contextParameterInstance.setValue(param.getDefaultValue());
 
-                contextParameterInstances.add(contextParameterInstance);
-            }
-        });
+                    contextParameterInstances.add(contextParameterInstance);
+                }
+            });
+        }
 
         GridPro<ContextParameterInstance> grid = new GridPro<>();
         grid.addColumn(ContextParameterInstance::getName).setHeader(getTranslation("table-header.name", UI.getCurrent().getLocale()));

@@ -58,6 +58,11 @@ public class JobProvisionServiceImpl implements JobProvisionService {
 
     @Override
     public void provisionJobs(List<SchedulerJob> jobs, String actor) {
+        if(jobs == null) {
+            logger.warn("Attempt to provision jobs with a null list of jobs. This should never happen!");
+            return;
+        }
+
         long now = System.currentTimeMillis();
         List<String> uniqueAgentNames = this.getUniqueAgentNames(jobs);
         logger.info(String.format("Provisioning %s jobs across %s agents", jobs.size(), uniqueAgentNames.size()));
@@ -241,15 +246,17 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                     InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
                     internalEventDrivenJob.setIdentifier(job.getIdentifier());
                     internalEventDrivenJob.setCommandLine(((InternalEventDrivenJob) job).getCommandLine());
-                    internalEventDrivenJob.setContextParameters(((InternalEventDrivenJob) job).getContextParameters()
-                        .stream()
-                        .map(p -> {
-                            ContextParameterImpl contextParameter = new ContextParameterImpl();
-                            contextParameter.setName(p.getName());
-                            contextParameter.setDefaultValue(p.getDefaultValue());
+                    if(((InternalEventDrivenJob) job).getContextParameters() != null) {
+                        internalEventDrivenJob.setContextParameters(((InternalEventDrivenJob) job).getContextParameters()
+                            .stream()
+                            .map(p -> {
+                                ContextParameterImpl contextParameter = new ContextParameterImpl();
+                                contextParameter.setName(p.getName());
+                                contextParameter.setDefaultValue(p.getDefaultValue());
 
-                            return contextParameter;
-                        }).collect(Collectors.toList()));
+                                return contextParameter;
+                            }).collect(Collectors.toList()));
+                    }
                     internalEventDrivenJob.setDaysOfWeekToRun(((InternalEventDrivenJob) job).getDaysOfWeekToRun());
                     internalEventDrivenJob.setMaxExecutionTime(((InternalEventDrivenJob) job).getMaxExecutionTime());
                     internalEventDrivenJob.setMinExecutionTime(((InternalEventDrivenJob) job).getMinExecutionTime());
