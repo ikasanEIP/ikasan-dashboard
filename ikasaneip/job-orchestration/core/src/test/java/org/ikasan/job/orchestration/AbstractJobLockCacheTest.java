@@ -2,7 +2,6 @@ package org.ikasan.job.orchestration;
 
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -11,15 +10,10 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;
-import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,6 +23,11 @@ public abstract class AbstractJobLockCacheTest {
 
     @Mock
     protected JobLockCacheService jobLockCacheService;
+
+    @Before
+    public void setup() throws InterruptedException {
+        JobLockCacheImpl.instance().reset();
+    }
 
     @After
     public void teardown() throws InterruptedException {

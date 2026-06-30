@@ -160,9 +160,11 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
                                     // Add FileNames and Paths
                                     StringBuilder fileNames = new StringBuilder();
-                                    fileEventDrivenJobInstance.getFilenames().forEach(s -> {
-                                        fileNames.append(s).append(System.lineSeparator());
-                                    });
+                                    if(fileEventDrivenJobInstance.getFilenames() != null) {
+                                        fileEventDrivenJobInstance.getFilenames().forEach(s -> {
+                                            fileNames.append(s).append(System.lineSeparator());
+                                        });
+                                    }
                                     genericNotificationDetails.setFileName(fileNames.toString());
                                     genericNotificationDetails.setFilePath(fileEventDrivenJobInstance.getFilePath());
 

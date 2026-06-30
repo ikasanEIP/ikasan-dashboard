@@ -94,7 +94,6 @@
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-core</artifactId>
-            <version>1.2.9</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
@@ -117,25 +116,21 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-            <version>3.7.9</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.19.1</version>
         </dependency>
 
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.2.13.Final</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.175</version> <!-- Use the latest stable version -->
         </dependency>
 
         <dependency>
@@ -319,12 +314,6 @@
         <dependency>
             <groupId>org.vaadin.addons.lipisak</groupId>
             <artifactId>vaadin-slidetab</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin.componentfactory</groupId>
-            <artifactId>togglebutton</artifactId>
-            <version>3.0.0</version>
         </dependency>
 
         <dependency>
@@ -729,12 +718,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.storedobject.helper</groupId>
-            <artifactId>so-helper</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
             <exclusions>
@@ -772,13 +755,6 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.stefanbirkner</groupId>
-            <artifactId>system-lambda</artifactId>
-            <version>1.2.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -873,7 +849,6 @@
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-api</artifactId>
-            <version>3.1.1</version>
             <scope>test</scope>
         </dependency>
 

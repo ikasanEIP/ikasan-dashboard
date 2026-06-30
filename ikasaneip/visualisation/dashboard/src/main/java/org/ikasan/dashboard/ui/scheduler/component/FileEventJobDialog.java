@@ -537,7 +537,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             return false;
         }
 
-        if(!this.fileEventDrivenJob.getFilenameReplacementPairs().isEmpty()){
+        if(this.fileEventDrivenJob.getFilenameReplacementPairs() != null
+            && !this.fileEventDrivenJob.getFilenameReplacementPairs().isEmpty()){
             ReplacementPairSpelBuilder fileNameReplace =  ReplacementPairSpelBuilder.fileNameReplace();
             this.fileEventDrivenJob.getFilenameReplacementPairs().forEach(replacementPair -> {
                 fileNameReplace.withReplacement(replacementPair);
@@ -549,7 +550,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             this.fileEventDrivenJob.setFilenameSpel(null);
         }
 
-        if(!this.fileEventDrivenJob.getFilePathReplacementPairs().isEmpty()){
+        if(this.fileEventDrivenJob.getFilePathReplacementPairs() != null
+            && !this.fileEventDrivenJob.getFilePathReplacementPairs().isEmpty()){
             ReplacementPairSpelBuilder filePathReplace =  ReplacementPairSpelBuilder.filePathReplace();
             fileEventDrivenJob.getFilePathReplacementPairs().forEach(replacementPair -> {
                 filePathReplace.withReplacement(replacementPair);
