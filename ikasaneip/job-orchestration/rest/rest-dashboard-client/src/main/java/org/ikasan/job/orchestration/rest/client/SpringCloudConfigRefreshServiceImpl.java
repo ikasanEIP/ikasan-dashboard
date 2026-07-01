@@ -123,7 +123,8 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
         actuatorRefreshAtUrl(environment.getProperty("ikasan.dashboard.extract.base.url"));
     }
 
-    @Override
+// Must remain commented out until Ikasan5.0x core updated with this method.
+//            @Override
     public void actuatorRefreshAtUrl(String baseUrl) {
         HttpEntity entity = new HttpEntity(buildActuatorRefreshHeaders());
         String url = baseUrl + ACTUATOR_REFRESH;
