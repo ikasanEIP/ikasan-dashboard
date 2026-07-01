@@ -938,7 +938,16 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Dvaadin.original.frontend.resources=true -Dvaadin.compatibilityMode=false</argLine>
+                    <!--
+                        -Djava.security.egd=file:/dev/./urandom: Solr's SolrTestCaseJ4 asserts that a
+                        non-blocking SecureRandom algorithm is in use. On Linux (and slow machines such as
+                        CI servers or older PCs) the default 'NativePRNG' reads from /dev/random, which
+                        can block when entropy is scarce, causing intermittent test failures. Pointing the
+                        entropy source at /dev/urandom keeps SecureRandom non-blocking. The extra dot in
+                        the path (/dev/./urandom) is intentional: without it the JDK silently maps the
+                        path back to NativePRNG, defeating the purpose.
+                    -->
+                    <argLine>-Dvaadin.original.frontend.resources=true -Dvaadin.compatibilityMode=false -Djava.security.egd=file:/dev/./urandom</argLine>
                     <includes>
                         <include>**/TestSuite.class</include>
                     </includes>

@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration;
 
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -10,10 +11,14 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,11 +32,33 @@ public abstract class AbstractJobLockCacheTest {
     @Before
     public void setup() throws InterruptedException {
         JobLockCacheImpl.instance().reset();
+        resetSingletonListenersAndExecutor();
     }
 
     @After
     public void teardown() throws InterruptedException {
         JobLockCacheImpl.instance().reset();
+        resetSingletonListenersAndExecutor();
+    }
+
+    // Two problems require this reset between tests:
+    // 1. The singleton accumulates event listeners across tests (reset() only clears lock data).
+    //    After many tests, concurrent executor threads iterating the large listener list in lockstep
+    //    both reach a test's lambda simultaneously, causing concurrent writes to an unsynchronised
+    //    ArrayList and losing events.
+    // 2. Even within a single test that registers multiple listeners, two events published in quick
+    //    succession are dispatched by different pool threads that race to the second listener. A
+    //    single-threaded executor serialises all dispatch tasks, eliminating both races without
+    //    affecting correctness (listeners are still called asynchronously, just in order).
+    private void resetSingletonListenersAndExecutor() {
+        ExecutorService old = (ExecutorService) ReflectionTestUtils
+            .getField(JobLockCacheImpl.instance(), "executor");
+        old.shutdownNow();
+        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "executor",
+            Executors.newSingleThreadExecutor(new JobThreadFactory("JobLockCacheImpl")));
+        ((LinkedList<?>) ReflectionTestUtils
+            .getField(JobLockCacheImpl.instance(), "jobLockCacheEventListeners")).clear();
+        JobLockCacheImpl.instance().addJobLockCacheEventListener(JobLockCacheImpl.instance());
     }
 
     /**

@@ -675,14 +675,20 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
                 // insert something that looks like a trade id somewhere in the middle of the content
                 if(i>=5000 && i<5090)
                 {
-                    doc.addField("payload", content.substring(0, 50) + " 33454432 " + content.substring(51, content.length()-1));
+                    // Fix for intermittent test failure: substring(51, length-1) throws StringIndexOutOfBoundsException
+                    // for any dataset line shorter than 52 chars, which aborts the insert loop before server.commit()
+                    // is reached, leaving the index empty and causing assertEquals(90,...) to see 0 results.
+                    String c5 = content.length() >= 52 ? content : content + " ".repeat(52 - content.length());
+                    doc.addField("payload", c5.substring(0, 50) + " 33454432 " + c5.substring(51, c5.length()-1));
                     doc.addField("event", "mrsquid5");
                 }
 
                 // insert something that looks like a trade id somewhere in the middle of the content that contains reserved characters
                 if(i>=6000 && i<6035)
                 {
-                    doc.addField("payload", content.substring(0, 50) + "  3345:44932-bb:9 " + content.substring(51, content.length()-1));
+                    // Same guard as the mrsquid5 block above — see comment there.
+                    String c6 = content.length() >= 52 ? content : content + " ".repeat(52 - content.length());
+                    doc.addField("payload", c6.substring(0, 50) + "  3345:44932-bb:9 " + c6.substring(51, c6.length()-1));
                     doc.addField("event", "mrsquid6");
                 }
 
