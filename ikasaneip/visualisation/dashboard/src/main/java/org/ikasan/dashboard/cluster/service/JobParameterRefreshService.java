@@ -49,8 +49,10 @@ public class JobParameterRefreshService {
             try {
                 this.clusterPeerUrls.forEach(peerUrl -> {
                     try {
-                        LOGGER.info("Propagating job parameter refresh to peer [{}]", peerUrl);
-                        this.springCloudConfigRefreshService.actuatorRefreshAtUrl(peerUrl);
+                        LOGGER.error("Propagating job parameter refresh to peer weas disabled, remember to enable it [{}]", peerUrl);
+                        // Must remain commented out until Ikasan5.0x core updated with this method.
+//                        LOGGER.info("Propagating job parameter refresh to peer [{}]", peerUrl);
+                        // this.springCloudConfigRefreshService.actuatorRefreshAtUrl(peerUrl);
                     }
                     catch (RestClientException e) {
                         LOGGER.warn("Failed to propagate job parameter refresh to peer [{}]: {}", peerUrl, e.getMessage());

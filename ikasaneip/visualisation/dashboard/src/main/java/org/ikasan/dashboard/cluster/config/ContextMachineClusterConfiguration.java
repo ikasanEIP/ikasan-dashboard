@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +40,10 @@ public class ContextMachineClusterConfiguration {
     @Autowired
     private LeaderElectionService leaderElectionService;
 
-    @Autowired
-    private List<ContextMachineRestServiceImpl> contextMachineRestServices;
+    // required=false: no ContextMachineRestServiceImpl beans exist in single-node deployments (tests, standalone);
+    // the isEmpty() guard in registerContextMachineFallback() handles that case once Spring can actually call it.
+    @Autowired(required=false)
+    private List<ContextMachineRestServiceImpl> contextMachineRestServices = new ArrayList<>();
 
     @Value("${ikasan.dashboard.cluster.zookeeper.leader-lookup-retries:3}")
     private int leaderLookupRetries;

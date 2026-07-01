@@ -152,11 +152,11 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
 
         Map<String, Image> imageMap  = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson(result);
         Assert.assertFalse(imageMap.isEmpty());
-        Assert.assertEquals(2102.5, imageMap.get("scheduler-agent-ch7").getX(), 5);
+        Assert.assertEquals(2111.5, imageMap.get("scheduler-agent-ch7").getX(), 5);
         Assert.assertEquals(735, imageMap.get("scheduler-agent-ch7").getY(), 5);
         Assert.assertEquals("scheduler-agent-ch7", imageMap.get("scheduler-agent-ch7").getId());
 
-        Assert.assertEquals(1601.5, imageMap.get("scheduler-agent-ch3").getX(), 5);
+        Assert.assertEquals(1608.5, imageMap.get("scheduler-agent-ch3").getX(), 5);
         Assert.assertEquals(600, imageMap.get("scheduler-agent-ch3").getY(), 5);
         Assert.assertEquals("scheduler-agent-ch3", imageMap.get("scheduler-agent-ch3").getId());
 
@@ -164,7 +164,7 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
         Assert.assertEquals(600, imageMap.get("scheduler-agent-sc1").getY(), 5);
         Assert.assertEquals("scheduler-agent-sc1", imageMap.get("scheduler-agent-sc1").getId());
 
-        Assert.assertEquals(1601.5, imageMap.get("scheduler-agent-ch5").getX(), 5);
+        Assert.assertEquals(1608.5, imageMap.get("scheduler-agent-ch5").getX(), 5);
         Assert.assertEquals(870, imageMap.get("scheduler-agent-ch5").getY(), 5);
         Assert.assertEquals("scheduler-agent-ch5", imageMap.get("scheduler-agent-ch5").getId());
 
@@ -228,11 +228,11 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
 
         Map<String, Image> imageMap  = Draw2dCanvasJsonHelper.getSchedulerJobImagesFromCanvasJson(result);
         Assert.assertFalse(imageMap.isEmpty());
-        Assert.assertEquals(2102.5, imageMap.get("scheduler-agent-ch7").getX(), 5);
+        Assert.assertEquals(2111.5, imageMap.get("scheduler-agent-ch7").getX(), 5);
         Assert.assertEquals(735, imageMap.get("scheduler-agent-ch7").getY(), 5);
         Assert.assertEquals("scheduler-agent-ch7", imageMap.get("scheduler-agent-ch7").getId());
 
-        Assert.assertEquals(1601.5, imageMap.get("scheduler-agent-ch3").getX(), 5);
+        Assert.assertEquals(1608.5, imageMap.get("scheduler-agent-ch3").getX(), 5);
         Assert.assertEquals(600, imageMap.get("scheduler-agent-ch3").getY(), 5);
         Assert.assertEquals("scheduler-agent-ch3", imageMap.get("scheduler-agent-ch3").getId());
 
@@ -240,7 +240,7 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
         Assert.assertEquals(600, imageMap.get("scheduler-agent-sc1").getY(), 5);
         Assert.assertEquals("scheduler-agent-sc1", imageMap.get("scheduler-agent-sc1").getId());
 
-        Assert.assertEquals(1601.5, imageMap.get("scheduler-agent-ch5").getX(), 5);
+        Assert.assertEquals(1608.5, imageMap.get("scheduler-agent-ch5").getX(), 5);
         Assert.assertEquals(870, imageMap.get("scheduler-agent-ch5").getY(), 5);
         Assert.assertEquals("scheduler-agent-ch5", imageMap.get("scheduler-agent-ch5").getId());
 
