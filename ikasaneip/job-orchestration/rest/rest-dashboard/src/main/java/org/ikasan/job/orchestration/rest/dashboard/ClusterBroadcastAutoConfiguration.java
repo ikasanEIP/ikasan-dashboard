@@ -49,6 +49,7 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuil
 import org.apache.hc.core5.util.Timeout;
 import org.ikasan.job.orchestration.broadcast.*;
 import org.ikasan.job.orchestration.broadcast.listener.*;
+import org.ikasan.spec.scheduled.event.service.ClusterEventBroadcastChannel;
 import org.ikasan.job.orchestration.rest.client.ClusterEventBroadcastRestServiceImpl;
 import org.ikasan.job.orchestration.rest.client.ContextMachineRestServiceImpl;
 import org.slf4j.Logger;

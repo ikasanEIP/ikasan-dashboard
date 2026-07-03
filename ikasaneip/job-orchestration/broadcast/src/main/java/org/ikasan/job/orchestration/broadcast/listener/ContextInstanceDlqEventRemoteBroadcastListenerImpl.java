@@ -1,6 +1,6 @@
 package org.ikasan.job.orchestration.broadcast.listener;
 
-import org.ikasan.job.orchestration.broadcast.ClusterEventBroadcastChannel;
+import org.ikasan.spec.scheduled.event.service.ClusterEventBroadcastChannel;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventRemoteBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 

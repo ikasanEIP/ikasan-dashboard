@@ -31,6 +31,11 @@ public class JobParameterRefreshService {
         propagateToPeersBestEffort();
     }
 
+    // Not try-with-resources: ExecutorService.close() (JEP 453) blocks the calling thread until all
+    // submitted tasks finish, which would make this method — and refreshLocalAndPropagateBestEffort()
+    // above it — block on every peer's HTTP call. The executor's lifetime is intentionally handed off
+    // to the background task below, which shuts it down itself once peer propagation completes.
+    @SuppressWarnings("resource")
     private void propagateToPeersBestEffort() {
         if (this.clusterPeerUrls.isEmpty()) {
             return;
@@ -49,10 +54,8 @@ public class JobParameterRefreshService {
             try {
                 this.clusterPeerUrls.forEach(peerUrl -> {
                     try {
-                        LOGGER.error("Propagating job parameter refresh to peer weas disabled, remember to enable it [{}]", peerUrl);
-                        // Must remain commented out until Ikasan5.0x core updated with this method.
-//                        LOGGER.info("Propagating job parameter refresh to peer [{}]", peerUrl);
-                        // this.springCloudConfigRefreshService.actuatorRefreshAtUrl(peerUrl);
+                        LOGGER.info("Propagating job parameter refresh to peer [{}]", peerUrl);
+                        this.springCloudConfigRefreshService.actuatorRefreshAtUrl(peerUrl);
                     }
                     catch (RestClientException e) {
                         LOGGER.warn("Failed to propagate job parameter refresh to peer [{}]: {}", peerUrl, e.getMessage());

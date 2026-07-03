@@ -103,6 +103,10 @@ public class JwtRequestFilter extends OncePerRequestFilter
             }
             else
             {
+                // DEBUG not WARN: cluster peer REST clients (ClusterPeerRestServiceImpl) authenticate
+                // reactively — the first call after startup, or after a token expires, is sent with no
+                // Authorization header and only authenticates after receiving a 401. That makes this a
+                // routine, expected occurrence for peer-to-peer /rest/** traffic, not an anomaly.
                 logger.debug(
                     "[Authorization] header does not begin with Bearer String on url [" + requestServletUrl + "]");
             }
