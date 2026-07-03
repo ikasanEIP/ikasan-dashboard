@@ -166,8 +166,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
                 //Do Nothing
             }
 
-// Must remain commented out until Ikasan5.0x core updated with this method.
-//            @Override
+            @Override
             public void actuatorRefreshAtUrl(String baseUrl) {
                 //Do Nothing
             }
@@ -184,8 +183,8 @@ public class SchedulerContextParametersPropertiesProviderTest {
         List<ContextParameterInstance> context1 = config.getAllContextParameters("Context1");
         assertEquals(1, context1.size());
         context1.sort(Comparator.comparing(ContextParameter::getName));
-        assertEquals("ParamName11", context1.get(0).getName());
-        assertEquals("Param11", context1.get(0).getValue());
+        assertEquals("ParamName11", context1.getFirst().getName());
+        assertEquals("Param11", context1.getFirst().getValue());
 
         List<ContextParameterInstance> context2 = config.getAllContextParameters("Context2");
         assertEquals(2, context2.size());

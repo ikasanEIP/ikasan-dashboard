@@ -1,11 +1,9 @@
 package org.ikasan.job.orchestration.broadcast.listener;
 
-import org.ikasan.job.orchestration.broadcast.ClusterEventBroadcastChannel;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.service.ClusterEventService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.junit.Test;
@@ -15,10 +13,7 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class RemoteBroadcastListenerImplTest {
-
-    private final ClusterEventService service = mock(ClusterEventService.class);
-    private final ClusterEventBroadcastChannel channel = new ImmediateBroadcastChannel(service);
+public class RemoteBroadcastListenerImplTest extends RemoteBroadcastListenerTestSupport {
 
     @Test
     public void testSchedulerJobStateChangeListenerSubmitsExpectedClusterServiceCall() {
@@ -100,28 +95,5 @@ public class RemoteBroadcastListenerImplTest {
         new ContextInstanceDlqEventRemoteBroadcastListenerImpl(List.of(channel)).receiveBroadcast(contextInstance);
 
         verify(service).broadcastContextInstanceDlq(contextInstance);
-    }
-
-    private static class ImmediateBroadcastChannel implements ClusterEventBroadcastChannel {
-        private final ClusterEventService service;
-
-        private ImmediateBroadcastChannel(ClusterEventService service) {
-            this.service = service;
-        }
-
-        @Override
-        public void submit(Runnable task) {
-            task.run();
-        }
-
-        @Override
-        public ClusterEventService service() {
-            return service;
-        }
-
-        @Override
-        public void shutdown() {
-            // Nothing to release.
-        }
     }
 }

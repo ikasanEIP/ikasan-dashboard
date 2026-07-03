@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.broadcast;
 
+import org.ikasan.spec.scheduled.event.service.ClusterEventBroadcastChannel;
 import org.ikasan.spec.scheduled.event.service.ClusterEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,14 @@ import java.util.concurrent.atomic.AtomicReference;
  *       consuming capacity meant for others.</li>
  * </ul>
  *
+ * <h3>Potential throughput optimisation</h3>
+ * <p>Because all broadcast types for a peer currently share one lane, a burst of one message
+ * type can delay delivery of another. If this becomes a bottleneck, a follow-up optimisation
+ * would be to split the single per-peer lane into multiple lanes keyed by message type (one
+ * thread per type), so different message types no longer queue behind each other. This would
+ * relax the current total-ordering guarantee to per-type ordering only, so it should only be
+ * adopted if consumers do not rely on cross-type ordering.</p>
+ *
  * <h3>Circuit breaker</h3>
  * <ul>
  *   <li><b>CLOSED</b> — normal operation; all tasks are submitted to the executor.</li>
@@ -34,7 +43,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *       opens. Submitted tasks are dropped immediately (not queued) until the open window
  *       expires.</li>
  *   <li><b>HALF_OPEN</b> — after {@code openDurationMs} milliseconds exactly one probe task is
- *       allowed through via a CAS on the state. Concurrent submitters that lose the CAS treat
+ *       allowed through via a CAS (CompareAndSet) on the state. Concurrent submitters that lose the CAS treat
  *       the circuit as still open and drop their task. A successful probe resets the circuit
  *       (CLOSED); a failed probe restarts the open window (OPEN).</li>
  * </ul>
@@ -115,7 +124,7 @@ public final class PeerBroadcastChannel implements ClusterEventBroadcastChannel 
      * Submits a broadcast task to this peer's execution lane.
      *
      * <p>Drops the task immediately if the circuit is OPEN or if another probe is already
-     * in flight (HALF_OPEN). Only one caller wins the CAS to become the half-open probe.</p>
+     * in flight (HALF_OPEN). Only one caller wins the CAS (CompareAndSet) to become the half-open probe.</p>
      *
      * @param task the broadcast action; must throw a {@link RuntimeException} on network
      *             failure for the circuit breaker to track consecutive failures
@@ -179,8 +188,8 @@ public final class PeerBroadcastChannel implements ClusterEventBroadcastChannel 
      *   <li>CLOSED → false (allow)</li>
      *   <li>HALF_OPEN → true (probe already in flight)</li>
      *   <li>OPEN, window not elapsed → true (suppress)</li>
-     *   <li>OPEN, window elapsed, CAS wins → false (this caller is the probe, state → HALF_OPEN)</li>
-     *   <li>OPEN, window elapsed, CAS loses → true (another caller is the probe)</li>
+     *   <li>OPEN, window elapsed, CAS (CompareAndSet) wins → false (this caller is the probe, state → HALF_OPEN)</li>
+     *   <li>OPEN, window elapsed, CAS (CompareAndSet) loses → true (another caller is the probe)</li>
      * </ul>
      */
     private boolean isCircuitOpen() {
