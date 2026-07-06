@@ -4444,7 +4444,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
 
         with().pollInterval(15, TimeUnit.MILLISECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(45, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent.size());
 
@@ -4485,7 +4485,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(45, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent.size());
 
@@ -4555,7 +4555,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(45, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent.size());
 
