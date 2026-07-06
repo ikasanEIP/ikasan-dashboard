@@ -4534,6 +4534,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals("AgentName0-TEST-LOCK-JobName0", jobLockCacheEvent.get().getJobIdentifier());
                 Assert.assertEquals(contextId0, jobLockCacheEvent.get().getContextName());
             });
+
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
     }
 
     @Test
@@ -4573,6 +4575,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
                 Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
             });
+
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
     }
 
     @Test
@@ -4612,6 +4616,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
                 Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
             });
+
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
     }
 
     @Test
@@ -4812,6 +4818,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals(contextId0, jobLockCacheEvent.get().getContextName());
             });
 
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
     }
 
     @Test
@@ -4873,6 +4880,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals(new HashSet<>(expected), new HashSet(releasedEvents));
             });
 
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
     }
 
     @Test
@@ -4934,6 +4942,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals(new HashSet<>(expected), new HashSet(releasedEvents));
             });
 
+        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
     }
 
     @Test
