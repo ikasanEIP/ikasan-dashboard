@@ -317,7 +317,7 @@ public class ClusterBroadcastAutoConfiguration {
             List<ClusterEventBroadcastChannel> peerBroadcastChannels) {
         JobLockCacheEventRemoteBroadcastListenerImpl listener =
             new JobLockCacheEventRemoteBroadcastListenerImpl(peerBroadcastChannels);
-        JobLockCacheEventBroadcaster.setRemoteListener(listener);
+        JobLockCacheEventBroadcaster.instance().setRemoteListener(listener);
         return listener;
     }
 

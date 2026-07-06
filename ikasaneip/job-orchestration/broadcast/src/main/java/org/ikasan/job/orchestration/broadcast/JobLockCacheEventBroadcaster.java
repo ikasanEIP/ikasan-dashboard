@@ -21,16 +21,37 @@ public class JobLockCacheEventBroadcaster {
     static ExecutorService executor = Executors.newSingleThreadExecutor
         (new BroadcasterThreadFactory("JobLockCacheEventBroadcaster"));
 
-    private static final WeakHashMap<JobLockCacheEventLocalBroadcastListener, Object> localListeners =
+    private final WeakHashMap<JobLockCacheEventLocalBroadcastListener, Object> localListeners =
         new WeakHashMap<>();
-    private static JobLockCacheEventRemoteBroadcastListener remoteListener;
+    private JobLockCacheEventRemoteBroadcastListener remoteListener;
 
+    public static JobLockCacheEventBroadcaster INSTANCE = new JobLockCacheEventBroadcaster();
+
+    /**
+     * Private constructor for the JobLockCacheEventBroadcaster class.
+     *
+     * This constructor enforces the singleton design pattern, ensuring that
+     * instances of this class cannot be created directly from outside the class.
+     * Use the {@code instance()} method to get the singleton instance.
+     */
+    private JobLockCacheEventBroadcaster () {}
+
+    /**
+     * Retrieves the singleton instance of the {@code JobLockCacheEventBroadcaster}.
+     * This method ensures that only one instance of the class exists, in compliance
+     * with the singleton design pattern.
+     *
+     * @return the singleton instance of {@code JobLockCacheEventBroadcaster}
+     */
+    public static JobLockCacheEventBroadcaster instance() {
+        return INSTANCE;
+    }
     /**
      * Registers a local broadcast listener.
      *
      * @param listener the local listener to register
      */
-    public static synchronized void register(JobLockCacheEventLocalBroadcastListener listener) {
+    public synchronized void register(JobLockCacheEventLocalBroadcastListener listener) {
         localListeners.put(listener, null);
     }
 
@@ -39,7 +60,7 @@ public class JobLockCacheEventBroadcaster {
      *
      * @param listener the local listener to unregister
      */
-    public static synchronized void unregister(JobLockCacheEventLocalBroadcastListener listener) {
+    public synchronized void unregister(JobLockCacheEventLocalBroadcastListener listener) {
         localListeners.remove(listener);
     }
 
@@ -48,7 +69,7 @@ public class JobLockCacheEventBroadcaster {
      *
      * @param listener the remote listener to register
      */
-    public static synchronized void setRemoteListener(JobLockCacheEventRemoteBroadcastListener listener) {
+    public synchronized void setRemoteListener(JobLockCacheEventRemoteBroadcastListener listener) {
         remoteListener = listener;
     }
 
@@ -58,7 +79,7 @@ public class JobLockCacheEventBroadcaster {
      *
      * @param event the job lock cache event to broadcast
      */
-    public static synchronized void broadcast(final JobLockCacheEvent event) {
+    public synchronized void broadcast(final JobLockCacheEvent event) {
         localBroadcast(event);
         remoteBroadcast(event);
     }
@@ -68,7 +89,7 @@ public class JobLockCacheEventBroadcaster {
      *
      * @param event the job lock cache event to broadcast
      */
-    public static synchronized void remoteBroadcast(final JobLockCacheEvent event) {
+    public synchronized void remoteBroadcast(final JobLockCacheEvent event) {
         if (remoteListener != null) {
             remoteListener.receiveBroadcast(event);
         }
@@ -80,29 +101,23 @@ public class JobLockCacheEventBroadcaster {
      *
      * @param event the job lock cache event to broadcast locally
      */
-    public static synchronized void localBroadcast(final JobLockCacheEvent event) {
+    public synchronized void localBroadcast(final JobLockCacheEvent event) {
         for (final JobLockCacheEventLocalBroadcastListener listener: localListeners.keySet()) {
             executor.execute(() -> listener.receiveBroadcast(event));
         }
     }
 
     /**
-     * Resets the executor service used for broadcasting job lock cache events.
-     * This involves shutting down the current executor service, releasing its resources,
-     * and initializing a new single-threaded executor with a dedicated thread factory.
-     * The reset ensures a fresh executor for handling broadcast tasks.
+     * Resets the singleton instance of the {@code JobLockCacheEventBroadcaster}.
      *
-     * Note:
-     * - Any pending tasks in the current executor will be terminated abruptly.
-     * - A new executor will be created with a thread factory that assigns
-     *   threads a prefix name "JobLockCacheEventBroadcaster".
+     * This method creates a new instance of the {@code JobLockCacheEventBroadcaster}
+     * and assigns it to the {@code INSTANCE} field, effectively clearing any existing
+     * listeners or configurations associated with the previous instance.
+     *
+     * Use this method cautiously as it overrides the previous state of the singleton,
+     * which may affect ongoing operations.
      */
-    public static void resetExecutorService() throws InterruptedException {
-        executor.shutdownNow();
-        executor.awaitTermination(15, TimeUnit.SECONDS);
-        executor.close();
-
-        executor = Executors.newSingleThreadExecutor
-            (new BroadcasterThreadFactory("JobLockCacheEventBroadcaster"));
+    private void reset() {
+        INSTANCE = new JobLockCacheEventBroadcaster();
     }
 }
