@@ -31,9 +31,11 @@ public class JobLockCacheManagementServiceImplTest extends AbstractJobLockCacheT
 
     @Mock
     ContextMachineImpl contextMachine;
+
     @Before
     public void setup() {
         ContextMachineCache.instance().resetAllCache();
+        JobLockCacheImpl.instance().reset();
     }
 
     @Test
