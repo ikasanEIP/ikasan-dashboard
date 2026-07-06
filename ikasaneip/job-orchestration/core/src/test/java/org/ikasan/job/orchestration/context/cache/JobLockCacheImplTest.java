@@ -22,6 +22,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -48,6 +49,11 @@ import static org.mockito.Mockito.*;
 public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobLockCacheImplTest.class);
+
+    @Before
+    public void setup() {
+        JobLockCacheImpl.instance().reset();
+    }
 
     @Test
     public void shouldCallSaveWhenAddingLocksOrLockHolderIsAddedOrRemoved() {
