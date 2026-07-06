@@ -47,22 +47,22 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
 
     private ExecutorService executor;
 
+    private int executorThreadPoolSize = 5;
+
     private final ConcurrentHashMap<String, JobLockCacheRecord> jobLockCacheRecordMap;
 
     /**
      * Constructor for JobLockCacheImpl class.
      * Initializes the jobLockCacheData, jobLockCacheEventListeners, and executor.
      * Also adds itself as an event listener.
-     * Uses a fixed thread pool with a size of 5 for background tasks.
-     * It is recommended to make the pool size configurable.
+     * Uses a configurable thread pool size for background tasks.
      */
     private JobLockCacheImpl() {
         this.jobLockCacheEventListeners = new LinkedList<>();
         this.jobLockCacheDataMap = new ConcurrentHashMap<>();
         this.jobLockCacheRecordMap = new ConcurrentHashMap<>();
         this.addJobLockCacheEventListener(this);
-        // todo make pool size configurable
-        this.executor = Executors.newFixedThreadPool(5, new JobThreadFactory("JobLockCacheImpl"));
+        this.executor = Executors.newFixedThreadPool(executorThreadPoolSize, new JobThreadFactory("JobLockCacheImpl"));
     }
 
     /**
@@ -321,6 +321,25 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
             LOGGER.debug("Setting job lock cache service");
             this.jobLockCacheService = jobLockCacheService;
         }
+    }
+
+    /**
+     * Sets the executor thread pool size and recreates the executor with the new size.
+     * This method should be called before the cache is actively used.
+     *
+     * @param executorThreadPoolSize the size of the thread pool for the executor
+     */
+    public synchronized void setExecutorThreadPoolSize(int executorThreadPoolSize) {
+        if (executorThreadPoolSize < 1) {
+            throw new IllegalArgumentException("Executor thread pool size must be at least 1");
+        }
+        this.executorThreadPoolSize = executorThreadPoolSize;
+        // Recreate executor with new pool size if already initialized
+        if (this.executor != null) {
+            this.executor.shutdown();
+        }
+        this.executor = Executors.newFixedThreadPool(executorThreadPoolSize, new JobThreadFactory("JobLockCacheImpl"));
+        LOGGER.info("JobLockCache executor thread pool size set to: {}", executorThreadPoolSize);
     }
 
     @Override

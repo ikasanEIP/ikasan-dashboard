@@ -1,7 +1,9 @@
 package org.ikasan.job.orchestration;
 
+import jakarta.annotation.PostConstruct;
 import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfiguration;
 import org.ikasan.job.orchestration.configuration.JobContextParamsSetupFactory;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
@@ -72,6 +74,14 @@ public class JobOrchestrationAutoConfiguration implements ApplicationListener<Co
 
     @Autowired
     private JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration;
+
+    @Value("${job.lock.cache.executor.thread.pool.size:5}")
+    private int executorThreadPoolSize;
+
+    @PostConstruct
+    public void configureJobLockCache() {
+        JobLockCacheImpl.instance().setExecutorThreadPoolSize(executorThreadPoolSize);
+    }
 
     /**
      * This map with a String key that is an identifier for the spel expression.

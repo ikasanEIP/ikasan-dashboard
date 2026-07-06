@@ -6,7 +6,9 @@ import org.ikasan.spec.scheduled.event.service.JobLockCacheEventRemoteBroadcastL
 
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Broadcaster for job lock cache events across multiple local listeners (UI widgets) and
@@ -16,7 +18,8 @@ import java.util.concurrent.Executors;
  * @author Ikasan Development Team
  */
 public class JobLockCacheEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("JobLockCacheEventBroadcaster"));
+    static ExecutorService executor = Executors.newSingleThreadExecutor
+        (new BroadcasterThreadFactory("JobLockCacheEventBroadcaster"));
 
     private static final WeakHashMap<JobLockCacheEventLocalBroadcastListener, Object> localListeners =
         new WeakHashMap<>();
@@ -81,5 +84,25 @@ public class JobLockCacheEventBroadcaster {
         for (final JobLockCacheEventLocalBroadcastListener listener: localListeners.keySet()) {
             executor.execute(() -> listener.receiveBroadcast(event));
         }
+    }
+
+    /**
+     * Resets the executor service used for broadcasting job lock cache events.
+     * This involves shutting down the current executor service, releasing its resources,
+     * and initializing a new single-threaded executor with a dedicated thread factory.
+     * The reset ensures a fresh executor for handling broadcast tasks.
+     *
+     * Note:
+     * - Any pending tasks in the current executor will be terminated abruptly.
+     * - A new executor will be created with a thread factory that assigns
+     *   threads a prefix name "JobLockCacheEventBroadcaster".
+     */
+    public static void resetExecutorService() throws InterruptedException {
+        executor.shutdownNow();
+        executor.awaitTermination(15, TimeUnit.SECONDS);
+        executor.close();
+
+        executor = Executors.newSingleThreadExecutor
+            (new BroadcasterThreadFactory("JobLockCacheEventBroadcaster"));
     }
 }
