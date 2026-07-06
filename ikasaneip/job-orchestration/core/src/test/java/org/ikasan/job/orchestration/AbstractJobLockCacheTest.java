@@ -5,14 +5,20 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
+import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.mockito.Mock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,40 +32,10 @@ import static org.junit.Assert.assertEquals;
 
 public abstract class AbstractJobLockCacheTest {
 
+    private static final Logger log = LoggerFactory.getLogger(AbstractJobLockCacheTest.class);
+
     @Mock
     protected JobLockCacheService jobLockCacheService;
-
-    @Before
-    public void setup() throws InterruptedException {
-        JobLockCacheImpl.instance().reset();
-        resetSingletonListenersAndExecutor();
-    }
-
-    @After
-    public void teardown() throws InterruptedException {
-        JobLockCacheImpl.instance().reset();
-        resetSingletonListenersAndExecutor();
-    }
-
-    // Two problems require this reset between tests:
-    // 1. The singleton accumulates event listeners across tests (reset() only clears lock data).
-    //    After many tests, concurrent executor threads iterating the large listener list in lockstep
-    //    both reach a test's lambda simultaneously, causing concurrent writes to an unsynchronised
-    //    ArrayList and losing events.
-    // 2. Even within a single test that registers multiple listeners, two events published in quick
-    //    succession are dispatched by different pool threads that race to the second listener. A
-    //    single-threaded executor serialises all dispatch tasks, eliminating both races without
-    //    affecting correctness (listeners are still called asynchronously, just in order).
-    private void resetSingletonListenersAndExecutor() {
-        ExecutorService old = (ExecutorService) ReflectionTestUtils
-            .getField(JobLockCacheImpl.instance(), "executor");
-        old.shutdownNow();
-        ReflectionTestUtils.setField(JobLockCacheImpl.instance(), "executor",
-            Executors.newSingleThreadExecutor(new JobThreadFactory("JobLockCacheImpl")));
-        ((LinkedList<?>) ReflectionTestUtils
-            .getField(JobLockCacheImpl.instance(), "jobLockCacheEventListeners")).clear();
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(JobLockCacheImpl.instance());
-    }
 
     /**
      * Validates the list of SchedulerJob objects against a job lock name.
@@ -155,5 +131,26 @@ public abstract class AbstractJobLockCacheTest {
         job.setJobDescription("Job" + count + extra + " Description");
         job.setLockCount(lockCount);
         return job;
+    }
+
+    /**
+     * Creates a new instance of the JobLockCacheImpl using reflection.
+     * This method provides a way to instantiate the JobLockCacheImpl class
+     * even if its constructor is not publicly accessible.
+     *
+     * @return A new instance of JobLockCacheImpl, or null if instantiation fails.
+     */
+    protected JobLockCacheImpl newJobLockCache() {
+        try {
+            Constructor<JobLockCacheImpl> pcc = JobLockCacheImpl.class.getDeclaredConstructor();
+            pcc.setAccessible(true);
+
+            return pcc.newInstance();
+        }
+        catch (Exception e) {
+            log.error("Could not create an instance of JobLockCache!", e);
+            Assert.fail("Could not create an instance of JobLockCache!");
+            return null;
+        }
     }
 }
