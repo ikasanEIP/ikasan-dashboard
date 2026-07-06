@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @author Ikasan Development Team
  */
 public class JobLockCacheEventBroadcaster {
-    static ExecutorService executor = Executors.newSingleThreadExecutor
+    private final ExecutorService executor = Executors.newSingleThreadExecutor
         (new BroadcasterThreadFactory("JobLockCacheEventBroadcaster"));
 
     private final WeakHashMap<JobLockCacheEventLocalBroadcastListener, Object> localListeners =
