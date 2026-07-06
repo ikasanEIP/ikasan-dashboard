@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,7 +52,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     @Test
     public void shouldCallSaveWhenAddingLocksOrLockHolderIsAddedOrRemoved() {
         ArgumentCaptor<JobLockCacheRecord> captor = ArgumentCaptor.forClass(JobLockCacheRecord.class);
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         ReflectionTestUtils.setField(jlc, "jobLockCacheService", null);
         when(jobLockCacheService.get(anyString())).thenReturn(null);
         jlc.setJobLockCacheService(jobLockCacheService);
@@ -100,7 +101,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void reset() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 2, 1)), "environment");
 
@@ -127,7 +128,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void reset_environment() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 2, 1)), "environment");
 
@@ -154,7 +155,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_remove_running_lock_holder() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3)
             , makeJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -188,7 +189,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_remove_queued_event() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3)
             , makeJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -222,7 +223,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_remove_queued_event_multiple_environment() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3)
             , makeJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -262,7 +263,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_remove_queued_event_multiple_null_second_environment_uses_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3)
             , makeJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -302,7 +303,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_remove_queued_event_exclusive_lock() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeExclusiveJobLock("TEST-LOCK", 3, 3)
             , makeExclusiveJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -337,7 +338,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_remove_queued_event_exclusive_lock_multiple_environments() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeExclusiveJobLock("TEST-LOCK", 3, 3)
             , makeExclusiveJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -382,7 +383,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_remove_queued_event_exclusive_lock_multiple_environments_with_null_delegates_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeExclusiveJobLock("TEST-LOCK", 3, 3)
             , makeExclusiveJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -427,7 +428,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void resetLock() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3)
             , makeJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -498,7 +499,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void reset_lock_multiple_environments() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3)
             , makeJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -601,7 +602,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void reset_lock_multiple_environments_with_null_delegate_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3)
             , makeJobLock("TEST-LOCK-1", 2, 2)), "environment");
@@ -704,7 +705,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void JobLockCache_lock_shouldNotGoAboveExistingLockCount_release_shouldNotGoBelowExistingLockCount() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         // 3 jobs lock count 2
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 2)), "environment");
@@ -786,7 +787,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void JobLockCache_lock_shouldNotGoAboveExistingLockCount_release_shouldNotGoBelowExistingLockCount_multiple_environments() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         // 3 jobs lock count 2
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 2)), "environment");
@@ -936,7 +937,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void JobLockCache_lock_shouldNotGoAboveExistingLockCount_release_shouldNotGoBelowExistingLockCount_multiple_environments_with_null_delegating_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         // 3 jobs lock count 2
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 2)), "environment");
@@ -1086,7 +1087,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -1133,7 +1134,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_second_environment() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -1209,7 +1210,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_second_environment_with_null_delegating_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -1285,7 +1286,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_by_unmanaged_job_lock_and_release() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -1313,7 +1314,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_by_unmanaged_job_lock_and_release_with_second_environment() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -1357,7 +1358,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_by_unmanaged_job_lock_and_release_with_second_environment_null_delegating_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -1401,7 +1402,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_different_job_weightings() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -1511,7 +1512,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_different_job_weightings_with_second_environment() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -1687,7 +1688,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_different_job_weightings_with_second_environment_with_null_delegating_to_default() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -1863,7 +1864,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_individual_job_weightings_exceeding_lock_count() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -1973,7 +1974,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_individual_job_weightings_exceeding_lock_count_with_second_environment() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -2153,7 +2154,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_individual_job_weightings_exceeding_lock_count_with_second_environment_wth_null_delegating_to_default() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -2333,7 +2334,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_individual_job_weightings_exceeding_lock_count_with_mixed_weightings() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -2443,7 +2444,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_individual_job_weightings_exceeding_lock_count_with_mixed_weightings_with_multiple_environments() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -2625,7 +2626,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_individual_job_weightings_exceeding_lock_count_with_mixed_weightings_with_multiple_environments_with_null_delegating_to_default() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -2807,7 +2808,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_different_job_weightings_with_large_lock_count_values() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -2917,7 +2918,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_different_job_weightings_with_large_lock_count_values_with_second_environment() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -3097,7 +3098,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_with_different_job_weightings_with_large_lock_count_values_with_second_environment_with_null_delegating_to_default() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -3277,7 +3278,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_exclusive_lock() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -3327,7 +3328,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_exclusive_lock_with_second_environment() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -3412,7 +3413,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_exclusive_lock_with_second_environment_with_null_delegating_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -3497,7 +3498,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_mix_of_exclusive_and_non_exclusive_locks_check_queuing() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -3684,7 +3685,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_mix_of_exclusive_and_non_exclusive_locks_check_queuing_with_second_environment() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -4035,7 +4036,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_mix_of_exclusive_and_non_exclusive_locks_check_queuing_with_second_environment_with_null_delegating_to_default() {
-        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
+        JobLockCacheImpl jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -4386,13 +4387,13 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_publishes_event_when_job_locked() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+        jlc.addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.set(event);
         });
@@ -4418,7 +4419,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_publishes_event_when_job_locked_multiple_environments() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4434,7 +4435,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+        jlc.addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
         });
@@ -4444,7 +4445,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
 
         with().pollInterval(15, TimeUnit.MILLISECONDS).and().with().pollDelay(1, TimeUnit.MILLISECONDS).await()
-            .atMost(45, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent.size());
 
@@ -4459,13 +4460,13 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_publishes_event_when_job_locked_multiple_environments_with_null_delegating_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+        jlc.addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
         });
@@ -4485,7 +4486,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(45, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent.size());
 
@@ -4501,7 +4502,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_broadcasts_event_when_job_locked() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4531,7 +4532,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_broadcasts_event_when_job_locked_with_multiple_environments() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4555,7 +4556,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(45, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent.size());
 
@@ -4570,7 +4571,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_broadcasts_event_when_job_locked_with_multiple_environments_with_null_delegating_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4609,7 +4610,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_publishes_event_when_job_released() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4625,7 +4626,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+        jlc.addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.set(event);
         });
@@ -4645,7 +4646,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_publishes_event_when_job_released_multiple_environments() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4660,7 +4661,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName", "another_environment"));
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+        jlc.addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
         });
@@ -4684,7 +4685,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent2 = new ArrayList<>();
 
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+        jlc.addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent2.add(event);
         });
@@ -4709,7 +4710,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_publishes_event_when_job_released_multiple_environments_with_null_delegating_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4725,7 +4726,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+        jlc.addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent.add(event);
         });
@@ -4749,7 +4750,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent2 = new ArrayList<>();
 
-        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+        jlc.addJobLockCacheEventListener(event -> {
             LOGGER.info("Event -> "+ event);
             jobLockCacheEvent2.add(event);
         });
@@ -4775,7 +4776,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_broadcasts_event_when_job_released() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4809,7 +4810,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_broadcasts_event_when_job_released_with_second_environment() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4870,7 +4871,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_broadcasts_event_when_job_released_with_second_environment_with_null_delegating_to_default() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4931,7 +4932,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_attempt_to_lock_job_not_in_cache() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4948,7 +4949,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_attempt_to_lock_job_not_in_cache_with_multiple_environments() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4969,7 +4970,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_lock_cache_attempt_to_lock_job_not_in_cache_with_multiple_environments_with_null_delegating_to_null() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
@@ -4990,7 +4991,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_job_participates_in_lock() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
 
         // 3 jobs one lock count
@@ -5014,7 +5015,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void shouldNotNPEAddNewJobs_AddLock_ToJobLockCache_NewLockIsNull() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(null, "environment");
 
@@ -5034,7 +5035,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void shouldAddNewJobs_AddLock_ToJobLockCache_NewLock() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 2)), "environment");
 
@@ -5088,7 +5089,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void shouldAddNewJobs_AddLock_DifferentLocks() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK-3", 3, 3)), "environment");
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK-4", 4, 4)), "environment");
@@ -5128,7 +5129,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void shouldAddNewJobs_AddLocks_DifferentLocks() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         JobLock jobLock1 = makeJobLock("TEST-LOCK-3", 3, 3);
         JobLock jobLock2 = makeJobLock("TEST-LOCK-4", 4, 4);
@@ -5195,7 +5196,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void shouldAddNewJobs_AddLocks_ToJobLockCache_ExistingLock() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         JobLock jobLock1 = makeJobLock("TEST-LOCK-1", 3, 1);
         JobLock jobLock2 = makeJobLock("TEST-LOCK-1", 2, 1, "New");
@@ -5214,7 +5215,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void add_job_lock_with_no_associated_jobs() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         JobLock jobLock1 = makeJobLock("TEST-LOCK-1", 0, 1);
         JobLock jobLock2 = makeJobLock("TEST-LOCK-1", 0, 1, "New");
@@ -5242,7 +5243,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void shouldNotNPEAddNewJobs_AddLocks_ToJobLockCache() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(null, "environment");
 
@@ -5262,7 +5263,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void addNewJobs_AddLocks_ToJobLockCache_EmptyList() {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(Collections.emptyList(), "environment");
 
@@ -5283,7 +5284,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     @Test
     public void test_job_lock_cache_is_locked_lock_and_release_multi_threaded() {
         ExecutorService executor = Executors.newFixedThreadPool(2, new JobThreadFactory("JobLockCacheImpl"));
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
         String contextId1 = UUID.randomUUID().toString();
@@ -5525,7 +5526,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_concurrent_addLocks_thread_safety() throws Exception {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.reset("test-env");
         jlc.setJobLockCacheService(jobLockCacheService);
 
@@ -5561,7 +5562,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_concurrent_lock_acquisition_race_condition() throws Exception {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.reset("test-env");
         jlc.setJobLockCacheService(jobLockCacheService);
 
@@ -5608,7 +5609,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_concurrent_exclusive_lock_enforcement() throws Exception {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.reset("test-env");
         jlc.setJobLockCacheService(jobLockCacheService);
 
@@ -5657,7 +5658,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_concurrent_queue_operations() throws Exception {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.reset("test-env");
         jlc.setJobLockCacheService(jobLockCacheService);
 
@@ -5731,7 +5732,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_concurrent_reset_while_operations_ongoing() throws Exception {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.reset("test-env");
         jlc.setJobLockCacheService(jobLockCacheService);
 
@@ -5783,7 +5784,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_concurrent_multiple_environments() throws Exception {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.reset("env1");
         jlc.reset("env2");
         jlc.reset("env3");
@@ -5833,7 +5834,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_concurrent_removeQueuedSchedulerJob() throws Exception {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.reset("test-env");
         jlc.setJobLockCacheService(jobLockCacheService);
 
@@ -5892,7 +5893,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
     @Test
     public void test_concurrent_lock_release_with_doesJobParticipate() throws Exception {
-        JobLockCache jlc = JobLockCacheImpl.instance();
+        JobLockCache jlc = super.newJobLockCache();
         jlc.reset("test-env");
         jlc.setJobLockCacheService(jobLockCacheService);
 
