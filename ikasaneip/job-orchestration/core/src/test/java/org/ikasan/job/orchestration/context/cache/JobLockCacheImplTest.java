@@ -53,6 +53,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     @Before
     public void setup() {
         JobLockCacheImpl.instance().reset();
+        this.consumeBroadcastEvents();
         ReflectionTestUtils.invokeMethod(JobLockCacheEventBroadcaster.instance(), "reset");
     }
 
@@ -5949,5 +5950,29 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertFalse("No exceptions during mixed operations", hasException.get());
 
         executor.shutdown();
+    }
+
+    /**
+     * Consumes broadcast events related to job lock cache and ensures no lingering events are present.
+     *
+     * This method registers a broadcast listener to collect {@link JobLockCacheEvent} messages and verifies
+     * that no broadcast events remain within a 30-second polling window. During this window, the method
+     * periodically clears the collected events and asserts that no events were detected, ensuring a clean
+     * state for subsequent operations. The polling interval and delay are set to 1 second each.
+     */
+    private void consumeBroadcastEvents() {
+        ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
+
+        JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.add(message);
+        JobLockCacheEventBroadcaster.instance().register(broadcaster);
+
+        // We will poll for 30 seconds to make sure broadcast events are no lingering from other tests.
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(30, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                int jobLockCacheEventSize = jobLockCacheEvent.size();
+                jobLockCacheEvent.clear();
+                Assert.assertEquals(0, jobLockCacheEventSize);
+            });
     }
 }
