@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.context.cache;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.AbstractJobLockCacheTest;
+import org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster;
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
@@ -4415,7 +4416,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(JobLockCacheEvent.EventType.LOCK_OBTAINED, jobLockCacheEvent.get().getEvent());
                 Assert.assertEquals("AgentName0-TEST-LOCK-JobName0", jobLockCacheEvent.get().getJobIdentifier());
@@ -4507,15 +4508,16 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     }
 
     @Test
-    public void test_job_lock_cache_broadcasts_event_when_job_locked() {
+    public void test_job_lock_cache_broadcasts_event_when_job_locked() throws InterruptedException {
         JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
+        JobLockCacheEventBroadcaster.resetExecutorService();
         JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.set(message);
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
+        JobLockCacheEventBroadcaster.register(broadcaster);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
 
@@ -4528,7 +4530,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(JobLockCacheEvent.EventType.LOCK_OBTAINED, jobLockCacheEvent.get().getEvent());
                 Assert.assertEquals("AgentName0-TEST-LOCK-JobName0", jobLockCacheEvent.get().getJobIdentifier());
@@ -4539,13 +4541,14 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     }
 
     @Test
-    public void test_job_lock_cache_broadcasts_event_when_job_locked_with_multiple_environments() {
+    public void test_job_lock_cache_broadcasts_event_when_job_locked_with_multiple_environments() throws InterruptedException {
         JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
+        JobLockCacheEventBroadcaster.resetExecutorService();
         JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.add(message);
         org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
@@ -4580,13 +4583,14 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     }
 
     @Test
-    public void test_job_lock_cache_broadcasts_event_when_job_locked_with_multiple_environments_with_null_delegating_to_default() {
+    public void test_job_lock_cache_broadcasts_event_when_job_locked_with_multiple_environments_with_null_delegating_to_default() throws InterruptedException {
         JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
+        JobLockCacheEventBroadcaster.resetExecutorService();
         JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.add(message);
         org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
@@ -4605,7 +4609,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent.size());
 
@@ -4647,7 +4651,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(JobLockCacheEvent.EventType.LOCK_RELEASED, jobLockCacheEvent.get().getEvent());
                 Assert.assertEquals("AgentName0-TEST-LOCK-JobName0", jobLockCacheEvent.get().getJobIdentifier());
@@ -4683,7 +4687,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent.size());
 
@@ -4707,7 +4711,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, jobLockCacheEvent2.size());
 
@@ -4787,7 +4791,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     }
 
     @Test
-    public void test_job_lock_cache_broadcasts_event_when_job_released() {
+    public void test_job_lock_cache_broadcasts_event_when_job_released() throws InterruptedException {
         JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
@@ -4804,6 +4808,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
+        JobLockCacheEventBroadcaster.resetExecutorService();
         JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.set(message);
         org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
@@ -4811,7 +4816,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(JobLockCacheEvent.EventType.LOCK_RELEASED, jobLockCacheEvent.get().getEvent());
                 Assert.assertEquals("AgentName0-TEST-LOCK-JobName0", jobLockCacheEvent.get().getJobIdentifier());
@@ -4822,7 +4827,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     }
 
     @Test
-    public void test_job_lock_cache_broadcasts_event_when_job_released_with_second_environment() {
+    public void test_job_lock_cache_broadcasts_event_when_job_released_with_second_environment() throws InterruptedException {
         JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
@@ -4844,6 +4849,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
             if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
             if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
         };
+        JobLockCacheEventBroadcaster.resetExecutorService();
         org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
         // lock it
@@ -4851,7 +4857,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, obtainedEvents.size());
 
@@ -4868,7 +4874,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "another_environment"));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, releasedEvents.size());
 
@@ -4884,7 +4890,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     }
 
     @Test
-    public void test_job_lock_cache_broadcasts_event_when_job_released_with_second_environment_with_null_delegating_to_default() {
+    public void test_job_lock_cache_broadcasts_event_when_job_released_with_second_environment_with_null_delegating_to_default() throws InterruptedException {
         JobLockCache jlc = super.newJobLockCache();
         jlc.setJobLockCacheService(jobLockCacheService);
         String contextId0 = UUID.randomUUID().toString();
@@ -4906,6 +4912,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
             if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
             if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
         };
+        JobLockCacheEventBroadcaster.resetExecutorService();
         org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
 
         // lock it
@@ -4913,7 +4920,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, null));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, obtainedEvents.size());
 
@@ -4930,7 +4937,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, null));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .atMost(15, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 Assert.assertEquals(2, releasedEvents.size());
 

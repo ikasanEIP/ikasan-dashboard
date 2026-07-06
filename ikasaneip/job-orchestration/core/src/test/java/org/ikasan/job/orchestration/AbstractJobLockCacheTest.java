@@ -145,7 +145,10 @@ public abstract class AbstractJobLockCacheTest {
             Constructor<JobLockCacheImpl> pcc = JobLockCacheImpl.class.getDeclaredConstructor();
             pcc.setAccessible(true);
 
-            return pcc.newInstance();
+            JobLockCacheImpl jobLockCache =  pcc.newInstance();
+            jobLockCache.setExecutorThreadPoolSize(1);
+
+            return jobLockCache;
         }
         catch (Exception e) {
             log.error("Could not create an instance of JobLockCache!", e);
