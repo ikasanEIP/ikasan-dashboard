@@ -593,13 +593,13 @@ public class JobLockManagementView extends VerticalLayout implements BeforeEnter
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        JobLockCacheEventBroadcaster.register(this);
+        JobLockCacheEventBroadcaster.instance().register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
-        JobLockCacheEventBroadcaster.unregister(this);
+        JobLockCacheEventBroadcaster.instance().unregister(this);
     }
 
 

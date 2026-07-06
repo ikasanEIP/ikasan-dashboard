@@ -46,9 +46,9 @@ public class JobLockCacheEventBroadcasterTest {
 
     @Test
     public void testRegister_addsListener() {
-        JobLockCacheEventBroadcaster.register(listener1);
+        JobLockCacheEventBroadcaster.instance().register(listener1);
 
-        JobLockCacheEventBroadcaster.broadcast(event);
+        JobLockCacheEventBroadcaster.instance().broadcast(event);
 
         try {
             Thread.sleep(100);
@@ -61,10 +61,10 @@ public class JobLockCacheEventBroadcasterTest {
 
     @Test
     public void testRegister_multipleListeners() {
-        JobLockCacheEventBroadcaster.register(listener1);
-        JobLockCacheEventBroadcaster.register(listener2);
+        JobLockCacheEventBroadcaster.instance().register(listener1);
+        JobLockCacheEventBroadcaster.instance().register(listener2);
 
-        JobLockCacheEventBroadcaster.broadcast(event);
+        JobLockCacheEventBroadcaster.instance().broadcast(event);
 
         try {
             Thread.sleep(100);
@@ -78,10 +78,10 @@ public class JobLockCacheEventBroadcasterTest {
 
     @Test
     public void testUnregister_removesListener() {
-        JobLockCacheEventBroadcaster.register(listener1);
-        JobLockCacheEventBroadcaster.unregister(listener1);
+        JobLockCacheEventBroadcaster.instance().register(listener1);
+        JobLockCacheEventBroadcaster.instance().unregister(listener1);
 
-        JobLockCacheEventBroadcaster.broadcast(event);
+        JobLockCacheEventBroadcaster.instance().broadcast(event);
 
         try {
             Thread.sleep(100);
@@ -94,7 +94,7 @@ public class JobLockCacheEventBroadcasterTest {
 
     @Test
     public void testBroadcast_withNoListeners() {
-        JobLockCacheEventBroadcaster.broadcast(event);
+        JobLockCacheEventBroadcaster.instance().broadcast(event);
     }
 
     @Test
@@ -103,8 +103,8 @@ public class JobLockCacheEventBroadcasterTest {
 
         JobLockCacheEventLocalBroadcastListener asyncListener = event -> latch.countDown();
 
-        JobLockCacheEventBroadcaster.register(asyncListener);
-        JobLockCacheEventBroadcaster.broadcast(event);
+        JobLockCacheEventBroadcaster.instance().register(asyncListener);
+        JobLockCacheEventBroadcaster.instance().broadcast(event);
 
         boolean completed = latch.await(1, TimeUnit.SECONDS);
         Assert.assertTrue("Broadcast should execute asynchronously", completed);
@@ -112,9 +112,9 @@ public class JobLockCacheEventBroadcasterTest {
 
     @Test
     public void testBroadcast_nullEvent() {
-        JobLockCacheEventBroadcaster.register(listener1);
+        JobLockCacheEventBroadcaster.instance().register(listener1);
 
-        JobLockCacheEventBroadcaster.broadcast(null);
+        JobLockCacheEventBroadcaster.instance().broadcast(null);
 
         try {
             Thread.sleep(100);
@@ -127,23 +127,23 @@ public class JobLockCacheEventBroadcasterTest {
 
     @Test
     public void testBroadcast_forwardsEventToRemoteListener() {
-        JobLockCacheEventBroadcaster.setRemoteListener(remoteListener);
-        JobLockCacheEventBroadcaster.broadcast(event);
+        JobLockCacheEventBroadcaster.instance().setRemoteListener(remoteListener);
+        JobLockCacheEventBroadcaster.instance().broadcast(event);
         verify(remoteListener).receiveBroadcast(event);
     }
 
     @Test
     public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
         // no remote listener set — must not throw
-        JobLockCacheEventBroadcaster.remoteBroadcast(event);
+        JobLockCacheEventBroadcaster.instance().remoteBroadcast(event);
     }
 
     @Test
     public void testRegister_sameListenerTwice() {
-        JobLockCacheEventBroadcaster.register(listener1);
-        JobLockCacheEventBroadcaster.register(listener1);
+        JobLockCacheEventBroadcaster.instance().register(listener1);
+        JobLockCacheEventBroadcaster.instance().register(listener1);
 
-        JobLockCacheEventBroadcaster.broadcast(event);
+        JobLockCacheEventBroadcaster.instance().broadcast(event);
 
         try {
             Thread.sleep(100);

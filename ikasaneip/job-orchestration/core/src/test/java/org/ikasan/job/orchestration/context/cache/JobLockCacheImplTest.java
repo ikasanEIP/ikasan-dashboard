@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,6 +53,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
     @Before
     public void setup() {
         JobLockCacheImpl.instance().reset();
+        ReflectionTestUtils.invokeMethod(JobLockCacheEventBroadcaster.instance(), "reset");
     }
 
     @Test
@@ -4515,9 +4515,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
-        JobLockCacheEventBroadcaster.resetExecutorService();
         JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.set(message);
-        JobLockCacheEventBroadcaster.register(broadcaster);
+        JobLockCacheEventBroadcaster.instance().register(broadcaster);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
 
@@ -4537,7 +4536,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals(contextId0, jobLockCacheEvent.get().getContextName());
             });
 
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
+        JobLockCacheEventBroadcaster.instance().unregister(broadcaster);
     }
 
     @Test
@@ -4548,9 +4547,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
-        JobLockCacheEventBroadcaster.resetExecutorService();
         JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.add(message);
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
+        JobLockCacheEventBroadcaster.instance().register(broadcaster);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
         assertFalse(jlc.locked("jobIdentifier", "contextName", "another_environment"));
@@ -4579,7 +4577,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
             });
 
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
+        JobLockCacheEventBroadcaster.instance().unregister(broadcaster);
     }
 
     @Test
@@ -4590,9 +4588,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         ArrayList<JobLockCacheEvent> jobLockCacheEvent = new ArrayList<>();
 
-        JobLockCacheEventBroadcaster.resetExecutorService();
         JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.add(message);
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
+        JobLockCacheEventBroadcaster.instance().register(broadcaster);
 
         assertFalse(jlc.locked("jobIdentifier", "contextName", "environment"));
         assertFalse(jlc.locked("jobIdentifier", "contextName", null));
@@ -4621,7 +4618,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals(new HashSet<>(expected), new HashSet(jobLockCacheEvent));
             });
 
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
+        JobLockCacheEventBroadcaster.instance().unregister(broadcaster);
     }
 
     @Test
@@ -4808,9 +4805,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
 
         AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
 
-        JobLockCacheEventBroadcaster.resetExecutorService();
         JobLockCacheEventLocalBroadcastListener broadcaster = message -> jobLockCacheEvent.set(message);
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
+        JobLockCacheEventBroadcaster.instance().register(broadcaster);
 
         // release the lock
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
@@ -4823,7 +4819,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals(contextId0, jobLockCacheEvent.get().getContextName());
             });
 
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
+        JobLockCacheEventBroadcaster.instance().unregister(broadcaster);
     }
 
     @Test
@@ -4849,8 +4845,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
             if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
             if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
         };
-        JobLockCacheEventBroadcaster.resetExecutorService();
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
+
+        JobLockCacheEventBroadcaster.instance().register(broadcaster);
 
         // lock it
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
@@ -4886,7 +4882,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals(new HashSet<>(expected), new HashSet(releasedEvents));
             });
 
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
+        JobLockCacheEventBroadcaster.instance().unregister(broadcaster);
     }
 
     @Test
@@ -4912,8 +4908,8 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
             if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_OBTAINED))obtainedEvents.add(message);
             if(message.getEvent().equals(JobLockCacheEvent.EventType.LOCK_RELEASED))releasedEvents.add(message);
         };
-        JobLockCacheEventBroadcaster.resetExecutorService();
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.register(broadcaster);
+
+        JobLockCacheEventBroadcaster.instance().register(broadcaster);
 
         // lock it
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0, "environment"));
@@ -4949,7 +4945,7 @@ public class JobLockCacheImplTest extends AbstractJobLockCacheTest {
                 Assert.assertEquals(new HashSet<>(expected), new HashSet(releasedEvents));
             });
 
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.unregister(broadcaster);
+        JobLockCacheEventBroadcaster.instance().unregister(broadcaster);
     }
 
     @Test

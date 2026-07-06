@@ -211,7 +211,7 @@ public class ClusterEventController {
     public ResponseEntity handleJobLockCache(@RequestBody String eventJson) {
         try {
             JobLockCacheEvent event = objectMapper.readValue(eventJson, JobLockCacheEventImpl.class);
-            JobLockCacheEventBroadcaster.localBroadcast(event);
+            JobLockCacheEventBroadcaster.instance().localBroadcast(event);
             LOG.debug("Dispatched received cluster JobLockCacheEvent to local listeners");
         } catch (Exception e) {
             LOG.error("Failed to process incoming cluster JobLockCacheEvent", e);

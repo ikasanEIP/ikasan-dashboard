@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.context.cache;
 
+import org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster;
 import org.ikasan.job.orchestration.context.util.JobThreadFactory;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
@@ -552,7 +553,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
 
     @Override
     public void onJobLockCacheEvent(JobLockCacheEvent jobLockCacheEvent) {
-        org.ikasan.job.orchestration.broadcast.JobLockCacheEventBroadcaster.broadcast(jobLockCacheEvent);
+        JobLockCacheEventBroadcaster.instance().broadcast(jobLockCacheEvent);
     }
 
     @Override
