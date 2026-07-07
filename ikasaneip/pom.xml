@@ -388,7 +388,6 @@
         <version.jmock.imposters>2.12.0</version.jmock.imposters>
         <version.net.bytebuddy.byte-buddy>1.17.8</version.net.bytebuddy.byte-buddy>
         <version.io.jsonwebtoken.jjwt>0.9.1</version.io.jsonwebtoken.jjwt>
-        <version.explorer-tree-grid-flow>4.0.0</version.explorer-tree-grid-flow>
         <version.jtgraph>1.5.1</version.jtgraph>
         <version.vcf-gridlayout>1.0.0</version.vcf-gridlayout>
         <version.javax.validation-api>2.0.1.Final</version.javax.validation-api>
@@ -1485,12 +1484,6 @@
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
                 <version>${version.ow2.asm}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.vaadin.componentfactory</groupId>
-                <artifactId>explorer-tree-grid-flow</artifactId>
-                <version>${version.explorer-tree-grid-flow}</version>
             </dependency>
 
             <dependency>

@@ -4,7 +4,6 @@ import com.cronutils.descriptor.CronDescriptor;
 import com.cronutils.model.Cron;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
-import com.vaadin.componentfactory.explorer.ExplorerTreeGrid;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -287,7 +286,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * Helper method to build the underlying grid.
      */
     private void buildGrid() {
-        grid = new ExplorerTreeGrid<>();
+        grid = new TreeGrid<>();
 
         Map<String, InternalEventDrivenJob> internalEventDrivenJobInstanceMap
             = this.getCommandExecutionJobsForContextInstance(contextInstance.getId());
@@ -927,8 +926,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         grid.setSizeFull();
         grid.expandRecursively(Collections.singleton(contextInstance), contextInstance.getTreeViewExpandLevel() - 1);
 
-        grid.addExpandListener(e -> this.expandedNodes.addAll(e.getItems()));
-        grid.addCollapseListener(e -> this.expandedNodes.removeAll(e.getItems()));
+        grid.addExpandListener(e -> {
+            this.expandedNodes.addAll(e.getItems());
+            this.grid.getDataProvider().refreshAll();
+        });
+        grid.addCollapseListener(e -> {
+            this.expandedNodes.removeAll(e.getItems());
+            this.grid.getDataProvider().refreshAll();
+        });
 
         grid.setPartNameGenerator(item -> {
             if(item instanceof PrecedingItem) {
