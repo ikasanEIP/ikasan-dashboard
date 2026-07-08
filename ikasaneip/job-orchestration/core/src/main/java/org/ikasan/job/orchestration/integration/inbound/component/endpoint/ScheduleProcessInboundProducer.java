@@ -169,20 +169,20 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
             this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, contextMachine);
         }
         catch (InvalidContextInstanceIdException | ConfigurationException e) {
-            e.printStackTrace();
             if(this.configuration.isIgnoreErrors()) {
                 logger.info("Ignoring error [{}] for payload [{}]", e.getMessage(), payload);
             }
             else {
+                logger.error("An error has occurred processing inbound process event!", e);
                 throw e;
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
             if(this.configuration.isIgnoreErrors()) {
                 logger.info("Ignoring error [{}] for payload [{}]", e.getMessage(), payload);
             }
             else {
+                logger.error("A general error has occurred processing inbound process event!", e);
                 throw new EndpointException(e);
             }
         }
