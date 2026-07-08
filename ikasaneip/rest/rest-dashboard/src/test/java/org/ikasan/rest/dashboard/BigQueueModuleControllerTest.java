@@ -604,7 +604,7 @@ public class BigQueueModuleControllerTest {
         MvcResult result = mockMvc.perform(requestBuilder).andReturn();
 
         assertEquals(200, result.getResponse().getStatus());
-        assertEquals("{\"messageId\":\"uuidAsMessageId\",\"createdTime\":1657509967,\"message\":\"some message\",\"messageProperties\":null}",
+        assertEquals("{\"createdTime\":1657509967,\"message\":\"some message\",\"messageId\":\"uuidAsMessageId\",\"messageProperties\":null}",
             result.getResponse().getContentAsString());
 
         verify(bigQueueModuleService).peek("localhost", "queueName1");
@@ -724,8 +724,8 @@ public class BigQueueModuleControllerTest {
         MvcResult result = mockMvc.perform(requestBuilder).andReturn();
 
         assertEquals(200, result.getResponse().getStatus());
-        assertEquals("[{\"messageId\":\"uuidAsMessageId1\",\"createdTime\":1657509967,\"message\":\"some message 1\",\"messageProperties\":null}," +
-                "{\"messageId\":\"uuidAsMessageId2\",\"createdTime\":1657509960,\"message\":\"some message 2\",\"messageProperties\":null}]",
+        assertEquals("[{\"createdTime\":1657509967,\"message\":\"some message 1\",\"messageId\":\"uuidAsMessageId1\"" +
+                ",\"messageProperties\":null},{\"createdTime\":1657509960,\"message\":\"some message 2\",\"messageId\":\"uuidAsMessageId2\",\"messageProperties\":null}]",
             result.getResponse().getContentAsString());
 
         verify(bigQueueModuleService).getMessages("localhost", "queueName1");
