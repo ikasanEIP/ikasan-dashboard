@@ -53,7 +53,7 @@ public class ResubmissionRestServiceImplTest
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())).withRequestBody(
                 containing(
-                    "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"errorUri\":\"testErrorURI\",\"action\":\"resubmit\",\"userName\":\"testUser\"}"))
+                    "{\"action\":\"resubmit\",\"errorUri\":\"testErrorURI\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(200)));
         boolean result = uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "testUser");
         assertEquals(true, result);
@@ -66,7 +66,7 @@ public class ResubmissionRestServiceImplTest
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())).withRequestBody(
                 containing(
-                    "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"errorUri\":\"testErrorURI\",\"action\":\"resubmit\",\"userName\":\"testUser\"}"))
+                    "{\"action\":\"resubmit\",\"errorUri\":\"testErrorURI\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(400)));
         boolean result = uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "testUser");
         assertEquals(false, result);
@@ -79,7 +79,7 @@ public class ResubmissionRestServiceImplTest
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())).withRequestBody(
                 containing(
-                    "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"errorUri\":\"testErrorURI\",\"action\":\"resubmit\",\"userName\":\"testUser\"}"))
+                    "{\"action\":\"resubmit\",\"errorUri\":\"testErrorURI\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(404)));
         boolean result = uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "testUser");
         assertEquals(false, result);
@@ -92,7 +92,7 @@ public class ResubmissionRestServiceImplTest
         stubFor(put(urlEqualTo(ResubmissionRestServiceImpl.RESUBMSSION_URL))
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
-                    .withRequestBody(containing("{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"errorUri\":\"testErrorURI\",\"action\":\"resubmit\",\"userName\":\"testUser\"}"))
+                    .withRequestBody(containing("{\"action\":\"resubmit\",\"errorUri\":\"testErrorURI\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse()
                                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                                     .withStatus(500)
@@ -125,7 +125,7 @@ public class ResubmissionRestServiceImplTest
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())).withRequestBody(
                 containing(
-                    "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"errorUri\":\"testErrorURI\",\"action\":\"resubmit\",\"userName\":\"testUser\"}"))
+                    "{\"action\":\"resubmit\",\"errorUri\":\"testErrorURI\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
             .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(200).withFixedDelay(2000)));
 
         Assert.assertFalse(uut.resubmit(contexBaseUrl, "test Module Name", "flow Test", "resubmit", "testErrorURI", "testUser"));

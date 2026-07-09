@@ -1,6 +1,5 @@
 package org.ikasan.rest.client;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
 import org.ikasan.rest.client.dto.ReplayRequestDto;
 import org.ikasan.spec.module.client.ReplayService;
@@ -8,9 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Arrays;
 
@@ -25,8 +26,11 @@ public class ReplayRestServiceImpl implements ReplayService
     public ReplayRestServiceImpl(HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory)
     {
         restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
-        MappingJackson2HttpMessageConverter jsonHttpMessageConverter = new MappingJackson2HttpMessageConverter();
-        jsonHttpMessageConverter.getObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        JsonMapper mapper = JsonMapper.builder()
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+            .build();
+
+        JacksonJsonHttpMessageConverter jsonHttpMessageConverter = new JacksonJsonHttpMessageConverter(mapper);
         restTemplate.getMessageConverters().add(jsonHttpMessageConverter);
     }
 
@@ -40,7 +44,7 @@ public class ReplayRestServiceImpl implements ReplayService
         String url = contextUrl + REPLAY_URL;
         try
         {
-            ResponseEntity response = restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
 
             if(response.getStatusCode().is2xxSuccessful()) {
                 return true;

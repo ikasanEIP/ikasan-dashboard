@@ -50,7 +50,7 @@ public class ReplayRestServiceImplTest
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())).withRequestBody(
                 containing(
-                    "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\",\"userName\":\"testUser\"}"))
+                    "{\"event\":\"cmVzdWJtaXQ=\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(200)));
         boolean result = uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes(), "testUser");
         assertEquals(true, result);
@@ -63,7 +63,7 @@ public class ReplayRestServiceImplTest
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())).withRequestBody(
                 containing(
-                    "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\",\"userName\":\"testUser\"}"))
+                    "{\"event\":\"cmVzdWJtaXQ=\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(400)));
        uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes(), "testUser");
     }
@@ -75,7 +75,7 @@ public class ReplayRestServiceImplTest
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())).withRequestBody(
                 containing(
-                    "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\",\"userName\":\"testUser\"}"))
+                    "{\"event\":\"cmVzdWJtaXQ=\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(404)));
         uut.replay(contexBaseUrl,  null, null,"test Module Name", "flow Test", "resubmit".getBytes(), "testUser");
     }
@@ -87,7 +87,7 @@ public class ReplayRestServiceImplTest
         stubFor(put(urlEqualTo(ReplayRestServiceImpl.REPLAY_URL))
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
-                    .withRequestBody(containing("{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\",\"userName\":\"testUser\"}"))
+                    .withRequestBody(containing("{\"event\":\"cmVzdWJtaXQ=\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
                     .willReturn(aResponse()
                                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                                     .withStatus(500)
@@ -114,7 +114,7 @@ public class ReplayRestServiceImplTest
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())).withRequestBody(
                 containing(
-                    "{\"moduleName\":\"test Module Name\",\"flowName\":\"flow Test\",\"event\":\"cmVzdWJtaXQ=\",\"userName\":\"testUser\"}"))
+                    "{\"event\":\"cmVzdWJtaXQ=\",\"flowName\":\"flow Test\",\"moduleName\":\"test Module Name\",\"userName\":\"testUser\"}"))
             .willReturn(aResponse().withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString()).withStatus(200).withFixedDelay(2000)));
 
         uut.replay(contexBaseUrl, null, null, "test Module Name", "flow Test", "resubmit".getBytes(), "testUser");

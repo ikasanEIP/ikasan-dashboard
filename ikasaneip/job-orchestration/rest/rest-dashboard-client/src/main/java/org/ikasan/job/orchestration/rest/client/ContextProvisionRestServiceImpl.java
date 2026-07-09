@@ -1,16 +1,18 @@
 package org.ikasan.job.orchestration.rest.client;
 
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.dashboard.DashboardRestServiceImpl;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.JsonMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
+
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
+
 
 public class ContextProvisionRestServiceImpl extends DashboardRestServiceImpl<String> implements ContextProvisionService {
 
@@ -32,9 +34,14 @@ public class ContextProvisionRestServiceImpl extends DashboardRestServiceImpl<St
                 .allowIfSubType("java.util.ArrayList")
                 .allowIfSubType("java.util.HashMap")
                 .build();
-            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-            objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-            objectMapper.disable(MapperFeature.USE_ANNOTATIONS);
+
+            JsonMapper objectMapper = JsonMapperFactory.newInstance();
+
+            objectMapper = objectMapper.rebuild()
+                .polymorphicTypeValidator(ptv)
+                .activateDefaultTyping(ptv, NON_FINAL)
+                .disable(MapperFeature.USE_ANNOTATIONS)
+                .build();
 
             String serialised = objectMapper.writeValueAsString(contextBundle);
             super.publish(serialised);

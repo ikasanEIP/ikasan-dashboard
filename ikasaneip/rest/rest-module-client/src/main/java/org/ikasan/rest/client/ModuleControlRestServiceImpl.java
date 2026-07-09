@@ -10,7 +10,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +43,7 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
         HttpHeaders headers = createHttpHeaders();
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl+FLOWS_STATUS_URL;
-        Map<String, String> parameters = new HashMap<String, String>(){{put("moduleName",moduleName);}};
+        Map<String, String> parameters = new HashMap<>(){{put("moduleName",moduleName);}};
         try
         {
             ResponseEntity<ModuleDto> response = restTemplate.exchange(url, HttpMethod.GET, entity, ModuleDto.class,parameters);

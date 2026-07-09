@@ -1,7 +1,6 @@
 package org.ikasan.rest.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -19,6 +18,8 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
@@ -32,10 +33,16 @@ public class TriggerRestServiceImplTest
 
     private String contexBaseUrl;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private JsonMapper mapper;
+
+
     @Before
     public void setup()
     {
+        mapper = JsonMapper.builder()
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+            .build();
+
         contexBaseUrl = "http://localhost:" + wireMockRule.port();
         Environment environment = new StandardEnvironment();
         uut = new TriggerRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());

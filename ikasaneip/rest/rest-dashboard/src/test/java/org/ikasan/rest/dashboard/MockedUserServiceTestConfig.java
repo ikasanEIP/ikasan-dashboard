@@ -1,10 +1,11 @@
 package org.ikasan.rest.dashboard;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -12,9 +13,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Arrays;
-import java.util.List;
 
 @TestConfiguration
 @EnableWebSecurity
@@ -44,9 +46,14 @@ public class MockedUserServiceTestConfig implements WebMvcConfigurer
     }
 
     @Override
-    public void configureMessageConverters(
-        List<HttpMessageConverter<?>> converters) {
+    public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+        JsonMapper jsonMapper = JsonMapper.builder()
+            .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_NULL)
+                .withValueInclusion(JsonInclude.Include.NON_NULL))
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+            .build();
 
-        converters.add(new MappingJackson2HttpMessageConverter());
+        builder.disableDefaults();
+        builder.withJsonConverter(new JacksonJsonHttpMessageConverter(jsonMapper));
     }
 }
