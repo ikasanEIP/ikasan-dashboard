@@ -1,16 +1,14 @@
 package org.ikasan.rest;
 
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import tools.jackson.core.StreamReadConstraints;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.ikasan.job.orchestration.rest.client.ContextProvisionRestServiceImpl;
 import org.ikasan.job.orchestration.rest.client.DashboardRestClientException;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.util.JsonMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,12 +21,16 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.mockito.Mockito.when;
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextProvisionRestServiceImplTest extends AbstractTest{
@@ -38,7 +40,7 @@ public class ContextProvisionRestServiceImplTest extends AbstractTest{
 
     private String contextBaseUrl;
 
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     @Mock
     Environment environment;
@@ -56,9 +58,13 @@ public class ContextProvisionRestServiceImplTest extends AbstractTest{
             .allowIfSubType("java.util.HashMap")
             .build();
 
-        objectMapper = ObjectMapperFactory.newInstance();
-        objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-        objectMapper.disable(MapperFeature.USE_ANNOTATIONS);
+        objectMapper = JsonMapperFactory.newInstance();
+
+        objectMapper = objectMapper.rebuild()
+            .polymorphicTypeValidator(ptv)
+            .activateDefaultTyping(ptv, NON_FINAL)
+            .disable(MapperFeature.USE_ANNOTATIONS)
+            .build();
 
         contextBaseUrl = "http://localhost:" + wireMockRule.port();
     }

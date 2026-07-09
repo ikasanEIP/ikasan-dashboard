@@ -1,13 +1,14 @@
 package org.ikasan.rest.client;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Arrays;
 
@@ -24,8 +25,11 @@ public abstract class ModuleRestService
         , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory)
     {
         restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
-        MappingJackson2HttpMessageConverter jsonHttpMessageConverter = new MappingJackson2HttpMessageConverter();
-        jsonHttpMessageConverter.getObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        JsonMapper mapper = JsonMapper.builder()
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+            .build();
+
+        JacksonJsonHttpMessageConverter jsonHttpMessageConverter = new JacksonJsonHttpMessageConverter(mapper);
         restTemplate.getMessageConverters().add(jsonHttpMessageConverter);
         String username = environment.getProperty(MODULE_REST_USERNAME_PROPERTY);
         String password = environment.getProperty(MODULE_REST_PASSWORD_PROPERTY);

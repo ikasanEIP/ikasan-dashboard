@@ -2,7 +2,6 @@ package org.ikasan.job.orchestration.rest.client;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.ikasan.dashboard.AbstractRestServiceImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.dashboard.DashboardRestService;
@@ -13,11 +12,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -35,9 +35,14 @@ public class ClusterPeerRestServiceImpl extends AbstractRestServiceImpl {
         this.username = environment.getProperty(DashboardRestService.DASHBOARD_USERNAME_PROPERTY);
         this.password = environment.getProperty(DashboardRestService.DASHBOARD_PASSWORD_PROPERTY);
         this.restTemplate = new RestTemplate(factory);
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        converter.getObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        this.restTemplate.getMessageConverters().add(converter);
+
+        JsonMapper mapper = JsonMapper.builder()
+            .configure(tools.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+            .build();
+
+        JacksonJsonHttpMessageConverter jsonHttpMessageConverter = new JacksonJsonHttpMessageConverter(mapper);
+        restTemplate.getMessageConverters().add(jsonHttpMessageConverter);
+
         this.objectMapper = ObjectMapperFactory.newInstance();
     }
 
