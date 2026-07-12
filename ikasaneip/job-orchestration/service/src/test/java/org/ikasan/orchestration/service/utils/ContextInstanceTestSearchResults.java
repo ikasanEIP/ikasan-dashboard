@@ -1,26 +1,25 @@
 package org.ikasan.orchestration.service.utils;
 
-import static org.ikasan.spec.scheduled.instance.model.InstanceStatus.RUNNING;
-import static org.ikasan.spec.scheduled.instance.model.InstanceStatus.WAITING;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.springframework.core.io.ClassPathResource;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.ikasan.spec.scheduled.instance.model.InstanceStatus.RUNNING;
+import static org.ikasan.spec.scheduled.instance.model.InstanceStatus.WAITING;
 
 public class ContextInstanceTestSearchResults implements SearchResults<ScheduledContextInstanceRecord> {
     private final int number;
     private final boolean insideOperatingWindow;
-    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.newInstance();
+    private static final JsonMapper OBJECT_MAPPER = ObjectMapperFactory.newInstance();
 
     public ContextInstanceTestSearchResults(int number, boolean insideOperatingWindow) {
         this.number = number;
@@ -50,7 +49,7 @@ public class ContextInstanceTestSearchResults implements SearchResults<Scheduled
             ContextInstanceImpl contextInstance;
             try {
                 contextInstance = OBJECT_MAPPER.readValue(jsonContext, ContextInstanceImpl.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException(e.getMessage());
 
             }

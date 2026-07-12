@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Div;
@@ -31,6 +30,7 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceGridWidget.class);
-    protected ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    protected JsonMapper objectMapper = ObjectMapperFactory.newInstance();
     protected IkasanAuthentication authentication;
     protected SchedulerJobInstanceService schedulerJobInstanceService;
     protected ContextInstance contextInstance;

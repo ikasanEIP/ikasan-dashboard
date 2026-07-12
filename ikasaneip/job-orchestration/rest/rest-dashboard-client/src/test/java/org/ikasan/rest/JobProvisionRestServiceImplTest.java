@@ -1,8 +1,5 @@
 package org.ikasan.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.ikasan.job.orchestration.builder.context.ContextParameterBuilder;
@@ -14,7 +11,10 @@ import org.ikasan.job.orchestration.rest.client.DashboardRestClientException;
 import org.ikasan.job.orchestration.rest.client.JobProvisionRestServiceImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
-import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +25,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +38,7 @@ import java.util.stream.IntStream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.mockito.Mockito.when;
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JobProvisionRestServiceImplTest extends AbstractTest{
@@ -44,7 +48,7 @@ public class JobProvisionRestServiceImplTest extends AbstractTest{
 
     private String contextBaseUrl;
 
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     @Mock
     Environment environment;
@@ -60,7 +64,9 @@ public class JobProvisionRestServiceImplTest extends AbstractTest{
             .build();
 
         objectMapper = ObjectMapperFactory.newInstance();
-        objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+        objectMapper = objectMapper.rebuild()
+            .activateDefaultTyping(ptv, NON_FINAL)
+            .build();
 
         contextBaseUrl = "http://localhost:" + wireMockRule.port();
     }

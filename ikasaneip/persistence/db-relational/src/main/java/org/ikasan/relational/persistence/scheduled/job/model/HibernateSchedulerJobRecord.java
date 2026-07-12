@@ -1,7 +1,5 @@
 package org.ikasan.relational.persistence.scheduled.job.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -10,6 +8,8 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Abstract Hibernate/PostgreSQL base class for SchedulerJobRecord implementations.
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public abstract class HibernateSchedulerJobRecord implements SchedulerJobRecord {
 
     protected static final Logger logger = LoggerFactory.getLogger(HibernateSchedulerJobRecord.class);
-    protected static final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    protected static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "id", nullable = false, length = 512)
@@ -94,7 +94,7 @@ public abstract class HibernateSchedulerJobRecord implements SchedulerJobRecord 
         if (job != null) {
             try {
                 this.jobJson = objectMapper.writeValueAsString(job);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to serialize SchedulerJob to JSON", e);
                 throw new RuntimeException("Failed to serialize SchedulerJob to JSON", e);
             }
@@ -111,7 +111,7 @@ public abstract class HibernateSchedulerJobRecord implements SchedulerJobRecord 
         if (jobJson != null && !jobJson.isEmpty()) {
             try {
                 this.job = deserializeJobFromJson(jobJson);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize SchedulerJob from JSON: {}", jobJson, e);
                 throw new RuntimeException("Failed to deserialize SchedulerJob from JSON", e);
             }
@@ -121,7 +121,7 @@ public abstract class HibernateSchedulerJobRecord implements SchedulerJobRecord 
     /**
      * Subclasses must implement this to deserialize their specific job type from JSON
      */
-    protected abstract SchedulerJob deserializeJobFromJson(String json) throws JsonProcessingException;
+    protected abstract SchedulerJob deserializeJobFromJson(String json) ;
 
     /**
      * Generate ID from job name and context name
@@ -192,7 +192,7 @@ public abstract class HibernateSchedulerJobRecord implements SchedulerJobRecord 
         if (job == null && jobJson != null) {
             try {
                 job = deserializeJobFromJson(jobJson);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize SchedulerJob from JSON", e);
                 throw new RuntimeException("Failed to deserialize SchedulerJob from JSON", e);
             }

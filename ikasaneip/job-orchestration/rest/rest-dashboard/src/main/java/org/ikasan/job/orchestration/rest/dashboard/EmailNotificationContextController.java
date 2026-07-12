@@ -1,9 +1,5 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationContextRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -18,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Date;
 
@@ -30,7 +29,7 @@ import java.util.Date;
 public class EmailNotificationContextController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailNotificationContextController.class);
-    private ObjectMapper mapper;
+    private JsonMapper mapper;
     private EmailNotificationContextService emailNotificationContextService;
 
     public EmailNotificationContextController(EmailNotificationContextService emailNotificationContextService) {
@@ -38,8 +37,9 @@ public class EmailNotificationContextController {
         if(this.emailNotificationContextService == null) {
             throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
         }
-        this.mapper = new ObjectMapper();
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.mapper = JsonMapper.builder()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
     }
 
     @RequestMapping(method = RequestMethod.PUT,
@@ -73,8 +73,10 @@ public class EmailNotificationContextController {
         try {
             SearchResults<EmailNotificationContextRecord> notificationResults = emailNotificationContextService.findByContextName(contextName, limit, offset);
 
-            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
+            JsonMapper objectMapper = ObjectMapperFactory.newInstance();
+            objectMapper = objectMapper.rebuild()
+                .enable(SerializationFeature.INDENT_OUTPUT)
+                .build(); // Export with pretty lines
 
             String jsonString = objectMapper.writeValueAsString(notificationResults);
             if (jsonString == null || "".equals(jsonString) || "null".equals(jsonString)) {

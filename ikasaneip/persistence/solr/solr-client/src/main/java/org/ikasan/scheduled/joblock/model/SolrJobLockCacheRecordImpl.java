@@ -1,17 +1,17 @@
 package org.ikasan.scheduled.joblock.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
 
-    private static ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -54,7 +54,7 @@ public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
     public void setJobLockCache(JobLockCacheData jobLockCache) {
         try {
             this.jobLockCache = objectMapper.writeValueAsString(jobLockCache);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + jobLockCache, e);
         }
     }
@@ -63,7 +63,7 @@ public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
     public JobLockCacheData getJobLockCache() {
         try {
             return objectMapper.readValue(jobLockCache, SolrJobLockCacheDataImpl.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + jobLockCache, e);
         }
     }

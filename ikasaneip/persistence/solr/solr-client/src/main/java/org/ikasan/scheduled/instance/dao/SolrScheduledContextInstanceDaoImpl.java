@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.instance.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
@@ -17,6 +15,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledContextInstanceRecord> implements ScheduledContextInstanceDao {
 
-    private static ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     /**
      * Logger for this class
@@ -44,7 +44,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         document.addField(TYPE, SCHEDULED_CONTEXT_INSTANCE);
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(scheduledContextInstanceRecord.getContextInstance()));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]", scheduledContextInstanceRecord.getContextInstance()));
         }
         document.addField(STATUS, scheduledContextInstanceRecord.getStatus());
@@ -66,7 +66,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         return document;
     }
 
-    protected String getPayloadContents(ContextInstance contextInstance) throws JsonProcessingException {
+    protected String getPayloadContents(ContextInstance contextInstance)  {
         return objectMapper.writeValueAsString(contextInstance);
     }
 

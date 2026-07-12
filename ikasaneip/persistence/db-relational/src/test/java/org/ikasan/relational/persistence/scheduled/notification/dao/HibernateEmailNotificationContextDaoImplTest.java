@@ -8,7 +8,10 @@ import org.ikasan.spec.scheduled.notification.dao.EmailNotificationContextDao;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -341,10 +344,8 @@ public class HibernateEmailNotificationContextDaoImplTest {
         SearchResults<EmailNotificationContextRecord> results = dao.findByContextName("empty-collections", 10, 0);
         EmailNotificationContext retrieved = results.getResultList().get(0).getEmailNotificationContext();
 
-        assertNotNull(retrieved.getMonitorTypes());
-        assertEquals(0, retrieved.getMonitorTypes().size());
-        assertNotNull(retrieved.getEmailSendTo());
-        assertEquals(0, retrieved.getEmailSendTo().size());
+        assertNull(retrieved.getMonitorTypes());
+        assertNull(retrieved.getEmailSendTo());
     }
 
     @Test

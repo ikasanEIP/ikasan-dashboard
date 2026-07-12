@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.job.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
@@ -15,6 +13,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +28,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
     private static Logger logger = LoggerFactory.getLogger(SolrInternalEventDrivenJobDaoImpl.class);
 
 
-    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, InternalEventDrivenJobRecord event) {
@@ -44,7 +44,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
             document.setField(PARTICIPATES_IN_LOCK, job.isParticipatesInLock());
             document.setField(COMPONENT_NAME, job.getContextName());
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert InternalEventDrivenJob to string! [%s]", event), e);
         }
 
@@ -65,7 +65,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
         return document;
     }
 
-    private String getInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) throws JsonProcessingException {
+    private String getInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob)  {
         return this.objectMapper.writeValueAsString(internalEventDrivenJob);
     }
 

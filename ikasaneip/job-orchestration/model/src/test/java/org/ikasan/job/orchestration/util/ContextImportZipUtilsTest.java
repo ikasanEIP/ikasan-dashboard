@@ -1,6 +1,5 @@
 package org.ikasan.job.orchestration.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
@@ -14,6 +13,7 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 
 public class ContextImportZipUtilsTest {
-    private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private final JsonMapper objectMapper = ObjectMapperFactory.newInstance();
     @Test
     public void should_unzip_file_context_with_subcontext_in_job_import_mode() throws IOException {
         String contextName = "HelloContext";

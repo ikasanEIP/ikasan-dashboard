@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AbstractJobLockHolder {
 
-    protected final Map<String, List<SchedulerJobLockParticipant>> schedulerJobs = new ConcurrentHashMap<>();
+    protected Map<String, List<SchedulerJobLockParticipant>> schedulerJobs = new ConcurrentHashMap<>();
 
     /**
      * Add scheduler jobs to the map of scheduler jobs.
@@ -48,4 +48,8 @@ public class AbstractJobLockHolder {
         this.schedulerJobs.clear();
         this.schedulerJobs.putAll(newJobLockMap);
     }
-}
+
+    public void setSchedulerJobs(Map<String, List<SchedulerJobLockParticipant>> schedulerJobs) {
+        this.schedulerJobs = schedulerJobs;
+    }
+ }

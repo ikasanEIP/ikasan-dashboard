@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.notification.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextRecordImpl;
@@ -12,6 +10,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrEmailNotificationContextDaoImpl extends SolrDaoBase<EmailNotificationContextRecord>
     implements EmailNotificationContextDao {
@@ -21,7 +21,7 @@ public class SolrEmailNotificationContextDaoImpl extends SolrDaoBase<EmailNotifi
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrEmailNotificationContextDaoImpl.class);
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private JsonMapper objectMapper = JsonMapper.builder().build();
 
     /**
      * We need to give this dao it's context.
@@ -36,7 +36,7 @@ public class SolrEmailNotificationContextDaoImpl extends SolrDaoBase<EmailNotifi
         try {
             document.addField(PAYLOAD_CONTENT, getEmailNotificationContextContent(emailNotificationContextRecord.getEmailNotificationContext()));
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new RuntimeException(String.format("Cannot convert Email Notification Context to string! [%s]", emailNotificationContextRecord));
         }
 
@@ -53,7 +53,7 @@ public class SolrEmailNotificationContextDaoImpl extends SolrDaoBase<EmailNotifi
         return document;
     }
 
-    private String getEmailNotificationContextContent(EmailNotificationContext emailNotificationContext) throws JsonProcessingException {
+    private String getEmailNotificationContextContent(EmailNotificationContext emailNotificationContext)  {
         return this.objectMapper.writeValueAsString(emailNotificationContext);
     }
 

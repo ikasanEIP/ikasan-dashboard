@@ -22,7 +22,6 @@ public class ContextTemplateStatisticsWidget extends Div {
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     /**
      * Constructor

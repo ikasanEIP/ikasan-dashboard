@@ -1,9 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.instance.dao;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.mongo.persistence.scheduled.MongoPersistenceAutoConfiguration;
-import org.ikasan.mongo.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.mongo.persistence.scheduled.context.MongoPersistenceTestAutoConfiguration;
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoSchedulerJobInstanceRecordImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoSchedulerJobInstanceRecordRepository;
@@ -607,10 +605,6 @@ public class MongoSchedulerJobInstanceDaoImplTest {
         @Override
         public void setEndTimeWindowEnd(long endTimeWindowEnd) { this.endTimeWindowEnd = endTimeWindowEnd; }
     }
-
-    // ========== Tests for getSchedulerJobInstance() with different job types ==========
-
-    private ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Test
     public void testGetSchedulerJobInstance_FileEventDrivenJob() throws Exception {

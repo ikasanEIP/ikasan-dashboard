@@ -1,21 +1,22 @@
 package org.ikasan.job.orchestration.util.serialise;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.JobLock;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Custom JsonSerializer implementation for serializing a list of JobLock objects in a sorted manner based on the lock name.
+ * Custom ValueSerializer implementation for serializing a list of JobLock objects in a sorted manner based on the lock name.
  */
-public class SortedJobLockListSerializer extends JsonSerializer<List<JobLock>> {
+public class SortedJobLockListSerializer extends ValueSerializer<List<JobLock>> {
 
     @Override
-    public void serialize(List<JobLock> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(List<JobLock> list, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
         if (list != null) {
             Collections.sort(list, (a, b) -> {
                 if (a.getName() != null && b.getName() != null) {
@@ -26,14 +27,17 @@ public class SortedJobLockListSerializer extends JsonSerializer<List<JobLock>> {
             });
         }
 
-        serializerProvider.defaultSerializeValue(list, jsonGenerator);
+        gen.writeStartArray();
+        if (list != null) {
+            for (JobLock lock : list) {
+                ctxt.writeValue(gen, lock);
+            }
+        }
+        gen.writeEndArray();
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, List<JobLock> list) {
-        if (list == null || list.isEmpty()) {
-            return true;
-        }
-        return false;
+    public boolean isEmpty(SerializationContext ctxt, List<JobLock> value) {
+        return value == null || value.isEmpty();
     }
 }

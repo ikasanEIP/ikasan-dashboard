@@ -38,8 +38,7 @@ public class JobLockCacheServiceImplTest {
     @Mock
     private JobLockCacheRecord mockCacheRecord;
 
-    @Mock
-    private JobLockCacheData mockJobLockCache;
+    private JobLockCacheData testJobLockCache;
 
     @Mock
     private JobLockCacheAuditRecord mockAuditRecord;
@@ -49,6 +48,7 @@ public class JobLockCacheServiceImplTest {
 
     @Before
     public void setUp() {
+        testJobLockCache = new JobLockCacheDataImpl();
         serviceWithAuditEnabled = new JobLockCacheServiceImpl(mockCacheDao, mockAuditDao, true);
         serviceWithAuditDisabled = new JobLockCacheServiceImpl(mockCacheDao, mockAuditDao, false);
     }
@@ -75,7 +75,7 @@ public class JobLockCacheServiceImplTest {
     @Test
     public void testSaveWithAuditEnabled() {
         // Given
-        when(mockCacheRecord.getJobLockCache()).thenReturn(mockJobLockCache);
+        when(mockCacheRecord.getJobLockCache()).thenReturn(testJobLockCache);
 
         // When
         serviceWithAuditEnabled.save(mockCacheRecord);
@@ -108,10 +108,10 @@ public class JobLockCacheServiceImplTest {
         // Given
         JobLockCacheRecord record2 = mock(JobLockCacheRecord.class);
         JobLockCacheRecord record3 = mock(JobLockCacheRecord.class);
-        JobLockCacheData cache2 = mock(JobLockCacheData.class);
-        JobLockCacheData cache3 = mock(JobLockCacheData.class);
+        JobLockCacheData cache2 = new JobLockCacheDataImpl();
+        JobLockCacheData cache3 = new JobLockCacheDataImpl();
 
-        when(mockCacheRecord.getJobLockCache()).thenReturn(mockJobLockCache);
+        when(mockCacheRecord.getJobLockCache()).thenReturn(testJobLockCache);
         when(record2.getJobLockCache()).thenReturn(cache2);
         when(record3.getJobLockCache()).thenReturn(cache3);
 
@@ -331,7 +331,7 @@ public class JobLockCacheServiceImplTest {
     @Test
     public void testAuditFlagBehavior() {
         // Given
-        when(mockCacheRecord.getJobLockCache()).thenReturn(mockJobLockCache);
+        when(mockCacheRecord.getJobLockCache()).thenReturn(testJobLockCache);
 
         // When - save with audit enabled
         serviceWithAuditEnabled.save(mockCacheRecord);

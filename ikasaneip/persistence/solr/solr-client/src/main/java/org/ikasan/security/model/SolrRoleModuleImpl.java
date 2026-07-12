@@ -40,8 +40,6 @@
  */
 package org.ikasan.security.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.model.RoleModule;
 

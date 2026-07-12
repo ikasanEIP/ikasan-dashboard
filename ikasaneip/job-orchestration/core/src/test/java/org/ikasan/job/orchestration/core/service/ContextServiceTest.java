@@ -3,13 +3,9 @@ package org.ikasan.job.orchestration.core.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
-import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.*;
-import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
-import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
@@ -51,7 +47,7 @@ public class ContextServiceTest extends AbstractTest {
     }
 
     @Test
-    public void test_isValidJSON_valid() throws JsonProcessingException {
+    public void test_isValidJSON_valid() {
         String validJson = "{\"name\":\"test\",\"value\":123}";
 
         boolean result = contextService.isValidJSON(validJson);
@@ -59,11 +55,11 @@ public class ContextServiceTest extends AbstractTest {
         Assert.assertTrue(result);
     }
 
-    @Test(expected = JsonProcessingException.class)
-    public void test_isValidJSON_invalid() throws JsonProcessingException {
+    @Test
+    public void test_isValidJSON_invalid() {
         String invalidJson = "{name:test,value:123}";
 
-        contextService.isValidJSON(invalidJson);
+        Assert.assertFalse(contextService.isValidJSON(invalidJson));
     }
 
     @Test

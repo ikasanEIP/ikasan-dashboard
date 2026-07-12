@@ -1,6 +1,5 @@
 package org.ikasan.rest.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -49,7 +48,7 @@ public class TriggerRestServiceImplTest
     }
 
     @Test
-    public void create() throws JsonProcessingException
+    public void create()
     {
         TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100", "user");
 
@@ -66,7 +65,7 @@ public class TriggerRestServiceImplTest
     }
 
     @Test
-    public void createreturns400() throws JsonProcessingException
+    public void createreturns400()
     {
         TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100", "user");
 
@@ -81,7 +80,7 @@ public class TriggerRestServiceImplTest
     }
 
     @Test
-    public void resubmit_returns404() throws JsonProcessingException
+    public void resubmit_returns404()
     {
         TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100", "user");
 
@@ -97,7 +96,7 @@ public class TriggerRestServiceImplTest
     }
 
     @Test
-    public void resubmit_returns500() throws JsonProcessingException
+    public void resubmit_returns500()
     {
 
         TriggerDto dto = new TriggerDto("testModule", "testFlow", "component", TriggerRelationship.AFTER.getDescription(), "wiretap", "100", "user");
@@ -200,7 +199,7 @@ public class TriggerRestServiceImplTest
     }
 
     @Test
-    public void testTimeout() throws JsonProcessingException {
+    public void testTimeout() {
         Environment environment = new StandardEnvironment();
 
         HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory

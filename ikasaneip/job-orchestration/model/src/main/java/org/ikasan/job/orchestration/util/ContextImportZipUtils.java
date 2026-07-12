@@ -1,6 +1,5 @@
 package org.ikasan.job.orchestration.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -12,6 +11,7 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -185,7 +185,7 @@ public final class ContextImportZipUtils {
                 default:
                     throw new RuntimeException("Unknown job type: " + type);
             }
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOG.warn(String.format("Could not read json for job type %s, Error: %s", type, e.getMessage()));
             throw new RuntimeException(e);
         }

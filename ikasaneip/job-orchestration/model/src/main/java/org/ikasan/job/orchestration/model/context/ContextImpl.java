@@ -1,7 +1,6 @@
 package org.ikasan.job.orchestration.model.context;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.util.serialise.SortedBlackoutWindowDateTimeRangesMapSerializer;
@@ -10,6 +9,7 @@ import org.ikasan.job.orchestration.util.serialise.SortedJobDependencyListSerial
 import org.ikasan.job.orchestration.util.serialise.SortedStringListSerializer;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.List;
 import java.util.Map;

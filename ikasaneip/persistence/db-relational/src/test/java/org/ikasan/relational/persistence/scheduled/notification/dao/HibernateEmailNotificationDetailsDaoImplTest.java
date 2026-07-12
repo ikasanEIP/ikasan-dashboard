@@ -8,7 +8,10 @@ import org.ikasan.spec.scheduled.notification.dao.EmailNotificationDetailsDao;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -17,7 +20,10 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -351,8 +357,7 @@ public class HibernateEmailNotificationDetailsDaoImplTest {
         EmailNotificationDetailsRecord retrieved = dao.findByJobNameAndMonitorType("EmptyJob", "EmptyChild", "INFO");
         EmailNotificationDetails retrievedDetails = retrieved.getEmailNotificationDetails();
 
-        assertNotNull(retrievedDetails.getEmailSendTo());
-        assertEquals(0, retrievedDetails.getEmailSendTo().size());
+        assertNull(retrievedDetails.getEmailSendTo());
     }
 
     @Test

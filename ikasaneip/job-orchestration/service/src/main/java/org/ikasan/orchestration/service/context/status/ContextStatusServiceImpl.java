@@ -43,9 +43,11 @@ package org.ikasan.orchestration.service.context.status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.status.*;
+import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
+import org.ikasan.job.orchestration.model.status.ContextJobInstanceStatusWrapperImpl;
+import org.ikasan.job.orchestration.model.status.ContextMachineStatusImpl;
+import org.ikasan.job.orchestration.model.status.ContextMachineStatusWrapperImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
@@ -71,7 +73,7 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
      * @throws JsonProcessingException if issue transforming to Json
      */
     @Override
-    public String getJsonContextMachineStatus(boolean includePrepared) throws JsonProcessingException {
+    public String getJsonContextMachineStatus(boolean includePrepared)  {
         Map<String, ContextMachine> mapAllContextMachine = ContextMachineCache.instance().getContextInstanceByContextInstanceIdCache();
         ContextMachineStatusWrapper contextMachineStatusWrapper = new ContextMachineStatusWrapperImpl();
         List<ContextMachineStatus> contextMachineStatusList = new ArrayList<>();
@@ -103,7 +105,7 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
      * @throws JsonProcessingException if issue transforming to Json
      */
     @Override
-    public String getJsonContextJobStatus(InstanceStatus instanceStatus, Map<String, ContextMachineImpl> mapAllContextMachine) throws JsonProcessingException {
+    public String getJsonContextJobStatus(InstanceStatus instanceStatus, Map<String, ContextMachineImpl> mapAllContextMachine)  {
         if (mapAllContextMachine == null || mapAllContextMachine.isEmpty()) {
             // Return Empty
             return "";
@@ -167,7 +169,7 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
      * @throws JsonProcessingException if issue transforming to Json
      */
     @Override
-    public String getJsonContextStatus(String instanceName, String contextName) throws JsonProcessingException {
+    public String getJsonContextStatus(String instanceName, String contextName) {
         Map<String, ContextInstance> contextInstanceStatusMap = new HashMap<>();
         List<ContextMachine> contextMachineList = ContextMachineCache.instance().getAllRunningByContextName(instanceName);
         validateContextMachine(contextMachineList, instanceName);
@@ -195,7 +197,7 @@ public class ContextStatusServiceImpl implements ContextStatusService<ContextMac
      * @throws JsonProcessingException if issue transforming to Json
      */
     @Override
-    public String getJsonContextStatusForJob(String instanceName, String contextName, String jobName) throws JsonProcessingException {
+    public String getJsonContextStatusForJob(String instanceName, String contextName, String jobName) {
         Map<String, SchedulerJobInstance> schedulerJobInstanceMap = new HashMap<>();
         List<ContextMachine> contextMachineList = ContextMachineCache.instance().getAllRunningByContextName(instanceName);
         validateContextMachine(contextMachineList, instanceName);

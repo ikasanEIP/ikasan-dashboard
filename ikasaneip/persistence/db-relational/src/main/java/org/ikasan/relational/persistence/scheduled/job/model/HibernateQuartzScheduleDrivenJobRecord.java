@@ -1,10 +1,11 @@
 package org.ikasan.relational.persistence.scheduled.job.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
-import org.ikasan.spec.scheduled.job.model.JobConstants;
 
 /**
  * Hibernate/PostgreSQL implementation of QuartzScheduleDrivenJobRecord.
@@ -42,7 +43,7 @@ public class HibernateQuartzScheduleDrivenJobRecord extends HibernateSchedulerJo
     }
 
     @Override
-    protected QuartzScheduleDrivenJob deserializeJobFromJson(String json) throws JsonProcessingException {
+    protected QuartzScheduleDrivenJob deserializeJobFromJson(String json)  {
         return objectMapper.readValue(json, QuartzScheduleDrivenJob.class);
     }
 

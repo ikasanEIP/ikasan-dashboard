@@ -1,7 +1,5 @@
 package org.ikasan.security.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.SolrIkasanPrincipalFilterImpl;
@@ -13,6 +11,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.security.dao.UserDao;
 import org.ikasan.spec.security.model.*;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,8 +43,8 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
     /** The Solr document type identifier for users */
     public static final String USER_TYPE = "securityUser";
 
-    /** Jackson ObjectMapper for JSON serialization/deserialization */
-    private static final ObjectMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
+    /** Jackson JsonMapper for JSON serialization/deserialization */
+    private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
 
     /**
      * Maximum number of predicates allowed in a single Solr query.
@@ -689,7 +689,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
 
         try {
             record.setUser(OBJECT_MAPPER.writeValueAsString(user));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Cannot convert User to string! [" + user.getUsername() + "]", e);
         }
 
@@ -722,7 +722,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
 
             try {
                 record.setUser(OBJECT_MAPPER.writeValueAsString(user));
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Cannot convert User to string! [" + user.getUsername() + "]", e);
             }
 
@@ -762,7 +762,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
             }
 
             return user;
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Cannot convert SolrUserRecord to User! [" + record.getUsername() + "]", e);
         }
     }
@@ -777,7 +777,7 @@ public class SolrUserDaoImpl extends SolrDaoBase<SolrUserRecord> implements User
     private UserLite convertRecordToUserLite(SolrUserRecord record) {
         try {
             return OBJECT_MAPPER.readValue(record.getUser(), SolrUserLiteImpl.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Cannot convert SolrUserRecord to UserLite! [" + record.getUsername() + "]", e);
         }
     }

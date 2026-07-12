@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.job.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
@@ -15,6 +13,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class SolrContextTerminalJobDaoImpl extends SolrDaoBase<ContextTerminalJo
     implements ContextTerminalJobDao<ContextTerminalJobRecord> {
 
     private static Logger logger = LoggerFactory.getLogger(SolrContextTerminalJobDaoImpl.class);
-    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ContextTerminalJobRecord event) {
@@ -36,7 +36,7 @@ public class SolrContextTerminalJobDaoImpl extends SolrDaoBase<ContextTerminalJo
             document.addField(COMPONENT_NAME, job.getContextName());
             document.addField(DISPLAY_NAME, job.getDisplayName());
             document.addField(MODULE_NAME, job.getAgentName());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert GlobalEventJob to string! [%s]", event), e);
         }
 
@@ -54,7 +54,7 @@ public class SolrContextTerminalJobDaoImpl extends SolrDaoBase<ContextTerminalJo
         return document;
     }
 
-    private String getContextTerminalJob(ContextTerminalJob contextTerminalJob) throws JsonProcessingException {
+    private String getContextTerminalJob(ContextTerminalJob contextTerminalJob) {
         return this.objectMapper.writeValueAsString(contextTerminalJob);
     }
 

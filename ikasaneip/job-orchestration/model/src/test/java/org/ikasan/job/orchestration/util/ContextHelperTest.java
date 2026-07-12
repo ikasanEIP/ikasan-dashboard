@@ -1,6 +1,5 @@
 package org.ikasan.job.orchestration.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
@@ -21,6 +20,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +42,7 @@ public class ContextHelperTest {
 
     ContextHelper contextHelper = new ContextHelper();
 
-    ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
+    JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
 
     @Test
     public void test_context_template_token_replacement() throws IOException, JSONException {

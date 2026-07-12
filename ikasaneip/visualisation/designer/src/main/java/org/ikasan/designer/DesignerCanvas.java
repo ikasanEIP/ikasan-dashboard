@@ -1,10 +1,7 @@
 package org.ikasan.designer;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonGenerator.Feature;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -23,12 +20,16 @@ import org.ikasan.designer.pallet.DesignerPalletImageItem;
 import org.ikasan.designer.util.DynamicImageHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static tools.jackson.core.json.JsonWriteFeature.ESCAPE_NON_ASCII;
 
 
 @Tag("div")
@@ -39,7 +40,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     Logger logger = LoggerFactory.getLogger(DesignerCanvas.class);
 
     private String canvasJson;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final JsonMapper mapper;
     private Map<String, DesignerPalletImageItem> designerPalletItemMap = new HashMap<>();
     private List<CanvasItemRightClickEventListener> canvasItemRightClickEventListeners = new ArrayList<>();
     private List<CanvasItemDoubleClickEventListener> canvasItemDoubleClickEventListeners = new ArrayList<>();
@@ -116,14 +117,14 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/Triangle.js");
         ui.getPage().addJavaScript("/frontend/org/ikasan/draw2d/NoDecorator.js");
 
-        // Dont transfer empty options.
-        mapper.setSerializationInclusion(Include.NON_EMPTY);
-        // Dont transfer getter and setter
-        mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
-            .withGetterVisibility(Visibility.NONE).withSetterVisibility(Visibility.NONE)
-            .withIsGetterVisibility(Visibility.NONE).withFieldVisibility(Visibility.ANY));
-        // remains utf8 escaped chars
-        mapper.configure(Feature.ESCAPE_NON_ASCII, true);
+         this.mapper = JsonMapper.builder()
+             .configure(ESCAPE_NON_ASCII, true)
+             .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_EMPTY)
+                 .withValueInclusion(JsonInclude.Include.NON_EMPTY))
+             .changeDefaultVisibility(vis -> vis.withGetterVisibility(Visibility.NONE)
+                 .withSetterVisibility(Visibility.NONE)
+                 .withIsGetterVisibility(Visibility.NONE).withFieldVisibility(Visibility.ANY))
+             .build();
 
         this.setId(name);
 
@@ -843,7 +844,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
             this.jobMouseOverListeners.forEach(jobMouseOverListener
                 -> jobMouseOverListener.onJobMouseOverEvent(new JobMouseOverEvent(figureObj)));
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             logger.error("An error has occurred processing figure json associated with a job mouse over event - [%s]!".formatted(e.getMessage()), e);
         }
     }

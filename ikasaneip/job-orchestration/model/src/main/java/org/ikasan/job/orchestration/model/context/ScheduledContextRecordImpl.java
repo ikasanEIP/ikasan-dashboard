@@ -1,14 +1,14 @@
 package org.ikasan.job.orchestration.model.context;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class ScheduledContextRecordImpl implements ScheduledContextRecord {
-    private static ObjectMapper objectMapper;
+    private static JsonMapper objectMapper;
 
     static {
         objectMapper = ObjectMapperFactory.newInstance();
@@ -43,7 +43,7 @@ public class ScheduledContextRecordImpl implements ScheduledContextRecord {
         try {
             return objectMapper.readValue(this.context, ContextTemplateImpl.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new EntityConversionException("Could not convert string to entity: " + this.context, e);
         }
     }
@@ -53,7 +53,7 @@ public class ScheduledContextRecordImpl implements ScheduledContextRecord {
         try {
             this.context = objectMapper.writeValueAsString(context);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new EntityConversionException("Could not convert entity to string: " + context, e);
         }
     }

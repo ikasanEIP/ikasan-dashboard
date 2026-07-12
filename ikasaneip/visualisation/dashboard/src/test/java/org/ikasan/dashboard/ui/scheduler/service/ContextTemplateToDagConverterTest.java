@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.lang.Assert;
 import org.ikasan.dashboard.AbstractTest;
 import org.ikasan.dashboard.ui.visualisation.scheduler.dag.component.DagNode;
@@ -8,13 +7,14 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateTo
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.junit.Test;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.List;
 
 public class ContextTemplateToDagConverterTest extends AbstractTest {
 
-    ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    JsonMapper objectMapper = ObjectMapperFactory.newInstance();
 
     @Test
     public void test_sample_context_with_multiple_and_roots() throws IOException {

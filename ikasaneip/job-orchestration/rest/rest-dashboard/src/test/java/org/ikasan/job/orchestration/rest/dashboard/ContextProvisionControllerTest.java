@@ -1,9 +1,5 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
@@ -25,11 +21,16 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ContextProvisionController.class)
@@ -44,8 +45,7 @@ public class ContextProvisionControllerTest {
 
     @MockitoBean
     private ContextProvisionService contextProvisionService;
-
-    @Autowired
+    
     @Before
     public void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
@@ -55,7 +55,7 @@ public class ContextProvisionControllerTest {
     public void test_provision_context_success() throws Exception {
         ContextBundle contextBundle = loadContextBundle();
 
-        ObjectMapper mapper = ConcurrentObjectMapperFactory.newInstance();
+        JsonMapper mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
@@ -70,8 +70,8 @@ public class ContextProvisionControllerTest {
             .allowIfSubType("java.util.HashSet")
             .allowIfSubType("java.util.concurrent.CopyOnWriteArraySet")
             .build();
-        mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-        mapper.disable(MapperFeature.USE_ANNOTATIONS);
+        mapper = mapper.rebuild().activateDefaultTyping(ptv, NON_FINAL)
+            .disable(MapperFeature.USE_ANNOTATIONS).build();
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put("/rest/provision/context")
             .contentType(MediaType.APPLICATION_JSON_VALUE).content(mapper.writeValueAsBytes(contextBundle))).andReturn();
@@ -94,7 +94,7 @@ public class ContextProvisionControllerTest {
     public void test_provision_context_success_all() throws Exception {
         ContextBundle contextBundle = loadContextBundleAll();
 
-        ObjectMapper mapper = ConcurrentObjectMapperFactory.newInstance();
+        JsonMapper mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
@@ -109,8 +109,8 @@ public class ContextProvisionControllerTest {
             .allowIfSubType("java.util.HashSet")
             .allowIfSubType("java.util.concurrent.CopyOnWriteArraySet")
             .build();
-        mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-        mapper.disable(MapperFeature.USE_ANNOTATIONS);
+        mapper = mapper.rebuild().activateDefaultTyping(ptv, NON_FINAL)
+            .disable(MapperFeature.USE_ANNOTATIONS).build();
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put("/rest/provision/context")
             .contentType(MediaType.APPLICATION_JSON_VALUE).content(mapper.writeValueAsBytes(contextBundle))).andReturn();
@@ -122,7 +122,7 @@ public class ContextProvisionControllerTest {
     public void test_provision_context_success_dynamic_file_watcher() throws Exception {
         ContextBundle contextBundle = loadContextBundleDynamic();
 
-        ObjectMapper mapper = ConcurrentObjectMapperFactory.newInstance();
+        JsonMapper mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
             .allowIfSubType("org.ikasan.spec.scheduled.job.context")
@@ -140,8 +140,8 @@ public class ContextProvisionControllerTest {
             .allowIfSubType("java.util.concurrent.CopyOnWriteArraySet")
             .allowIfSubType("java.util.concurrent")
             .build();
-        mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-        mapper.disable(MapperFeature.USE_ANNOTATIONS);
+        mapper = mapper.rebuild().activateDefaultTyping(ptv, NON_FINAL)
+            .disable(MapperFeature.USE_ANNOTATIONS).build();
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put("/rest/provision/context")
             .contentType(MediaType.APPLICATION_JSON_VALUE).content(mapper.writeValueAsBytes(contextBundle))).andReturn();

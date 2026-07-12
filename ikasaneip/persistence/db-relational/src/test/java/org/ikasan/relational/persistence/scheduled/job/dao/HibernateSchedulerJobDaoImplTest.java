@@ -2,8 +2,8 @@ package org.ikasan.relational.persistence.scheduled.job.dao;
 
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.relational.persistence.HibernatePersistenceAutoConfiguration;
-import org.ikasan.relational.persistence.scheduled.job.model.*;
 import org.ikasan.relational.persistence.scheduled.HibernatePersistenceTestAutoConfiguration;
+import org.ikasan.relational.persistence.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.dao.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;

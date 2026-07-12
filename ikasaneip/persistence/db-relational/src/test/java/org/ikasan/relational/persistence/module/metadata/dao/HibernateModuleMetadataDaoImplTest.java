@@ -1,7 +1,7 @@
 package org.ikasan.relational.persistence.module.metadata.dao;
 
-import org.ikasan.relational.persistence.module.metadata.model.*;
 import org.ikasan.relational.persistence.HibernatePersistenceAutoConfiguration;
+import org.ikasan.relational.persistence.module.metadata.model.*;
 import org.ikasan.relational.persistence.scheduled.HibernatePersistenceTestAutoConfiguration;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.dao.ModuleMetadataDao;

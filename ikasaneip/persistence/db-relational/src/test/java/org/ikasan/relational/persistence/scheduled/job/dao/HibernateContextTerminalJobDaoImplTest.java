@@ -6,7 +6,10 @@ import org.ikasan.relational.persistence.scheduled.job.model.HibernateContextTer
 import org.ikasan.spec.scheduled.job.dao.ContextTerminalJobDao;
 import org.ikasan.spec.scheduled.job.model.ContextTerminalJob;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;

@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -25,7 +23,6 @@ import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceDlqEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -34,10 +31,13 @@ import org.ikasan.rest.dashboard.model.scheduled.ScheduledProcessEventImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +52,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
 
     protected Grid<BigQueueMessage> bigQueueMessageGrid = new Grid<>();
     private ConfigurableFilterDataProvider<BigQueueMessage, Void, BigQueueFilter> filteredDataProvider;
-    private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private final JsonMapper objectMapper = ObjectMapperFactory.newInstance();
     private final ContextInstance contextInstance;
     private final SystemEventLogger systemEventLogger;
     private final BigQueueFilter bigQueueFilter = new BigQueueFilter();
@@ -280,7 +280,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                         .writeValueAsString(objectMapper.readValue(bigQueueMessage.getMessage().toString()
                             , ScheduledProcessEventImpl.class)));
                 }
-                catch (JsonProcessingException e) {
+                catch (JacksonException e) {
                     logger.info("Could not resolve bigQueueMessage - ", e.getMessage());
                 }
 
@@ -311,7 +311,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                     label.setText(DateFormatter.instance()
                         .getFormattedDate(scheduledProcessEvent.getFireTime()));
                 }
-                catch (JsonProcessingException e) {
+                catch (JacksonException e) {
                     logger.info("Could not resolve bigQueueMessage - ", e.getMessage());
                 }
 

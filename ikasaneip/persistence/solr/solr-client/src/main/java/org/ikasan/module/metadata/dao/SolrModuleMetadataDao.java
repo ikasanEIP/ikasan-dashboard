@@ -1,8 +1,5 @@
 package org.ikasan.module.metadata.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -18,6 +15,9 @@ import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,11 +40,10 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
      */
     public static final String MODULE_METADATA = "moduleMetaData";
 
-    private ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     public SolrModuleMetadataDao()
     {
-        this.objectMapper = new ObjectMapper();
 
         SimpleModule m = new SimpleModule();
         m.addAbstractTypeMapping(ModuleMetaData.class, SolrModuleMetaDataImpl.class);
@@ -53,7 +52,9 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
         m.addAbstractTypeMapping(Transition.class, SolrTransitionImpl.class);
         m.addAbstractTypeMapping(DecoratorMetaData.class, SolrDecoratorMetaDataImpl.class);
 
-        objectMapper.registerModule(m);
+        this.objectMapper = JsonMapper.builder()
+            .addModule(m)
+            .build();
     }
 
     @Override
@@ -90,7 +91,7 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData> implement
         {
             document.addField(PAYLOAD_CONTENT, objectMapper.writeValueAsString(moduleMetaData));
         }
-        catch (JsonProcessingException e)
+        catch (JacksonException e)
         {
             throw new RuntimeException("Unable to convert ["+moduleMetaData+"] to json format.");
         }

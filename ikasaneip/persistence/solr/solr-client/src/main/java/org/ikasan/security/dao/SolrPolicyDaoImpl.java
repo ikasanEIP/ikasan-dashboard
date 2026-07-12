@@ -1,7 +1,5 @@
 package org.ikasan.security.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.SolrPolicyImpl;
@@ -10,6 +8,8 @@ import org.ikasan.security.util.SolrSecurityObjectMapperFactory;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.security.model.Policy;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,8 +39,8 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
     /** The Solr document type identifier for security policies */
     public static final String POLICY_TYPE = "securityPolicy";
 
-    /** Jackson ObjectMapper for JSON serialization/deserialization */
-    private static final ObjectMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
+    /** Jackson JsonMapper for JSON serialization/deserialization */
+    private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
 
     /**
      * Converts a SolrPolicyRecord entity into a Solr input document for indexing.
@@ -112,7 +112,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
 
         try {
             record.setPolicy(OBJECT_MAPPER.writeValueAsString(policy));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Cannot convert Policy to string! [" + policy.getName() + "]", e);
         }
 
@@ -240,7 +240,7 @@ public class SolrPolicyDaoImpl extends SolrDaoBase<SolrPolicyRecord> {
             Policy policy = OBJECT_MAPPER.readValue(record.getPolicy(), SolrPolicyImpl.class);
             policy.setId(record.getId());
             return policy;
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Cannot convert SolrPolicyRecord to Policy! [" + record.getName() + "]", e);
         }
     }

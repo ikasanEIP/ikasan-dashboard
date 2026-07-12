@@ -1,7 +1,5 @@
 package org.ikasan.job.orchestration.rest.client;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.dashboard.AbstractRestServiceImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.dashboard.DashboardRestService;
@@ -17,6 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class ClusterPeerRestServiceImpl extends AbstractRestServiceImpl {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterPeerRestServiceImpl.class);
 
     private final String baseUrl;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     public ClusterPeerRestServiceImpl(String baseUrl, Environment environment,
                                       HttpComponentsClientHttpRequestFactory factory) {

@@ -27,6 +27,7 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(SchedulerJobUploadDialog.class);
@@ -37,7 +38,7 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
     private Class schedulerJobClass;
     private String label;
 
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     /**
      * Constructor
@@ -63,8 +64,6 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
         }
 
         objectMapper = ObjectMapperFactory.newInstance();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-
         this.init();
     }
 

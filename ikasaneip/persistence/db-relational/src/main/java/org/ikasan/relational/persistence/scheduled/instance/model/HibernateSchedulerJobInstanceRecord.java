@@ -1,7 +1,5 @@
 package org.ikasan.relational.persistence.scheduled.instance.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -10,6 +8,8 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Hibernate/PostgreSQL implementation of SchedulerJobInstanceRecord.
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 public class HibernateSchedulerJobInstanceRecord implements SchedulerJobInstanceRecord {
 
     private static final Logger logger = LoggerFactory.getLogger(HibernateSchedulerJobInstanceRecord.class);
-    private static final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "id", nullable = false, length = 512)
@@ -113,7 +113,7 @@ public class HibernateSchedulerJobInstanceRecord implements SchedulerJobInstance
                 if (this.type == null) {
                     this.type = determineJobType(schedulerJobInstance);
                 }
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to serialize SchedulerJobInstance to JSON", e);
                 throw new RuntimeException("Failed to serialize SchedulerJobInstance to JSON", e);
             }
@@ -125,7 +125,7 @@ public class HibernateSchedulerJobInstanceRecord implements SchedulerJobInstance
         if (schedulerJobInstanceJson != null && !schedulerJobInstanceJson.isEmpty()) {
             try {
                 this.schedulerJobInstance = objectMapper.readValue(schedulerJobInstanceJson, SchedulerJobInstance.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize SchedulerJobInstance from JSON: {}", schedulerJobInstanceJson, e);
                 throw new RuntimeException("Failed to deserialize SchedulerJobInstance from JSON", e);
             }
@@ -215,7 +215,7 @@ public class HibernateSchedulerJobInstanceRecord implements SchedulerJobInstance
             try {
                 // Deserialize using object mapper type resolution
                 schedulerJobInstance = objectMapper.readValue(schedulerJobInstanceJson, SchedulerJobInstance.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize SchedulerJobInstance from JSON", e);
                 throw new RuntimeException("Failed to deserialize SchedulerJobInstance from JSON", e);
             }

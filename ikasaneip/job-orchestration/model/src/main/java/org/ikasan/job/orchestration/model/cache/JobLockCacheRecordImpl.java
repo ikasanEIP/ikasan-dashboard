@@ -1,7 +1,5 @@
 package org.ikasan.job.orchestration.model.cache;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -10,10 +8,12 @@ import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class JobLockCacheRecordImpl implements JobLockCacheRecord {
 
-    private static ObjectMapper objectMapper;
+    private static final JsonMapper objectMapper;
 
     static {
         objectMapper = ConcurrentObjectMapperFactory.newInstance();
@@ -44,7 +44,7 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     public void setJobLockCache(JobLockCacheData jobLockCache) {
         try {
             this.jobLockCache = objectMapper.writeValueAsString(jobLockCache);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new EntityConversionException("Could not convert entity to string: " + jobLockCache, e);
         }
     }
@@ -53,7 +53,7 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     public JobLockCacheData getJobLockCache() {
         try {
             return objectMapper.readValue(jobLockCache, JobLockCacheDataImpl.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new EntityConversionException("Could not convert string to entity: " + jobLockCache, e);
         }
 

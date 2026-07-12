@@ -7,7 +7,9 @@ import org.ikasan.relational.persistence.scheduled.instance.model.HibernateSched
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditDao;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;

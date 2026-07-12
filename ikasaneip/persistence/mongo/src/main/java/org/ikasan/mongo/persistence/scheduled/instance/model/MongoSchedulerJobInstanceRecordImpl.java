@@ -1,7 +1,5 @@
 package org.ikasan.mongo.persistence.scheduled.instance.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.mongo.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -11,6 +9,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * MongoDB implementation of SchedulerJobInstanceRecord.
@@ -24,7 +24,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceRecord {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoSchedulerJobInstanceRecordImpl.class);
-    private static final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     private String id;
@@ -215,7 +215,7 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
 
             return instance;
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             // todo make better exception
             throw new RuntimeException("Could not convert string to entity: " + this.schedulerJobInstance, e);
         }
@@ -227,7 +227,7 @@ public class MongoSchedulerJobInstanceRecordImpl implements SchedulerJobInstance
         if (schedulerJobInstance != null) {
             try {
                 this.schedulerJobInstanceJson = objectMapper.writeValueAsString(schedulerJobInstance);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to serialize SchedulerJobInstance to JSON", e);
                 throw new RuntimeException("Failed to serialize SchedulerJobInstance", e);
             }

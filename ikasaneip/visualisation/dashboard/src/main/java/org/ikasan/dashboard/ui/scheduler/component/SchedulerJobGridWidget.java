@@ -51,6 +51,7 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.security.service.SecurityService;
 import org.ikasan.spec.security.service.UserService;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
@@ -64,7 +65,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
     private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
     private SystemEventLogger systemEventLogger;
     private ModuleMetaDataService moduleMetaDataService;
     private JobInitiationService jobInitiationService;

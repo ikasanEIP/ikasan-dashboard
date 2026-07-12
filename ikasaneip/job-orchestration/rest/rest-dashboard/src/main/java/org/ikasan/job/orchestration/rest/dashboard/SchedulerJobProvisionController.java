@@ -40,10 +40,6 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -57,6 +53,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
+
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 /**
  * Dashboard application implementing the REST contract
@@ -69,7 +70,7 @@ public class SchedulerJobProvisionController
 
     private JobProvisionService jobProvisionService;
     private SchedulerJobService schedulerJobService;
-    private ObjectMapper mapper;
+    private JsonMapper mapper;
 
     public SchedulerJobProvisionController(JobProvisionService jobProvisionService,
                                            SchedulerJobService schedulerJobService)
@@ -95,8 +96,9 @@ public class SchedulerJobProvisionController
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();
-        this.mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.mapper = this.mapper.rebuild()
+            .activateDefaultTyping(ptv, NON_FINAL)
+            .build();
     }
 
     @RequestMapping(method = RequestMethod.PUT,

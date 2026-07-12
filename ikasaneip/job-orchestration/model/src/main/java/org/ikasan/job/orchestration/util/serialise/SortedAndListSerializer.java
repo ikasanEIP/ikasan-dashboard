@@ -1,21 +1,21 @@
 package org.ikasan.job.orchestration.util.serialise;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.ikasan.spec.scheduled.context.model.And;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * Custom JSON serializer for sorting and serializing a list of "And" objects based on their identifiers.
  */
-public class SortedAndListSerializer extends JsonSerializer<List<And>> {
+public class SortedAndListSerializer extends ValueSerializer<List<And>> {
 
     @Override
-    public void serialize(List<And> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(List<And> list, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
         if (list != null) {
             Collections.sort(list, (a, b) -> {
                 if (a.getIdentifier() != null && b.getIdentifier() != null) {
@@ -25,14 +25,18 @@ public class SortedAndListSerializer extends JsonSerializer<List<And>> {
                 }
             });
         }
-        serializerProvider.defaultSerializeValue(list, jsonGenerator);
+
+        gen.writeStartArray();
+        if (list != null) {
+            for (And and : list) {
+                ctxt.writeValue(gen, and);
+            }
+        }
+        gen.writeEndArray();
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, List<And> list) {
-        if (list == null || list.isEmpty()) {
-            return true;
-        }
-        return false;
+    public boolean isEmpty(SerializationContext ctxt, List<And> list) {
+        return list == null || list.isEmpty();
     }
 }

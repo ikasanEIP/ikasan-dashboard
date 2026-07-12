@@ -1,7 +1,6 @@
 package org.ikasan.orchestration.service.context.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ikasan.job.orchestration.builder.util.ContextTemplateUtils;
@@ -25,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.SerializationUtils;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -123,8 +124,9 @@ public final class ContextExportZipUtils {
                                                       boolean addReplacementTokens,
                                                       boolean separateSubContextsWhenPersisting) {
         try {
-            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            JsonMapper objectMapper = ObjectMapperFactory.newInstance();
+            objectMapper = objectMapper.rebuild()
+                .enable(SerializationFeature.INDENT_OUTPUT).build();
 
             ContextTemplate unmodifiedContextTemplate = SerializationUtils.clone(context);
 
@@ -306,8 +308,9 @@ public final class ContextExportZipUtils {
                                                       boolean addReplacementTokens,
                                                       boolean seperateSubcontextsWhenPersisting) {
         try {
-            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
+            JsonMapper objectMapper = ObjectMapperFactory.newInstance();
+            objectMapper = objectMapper.rebuild()
+                .enable(SerializationFeature.INDENT_OUTPUT).build(); // Export with pretty lines
 
             List<SchedulerJob> jobsInPlan = getJobsInPlanWithIncludedGlobalEventJobs(context, schedulerJobList);
 
@@ -411,7 +414,7 @@ public final class ContextExportZipUtils {
      * @param currentContext to be persisted
      * @throws IOException if we fail to create the directory
      */
-    private static void writeContextRoots(ObjectMapper objectMapper, String currentContextDirectory, ContextTemplate currentContext) throws IOException {
+    private static void writeContextRoots(JsonMapper objectMapper, String currentContextDirectory, ContextTemplate currentContext) throws IOException {
         if (currentContext.getContexts() != null && !currentContext.getContexts().isEmpty()) {
             String newContextDirectory = createContextDirectory(currentContextDirectory, currentContext);
             for (ContextTemplate subContext : ContextTemplateUtils.setOrdinalsInContextTemplates(currentContext.getContexts())) {
@@ -455,7 +458,7 @@ public final class ContextExportZipUtils {
      * @param context to be persisted
      * @throws IOException if persistence fails
      */
-    protected static void writeCurrentRoot(ObjectMapper objectMapper, String containingDirectory, ContextTemplate context) throws IOException {
+    protected static void writeCurrentRoot(JsonMapper objectMapper, String containingDirectory, ContextTemplate context) throws IOException {
         // Leaves for this node already written, remove context to avoid serializing whole graph
         context.setContexts(Collections.EMPTY_LIST);
         String template = objectMapper.writeValueAsString(context);
@@ -514,7 +517,7 @@ public final class ContextExportZipUtils {
      * @param addReplacementTokens a boolean indicating whether replacement tokens should be added to the job files
      * @throws IOException if an I/O error occurs during file creation or writing
      */
-    private static void addJobFilesToZip(ObjectMapper objectMapper, Path filePath, Path internalPath, Path quartzPath, Path globalPath, Path internalTemplatePath,
+    private static void addJobFilesToZip(JsonMapper objectMapper, Path filePath, Path internalPath, Path quartzPath, Path globalPath, Path internalTemplatePath,
                                          List<SchedulerJob> results, boolean addReplacementTokens) throws IOException {
         for (SchedulerJob schedulerJob : results) {
 
@@ -569,7 +572,7 @@ public final class ContextExportZipUtils {
      * @param addReplacementTokens boolean flag to determine if replacement tokens should be added to context name
      * @throws IOException if an I/O error occurs during file creation or writing
      */
-    private static void addNotificationFilesToZip(ObjectMapper objectMapper, Path notificationPath
+    private static void addNotificationFilesToZip(JsonMapper objectMapper, Path notificationPath
         , SearchResults<EmailNotificationContextRecord> results, boolean addReplacementTokens) throws IOException {
         for (EmailNotificationContextRecord record : results.getResultList()) {
             EmailNotificationContext emailNotificationContext = record.getEmailNotificationContext();
@@ -601,7 +604,7 @@ public final class ContextExportZipUtils {
      * @param addReplacementTokens boolean flag to determine if replacement tokens should be added to context name
      * @throws IOException if an I/O error occurs during file creation or writing
      */
-    private static void addNotificationDetailFilesToZip(ObjectMapper objectMapper, Path notificationDetailPath
+    private static void addNotificationDetailFilesToZip(JsonMapper objectMapper, Path notificationDetailPath
         , SearchResults<EmailNotificationDetailsRecord> results, boolean addReplacementTokens) throws IOException {
         for (EmailNotificationDetailsRecord record : results.getResultList()) {
             EmailNotificationDetails emailNotificationDetails = record.getEmailNotificationDetails();
@@ -630,7 +633,7 @@ public final class ContextExportZipUtils {
      * @param results the search results containing ContextProfileRecord objects to add to the zip archive
      * @throws IOException if an I/O error occurs during file creation or writing
      */
-    private static void addProfilesFilesToZip(ObjectMapper objectMapper, Path profilesDir, SearchResults<ContextProfileRecord> results) throws IOException {
+    private static void addProfilesFilesToZip(JsonMapper objectMapper, Path profilesDir, SearchResults<ContextProfileRecord> results) throws IOException {
         for (ContextProfileRecord record : results.getResultList()) {
             String jsonString = objectMapper.writeValueAsString(record);
 

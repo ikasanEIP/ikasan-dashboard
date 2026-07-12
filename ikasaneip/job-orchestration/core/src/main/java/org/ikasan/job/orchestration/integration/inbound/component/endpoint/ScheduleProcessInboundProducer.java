@@ -2,7 +2,6 @@ package org.ikasan.job.orchestration.integration.inbound.component.endpoint;
 
 import com.arjuna.ats.arjuna.coordinator.ActionStatus;
 import com.arjuna.ats.jta.resources.LastResourceCommitOptimisation;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
@@ -37,6 +36,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -49,7 +49,7 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
 
     private static final String FLOW_NAME = "Scheduled Process Event Inbound Flow";
     private Logger logger = LoggerFactory.getLogger(ScheduleProcessInboundProducer.class);
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
     private ScheduleProcessInboundProducerConfiguration configuration;
     private String configurationId;
     private ScheduledProcessProducerConnectionCallback scheduledProcessProducerConnectionCallback;

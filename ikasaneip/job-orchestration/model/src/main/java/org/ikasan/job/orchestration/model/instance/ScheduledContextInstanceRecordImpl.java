@@ -1,18 +1,18 @@
 package org.ikasan.job.orchestration.model.instance;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class ScheduledContextInstanceRecordImpl implements ScheduledContextInstanceRecord {
 
-    private static final ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
 
     private String id;
     private String contextName;
@@ -36,7 +36,7 @@ public class ScheduledContextInstanceRecordImpl implements ScheduledContextInsta
         try {
             return objectMapper.readValue(this.contextInstance, ContextInstanceImpl.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new EntityConversionException("Could not convert string to entity: " + this.contextInstance, e);
         }
     }
@@ -46,7 +46,7 @@ public class ScheduledContextInstanceRecordImpl implements ScheduledContextInsta
         try {
             this.contextInstance = objectMapper.writeValueAsString(context);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new EntityConversionException("Could not convert entity to string: " + context, e);
         }
     }

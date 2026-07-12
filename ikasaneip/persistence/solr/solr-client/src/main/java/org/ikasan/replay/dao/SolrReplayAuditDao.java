@@ -1,15 +1,14 @@
 package org.ikasan.replay.dao;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.replay.model.SolrReplayAuditEvent;
 import org.ikasan.spec.entity.EsbEntityDao;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.replay.ReplayEvent;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +23,7 @@ public class SolrReplayAuditDao extends SolrDaoBase<SolrReplayAuditEvent>
      */
     public static final String REPLAY_AUDIT = "replay_audit";
 
-    ObjectMapper mapper = new ObjectMapper();
+    JsonMapper mapper = JsonMapper.builder().build();
 
     @Override
     public void insert(List<SolrReplayAuditEvent> entities)

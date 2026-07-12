@@ -1,7 +1,5 @@
 package org.ikasan.systemevent.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
@@ -14,6 +12,8 @@ import org.ikasan.spec.systemevent.SystemEventSearchFilter;
 import org.ikasan.systemevent.model.SolrSystemEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -26,7 +26,7 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
      */
     private static Logger logger = LoggerFactory.getLogger(SolrSystemEventDaoImpl.class);
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private JsonMapper objectMapper = JsonMapper.builder().build();
 
     /**
      * We need to give this dao it's context.
@@ -40,7 +40,7 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
         try {
             document.addField(PAYLOAD_CONTENT, getSystemEventContent(systemEvent));
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new RuntimeException(String.format("Cannot convert system event to string! [%s]", systemEvent));
         }
 
@@ -61,7 +61,7 @@ public class SolrSystemEventDaoImpl extends SolrDaoBase<SystemEvent> implements 
         return document;
     }
 
-    private String getSystemEventContent(SystemEvent systemEvent) throws JsonProcessingException {
+    private String getSystemEventContent(SystemEvent systemEvent)  {
         return this.objectMapper.writeValueAsString(systemEvent);
     }
 

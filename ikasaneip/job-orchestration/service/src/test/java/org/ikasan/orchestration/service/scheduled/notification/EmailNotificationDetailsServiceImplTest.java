@@ -32,13 +32,13 @@ public class EmailNotificationDetailsServiceImplTest {
     @Mock
     private EmailNotificationDetailsRecord mockRecord;
 
-    @Mock
-    private EmailNotificationDetails mockEmailNotificationDetails;
+    private EmailNotificationDetails testEmailNotificationDetails;
 
     private EmailNotificationDetailsServiceImpl service;
 
     @Before
     public void setUp() {
+        testEmailNotificationDetails = new EmailNotificationDetailsImpl();
         service = new EmailNotificationDetailsServiceImpl(mockDao);
     }
 
@@ -280,10 +280,10 @@ public class EmailNotificationDetailsServiceImplTest {
     @Test
     public void testSaveEmailNotificationDetails() {
         // Given
-        EmailNotificationDetails details2 = mock(EmailNotificationDetails.class);
-        EmailNotificationDetails details3 = mock(EmailNotificationDetails.class);
+        EmailNotificationDetails details2 = new EmailNotificationDetailsImpl();
+        EmailNotificationDetails details3 = new EmailNotificationDetailsImpl();
         List<EmailNotificationDetails> detailsList = Arrays.asList(
-            mockEmailNotificationDetails, details2, details3
+            testEmailNotificationDetails, details2, details3
         );
 
         // When
@@ -330,7 +330,7 @@ public class EmailNotificationDetailsServiceImplTest {
     public void testSaveEmailNotificationDetailsTimestampsAreSet() {
         // Given
         long beforeTimestamp = System.currentTimeMillis();
-        List<EmailNotificationDetails> detailsList = Arrays.asList(mockEmailNotificationDetails);
+        List<EmailNotificationDetails> detailsList = Arrays.asList(testEmailNotificationDetails);
 
         // When
         service.saveEmailNotificationDetails(detailsList);
@@ -440,7 +440,7 @@ public class EmailNotificationDetailsServiceImplTest {
         // Given
         List<EmailNotificationDetails> largeList = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
-            largeList.add(mock(EmailNotificationDetails.class));
+            largeList.add(new EmailNotificationDetailsImpl());
         }
 
         // When

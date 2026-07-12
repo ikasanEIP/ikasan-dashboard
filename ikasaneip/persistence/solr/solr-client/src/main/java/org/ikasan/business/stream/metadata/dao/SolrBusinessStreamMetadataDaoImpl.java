@@ -1,7 +1,5 @@
 package org.ikasan.business.stream.metadata.dao;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -10,13 +8,10 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.business.stream.metadata.model.SolrBusinessStream;
-import org.ikasan.module.metadata.model.SolrFlowElementMetaDataImpl;
-import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
-import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
-import org.ikasan.module.metadata.model.SolrTransitionImpl;
 import org.ikasan.spec.metadata.BusinessStreamMetadataSearchResults;
 import org.ikasan.spec.metadata.dao.BusinessStreamMetadataDao;
-import org.ikasan.spec.metadata.model.*;
+import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -38,19 +33,7 @@ public class SolrBusinessStreamMetadataDaoImpl extends SolrDaoBase<SolrBusinessS
      */
     public static final String BUSINESS_STREAM_METADATA = "businessStreamMetaData";
 
-    private ObjectMapper objectMapper;
-
-    public SolrBusinessStreamMetadataDaoImpl()
-    {
-        this.objectMapper = new ObjectMapper();
-
-        SimpleModule m = new SimpleModule();
-        m.addAbstractTypeMapping(ModuleMetaData.class, SolrModuleMetaDataImpl.class);
-        m.addAbstractTypeMapping(FlowMetaData.class, SolrFlowMetaDataImpl.class);
-        m.addAbstractTypeMapping(FlowElementMetaData.class, SolrFlowElementMetaDataImpl.class);
-        m.addAbstractTypeMapping(Transition.class, SolrTransitionImpl.class);
-
-        objectMapper.registerModule(m);
+    public SolrBusinessStreamMetadataDaoImpl() {
     }
 
     @Override

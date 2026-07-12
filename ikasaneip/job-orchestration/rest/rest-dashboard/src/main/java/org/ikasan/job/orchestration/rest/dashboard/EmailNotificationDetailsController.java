@@ -40,12 +40,7 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.EmailNotificationDetailsRecordRestImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -61,10 +56,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 /**
  * @author Ikasan Development Team
@@ -75,7 +78,7 @@ public class EmailNotificationDetailsController
 {
     private static final Logger logger = LoggerFactory.getLogger(EmailNotificationDetailsController.class);
 
-    private ObjectMapper mapper;
+    private JsonMapper mapper;
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
     public EmailNotificationDetailsController(EmailNotificationDetailsService emailNotificationDetailsService)
@@ -84,8 +87,9 @@ public class EmailNotificationDetailsController
         if(this.emailNotificationDetailsService == null) {
             throw new IllegalArgumentException("emailNotificationDetailsService cannot be null!");
         }
-        this.mapper = new ObjectMapper();
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.mapper = JsonMapper.builder()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
     }
 
     @RequestMapping(method = RequestMethod.PUT,
@@ -127,8 +131,10 @@ public class EmailNotificationDetailsController
                 .allowIfSubType("java.util.ArrayList")
                 .allowIfSubType("java.util.HashMap")
                 .build();
-            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-            objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+            JsonMapper objectMapper = ObjectMapperFactory.newInstance();
+            objectMapper = objectMapper.rebuild()
+                .activateDefaultTyping(ptv, NON_FINAL)
+                .build();
 
             EmailNotificationDetailsWrapper wrapper = objectMapper.readValue(emailNotificationDetailsWrapper, EmailNotificationDetailsWrapper.class);
 
@@ -161,8 +167,8 @@ public class EmailNotificationDetailsController
                                                                @PathVariable(value = "offset") int offset) {
         SearchResults<EmailNotificationDetailsRecord> notificationResults = emailNotificationDetailsService.findByContextName(contextName, limit, offset);
 
-        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
+        JsonMapper objectMapper = ObjectMapperFactory.newInstance();
+        objectMapper = objectMapper.rebuild().enable(SerializationFeature.INDENT_OUTPUT).build(); // Export with pretty lines
         try {
             String jsonString = objectMapper.writeValueAsString(notificationResults);
             if (jsonString == null || "".equals(jsonString)) {
@@ -170,7 +176,7 @@ public class EmailNotificationDetailsController
             } else {
                 return new ResponseEntity(jsonString, HttpStatus.OK);
             }
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             logger.error("Error converting to JSON", e);
             return new ResponseEntity("Error converting to JSON", HttpStatus.BAD_REQUEST);
         }
@@ -183,8 +189,8 @@ public class EmailNotificationDetailsController
                                                                       @PathVariable(value = "monitorType") String monitorType) {
         EmailNotificationDetailsRecord notificationResults = emailNotificationDetailsService.findByJobNameAndMonitorType(jobName, childContextName, monitorType);
 
-        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
+        JsonMapper objectMapper = ObjectMapperFactory.newInstance();
+        objectMapper = objectMapper.rebuild().enable(SerializationFeature.INDENT_OUTPUT).build();
         try {
             String jsonString = objectMapper.writeValueAsString(notificationResults);
             if (jsonString == null || "".equals(jsonString)) {
@@ -192,7 +198,7 @@ public class EmailNotificationDetailsController
             } else {
                 return new ResponseEntity(jsonString, HttpStatus.OK);
             }
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             logger.error("Error converting to JSON", e);
             return new ResponseEntity("Error converting to JSON", HttpStatus.BAD_REQUEST);
         }

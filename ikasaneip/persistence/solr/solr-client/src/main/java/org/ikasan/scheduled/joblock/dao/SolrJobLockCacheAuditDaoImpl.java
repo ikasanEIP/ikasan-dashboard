@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.joblock.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
@@ -12,13 +10,15 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.UUID;
 
 public class SolrJobLockCacheAuditDaoImpl extends SolrDaoBase<JobLockCacheAuditRecord> implements JobLockCacheAuditDao {
     private static final String JOB_LOCK_AUDIT_CACHE_TYPE = "jockLockCacheRecordAudit";
     private static final String JOB_LOCK_AUDIT_CACHE_TYPE_ID = "jockLockCacheRecordAuditID";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final JsonMapper OBJECT_MAPPER = JsonMapper.builder().build();
     private static final Logger LOG = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
 
     @Override
@@ -40,7 +40,7 @@ public class SolrJobLockCacheAuditDaoImpl extends SolrDaoBase<JobLockCacheAuditR
         document.addField(TYPE, JOB_LOCK_AUDIT_CACHE_TYPE);
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getJobLockCache()));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert JobLockCacheAuditRecord lockHolders to string! [%s]", record));
         }
         document.addField(CREATED_DATE_TIME, System.currentTimeMillis());

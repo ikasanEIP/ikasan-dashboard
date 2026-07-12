@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -49,6 +48,8 @@ import org.ikasan.spec.security.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +81,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
 
     private TextField filterTf = new TextField();
 
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
     private String initialJobLocks = "";
 
     private IntegerField lockCountTf;
@@ -191,7 +192,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             this.initialJobLocks = this.objectMapper.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(this.contextTemplate.getJobLocks());
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             LOGGER.info("Could not initialise job locks string for audit!");
         }
 
@@ -660,7 +661,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                 newLocksString = this.objectMapper.writerWithDefaultPrettyPrinter()
                     .writeValueAsString(this.contextTemplate.getJobLocks());
             }
-            catch (JsonProcessingException e) {
+            catch (JacksonException e) {
                 LOGGER.info("Could not initialise job locks string for audit!");
             }
 

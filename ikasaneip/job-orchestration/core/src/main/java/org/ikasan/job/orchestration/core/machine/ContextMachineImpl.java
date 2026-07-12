@@ -1,8 +1,5 @@
 package org.ikasan.job.orchestration.core.machine;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +58,7 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.*;
@@ -94,7 +92,7 @@ public class ContextMachineImpl implements ContextMachine {
     private IBigQueue deadLetterQueue;
     private ListenableFuture<byte[]> inboundListenableFuture;
     private ListenableFuture<byte[]> outboundListenableFuture;
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ScheduledContextService scheduledContextService;
@@ -208,7 +206,6 @@ public class ContextMachineImpl implements ContextMachine {
         this.contextExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachineImpl-ContextExecutor"));
         this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor(new JobThreadFactory("ContextMachineImpl-EventRaisedListener"));
         this.objectMapper = ConcurrentObjectMapperFactory.newInstance();
-        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.scheduledContextService = scheduledContextService;
@@ -373,8 +370,6 @@ public class ContextMachineImpl implements ContextMachine {
 
     /**
      * Helper method to reset the context instance held by the context machine.
-     *
-     * @throws JsonProcessingException
      */
     public void resetContextInstance(boolean holdCommandJobs, boolean initiateWithSameParameters,
                                      List<ContextParameterInstance> contextParameterInstances)

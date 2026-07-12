@@ -1,8 +1,5 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsWrapperImpl;
 import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.EmailNotificationDetailsRecordRestImpl;
@@ -30,11 +27,15 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = EmailNotificationDetailsController.class)
@@ -89,8 +90,8 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();
-        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-        objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+        JsonMapper objectMapper = ObjectMapperFactory.newInstance();
+        objectMapper = objectMapper.rebuild().activateDefaultTyping(ptv, NON_FINAL).build();
 
         String uri = "/rest/emailNotificationDetails/saveAll";
 

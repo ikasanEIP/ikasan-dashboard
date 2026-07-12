@@ -1,7 +1,6 @@
 package org.ikasan.job.orchestration.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SerializationUtils;
 import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfiguration;
@@ -27,6 +26,7 @@ import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceServi
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.junit.Assert;
 import org.springframework.test.util.ReflectionTestUtils;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
  */
 public class AbstractTest
 {
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
     private JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
     private final SchedulerContextParametersPropertiesProvider schedulerContextParametersPropertiesProvider = new SchedulerContextParametersPropertiesProvider( jobContextParamsSetupConfiguration, null);
     private final ContextParametersFactory contextParametersFactory = new ContextParametersFactory(schedulerContextParametersPropertiesProvider);

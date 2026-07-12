@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.instance.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
@@ -10,10 +8,12 @@ import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrScheduledContextInstanceAuditAggregateRecordImpl implements ScheduledContextInstanceAuditAggregateRecord {
 
-    private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
+    private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -89,7 +89,7 @@ public class SolrScheduledContextInstanceAuditAggregateRecordImpl implements Sch
     public ScheduledContextInstanceAuditAggregate getScheduledContextInstanceAuditAggregate() {
         try {
             return OBJECT_MAPPER.readValue(this.contextInstanceAudit, SolrScheduledContextInstanceAuditAggregateImpl.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.contextInstanceAudit, e);
         }
     }
@@ -98,7 +98,7 @@ public class SolrScheduledContextInstanceAuditAggregateRecordImpl implements Sch
     public void setScheduledContextInstanceAuditAggregate(ScheduledContextInstanceAuditAggregate scheduledContextInstanceAudit) {
         try {
             this.contextInstanceAudit = OBJECT_MAPPER.writeValueAsString(scheduledContextInstanceAudit);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + scheduledContextInstanceAudit, e);
         }
     }

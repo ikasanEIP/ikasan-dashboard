@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.instance.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -9,7 +7,6 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
-import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
@@ -22,6 +19,8 @@ import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobInstanceRecord> implements SchedulerJobInstanceDao {
 
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     /**
      * Logger for this class
@@ -109,7 +108,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(schedulerJobInstance));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
                 , schedulerJobInstanceRecord.getSchedulerJobInstance()));
         }
@@ -148,7 +147,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         return document;
     }
 
-    protected String getPayloadContents(SchedulerJobInstance contextInstance) throws JsonProcessingException {
+    protected String getPayloadContents(SchedulerJobInstance contextInstance)  {
         return objectMapper.writeValueAsString(contextInstance);
     }
 

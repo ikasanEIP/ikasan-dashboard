@@ -1,7 +1,5 @@
 package org.ikasan.relational.persistence.scheduled.context.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -10,6 +8,8 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Hibernate/PostgreSQL implementation of ScheduledContextRecord using JSONB for ContextTemplate storage.
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class HibernateScheduledContextRecordImpl implements ScheduledContextRecord {
 
     private static final Logger logger = LoggerFactory.getLogger(HibernateScheduledContextRecordImpl.class);
-    private static final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "id", nullable = false, length = 512)
@@ -104,7 +104,7 @@ public class HibernateScheduledContextRecordImpl implements ScheduledContextReco
         if (contextTemplate == null && contextTemplateJson != null) {
             try {
                 contextTemplate = objectMapper.readValue(contextTemplateJson, ContextTemplate.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize ContextTemplate from JSON", e);
                 throw new RuntimeException("Failed to deserialize ContextTemplate", e);
             }
@@ -174,7 +174,7 @@ public class HibernateScheduledContextRecordImpl implements ScheduledContextReco
                 // Update denormalized fields
                 this.disabled = contextTemplate.isDisabled();
                 this.quartzScheduledJobsDisabledForContext = contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext();
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to serialize ContextTemplate to JSON", e);
                 throw new RuntimeException("Failed to serialize ContextTemplate", e);
             }

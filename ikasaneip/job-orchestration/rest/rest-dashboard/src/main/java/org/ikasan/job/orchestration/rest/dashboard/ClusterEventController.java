@@ -40,7 +40,6 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.broadcast.*;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
@@ -65,6 +64,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.json.JsonMapper;
 
 @RestController
 @RequestMapping("/rest/clusterEvents")
@@ -72,7 +72,7 @@ public class ClusterEventController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClusterEventController.class);
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     public ClusterEventController() {
         this.objectMapper = ObjectMapperFactory.newInstance();

@@ -1,6 +1,5 @@
 package org.ikasan.orchestration.service.context.recovery;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
@@ -52,6 +51,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.time.*;
@@ -116,7 +116,7 @@ public class ContextInstanceRecoveryServiceImplTest {
     @Mock
     private ScheduledContextRecord scheduledContextRecord;
 
-    private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private final JsonMapper objectMapper = ObjectMapperFactory.newInstance();
 
     private ContextInstanceRecoveryServiceImpl contextInstanceRecoveryServiceImpl;
 

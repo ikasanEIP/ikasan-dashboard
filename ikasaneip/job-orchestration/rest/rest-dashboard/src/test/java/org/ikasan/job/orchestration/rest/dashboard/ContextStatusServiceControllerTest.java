@@ -11,6 +11,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -551,9 +553,9 @@ public class ContextStatusServiceControllerTest {
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
-        assertEquals("[{\"jobPlanInstanceId\":\"test-instance-id\",\"jobPlanName\":\"JOB_PLAN\"" +
+        JSONAssert.assertEquals("[{\"jobPlanInstanceId\":\"test-instance-id\",\"jobPlanName\":\"JOB_PLAN\"" +
             ",\"jobPlanStartTimestamp\":10000000,\"jobPlanProjectedEndTimestamp\":1000,\"timezone\":\"Europe/London\"}]"
-            , mvcResult.getResponse().getContentAsString());
+            , mvcResult.getResponse().getContentAsString(), JSONCompareMode.STRICT);
     }
 
     @Test

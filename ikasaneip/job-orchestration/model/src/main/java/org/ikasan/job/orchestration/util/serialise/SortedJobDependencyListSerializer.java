@@ -1,11 +1,12 @@
 package org.ikasan.job.orchestration.util.serialise;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,10 +14,10 @@ import java.util.List;
  * Custom JSON serializer for sorting and serializing a list of JobDependency objects in ascending order based on job identifiers.
  * Extends the JsonSerializer class.
  */
-public class SortedJobDependencyListSerializer extends JsonSerializer<List<JobDependency>> {
+public class SortedJobDependencyListSerializer extends ValueSerializer<List<JobDependency>> {
 
     @Override
-    public void serialize(List<JobDependency> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(List<JobDependency> list, JsonGenerator jsonGenerator, SerializationContext ctxt) throws JacksonException {
         if (list != null) {
             Collections.sort(list, (a, b) -> {
                 if (a.getJobIdentifier() != null && b.getJobIdentifier() != null) {
@@ -27,14 +28,17 @@ public class SortedJobDependencyListSerializer extends JsonSerializer<List<JobDe
             });
         }
 
-        serializerProvider.defaultSerializeValue(list, jsonGenerator);
+        jsonGenerator.writeStartArray();
+        if (list != null) {
+            for (JobDependency jobDependency : list) {
+                ctxt.writeValue(jsonGenerator, jobDependency);
+            }
+        }
+        jsonGenerator.writeEndArray();
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, List<JobDependency> list) {
-        if (list == null || list.isEmpty()) {
-            return true;
-        }
-        return false;
+    public boolean isEmpty(SerializationContext ctxt, List<JobDependency> value) {
+        return value == null || value.isEmpty();
     }
 }
