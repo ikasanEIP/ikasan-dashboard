@@ -1,7 +1,6 @@
 package org.ikasan.relational.persistence.scheduled.joblock.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+ 
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -10,6 +9,8 @@ import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Hibernate/PostgreSQL implementation of JobLockCacheRecord.
@@ -28,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class HibernateJobLockCacheRecord implements JobLockCacheRecord {
 
     private static final Logger logger = LoggerFactory.getLogger(HibernateJobLockCacheRecord.class);
-    private static final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "environment", nullable = false, length = 255)
@@ -70,7 +71,7 @@ public class HibernateJobLockCacheRecord implements JobLockCacheRecord {
         if (jobLockCacheData != null) {
             try {
                 this.jobLockCacheJson = objectMapper.writeValueAsString(jobLockCacheData);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to serialize JobLockCacheData to JSON", e);
                 throw new RuntimeException("Failed to serialize JobLockCacheData to JSON", e);
             }
@@ -93,7 +94,7 @@ public class HibernateJobLockCacheRecord implements JobLockCacheRecord {
         if (jobLockCacheJson != null && !jobLockCacheJson.isEmpty()) {
             try {
                 this.jobLockCacheData = objectMapper.readValue(jobLockCacheJson, HibernateJobLockCacheData.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize JobLockCacheData from JSON: {}", jobLockCacheJson, e);
                 throw new RuntimeException("Failed to deserialize JobLockCacheData from JSON", e);
             }
@@ -126,7 +127,7 @@ public class HibernateJobLockCacheRecord implements JobLockCacheRecord {
         if (jobLockCacheData == null && jobLockCacheJson != null) {
             try {
                 jobLockCacheData = objectMapper.readValue(jobLockCacheJson, HibernateJobLockCacheData.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize JobLockCacheData from JSON", e);
                 throw new RuntimeException("Failed to deserialize JobLockCacheData from JSON", e);
             }

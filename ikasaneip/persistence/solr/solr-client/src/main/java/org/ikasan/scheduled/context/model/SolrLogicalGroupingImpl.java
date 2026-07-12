@@ -1,6 +1,5 @@
 package org.ikasan.scheduled.context.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.util.serialise.SortedAndListSerializer;
@@ -10,6 +9,7 @@ import org.ikasan.spec.scheduled.context.model.And;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.context.model.Not;
 import org.ikasan.spec.scheduled.context.model.Or;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.List;
 import java.util.Objects;

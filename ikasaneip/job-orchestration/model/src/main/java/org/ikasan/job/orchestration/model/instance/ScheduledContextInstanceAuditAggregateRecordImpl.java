@@ -1,17 +1,17 @@
 package org.ikasan.job.orchestration.model.instance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class ScheduledContextInstanceAuditAggregateRecordImpl implements ScheduledContextInstanceAuditAggregateRecord {
 
-    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.newInstance();
+    private static final JsonMapper OBJECT_MAPPER = ObjectMapperFactory.newInstance();
 
     private String id;
     private String contextName;
@@ -48,7 +48,7 @@ public class ScheduledContextInstanceAuditAggregateRecordImpl implements Schedul
     public ScheduledContextInstanceAuditAggregate getScheduledContextInstanceAuditAggregate() {
         try {
             return OBJECT_MAPPER.readValue(this.contextInstanceAudit, ScheduledContextInstanceAuditAggregateImpl.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new EntityConversionException("Could not convert string to entity: " + this.contextInstanceAudit, e);
         }
     }
@@ -57,7 +57,7 @@ public class ScheduledContextInstanceAuditAggregateRecordImpl implements Schedul
     public void setScheduledContextInstanceAuditAggregate(ScheduledContextInstanceAuditAggregate scheduledContextInstanceAudit) {
         try {
             this.contextInstanceAudit = OBJECT_MAPPER.writeValueAsString(scheduledContextInstanceAudit);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new EntityConversionException("Could not convert entity to string: " + scheduledContextInstanceAudit, e);
         }
     }

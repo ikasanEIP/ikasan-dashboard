@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.job.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
@@ -15,6 +13,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzScheduleDrivenJobRecord>
     implements QuartzScheduleDrivenJobDao<QuartzScheduleDrivenJobRecord> {
@@ -25,7 +25,7 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
     private static Logger logger = LoggerFactory.getLogger(SolrQuartzScheduleDrivenJobDaoImpl.class);
 
 
-    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, QuartzScheduleDrivenJobRecord event) {
         SolrInputDocument document = new SolrInputDocument();
@@ -33,7 +33,7 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
         try {
             document.addField(PAYLOAD_CONTENT, getQuartzScheduleDrivenJob(event.getQuartzScheduleDrivenJob()));
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert QuartzScheduleDrivenJobRecord to string! [%s]", event), e);
         }
 
@@ -56,7 +56,7 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
         return document;
     }
 
-    private String getQuartzScheduleDrivenJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob) throws JsonProcessingException {
+    private String getQuartzScheduleDrivenJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob)  {
         return this.objectMapper.writeValueAsString(quartzScheduleDrivenJob);
     }
 

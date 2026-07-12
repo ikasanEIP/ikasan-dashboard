@@ -1,8 +1,5 @@
 package org.ikasan.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.rest.client.ContextProvisionRestServiceImpl;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -18,11 +15,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import static org.mockito.Mockito.when;
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 @RunWith(MockitoJUnitRunner.class)
 @Ignore
@@ -30,7 +31,7 @@ public class ContextProvisionLocalHostImplTest extends AbstractTest{
 
     private String contextBaseUrl;
 
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     @Mock
     Environment environment;
@@ -49,7 +50,9 @@ public class ContextProvisionLocalHostImplTest extends AbstractTest{
             .build();
 
         objectMapper = ObjectMapperFactory.newInstance();
-        objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+        objectMapper  = objectMapper.rebuild()
+            .activateDefaultTyping(ptv, NON_FINAL)
+            .build();
 
         contextBaseUrl = "http://localhost:9090";
     }

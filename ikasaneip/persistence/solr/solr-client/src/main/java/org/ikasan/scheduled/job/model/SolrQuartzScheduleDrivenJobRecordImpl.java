@@ -1,17 +1,17 @@
 package org.ikasan.scheduled.job.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDrivenJobRecord {
 
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -109,7 +109,7 @@ public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDriv
         try {
             return objectMapper.readValue(quartzScheduleDrivenJob, SolrQuartzScheduleDrivenJobImpl.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.quartzScheduleDrivenJob, e);
         }
     }
@@ -118,7 +118,7 @@ public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDriv
         try {
             this.quartzScheduleDrivenJob = objectMapper.writeValueAsString(quartzScheduleDrivenJob);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + quartzScheduleDrivenJob, e);
         }
     }

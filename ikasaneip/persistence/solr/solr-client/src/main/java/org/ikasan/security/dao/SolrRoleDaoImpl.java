@@ -1,7 +1,5 @@
 package org.ikasan.security.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.*;
@@ -12,6 +10,8 @@ import org.ikasan.spec.security.model.Role;
 import org.ikasan.spec.security.model.RoleJobPlan;
 import org.ikasan.spec.security.model.RoleModule;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +40,8 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
     /** The Solr document type identifier for security roles */
     public static final String ROLE_TYPE = "securityRole";
 
-    /** Jackson ObjectMapper for JSON serialization/deserialization */
-    private static final ObjectMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
+    /** Jackson JsonMapper for JSON serialization/deserialization */
+    private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
 
     private SolrPolicyDaoImpl solrPolicyDao;
 
@@ -139,7 +139,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
 
         try {
             record.setRole(OBJECT_MAPPER.writeValueAsString(role));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Cannot convert Role to string! [" + role.getName() + "]", e);
         }
 
@@ -411,7 +411,7 @@ public class SolrRoleDaoImpl extends SolrDaoBase<SolrRoleRecord> {
             }
 
             return role;
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Cannot convert SolrRoleRecord to Role! [" + record.getName() + "]", e);
         }
     }

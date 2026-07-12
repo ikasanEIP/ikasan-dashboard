@@ -3,23 +3,23 @@ package org.ikasan.job.orchestration.rest.dashboard;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
-import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.*;
-import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -30,12 +30,12 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(SpringExtension.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ContextMachineController.class)
 @WebAppConfiguration
 @EnableWebMvc
@@ -56,7 +56,7 @@ public class ContextMachineControllerTest extends AbstractRestMvcTest {
 
     private ContextMachine contextMachine;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         ContextMachineCache.instance().resetAllCache();
         ContextMachineCache.instance().registerLeaderProvider(null);
@@ -69,7 +69,7 @@ public class ContextMachineControllerTest extends AbstractRestMvcTest {
         when(contextMachine.getContext()).thenReturn(contextInstance);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         ContextMachineCache.instance().resetAllCache();
         ContextMachineCache.instance().registerLeaderProvider(null);

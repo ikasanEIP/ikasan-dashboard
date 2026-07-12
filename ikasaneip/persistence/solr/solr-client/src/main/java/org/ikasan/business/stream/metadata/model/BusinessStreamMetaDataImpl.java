@@ -1,8 +1,8 @@
 package org.ikasan.business.stream.metadata.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<BusinessStream>
 {
@@ -11,6 +11,8 @@ public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<Busine
     private String description;
     private String json;
     private BusinessStream businessStream;
+
+    private final JsonMapper mapper = JsonMapper.builder().build();
 
     @Override
     public String getId()
@@ -61,12 +63,10 @@ public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<Busine
     @Override
     public BusinessStream getBusinessStream() {
         if(this.businessStream == null) {
-            ObjectMapper mapper = new ObjectMapper();
-
             try {
                 this.businessStream = mapper.readValue(this.json, BusinessStream.class);
             }
-            catch (JsonProcessingException e) {
+            catch (JacksonException e) {
                 throw new RuntimeException("Could not map business stream from JSON", e);
             }
         }

@@ -1,10 +1,10 @@
 package org.ikasan.job.orchestration.util.serialise;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.SortedMap;
@@ -13,20 +13,25 @@ import java.util.TreeMap;
 /**
  * Custom JSON serializer for sorting and serializing a Map of Long keys and Long values in ascending order.
  */
-public class SortedBlackoutWindowDateTimeRangesMapSerializer extends JsonSerializer<Map<Long, Long>> {
+public class SortedBlackoutWindowDateTimeRangesMapSerializer extends ValueSerializer<Map<Long, Long>> {
 
     @Override
-    public void serialize(Map<Long, Long> map, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-        SortedMap sortedMap = new TreeMap(Comparator.naturalOrder());
-        sortedMap.putAll(map);
-        serializerProvider.defaultSerializeValue(sortedMap, jsonGenerator);
+    public void serialize(Map<Long, Long> map, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
+        SortedMap<Long, Long> sortedMap = new TreeMap<>(Comparator.naturalOrder());
+        if (map != null) {
+            sortedMap.putAll(map);
+        }
+
+        gen.writeStartObject();
+        for (Map.Entry<Long, Long> entry : sortedMap.entrySet()) {
+            gen.writeName(String.valueOf(entry.getKey()));
+            gen.writeNumber(entry.getValue());
+        }
+        gen.writeEndObject();
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, Map<Long, Long> map) {
-        if (map == null || map.isEmpty()) {
-            return true;
-        }
-        return false;
+    public boolean isEmpty(SerializationContext ctxt, Map<Long, Long> map) {
+        return map == null || map.isEmpty();
     }
 }

@@ -1,6 +1,5 @@
 package org.ikasan.job.orchestration.core.machine;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.awaitility.Awaitility;
 import org.ikasan.bigqueue.BigQueueImpl;
@@ -23,6 +22,7 @@ import org.ikasan.job.orchestration.model.job.SchedulerJobLockParticipantImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.exception.BigQueueNotFoundException;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
@@ -45,7 +45,6 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationServi
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -53,6 +52,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.test.util.ReflectionTestUtils;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,7 +76,7 @@ import static org.mockito.Mockito.*;
 public class ContextMachineTest extends AbstractTest {
 
     protected ContextService contextService = new ContextService();
-    protected ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
+    protected JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
     protected String queueDir = "./target";
 
     protected ContextTemplateValidator contextTemplateValidator = new ContextTemplateValidator();
@@ -3181,7 +3181,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_full_via_big_queue_nested_context_success() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
-        ObjectMapper objectMapper = new ObjectMapper();
+        JsonMapper objectMapper = ObjectMapperFactory.newInstance();
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
@@ -6835,9 +6835,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_held_and_released_local_event_job() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+        JsonMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
 
         when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
             .thenReturn(this.schedulerJobInstanceRecord);
@@ -6906,9 +6904,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_reset_preceding_job_to_held_local_event_job() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+        JsonMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
 
         when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
             .thenReturn(this.schedulerJobInstanceRecord);
@@ -7453,9 +7449,8 @@ public class ContextMachineTest extends AbstractTest {
      */
     @Test
     public void test_global_events_through_context_machine_via_big_queue_two_context_running() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        
+        JsonMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
+
         //Context1 the main initiator
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json"));
@@ -7660,8 +7655,7 @@ public class ContextMachineTest extends AbstractTest {
      */
     @Test
     public void test_global_events_through_context_machine_via_big_queue_single_context() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JsonMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json"));
 
@@ -7793,8 +7787,7 @@ public class ContextMachineTest extends AbstractTest {
      */
     @Test
     public void test_global_events_through_context_machine_via_big_queue_three_context_running_send_to_two() throws IOException, InvalidContextTemplateException {
-        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JsonMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
 
         // modify the context descriptor to add GRP1 for the environment group
         String contextJson = loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json");
@@ -8069,8 +8062,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_broadcast_global_events_success() throws IOException {
-        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JsonMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
 
         // modify the context descriptor to add GRP1 for the environment group
         String contextJson = loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json")
@@ -8152,8 +8144,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_broadcast_global_events_with_exception_in_one_plan_success() throws IOException {
-        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JsonMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
 
         // modify the context descriptor to add GRP1 for the environment group
         String contextJson = loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json")
@@ -8244,8 +8235,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_broadcast_global_events_skipped_success() throws IOException {
-        ObjectMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JsonMapper objectMapperTest = ConcurrentObjectMapperFactory.newInstance();
 
         // modify the context descriptor to add GRP1 for the environment group
         String contextJson = loadDataFile("/data/logic/simple-context-and-chained-single-dependency.json")

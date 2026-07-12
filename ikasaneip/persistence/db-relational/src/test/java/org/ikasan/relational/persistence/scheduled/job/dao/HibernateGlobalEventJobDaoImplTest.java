@@ -6,7 +6,10 @@ import org.ikasan.relational.persistence.scheduled.job.model.HibernateGlobalEven
 import org.ikasan.spec.scheduled.job.dao.GlobalEventJobDao;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.search.SearchResults;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -16,7 +19,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 

@@ -3,7 +3,6 @@ package org.ikasan.scheduled.job.model;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

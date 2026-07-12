@@ -1,13 +1,13 @@
 package org.ikasan.relational.persistence.scheduled.notification.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.ikasan.relational.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAudit;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Hibernate/JPA entity for NotificationSendAuditRecord with PostgreSQL JSONB storage.
@@ -24,7 +24,7 @@ import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
 public class HibernateNotificationSendAuditRecord implements NotificationSendAuditRecord {
 
     @Transient
-    private final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "id", nullable = false, length = 1024)
@@ -59,7 +59,7 @@ public class HibernateNotificationSendAuditRecord implements NotificationSendAud
         if (this.notificationSendAudit != null) {
             try {
                 this.notificationSendAuditJson = objectMapper.writeValueAsString(this.notificationSendAudit);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to serialize NotificationSendAudit to JSON", e);
             }
 
@@ -94,7 +94,7 @@ public class HibernateNotificationSendAuditRecord implements NotificationSendAud
                     this.notificationSendAuditJson,
                     HibernateNotificationSendAudit.class
                 );
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to deserialize NotificationSendAudit from JSON", e);
             }
         }

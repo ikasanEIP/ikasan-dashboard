@@ -1,12 +1,12 @@
 package org.ikasan.dashboard.ui.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.ikasan.systemevent.model.SolrSystemEvent;
 import org.ikasan.systemevent.model.SystemEventImpl;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.ZoneId;
 
@@ -17,7 +17,7 @@ public class IkasanSystemEventDocumentToCsvConverter {
 
     private DateFormatter dateFormatter;
 
-    ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
 
     public IkasanSystemEventDocumentToCsvConverter(ZoneId zoneId) {
         this.csvContents = new StringBuilder(HEADER);

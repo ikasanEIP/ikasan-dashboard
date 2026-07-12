@@ -1,13 +1,14 @@
 package org.ikasan.relational.persistence.scheduled.notification.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+ 
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.ikasan.relational.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Hibernate/JPA entity for EmailNotificationDetailsRecord with PostgreSQL JSONB storage.
@@ -23,7 +24,7 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsReco
 public class HibernateEmailNotificationDetailsRecord implements EmailNotificationDetailsRecord {
 
     @Transient
-    private final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "id", nullable = false, length = 767)
@@ -67,7 +68,7 @@ public class HibernateEmailNotificationDetailsRecord implements EmailNotificatio
         if (this.emailNotificationDetails != null) {
             try {
                 this.emailNotificationDetailsJson = objectMapper.writeValueAsString(this.emailNotificationDetails);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to serialize EmailNotificationDetails to JSON", e);
             }
 
@@ -105,7 +106,7 @@ public class HibernateEmailNotificationDetailsRecord implements EmailNotificatio
                     this.emailNotificationDetailsJson,
                     HibernateEmailNotificationDetails.class
                 );
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to deserialize EmailNotificationDetails from JSON", e);
             }
         }

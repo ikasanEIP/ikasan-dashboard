@@ -1,18 +1,16 @@
 package org.ikasan.designer.event;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.designer.model.Connection;
 import org.ikasan.designer.model.Image;
 import org.ikasan.designer.model.Rectangle;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
-import java.io.IOException;
 import java.util.*;
 
 public class CanvasEvent {
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    protected final JsonMapper objectMapper;
 
     protected String canvasJson;
     protected Map<String, Image> schedulerJobs;
@@ -27,39 +25,32 @@ public class CanvasEvent {
         this.andBoundaries = new ArrayList<>();
         this.connections = new ArrayList<>();
 
+        this.objectMapper = JsonMapper.builder()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
         init();
     }
 
     private void init() {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        try {
-            List<LinkedHashMap> values = objectMapper.readValue(this.canvasJson, List.class);
+        List<LinkedHashMap> values = objectMapper.readValue(this.canvasJson, List.class);
 
-            for (LinkedHashMap value : values) {
-                if (value.get("type").equals("draw2d.shape.basic.Image")) {
-                    Image image = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Image.class);
-                    this.schedulerJobs.put(image.getId(), image);
-                }
-                else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("AND")) {
-                    Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
-                    this.andBoundaries.add(rectangle);
-                }
-                else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("OR")) {
-                    Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
-                    this.orBoundaries.add(rectangle);
-                }
-                else if (value.get("type").equals("draw2d.Connection")) {
-                    Connection connection = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Connection.class);
-                    this.connections.add(connection);
-                }
+        for (LinkedHashMap value : values) {
+            if (value.get("type").equals("draw2d.shape.basic.Image")) {
+                Image image = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Image.class);
+                this.schedulerJobs.put(image.getId(), image);
             }
-
-        }
-        catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
+            else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("AND")) {
+                Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
+                this.andBoundaries.add(rectangle);
+            }
+            else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("OR")) {
+                Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
+                this.orBoundaries.add(rectangle);
+            }
+            else if (value.get("type").equals("draw2d.Connection")) {
+                Connection connection = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Connection.class);
+                this.connections.add(connection);
+            }
         }
     }
 

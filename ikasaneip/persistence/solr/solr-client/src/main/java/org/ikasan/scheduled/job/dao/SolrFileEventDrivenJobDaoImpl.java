@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.job.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
@@ -15,6 +13,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJo
     private static Logger logger = LoggerFactory.getLogger(SolrFileEventDrivenJobDaoImpl.class);
 
 
-    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, FileEventDrivenJobRecord event) {
@@ -36,7 +36,7 @@ public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJo
         try {
             document.addField(PAYLOAD_CONTENT, this.getFileEventDrivenJob(event.getFileEventDrivenJob()));
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]", event));
         }
 
@@ -59,7 +59,7 @@ public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJo
         return document;
     }
 
-    private String getFileEventDrivenJob(FileEventDrivenJob scheduledProcessEvent) throws JsonProcessingException {
+    private String getFileEventDrivenJob(FileEventDrivenJob scheduledProcessEvent) {
         return this.objectMapper.writeValueAsString(scheduledProcessEvent);
     }
 

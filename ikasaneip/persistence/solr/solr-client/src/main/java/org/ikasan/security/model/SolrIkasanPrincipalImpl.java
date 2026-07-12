@@ -41,7 +41,6 @@
 package org.ikasan.security.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.spec.security.model.IkasanPrincipal;
 import org.ikasan.spec.security.model.Role;
 

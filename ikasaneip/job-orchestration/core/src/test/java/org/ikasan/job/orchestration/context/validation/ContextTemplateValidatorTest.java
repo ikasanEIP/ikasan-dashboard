@@ -19,6 +19,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -31,7 +32,7 @@ public class ContextTemplateValidatorTest extends AbstractTest {
 
     Logger logger = LoggerFactory.getLogger(ContextTemplateValidatorTest.class);
 
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
 
     @Test
     public void test_simple_context_validation_success() throws IOException, InvalidContextTemplateException {
@@ -189,9 +190,7 @@ public class ContextTemplateValidatorTest extends AbstractTest {
 
     @Test
     public void test_context_validation_with_start_and_terminal_jobs_success() throws IOException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+        JsonMapper objectMapperTest = ObjectMapperFactory.newInstance();
         // modify the context descriptor to add GRP1 for the environment group
         String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_AND_TERMINAL_JOBS/" +
             "context/TEST_IK_GLOB.json");
@@ -217,8 +216,7 @@ public class ContextTemplateValidatorTest extends AbstractTest {
 
     @Test
     public void test_context_validation_with_job_names_that_are_substrings_of_other_jobs() throws IOException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JsonMapper objectMapperTest = ObjectMapperFactory.newInstance();
 
         // modify the context descriptor to add GRP1 for the environment group
         String contextJson = loadDataFile("/data/bundles/TEST_JOB_NAMES_THAT_ARE_SUBSTRINGS_OF_OTHER_JOB_NAMES/" +

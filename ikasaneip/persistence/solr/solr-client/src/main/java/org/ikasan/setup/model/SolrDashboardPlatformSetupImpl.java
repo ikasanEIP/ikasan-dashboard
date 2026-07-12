@@ -1,12 +1,10 @@
 package org.ikasan.setup.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.setup.util.SolrSetupObjectMapperFactory;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +13,7 @@ import java.util.List;
  * Solr implementation of DashboardPlatformSetup.
  */
 public class SolrDashboardPlatformSetupImpl implements DashboardPlatformSetup {
-    private final ObjectMapper objectMapper = SolrSetupObjectMapperFactory.newInstance();
+    private final JsonMapper objectMapper = SolrSetupObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -58,21 +56,12 @@ public class SolrDashboardPlatformSetupImpl implements DashboardPlatformSetup {
             return new ArrayList<>();
         }
 
-        try {
-            return this.objectMapper.readValue(platformSetupItems, new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        return this.objectMapper.readValue(platformSetupItems, new TypeReference<>() {});
     }
 
     @Override
     public void setPlatformSetupItems(List<DashboardSetupItem> dashboardSetupItems) {
-        try {
-            this.platformSetupItems = this.objectMapper.writeValueAsString(dashboardSetupItems);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        this.platformSetupItems = this.objectMapper.writeValueAsString(dashboardSetupItems);
     }
 
     @Override

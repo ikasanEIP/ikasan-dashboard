@@ -1,7 +1,5 @@
 package org.ikasan.solr.initialisation.security;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.solr.initialisation.core.SolrDataJob;
 import org.ikasan.solr.initialisation.core.SolrDataJobException;
 import org.ikasan.solr.initialisation.core.SolrInitialDataJobConstants;
@@ -18,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +27,7 @@ import java.util.*;
 public class BaselineSecurityDataLoader implements SolrDataJob {
     private static final Logger logger = LoggerFactory.getLogger(BaselineSecurityDataLoader.class);
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonMapper objectMapper = JsonMapper.builder().build();
     private final SolrPolicyDaoImpl policyDao;
     private final SolrRoleDaoImpl roleDao;
     private final SolrIkasanPrincipalDaoImpl principalDao;

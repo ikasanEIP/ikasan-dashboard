@@ -1,8 +1,5 @@
 package org.ikasan.relational.persistence.module.metadata.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -12,6 +9,9 @@ import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.Objects;
 public class HibernateModuleMetaDataImpl implements ModuleMetaData {
 
     private static final Logger logger = LoggerFactory.getLogger(HibernateModuleMetaDataImpl.class);
-    private static final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "name", nullable = false, length = 512)
@@ -91,7 +91,7 @@ public class HibernateModuleMetaDataImpl implements ModuleMetaData {
         if (flows != null && !flows.isEmpty()) {
             try {
                 this.flowsJson = objectMapper.writeValueAsString(flows);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to serialize flows to JSON", e);
                 throw new RuntimeException("Failed to serialize flows to JSON", e);
             }
@@ -107,7 +107,7 @@ public class HibernateModuleMetaDataImpl implements ModuleMetaData {
                 List<HibernateFlowMetaDataImpl> flowsList = objectMapper.readValue(flowsJson,
                     new TypeReference<List<HibernateFlowMetaDataImpl>>() {});
                 this.flows = new ArrayList<>(flowsList);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize flows from JSON: {}", flowsJson, e);
                 throw new RuntimeException("Failed to deserialize flows from JSON", e);
             }

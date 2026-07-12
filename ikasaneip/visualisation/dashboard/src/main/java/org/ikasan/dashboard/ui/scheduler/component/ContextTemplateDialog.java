@@ -47,6 +47,7 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -738,7 +739,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
             ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
 
-            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+            JsonMapper objectMapper = ObjectMapperFactory.newInstance();
 
             String action = String.format("Job plan [%s] has been modified.\nBefore\n[%s]After\n[%s]", this.contextTemplate.getName()
                 , objectMapper.writeValueAsString(beforeModification), objectMapper.writeValueAsString(this.contextTemplate));

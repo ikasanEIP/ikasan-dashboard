@@ -1,20 +1,21 @@
 package org.ikasan.orchestration.service.context.lifecycle;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerServiceImpl;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
-import org.ikasan.job.orchestration.model.instance.*;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.orchestration.service.utils.*;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
+import org.ikasan.orchestration.service.utils.StubSchedulerJobInstanceServiceTestImpl;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -35,10 +36,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.*;
+import java.util.List;
 
-import static java.time.ZonedDateTime.now;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -115,14 +115,8 @@ public class ContextInstanceEndServiceImplTest {
 
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
-    private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-
-    private String contextName;
-
     @Before
     public void setUp() {
-        this.contextName = RandomStringUtils.randomAlphabetic(22);
-
         // Stub this Implementation due to two difference SchedulerJobInstance can be returned
         this.schedulerJobInstanceService = new StubSchedulerJobInstanceServiceTestImpl();
 

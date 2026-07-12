@@ -40,18 +40,13 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
-import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.ScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
-import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
-import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +57,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_INSTANCE_ID;
@@ -78,7 +73,7 @@ public class ScheduledProcessEventController
 {
     private static Logger logger = LoggerFactory.getLogger(ScheduledProcessEventController.class);
 
-    private ObjectMapper mapper;
+    private JsonMapper mapper;
 
     protected IBigQueue inboundQueue;
 
@@ -105,7 +100,6 @@ public class ScheduledProcessEventController
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
         this.mapper = ObjectMapperFactory.newInstance();
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @RequestMapping(method = RequestMethod.PUT,

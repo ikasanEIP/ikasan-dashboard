@@ -1,17 +1,17 @@
 package org.ikasan.scheduled.job.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.model.ContextStartJob;
 import org.ikasan.spec.scheduled.job.model.ContextStartJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrContextStartJobRecordImpl implements ContextStartJobRecord {
 
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -97,7 +97,7 @@ public class SolrContextStartJobRecordImpl implements ContextStartJobRecord {
         try {
             return objectMapper.readValue(contextStartJob, SolrContextStartJobImpl.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.contextStartJob, e);
         }
     }
@@ -107,7 +107,7 @@ public class SolrContextStartJobRecordImpl implements ContextStartJobRecord {
         try {
             this.contextStartJob = objectMapper.writeValueAsString(contextStartJob);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + contextStartJob, e);
         }
     }

@@ -1,6 +1,7 @@
 package org.ikasan.scheduled.event.model;
 
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

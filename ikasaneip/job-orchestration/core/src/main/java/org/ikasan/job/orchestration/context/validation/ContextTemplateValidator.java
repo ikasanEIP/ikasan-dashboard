@@ -1,13 +1,13 @@
 package org.ikasan.job.orchestration.context.validation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,7 +22,7 @@ public class ContextTemplateValidator {
     private List<ContextError> errors = new ArrayList<>();
     private boolean inError = false;
     private  List<String> childContextName = new ArrayList<>();
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
 
     /**
      * Method to validate a context template.
@@ -67,7 +67,7 @@ public class ContextTemplateValidator {
                     this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job definition artefact" +
                         " is missing a job name. This is a mandatory field!\n", this.objectMapper.writeValueAsString(job)), "");
                 }
-                catch (JsonProcessingException e) {
+                catch (JacksonException e) {
                     this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job definition artefact" +
                         " is missing a job name. This is a mandatory field!\n", job.getIdentifier()), "");
                 }
@@ -83,7 +83,7 @@ public class ContextTemplateValidator {
                     this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job plan template" +
                         " is missing a job name. This is a mandatory field!\n", this.objectMapper.writeValueAsString(job)), "");
                 }
-                catch (JsonProcessingException e) {
+                catch (JacksonException e) {
                     this.reportError(contextTemplate.getName(), String.format("Job[%s] sourced from the job plan template" +
                         " is missing a job name. This is a mandatory field!\n", job.getIdentifier()), "");
                 }

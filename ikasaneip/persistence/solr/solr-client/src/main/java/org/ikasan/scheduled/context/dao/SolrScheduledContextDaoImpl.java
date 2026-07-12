@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.context.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
@@ -14,6 +12,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRecord> implements ScheduledContextDao
 {
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static JsonMapper objectMapper = JsonMapper.builder().build();
 
     /**
      * Logger for this class
@@ -42,7 +42,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
             document.addField(DISABLED, contextTemplate.isDisabled());
             document.addField(QUARTZ_SCHEDULED_JOBS_DISABLED, contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext());
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
                 , scheduledContextRecord.getContext()));
         }
@@ -61,7 +61,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
         return document;
     }
 
-    protected String getPayloadContents(ContextTemplate contextTemplate) throws JsonProcessingException {
+    protected String getPayloadContents(ContextTemplate contextTemplate)  {
         return objectMapper.writeValueAsString(contextTemplate);
     }
 

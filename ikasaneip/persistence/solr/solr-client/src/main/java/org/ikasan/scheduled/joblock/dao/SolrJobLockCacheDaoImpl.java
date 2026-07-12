@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.joblock.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
@@ -13,12 +11,14 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> implements JobLockCacheDao {
 
     public static final String JOB_LOCK_CACHE_TYPE = "jobLockCache";
     public static final String JOB_LOCK_CACHE_ID = "jobLockCacheIdentifier";
-    private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
+    private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
     private static final Logger LOG = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
 
     @Override
@@ -37,7 +37,7 @@ public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> imp
         document.addField(TYPE, JOB_LOCK_CACHE_TYPE);
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getJobLockCache()));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert JobLockCacheRecord lockHolders to string! [%s]", record));
         }
         if(record.getTimestamp() == 0) {

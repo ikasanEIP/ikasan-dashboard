@@ -1,11 +1,12 @@
 package org.ikasan.job.orchestration.util.serialise;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,10 +14,10 @@ import java.util.List;
  * Custom JsonSerializer implementation for serializing a list of SchedulerJob objects in a sorted manner based on the
  * job name or hash code.
  */
-public class SortedSchedulerJobListSerializer extends JsonSerializer<List<SchedulerJob>> {
+public class SortedSchedulerJobListSerializer extends ValueSerializer<List<SchedulerJob>> {
 
     @Override
-    public void serialize(List<SchedulerJob> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(List<SchedulerJob> list, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
         if (list != null) {
             // We set the ordinals on export if necessary
             for(int i=0; i<list.size(); i++) {
@@ -34,14 +35,17 @@ public class SortedSchedulerJobListSerializer extends JsonSerializer<List<Schedu
             });
         }
 
-        serializerProvider.defaultSerializeValue(list, jsonGenerator);
+        gen.writeStartArray();
+        if (list != null) {
+            for (SchedulerJob job : list) {
+                ctxt.writeValue(gen, job);
+            }
+        }
+        gen.writeEndArray();
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, List<SchedulerJob> list) {
-        if (list == null || list.isEmpty()) {
-            return true;
-        }
-        return false;
+    public boolean isEmpty(SerializationContext ctxt, List<SchedulerJob> value) {
+        return value == null || value.isEmpty();
     }
 }

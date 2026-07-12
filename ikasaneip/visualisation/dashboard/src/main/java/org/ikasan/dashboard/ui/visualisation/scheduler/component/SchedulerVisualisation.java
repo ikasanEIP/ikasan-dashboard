@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flowingcode.vaadin.addons.fontawesome.FontAwesome;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -54,6 +52,7 @@ import org.ikasan.spec.security.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.*;
@@ -111,7 +110,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     protected boolean showPrettyFormattedDiagram;
 
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -581,12 +580,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             this.scheduledContextService.save(scheduledContextRecord);
             logger.info("Saved context! " + stopWatch.getTime());
 
-            try {
-                this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_SAVED, String.format("Job Plan Saved. Parent Job Plan [%s]. Name of Saved Job Plan [%s].\nBefore\n[%s]\nAfter\n[%s]"
-                    , this.parentContextTemplate.getName(), this.contextTemplate.getName(), this.objectMapper.writeValueAsString(this.contextTemplate) , this.objectMapper.writeValueAsString(updatedContext)), this.authentication.getName());
-            } catch (JsonProcessingException e) {
-               // ignoring json exception
-            }
+            this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_SAVED, String.format("Job Plan Saved. Parent Job Plan [%s]. Name of Saved Job Plan [%s].\nBefore\n[%s]\nAfter\n[%s]"
+                , this.parentContextTemplate.getName(), this.contextTemplate.getName(), this.objectMapper.writeValueAsString(this.contextTemplate) , this.objectMapper.writeValueAsString(updatedContext)), this.authentication.getName());
 
             this.contextTemplate = updatedContext;
 

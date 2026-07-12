@@ -1,13 +1,14 @@
 package org.ikasan.relational.persistence.scheduled.notification.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+ 
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.ikasan.relational.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Hibernate/JPA entity for EmailNotificationContextRecord with PostgreSQL JSONB storage.
@@ -23,7 +24,7 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextReco
 public class HibernateEmailNotificationContextRecord implements EmailNotificationContextRecord {
 
     @Transient
-    private final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "context_name", nullable = false, length = 255)
@@ -58,7 +59,7 @@ public class HibernateEmailNotificationContextRecord implements EmailNotificatio
         if (this.emailNotificationContext != null) {
             try {
                 this.emailNotificationContextJson = objectMapper.writeValueAsString(this.emailNotificationContext);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to serialize EmailNotificationContext to JSON", e);
             }
         }
@@ -87,7 +88,7 @@ public class HibernateEmailNotificationContextRecord implements EmailNotificatio
                     this.emailNotificationContextJson,
                     EmailNotificationContext.class
                 );
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to deserialize EmailNotificationContext from JSON", e);
             }
         }

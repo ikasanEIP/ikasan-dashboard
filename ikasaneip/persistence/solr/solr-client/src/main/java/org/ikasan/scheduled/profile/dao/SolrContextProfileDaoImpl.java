@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.profile.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
@@ -17,6 +15,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class SolrContextProfileDaoImpl extends SolrDaoBase<ContextProfileRecord> implements ContextProfileDao {
 
     public static final String CONTEXT_PROFILE_TYPE = "contextProfile";
-    private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
+    private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
     private static final Logger LOG = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
 
 
@@ -58,7 +58,7 @@ public class SolrContextProfileDaoImpl extends SolrDaoBase<ContextProfileRecord>
                 document.addField(ACCESS_USERS, OBJECT_MAPPER.writeValueAsString(event.getAccessUsers()));
             }
 
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Error converting context profile record! [%s]", event));
         }
         if(event.getCreatedDateTime() == 0) {

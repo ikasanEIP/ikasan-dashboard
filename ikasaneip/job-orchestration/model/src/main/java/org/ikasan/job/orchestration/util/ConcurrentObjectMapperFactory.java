@@ -1,11 +1,7 @@
 package org.ikasan.job.orchestration.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.core.StreamWriteConstraints;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.ikasan.job.orchestration.model.context.*;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
@@ -28,6 +24,10 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +36,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class ConcurrentObjectMapperFactory {
 
+    @JsonIgnoreProperties({"mockitoInterceptor", "$$sinon"})
+    private interface IgnoreMockitoMixin {}
+
     /**
      * Create an ObjectMapper instance that can be used in the
      * job orchestration module with all relevant concrete type
@@ -43,8 +46,7 @@ public class ConcurrentObjectMapperFactory {
      *
      * @return
      */
-    public static ObjectMapper newInstance() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public static JsonMapper newInstance() {
         final var simpleModule = new SimpleModule()
             .addAbstractTypeMapping(And.class, AndImpl.class)
             .addAbstractTypeMapping(Or.class, OrImpl.class)
@@ -83,11 +85,14 @@ public class ConcurrentObjectMapperFactory {
             .addAbstractTypeMapping(Map.class, ConcurrentHashMap.class)
             .addAbstractTypeMapping(Set.class, CopyOnWriteArraySet.class);
 
-        objectMapper.registerModule(simpleModule);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        return objectMapper;
+        return JsonMapper.builder().addModule(simpleModule)
+            .addMixIn(Object.class, IgnoreMockitoMixin.class)
+            .changeDefaultPropertyInclusion(incl -> incl
+                .withContentInclusion(JsonInclude.Include.NON_EMPTY)
+                .withValueInclusion(JsonInclude.Include.NON_EMPTY)
+            )
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+            .build();
     }
 }

@@ -1,17 +1,17 @@
 package org.ikasan.scheduled.job.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.GlobalEventJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrGlobalEventJobRecordImpl implements GlobalEventJobRecord {
 
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -97,7 +97,7 @@ public class SolrGlobalEventJobRecordImpl implements GlobalEventJobRecord {
         try {
             return objectMapper.readValue(globalEventJob, SolrGlobalEventJobImpl.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.globalEventJob, e);
         }
     }
@@ -107,7 +107,7 @@ public class SolrGlobalEventJobRecordImpl implements GlobalEventJobRecord {
         try {
             this.globalEventJob = objectMapper.writeValueAsString(globalEventJob);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + globalEventJob, e);
         }
     }

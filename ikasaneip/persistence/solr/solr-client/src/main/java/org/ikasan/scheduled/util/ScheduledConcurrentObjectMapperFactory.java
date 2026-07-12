@@ -1,9 +1,6 @@
 package org.ikasan.scheduled.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.ikasan.scheduled.context.model.*;
 import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduled.event.model.SolrContextualisedSchedulerJobInitiationEventImpl;
@@ -24,8 +21,12 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobLockParticipant;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -33,14 +34,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class ScheduledConcurrentObjectMapperFactory {
 
     /**
-     * Create an ObjectMapper instance that can be used in the
+     * Create an JsonMapper instance that can be used in the
      * job orchestration module with all relevant concrete type
      * mappings.
      *
      * @return
      */
-    public static ObjectMapper newInstance() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public static JsonMapper newInstance() {
         final var simpleModule = new SimpleModule()
             .addAbstractTypeMapping(And.class, SolrAndImpl.class)
             .addAbstractTypeMapping(Or.class, SolrOrImpl.class)
@@ -76,11 +76,12 @@ public class ScheduledConcurrentObjectMapperFactory {
             .addAbstractTypeMapping(Set.class, CopyOnWriteArraySet.class);
 
 
-        objectMapper.registerModule(simpleModule);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        return objectMapper;
+        return JsonMapper.builder().addModule(simpleModule)
+            .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_NULL)
+                .withValueInclusion(JsonInclude.Include.NON_NULL))
+            .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_EMPTY)
+                .withValueInclusion(JsonInclude.Include.NON_EMPTY))
+            .configure(tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
     }
 }

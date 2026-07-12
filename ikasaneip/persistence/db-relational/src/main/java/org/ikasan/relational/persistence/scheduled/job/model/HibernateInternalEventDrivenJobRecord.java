@@ -1,7 +1,8 @@
 package org.ikasan.relational.persistence.scheduled.job.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -42,7 +43,7 @@ public class HibernateInternalEventDrivenJobRecord extends HibernateSchedulerJob
     }
 
     @Override
-    protected InternalEventDrivenJob deserializeJobFromJson(String json) throws JsonProcessingException {
+    protected InternalEventDrivenJob deserializeJobFromJson(String json)  {
         return objectMapper.readValue(json, InternalEventDrivenJob.class);
     }
 

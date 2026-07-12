@@ -1,7 +1,5 @@
 package org.ikasan.relational.persistence.scheduled.instance.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -10,6 +8,8 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Hibernate/PostgreSQL implementation of ScheduledContextInstanceRecord.
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 public class HibernateScheduledContextInstanceRecord implements ScheduledContextInstanceRecord {
 
     private static final Logger logger = LoggerFactory.getLogger(HibernateScheduledContextInstanceRecord.class);
-    private static final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "id", nullable = false, length = 512)
@@ -90,7 +90,7 @@ public class HibernateScheduledContextInstanceRecord implements ScheduledContext
         if (contextInstance != null) {
             try {
                 this.contextInstanceJson = objectMapper.writeValueAsString(contextInstance);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to serialize ContextInstance to JSON", e);
                 throw new RuntimeException("Failed to serialize ContextInstance to JSON", e);
             }
@@ -107,7 +107,7 @@ public class HibernateScheduledContextInstanceRecord implements ScheduledContext
         if (contextInstanceJson != null && !contextInstanceJson.isEmpty()) {
             try {
                 this.contextInstance = objectMapper.readValue(contextInstanceJson, ContextInstance.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize ContextInstance from JSON: {}", contextInstanceJson, e);
                 throw new RuntimeException("Failed to deserialize ContextInstance from JSON", e);
             }
@@ -153,7 +153,7 @@ public class HibernateScheduledContextInstanceRecord implements ScheduledContext
             try {
                 // Deserialize from JSON using object mapper type resolution
                 contextInstance = objectMapper.readValue(contextInstanceJson, ContextInstance.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize ContextInstance from JSON", e);
                 throw new RuntimeException("Failed to deserialize ContextInstance from JSON", e);
             }

@@ -1,7 +1,5 @@
 package org.ikasan.rest.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -17,6 +15,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Date;
 import java.util.List;
@@ -34,7 +33,7 @@ public class SchedulerRestServiceImplTest
 
     private String contextBaseUrl;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private JsonMapper mapper = JsonMapper.builder().build();
 
     @Before
     public void setup()
@@ -45,9 +44,9 @@ public class SchedulerRestServiceImplTest
     }
 
     @Test
-    public void getTriggers() throws JsonProcessingException
+    public void getTriggers() 
     {
-        ObjectMapper mapper = new ObjectMapper();
+        
         stubFor(get(urlEqualTo(SchedulerRestServiceImpl.TRIGGER_URL))
                     .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
                     .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -63,9 +62,9 @@ public class SchedulerRestServiceImplTest
     }
 
     @Test
-    public void getTriggers_http400() throws JsonProcessingException
+    public void getTriggers_http400() 
     {
-        ObjectMapper mapper = new ObjectMapper();
+        
         stubFor(get(urlEqualTo(SchedulerRestServiceImpl.TRIGGER_URL))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -80,9 +79,9 @@ public class SchedulerRestServiceImplTest
     }
 
     @Test
-    public void getTriggers_http404() throws JsonProcessingException
+    public void getTriggers_http404() 
     {
-        ObjectMapper mapper = new ObjectMapper();
+        
         stubFor(get(urlEqualTo(SchedulerRestServiceImpl.TRIGGER_URL))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -97,9 +96,9 @@ public class SchedulerRestServiceImplTest
     }
 
     @Test
-    public void getTriggers_http500() throws JsonProcessingException
+    public void getTriggers_http500() 
     {
-        ObjectMapper mapper = new ObjectMapper();
+        
         stubFor(get(urlEqualTo(SchedulerRestServiceImpl.TRIGGER_URL))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -114,9 +113,9 @@ public class SchedulerRestServiceImplTest
     }
 
     @Test
-    public void triggerFlowNow() throws JsonProcessingException
+    public void triggerFlowNow() 
     {
-        ObjectMapper mapper = new ObjectMapper();
+        
         stubFor(get(urlEqualTo("/rest/scheduler/moduleName/flowName"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -131,9 +130,9 @@ public class SchedulerRestServiceImplTest
     }
 
     @Test
-    public void triggerFlowNow_http400() throws JsonProcessingException
+    public void triggerFlowNow_http400() 
     {
-        ObjectMapper mapper = new ObjectMapper();
+        
         stubFor(get(urlEqualTo("/rest/scheduler/moduleName/flowName"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -148,9 +147,9 @@ public class SchedulerRestServiceImplTest
     }
 
     @Test
-    public void triggerFlowNow_http404() throws JsonProcessingException
+    public void triggerFlowNow_http404() 
     {
-        ObjectMapper mapper = new ObjectMapper();
+        
         stubFor(get(urlEqualTo("/rest/scheduler/moduleName/flowName"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -165,9 +164,9 @@ public class SchedulerRestServiceImplTest
     }
 
     @Test
-    public void triggerFlowNow_http450() throws JsonProcessingException
+    public void triggerFlowNow_http450() 
     {
-        ObjectMapper mapper = new ObjectMapper();
+        
         stubFor(get(urlEqualTo("/rest/scheduler/moduleName/flowName"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -183,7 +182,7 @@ public class SchedulerRestServiceImplTest
 
 
     @Test
-    public void testTimeout() throws JsonProcessingException {
+    public void testTimeout()  {
         Environment environment = new StandardEnvironment();
 
         HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory

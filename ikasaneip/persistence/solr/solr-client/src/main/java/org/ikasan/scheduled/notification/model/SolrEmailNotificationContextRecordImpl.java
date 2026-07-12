@@ -1,17 +1,17 @@
 package org.ikasan.scheduled.notification.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrEmailNotificationContextRecordImpl implements EmailNotificationContextRecord {
 
-    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -57,7 +57,7 @@ public class SolrEmailNotificationContextRecordImpl implements EmailNotification
         try {
             return objectMapper.readValue(this.emailNotificationContext, SolrEmailNotificationContextImpl.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + emailNotificationContext, e);
         }
     }
@@ -67,7 +67,7 @@ public class SolrEmailNotificationContextRecordImpl implements EmailNotification
         try {
             this.emailNotificationContext = objectMapper.writeValueAsString(emailNotificationContext);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + emailNotificationContext, e);
         }
     }

@@ -1,7 +1,5 @@
 package org.ikasan.job.orchestration.core.listener;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.AbstractTest;
@@ -26,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -101,7 +100,7 @@ public class SchedulerJobInstanceStateChangeEventListenerTest extends AbstractTe
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName5",
             "agentName5", true);
 
-        ObjectMapper mapper = ObjectMapperFactory.newInstance();
+        JsonMapper mapper = ObjectMapperFactory.newInstance();
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(mapper.writeValueAsString(eventInstance)).build();
         contextMachine.eventReceived(mapper.writeValueAsString(message));
 

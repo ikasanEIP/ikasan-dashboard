@@ -1,14 +1,15 @@
 package org.ikasan.relational.persistence.scheduled.profile.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.ikasan.relational.persistence.scheduled.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.List;
 @Table(name = "context_profile")
 public class HibernateContextProfileRecord implements ContextProfileRecord {
 
-    private static final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "id", nullable = false, length = 767)
@@ -81,7 +82,7 @@ public class HibernateContextProfileRecord implements ContextProfileRecord {
         if (this.contextProfileJson != null) {
             try {
                 this.contextProfile = objectMapper.readValue(this.contextProfileJson, ContextProfile.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to deserialize ContextProfile from JSON", e);
             }
         }
@@ -90,7 +91,7 @@ public class HibernateContextProfileRecord implements ContextProfileRecord {
         if (this.accessGroupsJson != null) {
             try {
                 this.accessGroups = objectMapper.readValue(this.accessGroupsJson, new TypeReference<ArrayList<String>>() {});
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to deserialize accessGroups from JSON", e);
             }
         }
@@ -99,7 +100,7 @@ public class HibernateContextProfileRecord implements ContextProfileRecord {
         if (this.accessUsersJson != null) {
             try {
                 this.accessUsers = objectMapper.readValue(this.accessUsersJson, new TypeReference<ArrayList<String>>() {});
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to deserialize accessUsers from JSON", e);
             }
         }
@@ -155,7 +156,7 @@ public class HibernateContextProfileRecord implements ContextProfileRecord {
         if (this.contextProfile != null) {
             try {
                 this.contextProfileJson = objectMapper.writeValueAsString(this.contextProfile);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to serialize ContextProfile to JSON", e);
             }
         }
@@ -173,7 +174,7 @@ public class HibernateContextProfileRecord implements ContextProfileRecord {
         if (this.accessGroups != null) {
             try {
                 this.accessGroupsJson = objectMapper.writeValueAsString(this.accessGroups);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to serialize accessGroups to JSON", e);
             }
         }
@@ -191,7 +192,7 @@ public class HibernateContextProfileRecord implements ContextProfileRecord {
         if (this.accessUsers != null) {
             try {
                 this.accessUsersJson = objectMapper.writeValueAsString(this.accessUsers);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Failed to serialize accessUsers to JSON", e);
             }
         }

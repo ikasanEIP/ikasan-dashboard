@@ -1,19 +1,10 @@
 package org.ikasan.job.orchestration.rest.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
-import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.rest.client.dto.ErrorDto;
 import org.ikasan.job.orchestration.rest.client.exception.SchedulerAgentRestClientException;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.rest.client.ModuleRestService;
-import org.ikasan.rest.client.SchedulerRestServiceImpl;
-import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +14,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.HttpClientErrorException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 public class JobProvisionModuleRestServiceImpl extends ModuleRestService implements JobProvisionModuleService {
 
@@ -34,7 +28,7 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService impleme
     public static final String JOB_PROVISION_REST_URL = "/rest/jobProvision";
     public static final String JOB_PROVISION_REMOVE_REST_URL = "/rest/jobProvision/remove";
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private JsonMapper objectMapper = JsonMapper.builder().build();
 
     public JobProvisionModuleRestServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         super(environment, httpComponentsClientHttpRequestFactory);
@@ -51,8 +45,9 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService impleme
                 .allowIfSubType("java.util.ArrayList")
                 .allowIfSubType("java.util.HashMap")
                 .build();
-            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-            objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+            JsonMapper objectMapper = ObjectMapperFactory.newInstance();
+            objectMapper = objectMapper.rebuild()
+                .activateDefaultTyping(ptv, NON_FINAL).build();
 
             String serialised = objectMapper.writeValueAsString(jobs);
 
@@ -86,7 +81,7 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService impleme
                     , contextName), e);
                 throw new SchedulerAgentRestClientException(String.format("An error has occurred attempting to remove jobs " +
                     "for context[%s] - error message[%s]!", contextName, errorDto.getErrorMessage()), e);
-            } catch (JsonProcessingException ex) {
+            } catch (JacksonException ex) {
                 throw new RuntimeException(ex);
             }
         }

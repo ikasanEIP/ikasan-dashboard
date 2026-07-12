@@ -40,10 +40,6 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
@@ -58,6 +54,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
+
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 /**
  * Dashboard application implementing the REST contract
@@ -69,7 +70,7 @@ public class ContextProvisionController
     private static Logger logger = LoggerFactory.getLogger(ContextProvisionController.class);
 
     private ContextProvisionService contextProvisionService;
-    private ObjectMapper mapper;
+    private JsonMapper mapper;
 
     public ContextProvisionController(ContextProvisionService contextProvisionService)
     {
@@ -94,8 +95,9 @@ public class ContextProvisionController
             .allowIfSubType("java.util.HashSet")
             .allowIfSubType("java.util.concurrent.CopyOnWriteArraySet")
             .build();
-        this.mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.mapper = this.mapper.rebuild()
+            .activateDefaultTyping(ptv, NON_FINAL)
+            .build();
     }
 
     @RequestMapping(method = RequestMethod.PUT,

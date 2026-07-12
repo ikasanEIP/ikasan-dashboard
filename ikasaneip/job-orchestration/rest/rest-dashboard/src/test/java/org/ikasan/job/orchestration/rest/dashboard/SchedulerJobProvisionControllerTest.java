@@ -1,8 +1,5 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
@@ -30,12 +27,16 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
+import static tools.jackson.databind.DefaultTyping.NON_FINAL;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SchedulerJobProvisionController.class)
@@ -67,7 +68,7 @@ public class SchedulerJobProvisionControllerTest {
     public void test_provision_context_success() throws Exception {
         ContextBundle contextBundle = loadContextBundle();
 
-        ObjectMapper mapper = ConcurrentObjectMapperFactory.newInstance();
+        JsonMapper mapper = ConcurrentObjectMapperFactory.newInstance();
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
@@ -77,7 +78,7 @@ public class SchedulerJobProvisionControllerTest {
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();
-        mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+        mapper = mapper.rebuild().activateDefaultTyping(ptv, NON_FINAL).build();
 
         SchedulerJobWrapperImpl schedulerJobWrapper = new SchedulerJobWrapperImpl();
         schedulerJobWrapper.setJobs(contextBundle.getSchedulerJobs());

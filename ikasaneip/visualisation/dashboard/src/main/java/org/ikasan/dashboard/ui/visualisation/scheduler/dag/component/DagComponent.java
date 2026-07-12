@@ -45,10 +45,6 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
 
     Logger logger = LoggerFactory.getLogger(DagComponent.class);
 
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-
-    private boolean initialised = false;
-
     private ModuleMetaDataService moduleMetaDataService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;

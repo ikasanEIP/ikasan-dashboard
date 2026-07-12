@@ -7,7 +7,10 @@ import org.ikasan.relational.persistence.scheduled.notification.model.HibernateN
 import org.ikasan.spec.scheduled.notification.dao.NotificationSendAuditDao;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAudit;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;

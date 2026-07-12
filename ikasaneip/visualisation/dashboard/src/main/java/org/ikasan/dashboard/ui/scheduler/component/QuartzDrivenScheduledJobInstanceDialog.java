@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -42,6 +41,7 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.ByteArrayInputStream;
 
@@ -74,7 +74,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
 
     private SchedulerStatusDiv statusDiv;
 
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
 
     private JobInitiationService jobInitiationService;
 

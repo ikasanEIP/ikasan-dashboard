@@ -1,16 +1,16 @@
 package org.ikasan.scheduled.notification.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAudit;
 import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrNotificationSendAuditRecord implements NotificationSendAuditRecord {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private JsonMapper objectMapper = JsonMapper.builder().build();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -44,7 +44,7 @@ public class SolrNotificationSendAuditRecord implements NotificationSendAuditRec
         try {
             return objectMapper.readValue(this.notificationSendAudit, SolrNotificationSendAudit.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + notificationSendAudit, e);
         }
     }
@@ -53,7 +53,7 @@ public class SolrNotificationSendAuditRecord implements NotificationSendAuditRec
         try {
             this.notificationSendAudit = objectMapper.writeValueAsString(notificationSendAudit);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + notificationSendAudit, e);
         }
     }

@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -38,7 +39,7 @@ import java.util.Map;
 public class ContextMachineWithStartTerminalAndLocalEventJobsTest extends AbstractTest {
 
     protected ContextService contextService = new ContextService();
-    protected ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    protected JsonMapper objectMapper = ObjectMapperFactory.newInstance();
     protected String queueDir = "./target";
 
     protected ContextTemplateValidator contextTemplateValidator = new ContextTemplateValidator();
@@ -73,8 +74,7 @@ public class ContextMachineWithStartTerminalAndLocalEventJobsTest extends Abstra
 
     @Test
     public void test_context_with_start_and_terminal_jobs_success() throws IOException {
-        ObjectMapper objectMapperTest = ObjectMapperFactory.newInstance();
-        objectMapperTest.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JsonMapper objectMapperTest = ObjectMapperFactory.newInstance();
 
         // modify the context descriptor to add GRP1 for the environment group
         String contextJson = loadDataFile("/data/bundles/TEST_IK_GLOB_WITH_START_TERMINAL_JOBS_AND_LOCAL_EVENT_JOBS/" +

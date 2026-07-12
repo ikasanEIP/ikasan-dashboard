@@ -1,7 +1,6 @@
 package org.ikasan.setup.service;
 
 import org.ikasan.setup.dao.SetupDao;
-import org.ikasan.setup.dao.SolrSetupDaoImpl;
 import org.ikasan.setup.model.DashboardPlatformSetup;
 import org.ikasan.spec.solr.SolrServiceBase;
 import org.slf4j.Logger;

@@ -1,8 +1,5 @@
 package org.ikasan.metrics.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -15,6 +12,9 @@ import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.Date;
@@ -35,14 +35,15 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
      */
     public static final String METRIC_ENTITY_TYPE = "metric";
 
-    private int solrMetricsQueryLimit;
+    private final int solrMetricsQueryLimit;
 
-    private ObjectMapper mapper;
+    private final JsonMapper mapper;
 
     public SolrMetricsDaoImpl(int solrMetricsQueryLimit) {
         this.solrMetricsQueryLimit = solrMetricsQueryLimit;
-        this.mapper = new ObjectMapper();
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.mapper = JsonMapper.builder()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
     }
 
     @Override
@@ -58,7 +59,7 @@ public class SolrMetricsDaoImpl extends SolrDaoBase<FlowInvocationMetric> implem
         try {
             document.addField(PAYLOAD_CONTENT, this.mapper.writeValueAsString(flowInvocationMetric));
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             e.printStackTrace();
             logger.warn(String.format("Could not set metric payload content[%s]", flowInvocationMetric), e);
         }

@@ -1,7 +1,4 @@
 package org.ikasan.job.orchestration.service;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
@@ -20,117 +17,118 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatusWrapper;
 import org.ikasan.spec.scheduled.status.model.ContextMachineStatusWrapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ContextService {
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     public ContextService() {
         this.objectMapper = ConcurrentObjectMapperFactory.newInstance();
     }
 
-    public boolean isValidJSON(final String json) throws JsonProcessingException {
+    public boolean isValidJSON(final String json) {
         try {
-            this.objectMapper.readTree(json);
+            this.objectMapper.readValue(json, Object.class);
         }
-        catch (JsonProcessingException jpe) {
-            throw jpe;
+        catch (JacksonException e) {
+            return false;
         }
-
         return true;
     }
 
-    public ContextTemplate getContextTemplate(String context) throws JsonProcessingException {
+    public ContextTemplate getContextTemplate(String context) throws JacksonException {
         return objectMapper.readValue(context, ContextTemplateImpl.class);
     }
 
-    public String getContextTemplateString(ContextTemplate context) throws JsonProcessingException {
+    public String getContextTemplateString(ContextTemplate context) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
     }
 
-    public ContextInstance getContextInstance(String context) throws JsonProcessingException {
+    public ContextInstance getContextInstance(String context) throws JacksonException {
         return objectMapper.readValue(context, ContextInstanceImpl.class);
     }
 
-    public String getContextInstanceString(ContextInstance context) throws JsonProcessingException {
+    public String getContextInstanceString(ContextInstance context) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
     }
 
-    public String getContextInstanceString(Map<String, ContextInstance> context) throws JsonProcessingException {
+    public String getContextInstanceString(Map<String, ContextInstance> context) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
     }
 
-    public String getSchedulerJobInstance(SchedulerJobInstance schedulerJobInstance) throws JsonProcessingException {
+    public String getSchedulerJobInstance(SchedulerJobInstance schedulerJobInstance) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJobInstance);
     }
 
-    public String getSchedulerJobInstance(Map<String, SchedulerJobInstance> schedulerJobInstance) throws JsonProcessingException {
+    public String getSchedulerJobInstance(Map<String, SchedulerJobInstance> schedulerJobInstance) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJobInstance);
     }
 
-    public SchedulerJob getSchedulerJob(String schedulerJob) throws JsonProcessingException {
+    public SchedulerJob getSchedulerJob(String schedulerJob) throws JacksonException {
         return objectMapper.readValue(schedulerJob, SchedulerJobImpl.class);
     }
 
-    public JobLock getJobLock(String jobLock) throws JsonProcessingException {
+    public JobLock getJobLock(String jobLock) throws JacksonException {
         return objectMapper.readValue(jobLock, JobLockImpl.class);
     }
 
-    public String getSchedulerJobString(SchedulerJob schedulerJob) throws JsonProcessingException {
+    public String getSchedulerJobString(SchedulerJob schedulerJob) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJob);
     }
 
-    public QuartzScheduleDrivenJob getQuartzScheduleDrivenJob(String schedulerJob) throws JsonProcessingException {
+    public QuartzScheduleDrivenJob getQuartzScheduleDrivenJob(String schedulerJob) throws JacksonException {
         return objectMapper.readValue(schedulerJob, QuartzScheduleDrivenJobImpl.class);
     }
 
-    public String getQuartzScheduleDrivenJobString(QuartzScheduleDrivenJob schedulerJob) throws JsonProcessingException {
+    public String getQuartzScheduleDrivenJobString(QuartzScheduleDrivenJob schedulerJob) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJob);
     }
 
-    public FileEventDrivenJob getFileEventDrivenJob(String schedulerJob) throws JsonProcessingException {
+    public FileEventDrivenJob getFileEventDrivenJob(String schedulerJob) throws JacksonException {
         return objectMapper.readValue(schedulerJob, FileEventDrivenJobImpl.class);
     }
 
-    public String getFileEventDrivenJobString(FileEventDrivenJob schedulerJob) throws JsonProcessingException {
+    public String getFileEventDrivenJobString(FileEventDrivenJob schedulerJob) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJob);
     }
 
-    public InternalEventDrivenJob getInternalEventDrivenJob(String schedulerJob) throws JsonProcessingException {
+    public InternalEventDrivenJob getInternalEventDrivenJob(String schedulerJob) throws JacksonException {
         return objectMapper.readValue(schedulerJob, InternalEventDrivenJobImpl.class);
     }
 
-    public String getInternalEventDrivenJobString(InternalEventDrivenJob schedulerJob) throws JsonProcessingException {
+    public String getInternalEventDrivenJobString(InternalEventDrivenJob schedulerJob) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJob);
     }
 
-    public GlobalEventJob getGlobalEventJob(String schedulerJob) throws JsonProcessingException {
+    public GlobalEventJob getGlobalEventJob(String schedulerJob) throws JacksonException {
         return objectMapper.readValue(schedulerJob, GlobalEventJobImpl.class);
     }
 
-    public String getGlobalEventJobString(GlobalEventJob schedulerJob) throws JsonProcessingException {
+    public String getGlobalEventJobString(GlobalEventJob schedulerJob) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJob);
     }
 
-    public ContextProfileRecord getContextProfileRecord(String contextProfileRecord) throws JsonProcessingException {
+    public ContextProfileRecord getContextProfileRecord(String contextProfileRecord) throws JacksonException {
         return objectMapper.readValue(contextProfileRecord, ContextProfileRecordImpl.class);
     }
 
-    public EmailNotificationDetails getEmailNotificationDetails(String emailNotificationDetails) throws JsonProcessingException {
+    public EmailNotificationDetails getEmailNotificationDetails(String emailNotificationDetails) throws JacksonException {
         return objectMapper.readValue(emailNotificationDetails, EmailNotificationDetailsImpl.class);
     }
 
-    public EmailNotificationContext getEmailNotificationContext(String emailNotificationContext) throws JsonProcessingException {
+    public EmailNotificationContext getEmailNotificationContext(String emailNotificationContext) throws JacksonException {
         return objectMapper.readValue(emailNotificationContext, EmailNotificationContextImpl.class);
     }
 
-    public String getContextJobInstanceStatus(ContextJobInstanceStatusWrapper contextJobInstanceStatusWrapper) throws JsonProcessingException {
+    public String getContextJobInstanceStatus(ContextJobInstanceStatusWrapper contextJobInstanceStatusWrapper) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextJobInstanceStatusWrapper);
     }
 
-    public String getContextMachineStatus(ContextMachineStatusWrapper contextMachineStatusWrapper) throws JsonProcessingException {
+    public String getContextMachineStatus(ContextMachineStatusWrapper contextMachineStatusWrapper) throws JacksonException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachineStatusWrapper);
     }
 

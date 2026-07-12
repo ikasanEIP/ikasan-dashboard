@@ -1,7 +1,5 @@
 package org.ikasan.setup.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * Solr implementation of DashboardSetupItem.
  */

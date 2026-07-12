@@ -1,9 +1,6 @@
 package org.ikasan.relational.persistence.scheduled;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
 import org.ikasan.job.orchestration.model.context.*;
 import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
@@ -25,6 +22,9 @@ import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.util.List;
 import java.util.Map;
@@ -42,8 +42,7 @@ public class ScheduledConcurrentObjectMapperFactory {
      *
      * @return
      */
-    public static ObjectMapper newInstance() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public static JsonMapper newInstance() {
         final var simpleModule = new SimpleModule()
             .addAbstractTypeMapping(And.class, AndImpl.class)
             .addAbstractTypeMapping(Or.class, OrImpl.class)
@@ -97,10 +96,12 @@ public class ScheduledConcurrentObjectMapperFactory {
             .addAbstractTypeMapping(Set.class, CopyOnWriteArraySet.class);
 
 
-        objectMapper.registerModule(simpleModule);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        return objectMapper;
+        return JsonMapper.builder().addModule(simpleModule)
+            .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_NULL)
+                .withValueInclusion(JsonInclude.Include.NON_NULL))
+            .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_EMPTY)
+                .withValueInclusion(JsonInclude.Include.NON_EMPTY))
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
     }
 }

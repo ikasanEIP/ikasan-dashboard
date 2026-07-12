@@ -1,7 +1,5 @@
 package org.ikasan.setup.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.setup.model.DashboardPlatformSetup;
@@ -12,6 +10,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class SolrSetupDaoImpl extends SolrDaoBase<DashboardPlatformSetup> implem
     private static final String DASHBOARD_PLATFORM_SETUP = "dashboardPlatformSetup";
     private static final String DASHBOARD_PLATFORM_SETUP_ID = "dashboardPlatformSetup";
 
-    private final ObjectMapper objectMapper = SolrSetupObjectMapperFactory.newInstance();
+    private final JsonMapper objectMapper = SolrSetupObjectMapperFactory.newInstance();
 
     /**
      * Converts a DashboardPlatformSetup entity to a SolrInputDocument.
@@ -42,7 +42,7 @@ public class SolrSetupDaoImpl extends SolrDaoBase<DashboardPlatformSetup> implem
 
         try {
             document.addField(PAYLOAD_CONTENT, getDashboardPlatformSetupContent(dashboardPlatformSetup.getPlatformSetupItems()));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(String.format("Cannot convert dashboard platform setup to string! [%s]", dashboardPlatformSetup), e);
         }
 
@@ -59,9 +59,9 @@ public class SolrSetupDaoImpl extends SolrDaoBase<DashboardPlatformSetup> implem
      * @param dashboardSetupItems a list of {@code DashboardSetupItem} instances representing
      *                               the setup configuration for the dashboard platform
      * @return a JSON string representation of the provided {@code dashboardSetupItems} list
-     * @throws JsonProcessingException if an error occurs during JSON serialization
+     * @ if an error occurs during JSON serialization
      */
-    private String getDashboardPlatformSetupContent(List<DashboardSetupItem> dashboardSetupItems) throws JsonProcessingException {
+    private String getDashboardPlatformSetupContent(List<DashboardSetupItem> dashboardSetupItems)  {
         return this.objectMapper.writeValueAsString(dashboardSetupItems);
     }
 

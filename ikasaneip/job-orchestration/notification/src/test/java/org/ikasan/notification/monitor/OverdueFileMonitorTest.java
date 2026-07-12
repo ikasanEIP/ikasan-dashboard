@@ -1,7 +1,5 @@
 package org.ikasan.notification.monitor;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachineImpl;
@@ -34,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,7 +55,7 @@ public class OverdueFileMonitorTest {
 
     private String result="test";
 
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     private ContextMachineImpl contextMachine1;
 
@@ -87,7 +86,6 @@ public class OverdueFileMonitorTest {
 
     public void startup(String testType) throws IOException {
         objectMapper = ObjectMapperFactory.newInstance();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         ContextInstance contextInstance1 = new ContextInstanceImpl();
         contextInstance1.setName("context-instance-1");

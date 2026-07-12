@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.instance.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
@@ -10,12 +8,14 @@ import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Objects;
 
 public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceRecord {
 
-    private static ObjectMapper objectMapper;
+    private static JsonMapper objectMapper;
 
     static {
         objectMapper = ScheduledObjectMapperFactory.newInstance();
@@ -173,7 +173,7 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
 
             return instance;
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.schedulerJobInstance, e);
         }
     }
@@ -208,7 +208,7 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
 
             this.schedulerJobInstance = objectMapper.writeValueAsString(schedulerJobInstance);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + schedulerJobInstance, e);
         }
     }

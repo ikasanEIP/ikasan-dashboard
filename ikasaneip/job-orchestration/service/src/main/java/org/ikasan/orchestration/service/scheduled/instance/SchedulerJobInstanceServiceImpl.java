@@ -1,6 +1,5 @@
 package org.ikasan.orchestration.service.scheduled.instance;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -26,6 +25,8 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
     private Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceServiceImpl.class);
 
-    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     private final SchedulerJobInstanceDao schedulerJobInstanceDao;
     private final ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao;
@@ -365,7 +366,7 @@ public class SchedulerJobInstanceServiceImpl implements SchedulerJobInstanceServ
 
             return contextualisedSchedulerJobInstances;
         }
-        catch (IOException e) {
+        catch (JacksonException e) {
             logger.error(String.format("An exception has occurred " +
                 "attempting to initialise scheduler job instances for context[%s]", contextInstance.getName()), e);
             throw new SchedulerJobInstanceInitialisationException(String.format("An exception has occurred " +

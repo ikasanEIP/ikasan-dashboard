@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.instance.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -20,6 +18,8 @@ import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBase<ScheduledContextInstanceAuditAggregateRecord> implements ScheduledContextInstanceAuditAggregateDao {
-    private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
+    private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
 
     private static final Logger LOG = LoggerFactory.getLogger(SolrScheduledContextInstanceAuditAggregateDaoImpl.class);
     private static final String SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE = "scheduledContextInstanceAuditAggregate";
@@ -40,7 +40,7 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
         document.addField(TYPE, SCHEDULED_CONTEXT_INSTANCE_AUDIT_AGGREGATE_TYPE);
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getScheduledContextInstanceAuditAggregate()));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert ScheduledContextInstanceAuditAggregateRecord to string! [%s]"
                 , record.getScheduledContextInstanceAuditAggregate()));
         }

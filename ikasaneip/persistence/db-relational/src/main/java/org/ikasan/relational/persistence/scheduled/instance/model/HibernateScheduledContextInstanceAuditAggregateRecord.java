@@ -1,7 +1,5 @@
 package org.ikasan.relational.persistence.scheduled.instance.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -10,6 +8,8 @@ import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAgg
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Hibernate/PostgreSQL implementation of ScheduledContextInstanceAuditAggregateRecord.
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 public class HibernateScheduledContextInstanceAuditAggregateRecord implements ScheduledContextInstanceAuditAggregateRecord {
 
     private static final Logger logger = LoggerFactory.getLogger(HibernateScheduledContextInstanceAuditAggregateRecord.class);
-    private static final ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Id
     @Column(name = "id", nullable = false, length = 512)
@@ -87,7 +87,7 @@ public class HibernateScheduledContextInstanceAuditAggregateRecord implements Sc
         if (scheduledContextInstanceAuditAggregate != null) {
             try {
                 this.auditAggregateJson = objectMapper.writeValueAsString(scheduledContextInstanceAuditAggregate);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to serialize ScheduledContextInstanceAuditAggregate to JSON", e);
                 throw new RuntimeException("Failed to serialize ScheduledContextInstanceAuditAggregate to JSON", e);
             }
@@ -105,7 +105,7 @@ public class HibernateScheduledContextInstanceAuditAggregateRecord implements Sc
             try {
                 this.scheduledContextInstanceAuditAggregate = objectMapper.readValue(
                     auditAggregateJson, ScheduledContextInstanceAuditAggregate.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize ScheduledContextInstanceAuditAggregate from JSON: {}",
                     auditAggregateJson, e);
                 throw new RuntimeException("Failed to deserialize ScheduledContextInstanceAuditAggregate from JSON", e);
@@ -167,7 +167,7 @@ public class HibernateScheduledContextInstanceAuditAggregateRecord implements Sc
             try {
                 scheduledContextInstanceAuditAggregate = objectMapper.readValue(
                     auditAggregateJson, ScheduledContextInstanceAuditAggregate.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 logger.error("Failed to deserialize ScheduledContextInstanceAuditAggregate from JSON", e);
                 throw new RuntimeException("Failed to deserialize ScheduledContextInstanceAuditAggregate from JSON", e);
             }

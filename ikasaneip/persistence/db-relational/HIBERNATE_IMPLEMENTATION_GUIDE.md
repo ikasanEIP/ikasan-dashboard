@@ -559,7 +559,7 @@ public void save(Entity entity) { ... }
 Use the existing factory pattern:
 
 ```java
-private static final ObjectMapper objectMapper =
+private static final JsonMapper  objectMapper =
     ScheduledConcurrentObjectMapperFactory.newInstance();
 ```
 

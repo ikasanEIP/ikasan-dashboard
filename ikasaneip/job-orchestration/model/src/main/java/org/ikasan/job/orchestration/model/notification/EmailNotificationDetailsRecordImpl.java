@@ -1,14 +1,14 @@
 package org.ikasan.job.orchestration.model.notification;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class EmailNotificationDetailsRecordImpl implements EmailNotificationDetailsRecord {
 
-    private ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
 
     private String id;
     private String jobName;
@@ -66,7 +66,7 @@ public class EmailNotificationDetailsRecordImpl implements EmailNotificationDeta
         try {
             return objectMapper.readValue(this.emailNotificationDetails, EmailNotificationDetails.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new RuntimeException("Could not convert string to entity: " + emailNotificationDetails, e);
         }
     }
@@ -75,7 +75,7 @@ public class EmailNotificationDetailsRecordImpl implements EmailNotificationDeta
         try {
             this.emailNotificationDetails = objectMapper.writeValueAsString(emailNotificationDetails);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new RuntimeException("Could not convert entity to string: " + emailNotificationDetails, e);
         }
     }

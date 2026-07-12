@@ -1,19 +1,19 @@
 package org.ikasan.scheduled.profile.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SolrContextProfileRecordImpl implements ContextProfileRecord {
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -81,7 +81,7 @@ public class SolrContextProfileRecordImpl implements ContextProfileRecord {
         try {
             return objectMapper.readValue(this.contextProfile, SolrContextProfileImpl.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.contextProfile, e);
         }
     }
@@ -91,7 +91,7 @@ public class SolrContextProfileRecordImpl implements ContextProfileRecord {
         try {
             this.contextProfile = objectMapper.writeValueAsString(contextProfile);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + contextProfile, e);
         }
     }
@@ -102,7 +102,7 @@ public class SolrContextProfileRecordImpl implements ContextProfileRecord {
         try {
             return objectMapper.readValue(this.accessGroups, ArrayList.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.accessGroups, e);
         }
     }
@@ -112,7 +112,7 @@ public class SolrContextProfileRecordImpl implements ContextProfileRecord {
         try {
             this.accessGroups = objectMapper.writeValueAsString(accessGroups);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + accessGroups, e);
         }
     }
@@ -123,7 +123,7 @@ public class SolrContextProfileRecordImpl implements ContextProfileRecord {
         try {
             return objectMapper.readValue(this.accessUsers, ArrayList.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.accessUsers, e);
         }
     }
@@ -133,7 +133,7 @@ public class SolrContextProfileRecordImpl implements ContextProfileRecord {
         try {
             this.accessUsers = objectMapper.writeValueAsString(accessUsers);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + accessUsers, e);
         }
     }

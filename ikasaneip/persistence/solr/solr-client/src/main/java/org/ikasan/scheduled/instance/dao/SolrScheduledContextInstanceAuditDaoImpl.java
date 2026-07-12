@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.instance.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
@@ -12,9 +10,11 @@ import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<ScheduledContextInstanceRecord> implements ScheduledContextInstanceAuditDao {
-    private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
+    private static final JsonMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
 
     private static final Logger LOG = LoggerFactory.getLogger(SolrScheduledContextInstanceAuditDaoImpl.class);
     private static final String SCHEDULED_CONTEXT_INSTANCE_AUDIT_TYPE = "scheduledContextInstanceAudit";
@@ -27,7 +27,7 @@ public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<Schedu
         document.addField(TYPE, SCHEDULED_CONTEXT_INSTANCE_AUDIT_TYPE);
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getContextInstance()));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert ScheduledContextInstanceRecord to string! [%s]"
                 , record.getContextInstance()));
         }

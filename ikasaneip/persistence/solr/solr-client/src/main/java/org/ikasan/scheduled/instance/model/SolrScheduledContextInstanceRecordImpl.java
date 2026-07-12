@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.instance.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
@@ -10,9 +8,11 @@ import org.ikasan.scheduled.util.ScheduledConcurrentObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextInstanceRecord {
-    private static ObjectMapper objectMapper;
+    private static JsonMapper objectMapper;
 
     static {
         objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
@@ -81,7 +81,7 @@ public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextI
         try {
             return objectMapper.readValue(this.contextInstance, SolrContextInstanceImpl.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.contextInstance, e);
         }
     }
@@ -91,7 +91,7 @@ public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextI
         try {
             this.contextInstance = objectMapper.writeValueAsString(context);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + context, e);
         }
     }

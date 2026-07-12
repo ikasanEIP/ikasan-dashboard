@@ -1,7 +1,5 @@
 package org.ikasan.configuration.metadata.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
@@ -17,6 +15,8 @@ import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +35,11 @@ public class SolrComponentConfigurationMetadataDaoImpl extends SolrDaoBase<Confi
      */
     public static final String COMPONENT_CONFIGURATION = "componentConfiguration";
 
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     public SolrComponentConfigurationMetadataDaoImpl()
     {
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = JsonMapper.builder().build();
     }
 
     @Override
@@ -82,7 +82,7 @@ public class SolrComponentConfigurationMetadataDaoImpl extends SolrDaoBase<Confi
         {
             document.addField(PAYLOAD_CONTENT, objectMapper.writeValueAsString(configurationMetaData));
         }
-        catch (JsonProcessingException e)
+        catch (JacksonException e)
         {
             throw new RuntimeException("Unable to convert ["+configurationMetaData+"] to json format.");
         }

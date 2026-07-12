@@ -1,11 +1,13 @@
 package org.ikasan.relational.persistence.module.metadata.dao;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.ikasan.relational.persistence.module.metadata.model.*;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.dao.ModuleMetadataDao;
@@ -14,6 +16,8 @@ import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,21 +36,21 @@ public class HibernateModuleMetadataDaoImpl implements ModuleMetadataDao {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     /**
      * Constructor initializing the ObjectMapper with type mappings
      */
     public HibernateModuleMetadataDaoImpl() {
-        this.objectMapper = new ObjectMapper();
-
-        SimpleModule module = new SimpleModule();
+       SimpleModule module = new SimpleModule();
         module.addAbstractTypeMapping(FlowMetaData.class, HibernateFlowMetaDataImpl.class);
         module.addAbstractTypeMapping(FlowElementMetaData.class, HibernateFlowElementMetaDataImpl.class);
         module.addAbstractTypeMapping(Transition.class, HibernateTransitionImpl.class);
         module.addAbstractTypeMapping(DecoratorMetaData.class, HibernateDecoratorMetaDataImpl.class);
 
-        objectMapper.registerModule(module);
+        objectMapper =JsonMapper.builder()
+            .addModule(module)
+            .build();
     }
 
     @Override

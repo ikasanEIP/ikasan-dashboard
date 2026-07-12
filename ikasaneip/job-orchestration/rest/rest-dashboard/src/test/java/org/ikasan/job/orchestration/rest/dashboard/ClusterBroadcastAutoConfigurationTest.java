@@ -10,9 +10,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ClusterBroadcastAutoConfigurationTest {
@@ -53,7 +51,7 @@ public class ClusterBroadcastAutoConfigurationTest {
     public void test_self_reference_via_local_hostname_is_excluded() throws UnknownHostException {
         String localHostname = InetAddress.getLocalHost().getHostName().toLowerCase();
         ReflectionTestUtils.setField(uut, "clusterPeerUrls", "http://" + localHostname + ":9090");
-        assertTrue(uut.clusterPeerUrls().isEmpty(), "Expected URL referencing local hostname to be excluded");
+        assertTrue("Expected URL referencing local hostname to be excluded", uut.clusterPeerUrls().isEmpty());
     }
 
     @Test

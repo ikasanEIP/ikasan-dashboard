@@ -1,17 +1,17 @@
 package org.ikasan.scheduled.job.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SolrFileEventDrivenJobRecordImpl implements FileEventDrivenJobRecord {
 
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -109,7 +109,7 @@ public class SolrFileEventDrivenJobRecordImpl implements FileEventDrivenJobRecor
         try {
             return objectMapper.readValue(fileEventDrivenJob, SolrFileEventDrivenJobImpl.class);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.fileEventDrivenJob, e);
         }
     }
@@ -118,7 +118,7 @@ public class SolrFileEventDrivenJobRecordImpl implements FileEventDrivenJobRecor
         try {
             this.fileEventDrivenJob = objectMapper.writeValueAsString(fileEventDrivenJob);
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException("Could not convert entity to string: " + fileEventDrivenJob, e);
         }
     }

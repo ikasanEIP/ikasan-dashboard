@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.event.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -16,6 +14,8 @@ import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,7 +28,7 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
      */
     private static Logger logger = LoggerFactory.getLogger(SolrScheduledProcessEventDao.class);
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private JsonMapper objectMapper = JsonMapper.builder().build();
 
     /**
      * We need to give this dao it's context.
@@ -42,7 +42,7 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         try {
             document.addField(PAYLOAD_CONTENT, getScheduledProcessEventContent(scheduledProcessEvent));
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert scheduled process event to string! [%s]", scheduledProcessEvent));
         }
 
@@ -62,7 +62,7 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         return document;
     }
 
-    private String getScheduledProcessEventContent(ScheduledProcessEvent scheduledProcessEvent) throws JsonProcessingException {
+    private String getScheduledProcessEventContent(ScheduledProcessEvent scheduledProcessEvent)  {
         return this.objectMapper.writeValueAsString(scheduledProcessEvent);
     }
 
@@ -211,7 +211,7 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
     }
 
-    private List<ScheduledProcessEvent> convert(List<SolrScheduledProcessEventRecord> records) throws JsonProcessingException {
+    private List<ScheduledProcessEvent> convert(List<SolrScheduledProcessEventRecord> records)  {
         List<ScheduledProcessEvent> converted = new ArrayList<>();
 
         for (SolrScheduledProcessEventRecord record : records) {

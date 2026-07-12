@@ -38,6 +38,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +68,7 @@ public class JobPlanEditorWidget extends VerticalLayout {
     private VerticalLayout errorWidget;
 
     private SplitLayout editorSplitLayout;
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private JsonMapper objectMapper = ObjectMapperFactory.newInstance();
     private IkasanAuthentication ikasanAuthentication;
 
     public JobPlanEditorWidget(ContextTemplate contextTemplate, ScheduledContextService scheduledContextService,
@@ -181,7 +183,7 @@ public class JobPlanEditorWidget extends VerticalLayout {
 
 
                         ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
-                    } catch (JsonProcessingException e) {
+                    } catch (JacksonException e) {
                         logger.error(String.format("An error has occurred saving job plan[%s]!", contextTemplate.getName()), e);
                         error = true;
                     } finally {
@@ -212,7 +214,7 @@ public class JobPlanEditorWidget extends VerticalLayout {
             contextService.isValidJSON(this.aceEditor.getValue());
             contextTemplate = this.contextService.getContextTemplate(this.aceEditor.getValue());
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             JsonValidationError jsonValidationError = new JsonValidationError(e.getMessage(), e.getLocation().getLineNr()-1,
                 e.getLocation().getColumnNr());
 
@@ -469,8 +471,8 @@ public class JobPlanEditorWidget extends VerticalLayout {
             this.contextTemplate = contextTemplate;
             aceEditor.setValue(contextService.getContextTemplateString(this.contextTemplate));
         }
-        catch (JsonProcessingException e) {
-            e.printStackTrace();
+        catch (JacksonException e) {
+            logger.error("An error has occurred serialising job plan!", e);
         }
     }
 }

@@ -1,7 +1,5 @@
 package org.ikasan.scheduled.notification.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAuditRecord;
@@ -11,6 +9,8 @@ import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class SolrNotificationSendAuditDaoImpl extends SolrDaoBase<NotificationSe
      */
     private static Logger logger = LoggerFactory.getLogger(SolrNotificationSendAuditDaoImpl.class);
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private JsonMapper objectMapper = JsonMapper.builder().build();
 
     /**
      * We need to give this dao it's context.
@@ -36,7 +36,7 @@ public class SolrNotificationSendAuditDaoImpl extends SolrDaoBase<NotificationSe
         try {
             document.addField(PAYLOAD_CONTENT, getNotificationSendAuditContent(notificationSendAuditRecord.getNotificationSendAudit()));
         }
-        catch (JsonProcessingException e) {
+        catch (JacksonException e) {
             throw new RuntimeException(String.format("Cannot convert Email Notification Details to string! [%s]", notificationSendAuditRecord));
         }
 
@@ -72,7 +72,7 @@ public class SolrNotificationSendAuditDaoImpl extends SolrDaoBase<NotificationSe
         return sb.toString();
     }
 
-    private String getNotificationSendAuditContent(NotificationSendAudit notificationSendAudit) throws JsonProcessingException {
+    private String getNotificationSendAuditContent(NotificationSendAudit notificationSendAudit)  {
         return this.objectMapper.writeValueAsString(notificationSendAudit);
     }
 

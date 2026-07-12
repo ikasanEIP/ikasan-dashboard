@@ -1,6 +1,5 @@
 package org.ikasan.orchestration.service.context;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.broadcast.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.broadcast.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -15,8 +14,8 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
-import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ConcurrentObjectMapperFactory;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecoveryServiceImpl;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -43,6 +42,7 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,7 +71,7 @@ public abstract class ContextInstanceServiceBase {
     protected final SchedulerJobService schedulerJobService;
     protected final TimeService timeService;
     protected final JobUtilsService jobUtilsService;
-    protected final ObjectMapper objectMapper;
+    protected final JsonMapper objectMapper;
     protected int contextMachineExecutorWaitTimeoutSeconds = -1;
     protected int blackListedMessageMaxRetries = -1;
     protected long errorRetrySleepInterval = -1;

@@ -14,10 +14,14 @@ import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaDat
 import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 import org.ikasan.spec.metadata.model.ConfigurationParameterMetaData;
 import org.ikasan.spec.solr.SolrDaoBase;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.json.JsonAssert;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -292,7 +296,7 @@ public class SolrComponentConfigurationMetadataDaoImplTest extends SolrTestCaseJ
     }
 
     @Test
-    public void test_convert_entity_to_solr_input_document() {
+    public void test_convert_entity_to_solr_input_document() throws JSONException {
 
         SolrConfigurationParameterMetaData solrConfigurationParameterMetaData
             = new SolrConfigurationParameterMetaData(12345L, "name", "value", "description", "implementingClass");
@@ -316,7 +320,8 @@ public class SolrComponentConfigurationMetadataDaoImplTest extends SolrTestCaseJ
         }
         Assert.assertEquals("configurationId", solrInputDocument.getFieldValue(SolrDaoBase.ID));
         Assert.assertEquals("componentConfiguration", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
-        Assert.assertEquals(metadata, solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT));
+        JSONAssert.assertEquals(metadata, solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT).toString()
+            , JSONCompareMode.LENIENT);
     }
 
     public static String TEST_HOME() {

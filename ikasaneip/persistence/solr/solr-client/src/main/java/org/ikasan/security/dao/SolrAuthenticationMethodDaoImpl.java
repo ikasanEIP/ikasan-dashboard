@@ -1,7 +1,5 @@
 package org.ikasan.security.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.security.model.SolrAuthenticationMethodImpl;
@@ -10,6 +8,8 @@ import org.ikasan.security.util.SolrSecurityObjectMapperFactory;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.security.model.AuthenticationMethod;
 import org.ikasan.spec.solr.SolrDaoBase;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,8 +36,8 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
     /** The Solr document type identifier for authentication methods */
     public static final String AUTHENTICATION_METHOD_TYPE = "securityAuthenticationMethod";
 
-    /** Jackson ObjectMapper for JSON serialization/deserialization */
-    private static final ObjectMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
+    /** Jackson JsonMapper for JSON serialization/deserialization */
+    private static final JsonMapper OBJECT_MAPPER = SolrSecurityObjectMapperFactory.newInstance();
 
     /**
      * Converts a SolrAuthenticationMethodRecord entity into a Solr input document for indexing.
@@ -105,7 +105,7 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
 
         try {
             record.setAuthenticationMethod(OBJECT_MAPPER.writeValueAsString(authenticationMethod));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Cannot convert AuthenticationMethod to string! ["
                 + authenticationMethod.getName() + "]", e);
         }
@@ -213,7 +213,7 @@ public class SolrAuthenticationMethodDaoImpl extends SolrDaoBase<SolrAuthenticat
     private AuthenticationMethod convertRecordToAuthenticationMethod(SolrAuthenticationMethodRecord record) {
         try {
             return OBJECT_MAPPER.readValue(record.getAuthenticationMethod(), SolrAuthenticationMethodImpl.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException("Cannot convert SolrAuthenticationMethodRecord to AuthenticationMethod! ["
                 + record.getName() + "]", e);
         }

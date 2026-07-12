@@ -1,11 +1,11 @@
 package org.ikasan.job.orchestration.util.serialise;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.ikasan.spec.scheduled.context.model.Context;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 
@@ -13,10 +13,9 @@ import java.util.List;
 /**
  * Custom JsonSerializer implementation for serializing a list of Context objects in a sorted manner based on the context name.
  */
-public class SortedContextListSerializer extends JsonSerializer<List<Context>> {
-
+public class SortedContextListSerializer extends ValueSerializer<List<Context>> {
     @Override
-    public void serialize(List<Context> list, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(List<Context> list, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
         if (list != null) {
             // We set the ordinals on export if necessary
             for(int i=0; i<list.size(); i++) {
@@ -27,16 +26,18 @@ public class SortedContextListSerializer extends JsonSerializer<List<Context>> {
 
             list.sort(Comparator.comparing(Context::getName));
         }
-        serializerProvider.defaultSerializeValue(list, jsonGenerator);
+
+        gen.writeStartArray();
+        if (list != null) {
+            for (Context context : list) {
+                ctxt.writeValue(gen, context);
+            }
+        }
+        gen.writeEndArray();
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, List<Context> list) {
-        if (list == null || list.isEmpty()) {
-            return true;
-        }
-        return false;
+    public boolean isEmpty(SerializationContext ctxt, List<Context> value) {
+        return value == null || value.isEmpty();
     }
-
-
 }
