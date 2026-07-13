@@ -182,7 +182,7 @@ public class JobPlanEditorWidget extends VerticalLayout {
                             , this.contextTemplate.getName(), this.contextTemplate.getName(), this.objectMapper.writeValueAsString(beforeUpdate), this.objectMapper.writeValueAsString(contextTemplate)), this.ikasanAuthentication.getName());
 
 
-                        ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                        ContextTemplateSavedEventBroadcaster.instance().broadcast(contextTemplate);
                     } catch (JacksonException e) {
                         logger.error(String.format("An error has occurred saving job plan[%s]!", contextTemplate.getName()), e);
                         error = true;

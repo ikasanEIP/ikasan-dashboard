@@ -11,8 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.lang.reflect.Field;
-import java.util.WeakHashMap;
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -36,19 +35,16 @@ public class NewSchedulerJobEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = NewSchedulerJobEventBroadcaster.class.getDeclaredField("localListeners");
-        listenersField.setAccessible(true);
-        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
-        Field remoteListenerField = NewSchedulerJobEventBroadcaster.class.getDeclaredField("remoteListener");
-        remoteListenerField.setAccessible(true);
-        remoteListenerField.set(null, null);
+        Method resetMethod = NewSchedulerJobEventBroadcaster.class.getDeclaredMethod("reset");
+        resetMethod.setAccessible(true);
+        resetMethod.invoke(NewSchedulerJobEventBroadcaster.instance());
     }
 
     @Test
     public void testRegister_addsListener() {
-        NewSchedulerJobEventBroadcaster.register(listener1);
+        NewSchedulerJobEventBroadcaster.instance().register(listener1);
 
-        NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+        NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
 
         try {
             Thread.sleep(100);
@@ -61,10 +57,10 @@ public class NewSchedulerJobEventBroadcasterTest {
 
     @Test
     public void testRegister_multipleListeners() {
-        NewSchedulerJobEventBroadcaster.register(listener1);
-        NewSchedulerJobEventBroadcaster.register(listener2);
+        NewSchedulerJobEventBroadcaster.instance().register(listener1);
+        NewSchedulerJobEventBroadcaster.instance().register(listener2);
 
-        NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+        NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
 
         try {
             Thread.sleep(100);
@@ -78,10 +74,10 @@ public class NewSchedulerJobEventBroadcasterTest {
 
     @Test
     public void testUnregister_removesListener() {
-        NewSchedulerJobEventBroadcaster.register(listener1);
-        NewSchedulerJobEventBroadcaster.unregister(listener1);
+        NewSchedulerJobEventBroadcaster.instance().register(listener1);
+        NewSchedulerJobEventBroadcaster.instance().unregister(listener1);
 
-        NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+        NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
 
         try {
             Thread.sleep(100);
@@ -94,7 +90,7 @@ public class NewSchedulerJobEventBroadcasterTest {
 
     @Test
     public void testBroadcast_withNoListeners() {
-        NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+        NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
     }
 
     @Test
@@ -103,8 +99,8 @@ public class NewSchedulerJobEventBroadcasterTest {
 
         NewSchedulerJobEventLocalBroadcastListener asyncListener = schedulerJob -> latch.countDown();
 
-        NewSchedulerJobEventBroadcaster.register(asyncListener);
-        NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+        NewSchedulerJobEventBroadcaster.instance().register(asyncListener);
+        NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
 
         boolean completed = latch.await(1, TimeUnit.SECONDS);
         Assert.assertTrue("Broadcast should execute asynchronously", completed);
@@ -112,9 +108,9 @@ public class NewSchedulerJobEventBroadcasterTest {
 
     @Test
     public void testBroadcast_nullSchedulerJob() {
-        NewSchedulerJobEventBroadcaster.register(listener1);
+        NewSchedulerJobEventBroadcaster.instance().register(listener1);
 
-        NewSchedulerJobEventBroadcaster.broadcast(null);
+        NewSchedulerJobEventBroadcaster.instance().broadcast(null);
 
         try {
             Thread.sleep(100);
@@ -127,23 +123,23 @@ public class NewSchedulerJobEventBroadcasterTest {
 
     @Test
     public void testBroadcast_forwardsEventToRemoteListener() {
-        NewSchedulerJobEventBroadcaster.setRemoteListener(remoteListener);
-        NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+        NewSchedulerJobEventBroadcaster.instance().setRemoteListener(remoteListener);
+        NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
         verify(remoteListener).receiveBroadcast(schedulerJob);
     }
 
     @Test
     public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
         // no remote listener set — must not throw
-        NewSchedulerJobEventBroadcaster.remoteBroadcast(schedulerJob);
+        NewSchedulerJobEventBroadcaster.instance().remoteBroadcast(schedulerJob);
     }
 
     @Test
     public void testRegister_sameListenerTwice() {
-        NewSchedulerJobEventBroadcaster.register(listener1);
-        NewSchedulerJobEventBroadcaster.register(listener1);
+        NewSchedulerJobEventBroadcaster.instance().register(listener1);
+        NewSchedulerJobEventBroadcaster.instance().register(listener1);
 
-        NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+        NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
 
         try {
             Thread.sleep(100);

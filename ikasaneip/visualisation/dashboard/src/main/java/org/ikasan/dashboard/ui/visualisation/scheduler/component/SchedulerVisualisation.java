@@ -585,7 +585,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
             this.contextTemplate = updatedContext;
 
-            ContextTemplateSavedEventBroadcaster.broadcast(this.parentContextTemplate);
+            ContextTemplateSavedEventBroadcaster.instance().broadcast(this.parentContextTemplate);
 
             logger.info("Broadcast context! " + stopWatch.getTime());
 

@@ -11,10 +11,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.lang.reflect.Field;
-import java.util.WeakHashMap;
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.Mockito.*;
 
@@ -36,22 +40,17 @@ public class ContextInstanceDlqEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        // localListeners is static final — clear the existing instance rather than replacing it,
-        // since Java 17 refuses reflective writes to final fields.
-        Field listenersField = ContextInstanceDlqEventBroadcaster.class.getDeclaredField("localListeners");
-        listenersField.setAccessible(true);
-        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
-        Field remoteListenerField = ContextInstanceDlqEventBroadcaster.class.getDeclaredField("remoteListener");
-        remoteListenerField.setAccessible(true);
-        remoteListenerField.set(null, null);
+        Method resetMethod = ContextInstanceDlqEventBroadcaster.class.getDeclaredMethod("reset");
+        resetMethod.setAccessible(true);
+        resetMethod.invoke(ContextInstanceDlqEventBroadcaster.instance());
     }
 
     @Test
     public void testRegister_addsListener() {
-        ContextInstanceDlqEventBroadcaster.register(listener1);
+        ContextInstanceDlqEventBroadcaster.instance().register(listener1);
 
         // Verify listener is registered by broadcasting
-        ContextInstanceDlqEventBroadcaster.broadcast(contextInstance);
+        ContextInstanceDlqEventBroadcaster.instance().broadcast(contextInstance);
 
         // Wait a bit for async execution
         try {
@@ -65,10 +64,10 @@ public class ContextInstanceDlqEventBroadcasterTest {
 
     @Test
     public void testRegister_multipleListeners() {
-        ContextInstanceDlqEventBroadcaster.register(listener1);
-        ContextInstanceDlqEventBroadcaster.register(listener2);
+        ContextInstanceDlqEventBroadcaster.instance().register(listener1);
+        ContextInstanceDlqEventBroadcaster.instance().register(listener2);
 
-        ContextInstanceDlqEventBroadcaster.broadcast(contextInstance);
+        ContextInstanceDlqEventBroadcaster.instance().broadcast(contextInstance);
 
         // Wait a bit for async execution
         try {
@@ -83,10 +82,10 @@ public class ContextInstanceDlqEventBroadcasterTest {
 
     @Test
     public void testUnregister_removesListener() {
-        ContextInstanceDlqEventBroadcaster.register(listener1);
-        ContextInstanceDlqEventBroadcaster.unregister(listener1);
+        ContextInstanceDlqEventBroadcaster.instance().register(listener1);
+        ContextInstanceDlqEventBroadcaster.instance().unregister(listener1);
 
-        ContextInstanceDlqEventBroadcaster.broadcast(contextInstance);
+        ContextInstanceDlqEventBroadcaster.instance().broadcast(contextInstance);
 
         // Wait a bit for async execution
         try {
@@ -101,7 +100,7 @@ public class ContextInstanceDlqEventBroadcasterTest {
     @Test
     public void testBroadcast_withNoListeners() {
         // Should not throw exception
-        ContextInstanceDlqEventBroadcaster.broadcast(contextInstance);
+        ContextInstanceDlqEventBroadcaster.instance().broadcast(contextInstance);
     }
 
     @Test
@@ -110,8 +109,8 @@ public class ContextInstanceDlqEventBroadcasterTest {
 
         ContextInstanceDlqEventLocalBroadcastListener asyncListener = contextInstance -> latch.countDown();
 
-        ContextInstanceDlqEventBroadcaster.register(asyncListener);
-        ContextInstanceDlqEventBroadcaster.broadcast(contextInstance);
+        ContextInstanceDlqEventBroadcaster.instance().register(asyncListener);
+        ContextInstanceDlqEventBroadcaster.instance().broadcast(contextInstance);
 
         // Wait for async execution
         boolean completed = latch.await(1, TimeUnit.SECONDS);
@@ -120,10 +119,10 @@ public class ContextInstanceDlqEventBroadcasterTest {
 
     @Test
     public void testBroadcast_nullContextInstance() {
-        ContextInstanceDlqEventBroadcaster.register(listener1);
+        ContextInstanceDlqEventBroadcaster.instance().register(listener1);
 
         // Should not throw exception
-        ContextInstanceDlqEventBroadcaster.broadcast(null);
+        ContextInstanceDlqEventBroadcaster.instance().broadcast(null);
 
         // Wait a bit for async execution
         try {
@@ -137,23 +136,23 @@ public class ContextInstanceDlqEventBroadcasterTest {
 
     @Test
     public void testBroadcast_forwardsEventToRemoteListener() {
-        ContextInstanceDlqEventBroadcaster.setRemoteListener(remoteListener);
-        ContextInstanceDlqEventBroadcaster.broadcast(contextInstance);
+        ContextInstanceDlqEventBroadcaster.instance().setRemoteListener(remoteListener);
+        ContextInstanceDlqEventBroadcaster.instance().broadcast(contextInstance);
         verify(remoteListener).receiveBroadcast(contextInstance);
     }
 
     @Test
     public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
         // no remote listener set — must not throw
-        ContextInstanceDlqEventBroadcaster.remoteBroadcast(contextInstance);
+        ContextInstanceDlqEventBroadcaster.instance().remoteBroadcast(contextInstance);
     }
 
     @Test
     public void testRegister_sameListenerTwice() {
-        ContextInstanceDlqEventBroadcaster.register(listener1);
-        ContextInstanceDlqEventBroadcaster.register(listener1);
+        ContextInstanceDlqEventBroadcaster.instance().register(listener1);
+        ContextInstanceDlqEventBroadcaster.instance().register(listener1);
 
-        ContextInstanceDlqEventBroadcaster.broadcast(contextInstance);
+        ContextInstanceDlqEventBroadcaster.instance().broadcast(contextInstance);
 
         // Wait a bit for async execution
         try {
@@ -164,5 +163,72 @@ public class ContextInstanceDlqEventBroadcasterTest {
 
         // Should only be called once because it's the same listener in a map
         verify(listener1, atLeastOnce()).receiveBroadcast(contextInstance);
+    }
+
+    /**
+     * Proves reset()'s concurrency fix (volatile INSTANCE + synchronized + drain-before-swap) rather
+     * than just arguing it: hammers register/broadcast/unregister from several threads while a
+     * separate thread repeatedly calls reset() via reflection. The only acceptable exception is the
+     * documented RejectedExecutionException from a stale reference to a just-reset instance — anything
+     * else (corruption, NPE, ConcurrentModificationException, a hang) fails the test.
+     */
+    @Test
+    public void testReset_isSafeUnderConcurrentBroadcastAndRegister() throws Exception {
+        int threadCount = 4;
+        int iterationsPerThread = 100;
+        ExecutorService workers = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+        AtomicInteger unexpectedExceptions = new AtomicInteger(0);
+        AtomicBoolean keepResetting = new AtomicBoolean(true);
+
+        for (int i = 0; i < threadCount; i++) {
+            workers.submit(() -> {
+                try {
+                    startLatch.await();
+                    ContextInstanceDlqEventLocalBroadcastListener localListener = ci -> { };
+                    for (int j = 0; j < iterationsPerThread; j++) {
+                        try {
+                            ContextInstanceDlqEventBroadcaster broadcaster = ContextInstanceDlqEventBroadcaster.instance();
+                            broadcaster.register(localListener);
+                            broadcaster.broadcast(contextInstance);
+                            broadcaster.unregister(localListener);
+                        } catch (RejectedExecutionException expected) {
+                            // A stale reference to an instance reset concurrently is documented (see
+                            // reset()'s javadoc) to throw here rather than silently going nowhere.
+                        }
+                    }
+                } catch (Exception e) {
+                    unexpectedExceptions.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        ExecutorService resetter = Executors.newSingleThreadExecutor();
+        resetter.submit(() -> {
+            try {
+                startLatch.await();
+                Method resetMethod = ContextInstanceDlqEventBroadcaster.class.getDeclaredMethod("reset");
+                resetMethod.setAccessible(true);
+                while (keepResetting.get()) {
+                    resetMethod.invoke(ContextInstanceDlqEventBroadcaster.instance());
+                }
+            } catch (Exception ignored) {
+                // best-effort background resetter; failures here don't affect the assertions below
+            }
+        });
+
+        startLatch.countDown();
+        boolean completed = doneLatch.await(30, TimeUnit.SECONDS);
+        keepResetting.set(false);
+        workers.shutdown();
+        resetter.shutdown();
+
+        Assert.assertTrue("Worker threads should finish without hanging", completed);
+        Assert.assertEquals(
+            "No exceptions other than the documented RejectedExecutionException should occur under concurrent reset",
+            0, unexpectedExceptions.get());
     }
 }

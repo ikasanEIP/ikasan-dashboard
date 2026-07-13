@@ -35,7 +35,7 @@ public class ContextMachineController {
         }
         try {
             contextMachine.holdJobs(dto.getChildContextName());
-            ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
+            ContextInstanceSavedEventBroadcaster.instance().broadcast(contextMachine.getContext());
             LOG.info("holdJobs: contextInstanceId [{}], childContext [{}]", contextInstanceId, dto.getChildContextName());
             return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {
@@ -55,7 +55,7 @@ public class ContextMachineController {
         }
         try {
             contextMachine.releaseJobs(dto.getChildContextName());
-            ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
+            ContextInstanceSavedEventBroadcaster.instance().broadcast(contextMachine.getContext());
             LOG.info("releaseJobs: contextInstanceId [{}], childContext [{}]", contextInstanceId, dto.getChildContextName());
             return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {
@@ -75,7 +75,7 @@ public class ContextMachineController {
         }
         try {
             contextMachine.skipJobs(dto.getChildContextName(), dto.isSkipFlag());
-            ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
+            ContextInstanceSavedEventBroadcaster.instance().broadcast(contextMachine.getContext());
             LOG.info("skipAllJobs: contextInstanceId [{}], childContext [{}], skip [{}]",
                 contextInstanceId, dto.getChildContextName(), dto.isSkipFlag());
             return new ResponseEntity(HttpStatus.OK);
@@ -236,7 +236,7 @@ public class ContextMachineController {
         if (contextMachine == null) return new ResponseEntity(HttpStatus.NOT_FOUND);
         try {
             contextMachine.updateContextParameters(new java.util.ArrayList<>(contextParameters));
-            ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
+            ContextInstanceSavedEventBroadcaster.instance().broadcast(contextMachine.getContext());
             return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("updateContextParameters failed for contextInstanceId [{}]", contextInstanceId, e);
@@ -353,7 +353,7 @@ public class ContextMachineController {
             instance.setChildContextName(dto.getChildContextName());
             instance.setChildContextNames(dto.getChildContextNames());
             contextMachine.acknowledgeSchedulerJobError(instance);
-            ContextInstanceSavedEventBroadcaster.broadcast(contextMachine.getContext());
+            ContextInstanceSavedEventBroadcaster.instance().broadcast(contextMachine.getContext());
             LOG.info("acknowledgeError: contextInstanceId [{}], job [{}]", contextInstanceId, dto.getIdentifier());
             return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {

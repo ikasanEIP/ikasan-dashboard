@@ -32,14 +32,14 @@ public class FlowStateBroadcasterTest
         MyConsumer myConsumer4 = new MyConsumer();
         MyConsumer myConsumer5 = new MyConsumer();
 
-        FlowStateBroadcaster.register(myConsumer1);
-        FlowStateBroadcaster.register(myConsumer2);
-        FlowStateBroadcaster.register(myConsumer3);
-        FlowStateBroadcaster.register(myConsumer4);
-        FlowStateBroadcaster.register(myConsumer5);
+        FlowStateBroadcaster.instance().register(myConsumer1);
+        FlowStateBroadcaster.instance().register(myConsumer2);
+        FlowStateBroadcaster.instance().register(myConsumer3);
+        FlowStateBroadcaster.instance().register(myConsumer4);
+        FlowStateBroadcaster.instance().register(myConsumer5);
 
         FlowState flowState = new FlowState("moduleName", "flowState", State.RUNNING_STATE);
-        FlowStateBroadcaster.broadcast(flowState);
+        FlowStateBroadcaster.instance().broadcast(flowState);
 
         Thread.sleep(20);
 
@@ -51,9 +51,9 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 1, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 1, "One flow state has been broadcast!");
 
-        FlowStateBroadcaster.unregister(myConsumer1);
+        FlowStateBroadcaster.instance().unregister(myConsumer1);
 
-        FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
+        FlowStateBroadcaster.instance().broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
         Thread.sleep(20);
 
@@ -63,9 +63,9 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 2, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 2, "One flow state has been broadcast!");
 
-        FlowStateBroadcaster.unregister(myConsumer2);
+        FlowStateBroadcaster.instance().unregister(myConsumer2);
 
-        FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
+        FlowStateBroadcaster.instance().broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
         Thread.sleep(20);
 
@@ -75,9 +75,9 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 3, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 3, "One flow state has been broadcast!");
 
-        FlowStateBroadcaster.unregister(myConsumer3);
+        FlowStateBroadcaster.instance().unregister(myConsumer3);
 
-        FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
+        FlowStateBroadcaster.instance().broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
         Thread.sleep(20);
 
@@ -87,9 +87,9 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 4, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 4, "One flow state has been broadcast!");
 
-        FlowStateBroadcaster.unregister(myConsumer4);
+        FlowStateBroadcaster.instance().unregister(myConsumer4);
 
-        FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
+        FlowStateBroadcaster.instance().broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
         Thread.sleep(20);
 
@@ -99,9 +99,9 @@ public class FlowStateBroadcasterTest
         Assertions.assertTrue(myConsumer4.flowStates.size() == 4, "One flow state has been broadcast!");
         Assertions.assertTrue(myConsumer5.flowStates.size() == 5, "One flow state has been broadcast!");
 
-        FlowStateBroadcaster.unregister(myConsumer5);
+        FlowStateBroadcaster.instance().unregister(myConsumer5);
 
-        FlowStateBroadcaster.broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
+        FlowStateBroadcaster.instance().broadcast(new FlowState("moduleName", "flowState", State.RUNNING_STATE));
 
         Thread.sleep(20);
 

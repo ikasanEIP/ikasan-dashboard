@@ -83,7 +83,7 @@ public class ClusterEventController {
     public ResponseEntity handleContextInstanceStateChange(@RequestBody String eventJson) {
         try {
             ContextInstanceStateChangeEvent event = objectMapper.readValue(eventJson, ContextInstanceStateChangeEventImpl.class);
-            ContextInstanceStateChangeEventBroadcaster.localBroadcast(event);
+            ContextInstanceStateChangeEventBroadcaster.instance().localBroadcast(event);
             LOG.debug("Dispatched received cluster ContextInstanceStateChangeEvent to local listeners");
         } catch (Exception e) {
             LOG.error("Failed to process incoming cluster ContextInstanceStateChangeEvent", e);
@@ -99,7 +99,7 @@ public class ClusterEventController {
     public ResponseEntity handleSchedulerJobStateChange(@RequestBody String eventJson) {
         try {
             SchedulerJobInstanceStateChangeEvent event = objectMapper.readValue(eventJson, SchedulerJobInstanceStateChangeEventImpl.class);
-            SchedulerJobStateChangeEventBroadcaster.localBroadcast(event);
+            SchedulerJobStateChangeEventBroadcaster.instance().localBroadcast(event);
             LOG.debug("Dispatched received cluster SchedulerJobInstanceStateChangeEvent to local listeners");
         } catch (Exception e) {
             LOG.error("Failed to process incoming cluster SchedulerJobInstanceStateChangeEvent", e);
@@ -115,7 +115,7 @@ public class ClusterEventController {
     public ResponseEntity handleContextInstanceSaved(@RequestBody String eventJson) {
         try {
             ContextInstance contextInstance = objectMapper.readValue(eventJson, ContextInstanceImpl.class);
-            ContextInstanceSavedEventBroadcaster.localBroadcast(contextInstance);
+            ContextInstanceSavedEventBroadcaster.instance().localBroadcast(contextInstance);
             LOG.debug("Dispatched received cluster ContextInstance saved event to local listeners");
         } catch (Exception e) {
             LOG.error("Failed to process incoming cluster ContextInstance saved event", e);
@@ -131,7 +131,7 @@ public class ClusterEventController {
     public ResponseEntity handleContextInstanceDlq(@RequestBody String eventJson) {
         try {
             ContextInstance contextInstance = objectMapper.readValue(eventJson, ContextInstanceImpl.class);
-            ContextInstanceDlqEventBroadcaster.localBroadcast(contextInstance);
+            ContextInstanceDlqEventBroadcaster.instance().localBroadcast(contextInstance);
             LOG.debug("Dispatched received cluster ContextInstance DLQ event to local listeners");
         } catch (Exception e) {
             LOG.error("Failed to process incoming cluster ContextInstance DLQ event", e);
@@ -147,7 +147,7 @@ public class ClusterEventController {
     public ResponseEntity handleContextTemplateSaved(@RequestBody String eventJson) {
         try {
             ContextTemplate contextTemplate = objectMapper.readValue(eventJson, ContextTemplateImpl.class);
-            ContextTemplateSavedEventBroadcaster.localBroadcast(contextTemplate);
+            ContextTemplateSavedEventBroadcaster.instance().localBroadcast(contextTemplate);
             LOG.debug("Dispatched received cluster ContextTemplate saved event to local listeners");
         } catch (Exception e) {
             LOG.error("Failed to process incoming cluster ContextTemplate saved event", e);
@@ -163,7 +163,7 @@ public class ClusterEventController {
     public ResponseEntity handleContextTemplateEnableDisable(@RequestBody String eventJson) {
         try {
             ContextTemplate contextTemplate = objectMapper.readValue(eventJson, ContextTemplateImpl.class);
-            ContextTemplateEnableDisableEventBroadcaster.localBroadcast(contextTemplate);
+            ContextTemplateEnableDisableEventBroadcaster.instance().localBroadcast(contextTemplate);
             LOG.debug("Dispatched received cluster ContextTemplate enable/disable event to local listeners");
         } catch (Exception e) {
             LOG.error("Failed to process incoming cluster ContextTemplate enable/disable event", e);
@@ -179,7 +179,7 @@ public class ClusterEventController {
     public ResponseEntity handleContextViewUpdate(@RequestBody String eventJson) {
         try {
             String message = objectMapper.readValue(eventJson, String.class);
-            ContextViewUpdateEventBroadcaster.localBroadcast(message);
+            ContextViewUpdateEventBroadcaster.instance().localBroadcast(message);
             LOG.debug("Dispatched received cluster context view update event to local listeners");
         } catch (Exception e) {
             LOG.error("Failed to process incoming cluster context view update event", e);
@@ -195,7 +195,7 @@ public class ClusterEventController {
     public ResponseEntity handleNewSchedulerJob(@RequestBody String eventJson) {
         try {
             SchedulerJob schedulerJob = objectMapper.readValue(eventJson, SchedulerJobImpl.class);
-            NewSchedulerJobEventBroadcaster.localBroadcast(schedulerJob);
+            NewSchedulerJobEventBroadcaster.instance().localBroadcast(schedulerJob);
             LOG.debug("Dispatched received cluster new SchedulerJob event to local listeners");
         } catch (Exception e) {
             LOG.error("Failed to process incoming cluster new SchedulerJob event", e);

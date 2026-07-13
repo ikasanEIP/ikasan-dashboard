@@ -10,8 +10,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.lang.reflect.Field;
-import java.util.WeakHashMap;
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -34,19 +33,16 @@ public class ContextViewUpdateEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = ContextViewUpdateEventBroadcaster.class.getDeclaredField("localListeners");
-        listenersField.setAccessible(true);
-        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
-        Field remoteListenerField = ContextViewUpdateEventBroadcaster.class.getDeclaredField("remoteListener");
-        remoteListenerField.setAccessible(true);
-        remoteListenerField.set(null, null);
+        Method resetMethod = ContextViewUpdateEventBroadcaster.class.getDeclaredMethod("reset");
+        resetMethod.setAccessible(true);
+        resetMethod.invoke(ContextViewUpdateEventBroadcaster.instance());
     }
 
     @Test
     public void testRegister_addsListener() {
-        ContextViewUpdateEventBroadcaster.register(listener1);
+        ContextViewUpdateEventBroadcaster.instance().register(listener1);
 
-        ContextViewUpdateEventBroadcaster.broadcast(testMessage);
+        ContextViewUpdateEventBroadcaster.instance().broadcast(testMessage);
 
         try {
             Thread.sleep(100);
@@ -59,10 +55,10 @@ public class ContextViewUpdateEventBroadcasterTest {
 
     @Test
     public void testRegister_multipleListeners() {
-        ContextViewUpdateEventBroadcaster.register(listener1);
-        ContextViewUpdateEventBroadcaster.register(listener2);
+        ContextViewUpdateEventBroadcaster.instance().register(listener1);
+        ContextViewUpdateEventBroadcaster.instance().register(listener2);
 
-        ContextViewUpdateEventBroadcaster.broadcast(testMessage);
+        ContextViewUpdateEventBroadcaster.instance().broadcast(testMessage);
 
         try {
             Thread.sleep(100);
@@ -76,10 +72,10 @@ public class ContextViewUpdateEventBroadcasterTest {
 
     @Test
     public void testUnregister_removesListener() {
-        ContextViewUpdateEventBroadcaster.register(listener1);
-        ContextViewUpdateEventBroadcaster.unregister(listener1);
+        ContextViewUpdateEventBroadcaster.instance().register(listener1);
+        ContextViewUpdateEventBroadcaster.instance().unregister(listener1);
 
-        ContextViewUpdateEventBroadcaster.broadcast(testMessage);
+        ContextViewUpdateEventBroadcaster.instance().broadcast(testMessage);
 
         try {
             Thread.sleep(100);
@@ -92,7 +88,7 @@ public class ContextViewUpdateEventBroadcasterTest {
 
     @Test
     public void testBroadcast_withNoListeners() {
-        ContextViewUpdateEventBroadcaster.broadcast(testMessage);
+        ContextViewUpdateEventBroadcaster.instance().broadcast(testMessage);
     }
 
     @Test
@@ -101,8 +97,8 @@ public class ContextViewUpdateEventBroadcasterTest {
 
         ContextViewUpdateEventLocalBroadcastListener asyncListener = message -> latch.countDown();
 
-        ContextViewUpdateEventBroadcaster.register(asyncListener);
-        ContextViewUpdateEventBroadcaster.broadcast(testMessage);
+        ContextViewUpdateEventBroadcaster.instance().register(asyncListener);
+        ContextViewUpdateEventBroadcaster.instance().broadcast(testMessage);
 
         boolean completed = latch.await(1, TimeUnit.SECONDS);
         Assert.assertTrue("Broadcast should execute asynchronously", completed);
@@ -110,9 +106,9 @@ public class ContextViewUpdateEventBroadcasterTest {
 
     @Test
     public void testBroadcast_nullMessage() {
-        ContextViewUpdateEventBroadcaster.register(listener1);
+        ContextViewUpdateEventBroadcaster.instance().register(listener1);
 
-        ContextViewUpdateEventBroadcaster.broadcast(null);
+        ContextViewUpdateEventBroadcaster.instance().broadcast(null);
 
         try {
             Thread.sleep(100);
@@ -125,9 +121,9 @@ public class ContextViewUpdateEventBroadcasterTest {
 
     @Test
     public void testBroadcast_emptyMessage() {
-        ContextViewUpdateEventBroadcaster.register(listener1);
+        ContextViewUpdateEventBroadcaster.instance().register(listener1);
 
-        ContextViewUpdateEventBroadcaster.broadcast("");
+        ContextViewUpdateEventBroadcaster.instance().broadcast("");
 
         try {
             Thread.sleep(100);
@@ -140,23 +136,23 @@ public class ContextViewUpdateEventBroadcasterTest {
 
     @Test
     public void testBroadcast_forwardsEventToRemoteListener() {
-        ContextViewUpdateEventBroadcaster.setRemoteListener(remoteListener);
-        ContextViewUpdateEventBroadcaster.broadcast(testMessage);
+        ContextViewUpdateEventBroadcaster.instance().setRemoteListener(remoteListener);
+        ContextViewUpdateEventBroadcaster.instance().broadcast(testMessage);
         verify(remoteListener).receiveBroadcast(testMessage);
     }
 
     @Test
     public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
         // no remote listener set — must not throw
-        ContextViewUpdateEventBroadcaster.remoteBroadcast(testMessage);
+        ContextViewUpdateEventBroadcaster.instance().remoteBroadcast(testMessage);
     }
 
     @Test
     public void testRegister_sameListenerTwice() {
-        ContextViewUpdateEventBroadcaster.register(listener1);
-        ContextViewUpdateEventBroadcaster.register(listener1);
+        ContextViewUpdateEventBroadcaster.instance().register(listener1);
+        ContextViewUpdateEventBroadcaster.instance().register(listener1);
 
-        ContextViewUpdateEventBroadcaster.broadcast(testMessage);
+        ContextViewUpdateEventBroadcaster.instance().broadcast(testMessage);
 
         try {
             Thread.sleep(100);

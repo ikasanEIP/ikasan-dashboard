@@ -675,7 +675,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             String action = String.format("New job plan [%s] has been created.", this.contextTemplate.getName());
             this.systemEventLogger.logEvent(SystemEventConstants.NEW_JOB_PLAN_CREATED, action, authentication.getName());
 
-            ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+            ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -737,7 +737,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
                 this.contextInstanceRegistrationService.reSchedule(this.contextTemplate.getName(), this.contextInstanceSchedulerService);
             }
 
-            ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+            ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
 
             JsonMapper objectMapper = ObjectMapperFactory.newInstance();
 

@@ -2127,9 +2127,9 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        SchedulerJobStateChangeEventBroadcaster.register(this);
-        ContextInstanceStateChangeEventBroadcaster.register(this);
-        ContextInstanceSavedEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(this);
+        ContextInstanceSavedEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -2139,8 +2139,8 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
     }
 
     protected void unregisterFromBroadcasters() {
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
-        ContextInstanceStateChangeEventBroadcaster.unregister(this);
-        ContextInstanceSavedEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
+        ContextInstanceSavedEventBroadcaster.instance().unregister(this);
     }
 }

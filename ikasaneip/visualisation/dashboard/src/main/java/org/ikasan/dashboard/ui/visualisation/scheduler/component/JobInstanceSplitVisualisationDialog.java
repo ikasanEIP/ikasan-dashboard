@@ -186,7 +186,7 @@ public class JobInstanceSplitVisualisationDialog extends AbstractCloseableResiza
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
-        ContextInstanceStateChangeEventBroadcaster.register(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -194,7 +194,7 @@ public class JobInstanceSplitVisualisationDialog extends AbstractCloseableResiza
         super.onDetach(detachEvent);
         this.ui = null;
 
-        ContextInstanceStateChangeEventBroadcaster.unregister(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
     }
 
     @Override

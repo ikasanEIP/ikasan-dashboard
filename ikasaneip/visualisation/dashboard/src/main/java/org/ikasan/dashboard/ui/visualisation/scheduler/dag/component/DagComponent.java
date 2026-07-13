@@ -181,7 +181,7 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
 
         this.ui = attachEvent.getUI();
 
-        ContextInstanceStateChangeEventBroadcaster.register(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(this);
     }
 
     public void styleNode(String nodeId, String colour) {
@@ -231,7 +231,7 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
         super.onDetach(detachEvent);
         this.ui = null;
 
-        ContextInstanceStateChangeEventBroadcaster.unregister(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
     }
 
     @Override

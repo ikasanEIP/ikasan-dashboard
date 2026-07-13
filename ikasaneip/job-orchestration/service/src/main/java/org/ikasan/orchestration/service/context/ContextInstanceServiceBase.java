@@ -234,7 +234,7 @@ public abstract class ContextInstanceServiceBase {
 
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
 
-        ContextInstanceStateChangeEventBroadcaster.broadcast(new ContextInstanceStateChangeEventImpl(contextInstance.getId(), contextInstance,
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(new ContextInstanceStateChangeEventImpl(contextInstance.getId(), contextInstance,
             previousStatus, contextInstance.getStatus()));
     }
 
@@ -368,10 +368,10 @@ public abstract class ContextInstanceServiceBase {
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
         // We add a listener to broadcast any context state changes to interested parties.
-        contextMachine.addContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventBroadcaster::broadcast);
+        contextMachine.addContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventBroadcaster.instance()::broadcast);
 
         // We add a listener to broadcast any job state changes to interested parties.
-        contextMachine.addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventBroadcaster::broadcast);
+        contextMachine.addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventBroadcaster.instance()::broadcast);
 
         // set the parameters on the instance every time
         if(contextParameterInstances == null) {
@@ -492,7 +492,7 @@ public abstract class ContextInstanceServiceBase {
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
         // We add a listener to broadcast any job state changes to interested parties.
-        contextMachine.addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventBroadcaster::broadcast);
+        contextMachine.addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventBroadcaster.instance()::broadcast);
 
         contextMachine.getContext().setStatus(InstanceStatus.PREPARED);
         ContextMachineCache.instance().put(contextMachine);

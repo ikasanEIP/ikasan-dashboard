@@ -162,7 +162,7 @@ public class AcknowledgeErrorDialog extends AbstractCloseableResizableDialog {
         SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
             = new SchedulerJobInstanceStateChangeEventImpl(instance,
             this.contextInstance, instance.getStatus(), instance.getStatus());
-        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+        SchedulerJobStateChangeEventBroadcaster.instance().broadcast(schedulerJobInstanceStateChangeEvent);
 
         this.systemEventLogger.logEvent(SystemEventConstants.JOB_ERROR_ACKNOWLEDGED, String.format("Job Plan " +
                 "Name[%s], Child Job Plan Name[%s], Job Plan Identifier[%s], Job Name[%s], Ticket Id[%s], Reason[%s]"

@@ -193,13 +193,13 @@ public class SchedulerJobUploadDialog extends AbstractCloseableResizableDialog {
         try {
             if (schedulerJob instanceof InternalEventDrivenJob) {
                 this.schedulerJobService.saveInternalEventDrivenJob((InternalEventDrivenJob) schedulerJob, actor);
-                NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+                NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
             } else if (schedulerJob instanceof FileEventDrivenJob) {
                 this.schedulerJobService.saveFileEventDrivenJob((FileEventDrivenJob) schedulerJob, actor);
-                NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+                NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
             } else if (schedulerJob instanceof QuartzScheduleDrivenJob) {
                 this.schedulerJobService.saveQuartzScheduledJob((QuartzScheduleDrivenJob) schedulerJob, actor);
-                NewSchedulerJobEventBroadcaster.broadcast(schedulerJob);
+                NewSchedulerJobEventBroadcaster.instance().broadcast(schedulerJob);
             }
         }
         catch (Exception e) {

@@ -48,9 +48,9 @@ public class AggregateStatusCollector implements SchedulerJobStateChangeEventLoc
         }
 
         instance = new AggregateStatusCollector(schedulerJobInstanceService);
-        SchedulerJobStateChangeEventBroadcaster.register(instance);
-        ContextInstanceStateChangeEventBroadcaster.register(instance);
-        ContextInstanceSavedEventBroadcaster.register(instance);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(instance);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(instance);
+        ContextInstanceSavedEventBroadcaster.instance().register(instance);
         return instance;
     }
 

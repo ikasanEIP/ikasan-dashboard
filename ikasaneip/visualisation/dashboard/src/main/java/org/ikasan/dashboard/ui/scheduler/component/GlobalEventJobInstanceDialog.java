@@ -516,7 +516,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
             = new SchedulerJobInstanceStateChangeEventImpl(globalEventJobInstance,
             this.contextInstance, previousStatus, newStatus);
 
-        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+        SchedulerJobStateChangeEventBroadcaster.instance().broadcast(schedulerJobInstanceStateChangeEvent);
     }
 
     /**
@@ -596,7 +596,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
-        SchedulerJobStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -604,7 +604,7 @@ public class GlobalEventJobInstanceDialog extends AbstractCloseableResizableDial
         super.onDetach(detachEvent);
 
         this.ui = null;
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
     }
 
     @Override

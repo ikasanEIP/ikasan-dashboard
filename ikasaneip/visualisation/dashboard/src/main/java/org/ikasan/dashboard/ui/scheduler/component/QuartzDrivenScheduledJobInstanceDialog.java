@@ -351,7 +351,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
-        SchedulerJobStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -359,7 +359,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
         super.onDetach(detachEvent);
         this.ui = null;
 
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
     }
 
     @Override

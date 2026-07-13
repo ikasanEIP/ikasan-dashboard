@@ -4,11 +4,12 @@ import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventRemoteBroadcastListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.WeakHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Broadcaster for job lock cache events across multiple local listeners (UI widgets) and
@@ -18,6 +19,8 @@ import java.util.concurrent.TimeUnit;
  * @author Ikasan Development Team
  */
 public class JobLockCacheEventBroadcaster {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobLockCacheEventBroadcaster.class);
+
     private final ExecutorService executor = Executors.newSingleThreadExecutor
         (new BroadcasterThreadFactory("JobLockCacheEventBroadcaster"));
 
@@ -25,7 +28,7 @@ public class JobLockCacheEventBroadcaster {
         new WeakHashMap<>();
     private JobLockCacheEventRemoteBroadcastListener remoteListener;
 
-    public static JobLockCacheEventBroadcaster INSTANCE = new JobLockCacheEventBroadcaster();
+    public static volatile JobLockCacheEventBroadcaster INSTANCE = new JobLockCacheEventBroadcaster();
 
     /**
      * Private constructor for the JobLockCacheEventBroadcaster class.
@@ -46,6 +49,7 @@ public class JobLockCacheEventBroadcaster {
     public static JobLockCacheEventBroadcaster instance() {
         return INSTANCE;
     }
+
     /**
      * Registers a local broadcast listener.
      *
@@ -108,16 +112,26 @@ public class JobLockCacheEventBroadcaster {
     }
 
     /**
-     * Resets the singleton instance of the {@code JobLockCacheEventBroadcaster}.
+     * Resets the singleton instance of the {@code ContextInstanceDlqEventBroadcaster}.
      *
-     * This method creates a new instance of the {@code JobLockCacheEventBroadcaster}
-     * and assigns it to the {@code INSTANCE} field, effectively clearing any existing
-     * listeners or configurations associated with the previous instance.
+     * <p>Shut down the current instance's executor and wait for any already queued or in-flight
+     * broadcasts to finish, this guarantees no broadcast is dispatched while the reset
+     * is still running — or silently lost — once this method returns. Prevents potential
+     * non-deamon thread leak
+     * This method is {@code synchronized}, so it cannot run concurrently with
+     * {@link #register}, {@link #unregister}, {@link #broadcast}, {@link #remoteBroadcast}
+     * or {@link #localBroadcast} on the same instance — no undefined-ordering race
+     * between a reset and an in-progress broadcast.
      *
-     * Use this method cautiously as it overrides the previous state of the singleton,
-     * which may affect ongoing operations.
+     * <p>A caller hat already holds a reference to the old instance (obtained via {@link #instance()}
+     * before this call) continues to hold a reference to a now-terminated object. However,
+     * since the old instance's executor is shut down, any further
+     * {@link #broadcast} or {@link #localBroadcast} call made through a stale reference will
+     * throw {@link java.util.concurrent.RejectedExecutionException} rather than quietly
+     * succeeding into an orphaned instance nobody observes.
      */
-    private void reset() {
+    private synchronized void reset() {
+        ExecutorDrainer.shutdownAndAwait(executor, LOGGER);
         INSTANCE = new JobLockCacheEventBroadcaster();
     }
 }

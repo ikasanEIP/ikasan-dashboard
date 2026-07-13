@@ -6,24 +6,59 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class FlowStateBroadcaster
-{
-    static Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("FlowStateBroadcaster"));
+public class FlowStateBroadcaster {
+    private final Executor executor = Executors.newSingleThreadExecutor(new VaadinThreadFactory("FlowStateBroadcaster"));
 
-    private static WeakHashMap<FlowStateBroadcastListener, Object> listeners =
+    private final WeakHashMap<FlowStateBroadcastListener, Object> listeners =
         new WeakHashMap<>();
 
-    public static synchronized void register(FlowStateBroadcastListener listener) {
+    public static FlowStateBroadcaster INSTANCE = new FlowStateBroadcaster();
+
+    /**
+     * Private constructor for the FlowStateBroadcaster class.
+     *
+     * This constructor enforces the singleton design pattern, ensuring that
+     * instances of this class cannot be created directly from outside the class.
+     * Use the {@code instance()} method to get the singleton instance.
+     */
+    private FlowStateBroadcaster() {}
+
+    /**
+     * Retrieves the singleton instance of the {@code FlowStateBroadcaster}.
+     * This method ensures that only one instance of the class exists, in compliance
+     * with the singleton design pattern.
+     *
+     * @return the singleton instance of {@code FlowStateBroadcaster}
+     */
+    public static FlowStateBroadcaster instance() {
+        return INSTANCE;
+    }
+
+    public synchronized void register(FlowStateBroadcastListener listener) {
         listeners.put(listener, null);
     }
 
-    public static synchronized void unregister(FlowStateBroadcastListener listener) {
+    public synchronized void unregister(FlowStateBroadcastListener listener) {
         listeners.remove(listener);
     }
 
-    public static synchronized void broadcast(final FlowState flowState) {
+    public synchronized void broadcast(final FlowState flowState) {
         for (final FlowStateBroadcastListener listener: listeners.keySet()) {
             executor.execute(() -> listener.receiveFlowStateBroadcast(flowState));
         }
+    }
+
+    /**
+     * Resets the singleton instance of the {@code FlowStateBroadcaster}.
+     *
+     * This method creates a new instance of the {@code FlowStateBroadcaster}
+     * and assigns it to the {@code INSTANCE} field, effectively clearing any existing
+     * listeners or configurations associated with the previous instance.
+     *
+     * Use this method cautiously as it overrides the previous state of the singleton,
+     * which may affect ongoing operations.
+     */
+    private void reset() {
+        INSTANCE = new FlowStateBroadcaster();
     }
 }

@@ -202,7 +202,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         }
 
         ContextMachineCache.instance().remove(contextMachine);
-        ContextInstanceSavedEventBroadcaster.broadcast(instance);
+        ContextInstanceSavedEventBroadcaster.instance().broadcast(instance);
         try {
             contextMachine.teardown();
         } catch (IOException e) {
@@ -342,7 +342,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                         , CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
                         , contextInstance.getTimezone(), contextInstance.getId());
                     LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
-                    ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
+                    ContextInstanceSavedEventBroadcaster.instance().broadcast(contextInstance);
                 } else {
                     LOG.info(String.format("Context name [%s] falls withing a blackout time window and will not be registered!", contextName));
                 }
@@ -411,7 +411,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
                 // save instance to take in any modification to the projected end time.
                 ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId()).saveContext();
-                ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
+                ContextInstanceSavedEventBroadcaster.instance().broadcast(contextInstance);
                 return contextInstance.getId();
             } else {
                 LOG.info(String.format("Context name [%s] falls withing a blackout time window and will not be registered!", contextName));

@@ -273,7 +273,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
             = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance,
             this.contextInstance, previousStatus, newStatus);
 
-        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+        SchedulerJobStateChangeEventBroadcaster.instance().broadcast(schedulerJobInstanceStateChangeEvent);
     }
 
     /**
