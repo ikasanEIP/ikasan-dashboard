@@ -5,17 +5,17 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Deliberately does not exercise the 5-second-timeout / shutdownNow() branch — doing so
- * correctly would mean the test itself has to block for 5+ real seconds, which isn't a
- * worthwhile trade for coverage of a simple, already-reviewed if-branch. These tests cover
- * the behaviour that actually matters: a normal drain terminates the executor, and a task
- * already in flight is allowed to finish rather than being killed prematurely.
+ * The timeout/{@code shutdownNow()} branches are exercised via the package-private
+ * {@code shutdownAndAwait(executor, logger, firstWait, secondWait)} overload with short
+ * durations, rather than the public 5s/2s defaults, so this suite doesn't have to block for
+ * real seconds to cover them.
  */
 public class ExecutorDrainerTest {
 
@@ -82,5 +82,47 @@ public class ExecutorDrainerTest {
 
         Assert.assertTrue("Interrupt flag should be restored on the calling thread",
             Thread.interrupted()); // also clears the flag so it doesn't leak into other tests
+    }
+
+    @Test
+    public void testShutdownAndAwait_firstWaitTimesOut_forcesShutdownNowAndThenTerminates() throws Exception {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        CountDownLatch taskInterrupted = new CountDownLatch(1);
+
+        executor.execute(() -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                taskInterrupted.countDown();
+            }
+        });
+
+        // firstWait shorter than the task's sleep forces the timeout branch; secondWait is long
+        // enough for shutdownNow()'s interrupt to actually take effect and terminate cleanly.
+        ExecutorDrainer.shutdownAndAwait(executor, logger, Duration.ofMillis(50), Duration.ofSeconds(2));
+
+        Assert.assertTrue("Task should have been interrupted by shutdownNow()",
+            taskInterrupted.await(1, TimeUnit.SECONDS));
+        Assert.assertTrue("Executor should have terminated after shutdownNow()", executor.isTerminated());
+    }
+
+    @Test
+    public void testShutdownAndAwait_taskIgnoresInterruption_stillReturnsAfterSecondWaitTimesOut() throws Exception {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        CountDownLatch taskFinished = new CountDownLatch(1);
+
+        executor.execute(() -> {
+            // Ignores interruption, simulating a genuinely stuck task that shutdownNow() cannot kill.
+            long deadline = System.currentTimeMillis() + 500;
+            while (System.currentTimeMillis() < deadline) {
+                // busy-wait past both firstWait and secondWait below
+            }
+            taskFinished.countDown();
+        });
+
+        ExecutorDrainer.shutdownAndAwait(executor, logger, Duration.ofMillis(50), Duration.ofMillis(50));
+
+        Assert.assertTrue("Method should return (logging an error) rather than blocking forever",
+            taskFinished.await(2, TimeUnit.SECONDS));
     }
 }

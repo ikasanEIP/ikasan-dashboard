@@ -13,6 +13,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.*;
@@ -162,5 +163,22 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
 
         boolean completed = latch.await(1, TimeUnit.SECONDS);
         Assert.assertTrue("Both broadcasts should execute", completed);
+    }
+
+    /**
+     * Deterministic counterpart to the documented (see reset()'s javadoc) but merely tolerated
+     * RejectedExecutionException in the concurrent stress test on ContextInstanceDlqEventBroadcasterTest:
+     * proves a stale reference held from before reset() actually throws, rather than just allowing it to.
+     */
+    @Test
+    public void testLocalBroadcast_onStaleReferenceAfterReset_throwsRejectedExecutionException() throws Exception {
+        ContextInstanceStateChangeEventBroadcaster staleReference = ContextInstanceStateChangeEventBroadcaster.instance();
+        staleReference.register(listener1);
+
+        Method resetMethod = ContextInstanceStateChangeEventBroadcaster.class.getDeclaredMethod("reset");
+        resetMethod.setAccessible(true);
+        resetMethod.invoke(staleReference);
+
+        Assert.assertThrows(RejectedExecutionException.class, () -> staleReference.localBroadcast(event));
     }
 }

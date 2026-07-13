@@ -301,4 +301,22 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
             "No exceptions other than the documented RejectedExecutionException should occur under concurrent reset",
             0, unexpectedExceptions.get());
     }
+
+    /**
+     * Deterministic counterpart to the test above: that concurrent stress test only tolerates
+     * RejectedExecutionException if the race happens to produce one, it never asserts that it does. This proves
+     * a stale reference held from before reset() actually throws, rather than just allowing it to.
+     */
+    @Test
+    public void testLocalBroadcast_onStaleReferenceAfterReset_throwsRejectedExecutionException() throws Exception {
+        SchedulerJobStateChangeEventBroadcaster staleReference = SchedulerJobStateChangeEventBroadcaster.instance();
+        SchedulerJobStateChangeEventLocalBroadcastListener localListener = evt -> { };
+        staleReference.register(localListener);
+
+        Method resetMethod = SchedulerJobStateChangeEventBroadcaster.class.getDeclaredMethod("reset");
+        resetMethod.setAccessible(true);
+        resetMethod.invoke(staleReference);
+
+        Assert.assertThrows(RejectedExecutionException.class, () -> staleReference.localBroadcast(event));
+    }
 }

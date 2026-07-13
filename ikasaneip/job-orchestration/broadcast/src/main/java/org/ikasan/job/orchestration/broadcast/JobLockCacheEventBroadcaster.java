@@ -117,13 +117,13 @@ public class JobLockCacheEventBroadcaster {
      * <p>Shut down the current instance's executor and wait for any already queued or in-flight
      * broadcasts to finish, this guarantees no broadcast is dispatched while the reset
      * is still running — or silently lost — once this method returns. Prevents potential
-     * non-deamon thread leak
+     * non-deamon thread leak.
      * This method is {@code synchronized}, so it cannot run concurrently with
      * {@link #register}, {@link #unregister}, {@link #broadcast}, {@link #remoteBroadcast}
      * or {@link #localBroadcast} on the same instance — no undefined-ordering race
      * between a reset and an in-progress broadcast.
      *
-     * <p>A caller hat already holds a reference to the old instance (obtained via {@link #instance()}
+     * <p>A caller that already holds a reference to the old instance (obtained via {@link #instance()}
      * before this call) continues to hold a reference to a now-terminated object. However,
      * since the old instance's executor is shut down, any further
      * {@link #broadcast} or {@link #localBroadcast} call made through a stale reference will

@@ -166,11 +166,11 @@ public class ContextInstanceDlqEventBroadcasterTest {
     }
 
     /**
-     * Proves reset()'s concurrency fix (volatile INSTANCE + synchronized + drain-before-swap) rather
-     * than just arguing it: hammers register/broadcast/unregister from several threads while a
-     * separate thread repeatedly calls reset() via reflection. The only acceptable exception is the
-     * documented RejectedExecutionException from a stale reference to a just-reset instance — anything
-     * else (corruption, NPE, ConcurrentModificationException, a hang) fails the test.
+     * Proves reset()'s concurrency fix (volatile INSTANCE + synchronized + drain-before-swap) exercises
+     * register/broadcast/unregister from several threads while a separate thread repeatedly calls reset()
+     * via reflection. The only acceptable exception is the documented RejectedExecutionException from a
+     * stale reference to a just-reset instance — anything else (corruption, NPE, ConcurrentModificationException,
+     * a hang) fails the test.
      */
     @Test
     public void testReset_isSafeUnderConcurrentBroadcastAndRegister() throws Exception {
@@ -230,5 +230,23 @@ public class ContextInstanceDlqEventBroadcasterTest {
         Assert.assertEquals(
             "No exceptions other than the documented RejectedExecutionException should occur under concurrent reset",
             0, unexpectedExceptions.get());
+    }
+
+    /**
+     * Deterministic counterpart to the test above: that concurrent stress test only tolerates
+     * RejectedExecutionException if the race happens to produce one, it never asserts that it does. This proves
+     * a stale reference held from before reset() actually throws, rather than just allowing it to.
+     */
+    @Test
+    public void testLocalBroadcast_onStaleReferenceAfterReset_throwsRejectedExecutionException() throws Exception {
+        ContextInstanceDlqEventBroadcaster staleReference = ContextInstanceDlqEventBroadcaster.instance();
+        ContextInstanceDlqEventLocalBroadcastListener localListener = ci -> { };
+        staleReference.register(localListener);
+
+        Method resetMethod = ContextInstanceDlqEventBroadcaster.class.getDeclaredMethod("reset");
+        resetMethod.setAccessible(true);
+        resetMethod.invoke(staleReference);
+
+        Assert.assertThrows(RejectedExecutionException.class, () -> staleReference.localBroadcast(contextInstance));
     }
 }
