@@ -29,7 +29,7 @@ public class JobSystemEventHistoryDialog extends ContextInstanceSystemEventHisto
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
-        SchedulerJobStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class JobSystemEventHistoryDialog extends ContextInstanceSystemEventHisto
         logger.debug("Detaching ContextInstanceTreeView");
         this.ui = null;
 
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
 
         logger.debug("Finished detaching ContextInstanceTreeView");
     }

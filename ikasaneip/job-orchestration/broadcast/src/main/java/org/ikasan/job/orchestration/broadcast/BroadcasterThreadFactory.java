@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.broadcast;
 
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Thread factory for creating named threads used by broadcaster executors.
@@ -9,7 +10,13 @@ import java.util.concurrent.ThreadFactory;
  * @author Ikasan Development Team
  */
 public class BroadcasterThreadFactory implements ThreadFactory {
-    private static long counter = 0;
+    /**
+     * Shared across every {@code BroadcasterThreadFactory} instance (i.e. across all nine
+     * broadcaster classes' executors, and every executor recreated by {@code reset()}), so a
+     * plain {@code long} here would be a non-atomic read-modify-write race if thread creation
+     * ever happened concurrently — e.g. under Surefire parallel test execution.
+     */
+    private static final AtomicLong counter = new AtomicLong(0);
     private final String prefix;
 
     /**
@@ -29,7 +36,7 @@ public class BroadcasterThreadFactory implements ThreadFactory {
      */
     @Override
     public Thread newThread(Runnable r) {
-        return new Thread(r, prefix + "-" + counter++);
+        return new Thread(r, prefix + "-" + counter.getAndIncrement());
     }
 
 }

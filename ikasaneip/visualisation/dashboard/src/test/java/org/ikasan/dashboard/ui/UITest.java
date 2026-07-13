@@ -53,11 +53,22 @@ import java.util.stream.IntStream;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class UITest {
 
+    // Defaults to /tmp so CI (Travis) needs no changes. Docker Desktop only shares /home
+    // by default, so override locally: -Ddashboard.uitest.solr.data.dir=$HOME/solr-data (see
+    // surefire systemPropertyVariables in dashboard pom.xml, which forwards this property into
+    // the test JVM). Deliberately not "solr.data.dir" - that name is the stock Apache Solr
+    // <dataDir>${solr.data.dir:}</dataDir> convention used by EmbeddedSolrServer tests elsewhere
+    // (e.g. ikasan-solr-client); setting it globally would redirect those unrelated tests' Solr
+    // cores into this directory too.
+    private static final String SOLR_DATA_DIR = System.getProperty("dashboard.uitest.solr.data.dir", "/tmp/solr-data");
+
     static SolrContainer solr = new SolrContainer("solr:9.10.1");
 
     static {
         try {
-            FileUtils.cleanDirectory(new File("/tmp/solr-data"));
+            File solrDataDir = new File(SOLR_DATA_DIR);
+            FileUtils.forceMkdir(solrDataDir);
+            FileUtils.cleanDirectory(solrDataDir);
 
             URL schemaUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("./solr/ikasan/conf/managed-schema.xml");
@@ -77,7 +88,7 @@ public abstract class UITest {
                     MountableFile.forHostPath(solrConfigDir.getPath()),
                     "/var/solr/data/ikasan/conf"
                 )
-                .withFileSystemBind("/tmp/solr-data",
+                .withFileSystemBind(SOLR_DATA_DIR,
                     "/var/solr/data/ikasan", BindMode.READ_WRITE)
                 .withZookeeper(false)
                 .withSchema(schemaUrl);

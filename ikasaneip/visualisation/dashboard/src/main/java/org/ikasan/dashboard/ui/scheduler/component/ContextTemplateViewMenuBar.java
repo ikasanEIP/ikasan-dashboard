@@ -112,7 +112,7 @@ public class ContextTemplateViewMenuBar extends MenuBar implements ContextViewUp
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
-        ContextViewUpdateEventBroadcaster.register(this);
+        ContextViewUpdateEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class ContextTemplateViewMenuBar extends MenuBar implements ContextViewUp
         super.onDetach(detachEvent);
         this.ui = null;
 
-        ContextViewUpdateEventBroadcaster.unregister(this);
+        ContextViewUpdateEventBroadcaster.instance().unregister(this);
     }
 
     @Override

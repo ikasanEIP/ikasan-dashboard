@@ -245,7 +245,7 @@ public class ClusterBroadcastAutoConfiguration {
             List<ClusterEventBroadcastChannel> peerBroadcastChannels) {
         ContextInstanceStateChangeEventRemoteBroadcastListenerImpl listener =
             new ContextInstanceStateChangeEventRemoteBroadcastListenerImpl(peerBroadcastChannels);
-        ContextInstanceStateChangeEventBroadcaster.setRemoteListener(listener);
+        ContextInstanceStateChangeEventBroadcaster.instance().setRemoteListener(listener);
         return listener;
     }
 
@@ -254,7 +254,7 @@ public class ClusterBroadcastAutoConfiguration {
             List<ClusterEventBroadcastChannel> peerBroadcastChannels) {
         SchedulerJobStateChangeEventRemoteBroadcastListenerImpl listener =
             new SchedulerJobStateChangeEventRemoteBroadcastListenerImpl(peerBroadcastChannels);
-        SchedulerJobStateChangeEventBroadcaster.setRemoteListener(listener);
+        SchedulerJobStateChangeEventBroadcaster.instance().setRemoteListener(listener);
         return listener;
     }
 
@@ -263,7 +263,7 @@ public class ClusterBroadcastAutoConfiguration {
             List<ClusterEventBroadcastChannel> peerBroadcastChannels) {
         ContextInstanceSavedEventRemoteBroadcastListenerImpl listener =
             new ContextInstanceSavedEventRemoteBroadcastListenerImpl(peerBroadcastChannels);
-        ContextInstanceSavedEventBroadcaster.setRemoteListener(listener);
+        ContextInstanceSavedEventBroadcaster.instance().setRemoteListener(listener);
         return listener;
     }
 
@@ -272,7 +272,7 @@ public class ClusterBroadcastAutoConfiguration {
             List<ClusterEventBroadcastChannel> peerBroadcastChannels) {
         ContextInstanceDlqEventRemoteBroadcastListenerImpl listener =
             new ContextInstanceDlqEventRemoteBroadcastListenerImpl(peerBroadcastChannels);
-        ContextInstanceDlqEventBroadcaster.setRemoteListener(listener);
+        ContextInstanceDlqEventBroadcaster.instance().setRemoteListener(listener);
         return listener;
     }
 
@@ -281,7 +281,7 @@ public class ClusterBroadcastAutoConfiguration {
             List<ClusterEventBroadcastChannel> peerBroadcastChannels) {
         ContextTemplateSavedEventRemoteBroadcastListenerImpl listener =
             new ContextTemplateSavedEventRemoteBroadcastListenerImpl(peerBroadcastChannels);
-        ContextTemplateSavedEventBroadcaster.setRemoteListener(listener);
+        ContextTemplateSavedEventBroadcaster.instance().setRemoteListener(listener);
         return listener;
     }
 
@@ -290,7 +290,7 @@ public class ClusterBroadcastAutoConfiguration {
             List<ClusterEventBroadcastChannel> peerBroadcastChannels) {
         ContextTemplateEnableDisableEventRemoteBroadcastListenerImpl listener =
             new ContextTemplateEnableDisableEventRemoteBroadcastListenerImpl(peerBroadcastChannels);
-        ContextTemplateEnableDisableEventBroadcaster.setRemoteListener(listener);
+        ContextTemplateEnableDisableEventBroadcaster.instance().setRemoteListener(listener);
         return listener;
     }
 
@@ -299,7 +299,7 @@ public class ClusterBroadcastAutoConfiguration {
             List<ClusterEventBroadcastChannel> peerBroadcastChannels) {
         ContextViewUpdateEventRemoteBroadcastListenerImpl listener =
             new ContextViewUpdateEventRemoteBroadcastListenerImpl(peerBroadcastChannels);
-        ContextViewUpdateEventBroadcaster.setRemoteListener(listener);
+        ContextViewUpdateEventBroadcaster.instance().setRemoteListener(listener);
         return listener;
     }
 
@@ -308,7 +308,7 @@ public class ClusterBroadcastAutoConfiguration {
             List<ClusterEventBroadcastChannel> peerBroadcastChannels) {
         NewSchedulerJobEventRemoteBroadcastListenerImpl listener =
             new NewSchedulerJobEventRemoteBroadcastListenerImpl(peerBroadcastChannels);
-        NewSchedulerJobEventBroadcaster.setRemoteListener(listener);
+        NewSchedulerJobEventBroadcaster.instance().setRemoteListener(listener);
         return listener;
     }
 

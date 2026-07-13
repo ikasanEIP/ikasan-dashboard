@@ -1006,7 +1006,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout
                                 .findByName(this.contextTemplate.getName());
                             scheduledContextRecord.setContext(this.contextTemplate);
                             this.scheduledContextService.save(scheduledContextRecord);
-                            ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                            ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
                         }
                     });
                 })
@@ -1540,14 +1540,14 @@ public class ContextTemplateManagementWidget extends VerticalLayout
         this.init("", moduleMetaDataService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, jobInitiationService);
-        ContextTemplateSavedEventBroadcaster.register(this);
+        ContextTemplateSavedEventBroadcaster.instance().register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
         this.ui = null;
-        ContextTemplateSavedEventBroadcaster.unregister(this);
+        ContextTemplateSavedEventBroadcaster.instance().unregister(this);
     }
 
     @Override

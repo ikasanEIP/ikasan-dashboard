@@ -253,7 +253,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
                         module.getName(), currentFlow.getName(), "start", authentication.getName()))
                     {
                         state = State.RUNNING_STATE;
-                        FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
+                        FlowStateBroadcaster.instance().broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
                     }
                     else
                     {
@@ -269,7 +269,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
                         module.getName(), currentFlow.getName(), "stop", authentication.getName()))
                     {
                         state = State.STOPPED_STATE;
-                        FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
+                        FlowStateBroadcaster.instance().broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
                     }
                     else
                     {
@@ -285,7 +285,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
                         module.getName(), currentFlow.getName(), "pause", authentication.getName()))
                     {
                         state = State.PAUSED_STATE;
-                        FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
+                        FlowStateBroadcaster.instance().broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
                     }
                     else
                     {
@@ -301,7 +301,7 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
                         module.getName(), currentFlow.getName(), "startPause", authentication.getName()))
                     {
                         state = State.START_PAUSE_STATE;
-                        FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
+                        FlowStateBroadcaster.instance().broadcast(new FlowState(this.module.getName(), this.currentFlow.getName(), state));
                     }
                     else
                     {
@@ -386,8 +386,8 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
     protected void onAttach(AttachEvent attachEvent)
     {
         current = attachEvent.getUI();
-        FlowStateBroadcaster.register(this);
-        CacheStateBroadcaster.register(this);
+        FlowStateBroadcaster.instance().register(this);
+        CacheStateBroadcaster.instance().register(this);
 
         this.startButtonTooltip.attachToComponent(startButton);
         this.stopButtonTooltip.attachToComponent(stopButton);
@@ -398,8 +398,8 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
     @Override
     protected void onDetach(DetachEvent detachEvent)
     {
-        FlowStateBroadcaster.unregister(this);
-        CacheStateBroadcaster.unregister(this);
+        FlowStateBroadcaster.instance().unregister(this);
+        CacheStateBroadcaster.instance().unregister(this);
     }
 
     @Override

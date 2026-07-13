@@ -1109,7 +1109,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             = new SchedulerJobInstanceStateChangeEventImpl(internalEventDrivenJobInstance,
             this.contextInstance, previousStatus, newStatus);
 
-        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+        SchedulerJobStateChangeEventBroadcaster.instance().broadcast(schedulerJobInstanceStateChangeEvent);
     }
 
     /**
@@ -1126,13 +1126,13 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
-        SchedulerJobStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
     }
 
     @Override

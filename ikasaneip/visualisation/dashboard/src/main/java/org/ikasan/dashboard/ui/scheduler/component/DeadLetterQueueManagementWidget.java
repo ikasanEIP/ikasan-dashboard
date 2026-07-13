@@ -135,7 +135,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                             contextMachine.resubmitMessageFromDeadLetterQueue(bigQueueMessage.getMessageId());
                             counter++;
                         }
-                        ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
+                        ContextInstanceDlqEventBroadcaster.instance().broadcast(this.contextInstance);
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_ALL_DLQ_MESSAGES_RESUBMITTED
                             , String.format("Resubmitted [%s] DLQ messages for job plan [%s] with instance id [%s]"
                                 , counter, this.contextInstance.getName(), this.contextInstance.getId())
@@ -196,7 +196,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                         ContextMachine contextMachine = ContextMachineCache.instance()
                             .getByContextInstanceId(contextInstance.getId());
                         contextMachine.deleteAllDlqMessages();
-                        ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
+                        ContextInstanceDlqEventBroadcaster.instance().broadcast(this.contextInstance);
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_ALL_DLQ_MESSAGES_DELETED
                             , String.format("Deleted all DLQ messages for job plan [%s] with instance id [%s]"
                                 , this.contextInstance.getName(), this.contextInstance.getId())
@@ -353,7 +353,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                             ContextMachine contextMachine = ContextMachineCache.instance()
                                 .getByContextInstanceId(contextInstance.getId());
                             contextMachine.resubmitMessageFromDeadLetterQueue(bigQueueMessage.getMessageId());
-                            ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
+                            ContextInstanceDlqEventBroadcaster.instance().broadcast(this.contextInstance);
                             this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DLQ_MESSAGE_RESUBMITTED
                                 , String.format("Resubmitted DLQ message[%s], with content[%s] for job plan [%s] with instance id [%s]"
                                     , bigQueueMessage.getMessageId(), bigQueueMessage.getMessage(), this.contextInstance.getName()
@@ -414,7 +414,7 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
                             ContextMachine contextMachine = ContextMachineCache.instance()
                                 .getByContextInstanceId(contextInstance.getId());
                             contextMachine.deleteDlqMessage(bigQueueMessage.getMessageId());
-                            ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance);
+                            ContextInstanceDlqEventBroadcaster.instance().broadcast(this.contextInstance);
                             this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DLQ_MESSAGE_DELETED
                                 , String.format("Deleted DLQ message[%s], with content[%s] for job plan [%s] with instance id [%s]"
                                     , bigQueueMessage.getMessageId(), bigQueueMessage.getMessage(), this.contextInstance.getName()
@@ -585,13 +585,13 @@ public class DeadLetterQueueManagementWidget extends VerticalLayout implements C
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        ContextInstanceDlqEventBroadcaster.register(this);
+        ContextInstanceDlqEventBroadcaster.instance().register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
-        ContextInstanceDlqEventBroadcaster.unregister(this);
+        ContextInstanceDlqEventBroadcaster.instance().unregister(this);
     }
 
     @Override

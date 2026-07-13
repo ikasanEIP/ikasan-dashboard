@@ -11,8 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.lang.reflect.Field;
-import java.util.WeakHashMap;
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -36,19 +35,16 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = ContextInstanceStateChangeEventBroadcaster.class.getDeclaredField("localListeners");
-        listenersField.setAccessible(true);
-        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
-        Field remoteListenerField = ContextInstanceStateChangeEventBroadcaster.class.getDeclaredField("remoteListener");
-        remoteListenerField.setAccessible(true);
-        remoteListenerField.set(null, null);
+        Method resetMethod = ContextInstanceStateChangeEventBroadcaster.class.getDeclaredMethod("reset");
+        resetMethod.setAccessible(true);
+        resetMethod.invoke(ContextInstanceStateChangeEventBroadcaster.instance());
     }
 
     @Test
     public void testRegister_addsListener() {
-        ContextInstanceStateChangeEventBroadcaster.register(listener1);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(listener1);
 
-        ContextInstanceStateChangeEventBroadcaster.broadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(event);
 
         try {
             Thread.sleep(100);
@@ -61,10 +57,10 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
 
     @Test
     public void testRegister_multipleListeners() {
-        ContextInstanceStateChangeEventBroadcaster.register(listener1);
-        ContextInstanceStateChangeEventBroadcaster.register(listener2);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(listener1);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(listener2);
 
-        ContextInstanceStateChangeEventBroadcaster.broadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(event);
 
         try {
             Thread.sleep(100);
@@ -78,10 +74,10 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
 
     @Test
     public void testUnregister_removesListener() {
-        ContextInstanceStateChangeEventBroadcaster.register(listener1);
-        ContextInstanceStateChangeEventBroadcaster.unregister(listener1);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(listener1);
+        ContextInstanceStateChangeEventBroadcaster.instance().unregister(listener1);
 
-        ContextInstanceStateChangeEventBroadcaster.broadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(event);
 
         try {
             Thread.sleep(100);
@@ -94,7 +90,7 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
 
     @Test
     public void testBroadcast_withNoListeners() {
-        ContextInstanceStateChangeEventBroadcaster.broadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(event);
     }
 
     @Test
@@ -103,8 +99,8 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
 
         ContextInstanceStateChangeEventLocalBroadcastListener asyncListener = event -> latch.countDown();
 
-        ContextInstanceStateChangeEventBroadcaster.register(asyncListener);
-        ContextInstanceStateChangeEventBroadcaster.broadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(asyncListener);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(event);
 
         boolean completed = latch.await(1, TimeUnit.SECONDS);
         Assert.assertTrue("Broadcast should execute asynchronously", completed);
@@ -112,9 +108,9 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
 
     @Test
     public void testBroadcast_nullEvent() {
-        ContextInstanceStateChangeEventBroadcaster.register(listener1);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(listener1);
 
-        ContextInstanceStateChangeEventBroadcaster.broadcast(null);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(null);
 
         try {
             Thread.sleep(100);
@@ -127,23 +123,23 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
 
     @Test
     public void testBroadcast_forwardsEventToRemoteListener() {
-        ContextInstanceStateChangeEventBroadcaster.setRemoteListener(remoteListener);
-        ContextInstanceStateChangeEventBroadcaster.broadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().setRemoteListener(remoteListener);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(event);
         verify(remoteListener).receiveBroadcast(event);
     }
 
     @Test
     public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
         // no remote listener set — must not throw
-        ContextInstanceStateChangeEventBroadcaster.remoteBroadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().remoteBroadcast(event);
     }
 
     @Test
     public void testRegister_sameListenerTwice() {
-        ContextInstanceStateChangeEventBroadcaster.register(listener1);
-        ContextInstanceStateChangeEventBroadcaster.register(listener1);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(listener1);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(listener1);
 
-        ContextInstanceStateChangeEventBroadcaster.broadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(event);
 
         try {
             Thread.sleep(100);
@@ -160,9 +156,9 @@ public class ContextInstanceStateChangeEventBroadcasterTest {
 
         ContextInstanceStateChangeEventLocalBroadcastListener asyncListener = event -> latch.countDown();
 
-        ContextInstanceStateChangeEventBroadcaster.register(asyncListener);
-        ContextInstanceStateChangeEventBroadcaster.broadcast(event);
-        ContextInstanceStateChangeEventBroadcaster.broadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(asyncListener);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(event);
+        ContextInstanceStateChangeEventBroadcaster.instance().broadcast(event);
 
         boolean completed = latch.await(1, TimeUnit.SECONDS);
         Assert.assertTrue("Both broadcasts should execute", completed);

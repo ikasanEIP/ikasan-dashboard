@@ -142,7 +142,7 @@ public class ContextViewManagementDialog extends AbstractCloseableResizableDialo
             NotificationHelper.showUserNotification(getTranslation("notification.context-profile-saved", UI.getCurrent().getLocale()));
 
             this.close();
-            ContextViewUpdateEventBroadcaster.broadcast("update!");
+            ContextViewUpdateEventBroadcaster.instance().broadcast("update!");
         });
 
         Button cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));

@@ -91,7 +91,7 @@ public class FlowStateCache implements Consumer<FlowState>
             }
 
             this.cache.put(key, flowState);
-            CacheStateBroadcaster.broadcast(flowState);
+            CacheStateBroadcaster.instance().broadcast(flowState);
         }
     }
 

@@ -1009,7 +1009,7 @@ public class ContextInstanceWidget extends VerticalLayout
                         disableQuartzScheduledJobsButton.setVisible(true);
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED, String.format("Job Plan Name[%s], Job Plan Identifier[%s]"
                             , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                        ContextInstanceSavedEventBroadcaster.broadcast(ContextMachineCache.instance()
+                        ContextInstanceSavedEventBroadcaster.instance().broadcast(ContextMachineCache.instance()
                             .getByContextInstanceId(this.contextInstance.getId()).getContext());
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -1052,7 +1052,7 @@ public class ContextInstanceWidget extends VerticalLayout
                         disableQuartzScheduledJobsButton.setVisible(false);
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED, String.format("Job Plan Instance Name[%s], Job Plan Instance Identifier[%s]"
                             , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                        ContextInstanceSavedEventBroadcaster.broadcast(ContextMachineCache.instance()
+                        ContextInstanceSavedEventBroadcaster.instance().broadcast(ContextMachineCache.instance()
                             .getByContextInstanceId(this.contextInstance.getId()).getContext());
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -1100,7 +1100,7 @@ public class ContextInstanceWidget extends VerticalLayout
 
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_ENDED, String.format("Job Plan Name[%s], Job Plan Instance Identifier[%s]"
                             , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
-                        ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
+                        ContextInstanceSavedEventBroadcaster.instance().broadcast(contextInstance);
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -1377,7 +1377,7 @@ public class ContextInstanceWidget extends VerticalLayout
                 // saveContextInstance sets status=ENDED on the in-memory object, so the internal
                 // state-change event inside resetContextInstance() sees (ENDED→ENDED) and is
                 // suppressed. Broadcast explicitly here so cluster peers see the ENDED transition.
-                ContextInstanceStateChangeEventBroadcaster.broadcast(new ContextInstanceStateChangeEventImpl(
+                ContextInstanceStateChangeEventBroadcaster.instance().broadcast(new ContextInstanceStateChangeEventImpl(
                     machine.getContext().getId(), machine.getContext(), previousStatus, InstanceStatus.ENDED));
                 machine.getContext().getAllNestedJobLocks().forEach(jobLockInstance -> {
                     JobLockCacheImpl.instance().resetLock(jobLockInstance.getName(), this.contextInstance.getEnvironmentGroup());
@@ -1514,8 +1514,8 @@ public class ContextInstanceWidget extends VerticalLayout
 
         this.refreshJobStatusWidget();
 
-        ContextInstanceStateChangeEventBroadcaster.register(this);
-        SchedulerJobStateChangeEventBroadcaster.register(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -1523,8 +1523,8 @@ public class ContextInstanceWidget extends VerticalLayout
         super.onDetach(detachEvent);
         this.ui = null;
 
-        ContextInstanceStateChangeEventBroadcaster.unregister(this);
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
     }
 
     @Override

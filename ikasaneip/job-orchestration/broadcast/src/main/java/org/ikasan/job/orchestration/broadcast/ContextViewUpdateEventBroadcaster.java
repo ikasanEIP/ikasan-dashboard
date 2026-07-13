@@ -3,8 +3,11 @@ package org.ikasan.job.orchestration.broadcast;
 import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventLocalBroadcastListener;
 import org.ikasan.spec.scheduled.event.service.ContextViewUpdateEventRemoteBroadcastListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.WeakHashMap;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -14,20 +17,43 @@ import java.util.concurrent.Executors;
  *
  * @author Ikasan Development Team
  */
-public class ContextViewUpdateEventBroadcaster
-{
-    static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextViewUpdateEventBroadcaster"));
+public class ContextViewUpdateEventBroadcaster {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContextViewUpdateEventBroadcaster.class);
 
-    private static final WeakHashMap<ContextViewUpdateEventLocalBroadcastListener, Object> localListeners =
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextViewUpdateEventBroadcaster"));
+
+    private final WeakHashMap<ContextViewUpdateEventLocalBroadcastListener, Object> localListeners =
         new WeakHashMap<>();
-    private static ContextViewUpdateEventRemoteBroadcastListener remoteListener;
+    private ContextViewUpdateEventRemoteBroadcastListener remoteListener;
+
+    public static volatile ContextViewUpdateEventBroadcaster INSTANCE = new ContextViewUpdateEventBroadcaster();
+
+    /**
+     * Private constructor for the ContextViewUpdateEventBroadcaster class.
+     *
+     * This constructor enforces the singleton design pattern, ensuring that
+     * instances of this class cannot be created directly from outside the class.
+     * Use the {@code instance()} method to get the singleton instance.
+     */
+    private ContextViewUpdateEventBroadcaster() {}
+
+    /**
+     * Retrieves the singleton instance of the {@code ContextViewUpdateEventBroadcaster}.
+     * This method ensures that only one instance of the class exists, in compliance
+     * with the singleton design pattern.
+     *
+     * @return the singleton instance of {@code ContextViewUpdateEventBroadcaster}
+     */
+    public static ContextViewUpdateEventBroadcaster instance() {
+        return INSTANCE;
+    }
 
     /**
      * Registers a local broadcast listener.
      *
      * @param listener the local listener to register
      */
-    public static synchronized void register(ContextViewUpdateEventLocalBroadcastListener listener) {
+    public synchronized void register(ContextViewUpdateEventLocalBroadcastListener listener) {
         localListeners.put(listener, null);
     }
 
@@ -36,7 +62,7 @@ public class ContextViewUpdateEventBroadcaster
      *
      * @param listener the local listener to unregister
      */
-    public static synchronized void unregister(ContextViewUpdateEventLocalBroadcastListener listener) {
+    public synchronized void unregister(ContextViewUpdateEventLocalBroadcastListener listener) {
         localListeners.remove(listener);
     }
 
@@ -45,7 +71,7 @@ public class ContextViewUpdateEventBroadcaster
      *
      * @param listener the remote listener to register
      */
-    public static synchronized void setRemoteListener(ContextViewUpdateEventRemoteBroadcastListener listener) {
+    public synchronized void setRemoteListener(ContextViewUpdateEventRemoteBroadcastListener listener) {
         remoteListener = listener;
     }
 
@@ -55,7 +81,7 @@ public class ContextViewUpdateEventBroadcaster
      *
      * @param message the message to broadcast
      */
-    public static synchronized void broadcast(final String message) {
+    public synchronized void broadcast(final String message) {
         localBroadcast(message);
         remoteBroadcast(message);
     }
@@ -65,7 +91,7 @@ public class ContextViewUpdateEventBroadcaster
      *
      * @param message the message to broadcast
      */
-    public static synchronized void remoteBroadcast(final String message) {
+    public synchronized void remoteBroadcast(final String message) {
         if (remoteListener != null) {
             remoteListener.receiveBroadcast(message);
         }
@@ -77,9 +103,33 @@ public class ContextViewUpdateEventBroadcaster
      *
      * @param message the message to broadcast locally
      */
-    public static synchronized void localBroadcast(final String message) {
+    public synchronized void localBroadcast(final String message) {
         for (final ContextViewUpdateEventLocalBroadcastListener listener: localListeners.keySet()) {
             executor.execute(() -> listener.receiveBroadcast(message));
         }
+    }
+
+    /**
+     * Resets the singleton instance of the {@code ContextInstanceDlqEventBroadcaster}.
+     *
+     * <p>Shut down the current instance's executor and wait for any already queued or in-flight
+     * broadcasts to finish, this guarantees no broadcast is dispatched while the reset
+     * is still running — or silently lost — once this method returns. Prevents potential
+     * non-deamon thread leak
+     * This method is {@code synchronized}, so it cannot run concurrently with
+     * {@link #register}, {@link #unregister}, {@link #broadcast}, {@link #remoteBroadcast}
+     * or {@link #localBroadcast} on the same instance — no undefined-ordering race
+     * between a reset and an in-progress broadcast.
+     *
+     * <p>A caller hat already holds a reference to the old instance (obtained via {@link #instance()}
+     * before this call) continues to hold a reference to a now-terminated object. However,
+     * since the old instance's executor is shut down, any further
+     * {@link #broadcast} or {@link #localBroadcast} call made through a stale reference will
+     * throw {@link java.util.concurrent.RejectedExecutionException} rather than quietly
+     * succeeding into an orphaned instance nobody observes.
+     */
+    private synchronized void reset() {
+        ExecutorDrainer.shutdownAndAwait(executor, LOGGER);
+        INSTANCE = new ContextViewUpdateEventBroadcaster();
     }
 }

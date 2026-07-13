@@ -240,13 +240,13 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog impleme
         super.onAttach(attachEvent);
         ui = attachEvent.getUI();
 
-        CacheStateBroadcaster.register(this);
+        CacheStateBroadcaster.instance().register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
-        CacheStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.instance().unregister(this);
     }
 
     @Override

@@ -347,15 +347,15 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
     protected void onAttach(AttachEvent attachEvent)
     {
         this.current = attachEvent.getUI();
-        FlowStateBroadcaster.register(this);
-        CacheStateBroadcaster.register(this);
+        FlowStateBroadcaster.instance().register(this);
+        CacheStateBroadcaster.instance().register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent)
     {
-        FlowStateBroadcaster.unregister(this);
-        CacheStateBroadcaster.unregister(this);
+        FlowStateBroadcaster.instance().unregister(this);
+        CacheStateBroadcaster.instance().unregister(this);
     }
 
     @Override

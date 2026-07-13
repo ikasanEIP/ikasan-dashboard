@@ -558,7 +558,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             !residingContextSelectDialog.getSelectedContexts().isEmpty()) {
                             this.schedulerJobService.skip(schedulerJobRecord, residingContextSelectDialog.getSelectedContexts(), this.authentication.getName());
                             this.refresh();
-                            ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                            ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
 
                             String action = String.format("Targeted Scheduler Job[%s], Parent Job Plan[%s], was skipped in the following Child Contexts [%s]."
                                 , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(residingContextSelectDialog.getSelectedContexts().toArray(), ","));
@@ -582,7 +582,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, action, authentication.getName());
                     }
                     this.refresh();
-                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                    ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
                 }
 
             });
@@ -612,7 +612,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             enable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 this.schedulerJobService.enable(schedulerJobRecord, this.contextTemplate.getName(), this.authentication.getName());
                 refresh();
-                ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
 
                 String action = String.format("Scheduler Job[%s], Parent Job Plan[%s], has been enabled."
                     , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
@@ -651,7 +651,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                             !residingContextSelectDialog.getSelectedContexts().isEmpty()) {
                             this.schedulerJobService.hold(schedulerJobRecord, residingContextSelectDialog.getSelectedContexts(), this.authentication.getName());
                             this.refresh();
-                            ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                            ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
 
                             String action = String.format("Targeted Scheduler Job[%s], Parent Context[%s], was held in the following Child Contexts [%s]."
                                 , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(residingContextSelectDialog.getSelectedContexts().toArray(), ","));
@@ -662,7 +662,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                 else {
                     this.schedulerJobService.hold(schedulerJobRecord, schedulerJobRecord.getJob().getChildContextNames(), this.authentication.getName());
                     this.refresh();
-                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                    ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
 
                     String action = String.format("Scheduler Job[%s], Parent Context[%s], was held in the following Child Contexts [%s]."
                         , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(schedulerJobRecord.getJob().getChildContextNames().toArray(), ","));
@@ -688,7 +688,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
             release.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 this.schedulerJobService.release(schedulerJobRecord, this.authentication.getName());
                 refresh();
-                ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
 
                 String action = String.format("Scheduler Job[%s], Parent Context[%s], has been released."
                     , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
@@ -922,7 +922,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         String.format("Enabling all skipped jobs for job plan. Job Plan Name[%s]", this.contextTemplate.getName())
                         , this.authentication.getName());
                     this.refresh();
-                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                    ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -964,7 +964,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         String.format("Holding all jobs for job plan. Job Plan Name[%s]", this.contextTemplate.getName())
                         , this.authentication.getName());
                     this.refresh();
-                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                    ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -1006,7 +1006,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         String.format("All scheduled jobs released. Job Plan Name[%s]", this.contextTemplate.getName())
                         , this.authentication.getName());
                     this.refresh();
-                    ContextTemplateSavedEventBroadcaster.broadcast(this.contextTemplate);
+                    ContextTemplateSavedEventBroadcaster.instance().broadcast(this.contextTemplate);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -1058,7 +1058,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                     disableQuartzScheduledJobsButton.setVisible(true);
                     this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED, String.format("Enabling all scheduled jobs. Job Plan Name[%s]"
                         , contextTemplate.getName()), this.authentication.getName());
-                    ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                    ContextTemplateSavedEventBroadcaster.instance().broadcast(contextTemplate);
                 } catch (Exception e) {
                     e.printStackTrace();
                     error = true;
@@ -1091,7 +1091,7 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
                         disableQuartzScheduledJobsButton.setVisible(false);
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED, String.format("Disabling all scheduled jobs. Job Plan Name[%s]"
                             , contextTemplate.getName()), this.authentication.getName());
-                        ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                        ContextTemplateSavedEventBroadcaster.instance().broadcast(contextTemplate);
                     } catch (Exception e) {
                         e.printStackTrace();
                         error = true;
@@ -1162,8 +1162,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
-        ContextTemplateSavedEventBroadcaster.register(this);
-        NewSchedulerJobEventBroadcaster.register(this);
+        ContextTemplateSavedEventBroadcaster.instance().register(this);
+        NewSchedulerJobEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -1171,8 +1171,8 @@ public class SchedulerJobGridWidget extends Div implements ContextTemplateSavedE
         super.onDetach(detachEvent);
         this.ui = null;
 
-        ContextTemplateSavedEventBroadcaster.unregister(this);
-        NewSchedulerJobEventBroadcaster.unregister(this);
+        ContextTemplateSavedEventBroadcaster.instance().unregister(this);
+        NewSchedulerJobEventBroadcaster.instance().unregister(this);
     }
 
     @Override

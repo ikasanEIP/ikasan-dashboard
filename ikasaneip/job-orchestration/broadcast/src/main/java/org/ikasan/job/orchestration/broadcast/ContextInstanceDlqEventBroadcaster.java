@@ -4,8 +4,11 @@ import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventLocalBroad
 import org.ikasan.spec.scheduled.event.service.ContextInstanceDlqEventRemoteBroadcastListener;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.WeakHashMap;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -16,18 +19,42 @@ import java.util.concurrent.Executors;
  * @author Ikasan Development Team
  */
 public class ContextInstanceDlqEventBroadcaster {
-    static Executor executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextInstanceDlqEventBroadcaster"));
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContextInstanceDlqEventBroadcaster.class);
 
-    private static final WeakHashMap<ContextInstanceDlqEventLocalBroadcastListener, Object> localListeners =
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(new BroadcasterThreadFactory("ContextInstanceDlqEventBroadcaster"));
+
+    private final WeakHashMap<ContextInstanceDlqEventLocalBroadcastListener, Object> localListeners =
         new WeakHashMap<>();
-    private static ContextInstanceDlqEventRemoteBroadcastListener remoteListener;
+    private ContextInstanceDlqEventRemoteBroadcastListener remoteListener;
+
+    public static volatile ContextInstanceDlqEventBroadcaster INSTANCE = new ContextInstanceDlqEventBroadcaster();
+
+    /**
+     * Private constructor for the ContextInstanceDlqEventBroadcaster class.
+     *
+     * This constructor enforces the singleton design pattern, ensuring that
+     * instances of this class cannot be created directly from outside the class.
+     * Use the {@code instance()} method to get the singleton instance.
+     */
+    private ContextInstanceDlqEventBroadcaster() {}
+
+    /**
+     * Retrieves the singleton instance of the {@code ContextInstanceDlqEventBroadcaster}.
+     * This method ensures that only one instance of the class exists, in compliance
+     * with the singleton design pattern.
+     *
+     * @return the singleton instance of {@code ContextInstanceDlqEventBroadcaster}
+     */
+    public static ContextInstanceDlqEventBroadcaster instance() {
+        return INSTANCE;
+    }
 
     /**
      * Registers a local broadcast listener.
      *
      * @param listener the local listener to register
      */
-    public static synchronized void register(ContextInstanceDlqEventLocalBroadcastListener listener) {
+    public synchronized void register(ContextInstanceDlqEventLocalBroadcastListener listener) {
         localListeners.put(listener, null);
     }
 
@@ -36,7 +63,7 @@ public class ContextInstanceDlqEventBroadcaster {
      *
      * @param listener the local listener to unregister
      */
-    public static synchronized void unregister(ContextInstanceDlqEventLocalBroadcastListener listener) {
+    public synchronized void unregister(ContextInstanceDlqEventLocalBroadcastListener listener) {
         localListeners.remove(listener);
     }
 
@@ -45,7 +72,7 @@ public class ContextInstanceDlqEventBroadcaster {
      *
      * @param listener the remote listener to register
      */
-    public static synchronized void setRemoteListener(ContextInstanceDlqEventRemoteBroadcastListener listener) {
+    public synchronized void setRemoteListener(ContextInstanceDlqEventRemoteBroadcastListener listener) {
         remoteListener = listener;
     }
 
@@ -55,7 +82,7 @@ public class ContextInstanceDlqEventBroadcaster {
      *
      * @param contextInstance the context instance to broadcast
      */
-    public static synchronized void broadcast(final ContextInstance contextInstance) {
+    public synchronized void broadcast(final ContextInstance contextInstance) {
         localBroadcast(contextInstance);
         remoteBroadcast(contextInstance);
     }
@@ -65,7 +92,7 @@ public class ContextInstanceDlqEventBroadcaster {
      *
      * @param contextInstance the context instance to broadcast
      */
-    public static synchronized void remoteBroadcast(final ContextInstance contextInstance) {
+    public synchronized void remoteBroadcast(final ContextInstance contextInstance) {
         if (remoteListener != null) {
             remoteListener.receiveBroadcast(contextInstance);
         }
@@ -77,9 +104,33 @@ public class ContextInstanceDlqEventBroadcaster {
      *
      * @param contextInstance the context instance to broadcast locally
      */
-    public static synchronized void localBroadcast(final ContextInstance contextInstance) {
+    public synchronized void localBroadcast(final ContextInstance contextInstance) {
         for (final ContextInstanceDlqEventLocalBroadcastListener listener: localListeners.keySet()) {
             executor.execute(() -> listener.receiveBroadcast(contextInstance));
         }
+    }
+
+    /**
+     * Resets the singleton instance of the {@code ContextInstanceDlqEventBroadcaster}.
+     *
+     * <p>Shut down the current instance's executor and wait for any already queued or in-flight
+     * broadcasts to finish, this guarantees no broadcast is dispatched while the reset
+     * is still running — or silently lost — once this method returns. Prevents potential
+     * non-deamon thread leak
+     * This method is {@code synchronized}, so it cannot run concurrently with
+     * {@link #register}, {@link #unregister}, {@link #broadcast}, {@link #remoteBroadcast}
+     * or {@link #localBroadcast} on the same instance — no undefined-ordering race
+     * between a reset and an in-progress broadcast.
+     *
+     * <p>A caller hat already holds a reference to the old instance (obtained via {@link #instance()}
+     * before this call) continues to hold a reference to a now-terminated object. However,
+     * since the old instance's executor is shut down, any further
+     * {@link #broadcast} or {@link #localBroadcast} call made through a stale reference will
+     * throw {@link java.util.concurrent.RejectedExecutionException} rather than quietly
+     * succeeding into an orphaned instance nobody observes.
+     */
+    private synchronized void reset() {
+        ExecutorDrainer.shutdownAndAwait(executor, LOGGER);
+        INSTANCE = new ContextInstanceDlqEventBroadcaster();
     }
 }

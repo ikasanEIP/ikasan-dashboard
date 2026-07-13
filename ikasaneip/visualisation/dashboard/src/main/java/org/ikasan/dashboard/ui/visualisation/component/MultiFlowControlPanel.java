@@ -90,7 +90,7 @@ public class MultiFlowControlPanel extends ControlPanel {
                             module.getName(), flow.getName(), "start", authentication.getName()))
                         {
                             state.set(State.RUNNING_STATE);
-                            FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
+                            FlowStateBroadcaster.instance().broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
                         }
                         else
                         {
@@ -108,7 +108,7 @@ public class MultiFlowControlPanel extends ControlPanel {
                         module.getName(), flow.getName(), "stop", authentication.getName()))
                     {
                         state.set(State.STOPPED_STATE);
-                        FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
+                        FlowStateBroadcaster.instance().broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
                     }
                     else
                     {
@@ -125,7 +125,7 @@ public class MultiFlowControlPanel extends ControlPanel {
                             module.getName(), flow.getName(), "pause", authentication.getName()))
                         {
                             state.set(State.PAUSED_STATE);
-                            FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
+                            FlowStateBroadcaster.instance().broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
                         }
                         else
                         {
@@ -143,7 +143,7 @@ public class MultiFlowControlPanel extends ControlPanel {
                             module.getName(), flow.getName(), "startPause", authentication.getName()))
                         {
                             state.set(State.START_PAUSE_STATE);
-                            FlowStateBroadcaster.broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
+                            FlowStateBroadcaster.instance().broadcast(new FlowState(this.module.getName(), flow.getName(), state.get()));
                         }
                         else
                         {

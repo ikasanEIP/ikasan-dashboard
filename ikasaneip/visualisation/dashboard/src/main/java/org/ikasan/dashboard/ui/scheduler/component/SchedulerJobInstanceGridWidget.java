@@ -1226,7 +1226,7 @@ public class SchedulerJobInstanceGridWidget extends Div
             = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance,
             this.contextInstance, previousStatus, newStatus);
 
-        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+        SchedulerJobStateChangeEventBroadcaster.instance().broadcast(schedulerJobInstanceStateChangeEvent);
     }
 
     /**
@@ -1247,14 +1247,14 @@ public class SchedulerJobInstanceGridWidget extends Div
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
-        SchedulerJobStateChangeEventBroadcaster.register(this);
-        ContextInstanceSavedEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
+        ContextInstanceSavedEventBroadcaster.instance().register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
-        ContextInstanceSavedEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
+        ContextInstanceSavedEventBroadcaster.instance().unregister(this);
     }
 
     @Override

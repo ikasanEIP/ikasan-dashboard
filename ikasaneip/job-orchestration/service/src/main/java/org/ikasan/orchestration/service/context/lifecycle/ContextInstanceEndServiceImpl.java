@@ -74,7 +74,7 @@ public class ContextInstanceEndServiceImpl extends ContextInstanceRegistrationSe
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
 
-        ContextInstanceStateChangeEventBroadcaster.register(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override

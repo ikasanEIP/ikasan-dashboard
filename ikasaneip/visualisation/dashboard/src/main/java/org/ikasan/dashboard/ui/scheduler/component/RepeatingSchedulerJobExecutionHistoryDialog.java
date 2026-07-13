@@ -428,8 +428,8 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
-        SchedulerJobStateChangeEventBroadcaster.register(this);
-        ContextInstanceStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -437,8 +437,8 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
         super.onDetach(detachEvent);
         this.ui = null;
 
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
-        ContextInstanceStateChangeEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
     }
 
     @Override

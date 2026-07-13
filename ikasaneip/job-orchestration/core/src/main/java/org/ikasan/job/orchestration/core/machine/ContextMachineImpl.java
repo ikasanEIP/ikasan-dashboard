@@ -2238,7 +2238,7 @@ public class ContextMachineImpl implements ContextMachine {
      */
     private void issueContextInstanceDlqEvent() {
         this.contextInstanceDlqEventListenerExecutor.submit(()
-            -> ContextInstanceDlqEventBroadcaster.broadcast(this.contextInstance));
+            -> ContextInstanceDlqEventBroadcaster.instance().broadcast(this.contextInstance));
     }
 
     /**

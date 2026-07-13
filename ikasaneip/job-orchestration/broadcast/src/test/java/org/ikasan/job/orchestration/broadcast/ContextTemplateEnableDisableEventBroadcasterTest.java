@@ -11,8 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.lang.reflect.Field;
-import java.util.WeakHashMap;
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -36,19 +35,16 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
-        Field listenersField = ContextTemplateEnableDisableEventBroadcaster.class.getDeclaredField("localListeners");
-        listenersField.setAccessible(true);
-        ((WeakHashMap<?, ?>) listenersField.get(null)).clear();
-        Field remoteListenerField = ContextTemplateEnableDisableEventBroadcaster.class.getDeclaredField("remoteListener");
-        remoteListenerField.setAccessible(true);
-        remoteListenerField.set(null, null);
+        Method resetMethod = ContextTemplateEnableDisableEventBroadcaster.class.getDeclaredMethod("reset");
+        resetMethod.setAccessible(true);
+        resetMethod.invoke(ContextTemplateEnableDisableEventBroadcaster.instance());
     }
 
     @Test
     public void testRegister_addsListener() {
-        ContextTemplateEnableDisableEventBroadcaster.register(listener1);
+        ContextTemplateEnableDisableEventBroadcaster.instance().register(listener1);
 
-        ContextTemplateEnableDisableEventBroadcaster.broadcast(contextTemplate);
+        ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(contextTemplate);
 
         try {
             Thread.sleep(100);
@@ -61,10 +57,10 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
 
     @Test
     public void testRegister_multipleListeners() {
-        ContextTemplateEnableDisableEventBroadcaster.register(listener1);
-        ContextTemplateEnableDisableEventBroadcaster.register(listener2);
+        ContextTemplateEnableDisableEventBroadcaster.instance().register(listener1);
+        ContextTemplateEnableDisableEventBroadcaster.instance().register(listener2);
 
-        ContextTemplateEnableDisableEventBroadcaster.broadcast(contextTemplate);
+        ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(contextTemplate);
 
         try {
             Thread.sleep(100);
@@ -78,10 +74,10 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
 
     @Test
     public void testUnregister_removesListener() {
-        ContextTemplateEnableDisableEventBroadcaster.register(listener1);
-        ContextTemplateEnableDisableEventBroadcaster.unregister(listener1);
+        ContextTemplateEnableDisableEventBroadcaster.instance().register(listener1);
+        ContextTemplateEnableDisableEventBroadcaster.instance().unregister(listener1);
 
-        ContextTemplateEnableDisableEventBroadcaster.broadcast(contextTemplate);
+        ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(contextTemplate);
 
         try {
             Thread.sleep(100);
@@ -94,7 +90,7 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
 
     @Test
     public void testBroadcast_withNoListeners() {
-        ContextTemplateEnableDisableEventBroadcaster.broadcast(contextTemplate);
+        ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(contextTemplate);
     }
 
     @Test
@@ -103,8 +99,8 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
 
         ContextTemplateEnableDisableEventLocalBroadcastListener asyncListener = contextTemplate -> latch.countDown();
 
-        ContextTemplateEnableDisableEventBroadcaster.register(asyncListener);
-        ContextTemplateEnableDisableEventBroadcaster.broadcast(contextTemplate);
+        ContextTemplateEnableDisableEventBroadcaster.instance().register(asyncListener);
+        ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(contextTemplate);
 
         boolean completed = latch.await(1, TimeUnit.SECONDS);
         Assert.assertTrue("Broadcast should execute asynchronously", completed);
@@ -112,9 +108,9 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
 
     @Test
     public void testBroadcast_nullContextTemplate() {
-        ContextTemplateEnableDisableEventBroadcaster.register(listener1);
+        ContextTemplateEnableDisableEventBroadcaster.instance().register(listener1);
 
-        ContextTemplateEnableDisableEventBroadcaster.broadcast(null);
+        ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(null);
 
         try {
             Thread.sleep(100);
@@ -127,23 +123,23 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
 
     @Test
     public void testBroadcast_forwardsEventToRemoteListener() {
-        ContextTemplateEnableDisableEventBroadcaster.setRemoteListener(remoteListener);
-        ContextTemplateEnableDisableEventBroadcaster.broadcast(contextTemplate);
+        ContextTemplateEnableDisableEventBroadcaster.instance().setRemoteListener(remoteListener);
+        ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(contextTemplate);
         verify(remoteListener).receiveBroadcast(contextTemplate);
     }
 
     @Test
     public void testRemoteBroadcast_isNoOpWhenRemoteListenerNotSet() {
         // no remote listener set — must not throw
-        ContextTemplateEnableDisableEventBroadcaster.remoteBroadcast(contextTemplate);
+        ContextTemplateEnableDisableEventBroadcaster.instance().remoteBroadcast(contextTemplate);
     }
 
     @Test
     public void testRegister_sameListenerTwice() {
-        ContextTemplateEnableDisableEventBroadcaster.register(listener1);
-        ContextTemplateEnableDisableEventBroadcaster.register(listener1);
+        ContextTemplateEnableDisableEventBroadcaster.instance().register(listener1);
+        ContextTemplateEnableDisableEventBroadcaster.instance().register(listener1);
 
-        ContextTemplateEnableDisableEventBroadcaster.broadcast(contextTemplate);
+        ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(contextTemplate);
 
         try {
             Thread.sleep(100);

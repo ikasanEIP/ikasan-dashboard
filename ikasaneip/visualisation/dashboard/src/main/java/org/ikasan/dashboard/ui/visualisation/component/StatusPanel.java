@@ -232,7 +232,7 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
     protected void onAttach(AttachEvent attachEvent)
     {
         this.ui = attachEvent.getUI();
-        CacheStateBroadcaster.register(this);
+        CacheStateBroadcaster.instance().register(this);
 
         this.stoppedButtonTooltip.attachToComponent(stoppedButton);
         this.recoveringButtonTooltip.attachToComponent(recoveringButton);
@@ -244,7 +244,7 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
     @Override
     protected void onDetach(DetachEvent detachEvent)
     {
-        CacheStateBroadcaster.unregister(this);
+        CacheStateBroadcaster.instance().unregister(this);
     }
 
     @Override

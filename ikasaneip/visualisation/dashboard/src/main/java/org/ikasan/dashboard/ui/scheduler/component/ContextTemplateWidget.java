@@ -483,7 +483,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                             this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_DELETED, action, authentication.getName());
                             // Reuse the existing context-template refresh event; peer widgets re-query the backing store,
                             // so a deleted plan disappears without adding a delete-specific REST broadcast.
-                            ContextTemplateSavedEventBroadcaster.broadcast(record.getContext());
+                            ContextTemplateSavedEventBroadcaster.instance().broadcast(record.getContext());
 
                             current.access(() -> {
                                 this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
@@ -586,7 +586,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         disableQuartzScheduledJobsButton.setVisible(true);
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED, String.format("Context Template Name [%s]"
                             , contextTemplate.getName()), this.authentication.getName());
-                        ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                        ContextTemplateSavedEventBroadcaster.instance().broadcast(contextTemplate);
                     } catch (Exception e) {
                         e.printStackTrace();
                         error = true;
@@ -622,7 +622,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                         disableQuartzScheduledJobsButton.setVisible(false);
                         this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED, String.format("Context Template Name [%s]"
                             , contextTemplate.getName()), this.authentication.getName());
-                        ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                        ContextTemplateSavedEventBroadcaster.instance().broadcast(contextTemplate);
                     } catch (Exception e) {
                         e.printStackTrace();
                         error = true;
@@ -899,7 +899,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 String action = String.format("Job plan [%s] has been enabled.", scheduledContextRecord.getContextName());
                                 this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_ENABLED, action, authentication.getName());
 
-                                ContextTemplateEnableDisableEventBroadcaster.broadcast(record.getContext());
+                                ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(record.getContext());
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
                                 logger.error(String.format("An error has occurred enabling job plans [%s]", scheduledContextRecord.getContextName()), e);
@@ -988,7 +988,7 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
                                 String action = String.format("Job plan [%s] has been disabled.", scheduledContextRecord.getContextName());
                                 this.systemEventLogger.logEvent(SystemEventConstants.JOB_PLAN_DISABLED, action, authentication.getName());
 
-                                ContextTemplateEnableDisableEventBroadcaster.broadcast(record.getContext());
+                                ContextTemplateEnableDisableEventBroadcaster.instance().broadcast(record.getContext());
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
                                 logger.error(String.format("An error has occurred disabling job plans [%s]", scheduledContextRecord.getContextName()), e);
@@ -1211,9 +1211,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
-        ContextInstanceSavedEventBroadcaster.register(this);
-        ContextTemplateEnableDisableEventBroadcaster.register(this);
-        ContextTemplateSavedEventBroadcaster.register(this);
+        ContextInstanceSavedEventBroadcaster.instance().register(this);
+        ContextTemplateEnableDisableEventBroadcaster.instance().register(this);
+        ContextTemplateSavedEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -1221,9 +1221,9 @@ public class ContextTemplateWidget extends VerticalLayout implements ContextInst
         super.onDetach(detachEvent);
         this.ui = null;
 
-        ContextTemplateEnableDisableEventBroadcaster.unregister(this);
-        ContextInstanceSavedEventBroadcaster.unregister(this);
-        ContextTemplateSavedEventBroadcaster.unregister(this);
+        ContextTemplateEnableDisableEventBroadcaster.instance().unregister(this);
+        ContextInstanceSavedEventBroadcaster.instance().unregister(this);
+        ContextTemplateSavedEventBroadcaster.instance().unregister(this);
     }
 
     @Override

@@ -288,16 +288,16 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
     protected void onAttach(AttachEvent attachEvent) {
         this.ui = attachEvent.getUI();
 
-        ContextInstanceStateChangeEventBroadcaster.register(this);
-        SchedulerJobStateChangeEventBroadcaster.register(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         this.ui = null;
 
-        ContextInstanceStateChangeEventBroadcaster.unregister(this);
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
     }
 
     @Override

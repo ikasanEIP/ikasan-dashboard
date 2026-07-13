@@ -394,7 +394,7 @@ public class LogFileHistoryDialog extends AbstractCloseableResizableDialog imple
         super.onAttach(attachEvent);
         this.ui = attachEvent.getUI();
 
-        SchedulerJobStateChangeEventBroadcaster.register(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().register(this);
     }
 
     @Override
@@ -403,7 +403,7 @@ public class LogFileHistoryDialog extends AbstractCloseableResizableDialog imple
         logger.debug("Detaching ContextInstanceTreeView");
         this.ui = null;
 
-        SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
 
         logger.debug("Finished detaching ContextInstanceTreeView");
     }
