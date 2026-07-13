@@ -111,7 +111,7 @@ public class ContextTemplateSavedEventBroadcaster {
     }
 
     /**
-     * Resets the singleton instance of the {@code ContextInstanceDlqEventBroadcaster}.
+     * Resets the singleton instance of the {@code ContextTemplateSavedEventBroadcaster}.
      *
      * <p>Shut down the current instance's executor and wait for any already queued or in-flight
      * broadcasts to finish, this guarantees no broadcast is dispatched while the reset

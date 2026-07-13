@@ -114,26 +114,18 @@ public class ContextTemplateEnableDisableEventBroadcaster {
      * Resets the singleton instance of the {@code ContextTemplateEnableDisableEventBroadcaster},
      * safely draining the current instance's executor before recreating it.
      *
-     * <p>Delegates to {@link ExecutorDrainer#shutdownAndAwait} to shut down the current instance's
-     * executor and wait for any already queued or in-flight broadcasts to finish, then assigns a
-     * new instance to {@code INSTANCE}. This guarantees no broadcast dispatched before the reset
-     * is still running — or silently lost — once this method returns.
+     * <p>Shut down the current instance's executor and wait for any already queued or in-flight
+     * broadcasts to finish, this guarantees no broadcast is dispatched while the reset
+     * is still running — or silently lost — once this method returns. Prevents potential
+     * non-deamon thread leak
+     * This method is {@code synchronized}, so it cannot run concurrently with
+     * {@link #register}, {@link #unregister}, {@link #broadcast}, {@link #remoteBroadcast}
+     * or {@link #localBroadcast} on the same instance — no undefined-ordering race
+     * between a reset and an in-progress broadcast.
      *
-     * <p><b>What this fixes, relative to earlier versions of this method:</b>
-     * <ul>
-     *   <li>{@code INSTANCE} is now {@code volatile}, so the reassignment is visible to any
-     *       thread calling {@link #instance()} without needing a lock.</li>
-     *   <li>This method is now {@code synchronized}, so it cannot run concurrently with
-     *       {@link #register}, {@link #unregister}, {@link #broadcast}, {@link #remoteBroadcast}
-     *       or {@link #localBroadcast} on the same instance — no more undefined-ordering race
-     *       between a reset and an in-progress broadcast.</li>
-     *   <li>The old instance's executor is properly shut down and awaited rather than
-     *       discarded, so this no longer leaks one non-daemon thread on every call.</li>
-     * </ul>
-     * <p><b>What is still true, and is inherent to any reference-swap singleton:</b> a caller
-     * that already holds a reference to the old instance (obtained via {@link #instance()}
-     * before this call) continues to hold a reference to a now-terminated object. It is no
-     * longer <i>silent</i>, though — since the old instance's executor is shut down, any further
+     * <p>A caller hat already holds a reference to the old instance (obtained via {@link #instance()}
+     * before this call) continues to hold a reference to a now-terminated object. However,
+     * since the old instance's executor is shut down, any further
      * {@link #broadcast} or {@link #localBroadcast} call made through a stale reference will
      * throw {@link java.util.concurrent.RejectedExecutionException} rather than quietly
      * succeeding into an orphaned instance nobody observes.
