@@ -33,4 +33,14 @@ vaadin-grid::part(cell) {
     margin-top: 0px !important;
 }
 
+/* Target the internal checkbox box when both checked and readonly attributes are present */
+vaadin-checkbox[checked][disabled]::part(checkbox) {
+    background-color: rgba(241, 90, 35, 0.3); /* Replace with your desired color */
+}
+
+/* Optional: If you want to change the color of the checkmark icon inside it */
+vaadin-checkbox[checked][disabled]::part(checkbox)::after {
+    border-color: #ffffff; /* Color of the checkmark */
+}
+
 
