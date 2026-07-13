@@ -21,9 +21,7 @@
              Docker Desktop users override with -Ddashboard.uitest.solr.data.dir=$HOME/solr-data
              since it only shares /home by default. Deliberately not named "solr.data.dir" - that
              name collides with the stock Apache Solr <dataDir>${solr.data.dir:}</dataDir> convention
-             used by EmbeddedSolrServer tests elsewhere (e.g. ikasan-solr-client), and setting it
-             globally on the command line redirects every embedded Solr core in those unrelated
-             tests into this one shared directory. -->
+             used by EmbeddedSolrServer tests elsewhere (e.g. ikasan-solr-client). -->
         <dashboard.uitest.solr.data.dir>/tmp/solr-data</dashboard.uitest.solr.data.dir>
     </properties>
 
