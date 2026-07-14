@@ -255,8 +255,8 @@ public class HibernateEmailNotificationDetailsDaoImplTest {
     @Test
     public void test_save_sets_timestamps_automatically() {
         // Given
-        HibernateEmailNotificationDetailsRecord record = createRecord("TimestampJob", "TimestampContext", "TimestampChild", "ERROR");
         long beforeSave = System.currentTimeMillis();
+        HibernateEmailNotificationDetailsRecord record = createRecord("TimestampJob", "TimestampContext", "TimestampChild", "ERROR");
 
         // When
         dao.save(record);
