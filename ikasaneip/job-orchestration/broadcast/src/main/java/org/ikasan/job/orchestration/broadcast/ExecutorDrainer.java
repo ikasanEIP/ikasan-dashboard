@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Shared logic for safely draining an {@link ExecutorService} before a broadcaster's singleton
- * instance is recreated by {@code reset()}. Extracted so all nine broadcaster classes share one
+ * instance is recreated by {@code reset()}. Extracted so all broadcaster classes share one
  * implementation of this instead of nine identical copies.
  *
  * @author Ikasan Development Team

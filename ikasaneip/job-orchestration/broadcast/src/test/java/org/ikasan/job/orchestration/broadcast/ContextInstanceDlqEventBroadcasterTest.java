@@ -180,6 +180,7 @@ public class ContextInstanceDlqEventBroadcasterTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(threadCount);
         AtomicInteger unexpectedExceptions = new AtomicInteger(0);
+        AtomicInteger resetFailures = new AtomicInteger(0);
         AtomicBoolean keepResetting = new AtomicBoolean(true);
 
         for (int i = 0; i < threadCount; i++) {
@@ -215,27 +216,32 @@ public class ContextInstanceDlqEventBroadcasterTest {
                 while (keepResetting.get()) {
                     resetMethod.invoke(ContextInstanceDlqEventBroadcaster.instance());
                 }
-            } catch (Exception ignored) {
-                // best-effort background resetter; failures here don't affect the assertions below
+            } catch (Exception e) {
+                resetFailures.incrementAndGet();
             }
         });
 
         startLatch.countDown();
-        boolean completed = doneLatch.await(30, TimeUnit.SECONDS);
-        keepResetting.set(false);
-        workers.shutdown();
-        resetter.shutdown();
+        boolean completed;
+        try {
+            completed = doneLatch.await(30, TimeUnit.SECONDS);
+        } finally {
+            keepResetting.set(false);
+            workers.shutdown();
+            resetter.shutdown();
+        }
 
         Assert.assertTrue("Worker threads should finish without hanging", completed);
+        Assert.assertTrue("Worker executor should terminate", workers.awaitTermination(5, TimeUnit.SECONDS));
+        Assert.assertTrue("Resetter should stop before the test ends", resetter.awaitTermination(5, TimeUnit.SECONDS));
         Assert.assertEquals(
             "No exceptions other than the documented RejectedExecutionException should occur under concurrent reset",
             0, unexpectedExceptions.get());
+        Assert.assertEquals("Concurrent reset should not fail", 0, resetFailures.get());
     }
 
     /**
-     * Deterministic counterpart to the test above: that concurrent stress test only tolerates
-     * RejectedExecutionException if the race happens to produce one, it never asserts that it does. This proves
-     * a stale reference held from before reset() actually throws, rather than just allowing it to.
+     * Proves a stale reference held from before reset() throws RejectedExecutionException if broadcast attempted.
      */
     @Test
     public void testLocalBroadcast_onStaleReferenceAfterReset_throwsRejectedExecutionException() throws Exception {
