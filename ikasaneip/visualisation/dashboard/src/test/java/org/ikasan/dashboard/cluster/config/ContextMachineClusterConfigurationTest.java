@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.cluster.config;
 
 import org.ikasan.dashboard.cluster.service.LeaderElectionService;
+import org.ikasan.dashboard.cluster.service.ZooKeeperLeaderElectionService;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.rest.client.ContextMachineRestServiceImpl;
@@ -70,6 +71,21 @@ public class ContextMachineClusterConfigurationTest {
 
         Assert.assertNotNull("registerContextMachineFallback() must not touch the fallback provider " +
             "when contextMachineRestServices is empty (single-node deployment)",
+            ContextMachineCache.instance().getByContextInstanceId("unknown-instance-id"));
+    }
+
+    @Test
+    public void testDefaultNonClusteredPropertiesRemainLocalWithoutZooKeeper() {
+        // These are the defaults when the optional cluster properties are absent: the ZooKeeper
+        // service does not start or connect, and treats this standalone node as the leader.
+        ZooKeeperLeaderElectionService standaloneLeaderService =
+            new ZooKeeperLeaderElectionService(new ZooKeeperLeaderElectionProperties());
+        ReflectionTestUtils.setField(configuration, "leaderElectionService", standaloneLeaderService);
+
+        configuration.registerContextMachineFallback();
+
+        Assert.assertTrue("A non-clustered node must remain locally authoritative", ContextMachineCache.instance().isLeader());
+        Assert.assertNull("No REST proxy fallback must be registered without configured peer services",
             ContextMachineCache.instance().getByContextInstanceId("unknown-instance-id"));
     }
 

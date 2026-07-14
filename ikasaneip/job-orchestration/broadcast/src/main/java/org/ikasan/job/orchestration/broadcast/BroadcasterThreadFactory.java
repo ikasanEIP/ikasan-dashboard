@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class BroadcasterThreadFactory implements ThreadFactory {
     /**
-     * Shared across every {@code BroadcasterThreadFactory} instance (i.e. across all nine
+     * Shared across every {@code BroadcasterThreadFactory} instance (i.e. across all
      * broadcaster classes' executors, and every executor recreated by {@code reset()}), so a
      * plain {@code long} here would be a non-atomic read-modify-write race if thread creation
      * ever happened concurrently — e.g. under Surefire parallel test execution.

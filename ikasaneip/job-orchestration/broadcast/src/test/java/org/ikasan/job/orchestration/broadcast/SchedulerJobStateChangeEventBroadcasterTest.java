@@ -45,13 +45,17 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
     @Before
     @After
     public void resetListeners() throws Exception {
+        resetCurrentBroadcaster();
+    }
+
+    private void resetCurrentBroadcaster() throws Exception {
         Method resetMethod = SchedulerJobStateChangeEventBroadcaster.class.getDeclaredMethod("reset");
         resetMethod.setAccessible(true);
         resetMethod.invoke(SchedulerJobStateChangeEventBroadcaster.instance());
     }
 
     @Test
-    public void testRegister_addsListener() {
+    public void testRegister_addsListener() throws Exception {
         when(event.getSchedulerJobInstance()).thenReturn(schedulerJobInstance);
         when(schedulerJobInstance.getAgentName()).thenReturn("TestAgent");
 
@@ -59,17 +63,13 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
 
         SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event);
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        resetCurrentBroadcaster();
 
-        verify(listener1, atLeastOnce()).receiveBroadcast(event);
+        verify(listener1).receiveBroadcast(event);
     }
 
     @Test
-    public void testRegister_multipleListeners() {
+    public void testRegister_multipleListeners() throws Exception {
         when(event.getSchedulerJobInstance()).thenReturn(schedulerJobInstance);
         when(schedulerJobInstance.getAgentName()).thenReturn("TestAgent");
 
@@ -78,18 +78,14 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
 
         SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event);
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        resetCurrentBroadcaster();
 
-        verify(listener1, atLeastOnce()).receiveBroadcast(event);
-        verify(listener2, atLeastOnce()).receiveBroadcast(event);
+        verify(listener1).receiveBroadcast(event);
+        verify(listener2).receiveBroadcast(event);
     }
 
     @Test
-    public void testUnregister_removesListener() {
+    public void testUnregister_removesListener() throws Exception {
         when(event.getSchedulerJobInstance()).thenReturn(schedulerJobInstance);
         when(schedulerJobInstance.getAgentName()).thenReturn("TestAgent");
 
@@ -98,11 +94,7 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
 
         SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event);
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        resetCurrentBroadcaster();
 
         verify(listener1, never()).receiveBroadcast(any());
     }
@@ -116,86 +108,88 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
     }
 
     @Test
-    public void testBroadcast_executesAsynchronously() throws InterruptedException {
+    public void testBroadcast_executesAsynchronously() throws Exception {
         when(event.getSchedulerJobInstance()).thenReturn(schedulerJobInstance);
         when(schedulerJobInstance.getAgentName()).thenReturn("TestAgent");
 
-        CountDownLatch latch = new CountDownLatch(1);
-
-        SchedulerJobStateChangeEventLocalBroadcastListener asyncListener = event -> latch.countDown();
+        CountDownLatch listenerStarted = new CountDownLatch(1);
+        CountDownLatch allowListenerToFinish = new CountDownLatch(1);
+        SchedulerJobStateChangeEventLocalBroadcastListener asyncListener = event -> {
+            listenerStarted.countDown();
+            try {
+                allowListenerToFinish.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        };
 
         SchedulerJobStateChangeEventBroadcaster.instance().register(asyncListener);
-        SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event);
-
-        boolean completed = latch.await(1, TimeUnit.SECONDS);
-        Assert.assertTrue("Broadcast should execute asynchronously", completed);
+        Thread broadcasterThread = new Thread(() -> SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event));
+        broadcasterThread.start();
+        try {
+            Assert.assertTrue("Listener should start", listenerStarted.await(1, TimeUnit.SECONDS));
+            broadcasterThread.join(1000);
+            Assert.assertFalse("broadcast() should return without waiting for its local listener", broadcasterThread.isAlive());
+        } finally {
+            allowListenerToFinish.countDown();
+            broadcasterThread.join(1000);
+            resetCurrentBroadcaster();
+        }
     }
 
     @Test
-    public void testBroadcast_filtersTerminalJob() {
+    public void testBroadcast_filtersTerminalJob() throws Exception {
         when(event.getSchedulerJobInstance()).thenReturn(schedulerJobInstance);
         when(schedulerJobInstance.getAgentName()).thenReturn(JobConstants.CONTEXT_TERMINAL_JOB);
 
         SchedulerJobStateChangeEventBroadcaster.instance().register(listener1);
+        SchedulerJobStateChangeEventBroadcaster.instance().setRemoteListener(remoteListener);
         SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event);
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        resetCurrentBroadcaster();
 
         verify(listener1, never()).receiveBroadcast(any());
+        verify(remoteListener, never()).receiveBroadcast(any());
     }
 
     @Test
-    public void testBroadcast_filtersStartJob() {
+    public void testBroadcast_filtersStartJob() throws Exception {
         when(event.getSchedulerJobInstance()).thenReturn(schedulerJobInstance);
         when(schedulerJobInstance.getAgentName()).thenReturn(JobConstants.CONTEXT_START_JOB);
 
         SchedulerJobStateChangeEventBroadcaster.instance().register(listener1);
+        SchedulerJobStateChangeEventBroadcaster.instance().setRemoteListener(remoteListener);
         SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event);
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        resetCurrentBroadcaster();
 
         verify(listener1, never()).receiveBroadcast(any());
+        verify(remoteListener, never()).receiveBroadcast(any());
     }
 
     @Test
-    public void testBroadcast_withNullSchedulerJobInstance() {
+    public void testBroadcast_withNullSchedulerJobInstance() throws Exception {
         when(event.getSchedulerJobInstance()).thenReturn(null);
 
         SchedulerJobStateChangeEventBroadcaster.instance().register(listener1);
         SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event);
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        resetCurrentBroadcaster();
 
         verify(listener1, never()).receiveBroadcast(any());
     }
 
     @Test
-    public void testBroadcast_withRegularJob() {
+    public void testBroadcast_withRegularJob() throws Exception {
         when(event.getSchedulerJobInstance()).thenReturn(schedulerJobInstance);
         when(schedulerJobInstance.getAgentName()).thenReturn("RegularJobAgent");
 
         SchedulerJobStateChangeEventBroadcaster.instance().register(listener1);
         SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event);
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        resetCurrentBroadcaster();
 
-        verify(listener1, atLeastOnce()).receiveBroadcast(event);
+        verify(listener1).receiveBroadcast(event);
     }
 
     @Test
@@ -215,7 +209,7 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
     }
 
     @Test
-    public void testRegister_sameListenerTwice() {
+    public void testRegister_sameListenerTwice() throws Exception {
         when(event.getSchedulerJobInstance()).thenReturn(schedulerJobInstance);
         when(schedulerJobInstance.getAgentName()).thenReturn("TestAgent");
 
@@ -224,13 +218,9 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
 
         SchedulerJobStateChangeEventBroadcaster.instance().broadcast(event);
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        resetCurrentBroadcaster();
 
-        verify(listener1, atLeastOnce()).receiveBroadcast(event);
+        verify(listener1).receiveBroadcast(event);
     }
 
     /**
@@ -250,8 +240,12 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(threadCount);
         AtomicInteger unexpectedExceptions = new AtomicInteger(0);
+        AtomicInteger resetFailures = new AtomicInteger(0);
         AtomicBoolean keepResetting = new AtomicBoolean(true);
 
+        // Each of the 4 workers repeatedly fetches instance(), then register/broadcast/unregister on that
+        // reference. The resetter thread below may swap INSTANCE in between, so the reference a worker is
+        // holding can go stale mid-iteration.
         for (int i = 0; i < threadCount; i++) {
             workers.submit(() -> {
                 try {
@@ -269,6 +263,7 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
                         }
                     }
                 } catch (Exception e) {
+                    // Anything other than the documented RejectedExecutionException above is a real bug.
                     unexpectedExceptions.incrementAndGet();
                 } finally {
                     doneLatch.countDown();
@@ -276,6 +271,9 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
             });
         }
 
+        // The source of the race: continuously resets the singleton (draining the old executor, then
+        // swapping INSTANCE) for as long as workers are running. No explicit delay is needed between
+        // iterations — reset() itself blocks until the previous instance's executor has drained.
         ExecutorService resetter = Executors.newSingleThreadExecutor();
         resetter.submit(() -> {
             try {
@@ -285,27 +283,34 @@ public class SchedulerJobStateChangeEventBroadcasterTest {
                 while (keepResetting.get()) {
                     resetMethod.invoke(SchedulerJobStateChangeEventBroadcaster.instance());
                 }
-            } catch (Exception ignored) {
-                // best-effort background resetter; failures here don't affect the assertions below
+            } catch (Exception e) {
+                resetFailures.incrementAndGet();
             }
         });
 
         startLatch.countDown();
-        boolean completed = doneLatch.await(30, TimeUnit.SECONDS);
-        keepResetting.set(false);
-        workers.shutdown();
-        resetter.shutdown();
+        boolean completed;
+        try {
+            completed = doneLatch.await(30, TimeUnit.SECONDS);
+        } finally {
+            keepResetting.set(false);
+            workers.shutdown();
+            resetter.shutdown();
+        }
 
+        // completed catches a hang/deadlock; the two awaitTermination checks catch thread leaks; the two
+        // AtomicInteger checks are the correctness proof — nothing broke beyond the one documented exception.
         Assert.assertTrue("Worker threads should finish without hanging", completed);
+        Assert.assertTrue("Worker executor should terminate", workers.awaitTermination(5, TimeUnit.SECONDS));
+        Assert.assertTrue("Resetter should stop before the test ends", resetter.awaitTermination(5, TimeUnit.SECONDS));
         Assert.assertEquals(
             "No exceptions other than the documented RejectedExecutionException should occur under concurrent reset",
             0, unexpectedExceptions.get());
+        Assert.assertEquals("Concurrent reset should not fail", 0, resetFailures.get());
     }
 
     /**
-     * Deterministic counterpart to the test above: that concurrent stress test only tolerates
-     * RejectedExecutionException if the race happens to produce one, it never asserts that it does. This proves
-     * a stale reference held from before reset() actually throws, rather than just allowing it to.
+     * Proves a stale reference held from before reset() throws RejectedExecutionException if broadcast attempted.
      */
     @Test
     public void testLocalBroadcast_onStaleReferenceAfterReset_throwsRejectedExecutionException() throws Exception {

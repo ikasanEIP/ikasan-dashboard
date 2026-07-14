@@ -152,9 +152,7 @@ public class ContextTemplateEnableDisableEventBroadcasterTest {
     }
 
     /**
-     * Deterministic counterpart to the documented (see reset()'s javadoc) but merely tolerated
-     * RejectedExecutionException in the concurrent stress test on ContextInstanceDlqEventBroadcasterTest:
-     * proves a stale reference held from before reset() actually throws, rather than just allowing it to.
+     * Proves a stale reference held from before reset() throws RejectedExecutionException if broadcast attempted.
      */
     @Test
     public void testLocalBroadcast_onStaleReferenceAfterReset_throwsRejectedExecutionException() throws Exception {

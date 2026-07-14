@@ -199,7 +199,7 @@ public class ClusterBroadcastAutoConfiguration {
      * Creates one {@link PeerBroadcastChannel} per configured peer node. Each channel pairs the
      * peer's REST client with a dedicated single-threaded executor and a per-peer circuit breaker.
      *
-     * <p>All nine remote broadcast listener beans share this same list, so each peer has exactly
+     * <p>All remote broadcast listener beans share this same list, so each peer has exactly
      * one execution lane across all event types. This preserves event ordering per peer and
      * minimises total thread count (one thread per peer, not one per event-type per peer).</p>
      */

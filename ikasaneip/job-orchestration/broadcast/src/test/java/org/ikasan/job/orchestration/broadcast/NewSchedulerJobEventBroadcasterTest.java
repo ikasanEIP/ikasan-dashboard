@@ -53,7 +53,7 @@ public class NewSchedulerJobEventBroadcasterTest {
             Thread.currentThread().interrupt();
         }
 
-        verify(listener1, atLeastOnce()).receiveBroadcast(schedulerJob);
+        verify(listener1).receiveBroadcast(schedulerJob);
     }
 
     @Test
@@ -69,8 +69,8 @@ public class NewSchedulerJobEventBroadcasterTest {
             Thread.currentThread().interrupt();
         }
 
-        verify(listener1, atLeastOnce()).receiveBroadcast(schedulerJob);
-        verify(listener2, atLeastOnce()).receiveBroadcast(schedulerJob);
+        verify(listener1).receiveBroadcast(schedulerJob);
+        verify(listener2).receiveBroadcast(schedulerJob);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class NewSchedulerJobEventBroadcasterTest {
             Thread.currentThread().interrupt();
         }
 
-        verify(listener1, atLeastOnce()).receiveBroadcast(null);
+        verify(listener1).receiveBroadcast(null);
     }
 
     @Test
@@ -148,13 +148,11 @@ public class NewSchedulerJobEventBroadcasterTest {
             Thread.currentThread().interrupt();
         }
 
-        verify(listener1, atLeastOnce()).receiveBroadcast(schedulerJob);
+        verify(listener1).receiveBroadcast(schedulerJob);
     }
 
     /**
-     * Deterministic counterpart to the documented (see reset()'s javadoc) but merely tolerated
-     * RejectedExecutionException in the concurrent stress test on ContextInstanceDlqEventBroadcasterTest:
-     * proves a stale reference held from before reset() actually throws, rather than just allowing it to.
+     * Proves a stale reference held from before reset() throws RejectedExecutionException if broadcast attempted.
      */
     @Test
     public void testLocalBroadcast_onStaleReferenceAfterReset_throwsRejectedExecutionException() throws Exception {
