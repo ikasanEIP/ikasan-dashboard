@@ -32,18 +32,14 @@ public class SchedulerJobStateChangeEventBroadcaster {
 
     /**
      * Private constructor for the SchedulerJobStateChangeEventBroadcaster class.
-     *
-     * This constructor enforces the singleton design pattern, ensuring that
-     * instances of this class cannot be created directly from outside the class.
-     * Use the {@code instance()} method to get the singleton instance.
+     * This constructor enforces the singleton design pattern use the {@code instance()}
+     * method to get the singleton instance.
      */
     private SchedulerJobStateChangeEventBroadcaster() {}
 
     /**
-     * Retrieves the singleton instance of the {@code SchedulerJobStateChangeEventBroadcaster}.
-     * This method ensures that only one instance of the class exists, in compliance
+     * Ensures that only one instance of the class exists, in compliance
      * with the singleton design pattern.
-     *
      * @return the singleton instance of {@code SchedulerJobStateChangeEventBroadcaster}
      */
     public static SchedulerJobStateChangeEventBroadcaster instance() {
