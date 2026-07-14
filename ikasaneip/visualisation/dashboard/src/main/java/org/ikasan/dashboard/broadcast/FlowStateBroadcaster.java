@@ -16,18 +16,14 @@ public class FlowStateBroadcaster {
 
     /**
      * Private constructor for the FlowStateBroadcaster class.
-     *
-     * This constructor enforces the singleton design pattern, ensuring that
-     * instances of this class cannot be created directly from outside the class.
-     * Use the {@code instance()} method to get the singleton instance.
+     * This constructor enforces the singleton design pattern use the {@code instance()}
+     * method to get the singleton instance.
      */
     private FlowStateBroadcaster() {}
 
     /**
-     * Retrieves the singleton instance of the {@code FlowStateBroadcaster}.
-     * This method ensures that only one instance of the class exists, in compliance
+     * Ensures that only one instance of the class exists, in compliance
      * with the singleton design pattern.
-     *
      * @return the singleton instance of {@code FlowStateBroadcaster}
      */
     public static FlowStateBroadcaster instance() {
