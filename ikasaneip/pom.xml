@@ -377,7 +377,7 @@
         <version.font-awesome-iron-iconset>5.2.2</version.font-awesome-iron-iconset>
         <version.ace.editor>5.0.1</version.ace.editor>
         <version.big.queue>1.0.0</version.big.queue>
-        <version.logback>1.5.33</version.logback>
+        <version.logback>1.5.34</version.logback>
         <ikasan.core.version>5.0.0-SNAPSHOT</ikasan.core.version>
         <version.spring.webflux>7.0.7</version.spring.webflux>
         <version.reactor>3.7.9</version.reactor>
