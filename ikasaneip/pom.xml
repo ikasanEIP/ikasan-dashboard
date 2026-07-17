@@ -341,7 +341,7 @@
         <version.org.mockftpserver>2.6</version.org.mockftpserver>
         <version.org.apache.sshd>2.1.0</version.org.apache.sshd>
         <version.com.fasterxml.jackson.core.annotations>2.22</version.com.fasterxml.jackson.core.annotations>
-        <version.com.fasterxml.jackson.core.databind>2.22.0</version.com.fasterxml.jackson.core.databind>
+        <version.com.fasterxml.jackson.core.databind>2.22.1</version.com.fasterxml.jackson.core.databind>
         <version.tools.jackson.core.databind>3.1.4</version.tools.jackson.core.databind>
         <version.tools.jackson.core>3.1.4</version.tools.jackson.core>
         <version.vaadin>25.2.1</version.vaadin>
