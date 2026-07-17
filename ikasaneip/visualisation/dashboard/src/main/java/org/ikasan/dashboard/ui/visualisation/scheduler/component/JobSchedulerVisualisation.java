@@ -265,8 +265,18 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                 (this.contextTemplate.getUserGeneratedLayout());
         }
 
+        Map<String, SchedulerJob> schedulerJobMap = new HashMap<>();
+        schedulerJobs.values().forEach(schedulerJob -> {
+            if(schedulerJob.getChildContextNames() != null && !schedulerJob.getChildContextNames().isEmpty()) {
+                schedulerJob.getChildContextNames().forEach(name ->
+                    schedulerJobMap.put(schedulerJob.getIdentifier() + "-" + name, schedulerJob));
+            }
+            else {
+                schedulerJobMap.put(schedulerJob.getIdentifier(), schedulerJob);
+            }
+        });
+
         this.designerCanvas.setCanvasJson(contextTemplateDraw2dAdapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
-            schedulerJobs.values().stream().collect(Collectors.toMap(SchedulerJob::getIdentifier, Function.identity(), (key1, key2)-> key2)),
-            schedulerJobImageMap, logicalBoundaries));
+            schedulerJobMap, schedulerJobImageMap, logicalBoundaries));
     }
 }
