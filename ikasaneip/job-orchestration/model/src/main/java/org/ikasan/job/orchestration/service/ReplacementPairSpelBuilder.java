@@ -5,6 +5,7 @@ import org.ikasan.spec.scheduled.job.model.ReplacementPair;
 public class ReplacementPairSpelBuilder {
     private static final String FILE_NAME_REPLACE_VARIABLE =  "#fileNamePattern";
     private static final String FILE_PATH_REPLACE_VARIABLE =  "#filePathPattern";
+    private static final String MOVE_DIRECTORY_REPLACE_VARIABLE =  "#moveDirectoryPattern";
     private static final String CONTEXT_PARAM_SPEL_REPLACE =".replace('%s', T(org.ikasan.ootb.scheduler.agent.rest.cache.ContextInstanceCache)" +
         ".getContextParameter(#correlatingIdentifier, '%s'))";
 
@@ -37,6 +38,15 @@ public class ReplacementPairSpelBuilder {
      */
     public static ReplacementPairSpelBuilder filePathReplace() {
         return new ReplacementPairSpelBuilder(FILE_PATH_REPLACE_VARIABLE);
+    }
+
+    /**
+     * Creates a ReplacementPairSpelBuilder object with the initial variable set to the predefined MOVE_DIRECTORY_REPLACE_VARIABLE.
+     *
+     * @return a ReplacementPairSpelBuilder object with MOVE_DIRECTORY_REPLACE_VARIABLE as the initial variable
+     */
+    public static ReplacementPairSpelBuilder moveDirectoryReplace() {
+        return new ReplacementPairSpelBuilder(MOVE_DIRECTORY_REPLACE_VARIABLE);
     }
 
     /**
