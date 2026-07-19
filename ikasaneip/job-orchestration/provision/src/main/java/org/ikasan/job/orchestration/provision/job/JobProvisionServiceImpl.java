@@ -304,6 +304,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                     fileEventDrivenJob.setDynamic(((FileEventDrivenJob) job).isDynamic());
                     fileEventDrivenJob.setFilenameSpel(((FileEventDrivenJob) job).getFilenameSpel());
                     fileEventDrivenJob.setFilePathSpel(((FileEventDrivenJob) job).getFilePathSpel());
+                    fileEventDrivenJob.setMoveDirectorySpel(((FileEventDrivenJob) job).getMoveDirectorySpel());
 
                     return fileEventDrivenJob;
                 } else if (job instanceof GlobalEventJob) {
