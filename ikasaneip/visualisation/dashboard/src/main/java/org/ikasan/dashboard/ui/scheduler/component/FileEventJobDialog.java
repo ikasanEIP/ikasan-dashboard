@@ -65,6 +65,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private Button filepathPlus;
     private MultiSelectComboBox<ReplacementPair> filenamePairs;
     private MultiSelectComboBox<ReplacementPair> filepathPairs;
+    private Button archiveDirectoryPlus;
+    private MultiSelectComboBox<ReplacementPair> archiveDirectoryPairs;
     private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
     private TextField slaCronExpressionTf;
@@ -234,6 +236,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
                 this.filepathPairs.setVisible(true);
                 this.filenamePlus.setVisible(true);
                 this.filepathPlus.setVisible(true);
+                this.archiveDirectoryPairs.setVisible(true);
+                this.archiveDirectoryPlus.setVisible(true);
             }
             else {
                 this.setHeight("800px");
@@ -246,6 +250,10 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
                 this.filepathPairs.setVisible(false);
                 this.filenamePlus.setVisible(false);
                 this.filepathPlus.setVisible(false);
+                this.archiveDirectoryPairs.setValue();
+                this.archiveDirectoryPairs.setItems(new HashSet<>());
+                this.archiveDirectoryPairs.setVisible(false);
+                this.archiveDirectoryPlus.setVisible(false);
             }
         });
 
@@ -416,6 +424,55 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             .bind(FileEventDrivenJob::getMoveDirectory, FileEventDrivenJob::setMoveDirectory);
         formLayout.add(this.archiveDirectoryTf, 2);
 
+        this.archiveDirectoryPairs = new MultiSelectComboBox<>(getTranslation("label.archive-directory-replacements"));
+        this.archiveDirectoryPairs.setId("archiveDirectoryPairs");
+        this.archiveDirectoryPairs.setAutoExpand(MultiSelectComboBox.AutoExpandMode.BOTH);
+        this.archiveDirectoryPairs.setValue(new HashSet<>());
+        this.archiveDirectoryPairs.setItemLabelGenerator(item -> String.format(getTranslation("label.archive-directory-item-label")
+            ,item.getReplacementToken(), item.getJobPlanParameterName()));
+        formBinder.forField(this.archiveDirectoryPairs)
+            .bind(FileEventDrivenJob::getMoveDirectoryReplacementPairs, FileEventDrivenJob::setMoveDirectoryReplacementPairs);
+        this.archiveDirectoryPairs.setVisible(this.fileEventDrivenJob.isDynamic());
+
+        this.archiveDirectoryPlus = new Button();
+        this.archiveDirectoryPlus.setId("archiveDirectoryPlus");
+        this.archiveDirectoryPlus.getElement().appendChild(VaadinIcon.PLUS.create().getElement());
+        this.archiveDirectoryPlus.setVisible(this.fileEventDrivenJob.isDynamic());
+        this.archiveDirectoryPlus.getElement().setAttribute("title", getTranslation("tooltip.add-archive-directory-replacement"));
+
+        this.archiveDirectoryPlus.addClickListener(buttonClickEvent -> {
+            ReplacementPairDialog replacementPairDialog = new ReplacementPairDialog(this.parentContextTemplate);
+            replacementPairDialog.open();
+            replacementPairDialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened()){
+                    if (replacementPairDialog.isSaved()) {
+                        Set<ReplacementPair> selected = new HashSet<>(this.archiveDirectoryPairs.getValue());
+                        selected.add(replacementPairDialog.getReplacementPair());
+                        HashSet values = new HashSet();
+                        values.addAll(archiveDirectoryPairs.getValue());
+                        values.add(replacementPairDialog.getReplacementPair());
+                        this.archiveDirectoryPairs.setItems(values);
+                        this.archiveDirectoryPairs.setValue(selected);
+                    }
+                }
+            });
+        });
+
+        archiveDirectoryPairs.addSelectionListener(event -> {
+            if (event.getRemovedSelection().size() > 0) {
+                HashSet values = new HashSet();
+                Set<ReplacementPair> selected = this.archiveDirectoryPairs.getValue();
+                values.addAll(archiveDirectoryPairs.getValue());
+                values.removeAll(event.getRemovedSelection());
+                this.archiveDirectoryPairs.setItems(values);
+                this.archiveDirectoryPairs.setValue(selected);
+            }
+        });
+
+        HorizontalLayout archiveDirectoryReplace = new HorizontalLayout(this.archiveDirectoryPairs, this.archiveDirectoryPlus);
+        archiveDirectoryReplace.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.archiveDirectoryPlus);
+        formLayout.add(archiveDirectoryReplace, 2);
+
         Icon builderIconCronExpression = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         builderIconCronExpression.addClickListener(event -> {
             CronBuilderDialog dialog = new CronBuilderDialog();
@@ -563,6 +620,19 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             this.fileEventDrivenJob.setFilePathSpel(null);
         }
 
+        if(this.fileEventDrivenJob.getMoveDirectoryReplacementPairs() != null
+            && !this.fileEventDrivenJob.getMoveDirectoryReplacementPairs().isEmpty()){
+            ReplacementPairSpelBuilder moveDirectoryReplace =  ReplacementPairSpelBuilder.moveDirectoryReplace();
+            fileEventDrivenJob.getMoveDirectoryReplacementPairs().forEach(replacementPair -> {
+                moveDirectoryReplace.withReplacement(replacementPair);
+            });
+
+            this.fileEventDrivenJob.setMoveDirectorySpel(moveDirectoryReplace.build());
+        }
+        else {
+            this.fileEventDrivenJob.setMoveDirectorySpel(null);
+        }
+
         return true;
     }
     
@@ -632,6 +702,10 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         this.archiveDirectoryTf.setEnabled(enabled &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+        this.archiveDirectoryPairs.setEnabled(enabled &&
             ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));

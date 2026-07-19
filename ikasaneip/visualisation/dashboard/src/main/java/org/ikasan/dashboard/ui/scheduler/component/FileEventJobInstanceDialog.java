@@ -68,6 +68,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
     private TextField filePathTf;
     private MultiSelectComboBox<ReplacementPair> filenamePairs;
     private MultiSelectComboBox<ReplacementPair> filepathPairs;
+    private MultiSelectComboBox<ReplacementPair> archiveDirectoryPairs;
     private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
     private TextField slaCronExpressionTf;
@@ -401,6 +402,27 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             .bind(FileEventDrivenJobInstance::getMoveDirectory, FileEventDrivenJobInstance::setMoveDirectory);
         formLayout.add(this.archiveDirectoryTf, 2);
 
+        this.archiveDirectoryPairs = new MultiSelectComboBox<>(getTranslation("label.archive-directory-replacements"));
+        this.archiveDirectoryPairs.setAutoExpand(MultiSelectComboBox.AutoExpandMode.BOTH);
+        this.archiveDirectoryPairs.setValue(new HashSet<>());
+        this.archiveDirectoryPairs.setItemLabelGenerator(item ->String.format(getTranslation("label.instance-archive-directory-item-label")
+            ,item.getReplacementToken(), contextInstance.getContextParameters().stream()
+                .filter(param -> param.getName().equals(item.getJobPlanParameterName()))
+                .map(param -> {
+                    if(param.getValue() == null) {
+                        return "";
+                    }
+                    else {
+                        return param.getValue();
+                    }
+                })
+                .findFirst().orElse("Not Available"), item.getJobPlanParameterName()));
+        formBinder.forField(this.archiveDirectoryPairs)
+            .bind(FileEventDrivenJob::getMoveDirectoryReplacementPairs, FileEventDrivenJob::setMoveDirectoryReplacementPairs);
+        this.archiveDirectoryPairs.setVisible(this.fileEventDrivenJobInstance.isDynamic());
+        this.archiveDirectoryPairs.setEnabled(false);
+        this.formLayout.add(this.archiveDirectoryPairs, 2);
+
         this.cronExpressionTf = new TextField(getTranslation("label.polling-interval-cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
         this.cronExpressionTf.setId("cronExpressionTf");
@@ -486,6 +508,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
         this.filenamePairs.setItems(this.fileEventDrivenJobInstance.getFilenameReplacementPairs());
         this.filepathPairs.setItems(this.fileEventDrivenJobInstance.getFilePathReplacementPairs());
+        this.archiveDirectoryPairs.setItems(this.fileEventDrivenJobInstance.getMoveDirectoryReplacementPairs());
 
         this.formBinder.readBean(this.fileEventDrivenJobInstance);
         this.setEnabled();
