@@ -51,6 +51,8 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
 
     private Set<ReplacementPair> filenameReplacementPairs = new HashSet<>();
     private Set<ReplacementPair> filePathReplacementPairs = new HashSet<>();
+    private String moveDirectorySpel;
+    private Set<ReplacementPair> moveDirectoryReplacementPairs = new HashSet<>();
 
     @Override
     public String getFilePath() {
@@ -233,6 +235,26 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
     }
 
     @Override
+    public String getMoveDirectorySpel() {
+        return moveDirectorySpel;
+    }
+
+    @Override
+    public void setMoveDirectorySpel(String moveDirectorySpel) {
+        this.moveDirectorySpel = moveDirectorySpel;
+    }
+
+    @Override
+    public Set<ReplacementPair> getMoveDirectoryReplacementPairs() {
+        return moveDirectoryReplacementPairs;
+    }
+
+    @Override
+    public void setMoveDirectoryReplacementPairs(Set<ReplacementPair> moveDirectoryReplacementPairs) {
+        this.moveDirectoryReplacementPairs = moveDirectoryReplacementPairs;
+    }
+
+    @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("SolrFileEventDrivenJobImpl{");
         sb.append("filePath='").append(filePath).append('\'');
@@ -256,6 +278,7 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
         sb.append(", isDynamic=").append(isDynamic);
         sb.append(", filePathSpel=").append(filePathSpel);
         sb.append(", filenameSpel=").append(filenameSpel);
+        sb.append(", moveDirectorySpel=").append(moveDirectorySpel);
 
         if(childContextNames != null) {
             sb.append(", childContextIds=[ ");

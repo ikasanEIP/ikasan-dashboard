@@ -99,4 +99,50 @@ public class ReplacementPairSpelBuilderTest {
         ReplacementPairSpelBuilder builder = ReplacementPairSpelBuilder.filePathReplace();
         builder.build();
     }
+
+    @Test
+    public void test_move_directory_replacement_success() {
+        ReplacementPair replacementPair = new ReplacementPairImpl();
+        replacementPair.setJobPlanParameterName("param_name");
+        replacementPair.setReplacementToken("<token>");
+
+        ReplacementPairSpelBuilder builder = ReplacementPairSpelBuilder.moveDirectoryReplace();
+        builder.withReplacement(replacementPair);
+
+        String result = builder.build();
+
+        assertEquals("#moveDirectoryPattern.replace('<token>', T(org.ikasan.ootb.scheduler.agent.rest.cache.ContextInstanceCache)" +
+                ".getContextParameter(#correlatingIdentifier, 'param_name'))"
+            , result);
+    }
+
+    @Test
+    public void test_move_directory_replacement_multiple_replacement_pairs_success() {
+        ReplacementPair replacementPair = new ReplacementPairImpl();
+        replacementPair.setJobPlanParameterName("param_name1");
+        replacementPair.setReplacementToken("<token1>");
+
+        ReplacementPairSpelBuilder builder = ReplacementPairSpelBuilder.moveDirectoryReplace();
+        builder.withReplacement(replacementPair);
+
+        replacementPair = new ReplacementPairImpl();
+        replacementPair.setJobPlanParameterName("param_name2");
+        replacementPair.setReplacementToken("<token3>");
+
+        builder.withReplacement(replacementPair);
+
+        String result = builder.build();
+
+        assertEquals("#moveDirectoryPattern.replace('<token1>', T(org.ikasan.ootb.scheduler.agent.rest.cache.ContextInstanceCache)" +
+                ".getContextParameter(#correlatingIdentifier, 'param_name1'))" +
+                ".replace('<token3>', T(org.ikasan.ootb.scheduler.agent.rest.cache.ContextInstanceCache)" +
+                ".getContextParameter(#correlatingIdentifier, 'param_name2'))"
+            , result);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void test_move_directory_replacement_no_replacement_pairs_provided_exception() {
+        ReplacementPairSpelBuilder builder = ReplacementPairSpelBuilder.moveDirectoryReplace();
+        builder.build();
+    }
 }

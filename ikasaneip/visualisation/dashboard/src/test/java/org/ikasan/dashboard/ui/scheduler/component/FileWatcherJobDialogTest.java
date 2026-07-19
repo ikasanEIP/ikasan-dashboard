@@ -398,6 +398,14 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
         TextField archiveDirectoryTf = _get(TextField.class, spec -> spec.withId("archiveDirectoryTf"));
         Assertions.assertNotNull(archiveDirectoryTf);
 
+        MultiSelectComboBox archiveDirectoryPairs = _get(MultiSelectComboBox.class, spec -> spec.withId("archiveDirectoryPairs"));
+        Assertions.assertNotNull(archiveDirectoryPairs);
+        Assertions.assertTrue(archiveDirectoryPairs.isVisible());
+
+        Button archiveDirectoryPlus = _get(Button.class, spec -> spec.withId("archiveDirectoryPlus"));
+        Assertions.assertNotNull(archiveDirectoryPlus);
+        Assertions.assertTrue(archiveDirectoryPlus.isVisible());
+
         TextField cronExpressionTf = _get(TextField.class, spec -> spec.withId("cronExpressionTf"));
         Assertions.assertNotNull(cronExpressionTf);
 
@@ -459,12 +467,35 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
 
         Assertions.assertEquals(1, filepathPairs.getValue().size());
 
+        _click(archiveDirectoryPlus);
+        ReplacementPairDialog archiveDirectoryReplacementPairDialog = _get(ReplacementPairDialog.class);
+        Assertions.assertNotNull(archiveDirectoryReplacementPairDialog);
+
+        replacementTokenTf = _get(TextField.class, spec -> spec.withId("replacementTokenTf"));
+        Assertions.assertNotNull(replacementTokenTf);
+
+        contextParameterSelect = _get(Select.class, spec -> spec.withId("contextParameterSelect"));
+        Assertions.assertNotNull(contextParameterSelect);
+        Assertions.assertEquals(2, (((ListDataProvider)contextParameterSelect.getDataProvider()).getItems().size()));
+
+        replacementPairSaveButton = _get(Button.class, spec -> spec.withId("replacementPairSaveButton"));
+        Assertions.assertNotNull(replacementPairSaveButton);
+
+        _setValue(replacementTokenTf, "<archive-token>");
+        _setValue(contextParameterSelect, (((ListDataProvider)contextParameterSelect.getDataProvider()).getItems()
+            .stream()
+            .filter(item -> ((ContextParameter)item).getName().equals("filepath_replacement"))
+            .findFirst().get()));
+        _click(replacementPairSaveButton);
+
+        Assertions.assertEquals(1, archiveDirectoryPairs.getValue().size());
+
         _setValue(agentCb, "agent0");
         _setValue(jobNameTf, "jobName");
         _setValue(jobDescriptionTa, "This is the job description");
         _setValue(filenameTf, "file-<file-token>.txt");
         _setValue(filePathTf, "/file/<file-path-token>");
-        _setValue(archiveDirectoryTf, "/archive/path");
+        _setValue(archiveDirectoryTf, "/archive/<archive-token>");
         _setValue(cronExpressionTf, "0 0/1 * 1/1 * ? *");
         _setValue(slaCronExpressionTf, "0 0/2 * 1/1 * ? *");
         _setValue(timezoneCb, DateTimeUtil.getTimezonePairForZoneId(ZoneId.of("Europe/London").getId()));
@@ -491,7 +522,9 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
         Assert.assertEquals("/file/<file-path-token>", fileEventDrivenJob.getFilePath());
         Assert.assertEquals("#filePathPattern.replace('<file-path-token>', T(org.ikasan.ootb.scheduler.agent.rest.cache.ContextInstanceCache)" +
             ".getContextParameter(#correlatingIdentifier, 'filepath_replacement'))", fileEventDrivenJob.getFilePathSpel());
-        Assert.assertEquals("/archive/path", fileEventDrivenJob.getMoveDirectory());
+        Assert.assertEquals("/archive/<archive-token>", fileEventDrivenJob.getMoveDirectory());
+        Assert.assertEquals("#moveDirectoryPattern.replace('<archive-token>', T(org.ikasan.ootb.scheduler.agent.rest.cache.ContextInstanceCache)" +
+            ".getContextParameter(#correlatingIdentifier, 'filepath_replacement'))", fileEventDrivenJob.getMoveDirectorySpel());
         Assert.assertEquals("0 0/1 * 1/1 * ? *", fileEventDrivenJob.getCronExpression());
         Assert.assertEquals("0 0/2 * 1/1 * ? *", fileEventDrivenJob.getSlaCronExpression());
         Assert.assertEquals("Europe/London", fileEventDrivenJob.getTimeZone());
@@ -661,6 +694,12 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
 
         Button filepathPlus = _get(Button.class, spec -> spec.withId("filepathPlus"));
         Assert.assertTrue(filepathPlus.isVisible());
+
+        MultiSelectComboBox archiveDirectoryPairs = _get(MultiSelectComboBox.class, spec -> spec.withId("archiveDirectoryPairs"));
+        Assert.assertTrue(archiveDirectoryPairs.isVisible());
+
+        Button archiveDirectoryPlus = _get(Button.class, spec -> spec.withId("archiveDirectoryPlus"));
+        Assert.assertTrue(archiveDirectoryPlus.isVisible());
     }
 
     @Test
@@ -810,6 +849,32 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
 
         Button filepathPlus = _get(Button.class, spec -> spec.withId("filepathPlus"));
         _click(filepathPlus);
+
+        ReplacementPairDialog replacementPairDialog = _get(ReplacementPairDialog.class);
+        Assertions.assertNotNull(replacementPairDialog);
+    }
+
+    @Test
+    public void test_replacement_pair_dialog_opens_for_archive_directory() {
+        UI.getCurrent().navigate("scheduler");
+
+        Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
+        Tab contextTemplateTab = _get(Tab.class, spec -> spec.withId("contextTemplateTab"));
+        schedulerDashboardTabs.setSelectedTab(contextTemplateTab);
+
+        ContextTemplateFilteringGrid contextTemplateFilteringGrid = _get(ContextTemplateFilteringGrid.class);
+        HorizontalLayout actionsLayout = (HorizontalLayout) GridKt._getCellComponent(contextTemplateFilteringGrid, 0, "actions");
+        Icon openPlanManagementInNewWindow = (Icon) actionsLayout.getComponentAt(0);
+        _click(openPlanManagementInNewWindow);
+
+        MenuItem newFileWatcherJobMenuItem = _get(MenuItem.class, spec -> spec.withId("newFileWatcherJobMenuItem"));
+        _click(newFileWatcherJobMenuItem);
+
+        Checkbox isDynamicCheckbox = _get(Checkbox.class, spec -> spec.withId("isDynamicCheckbox"));
+        isDynamicCheckbox.setValue(true);
+
+        Button archiveDirectoryPlus = _get(Button.class, spec -> spec.withId("archiveDirectoryPlus"));
+        _click(archiveDirectoryPlus);
 
         ReplacementPairDialog replacementPairDialog = _get(ReplacementPairDialog.class);
         Assertions.assertNotNull(replacementPairDialog);
