@@ -736,6 +736,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.fileEventDrivenJob = fileEventDrivenJob;
         this.filenamePairs.setItems(this.fileEventDrivenJob.getFilenameReplacementPairs());
         this.filepathPairs.setItems(this.fileEventDrivenJob.getFilePathReplacementPairs());
+        this.archiveDirectoryPairs.setItems(this.fileEventDrivenJob.getMoveDirectoryReplacementPairs());
         this.formBinder.readBean(this.fileEventDrivenJob);
 
         // because file names are a collection we need to manually set
