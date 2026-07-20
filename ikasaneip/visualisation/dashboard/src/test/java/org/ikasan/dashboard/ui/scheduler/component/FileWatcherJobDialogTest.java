@@ -19,9 +19,12 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import org.ikasan.dashboard.ui.scheduler.AbstractSchedulerViewTest;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.ReplacementPairImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.ReplacementPair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -32,6 +35,7 @@ import java.io.IOException;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ.*;
@@ -532,6 +536,12 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
 
     @Test
     public void test_dialog_opens_successfully() {
+        FileEventJobDialog fileEventJobDialog = openNewFileWatcherJobDialog();
+
+        Assert.assertTrue(fileEventJobDialog.isOpened());
+    }
+
+    private FileEventJobDialog openNewFileWatcherJobDialog() {
         UI.getCurrent().navigate("scheduler");
 
         Tabs schedulerDashboardTabs = _get(Tabs.class, spec -> spec.withId("schedulerViewTabs"));
@@ -549,7 +559,39 @@ public class FileWatcherJobDialogTest extends AbstractSchedulerViewTest {
 
         FileEventJobDialog fileEventJobDialog = _get(FileEventJobDialog.class);
         Assertions.assertNotNull(fileEventJobDialog);
-        Assert.assertTrue(fileEventJobDialog.isOpened());
+        return fileEventJobDialog;
+    }
+
+    /**
+     * Regression test for IKASAN-2756: existing dynamic File Watcher jobs retain their
+     * archive-directory replacements when opened for editing.
+     */
+    @Test
+    public void test_open_existing_dynamic_file_watcher_job_with_archive_directory_replacements() {
+
+        FileEventJobDialog fileEventJobDialog = openNewFileWatcherJobDialog();
+
+        // Simulate opening an EXISTING job (as happens when double-clicking a row in
+        // SchedulerJobGridWidget) whose archive-directory replacements were already saved.
+        FileEventDrivenJob existingJob = new FileEventDrivenJobImpl();
+        existingJob.setJobName("existingJob");
+        existingJob.setJobDescription("An existing dynamic job with archive directory replacements");
+        existingJob.setAgentName("agent0");
+        existingJob.setDynamic(true);
+        existingJob.setFilePath("/file/path");
+        existingJob.setMoveDirectory("/archive/path");
+        existingJob.setTimeZone(ZoneId.of("Europe/London").getId());
+
+        ReplacementPair archiveReplacementPair = new ReplacementPairImpl();
+        archiveReplacementPair.setReplacementToken("<archive-token>");
+        archiveReplacementPair.setJobPlanParameterName("filepath_replacement");
+        existingJob.setMoveDirectoryReplacementPairs(Set.of(archiveReplacementPair));
+
+        fileEventJobDialog.setJob(existingJob, EditMode.EDIT);
+
+        MultiSelectComboBox archiveDirectoryPairs = _get(MultiSelectComboBox.class, spec -> spec.withId("archiveDirectoryPairs"));
+        Assertions.assertNotNull(archiveDirectoryPairs);
+        Assertions.assertEquals(Set.of(archiveReplacementPair), archiveDirectoryPairs.getValue());
     }
 
     @Test
