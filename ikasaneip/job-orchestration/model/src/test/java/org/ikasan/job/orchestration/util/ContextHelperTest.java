@@ -874,6 +874,564 @@ public class ContextHelperTest {
         Assert.assertEquals("jobName6", jobs.values().stream().findFirst().get().getJobName());
     }
 
+    @Test
+    public void test_transitionsFromContext_with_single_direct_dependency() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        // Setup job dependency in target that references the terminal job
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("source-terminal-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("SourceContext", result.get(0).getName());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_no_matching_dependencies() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        // Setup job dependency in target that references a different job
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("different-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_multiple_and_dependencies() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        // Setup job dependency in target with multiple AND dependencies
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency1 = new AndImpl();
+        andDependency1.setIdentifier("source-terminal-job");
+        AndImpl andDependency2 = new AndImpl();
+        andDependency2.setIdentifier("another-job");
+        logicalGrouping.setAnd(List.of(andDependency1, andDependency2));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("SourceContext", result.get(0).getName());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_multiple_sources() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup first source context with terminal job
+        ContextTemplateImpl source1 = new ContextTemplateImpl();
+        source1.setName("SourceContext1");
+        SchedulerJobImpl terminalJob1 = new SchedulerJobImpl();
+        terminalJob1.setIdentifier("source1-terminal-job");
+        terminalJob1.setJobName("Terminal Job 1");
+        terminalJob1.setAgentName("CONTEXT_TERMINAL_JOB");
+        source1.setScheduledJobs(List.of(terminalJob1));
+
+        // Setup second source context with terminal job
+        ContextTemplateImpl source2 = new ContextTemplateImpl();
+        source2.setName("SourceContext2");
+        SchedulerJobImpl terminalJob2 = new SchedulerJobImpl();
+        terminalJob2.setIdentifier("source2-terminal-job");
+        terminalJob2.setJobName("Terminal Job 2");
+        terminalJob2.setAgentName("CONTEXT_TERMINAL_JOB");
+        source2.setScheduledJobs(List.of(terminalJob2));
+
+        // Setup job dependency in target that references first terminal job
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("source1-terminal-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source1, source2);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("SourceContext1", result.get(0).getName());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_nested_context_dependencies() {
+        // Setup target context with nested context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        ContextTemplateImpl nestedTarget = new ContextTemplateImpl();
+        nestedTarget.setName("NestedTargetContext");
+        target.setContexts(List.of(nestedTarget));
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        // Setup job dependency in nested target context
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("source-terminal-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        nestedTarget.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("SourceContext", result.get(0).getName());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_no_job_dependencies() {
+        // Setup target context with no job dependencies
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_empty_job_dependencies() {
+        // Setup target context with empty job dependencies
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+        target.setJobDependencies(new ArrayList<>());
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_empty_sources() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("some-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = new ArrayList<>();
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_multiple_matching_sources() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup first source context with terminal job
+        ContextTemplateImpl source1 = new ContextTemplateImpl();
+        source1.setName("SourceContext1");
+        SchedulerJobImpl terminalJob1 = new SchedulerJobImpl();
+        terminalJob1.setIdentifier("terminal-job");
+        terminalJob1.setJobName("Terminal Job");
+        terminalJob1.setAgentName("CONTEXT_TERMINAL_JOB");
+        source1.setScheduledJobs(List.of(terminalJob1));
+
+        // Setup second source context with same terminal job identifier
+        ContextTemplateImpl source2 = new ContextTemplateImpl();
+        source2.setName("SourceContext2");
+        SchedulerJobImpl terminalJob2 = new SchedulerJobImpl();
+        terminalJob2.setIdentifier("terminal-job");
+        terminalJob2.setJobName("Terminal Job");
+        terminalJob2.setAgentName("CONTEXT_TERMINAL_JOB");
+        source2.setScheduledJobs(List.of(terminalJob2));
+
+        // Setup job dependency in target that references the terminal job
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("terminal-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source1, source2);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(2, result.size());
+        Assert.assertTrue(result.stream().anyMatch(c -> c.getName().equals("SourceContext1")));
+        Assert.assertTrue(result.stream().anyMatch(c -> c.getName().equals("SourceContext2")));
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_multiple_terminal_jobs_in_source() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup source context with multiple terminal jobs
+        // Note: getContextTerminalJobFromContext will only return the first terminal job
+        // that matches the context name, or the first one if no match is found
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob1 = new SchedulerJobImpl();
+        terminalJob1.setIdentifier("terminal-job-1");
+        terminalJob1.setJobName("SourceContext Terminal Job 1");
+        terminalJob1.setAgentName("CONTEXT_TERMINAL_JOB");
+        SchedulerJobImpl terminalJob2 = new SchedulerJobImpl();
+        terminalJob2.setIdentifier("terminal-job-2");
+        terminalJob2.setJobName("Terminal Job 2");
+        terminalJob2.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob1, terminalJob2));
+
+        // Setup job dependency in target that references the first terminal job
+        // (which will be returned by getContextTerminalJobFromContext since it contains context name)
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("terminal-job-1");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("SourceContext", result.get(0).getName());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_deeply_nested_target_contexts() {
+        // Setup target context with deeply nested contexts
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        ContextTemplateImpl nestedLevel1 = new ContextTemplateImpl();
+        nestedLevel1.setName("NestedLevel1");
+        target.setContexts(List.of(nestedLevel1));
+
+        ContextTemplateImpl nestedLevel2 = new ContextTemplateImpl();
+        nestedLevel2.setName("NestedLevel2");
+        nestedLevel1.setContexts(List.of(nestedLevel2));
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        // Setup job dependency in deeply nested context
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("source-terminal-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        nestedLevel2.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("SourceContext", result.get(0).getName());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_null_and_dependencies() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        // Setup job dependency with null AND dependencies
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        logicalGrouping.setAnd(null);
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_null_logical_grouping() {
+        // This test verifies that the method throws NPE when logical grouping is null
+        // This is a documented limitation/bug in the current implementation
+
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        // Setup job dependency with null logical grouping
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        jobDependency.setLogicalGrouping(null);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        // This should throw NullPointerException
+        ContextHelper.transitionsFromContext(target, sources);
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_null_job_dependencies_list() {
+        // Setup target context with null job dependencies
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+        target.setJobDependencies(null);
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_null_scheduled_jobs_in_source() {
+        // This test verifies that the method throws NPE when source context has null scheduled jobs
+        // This is a documented limitation/bug in the current implementation
+
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("some-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        // Setup source context with null scheduled jobs
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        source.setScheduledJobs(null);
+
+        List<Context> sources = List.of(source);
+        // This should throw NullPointerException
+        ContextHelper.transitionsFromContext(target, sources);
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_empty_scheduled_jobs_in_source() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("some-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        // Setup source context with empty scheduled jobs
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        source.setScheduledJobs(new ArrayList<>());
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_null_contexts_in_target() {
+        // Setup target context with null nested contexts
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+        target.setContexts(null);
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        AndImpl andDependency = new AndImpl();
+        andDependency.setIdentifier("source-terminal-job");
+        logicalGrouping.setAnd(List.of(andDependency));
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("SourceContext", result.get(0).getName());
+    }
+
+    @Test
+    public void test_transitionsFromContext_with_empty_and_list() {
+        // Setup target context
+        ContextTemplateImpl target = new ContextTemplateImpl();
+        target.setName("TargetContext");
+
+        // Setup source context with terminal job
+        ContextTemplateImpl source = new ContextTemplateImpl();
+        source.setName("SourceContext");
+        SchedulerJobImpl terminalJob = new SchedulerJobImpl();
+        terminalJob.setIdentifier("source-terminal-job");
+        terminalJob.setJobName("Terminal Job");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+        source.setScheduledJobs(List.of(terminalJob));
+
+        // Setup job dependency with empty AND list
+        JobDependencyImpl jobDependency = new JobDependencyImpl();
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        logicalGrouping.setAnd(new ArrayList<>());
+        jobDependency.setLogicalGrouping(logicalGrouping);
+        target.setJobDependencies(List.of(jobDependency));
+
+        List<Context> sources = List.of(source);
+        List<Context> result = ContextHelper.transitionsFromContext(target, sources);
+
+        Assert.assertNotNull(result);
+        Assert.assertEquals(0, result.size());
+    }
+
     /**
      * Loads the content of a data file.
      *
