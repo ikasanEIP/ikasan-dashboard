@@ -313,8 +313,10 @@ public class HibernateFileEventDrivenJobDaoImplTest {
         private boolean isDynamic;
         private String filePathSpel;
         private String filenameSpel;
+        private String moveDirectorySpel;
         private Set<ReplacementPair> filenameReplacementPairs;
         private Set<ReplacementPair> filePathReplacementPairs;
+        private Set<ReplacementPair> moveDirectoryReplacementPairs;
 
         public TestFileEventDrivenJob(String jobName, String contextName) {
             this.jobName = jobName;
@@ -768,6 +770,26 @@ public class HibernateFileEventDrivenJobDaoImplTest {
         @Override
         public void setFilePathReplacementPairs(Set<ReplacementPair> filePathReplacementPairs) {
             this.filePathReplacementPairs = filePathReplacementPairs;
+        }
+
+        @Override
+        public String getMoveDirectorySpel() {
+            return moveDirectorySpel;
+        }
+
+        @Override
+        public void setMoveDirectorySpel(String moveDirectorySpel) {
+            this.moveDirectorySpel = moveDirectorySpel;
+        }
+
+        @Override
+        public Set<ReplacementPair> getMoveDirectoryReplacementPairs() {
+            return moveDirectoryReplacementPairs;
+        }
+
+        @Override
+        public void setMoveDirectoryReplacementPairs(Set<ReplacementPair> moveDirectoryReplacementPairs) {
+            this.moveDirectoryReplacementPairs = moveDirectoryReplacementPairs;
         }
     }
 }

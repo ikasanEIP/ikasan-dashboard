@@ -46,9 +46,11 @@ public class FileEventDrivenJobInstanceImpl extends QuartzScheduleDrivenJobInsta
     private boolean isDynamic;
     private String filePathSpel;
     private String filenameSpel;
+    private String moveDirectorySpel;
 
     private Set<ReplacementPair> filenameReplacementPairs = new HashSet<>();
     private Set<ReplacementPair> filePathReplacementPairs = new HashSet<>();
+    private Set<ReplacementPair> moveDirectoryReplacementPairs;
 
     @Override
     public String getFilePath() {
@@ -228,6 +230,25 @@ public class FileEventDrivenJobInstanceImpl extends QuartzScheduleDrivenJobInsta
     @Override
     public void setFilePathReplacementPairs(Set<ReplacementPair> filePathReplacementPairs) {
         this.filePathReplacementPairs = filePathReplacementPairs;
+    }
+    @Override
+    public String getMoveDirectorySpel() {
+        return moveDirectorySpel;
+    }
+
+    @Override
+    public void setMoveDirectorySpel(String moveDirectorySpel) {
+        this.moveDirectorySpel = moveDirectorySpel;
+    }
+
+    @Override
+    public Set<ReplacementPair> getMoveDirectoryReplacementPairs() {
+        return moveDirectoryReplacementPairs;
+    }
+
+    @Override
+    public void setMoveDirectoryReplacementPairs(Set<ReplacementPair> moveDirectoryReplacementPairs) {
+        this.moveDirectoryReplacementPairs = moveDirectoryReplacementPairs;
     }
 
     @Override
