@@ -552,6 +552,7 @@ public class ContextHelper {
      * @return an Optional containing the terminal job, or an empty Optional if no terminal job is found
      */
     public static void getContextTerminalJobFromContext(Context context, List<SchedulerJob> terminalJobs) {
+        if(context.getScheduledJobs() == null) return;
         Optional<SchedulerJob> terminalJob = context.getScheduledJobs().stream()
             .filter(job -> ((SchedulerJob)job).getAgentName().equals(JobConstants.CONTEXT_TERMINAL_JOB)
                 && ((SchedulerJob)job).getJobName().toLowerCase().replaceAll("_", "").replaceAll(" ", "")
@@ -582,11 +583,13 @@ public class ContextHelper {
         sources.forEach(source -> {
             List<SchedulerJob> terminalJobs = ContextHelper.getContextTerminalJobsFromContext(source);
             AtomicBoolean found = new AtomicBoolean(false);
-            if(!target.getJobDependencies().isEmpty()) {
+            if(target.getJobDependencies() != null && !target.getJobDependencies().isEmpty()) {
                 target.getJobDependencies()
                     .forEach(jd -> {
                         terminalJobs.forEach(schedulerJob -> {
-                            if (((JobDependency) jd).getLogicalGrouping().getAnd().size() == 1
+                            if (((JobDependency) jd).getLogicalGrouping() != null &&
+                                ((JobDependency) jd).getLogicalGrouping().getAnd() != null &&
+                                ((JobDependency) jd).getLogicalGrouping().getAnd().size() == 1
                                 && ((JobDependency) jd).getLogicalGrouping().getAnd().get(0)
                                 .getIdentifier().equals(schedulerJob.getIdentifier())) {
                                 sourceContexts.add(source);
@@ -619,14 +622,17 @@ public class ContextHelper {
      * @param terminalJobs List of terminal jobs to search for in the target Context and dependencies
      */
     private static void referencesTerminalJob(AtomicBoolean result, Context target, List<SchedulerJob> terminalJobs) {
-        if(!target.getJobDependencies().isEmpty()) {
+        if(target.getJobDependencies() != null && !target.getJobDependencies().isEmpty()) {
             target.getJobDependencies().forEach(jd ->
                 terminalJobs.forEach(schedulerJob -> {
-                    ((JobDependency) jd).getLogicalGrouping().getAnd().forEach(and -> {
-                        if(and.getIdentifier().equals(schedulerJob.getIdentifier())) {
-                            result.set(true);
-                        }
-                    });
+                    if(((JobDependency) jd).getLogicalGrouping() != null &&
+                        ((JobDependency) jd).getLogicalGrouping().getAnd() != null) {
+                        ((JobDependency) jd).getLogicalGrouping().getAnd().forEach(and -> {
+                            if (and.getIdentifier().equals(schedulerJob.getIdentifier())) {
+                                result.set(true);
+                            }
+                        });
+                    }
                 })
             );
         }
