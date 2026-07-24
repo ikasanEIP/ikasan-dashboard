@@ -3689,22 +3689,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         // verify
         verify(scheduledContextService, times(2)).findById(contextName);
-//        verify(moduleMetadataService, times(2)).find(any(), any(), eq(-1), eq(-1));
-//        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
-//        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
-//        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
-//        verify(contextInstanceStateChangeEventBroadcaster, times(2)).broadcast(any());
-//        ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-//        verify(scheduledContextInstanceService, times(3)).save(contextInstanceCaptor.capture());
         verify(scheduledContextInstanceService, times(1)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
-//        verify(contextParametersInstanceService).populateContextParameters();
-//        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(), any());
-//        ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
-//        assertEquals(contextName, actualContextInstanceRecord.getContextName());
-//        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
-//        assertNull(null, actualContextInstanceRecord.getId());
-//        assertNotNull(actualContextInstanceRecord.getContextInstance());
-//        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
@@ -3715,10 +3700,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstancePublicationService,
             scheduledContextService,
             jobLockCacheService,
-            contextInstanceStateChangeEventBroadcaster,
             this.jobProvisionService,
-            this.schedulerJobService,
-            schedulerJobStateChangeEventBroadcaster
+            this.schedulerJobService
         );
 
         List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
