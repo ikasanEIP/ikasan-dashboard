@@ -624,9 +624,19 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
         boolean isValid = this.binder.validate().isOk();
 
+        if(this.contextTtlDays.getValue() == 0 && this.contextTtlHours.getValue() == 0
+            && this.contextTtlMinutes.getValue() == 0) {
+            this.contextTtlMinutes.setErrorMessage("Cannot have a job plan duration of zero!");
+            this.contextTtlMinutes.setInvalid(true);
+        }
+        else {
+            this.contextTtlMinutes.setErrorMessage(getTranslation("error.context-ttl-minutes", UI.getCurrent().getLocale()));
+        }
+
         this.contextTtlDays.setInvalid(this.contextTtlDays.isInvalid() || this.contextTtlDays.getValue() == null);
         this.contextTtlHours.setInvalid(this.contextTtlHours.isInvalid() || this.contextTtlHours.getValue() == null);
         this.contextTtlMinutes.setInvalid(this.contextTtlMinutes.isInvalid() || this.contextTtlMinutes.getValue() == null);
+
         this.contextVisualisationNodeDistanceIf.setInvalid(this.contextVisualisationNodeDistanceIf.isInvalid() || this.contextVisualisationNodeDistanceIf.getValue() == null);
         this.contextVisualisationLevelDistanceIf.setInvalid(this.contextVisualisationLevelDistanceIf.isInvalid() || this.contextVisualisationLevelDistanceIf.getValue() == null);
         this.jobVisualisationVerticalSpacingIf.setInvalid(this.jobVisualisationVerticalSpacingIf.isInvalid() || this.jobVisualisationVerticalSpacingIf.getValue() == null);
