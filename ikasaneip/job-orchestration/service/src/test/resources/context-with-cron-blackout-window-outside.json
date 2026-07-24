@@ -2,6 +2,7 @@
   "name": "CONTEXT-1436221681",
   "description": "Context Template Description",
   "blackoutWindowCronExpressions":["0 15 10 * * ? 2099"],
+  "contextTtlMilliseconds": 86400000,
   "jobDependencies": [
     {
       "jobIdentifier": "scheduler-agent--801842677",

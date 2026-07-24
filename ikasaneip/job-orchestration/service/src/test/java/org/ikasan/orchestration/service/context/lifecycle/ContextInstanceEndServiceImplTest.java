@@ -324,6 +324,7 @@ public class ContextInstanceEndServiceImplTest {
         this.contextTemplate.setName("context-name");
         this.contextTemplate.setAbleToRunConcurrently(false);
         this.contextTemplate.setTimeWindowStart("0 0 1 ? * * *");
+        this.contextTemplate.setContextTtlMilliseconds(100000);
 
         this.preparedContextInstance = new ContextInstanceImpl();
         this.preparedContextInstance.setName("context-name");
@@ -331,6 +332,7 @@ public class ContextInstanceEndServiceImplTest {
         this.preparedContextInstance.setStatus(InstanceStatus.PREPARED);
         this.preparedContextInstance.setStartTime(System.currentTimeMillis() - 1000000L);
         this.preparedContextInstance.setTimeWindowStart("0 0 1 ? * * *");
+        this.preparedContextInstance.setContextTtlMilliseconds(100000);
 
         when(this.contextInstanceStateChangeEvent.getContextInstance()).thenReturn(this.contextInstance);
         when(this.contextInstance.isEndJobPlanUponCompletion()).thenReturn(true);
@@ -359,7 +361,7 @@ public class ContextInstanceEndServiceImplTest {
         verify(this.scheduledContextInstanceService,times(3)).getScheduledContextInstancesByFilter
             (any(), anyInt(), anyInt(), isNull(), isNull());
         verify(this.scheduledContextService, times(2)).findById(anyString());
-        verify(this.scheduledContextRecord, times(3)).getContext();
+        verify(this.scheduledContextRecord, times(4)).getContext();
         verify(this.scheduledContextRecord, times(2)).getContextName();
         verify(this.preparedContextInstanceRecord, times(3)).getContextInstance();
         verify(this.moduleMetadataService, times(2)).find(any(), any(), anyInt(), anyInt());
@@ -450,6 +452,7 @@ public class ContextInstanceEndServiceImplTest {
         this.contextTemplate.setName("context-name");
         this.contextTemplate.setAbleToRunConcurrently(false);
         this.contextTemplate.setTimeWindowStart("0 0 1 ? * * *");
+        this.contextTemplate.setContextTtlMilliseconds(100000);
 
         this.preparedContextInstance = new ContextInstanceImpl();
         this.preparedContextInstance.setName("context-name");
@@ -457,6 +460,7 @@ public class ContextInstanceEndServiceImplTest {
         this.preparedContextInstance.setStatus(InstanceStatus.PREPARED);
         this.preparedContextInstance.setStartTime(System.currentTimeMillis() - 1000000L);
         this.preparedContextInstance.setTimeWindowStart("bad cron expression");
+        this.preparedContextInstance.setContextTtlMilliseconds(100000);
 
         when(this.contextInstanceStateChangeEvent.getContextInstance()).thenReturn(this.contextInstance);
         when(this.contextInstanceStateChangeEvent.getContextInstanceId()).thenReturn("id");
@@ -486,7 +490,7 @@ public class ContextInstanceEndServiceImplTest {
         verify(this.scheduledContextInstanceService,times(3)).getScheduledContextInstancesByFilter
             (any(), anyInt(), anyInt(), isNull(), isNull());
         verify(this.scheduledContextService, times(2)).findById(anyString());
-        verify(this.scheduledContextRecord, times(3)).getContext();
+        verify(this.scheduledContextRecord, times(4)).getContext();
         verify(this.scheduledContextRecord, times(2)).getContextName();
         verify(this.preparedContextInstanceRecord, times(3)).getContextInstance();
         verify(this.moduleMetadataService, times(2)).find(any(), any(), anyInt(), anyInt());

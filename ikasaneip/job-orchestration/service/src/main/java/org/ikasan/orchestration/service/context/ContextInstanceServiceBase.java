@@ -417,6 +417,11 @@ public abstract class ContextInstanceServiceBase {
      */
     protected void prepareContextInstance(ContextTemplate context, ContextInstance instance, boolean initialiseJobs) throws Exception {
 
+        if(context.getContextTtlMilliseconds() == 0) {
+            LOG.warn(String.format("Job Plan [%s] has a ttl of zero and a prepared instance will not be created!", context.getName()));
+            return;
+        }
+
         SchedulerJobInstancesInitialisationParameters parameters
             = new SchedulerJobInstancesInitialisationParametersImpl(false);
 
@@ -524,6 +529,11 @@ public abstract class ContextInstanceServiceBase {
             final String message = String.format("Could not find scheduledContextRecord for context name [%s] when attempting to prepare instance!", contextName);
             LOG.error(message);
             throw new RuntimeException(message);
+        }
+
+        if(scheduledContextRecord.getContext().getContextTtlMilliseconds() == 0) {
+            LOG.warn(String.format("Job Plan [%s] has a ttl of zero and a prepared instance will not be created!", contextName));
+            return;
         }
 
         if (scheduledContextRecord.isDisabled()) {

@@ -346,7 +346,10 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
             for (ContextInstance contextInstance : contextInstances) {
                 Date now = timeService.getDateNow();
-                if (!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
+                if(contextInstance.getContextTtlMilliseconds() == 0) {
+                    LOG.warn(String.format("Job Plan [%s] has a ttl of zero and will not be started!", contextName));
+                }
+                else if (!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                     && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
                     initialiseContextMachine(context, contextInstance, initialiseJobs, true, null);
                     contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName()
@@ -355,12 +358,12 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                     LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
                     this.contextInstanceSavedEventBroadcaster.broadcast(contextInstance);
                 } else {
-                    LOG.info(String.format("Context name [%s] falls withing a blackout time window and will not be registered!", contextName));
+                    LOG.info(String.format("Job Plan [%s] falls withing a blackout time window and will not be registered!", contextName));
                 }
             }
 
         } catch (Exception e) {
-            LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
+            LOG.error(String.format("An error has occurred executing registering Job Plan [%s]", e.getMessage()), e);
             throw new RuntimeException(e);
         }
     }
