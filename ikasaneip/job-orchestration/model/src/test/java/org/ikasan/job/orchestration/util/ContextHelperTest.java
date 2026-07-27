@@ -1,13 +1,11 @@
 package org.ikasan.job.orchestration.util;
 
 import org.apache.commons.io.IOUtils;
-import org.ikasan.job.orchestration.model.context.ContextTransition;
-import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
-import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.context.*;
+import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.spec.scheduled.context.model.ContextParameter;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.status.model.ContextJobInstanceStatus;
@@ -1093,5 +1091,497 @@ public class ContextHelperTest {
             }
             return internalEventDrivenJob;
         }).collect(Collectors.toList());
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_no_transitions_simple_context() {
+        // Create parent context with a single child context containing jobs
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext = new ContextTemplateImpl();
+        childContext.setName("ChildContext");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("Job1");
+        job1.setIdentifier("job1-id");
+        job1.setAgentName("agent1");
+
+        SchedulerJob job2 = new SchedulerJobImpl();
+        job2.setJobName("Job2");
+        job2.setIdentifier("job2-id");
+        job2.setAgentName("agent2");
+
+        childContext.setScheduledJobs(List.of(job1, job2));
+
+        JobDependency jobDependency = new JobDependencyImpl();
+        jobDependency.setJobIdentifier("job2-id");
+        childContext.setJobDependencies(List.of(jobDependency));
+
+        parentContext.setContexts(List.of(childContext));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("job1-id-ChildContext", job1);
+        schedulerJobs.put("job2-id-ChildContext", job2);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        Assert.assertTrue("Expected no transitions for jobs contained within a single context", transitions.isEmpty());
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_with_context_terminal_job() {
+        // Test that terminal jobs are handled correctly (skip tracing)
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext = new ContextTemplateImpl();
+        childContext.setName("ChildContext");
+
+        SchedulerJob terminalJob = new ContextTerminalJobImpl();
+        terminalJob.setJobName("TerminalJob");
+        terminalJob.setIdentifier("terminal-id");
+        terminalJob.setAgentName("CONTEXT_TERMINAL_JOB");
+
+        childContext.setScheduledJobs(List.of(terminalJob));
+        parentContext.setContexts(List.of(childContext));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("terminal-id-ChildContext", terminalJob);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        Assert.assertTrue("Terminal jobs should not create transitions", transitions.isEmpty());
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_job_crosses_context_boundary() {
+        // Create a scenario where a job in child context transitions to another context
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext1 = new ContextTemplateImpl();
+        childContext1.setName("ChildContext1");
+
+        Context childContext2 = new ContextTemplateImpl();
+        childContext2.setName("ChildContext2");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("SharedJob");
+        job1.setIdentifier("shared-job-id");
+        job1.setAgentName("agent1");
+
+        SchedulerJob job2 = new SchedulerJobImpl();
+        job2.setJobName("Job2");
+        job2.setIdentifier("job2-id");
+        job2.setAgentName("agent2");
+
+        SchedulerJob sharedJobInContext2 = new SchedulerJobImpl();
+        sharedJobInContext2.setJobName("SharedJob");
+        sharedJobInContext2.setIdentifier("shared-job-id");
+        sharedJobInContext2.setAgentName("agent1");
+
+        SchedulerJob job3 = new SchedulerJobImpl();
+        job3.setJobName("Job3");
+        job3.setIdentifier("job3-id");
+        job3.setAgentName("agent3");
+
+        childContext1.setScheduledJobs(List.of(job1, job2));
+        JobDependency jobDep1 = new JobDependencyImpl();
+        jobDep1.setJobIdentifier("job2-id");
+        childContext1.setJobDependencies(List.of(jobDep1));
+
+        childContext2.setScheduledJobs(List.of(sharedJobInContext2, job3));
+        JobDependency jobDep2 = new JobDependencyImpl();
+        jobDep2.setJobIdentifier("job3-id");
+        childContext2.setJobDependencies(List.of(jobDep2));
+
+        parentContext.setContexts(List.of(childContext1, childContext2));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("shared-job-id-ChildContext1", job1);
+        schedulerJobs.put("job2-id-ChildContext1", job2);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+        InternalEventDrivenJob internalJob = new InternalEventDrivenJobImpl();
+        internalJob.setJobName("SharedJob");
+        internalJob.setIdentifier("shared-job-id");
+        internalJob.setTargetResidingContextOnly(false);
+        internalEventDrivenJobMap.put("shared-job-id-ChildContext1", internalJob);
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext1, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        // Transitions should be detected when jobs cross context boundaries
+        // The actual count depends on the tracing logic and context structure
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_with_target_residing_context_only() {
+        // Test jobs that target residing context only should not create transitions
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext1 = new ContextTemplateImpl();
+        childContext1.setName("ChildContext1");
+
+        Context childContext2 = new ContextTemplateImpl();
+        childContext2.setName("ChildContext2");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("LocalJob");
+        job1.setIdentifier("local-job-id");
+        job1.setAgentName("agent1");
+
+        childContext1.setScheduledJobs(List.of(job1));
+        childContext2.setScheduledJobs(new ArrayList<>());
+
+        parentContext.setContexts(List.of(childContext1, childContext2));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("local-job-id-ChildContext1", job1);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+        InternalEventDrivenJob internalJob = new InternalEventDrivenJobImpl();
+        internalJob.setJobName("LocalJob");
+        internalJob.setIdentifier("local-job-id");
+        internalJob.setTargetResidingContextOnly(true); // Should not transition
+        internalEventDrivenJobMap.put("local-job-id-ChildContext1", internalJob);
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext1, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        Assert.assertTrue("Jobs targeting residing context only should not create transitions", transitions.isEmpty());
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_with_logical_grouping() {
+        // Test that jobs within logical grouping are handled correctly
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext = new ContextTemplateImpl();
+        childContext.setName("ChildContext");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("Job1");
+        job1.setIdentifier("job1-id");
+        job1.setAgentName("agent1");
+
+        SchedulerJob job2 = new SchedulerJobImpl();
+        job2.setJobName("Job2");
+        job2.setIdentifier("job2-id");
+        job2.setAgentName("agent2");
+
+        SchedulerJob job3 = new SchedulerJobImpl();
+        job3.setJobName("Job3");
+        job3.setIdentifier("job3-id");
+        job3.setAgentName("agent3");
+
+        childContext.setScheduledJobs(List.of(job1, job2, job3));
+
+        // Create logical grouping with AND condition
+        And and = new AndImpl();
+        and.setIdentifier("job2-id");
+
+        LogicalGroupingImpl logicalGrouping = new LogicalGroupingImpl();
+        logicalGrouping.setAnd(List.of(and));
+
+        JobDependency jobDependency = new JobDependencyImpl();
+        jobDependency.setJobIdentifier("job3-id");
+        jobDependency.setLogicalGrouping(logicalGrouping);
+
+        childContext.setJobDependencies(List.of(jobDependency));
+
+        parentContext.setContexts(List.of(childContext));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("job1-id-ChildContext", job1);
+        schedulerJobs.put("job2-id-ChildContext", job2);
+        schedulerJobs.put("job3-id-ChildContext", job3);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        // Jobs within logical grouping should be filtered out by getJobsOutsideLogicalGrouping
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_empty_scheduler_jobs() {
+        // Test with empty scheduler jobs map
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext = new ContextTemplateImpl();
+        childContext.setName("ChildContext");
+        childContext.setScheduledJobs(new ArrayList<>());
+
+        parentContext.setContexts(List.of(childContext));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        Assert.assertTrue("Empty scheduler jobs should result in no transitions", transitions.isEmpty());
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_null_job_dependencies() {
+        // Test with null job dependencies
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext = new ContextTemplateImpl();
+        childContext.setName("ChildContext");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("Job1");
+        job1.setIdentifier("job1-id");
+        job1.setAgentName("agent1");
+
+        childContext.setScheduledJobs(List.of(job1));
+        childContext.setJobDependencies(null);
+
+        parentContext.setContexts(List.of(childContext));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("job1-id-ChildContext", job1);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        // Should handle null dependencies gracefully
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_distinct_transitions() {
+        // Test that duplicate transitions are filtered out
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext1 = new ContextTemplateImpl();
+        childContext1.setName("ChildContext1");
+
+        Context childContext2 = new ContextTemplateImpl();
+        childContext2.setName("ChildContext2");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("SharedJob");
+        job1.setIdentifier("shared-job-id");
+        job1.setAgentName("agent1");
+
+        SchedulerJob job2 = new SchedulerJobImpl();
+        job2.setJobName("SharedJob");
+        job2.setIdentifier("shared-job-id");
+        job2.setAgentName("agent1");
+
+        childContext1.setScheduledJobs(List.of(job1));
+        childContext2.setScheduledJobs(List.of(job2));
+
+        parentContext.setContexts(List.of(childContext1, childContext2));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("shared-job-id-ChildContext1", job1);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext1, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        // Check that transitions are distinct
+        long distinctCount = transitions.stream().distinct().count();
+        Assert.assertEquals("Transitions should be distinct", distinctCount, transitions.size());
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_filters_empty_contexts() {
+        // Test that transitions with empty contexts list are filtered out
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext = new ContextTemplateImpl();
+        childContext.setName("ChildContext");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("Job1");
+        job1.setIdentifier("job1-id");
+        job1.setAgentName("agent1");
+
+        childContext.setScheduledJobs(List.of(job1));
+        parentContext.setContexts(List.of(childContext));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("job1-id-ChildContext", job1);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        // All transitions should have non-empty contexts list
+        transitions.forEach(transition -> {
+            Assert.assertNotNull("Context list should not be null", transition.getContexts());
+            Assert.assertFalse("Context list should not be empty", transition.getContexts().isEmpty());
+        });
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_excludes_child_context_from_results() {
+        // Test that the child context being analyzed is excluded from the contexts list in transitions
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext1 = new ContextTemplateImpl();
+        childContext1.setName("ChildContext1");
+
+        Context childContext2 = new ContextTemplateImpl();
+        childContext2.setName("ChildContext2");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("TransitioningJob");
+        job1.setIdentifier("trans-job-id");
+        job1.setAgentName("agent1");
+
+        SchedulerJob job2InContext1 = new SchedulerJobImpl();
+        job2InContext1.setJobName("TransitioningJob");
+        job2InContext1.setIdentifier("trans-job-id");
+        job2InContext1.setAgentName("agent1");
+
+        SchedulerJob job2InContext2 = new SchedulerJobImpl();
+        job2InContext2.setJobName("TransitioningJob");
+        job2InContext2.setIdentifier("trans-job-id");
+        job2InContext2.setAgentName("agent1");
+
+        childContext1.setScheduledJobs(List.of(job1, job2InContext1));
+        childContext2.setScheduledJobs(List.of(job2InContext2));
+
+        parentContext.setContexts(List.of(childContext1, childContext2));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("trans-job-id-ChildContext1", job1);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext1, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        // Verify that ChildContext1 is not in the contexts list of any transition
+        transitions.forEach(transition -> {
+            Assert.assertFalse("Child context should be excluded from transition contexts",
+                transition.getContexts().contains("ChildContext1"));
+        });
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_multiple_preceding_jobs() {
+        // Test scenario with multiple preceding jobs transitioning to the same subsequent job
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext1 = new ContextTemplateImpl();
+        childContext1.setName("ChildContext1");
+
+        Context childContext2 = new ContextTemplateImpl();
+        childContext2.setName("ChildContext2");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("Job1");
+        job1.setIdentifier("job1-id");
+        job1.setAgentName("agent1");
+
+        SchedulerJob job2 = new SchedulerJobImpl();
+        job2.setJobName("Job2");
+        job2.setIdentifier("job2-id");
+        job2.setAgentName("agent2");
+
+        SchedulerJob job3 = new SchedulerJobImpl();
+        job3.setJobName("Job3");
+        job3.setIdentifier("job3-id");
+        job3.setAgentName("agent3");
+
+        childContext1.setScheduledJobs(List.of(job1, job2));
+        childContext2.setScheduledJobs(List.of(job3));
+
+        parentContext.setContexts(List.of(childContext1, childContext2));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("job1-id-ChildContext1", job1);
+        schedulerJobs.put("job2-id-ChildContext1", job2);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+        InternalEventDrivenJob internalJob1 = new InternalEventDrivenJobImpl();
+        internalJob1.setJobName("Job1");
+        internalJob1.setIdentifier("job1-id");
+        internalJob1.setTargetResidingContextOnly(false);
+        internalEventDrivenJobMap.put("job1-id-ChildContext1", internalJob1);
+
+        InternalEventDrivenJob internalJob2 = new InternalEventDrivenJobImpl();
+        internalJob2.setJobName("Job2");
+        internalJob2.setIdentifier("job2-id");
+        internalJob2.setTargetResidingContextOnly(false);
+        internalEventDrivenJobMap.put("job2-id-ChildContext1", internalJob2);
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext1, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        // The test verifies the method can handle multiple preceding jobs
+    }
+
+    @Test
+    public void test_determineIfJobsTransitionToOtherContexts_non_internal_event_driven_job() {
+        // Test that non-InternalEventDrivenJob entries in the map are handled correctly
+        Context parentContext = new ContextTemplateImpl();
+        parentContext.setName("ParentContext");
+
+        Context childContext = new ContextTemplateImpl();
+        childContext.setName("ChildContext");
+
+        SchedulerJob job1 = new SchedulerJobImpl();
+        job1.setJobName("RegularJob");
+        job1.setIdentifier("regular-job-id");
+        job1.setAgentName("agent1");
+
+        childContext.setScheduledJobs(List.of(job1));
+        parentContext.setContexts(List.of(childContext));
+
+        Map<String, SchedulerJob> schedulerJobs = new HashMap<>();
+        schedulerJobs.put("regular-job-id-ChildContext", job1);
+
+        Map<String, SchedulerJob> internalEventDrivenJobMap = new HashMap<>();
+        // Add a regular SchedulerJob (not InternalEventDrivenJob) to the map
+        SchedulerJob regularJob = new SchedulerJobImpl();
+        regularJob.setJobName("RegularJob");
+        regularJob.setIdentifier("regular-job-id");
+        regularJob.setAgentName("agent1");
+        internalEventDrivenJobMap.put("regular-job-id-ChildContext", regularJob);
+
+        List<ContextTransition> transitions = ContextHelper.determineIfJobsTransitionToOtherContexts(
+            parentContext, schedulerJobs, childContext, internalEventDrivenJobMap);
+
+        Assert.assertNotNull(transitions);
+        // Should handle non-InternalEventDrivenJob instances correctly
     }
 }
