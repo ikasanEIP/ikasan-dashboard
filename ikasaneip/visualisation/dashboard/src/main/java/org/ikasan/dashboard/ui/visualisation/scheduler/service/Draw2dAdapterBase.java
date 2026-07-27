@@ -95,8 +95,14 @@ public abstract class Draw2dAdapterBase {
             // Determine if any jobs are initiated from a previous or are responsible for initiating a job in a
             // subsequent flow.
             List<ContextTransition> previousContexts = this.getPreviousContextTransitions(parentContext, context, schedulerJobsMap);
+
+            Map<String, SchedulerJob> contextJobMap = new HashMap<>();
+            schedulerJobsMap.entrySet()
+                .forEach(entry ->
+                   contextJobMap.put(entry.getKey() + "-" + context.getName(), entry.getValue()));
+
             List<ContextTransition> subsequentTransitions = ContextHelper.determineIfJobsTransitionToOtherContexts
-                (parentContext, context.getScheduledJobsMap(), context, schedulerJobsMap);
+                (parentContext, contextJobMap, context, schedulerJobsMap);
 
             // We create the draw2d items in parallel to creating
             // an instance of a DefaultDirectedGraph. The DefaultDirectedGraph
