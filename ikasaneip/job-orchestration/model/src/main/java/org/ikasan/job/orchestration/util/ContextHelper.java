@@ -747,6 +747,11 @@ public class ContextHelper {
         // to other contexts
         Map<String, SchedulerJob> jobMap = ContextHelper.getJobsOutsideLogicalGrouping(child);
 
+        Map<String, SchedulerJob> contextJobMap = new HashMap<>();
+        jobMap.entrySet()
+            .forEach(entry ->
+                contextJobMap.put(entry.getKey() + "-" + child.getName(), entry.getValue()));
+
         // Now iterate over all jobs in the context
         schedulerJobs.entrySet().forEach(entry -> {
             LinkedList<List<SchedulerJob>> linkedJobs;
@@ -764,19 +769,19 @@ public class ContextHelper {
             // we cross the boundary of the child context.
             linkedJobs.forEach(jobs -> jobs.forEach(job -> {
                 // Keep track of the previous job in the child context.
-                if(jobMap.containsKey(job.getIdentifier())) {
+                if(contextJobMap.containsKey(job.getIdentifier() + "-" + child.getName())) {
                     precedingJobs.add(job);
                 }
 
                 // At this point we have detected that we have crossed the boundary into another context.
-                if(precedingJobs.size() > 0 && !schedulerJobs.containsKey(job.getIdentifier())) {
+                if(precedingJobs.size() > 0 && !schedulerJobs.containsKey(job.getIdentifier() + "-" + child.getName())) {
                     precedingJobs.forEach(precedingJob -> {
                         // We do not add jobs that target their residing context only as these jobs
                         // by their nature cannot transition ot another context.
-                        if(internalEventDrivenJobMap.containsKey(precedingJob.getIdentifier())
-                            && ((internalEventDrivenJobMap.get(precedingJob.getIdentifier()) instanceof  InternalEventDrivenJob
-                                && !((InternalEventDrivenJob) internalEventDrivenJobMap.get(precedingJob.getIdentifier())).isTargetResidingContextOnly())
-                            || !(internalEventDrivenJobMap.get(precedingJob.getIdentifier()) instanceof  InternalEventDrivenJob))) {
+                        if(internalEventDrivenJobMap.containsKey(precedingJob.getIdentifier() + "-" + child.getName() )
+                            && ((internalEventDrivenJobMap.get(precedingJob.getIdentifier()+ "-" + child.getName()) instanceof  InternalEventDrivenJob
+                                && !((InternalEventDrivenJob) internalEventDrivenJobMap.get(precedingJob.getIdentifier() + "-" + child.getName())).isTargetResidingContextOnly())
+                            || !(internalEventDrivenJobMap.get(precedingJob.getIdentifier() + "-" + child.getName()) instanceof  InternalEventDrivenJob))) {
                             ContextTransition contextTransition = new ContextTransition();
                             contextTransition.setPrecedingJob(precedingJob);
                             contextTransition.setSubsequentJob(job);
