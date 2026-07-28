@@ -24,8 +24,6 @@ import org.ikasan.spec.harvest.HarvestingJob;
 import org.ikasan.spec.harvest.HarvestingSchedulerService;
 import org.ikasan.spec.metadata.model.ModuleMetaDataProvider;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
-import org.ikasan.spec.metadata.ModuleMetaDataProvider;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.Module;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
