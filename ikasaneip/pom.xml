@@ -1258,6 +1258,12 @@
 
             <dependency>
                 <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-h2-backup</artifactId>
+                <version>${ikasan.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-setup</artifactId>
                 <version>${ikasan.core.version}</version>
             </dependency>
