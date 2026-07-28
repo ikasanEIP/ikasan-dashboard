@@ -342,7 +342,7 @@
         <version.org.apache.sshd>2.1.0</version.org.apache.sshd>
         <version.com.fasterxml.jackson.core.annotations>2.22</version.com.fasterxml.jackson.core.annotations>
         <version.com.fasterxml.jackson.core.databind>2.22.1</version.com.fasterxml.jackson.core.databind>
-        <version.tools.jackson.core.databind>3.1.4</version.tools.jackson.core.databind>
+        <version.tools.jackson.core.databind>3.1.5</version.tools.jackson.core.databind>
         <version.tools.jackson.core>3.1.4</version.tools.jackson.core>
         <version.vaadin>25.2.1</version.vaadin>
         <version.org.vaadin.tabs>1.2.0</version.org.vaadin.tabs>
@@ -402,7 +402,7 @@
         <version.org.hibernate>6.4.1.Final</version.org.hibernate>
         <version.org.hibernate-validator>8.0.1.Final</version.org.hibernate-validator>
         <version.apache.zookeeper>3.9.5</version.apache.zookeeper>
-        <version.postgres>42.7.11</version.postgres>
+        <version.postgres>42.7.12</version.postgres>
         <version.classgraph>4.8.175</version.classgraph>
         <version.org.glassfish.hk2>3.1.1</version.org.glassfish.hk2>
     </properties>
