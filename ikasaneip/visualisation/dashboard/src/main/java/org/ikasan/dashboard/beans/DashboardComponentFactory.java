@@ -15,6 +15,7 @@ import org.ikasan.flow.configuration.FlowPersistentConfiguration;
 import org.ikasan.harvesting.HarvestingAutoConfiguration;
 import org.ikasan.harvesting.HarvestingSchedulerServiceImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.module.SimpleModule;
 import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
@@ -23,6 +24,7 @@ import org.ikasan.spec.harvest.HarvestingJob;
 import org.ikasan.spec.harvest.HarvestingSchedulerService;
 import org.ikasan.spec.metadata.model.ModuleMetaDataProvider;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
+import org.ikasan.spec.module.Module;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
@@ -76,6 +78,9 @@ public class DashboardComponentFactory
     @Value("${module.metadata.cache.expiry.seconds:60}")
     private int moduleMetadataCacheExpirySeconds;
 
+    @Value("${module.name}")
+    private String moduleName;
+
     private static boolean invalidateNonLoginSessions = true;
 
 
@@ -121,6 +126,12 @@ public class DashboardComponentFactory
     @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "true")
     public IBigQueue inboundQueue() throws IOException {
         return new BigQueueImpl(queueDirectory, INBOUND_QUEUE);
+    }
+
+    @Bean
+    @ConditionalOnProperty(value="is.ikasan.enterprise.scheduler.instance", havingValue = "false")
+    public Module module() throws IOException {
+        return new SimpleModule(moduleName);
     }
 
     @Bean(name = "harvestingSchedulerService")
