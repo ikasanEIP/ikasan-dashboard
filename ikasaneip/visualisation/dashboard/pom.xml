@@ -490,6 +490,11 @@
             <artifactId>ikasan-job-orchestration-notification</artifactId>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>org.ikasan</groupId>-->
+<!--            <artifactId>ikasan-h2-backup</artifactId>-->
+<!--        </dependency>-->
+
         <!-- Other third party dependencies -->
         <dependency>
             <groupId>io.micrometer</groupId>
