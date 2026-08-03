@@ -11,7 +11,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrGlobalEventJobRecordImpl implements GlobalEventJobRecord {
 
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static final ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;

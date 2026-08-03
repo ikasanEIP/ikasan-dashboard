@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SolrContextProfileRecordImpl implements ContextProfileRecord {
-    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private final static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;

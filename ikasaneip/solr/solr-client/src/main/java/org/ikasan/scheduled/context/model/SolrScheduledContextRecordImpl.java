@@ -12,7 +12,7 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrScheduledContextRecordImpl implements ScheduledContextRecord {
-    private ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static ObjectMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;

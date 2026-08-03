@@ -10,7 +10,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrNotificationSendAuditRecord implements NotificationSendAuditRecord {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
     @Field(SolrDaoBase.ID)
     private String id;
