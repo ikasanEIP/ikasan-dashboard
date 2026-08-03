@@ -14,12 +14,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.Objects;
 
 public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceRecord {
-
-    private static JsonMapper objectMapper;
-
-    static {
-        objectMapper = ScheduledObjectMapperFactory.newInstance();
-    }
+    private static final JsonMapper objectMapper  = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;

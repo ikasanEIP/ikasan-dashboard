@@ -11,7 +11,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 public class SolrBridgingJobRecordImpl implements BridgingJobRecord {
 
-    private static JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
