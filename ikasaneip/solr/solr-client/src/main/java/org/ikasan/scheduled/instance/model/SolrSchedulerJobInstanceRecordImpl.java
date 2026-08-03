@@ -15,11 +15,7 @@ import java.util.Objects;
 
 public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceRecord {
 
-    private static ObjectMapper objectMapper;
-
-    static {
-        objectMapper = ScheduledObjectMapperFactory.newInstance();
-    }
+    private final static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;

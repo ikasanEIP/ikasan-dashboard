@@ -11,7 +11,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrEmailNotificationContextRecordImpl implements EmailNotificationContextRecord {
 
-    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
+    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
