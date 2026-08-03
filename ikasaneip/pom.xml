@@ -2760,18 +2760,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.httpcomponents.core5</groupId>
-                <artifactId>httpcore5</artifactId>
-                <version>${version.org.apache.httpcomponents5}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.httpcomponents.core5</groupId>
-                <artifactId>httpcore5-h2</artifactId>
-                <version>${version.org.apache.httpcomponents5}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.wiremock</groupId>
                 <artifactId>wiremock</artifactId>
                 <version>${version.wiremock}</version>
