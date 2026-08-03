@@ -10,7 +10,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 public class SolrNotificationSendAuditRecord implements NotificationSendAuditRecord {
 
-    private JsonMapper objectMapper = JsonMapper.builder().build();
+    private static final JsonMapper objectMapper = JsonMapper.builder().build();
 
     @Field(SolrDaoBase.ID)
     private String id;

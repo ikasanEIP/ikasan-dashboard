@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
-    private JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
     private String id;
     private long createdDateTime;
     private long updatedDateTime;

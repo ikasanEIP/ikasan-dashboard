@@ -12,7 +12,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
 public class SolrScheduledContextRecordImpl implements ScheduledContextRecord {
-    private JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
+    private static final JsonMapper objectMapper = ScheduledConcurrentObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
