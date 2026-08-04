@@ -72,6 +72,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
 {
     Logger logger = LoggerFactory.getLogger(GraphVisualisation.class);
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
     private ModuleControlService moduleControlRestService;
@@ -187,7 +188,6 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             .setFlexGrow(8);
         modulesGrid.addColumn(new ComponentRenderer<>(moduleMetaData->
         {
-            ObjectMapper objectMapper = new ObjectMapper();
             byte[] metaData = null;
 
             try {

@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
@@ -18,8 +17,6 @@ public class TextViewerDialog extends AbstractCloseableResizableDialog  {
     private AceEditor aceEditor;
 
     private boolean initialised = false;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     public TextViewerDialog(String contents, String header) {
         this(contents);

@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public abstract class Draw2dAdapterBase {
     Logger logger = LoggerFactory.getLogger(Draw2dAdapterBase.class);
 
-    protected ObjectMapper mapper = new ObjectMapper();
+    protected static final ObjectMapper mapper = new ObjectMapper();
     protected DiagramBuilder diagramBuilder = new DiagramBuilder();
     protected double jobMaxXExtent = 0;
     protected double jobMaxYExtent = 0;
