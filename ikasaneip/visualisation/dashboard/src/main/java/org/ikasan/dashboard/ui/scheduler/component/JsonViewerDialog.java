@@ -20,7 +20,7 @@ public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
 
     private boolean initialised = false;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public JsonViewerDialog(Object contents, String header) {
         this(contents);

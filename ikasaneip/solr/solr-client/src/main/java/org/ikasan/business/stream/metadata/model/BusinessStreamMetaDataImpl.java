@@ -6,6 +6,7 @@ import org.ikasan.spec.metadata.BusinessStreamMetaData;
 
 public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<BusinessStream>
 {
+    private static final ObjectMapper mapper = new ObjectMapper();
     private String id;
     private String name;
     private String description;
@@ -61,7 +62,6 @@ public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<Busine
     @Override
     public BusinessStream getBusinessStream() {
         if(this.businessStream == null) {
-            ObjectMapper mapper = new ObjectMapper();
 
             try {
                 this.businessStream = mapper.readValue(this.json, BusinessStream.class);
