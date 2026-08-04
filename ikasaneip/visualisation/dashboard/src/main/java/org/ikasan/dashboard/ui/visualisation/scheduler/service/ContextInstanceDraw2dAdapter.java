@@ -181,9 +181,6 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
 
         items.addAll(statusRectangles);
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
         try {
            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
         }

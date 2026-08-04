@@ -6,13 +6,13 @@ import tools.jackson.databind.json.JsonMapper;
 
 public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<BusinessStream>
 {
+    private static final JsonMapper mapper = JsonMapper.builder().build();
+
     private String id;
     private String name;
     private String description;
     private String json;
     private BusinessStream businessStream;
-
-    private final JsonMapper mapper = JsonMapper.builder().build();
 
     @Override
     public String getId()
@@ -63,6 +63,7 @@ public class BusinessStreamMetaDataImpl implements BusinessStreamMetaData<Busine
     @Override
     public BusinessStream getBusinessStream() {
         if(this.businessStream == null) {
+
             try {
                 this.businessStream = mapper.readValue(this.json, BusinessStream.class);
             }

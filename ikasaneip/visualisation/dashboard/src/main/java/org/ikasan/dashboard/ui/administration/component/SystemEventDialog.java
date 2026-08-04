@@ -40,7 +40,7 @@ public class SystemEventDialog extends AbstractEntityViewDialog<SystemEvent>
 
     private DateFormatter dateFormatter;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public SystemEventDialog(DateFormatter dateFormatter) {
         actionedByTf = new TextField(getTranslation("text-field.action-performed-by", UI.getCurrent().getLocale()));

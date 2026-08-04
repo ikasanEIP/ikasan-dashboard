@@ -7,9 +7,9 @@ import com.flipkart.zjsonpatch.JsonDiff;
 
 public class ConfigurationChangedSystemEventFormatter {
 
-    public static String format(String systemEventDetails) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    public static String format(String systemEventDetails) throws JsonProcessingException {
         if(systemEventDetails.startsWith("Configuration Deleted")) {
             String json1 = systemEventDetails.substring(systemEventDetails.indexOf("OldConfig [") + "OldConfig [".length(), systemEventDetails.lastIndexOf("]"));
 
