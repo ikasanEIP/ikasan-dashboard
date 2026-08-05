@@ -802,7 +802,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private void connectorEvent(String event){
         try {
             ConnectorEvent connectorEvent = mapper.readValue(event, ConnectorEvent.class);
-            logger.debug("Event received: " + connectorEvent.getCanvasJson());
+            logger.debug("Event received: {}", connectorEvent.getCanvasJson());
 
             this.connectorEventListeners.forEach(listener
                 -> listener.connectorEvent(connectorEvent));
@@ -815,7 +815,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     @ClientCallable
     private void canvasUpdatedEvent(String event){
         try {
-            logger.debug("Event received: " + event);
+            logger.debug("Event received: {}", event);
             CanvasUpdatedEvent canvasUpdatedEvent = mapper.readValue(event, CanvasUpdatedEvent.class);
 
             this.canvasUpdatedListeners.forEach(listener
