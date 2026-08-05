@@ -78,16 +78,16 @@ public class FlowStateCache implements Consumer<FlowState>
     {
         String key = flowState.getModuleName() + flowState.getFlowName();
 
-        logger.debug(String.format("%s attempting to put key[%s]", this, key));
+        logger.debug("{} attempting to put key[{}]", this, key);
 
         // Only update and broadcast state if state is new
         // or has changed.
         if(!this.cache.containsKey(key) || this.cache.get(key).getState() != flowState.getState()) {
-            logger.debug(String.format("%s does not contain key[%s]", this, key));
+            logger.debug("{} does not contain key[{}]", this, key);
 
             if(this.cache.containsKey(key)) {
-                logger.debug(String.format("%s old state[%s] - new state [%s]",this
-                    ,this.cache.get(key).getState(), flowState.getState()));
+                logger.debug("{} old state[{}] - new state [{}]",this
+                    ,this.cache.get(key).getState(), flowState.getState());
             }
 
             this.cache.put(key, flowState);
@@ -105,8 +105,8 @@ public class FlowStateCache implements Consumer<FlowState>
      */
     public FlowState get(Module module, Flow flow)
     {
-        logger.debug(String.format("%s attempting to get module[%s] - flow[%s] - cache value[%s]"
-            , this, module, flow.getName(), this.cache.get(module.getName()+flow.getName())));
+        logger.debug("{} attempting to get module[{}] - flow[{}] - cache value[{}]"
+            , this, module.getName(), flow.getName(), this.cache.get(module.getName()+flow.getName()));
         if(!this.contains(module, flow)) {
             this.put(new FlowState(module.getName(), flow.getName(), State.getState(State.UNKNOWN)));
             Runnable updateFromSourceRunnable = () -> refreshFromSource
@@ -129,8 +129,8 @@ public class FlowStateCache implements Consumer<FlowState>
             return null;
         }
 
-        logger.debug(String.format("%s attempting to get module[%s] - flow[%s] - cache value[%s]"
-            , this, module.getName(), flowName, this.cache.get(module.getName()+flowName)));
+        logger.debug("{} attempting to get module[{}] - flow[{}] - cache value[{}]"
+            , this, module.getName(), flowName, this.cache.get(module.getName()+flowName));
         if(!this.contains(module, flowName)) {
             this.put(new FlowState(module.getName(), flowName, State.getState(State.UNKNOWN)));
             Runnable updateFromSourceRunnable = () -> refreshFromSource
@@ -150,8 +150,8 @@ public class FlowStateCache implements Consumer<FlowState>
      */
     public boolean contains(Module module, Flow flow)
     {
-        logger.debug(String.format("%s check contains[%s] - result [%s]",this
-            , module.getName()+flow.getName(), this.cache.containsKey(module.getName()+flow.getName())));
+        logger.debug("{} check contains[{}] - result [{{}]",this
+            , module.getName()+flow.getName(), this.cache.containsKey(module.getName()+flow.getName()));
         return this.cache.containsKey(module.getName()+flow.getName());
     }
 
@@ -167,8 +167,8 @@ public class FlowStateCache implements Consumer<FlowState>
         if(module == null) {
             return false;
         }
-        logger.debug(String.format("%s check contains[%s] - result [%s]",this
-            , module.getName()+flowName, this.cache.containsKey(module.getName()+flowName)));
+        logger.debug("{} check contains[{}] - result [{{}]",this
+            , module.getName()+flowName, this.cache.containsKey(module.getName()+flowName));
         return this.cache.containsKey(module.getName()+flowName);
     }
 
@@ -181,16 +181,16 @@ public class FlowStateCache implements Consumer<FlowState>
      */
     public boolean contains(String moduleName, String flowName)
     {
-        logger.debug(String.format("%s check contains[%s] - result [%s]",this
-            , moduleName+flowName, this.cache.containsKey(moduleName+flowName)));
+        logger.debug("{} check contains[{}] - result [{{}]",this
+            , moduleName+flowName, this.cache.containsKey(moduleName+flowName));
         return this.cache.containsKey(moduleName+flowName);
     }
 
     @Override
     public void accept(FlowState flowState)
     {
-        logger.debug(String.format("%s Received state change[%s]",this
-            , flowState));
+        logger.debug("{} Received state change[{}]",this
+            , flowState);
         this.put(flowState);
     }
 
@@ -224,21 +224,22 @@ public class FlowStateCache implements Consumer<FlowState>
     {
         Optional<FlowDto> flowDto;
 
-        logger.debug(String.format("%s Refresh from source[%s]-[%s]-[%s]",this
-            , contextUrl, moduleName, flowName));
+        logger.debug("{} Refresh from source[{}]-[{}]-[{}]",this
+            , contextUrl, moduleName, flowName);
 
         flowDto = this.moduleControlRestService.getFlowState(contextUrl, moduleName, flowName);
 
         flowDto.ifPresentOrElse(dto -> {
             FlowState state = new FlowState(moduleName, flowName, State.getState(flowDto.get().getState()));
-            logger.debug(String.format("%s Putting state-[%s]",FlowStateCache.instance()
-                , state));
+            logger.debug("{} Putting state-[{}]",FlowStateCache.instance()
+                , state);
             FlowStateCache.instance().put(state);
         }, () -> {
-            logger.debug(String.format("Could not load flow state for module[%s], flow[%s] using URL[%s].", moduleName, flowName, contextUrl));
+            logger.debug("Could not load flow state for module[{}], flow[{}] using URL[{}]."
+                , moduleName, flowName, contextUrl);
             FlowState state = new FlowState(moduleName, flowName, State.getState(State.UNKNOWN));
-            logger.debug(String.format("%s Putting state-[%s]",FlowStateCache.instance()
-                , state));
+            logger.debug("{} Putting state-[{}]",FlowStateCache.instance()
+                , state);
             FlowStateCache.instance().put(state);
         });
     }

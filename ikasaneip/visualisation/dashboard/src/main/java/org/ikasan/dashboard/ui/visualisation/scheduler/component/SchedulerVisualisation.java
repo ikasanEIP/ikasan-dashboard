@@ -488,7 +488,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     @Override
     public void figureDeleted(FigureDeleteEvent figureDeleteEvent) {
         if(figureDeleteEvent.getFigure().getUserData().getItemType().equals(UserData.CONTEXT)) {
-            logger.debug("Context deleted! " + figureDeleteEvent.getFigure());
+            logger.debug("Context deleted! {}", figureDeleteEvent.getFigure());
             ContextTemplate parent = ContextHelper.getParentContextTemplate(figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
             ContextTemplate removed = ContextHelper.getChildContextTemplate(figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
             ContextHelper.removeChildContextTemplate(figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
@@ -503,7 +503,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     @Override
     public void undoFigureDeleted(FigureUndoDeleteEvent figureUndoDeleteEvent) {
         if(figureUndoDeleteEvent.getFigure().getUserData().getItemType().equals(UserData.CONTEXT)) {
-            logger.debug("Context undo delete! " + figureUndoDeleteEvent.getFigure());
+            logger.debug("Context undo delete! {}", figureUndoDeleteEvent.getFigure());
             ContextDeletedHolder contextDeletedHolder = this.contextDeletedHolderMap.get(figureUndoDeleteEvent.getFigure().getUserData().getContextName());
             if(contextDeletedHolder != null) {
                 ContextTemplate parent = ContextHelper.getChildContextTemplate(contextDeletedHolder.parent.getName(), this.parentContextTemplate);
@@ -517,7 +517,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     @Override
     public void canvasUpdated(CanvasUpdatedEvent canvasUpdatedEvent) {
-        logger.debug("Canvas updated! " + canvasUpdatedEvent.getCanvasJson());
+        logger.debug("Canvas updated! {}", canvasUpdatedEvent.getCanvasJson());
     }
 
     protected void _save() {
