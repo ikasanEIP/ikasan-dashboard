@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
-    private ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
+    private static final ObjectMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
     private String id;
     private long createdDateTime;
     private long updatedDateTime;
