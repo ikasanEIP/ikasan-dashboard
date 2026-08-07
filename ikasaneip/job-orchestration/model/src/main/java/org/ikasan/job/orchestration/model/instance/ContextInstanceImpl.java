@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
-    private JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
+    private static JsonMapper objectMapper = ConcurrentObjectMapperFactory.newInstance();
     private String id;
     private long createdDateTime;
     private long updatedDateTime;
@@ -162,7 +162,7 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     @Override
     public String toString() {
         try {
-            return this.objectMapper.writeValueAsString(this);
+            return objectMapper.writeValueAsString(this);
         }
         catch (JacksonException e) {
             return String.format("Could not resolve context instance as string. Context Name[%s], Context Instance Id[%s]", this.name, this.id);
