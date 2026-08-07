@@ -41,7 +41,7 @@ public class NetworkDiagram extends Component implements HasSize {
     Logger log = LoggerFactory.getLogger(NetworkDiagram.class);
 
     private final Options options;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     // Holds all event types already registered client side.
     private final Set<Class<? extends Event>> enabledEvents = new LinkedHashSet<>();
