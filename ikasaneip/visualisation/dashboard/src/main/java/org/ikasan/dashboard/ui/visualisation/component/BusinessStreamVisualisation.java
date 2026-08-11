@@ -12,6 +12,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteParameters;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcastListener;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
@@ -25,6 +27,7 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
+import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
@@ -537,15 +540,18 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                 dialog.open();
             }
             else if(accessibleModules.contains(moduleMetaData.getName()) || authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
-                FlowVisualisationDialog flowVisualisationDialog
-                    = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
-                    this.triggerRestService, this.configurationMetadataService, moduleMetaData
-                    , this.flowMap.get(nodeId), this.solrSearchService
-                    , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
-                    , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
-                    , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dateFormatter, this.maxDownloadBytes);
+                if(moduleMetaData != null && this.flowMap != null && this.flowMap.get(nodeId) != null) {
+                    String url = RouteConfiguration.forSessionScope()
+                        .getUrl(GraphVisualisationDeepLinkView.class, "FLOW:" + moduleMetaData.getName() + "." + this.flowMap.get(nodeId).getFlowName());
+                    UI.getCurrent().getPage().open(url, "_blank");
+                }
+                else {
+                    ConfirmDialog dialog = new ConfirmDialog(getTranslation("confirm.header.flow-not-found", UI.getCurrent().getLocale()),
+                        getTranslation("confirm.body.flow-not-found", UI.getCurrent().getLocale()), getTranslation("button.ok", UI.getCurrent().getLocale()),
+                        (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {});
 
-                flowVisualisationDialog.open();
+                    dialog.open();
+                }
             }
             else {
                 ConfirmDialog dialog = new ConfirmDialog(getTranslation("confirm.header.no-flow-access", UI.getCurrent().getLocale()),
