@@ -2,10 +2,21 @@ package org.ikasan.mongo.persistence.scheduled;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import org.ikasan.mongo.persistence.business.stream.metadata.dao.MongoBusinessStreamMetadataDaoImpl;
+import org.ikasan.mongo.persistence.business.stream.metadata.repository.MongoBusinessStreamRepository;
+import org.ikasan.mongo.persistence.configuration.metadata.dao.MongoComponentConfigurationMetadataDaoImpl;
+import org.ikasan.mongo.persistence.configuration.metadata.repository.MongoComponentConfigurationMetadataRepository;
+import org.ikasan.mongo.persistence.error.reporting.dao.MongoErrorReportingServiceDaoImpl;
+import org.ikasan.mongo.persistence.error.reporting.repository.MongoErrorOccurrenceRepository;
+import org.ikasan.mongo.persistence.module.metadata.dao.MongoModuleMetadataDaoImpl;
+import org.ikasan.mongo.persistence.module.metadata.repository.MongoModuleMetadataRepository;
 import org.ikasan.mongo.persistence.scheduled.context.dao.MongoScheduledContextDaoImpl;
 import org.ikasan.mongo.persistence.scheduled.context.repository.MongoScheduledContextRecordRepository;
 import org.ikasan.mongo.persistence.scheduled.instance.dao.MongoSchedulerJobInstanceDaoImpl;
 import org.ikasan.mongo.persistence.scheduled.instance.repository.MongoSchedulerJobInstanceRecordRepository;
+import org.ikasan.spec.metadata.dao.BusinessStreamMetadataDao;
+import org.ikasan.spec.metadata.dao.ComponentConfigurationMetadataDao;
+import org.ikasan.spec.metadata.dao.ModuleMetadataDao;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +28,11 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @Configuration
 @EnableMongoRepositories(basePackages = {
     "org.ikasan.mongo.persistence.scheduled.context.repository",
-    "org.ikasan.mongo.persistence.scheduled.instance.repository"
+    "org.ikasan.mongo.persistence.scheduled.instance.repository",
+    "org.ikasan.mongo.persistence.business.stream.metadata.repository",
+    "org.ikasan.mongo.persistence.module.metadata.repository",
+    "org.ikasan.mongo.persistence.configuration.metadata.repository",
+    "org.ikasan.mongo.persistence.error.reporting.repository"
 })
 public class MongoPersistenceAutoConfiguration {
 
@@ -42,5 +57,31 @@ public class MongoPersistenceAutoConfiguration {
     public SchedulerJobInstanceDao schedulerJobInstanceDao(MongoSchedulerJobInstanceRecordRepository repository,
                                                            MongoTemplate mongoTemplate) {
         return new MongoSchedulerJobInstanceDaoImpl(repository, mongoTemplate);
+    }
+
+    @Bean
+    public BusinessStreamMetadataDao businessStreamMetadataDao(MongoBusinessStreamRepository repository,
+                                                               MongoTemplate mongoTemplate) {
+        return new MongoBusinessStreamMetadataDaoImpl(repository, mongoTemplate);
+    }
+
+    @Bean
+    public ModuleMetadataDao moduleMetadataDao(MongoModuleMetadataRepository repository,
+                                               MongoTemplate mongoTemplate) {
+        return new MongoModuleMetadataDaoImpl(repository, mongoTemplate);
+    }
+
+    @Bean
+    public ComponentConfigurationMetadataDao componentConfigurationMetadataDao(
+            MongoComponentConfigurationMetadataRepository repository,
+            MongoTemplate mongoTemplate) {
+        return new MongoComponentConfigurationMetadataDaoImpl(repository, mongoTemplate);
+    }
+
+    @Bean
+    public MongoErrorReportingServiceDaoImpl errorReportingServiceDao(
+            MongoErrorOccurrenceRepository repository,
+            MongoTemplate mongoTemplate) {
+        return new MongoErrorReportingServiceDaoImpl(repository, mongoTemplate);
     }
 }
