@@ -41,6 +41,16 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-spec-metadata</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-spec-housekeeping</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
             <artifactId>ikasan-job-orchestration-model</artifactId>
         </dependency>
 
@@ -103,8 +113,13 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-spec-entity</artifactId>
+        </dependency>
 
-<!--        <dependency>-->
+
+        <!--        <dependency>-->
 <!--            <groupId>org.mongodb</groupId>-->
 <!--            <artifactId>mongodb-driver-sync</artifactId>-->
 <!--            <version>4.11.4</version>-->
