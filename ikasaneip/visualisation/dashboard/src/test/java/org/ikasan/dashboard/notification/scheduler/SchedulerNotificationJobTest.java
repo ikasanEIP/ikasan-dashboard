@@ -12,6 +12,7 @@ import org.ikasan.dashboard.notification.email.EmailNotification;
 import org.ikasan.dashboard.notification.email.EmailNotifier;
 import org.ikasan.dashboard.notification.scheduler.model.SchedulerNotification;
 import org.ikasan.dashboard.notification.scheduler.service.SchedulerNotificationService;
+import org.ikasan.solr.dao.SolrGeneralDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.configuration.PlatformConfigurationService;

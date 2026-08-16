@@ -1,0 +1,24 @@
+package org.ikasan.mongo.persistence.scheduled.job.repository;
+
+import org.ikasan.mongo.persistence.scheduled.job.model.MongoBridgingJobRecordImpl;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+/**
+ * Spring Data MongoDB repository for BridgingJob records.
+ */
+@Repository
+@DependsOn("mongoTemplate")
+public interface MongoBridgingJobRepository extends MongoRepository<MongoBridgingJobRecordImpl, String> {
+
+    /**
+     * Find all BridgingJob records by context name.
+     *
+     * @param contextName the context name to search for
+     * @return list of matching records
+     */
+    List<MongoBridgingJobRecordImpl> findByContextName(String contextName);
+}

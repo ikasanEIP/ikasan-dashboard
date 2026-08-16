@@ -4,11 +4,12 @@ import org.ikasan.business.stream.metadata.model.BusinessStream;
 import org.ikasan.business.stream.metadata.model.Flow;
 import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExclusion;
 import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExclusions;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,12 +20,12 @@ import java.util.stream.Collectors;
 
 public class BusinessStreamNotificationService {
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     public BusinessStreamNotificationService(BusinessStreamMetaDataService businessStreamMetaDataService
-        , SolrGeneralService solrGeneralService) {
+        , ESBSearchService esbSearchService) {
         this.businessStreamMetaDataService = businessStreamMetaDataService;
-        this.solrGeneralService = solrGeneralService;
+        this.esbSearchService = esbSearchService;
     }
 
     public Optional<BusinessStreamExclusions> getBusinessStreamExclusions(String businessStreamName, Long startTimestamp, Integer resultSize) throws JSONException {
@@ -68,7 +69,7 @@ public class BusinessStreamNotificationService {
                 .collect(Collectors.toSet());
         }
 
-        IkasanSolrDocumentSearchResults results = this.solrGeneralService.search(ref.moduleNames, ref.flowNames
+        IkasanDocumentSearchResults results = this.esbSearchService.search(ref.moduleNames, ref.flowNames
             , null, startTimestamp, System.currentTimeMillis(), resultSize, List.of("exclusion")
             ,false, null, null);
 
@@ -79,13 +80,13 @@ public class BusinessStreamNotificationService {
         return Optional.of(new BusinessStreamExclusions(businessStreamMetaData, this.getBusinessStreamExclusions(results)));
     }
 
-    private List<BusinessStreamExclusion> getBusinessStreamExclusions(IkasanSolrDocumentSearchResults results) {
+    private List<BusinessStreamExclusion> getBusinessStreamExclusions(IkasanDocumentSearchResults results) {
         if(results.getResultList().size() > 0) {
-            Map<String, IkasanSolrDocument> errorOccurrencesMap = results.getResultList()
+            Map<String, IkasanESBDocument> errorOccurrencesMap = results.getResultList()
                 .stream()
-                .map(ikasanDoc -> this.solrGeneralService.findByErrorUri("error", this.getErrorUri(ikasanDoc.getId())))
+                .map(ikasanDoc -> this.esbSearchService.findByErrorUri("error", this.getErrorUri(ikasanDoc.getId())))
                 .filter(Objects::nonNull)
-                .collect(Collectors.toMap(IkasanSolrDocument::getErrorUri, Function.identity()));
+                .collect(Collectors.toMap(IkasanESBDocument::getErrorUri, Function.identity()));
 
             List<BusinessStreamExclusion> businessStreamExclusionsList = new ArrayList<>();
 

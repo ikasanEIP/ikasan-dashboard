@@ -1,6 +1,7 @@
 package org.ikasan.mongo.persistence.scheduled.instance.repository;
 
 import org.ikasan.mongo.persistence.scheduled.instance.model.MongoSchedulerJobInstanceRecordImpl;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * Spring Data MongoDB repository for SchedulerJobInstanceRecord.
  */
 @Repository
+@DependsOn("mongoTemplate")
 public interface MongoSchedulerJobInstanceRecordRepository extends MongoRepository<MongoSchedulerJobInstanceRecordImpl, String> {
 
     /**

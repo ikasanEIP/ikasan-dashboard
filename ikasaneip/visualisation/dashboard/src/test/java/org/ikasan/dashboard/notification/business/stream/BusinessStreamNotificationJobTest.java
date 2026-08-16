@@ -13,6 +13,7 @@ import org.ikasan.dashboard.notification.business.stream.service.BusinessStreamN
 import org.ikasan.dashboard.notification.email.EmailNotification;
 import org.ikasan.dashboard.notification.email.EmailNotifier;
 import org.ikasan.esb.service.business.stream.metadata.BusinessStreamMetaDataServiceImpl;
+import org.ikasan.solr.dao.SolrGeneralDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.configuration.PlatformConfigurationService;

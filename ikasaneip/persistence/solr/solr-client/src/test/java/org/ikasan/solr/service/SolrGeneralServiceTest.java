@@ -5,9 +5,11 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
+import org.ikasan.solr.dao.SolrGeneralDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.junit.Test;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -351,14 +353,14 @@ public class SolrGeneralServiceTest extends SolrTestCaseJ4
             Set<String> moduleNames = new HashSet<String>();
             moduleNames.add("test");
 
-            List<IkasanSolrDocument> documents = new ArrayList<>();
+            List<IkasanESBDocument> documents = new ArrayList<>();
             documents.add(doc1);
             documents.add(doc2);
 
             SolrGeneralServiceImpl solrGeneralService = new SolrGeneralServiceImpl(dao);
             solrGeneralService.saveOrUpdate(documents);
 
-            IkasanSolrDocumentSearchResults results = solrGeneralService.search(moduleNames, null, "test", 0, System.currentTimeMillis() + 100000000l, 100, false, null ,null );
+            IkasanDocumentSearchResults results = solrGeneralService.search(moduleNames, null, "test", 0, System.currentTimeMillis() + 100000000l, 100, false, null ,null );
 
             assertEquals(2, solrGeneralService.search(moduleNames, null, "test", 0, System.currentTimeMillis() + 100000000l, 100, false, null ,null ).getResultList().size());
 

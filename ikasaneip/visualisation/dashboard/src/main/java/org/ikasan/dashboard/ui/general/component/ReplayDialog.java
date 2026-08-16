@@ -25,10 +25,10 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.rest.client.ReplayFailException;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayAuditEvent;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,11 +39,11 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
+public class ReplayDialog extends AbstractEntityViewDialog<IkasanESBDocument>
 {
     Logger logger = LoggerFactory.getLogger(ReplayDialog.class);
 
-    private IkasanSolrDocument replayEvent;
+    private IkasanESBDocument replayEvent;
 
     private TextField moduleNameTf;
     private TextField flowNameTf;
@@ -230,7 +230,7 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     }
 
     @Override
-    public void populate(IkasanSolrDocument replayEvent)
+    public void populate(IkasanESBDocument replayEvent)
     {
         super.title.setText("Replay " + replayEvent.getEventId());
 

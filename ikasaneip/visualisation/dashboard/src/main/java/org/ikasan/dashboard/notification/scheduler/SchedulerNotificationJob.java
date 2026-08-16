@@ -7,6 +7,7 @@ import org.ikasan.dashboard.notification.scheduler.service.SchedulerNotification
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.configuration.PlatformConfigurationService;
 import org.ikasan.spec.scheduler.DashboardJob;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
@@ -93,7 +94,7 @@ public class SchedulerNotificationJob implements DashboardJob {
             long lastRunTimestamp = this.getLastRunTimestamp();
 
 
-            Optional<List<IkasanSolrDocument>> failedScheduledJobs = this.schedulerNotificationService
+            Optional<List<IkasanESBDocument>> failedScheduledJobs = this.schedulerNotificationService
                 .getFailedScheduledJobs(this.schedulerNotification.getSchedulerAgentName(), lastRunTimestamp,
                     this.schedulerNotification.getResultSize());
 
