@@ -10,10 +10,12 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcastListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
@@ -176,20 +178,30 @@ public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstan
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if (event.getContextInstance() != null) {
-            if(this.contextInstance.getId().equals(event.getContextInstance().getId())) {
-                this.contextInstance = event.getContextInstance();
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if (event.getContextInstance() != null) {
+                if(this.contextInstance.getId().equals(event.getContextInstance().getId())) {
+                    this.contextInstance = event.getContextInstance();
+                }
             }
+        }
+        else {
+            ContextViewUpdateEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
         }
     }
 
     @Override
     public void receiveBroadcast(String message) {
-        if(this.ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
             this.ui.access(() -> {
                 this.removeAll();
                 this.init();
             });
+        }
+        else {
+            ContextViewUpdateEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
         }
     }
 }

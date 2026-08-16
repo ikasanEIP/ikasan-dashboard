@@ -2,17 +2,14 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.dag.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PreserveOnRefresh;
-import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobSchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -249,12 +246,19 @@ public class DagComponent extends VerticalLayout implements HasSize, ContextInst
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        this.refreshContextInstance();
-        ContextInstance child = ContextHelper.getChildContextInstance(event.getContextInstance().getName()
-            , this.parentContextInstance);
-        child.setStatus(event.getNewStatus());
-        this.styleNode(event.getContextInstance().getName()
-            , this.getStatusColour(event.getNewStatus()));
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            this.refreshContextInstance();
+            ContextInstance child = ContextHelper.getChildContextInstance(event.getContextInstance().getName()
+                , this.parentContextInstance);
+            if (child != null) {
+                child.setStatus(event.getNewStatus());
+            }
+            this.styleNode(event.getContextInstance().getName()
+                , this.getStatusColour(event.getNewStatus()));
+        }
+        else {
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
+        }
     }
 
     private void refreshContextInstance() {

@@ -42,7 +42,6 @@ import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.orchestration.service.context.local.LocalEventServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
-import org.ikasan.scheduled.instance.service.SolrSchedulerJobInstanceServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -2082,39 +2081,60 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        logger.debug("received SchedulerJobInstanceStateChangeEvent event: " + event.getSchedulerJobInstance().getJobName());
-        if(event.getSchedulerJobInstance().getContextInstanceId().equals(this.contextInstance.getId())) {
-            manageJobStatusStateChangeEvent(this.ui, event);
-            manageContextStatusIndicators(this.ui);
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            logger.debug("received SchedulerJobInstanceStateChangeEvent event: " + event.getSchedulerJobInstance().getJobName());
+            if (event.getSchedulerJobInstance().getContextInstanceId().equals(this.contextInstance.getId())) {
+                manageJobStatusStateChangeEvent(this.ui, event);
+                manageContextStatusIndicators(this.ui);
+            }
+        }
+        else {
+            SchedulerJobStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceSavedEventBroadcaster.unregister(this);
         }
     }
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        logger.debug("received ContextInstanceStateChangeEvent event");
-        if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
-            if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
-                this.manageContextInstanceStateChangeEvent(this.ui, event);
-                manageContextStatusIndicators(this.ui);
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            logger.debug("received ContextInstanceStateChangeEvent event");
+            if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
+                if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                    this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                    this.manageContextInstanceStateChangeEvent(this.ui, event);
+                    manageContextStatusIndicators(this.ui);
+                }
+                else {
+                    this.manageContextInstanceStateChangeEvent(this.ui, event);
+                    manageContextStatusIndicators(this.ui);
+                }
             }
-            else {
-                this.manageContextInstanceStateChangeEvent(this.ui, event);
-                manageContextStatusIndicators(this.ui);
-            }
+        }
+        else {
+            SchedulerJobStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceSavedEventBroadcaster.unregister(this);
         }
     }
 
     @Override
     public void receiveBroadcast(ContextInstance event) {
-        logger.debug("received ContextInstance event: " + contextInstance.getId());
-        if(event.getId().equals(this.contextInstance.getId())) {
-            this.contextInstance = event;
-            ContextHelper.enrichJobs(contextInstance);
-            this.enableDisableScheduledJobs(this.contextInstance, this.ui);
-            manageContextStatusIndicators(this.ui);
-            this.grid.getDataCommunicator().reset();
-            this.createTreeGridDataProvider().refreshAll();
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            logger.debug("received ContextInstance event: " + contextInstance.getId());
+            if(event.getId().equals(this.contextInstance.getId())) {
+                this.contextInstance = event;
+                ContextHelper.enrichJobs(contextInstance);
+                this.enableDisableScheduledJobs(this.contextInstance, this.ui);
+                manageContextStatusIndicators(this.ui);
+                this.grid.getDataCommunicator().reset();
+                this.createTreeGridDataProvider().refreshAll();
+            }
+        }
+        else {
+            SchedulerJobStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceSavedEventBroadcaster.unregister(this);
         }
     }
 
