@@ -218,7 +218,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
             }
         }
         else {
-            ContextInstanceStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 

@@ -271,7 +271,7 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
             });
         }
         else {
-            CacheStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 }

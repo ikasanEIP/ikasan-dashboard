@@ -66,8 +66,8 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
             });
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 
@@ -87,8 +87,8 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
             });
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 }
