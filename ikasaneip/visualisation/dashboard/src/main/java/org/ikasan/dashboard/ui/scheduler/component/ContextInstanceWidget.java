@@ -1536,42 +1536,54 @@ public class ContextInstanceWidget extends VerticalLayout
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if (event.getContextInstance() != null) {
-            if(this.ui != null && this.ui.isAttached() && this.contextInstance.getId().equals(event.getContextInstance().getId())) {
-                this.ui.access(() -> {
-                    this.contextInstance = event.getContextInstance();
-                    ContextHelper.enrichJobs(this.contextInstance);
-                    this.statusDiv.setStatus(event.getNewStatus());
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if (event.getContextInstance() != null) {
+                if(this.contextInstance.getId().equals(event.getContextInstance().getId())) {
+                    this.ui.access(() -> {
+                        this.contextInstance = event.getContextInstance();
+                        ContextHelper.enrichJobs(this.contextInstance);
+                        this.statusDiv.setStatus(event.getNewStatus());
 
 
-                    if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
-                        this.jobLockDashboard.setEnabled(false);
-                        this.contextInstanceEndButton.setEnabled(false);
-                        this.resetContextButton.setEnabled(false);
-                        this.ignoreContextInstanceEndButton.setEnabled(false);
-                        this.disableQuartzScheduledJobsButton.setEnabled(false);
-                        this.holdContextButton.setEnabled(false);
-                        this.releaseContextButton.setEnabled(false);
-                        this.enableQuartzScheduledJobsButton.setEnabled(false);
-                        this.contextInstanceParameterButton.setEnabled(false);
-                    }
-                });
+                        if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
+                            this.jobLockDashboard.setEnabled(false);
+                            this.contextInstanceEndButton.setEnabled(false);
+                            this.resetContextButton.setEnabled(false);
+                            this.ignoreContextInstanceEndButton.setEnabled(false);
+                            this.disableQuartzScheduledJobsButton.setEnabled(false);
+                            this.holdContextButton.setEnabled(false);
+                            this.releaseContextButton.setEnabled(false);
+                            this.enableQuartzScheduledJobsButton.setEnabled(false);
+                            this.contextInstanceParameterButton.setEnabled(false);
+                        }
+                    });
+                }
             }
+        }
+        else {
+            SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        if(this.ui != null && this.ui.isAttached() && event.getContextInstance().getId().equals(this.contextInstance.getId())) {
-            this.ui.access(() -> {
-                ScheduledContextInstanceRecord record = this.scheduledContextInstanceService
-                    .findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE);
-                if (record != null) {
-                    this.contextInstance = record.getContextInstance();
-                    ContextHelper.enrichJobs(this.contextInstance);
-                    this.refreshJobStatusWidget();
-                }
-            });
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if(event.getContextInstance().getId().equals(this.contextInstance.getId())) {
+                this.ui.access(() -> {
+                    ScheduledContextInstanceRecord record = this.scheduledContextInstanceService
+                        .findById(this.contextInstance.getId() + "_" + SCHEDULED_CONTEXT_INSTANCE);
+                    if (record != null) {
+                        this.contextInstance = record.getContextInstance();
+                        ContextHelper.enrichJobs(this.contextInstance);
+                        this.refreshJobStatusWidget();
+                    }
+                });
+            }
+        }
+        else {
+            SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 }

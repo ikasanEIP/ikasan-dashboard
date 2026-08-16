@@ -10,6 +10,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.scheduler.listener.ContextOpenedListener;
@@ -370,8 +371,8 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if(event.getContextInstance() != null && this.childContextInstance != null && this.childContextInstance.getId().equals(event.getContextInstance().getId())) {
-            if(this.ui != null && this.ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if(event.getContextInstance() != null && this.childContextInstance != null && this.childContextInstance.getId().equals(event.getContextInstance().getId())) {
                 this.ui.access(() -> {
                     if (ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())) {
                         this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
@@ -383,16 +384,26 @@ public class SplitContextInstanceVisualisation extends VerticalLayout
                 });
             }
         }
+        else {
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
+            SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
+        }
     }
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        if(this.ui != null && this.ui.isAttached() && event.getContextInstance().getId().equals(this.contextInstance.getId())) {
-            this.ui.access(() -> {
-                if (ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())) {
-                    this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
-                }
-            });
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if(event.getContextInstance().getId().equals(this.contextInstance.getId())) {
+                this.ui.access(() -> {
+                    if (ContextMachineCache.instance().isLeaderForContextInstance(this.contextInstance.getId())) {
+                        this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                    }
+                });
+            }
+        }
+        else {
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
+            SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 }

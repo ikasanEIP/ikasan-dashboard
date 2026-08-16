@@ -404,13 +404,25 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
 
     @Override
     public void receiveFlowStateBroadcast(FlowState flowState) {
-        logger.debug("Received flow state: " + flowState);
-        setFlowState(current, flowState);
+        if(this.current != null && this.current.isAttached() && !this.current.isClosing() && this.current.getSession() != null) {
+            logger.debug("Received flow state: " + flowState);
+            setFlowState(current, flowState);
+        }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 
     @Override
     public void receiveCacheStateBroadcast(FlowState flowState) {
-        logger.debug("Received flow state: " + flowState);
-        setFlowState(current, flowState);
+        if(this.current != null && this.current.isAttached() && !this.current.isClosing() && this.current.getSession() != null) {
+            logger.debug("Received flow state: " + flowState);
+            setFlowState(current, flowState);
+        }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 }

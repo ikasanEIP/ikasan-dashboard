@@ -181,20 +181,30 @@ public class ContextInstanceViewMenuBar extends MenuBar implements ContextInstan
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if (event.getContextInstance() != null) {
-            if(this.contextInstance.getId().equals(event.getContextInstance().getId())) {
-                this.contextInstance = event.getContextInstance();
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if (event.getContextInstance() != null) {
+                if(this.contextInstance.getId().equals(event.getContextInstance().getId())) {
+                    this.contextInstance = event.getContextInstance();
+                }
             }
+        }
+        else {
+            ContextViewUpdateEventBroadcaster.instance().unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 
     @Override
     public void receiveBroadcast(String message) {
-        if(this.ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
             this.ui.access(() -> {
                 this.removeAll();
                 this.init();
             });
+        }
+        else {
+            ContextViewUpdateEventBroadcaster.instance().unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 }

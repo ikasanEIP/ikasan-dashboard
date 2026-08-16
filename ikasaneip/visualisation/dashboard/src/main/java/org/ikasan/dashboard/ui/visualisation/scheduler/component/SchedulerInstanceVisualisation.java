@@ -302,12 +302,12 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if (event.getContextInstance() != null) {
-            logger.debug("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
-                event.getContextInstance().getName(), event.getContextInstance().getStatus().toString(),
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if (event.getContextInstance() != null) {
+                logger.debug("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
+                    event.getContextInstance().getName(), event.getContextInstance().getStatus().toString(),
                 StatusColours.getInstanceStatusColour(event.getContextInstance().getStatus()));
 
-            if(this.ui != null && this.ui.isAttached()) {
                 this.ui.access(() -> {
                     if (this.designerCanvas != null) {
                         this.designerCanvas.setBackgroundColor(event.getContextInstance().getName() + "_status"
@@ -316,20 +316,24 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                 });
             }
         }
+        else {
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
+            SchedulerJobStateChangeEventBroadcaster.unregister(this);
+        }
     }
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent) {
-        if (schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance() != null
-            && this.contextInstance != null
-            && this.parentContextInstance != null
-            && this.contextInstance.getName().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName())
-            && this.parentContextInstance.getId().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId())) {
-            logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
-                schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
-                StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if (schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance() != null
+                && this.contextInstance != null
+                && this.parentContextInstance != null
+                && this.contextInstance.getName().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName())
+                && this.parentContextInstance.getId().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId())) {
+                logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
+                    schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
+                    StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
 
-            if(this.ui.isAttached()) {
                 this.ui.access(() -> {
                     if (this.designerCanvas != null) {
                         this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
@@ -339,6 +343,10 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                     }
                 });
             }
+        }
+        else {
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
+            SchedulerJobStateChangeEventBroadcaster.unregister(this);
         }
     }
 }

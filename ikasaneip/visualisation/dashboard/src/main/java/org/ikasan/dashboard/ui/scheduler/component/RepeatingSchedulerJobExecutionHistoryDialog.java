@@ -443,15 +443,27 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        if(event.getSchedulerJobInstance().getContextInstanceId().equals(this.contextInstance.getId())) {
-            ui.access(() -> this.logFileGrid.getDataProvider().refreshAll());
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if(event.getSchedulerJobInstance().getContextInstanceId().equals(this.contextInstance.getId())) {
+                ui.access(() -> this.logFileGrid.getDataProvider().refreshAll());
+            }
+        }
+        else {
+            SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
-            ui.access(() -> this.logFileGrid.getDataProvider().refreshAll());
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
+                ui.access(() -> this.logFileGrid.getDataProvider().refreshAll());
+            }
+        }
+        else {
+            SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 
