@@ -11,6 +11,7 @@ import com.vaadin.flow.shared.Registration;
 import org.ikasan.business.stream.metadata.model.BusinessStream;
 import org.ikasan.business.stream.metadata.model.Flow;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
@@ -262,12 +263,15 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
 
     @Override
     public void receiveCacheStateBroadcast(FlowState flowState) {
-        if(ui != null && ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
             ui.access(() ->
             {
                 logger.info("Received flow state: " + flowState);
                 calculateStatus();
             });
+        }
+        else {
+            CacheStateBroadcaster.unregister(this);
         }
     }
 }

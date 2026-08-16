@@ -52,7 +52,7 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
 
     @Override
     public void receiveFlowStateBroadcast(FlowState flowState) {
-        if(this.ui != null && ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
             ui.access(() ->
             {
                 logger.debug("Received flow state: " + flowState);
@@ -65,11 +65,15 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
                 }
             });
         }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 
     @Override
     public void receiveCacheStateBroadcast(FlowState flowState) {
-        if(ui != null && ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
             ui.access(() ->
             {
                 logger.debug("Received flow state: " + flowState);
@@ -81,6 +85,10 @@ public class FlowComboBox extends ComboBox<Flow> implements FlowStateBroadcastLi
                     this.setValue(flow);
                 }
             });
+        }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
         }
     }
 }

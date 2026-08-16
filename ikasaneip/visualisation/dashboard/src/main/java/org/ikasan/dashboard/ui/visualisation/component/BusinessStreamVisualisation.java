@@ -613,13 +613,25 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
     @Override
     public void receiveFlowStateBroadcast(FlowState flowState) {
-        logger.debug("Received flow state: " + flowState);
-        this.drawFlowStatus(ui, flowState);
+        if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
+            logger.debug("Received flow state: " + flowState);
+            this.drawFlowStatus(ui, flowState);
+        }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 
     @Override
     public void receiveCacheStateBroadcast(FlowState flowState) {
-        logger.debug("Received flow state: " + flowState);
-        this.drawFlowStatus(ui, flowState);
+        if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
+            logger.debug("Received flow state: " + flowState);
+            this.drawFlowStatus(ui, flowState);
+        }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 }

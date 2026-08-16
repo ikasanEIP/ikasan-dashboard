@@ -2058,7 +2058,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if(this.ui == null || !this.ui.isAttached()) {
+        if(this.ui == null || !this.ui.isAttached() || ui.isClosing() || ui.getSession() == null) {
             this.unregisterFromBroadcasters();
             return;
         }
@@ -2077,7 +2077,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
 
     @Override
     public void receiveBroadcast(ContextInstance event) {
-        if(this.ui == null || !this.ui.isAttached()) {
+        if(this.ui == null || !this.ui.isAttached() || ui.isClosing() || ui.getSession() == null) {
             this.unregisterFromBroadcasters();
             return;
         }
@@ -2096,7 +2096,7 @@ public class ContextInstanceDashboardWidget extends DashboardWidget
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        if(this.ui == null || !this.ui.isAttached()) {
+        if(this.ui == null || !this.ui.isAttached() || ui.isClosing() || ui.getSession() == null) {
             this.unregisterFromBroadcasters();
             return;
         }

@@ -199,13 +199,16 @@ public class JobInstanceSplitVisualisationDialog extends AbstractCloseableResiza
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if (event.getContextInstance() != null &&
-            event.getContextInstance().getId().equals(this.rootContextInstance.getId())) {
-            if(this.ui != null && this.ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if (event.getContextInstance() != null &&
+                event.getContextInstance().getId().equals(this.rootContextInstance.getId())) {
                 this.ui.access(() -> {
                     this.statusDiv.setStatus(event.getNewStatus());
                 });
             }
+        }
+        else {
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 }

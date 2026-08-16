@@ -360,13 +360,25 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
 
     @Override
     public void receiveFlowStateBroadcast(FlowState flowState) {
-        logger.debug("Received flow state: " + flowState);
-        this.drawFlowStatus(current, flowState);
+        if(this.current != null && this.current.isAttached() && !this.current.isClosing() && this.current.getSession() != null) {
+            logger.debug("Received flow state: " + flowState);
+            this.drawFlowStatus(current, flowState);
+        }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 
     @Override
     public void receiveCacheStateBroadcast(FlowState flowState) {
-        logger.debug("Received flow state: " + flowState);
-        this.drawFlowStatus(current, flowState);
+        if(this.current != null && this.current.isAttached() && !this.current.isClosing() && this.current.getSession() != null) {
+            logger.debug("Received flow state: " + flowState);
+            this.drawFlowStatus(current, flowState);
+        }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 }
