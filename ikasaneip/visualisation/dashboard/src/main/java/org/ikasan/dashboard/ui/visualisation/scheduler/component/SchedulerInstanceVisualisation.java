@@ -317,8 +317,8 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
             }
         }
         else {
-            ContextInstanceStateChangeEventBroadcaster.unregister(this);
-            SchedulerJobStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
+            SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 
@@ -345,8 +345,8 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
             }
         }
         else {
-            ContextInstanceStateChangeEventBroadcaster.unregister(this);
-            SchedulerJobStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.instance().unregister(this);
+            SchedulerJobStateChangeEventBroadcaster.instance().unregister(this);
         }
     }
 }

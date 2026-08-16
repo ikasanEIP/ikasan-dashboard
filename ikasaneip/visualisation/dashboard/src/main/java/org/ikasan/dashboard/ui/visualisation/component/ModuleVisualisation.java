@@ -365,8 +365,8 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
             this.drawFlowStatus(current, flowState);
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 
@@ -377,8 +377,8 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
             this.drawFlowStatus(current, flowState);
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 }

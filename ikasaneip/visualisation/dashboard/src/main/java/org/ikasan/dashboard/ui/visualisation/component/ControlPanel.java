@@ -409,8 +409,8 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
             setFlowState(current, flowState);
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 
@@ -421,8 +421,8 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
             setFlowState(current, flowState);
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 }

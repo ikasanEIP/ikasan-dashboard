@@ -366,8 +366,8 @@ public class StatusWidget extends DashboardWidget implements FlowStateBroadcastL
             logger.debug("Flow state update received!" + flowState);
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 
@@ -378,8 +378,8 @@ public class StatusWidget extends DashboardWidget implements FlowStateBroadcastL
             logger.debug("Flow state update received!" + flowState);
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 }

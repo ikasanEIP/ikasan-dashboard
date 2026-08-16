@@ -618,8 +618,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
             this.drawFlowStatus(ui, flowState);
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 
@@ -630,8 +630,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
             this.drawFlowStatus(ui, flowState);
         }
         else {
-            FlowStateBroadcaster.unregister(this);
-            CacheStateBroadcaster.unregister(this);
+            FlowStateBroadcaster.instance().unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 }

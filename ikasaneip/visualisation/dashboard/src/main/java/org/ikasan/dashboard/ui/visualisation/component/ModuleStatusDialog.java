@@ -264,7 +264,7 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog impleme
                 });
         }
         else {
-            CacheStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 }

@@ -257,7 +257,7 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
             });
         }
         else {
-            CacheStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.instance().unregister(this);
         }
     }
 }
