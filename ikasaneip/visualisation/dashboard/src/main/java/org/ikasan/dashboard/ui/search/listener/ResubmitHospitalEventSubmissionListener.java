@@ -17,13 +17,13 @@ import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.VaadinThreadFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ResubmissionService;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,10 +46,10 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
     private SearchResults searchResults;
 
     public ResubmitHospitalEventSubmissionListener(HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
-        , ModuleMetaDataService moduleMetadataService, SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService
+        , ModuleMetaDataService moduleMetadataService, ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService
         , String actionMessage, SolrSearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes
-        , HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication, DateFormatter dateFormatter, SearchResults searchResults) {
-        super(actionMessage, solrGeneralService, moduleMetadataService, resubmissionRestService
+        , HashMap<String, IkasanESBDocument> selectionItems, IkasanAuthentication ikasanAuthentication, DateFormatter dateFormatter, SearchResults searchResults) {
+        super(actionMessage, esbSearchService, moduleMetadataService, resubmissionRestService
             , searchResultsGrid, selectionBoxes, selectionItems, ikasanAuthentication, dateFormatter);
         this.hospitalAuditService = hospitalAuditService;
         if (this.hospitalAuditService == null) {
@@ -98,12 +98,12 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                         AtomicInteger resubmitCount = new AtomicInteger(0);
 
                         if (!selected) {
-                            List<IkasanSolrDocument> resubmissionEvents = this.selectionItems.values()
+                            List<IkasanESBDocument> resubmissionEvents = this.selectionItems.values()
                                 .stream()
                                 .filter(document -> this.shouldActionEvent(document))
                                 .collect(Collectors.toList());
 
-                            resubmissionEvents.sort(Comparator.comparingLong(IkasanSolrDocument::getTimestamp));
+                            resubmissionEvents.sort(Comparator.comparingLong(IkasanESBDocument::getTimestamp));
 
                             resubmitCount.set(resubmissionEvents.size());
 
@@ -121,11 +121,11 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                                     break;
                                 }
 
-                                List<IkasanSolrDocument> docs = searchResultsGrid.getDataProvider()
+                                List<IkasanESBDocument> docs = searchResultsGrid.getDataProvider()
                                     .fetch(new Query<>(0, 100, List.of(new QuerySortOrder("timestamp", SortDirection.ASCENDING)), null, null))
                                     .collect(Collectors.toList());
 
-                                List<IkasanSolrDocument> resubmissionEvents = docs
+                                List<IkasanESBDocument> resubmissionEvents = docs
                                     .stream()
                                     .filter(document -> this.shouldActionEvent(document))
                                     .collect(Collectors.toList());

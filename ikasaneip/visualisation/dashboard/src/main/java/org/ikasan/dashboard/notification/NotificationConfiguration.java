@@ -15,7 +15,7 @@ import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.configuration.PlatformConfigurationService;
 import org.ikasan.spec.metadata.service.BusinessStreamMetaDataService;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
@@ -95,14 +95,14 @@ public class NotificationConfiguration {
 
     @Bean
     public BusinessStreamNotificationService businessStreamNotificationService(BusinessStreamMetaDataService businessStreamMetaDataService
-        , SolrGeneralService solrGeneralService) {
+        , ESBSearchService solrGeneralService) {
             return new BusinessStreamNotificationService(businessStreamMetaDataService,
             solrGeneralService);
     }
 
     @Bean
-    public SchedulerNotificationService schedulerNotificationService(SolrGeneralService solrGeneralService) {
-        return new SchedulerNotificationService(solrGeneralService);
+    public SchedulerNotificationService schedulerNotificationService(ESBSearchService esbSearchService) {
+        return new SchedulerNotificationService(esbSearchService);
     }
 
     @Bean

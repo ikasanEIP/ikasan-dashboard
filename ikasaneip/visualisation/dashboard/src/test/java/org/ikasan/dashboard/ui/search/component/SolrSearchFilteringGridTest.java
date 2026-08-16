@@ -22,7 +22,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static com.github.mvysny.kaributesting.v10.ButtonKt._click;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
@@ -50,12 +49,12 @@ public class SolrSearchFilteringGridTest extends UITest {
 
 
     public void setup_expectations() {
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(50));
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(1));
@@ -133,7 +132,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.user.getPrincipals()).thenReturn(principals);
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING)),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING)),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -172,7 +171,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.user.getPrincipals()).thenReturn(principals);
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING)),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING)),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -215,7 +214,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -246,7 +245,7 @@ public class SolrSearchFilteringGridTest extends UITest {
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -279,7 +278,7 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -312,7 +311,7 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -345,7 +344,7 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -385,7 +384,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -416,7 +415,7 @@ public class SolrSearchFilteringGridTest extends UITest {
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -449,7 +448,7 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -482,7 +481,7 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -515,7 +514,7 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -555,7 +554,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -587,7 +586,7 @@ public class SolrSearchFilteringGridTest extends UITest {
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -621,7 +620,7 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -655,7 +654,7 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -689,7 +688,7 @@ public class SolrSearchFilteringGridTest extends UITest {
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -730,7 +729,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -763,7 +762,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -798,7 +797,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -833,7 +832,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -868,7 +867,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
@@ -909,7 +908,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -941,7 +940,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -975,7 +974,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1009,7 +1008,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1043,7 +1042,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1083,7 +1082,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1115,7 +1114,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1149,7 +1148,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1183,7 +1182,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1217,7 +1216,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1257,7 +1256,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1290,7 +1289,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1325,7 +1324,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1360,7 +1359,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1395,7 +1394,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1436,7 +1435,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1469,7 +1468,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1504,7 +1503,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1539,7 +1538,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1574,7 +1573,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
@@ -1615,7 +1614,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1647,7 +1646,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1681,7 +1680,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1715,7 +1714,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1749,7 +1748,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1789,7 +1788,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1821,7 +1820,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1855,7 +1854,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1889,7 +1888,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1923,7 +1922,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -1963,7 +1962,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -1996,7 +1995,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -2031,7 +2030,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -2066,7 +2065,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -2101,7 +2100,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -2142,7 +2141,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -2175,7 +2174,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -2210,7 +2209,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -2245,7 +2244,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -2280,7 +2279,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
@@ -2321,7 +2320,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2353,7 +2352,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2387,7 +2386,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2421,7 +2420,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2455,7 +2454,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2495,7 +2494,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2527,7 +2526,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2561,7 +2560,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2595,7 +2594,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2629,7 +2628,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -2669,7 +2668,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -2702,7 +2701,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -2737,7 +2736,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -2772,7 +2771,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -2807,7 +2806,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -2848,7 +2847,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -2881,7 +2880,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -2916,7 +2915,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -2951,7 +2950,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -2987,7 +2986,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
@@ -3028,7 +3027,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3061,7 +3060,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3102,7 +3101,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3143,7 +3142,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3184,7 +3183,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3226,7 +3225,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3259,7 +3258,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3300,7 +3299,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3341,7 +3340,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3382,7 +3381,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
             Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -3423,7 +3422,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")), Mockito.anyBoolean(),
@@ -3457,7 +3456,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")), Mockito.anyBoolean(),
@@ -3499,7 +3498,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")), Mockito.anyBoolean(),
@@ -3533,7 +3532,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")), Mockito.anyBoolean(),
@@ -3575,7 +3574,7 @@ public class SolrSearchFilteringGridTest extends UITest {
         Mockito.when(this.principal.getRoles()).thenReturn(roles);
         Mockito.when(this.role.getRoleModules()).thenReturn(roleModules);
         Mockito.when(this.roleModule.getModuleName()).thenReturn("testModuleName");
-        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
+        Mockito.when(this.esbSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("testModuleName")),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")), Mockito.anyBoolean(),
@@ -3605,7 +3604,7 @@ public class SolrSearchFilteringGridTest extends UITest {
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")), Mockito.anyBoolean(),
@@ -3635,7 +3634,7 @@ public class SolrSearchFilteringGridTest extends UITest {
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             argThat(strings -> strings.size() == 1 && strings.contains(SearchConstants.NONSENSE_STRING)), Mockito.anyBoolean(),
@@ -3665,13 +3664,13 @@ public class SolrSearchFilteringGridTest extends UITest {
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             Mockito.anyList(), Mockito.anyBoolean(),
             Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getSolrResults(10));
-        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+        Mockito.when(this.esbSearchService.search(Mockito.isNull(),
             Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
             Mockito.anyList(), Mockito.anyBoolean(),

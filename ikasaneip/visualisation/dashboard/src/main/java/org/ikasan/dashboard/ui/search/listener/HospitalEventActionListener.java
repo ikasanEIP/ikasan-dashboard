@@ -12,13 +12,13 @@ import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ResubmissionService;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -33,23 +33,23 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
     private Logger logger = LoggerFactory.getLogger(HospitalEventActionListener.class);
 
     private String translatedEventActionMessage;
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
     private ResubmissionService resubmissionRestService;
     private IkasanAuthentication ikasanAuthentication;
     private DateFormatter dateFormatter;
 
-    public HospitalEventActionListener(String translatedEventActionMessage, SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
+    public HospitalEventActionListener(String translatedEventActionMessage, ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService,
                                        ModuleMetaDataService moduleMetadataService, ResubmissionService resubmissionRestService,
                                        SolrSearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes,
-                                       HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication,
+                                       HashMap<String, IkasanESBDocument> selectionItems, IkasanAuthentication ikasanAuthentication,
                                        DateFormatter dateFormatter) {
         super(moduleMetadataService, searchResultsGrid, selectionBoxes, selectionItems);
         this.translatedEventActionMessage = translatedEventActionMessage;
         if (this.translatedEventActionMessage == null) {
             throw new IllegalArgumentException("translatedEventActionMessage cannot be null!");
         }
-        this.solrGeneralService = solrGeneralService;
-        if (this.solrGeneralService == null) {
+        this.esbSearchService = esbSearchService;
+        if (this.esbSearchService == null) {
             throw new IllegalArgumentException("solrGeneralService cannot be null!");
         }
         this.resubmissionRestService = resubmissionRestService;
@@ -66,13 +66,13 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
         }
     }
 
-    protected List<ExclusionEventAction> actionHospitalEvents(List<IkasanSolrDocument> exclusionEvents, ExclusionEventAction exclusionEventAction, ProgressIndicatorDialog progressIndicatorDialog
+    protected List<ExclusionEventAction> actionHospitalEvents(List<IkasanESBDocument> exclusionEvents, ExclusionEventAction exclusionEventAction, ProgressIndicatorDialog progressIndicatorDialog
         , String action, String username, UI current, Authentication authentication) throws JsonProcessingException {
         ExclusionEventAction eventAction;
         ObjectMapper mapper = new ObjectMapper();
         List<ExclusionEventAction> exclusionEventActions = new ArrayList<>();
 
-        for (IkasanSolrDocument document : exclusionEvents) {
+        for (IkasanESBDocument document : exclusionEvents) {
 
             if (progressIndicatorDialog.isCancelled()) {
                 break;
@@ -122,8 +122,8 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
      * @param user
      * @return
      */
-    protected ExclusionEventAction getExclusionEventAction(String comment, String action, IkasanSolrDocument document, String user) {
-        IkasanSolrDocument errorOccurrence = this.solrGeneralService.findByErrorUri("error", this.getErrorUri(document.getId()));
+    protected ExclusionEventAction getExclusionEventAction(String comment, String action, IkasanESBDocument document, String user) {
+        IkasanESBDocument errorOccurrence = this.esbSearchService.findByErrorUri("error", this.getErrorUri(document.getId()));
         ExclusionEventAction exclusionEventAction = new ExclusionEventActionImpl();
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);

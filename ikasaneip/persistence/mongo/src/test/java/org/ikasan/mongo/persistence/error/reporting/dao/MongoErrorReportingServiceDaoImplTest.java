@@ -2,10 +2,11 @@ package org.ikasan.mongo.persistence.error.reporting.dao;
 
 import org.ikasan.mongo.persistence.error.reporting.model.MongoErrorOccurrence;
 import org.ikasan.mongo.persistence.error.reporting.repository.MongoErrorOccurrenceRepository;
-import org.ikasan.mongo.persistence.scheduled.MongoPersistenceAutoConfiguration;
-import org.ikasan.mongo.persistence.scheduled.context.MongoPersistenceTestAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
 import org.ikasan.spec.error.reporting.ErrorOccurrence;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,6 +61,13 @@ public class MongoErrorReportingServiceDaoImplTest {
     @After
     public void tearDown() {
         repository.deleteAll();
+    }
+
+    @AfterClass
+    public static void stopContainer() {
+        if (mongoDBContainer != null) {
+            mongoDBContainer.stop();
+        }
     }
 
     @Test

@@ -1,8 +1,10 @@
 package org.ikasan.dashboard.backup;
 
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.scheduler.DashboardJob;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -18,7 +20,7 @@ public class SolrIndexBackupJob implements DashboardJob {
 
     private static Logger logger = LoggerFactory.getLogger(SolrIndexBackupJob.class);
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private SolrGeneralService<IkasanESBDocument, IkasanDocumentSearchResults> solrGeneralService;
     private String backupLocationPath;
     private int numberOfBackupsToKeep;
     private String cronExpression;
@@ -115,7 +117,7 @@ public class SolrIndexBackupJob implements DashboardJob {
      */
     private boolean checkIndexValidity() {
         try {
-            IkasanSolrDocumentSearchResults results = this.solrGeneralService
+            IkasanDocumentSearchResults results = ((ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults>)this.solrGeneralService)
                 .search("*", 0, System.currentTimeMillis(), 0, 1
                 , List.of(), false, null, null);
 

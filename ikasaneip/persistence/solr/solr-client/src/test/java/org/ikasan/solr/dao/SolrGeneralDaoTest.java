@@ -16,6 +16,7 @@ import org.hamcrest.Description;
 import org.ikasan.job.orchestration.model.event.JobLockCacheEventImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.imposters.ByteBuddyClassImposteriser;
@@ -412,7 +413,7 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
             server.add("ikasan", doc);
             server.commit();
 
-            List<IkasanSolrDocument> results = dao.search(null, null, "test", 0
+            List<IkasanESBDocument> results = dao.search(null, null, "test", 0
                 , System.currentTimeMillis() + 100000000l, 100, false, "payload"
                 ,SolrGeneralDaoImpl.ASCENDING ).getResultList();
 
@@ -455,7 +456,7 @@ public class SolrGeneralDaoTest extends SolrTestCaseJ4
             server.add("ikasan", doc);
             server.commit();
 
-            List<IkasanSolrDocument> results = dao.search(null, null, "test", 0
+            List<IkasanESBDocument> results = dao.search(null, null, "test", 0
                 , System.currentTimeMillis() + 100000000l, 100, false, "payload"
                 ,SolrGeneralDaoImpl.DESCENDING ).getResultList();
 

@@ -58,10 +58,10 @@ public class HospitalViewTest extends UITest {
         document.setEvent("event payload");
         document.setEventId("eventId");
 
-        Mockito.when(this.solrSearchService.findById("exclusion", "12345"))
+        Mockito.when(this.esbSearchService.findById("exclusion", "12345"))
             .thenReturn(document);
 
-        Mockito.when(this.solrSearchService.findByErrorUri("error", "id"))
+        Mockito.when(this.esbSearchService.findByErrorUri("error", "id"))
             .thenReturn(document);
 
         UI.getCurrent().navigate("exclusion/12345");
@@ -103,10 +103,10 @@ public class HospitalViewTest extends UITest {
         document.setEvent("event payload");
         document.setEventId("eventId");
 
-        Mockito.when(this.solrSearchService.findById("exclusion", "12345"))
+        Mockito.when(this.esbSearchService.findById("exclusion", "12345"))
             .thenReturn(document);
 
-        Mockito.when(this.solrSearchService.findByErrorUri("error", "id"))
+        Mockito.when(this.esbSearchService.findByErrorUri("error", "id"))
             .thenReturn(document);
 
         Mockito.when(this.moduleMetadataService.findById(Mockito.anyString()))
@@ -159,10 +159,10 @@ public class HospitalViewTest extends UITest {
         document.setEvent("event payload");
         document.setEventId("eventId");
 
-        Mockito.when(this.solrSearchService.findById("exclusion", "12345"))
+        Mockito.when(this.esbSearchService.findById("exclusion", "12345"))
             .thenReturn(document);
 
-        Mockito.when(this.solrSearchService.findByErrorUri("error", "id"))
+        Mockito.when(this.esbSearchService.findByErrorUri("error", "id"))
             .thenReturn(document);
 
         Mockito.when(this.moduleMetadataService.findById(Mockito.anyString()))

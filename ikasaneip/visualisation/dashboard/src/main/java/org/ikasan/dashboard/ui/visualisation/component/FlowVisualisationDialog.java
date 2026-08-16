@@ -28,12 +28,14 @@ import org.ikasan.spec.component.endpoint.Producer;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 import org.ikasan.spec.metadata.model.ConfigurationParameterMetaData;
-import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
+import org.ikasan.spec.metadata.service.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +46,7 @@ import java.util.stream.Collectors;
 public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(FlowVisualisationDialog.class);
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     private ModuleControlService moduleControlRestService;
     private ConfigurationService configurationRestService;
@@ -89,8 +91,8 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
     public FlowVisualisationDialog(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService
         , TriggerService triggerRestService, ConfigurationMetaDataService configurationMetadataService
-        , ModuleMetaData moduleMetaData, Flow flow, SolrGeneralService<IkasanSolrDocument
-        , IkasanSolrDocumentSearchResults> solrSearchService, SearchFoundStatus searchFoundStatus
+        , ModuleMetaData moduleMetaData, Flow flow, ESBSearchService<IkasanESBDocument
+        , IkasanDocumentSearchResults> esbSearchService, SearchFoundStatus searchFoundStatus
         , HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService
         , ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService
@@ -113,8 +115,8 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
         if(this.configurationMetadataService == null){
             throw new IllegalArgumentException("configurationMetadataService cannot be null!");
         }
-        this.solrSearchService = solrSearchService;
-        if(this.solrSearchService == null){
+        this.esbSearchService = esbSearchService;
+        if(this.esbSearchService == null){
             throw new IllegalArgumentException("solrSearchService cannot be null!");
         }
         this.searchFoundStatus = searchFoundStatus;
@@ -302,7 +304,7 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
      */
     protected void search(String type)
     {
-        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
+        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.esbSearchService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, this.dateFormatter, this.maxDownloadBytes);
         searchResultsDialog.search(this.searchFoundStatus.getStartTime(), this.searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm()
             , type, false, flow.getModuleName(), flow.getFlowName());

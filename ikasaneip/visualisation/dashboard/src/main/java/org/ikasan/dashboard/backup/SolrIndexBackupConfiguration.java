@@ -5,6 +5,7 @@ import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,7 @@ public class SolrIndexBackupConfiguration {
 
     @Bean
     @ConditionalOnProperty(name = "solr.backup.enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnBean(name = "solrSearchService")
     public SolrIndexBackupSchedulerService solrIndexBackupSchedulerService(SolrGeneralService solrGeneralService) {
         return new SolrIndexBackupSchedulerService(SchedulerFactory.getInstance().getScheduler()
             , CachingScheduledJobFactory.getInstance(), solrGeneralService, this.backupLocationPath
