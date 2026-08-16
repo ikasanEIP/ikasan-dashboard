@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.visualisation.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
@@ -15,13 +14,11 @@ import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.ui.general.component.FlowControlManagementDialog;
-import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.visualisation.layout.IkasanFlowLayoutManager;
 import org.ikasan.dashboard.ui.visualisation.model.flow.*;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.builder.ImageBuilder;
-import org.ikasan.designer.builder.RectangleBuilder;
 import org.ikasan.designer.builder.UserDataBuilder;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
@@ -34,8 +31,6 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.module.client.TriggerService;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.trigger.TriggerJobType;
-import org.ikasan.spec.trigger.TriggerRelationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class ModuleVisualisation extends VerticalLayout implements BeforeEnterObserver
     , FlowStateBroadcastListener, CacheStateBroadcastListener, CanvasItemDoubleClickEventListener

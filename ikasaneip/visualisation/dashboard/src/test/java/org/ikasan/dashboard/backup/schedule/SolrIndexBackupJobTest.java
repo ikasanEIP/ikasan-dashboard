@@ -2,7 +2,8 @@ package org.ikasan.dashboard.backup.schedule;
 
 import org.ikasan.dashboard.backup.SolrIndexBackupJob;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.imposters.ByteBuddyClassImposteriser;
@@ -24,11 +25,11 @@ public class SolrIndexBackupJobTest {
         }
     };
 
-    private SolrGeneralService solrGeneralService = mockery.mock(SolrGeneralService.class);
+    private SolrGeneralServiceImpl solrGeneralService = mockery.mock(SolrGeneralServiceImpl.class);
     private JobExecutionContext jobExecutionContext = mockery.mock(JobExecutionContext.class);
     private ApplicationContext applicationContext = mockery.mock(ApplicationContext.class);
-    private IkasanSolrDocumentSearchResults ikasanSolrDocumentSearchResults
-        = mockery.mock(IkasanSolrDocumentSearchResults.class);
+    private IkasanDocumentSearchResults ikasanSolrDocumentSearchResults
+        = mockery.mock(IkasanDocumentSearchResults.class);
 
     @Test(expected = IllegalArgumentException.class)
     public void test_constructor_null_solr_general_service() {

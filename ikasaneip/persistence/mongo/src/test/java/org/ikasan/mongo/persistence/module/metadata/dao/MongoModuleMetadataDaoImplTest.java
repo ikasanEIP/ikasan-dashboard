@@ -3,13 +3,14 @@ package org.ikasan.mongo.persistence.module.metadata.dao;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.mongo.persistence.module.metadata.model.*;
 import org.ikasan.mongo.persistence.module.metadata.repository.MongoModuleMetadataRepository;
-import org.ikasan.mongo.persistence.scheduled.MongoPersistenceAutoConfiguration;
-import org.ikasan.mongo.persistence.scheduled.context.MongoPersistenceTestAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.dao.ModuleMetadataDao;
 import org.ikasan.spec.metadata.model.*;
 import org.ikasan.spec.module.ModuleType;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -97,6 +98,13 @@ public class MongoModuleMetadataDaoImplTest {
 
         String jsonContent = loadDataFile(fileName);
         return objectMapper.readValue(jsonContent, MongoModuleMetaDataImpl.class);
+    }
+
+    @AfterClass
+    public static void stopContainer() {
+        if (mongoDBContainer != null) {
+            mongoDBContainer.stop();
+        }
     }
 
     @Test

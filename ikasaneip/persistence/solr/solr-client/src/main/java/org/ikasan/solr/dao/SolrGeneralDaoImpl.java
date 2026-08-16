@@ -10,6 +10,9 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
+import org.ikasan.spec.persistence.dao.EntityDeleteDao;
+import org.ikasan.spec.search.dao.ESBSearchDao;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -23,7 +26,10 @@ import java.util.Set;
 /**
  * Created by Ikasan Development Team on 04/08/2017.
  */
-public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implements SolrGeneralDao<IkasanSolrDocumentSearchResults, IkasanSolrDocument>
+public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implements
+    SolrGeneralDao<IkasanSolrDocumentSearchResults, IkasanSolrDocument>,
+    ESBSearchDao<IkasanSolrDocumentSearchResults, IkasanSolrDocument>,
+    EntityDeleteDao
 {
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger(SolrGeneralDaoImpl.class);
@@ -133,7 +139,10 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
 
             List<IkasanSolrDocument> beans = rsp.getBeans(IkasanSolrDocument.class);
 
-            return new IkasanSolrDocumentSearchResults(beans, rsp.getResults().getNumFound(), rsp.getQTime());
+            return new IkasanSolrDocumentSearchResults(beans.stream()
+                .map(doc -> (IkasanESBDocument)doc)
+                .toList()
+                , rsp.getResults().getNumFound(), rsp.getQTime());
         }
         catch (Exception e)
         {

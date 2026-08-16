@@ -21,6 +21,9 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.module.client.TriggerService;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +45,7 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
 
     private GraphVisualisation graphVisualisation;
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
     private ModuleControlService moduleControlRestService;
     private ModuleMetaDataService moduleMetadataService;
     private ConfigurationService configurationRestService;
@@ -70,7 +73,7 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
 
     private DateFormatter dateFormatter;
 
-    public GraphVisualisationDeepLinkView(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService, ModuleControlService moduleControlRestService,
+    public GraphVisualisationDeepLinkView(ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService, ModuleControlService moduleControlRestService,
                                           @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService,
                                           @Qualifier("configurationMetadataService") ConfigurationMetaDataService configurationMetadataService,
                                           BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
@@ -84,7 +87,7 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
                                           TriggerService triggerRestService,
                                           DateFormatter dateFormatter)
     {
-        this.solrSearchService = solrSearchService;
+        this.esbSearchService = esbSearchService;
         this.moduleControlRestService = moduleControlRestService;
         this.moduleMetadataService = moduleMetadataService;
         this.configurationRestService = configurationRestService;
@@ -102,9 +105,9 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
     }
 
     private void init() {
-        this.graphVisualisation = new GraphVisualisation(solrSearchService,
+        this.graphVisualisation = new GraphVisualisation(esbSearchService,
             moduleControlRestService, moduleMetadataService, configurationRestService,
-            configurationMetadataService, businessStreamMetaDataService, solrGeneralService,
+            configurationMetadataService, businessStreamMetaDataService,
             hospitalAuditService, resubmissionRestService, replayRestService, replayAuditService,
             metaDataApplicationRestService, moduleMetadataBatchInsert, triggerRestService, dynamicImagePath,
             this.dateFormatter, this.maxDownloadBytes);

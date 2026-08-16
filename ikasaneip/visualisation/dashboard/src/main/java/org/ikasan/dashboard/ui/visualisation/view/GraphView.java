@@ -24,7 +24,9 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.module.client.TriggerService;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +44,6 @@ import java.util.List;
 public class GraphView extends VerticalLayout implements BeforeEnterObserver
 {
     Logger logger = LoggerFactory.getLogger(GraphView.class);
-
-    @Autowired
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
 
     @Autowired
     private ModuleControlService moduleControlRestService;
@@ -65,7 +64,7 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
 
     @Autowired
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     @Autowired
     private HospitalAuditService hospitalAuditService;
@@ -118,9 +117,9 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
      * added to the current layout, and the initialised flag is set to true to indicate that the setup is complete.
      */
     private void init() {
-        this.graphVisualisation = new GraphVisualisation(this.solrSearchService,
+        this.graphVisualisation = new GraphVisualisation(this.esbSearchService,
             this.moduleControlRestService, this.moduleMetadataService, this.configurationRestService,
-            this.configurationMetadataService, this.businessStreamMetaDataService, this.solrGeneralService,
+            this.configurationMetadataService, this.businessStreamMetaDataService,
             this.hospitalAuditService, this.resubmissionRestService, this.replayRestService, this.replayAuditService,
             this.metaDataApplicationRestService, this.moduleMetadataBatchInsert, this.triggerRestService, this.dynamicImagePath,
             this.dateFormatter, this.maxDownloadBytes);

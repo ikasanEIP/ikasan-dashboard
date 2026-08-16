@@ -16,11 +16,11 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.solr.model.IkasanSolrDocument;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 
 import java.io.ByteArrayInputStream;
 
-public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
+public class WiretapDialog extends AbstractEntityViewDialog<IkasanESBDocument>
 {
     private TextField moduleNameTf;
     private TextField componentNameTf;
@@ -32,7 +32,7 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
     private DateFormatter dateFormatter;
 
-    private IkasanSolrDocument wiretapEvent;
+    private IkasanESBDocument wiretapEvent;
 
     public WiretapDialog(DateFormatter dateFormatter)
     {
@@ -104,7 +104,7 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     }
 
     @Override
-    public void populate(IkasanSolrDocument wiretapEvent)
+    public void populate(IkasanESBDocument wiretapEvent)
     {
         this.wiretapEvent = wiretapEvent;
         super.title.setText("Wiretap " + wiretapEvent.getEventId());

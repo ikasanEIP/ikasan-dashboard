@@ -10,12 +10,12 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,10 +25,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-//@HtmlImport("frontend://styles/shared-styles.html")
-//@HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
-//@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-//@Theme(themeClass = Material.class)
 @PreserveOnRefresh
 @Route(value = "eventLifeId")
 @UIScope
@@ -43,11 +39,11 @@ public class EventLifeIdDeepLinkView extends VerticalLayout implements HasUrlPar
     private SearchResults searchResults;
 
     public EventLifeIdDeepLinkView(@Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetadataService,
-                                   SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
+                                   ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService,
                                    @Qualifier("hospitalEntityService") HospitalAuditService hospitalAuditService, ResubmissionRestServiceImpl resubmissionRestService,
                                    ReplayRestServiceImpl replayRestService, @Qualifier("replayAuditService") BatchInsert replayAuditService, DateFormatter dateFormatter)
     {
-        this.searchResults = new SearchResults(solrGeneralService, hospitalAuditService, resubmissionRestService
+        this.searchResults = new SearchResults(esbSearchService, hospitalAuditService, resubmissionRestService
             , replayRestService, moduleMetadataService, replayAuditService, dateFormatter, this.maxDownloadBytes);
         this.searchResults.setSizeFull();
 

@@ -14,19 +14,20 @@ import org.ikasan.dashboard.ui.util.DashboardContextNavigator;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.module.client.ResubmissionService;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.ikasan.spec.security.model.User;
 import org.ikasan.spec.security.service.UserService;
-import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -45,7 +46,8 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
     Logger logger = LoggerFactory.getLogger(SearchView.class);
 
     @Autowired
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    @Qualifier("esbSearchService")
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
 
     @Autowired
     private HospitalAuditService hospitalAuditService;
@@ -98,7 +100,7 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
      * Create the results grid layout.
      */
     protected void createSearchResults() {
-        this.searchResults = new SearchResults(solrGeneralService, hospitalAuditService, resubmissionRestService, replayRestService,
+        this.searchResults = new SearchResults(esbSearchService, hospitalAuditService, resubmissionRestService, replayRestService,
             moduleMetadataService, replayAuditService, this.dateFormatter, this.maxDownloadBytes);
         this.searchResults.setSizeFull();
     }

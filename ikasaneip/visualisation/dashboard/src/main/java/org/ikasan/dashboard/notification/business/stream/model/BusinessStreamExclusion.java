@@ -1,21 +1,21 @@
 package org.ikasan.dashboard.notification.business.stream.model;
 
-import org.ikasan.solr.model.IkasanSolrDocument;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 
 public class BusinessStreamExclusion {
-    private IkasanSolrDocument exclusionEvent;
-    private IkasanSolrDocument errorOccurrence;
+    private IkasanESBDocument exclusionEvent;
+    private IkasanESBDocument errorOccurrence;
 
-    public BusinessStreamExclusion(IkasanSolrDocument exclusionEvent, IkasanSolrDocument errorOccurrence) {
+    public BusinessStreamExclusion(IkasanESBDocument exclusionEvent, IkasanESBDocument errorOccurrence) {
         this.exclusionEvent = exclusionEvent;
         this.errorOccurrence = errorOccurrence;
     }
 
-    public IkasanSolrDocument getExclusionEvent() {
+    public IkasanESBDocument getExclusionEvent() {
         return exclusionEvent;
     }
 
-    public IkasanSolrDocument getErrorOccurrence() {
+    public IkasanESBDocument getErrorOccurrence() {
         return errorOccurrence;
     }
 }

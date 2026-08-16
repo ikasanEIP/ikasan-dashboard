@@ -1,8 +1,8 @@
 package org.ikasan.mongo.persistence.scheduled.context.dao;
 
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
-import org.ikasan.mongo.persistence.scheduled.MongoPersistenceAutoConfiguration;
-import org.ikasan.mongo.persistence.scheduled.context.MongoPersistenceTestAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
 import org.ikasan.mongo.persistence.scheduled.context.model.MongoScheduledContextRecordImpl;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -10,6 +10,7 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,6 +68,13 @@ public class MongoScheduledContextDaoImplTest {
         record.setContext(createContextTemplate(contextName, disabled));
         record.setModifiedBy("test-user");
         return record;
+    }
+
+    @AfterClass
+    public static void stopContainer() {
+        if (mongoDBContainer != null) {
+            mongoDBContainer.stop();
+        }
     }
 
     @Test

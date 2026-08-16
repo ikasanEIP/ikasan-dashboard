@@ -47,8 +47,6 @@ import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.model.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.model.ModuleMetaData;
@@ -60,7 +58,9 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.module.client.TriggerService;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.solr.SolrGeneralService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
@@ -81,14 +81,13 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
+    private ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService;
     private ModuleControlService moduleControlRestService;
     private ModuleMetaDataService moduleMetadataService;
     private ConfigurationService configurationRestService;
     private TriggerService triggerRestService;
     private ConfigurationMetaDataService configurationMetadataService;
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
     private HospitalAuditService hospitalAuditService;
     private ResubmissionRestServiceImpl resubmissionRestService;
     private ReplayRestServiceImpl replayRestService;
@@ -122,20 +121,19 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
     /**
      * Constructor
      */
-    public GraphVisualisation(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService,  ModuleControlService moduleControlRestService,
+    public GraphVisualisation(ESBSearchService<IkasanESBDocument, IkasanDocumentSearchResults> esbSearchService, ModuleControlService moduleControlRestService,
                               ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService, ConfigurationMetaDataService configurationMetadataService,
                               BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
-                              SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService, HospitalAuditService hospitalAuditService,
+                              HospitalAuditService hospitalAuditService,
                               ResubmissionRestServiceImpl resubmissionRestService, ReplayRestServiceImpl replayRestService, BatchInsert replayAuditService, MetaDataService metaDataApplicationRestService,
                               BatchInsert<ModuleMetaData> moduleMetadataBatchInsert, TriggerService triggerRestService, String dynamicImagePath, DateFormatter dateFormatter, int maxDownloadBytes)
     {
-        this.solrSearchService = solrSearchService;
+        this.esbSearchService = esbSearchService;
         this.moduleControlRestService = moduleControlRestService;
         this.moduleMetadataService = moduleMetadataService;
         this.configurationRestService = configurationRestService;
         this.configurationMetadataService = configurationMetadataService;
         this.businessStreamMetaDataService = businessStreamMetaDataService;
-        this.solrGeneralService = solrGeneralService;
         this.hospitalAuditService = hospitalAuditService;
         this.resubmissionRestService = resubmissionRestService;
         this.replayRestService = replayRestService;
@@ -159,7 +157,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
 
     private void init()
     {
-        this.searchResults = new SearchResults(this.solrGeneralService,
+        this.searchResults = new SearchResults(this.esbSearchService,
             this.hospitalAuditService, this.resubmissionRestService, this.replayRestService,
             this.moduleMetadataService, this.replayAuditService, this.dateFormatter, this.maxDownloadBytes);
         this.searchResults.setHeight("50vh");
@@ -478,7 +476,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             this.remove(moduleVisualisation);
         }
 
-        businessStreamVisualisation = new GraphViewBusinessStreamVisualisation(this.solrSearchService,
+        businessStreamVisualisation = new GraphViewBusinessStreamVisualisation(this.esbSearchService,
             this.moduleControlRestService, this.moduleMetadataService, this.configurationRestService
             , this.triggerRestService, this.configurationMetadataService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.replayAuditService, this.metaDataApplicationRestService,

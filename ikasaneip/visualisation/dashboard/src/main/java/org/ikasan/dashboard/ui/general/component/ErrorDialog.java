@@ -18,11 +18,12 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.solr.model.IkasanSolrDocument;
+import org.ikasan.spec.search.model.IkasanESBDocument;
 
 import java.io.ByteArrayInputStream;
 import java.util.Optional;
 
-public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
+public class ErrorDialog extends AbstractEntityViewDialog<IkasanESBDocument>
 {
     private TextField moduleNameTf;
     private TextField componentNameTf;
@@ -38,7 +39,7 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
     private DateFormatter dateFormatter;
 
-    private IkasanSolrDocument ikasanSolrDocument;
+    private IkasanESBDocument ikasanESBDocument;
 
     public ErrorDialog(DateFormatter dateFormatter)
     {
@@ -134,7 +135,7 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
         Button newWindowButton = new TableButton(VaadinIcon.EXTERNAL_LINK.create());
         newWindowButton.addClickListener(buttonClickEvent -> {
-            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Error " + ikasanSolrDocument.getErrorUri());
+            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Error " + ikasanESBDocument.getErrorUri());
             if(tabs.getSelectedTab().equals(errorTab)) {
                 entityContentsViewDialog.open(this.errorDetails);
             }
@@ -159,9 +160,9 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     }
 
     @Override
-    public void populate(IkasanSolrDocument errorEvent)
+    public void populate(IkasanESBDocument errorEvent)
     {
-        this.ikasanSolrDocument = errorEvent;
+        this.ikasanESBDocument = errorEvent;
         super.title.setText("Error " + errorEvent.getErrorUri());
         this.moduleNameTf.setValue(Optional.ofNullable(errorEvent.getModuleName()).orElse(""));
         this.flowNameTf.setValue(Optional.ofNullable(errorEvent.getFlowName()).orElse(""));

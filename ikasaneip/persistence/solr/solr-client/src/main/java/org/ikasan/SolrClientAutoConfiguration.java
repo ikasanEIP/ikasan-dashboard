@@ -27,9 +27,11 @@ import org.ikasan.setup.dao.SetupDao;
 import org.ikasan.setup.dao.SolrSetupDaoImpl;
 import org.ikasan.setup.service.SetupService;
 import org.ikasan.setup.service.SolrSetupServiceImpl;
+import org.ikasan.solr.dao.SolrGeneralDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.entity.EsbEntityDao;
+import org.ikasan.spec.housekeeping.HousekeepService;
 import org.ikasan.spec.metadata.dao.BusinessStreamMetadataDao;
 import org.ikasan.spec.metadata.dao.ComponentConfigurationMetadataDao;
 import org.ikasan.spec.metadata.dao.ModuleMetadataDao;
@@ -261,9 +263,8 @@ public class SolrClientAutoConfiguration {
         return dao;
     }
 
-    @Bean(name = "solrSearchService")
-    public SolrGeneralServiceImpl solrSearchService()
-    {
+    @Bean(name = "esbSearchService")
+    public SolrGeneralServiceImpl esbSearchService() {
         SolrGeneralDaoImpl dao = new SolrGeneralDaoImpl();
         initializeDao(dao, this.solrRetentionDays);
         SolrGeneralServiceImpl service = new SolrGeneralServiceImpl(dao);
@@ -271,6 +272,12 @@ public class SolrClientAutoConfiguration {
         service.setSolrPassword(this.solrPassword);
 
         return service;
+    }
+
+    @Bean(name = "housekeepService")
+    public HousekeepService housekeepService()
+    {
+        return esbSearchService();
     }
 
     @Bean("wiretapEsbEntityDao")

@@ -6,12 +6,13 @@ import org.ikasan.mongo.persistence.business.stream.metadata.model.MongoBusiness
 import org.ikasan.mongo.persistence.business.stream.metadata.repository.MongoBusinessStreamRepository;
 import org.ikasan.mongo.persistence.module.metadata.model.MongoFlowMetaDataImpl;
 import org.ikasan.mongo.persistence.module.metadata.model.MongoModuleMetaDataImpl;
-import org.ikasan.mongo.persistence.scheduled.MongoPersistenceAutoConfiguration;
-import org.ikasan.mongo.persistence.scheduled.context.MongoPersistenceTestAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
 import org.ikasan.spec.metadata.BusinessStreamMetadataSearchResults;
 import org.ikasan.spec.metadata.dao.BusinessStreamMetadataDao;
 import org.ikasan.spec.metadata.model.*;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,6 +89,13 @@ public class MongoBusinessStreamMetadataDaoImplTest {
                 throw new IOException("File not found: " + fileName);
             }
             return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        }
+    }
+
+    @AfterClass
+    public static void stopContainer() {
+        if (mongoDBContainer != null) {
+            mongoDBContainer.stop();
         }
     }
 

@@ -21,7 +21,7 @@ public class DashboardHousekeepingAutoConfiguration
 {
 
     @Bean
-    public HousekeepingSchedulerService housekeepingSchedulerService(@Qualifier("solrHousekeepingJob") HousekeepingJob solrHousekeepingJob)
+    public HousekeepingSchedulerService housekeepingSchedulerService(@Qualifier("persistenceHousekeepingJob") HousekeepingJob solrHousekeepingJob)
     {
         HousekeepingSchedulerService housekeepingSchedulerService =  new HousekeepingSchedulerServiceImpl(SchedulerFactory.getInstance().getScheduler(),
             CachingScheduledJobFactory.getInstance(), Arrays.asList(solrHousekeepingJob));
@@ -30,10 +30,11 @@ public class DashboardHousekeepingAutoConfiguration
         return housekeepingSchedulerService;
 
     }
-    @Bean(name = "solrHousekeepingJob")
-    public HousekeepingJob solrHousekeepingJob(@Qualifier("solrSearchService") HousekeepService solrSearchService, Environment environment)
+
+    @Bean(name = "persistenceHousekeepingJob")
+    public HousekeepingJob housekeepingJob(@Qualifier("housekeepService") HousekeepService housekeepService, Environment environment)
     {
-        return new HousekeepingJobImpl("solrHousekeepingJob", solrSearchService, environment);
+        return new HousekeepingJobImpl("persistenceHousekeepingJob", housekeepService, environment);
     }
 
 

@@ -17,9 +17,12 @@ import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerSer
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.ikasan.spec.housekeeping.HousekeepService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.metadata.service.ModuleMetaDataService;
+import org.ikasan.spec.search.model.IkasanDocumentSearchResults;
+import org.ikasan.spec.search.model.IkasanESBDocument;
+import org.ikasan.spec.search.service.ESBSearchService;
 import org.ikasan.spec.security.model.User;
 import org.ikasan.spec.security.service.UserService;
 import org.junit.After;
@@ -37,7 +40,9 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.BindMode;
+import org.testcontainers.mongodb.MongoDBContainer;
 import org.testcontainers.solr.SolrContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
@@ -63,6 +68,7 @@ public abstract class UITest {
     private static final String SOLR_DATA_DIR = System.getProperty("dashboard.uitest.solr.data.dir", "/tmp/solr-data");
 
     static SolrContainer solr = new SolrContainer("solr:9.10.1");
+    public static MongoDBContainer mongoDBContainer;
 
     static {
         try {
@@ -95,6 +101,10 @@ public abstract class UITest {
 
             solr.start();
             System.out.println("Solr started!");
+
+            mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:7.0"));
+            mongoDBContainer.start();
+
         } catch (IOException e) {
             System.out.println("Error starting SOLR! " + e.getMessage());
             throw new RuntimeException(e);
@@ -103,6 +113,7 @@ public abstract class UITest {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
         registry.add("solr.url", () -> "http://" + solr.getHost() + ":" + solr.getSolrPort() + "/solr");
     }
 
@@ -119,7 +130,10 @@ public abstract class UITest {
     protected User user;
 
     @MockitoBean
-    protected SolrGeneralServiceImpl solrSearchService;
+    protected ESBSearchService esbSearchService;
+
+    @MockitoBean
+    protected HousekeepService housekeepService;
 
     @MockitoBean
     public ModuleMetaDataService moduleMetadataService;
@@ -146,9 +160,9 @@ public abstract class UITest {
         Mockito.when(user.isRequiresPasswordChange())
             .thenReturn(false);
 
-        IkasanSolrDocumentSearchResults results = new IkasanSolrDocumentSearchResults(new ArrayList<>(), 0, 1L);
+        IkasanDocumentSearchResults results = new IkasanSolrDocumentSearchResults(new ArrayList<>(), 0, 1L);
 
-        Mockito.when(this.solrSearchService.search(Mockito.anySet(), Mockito.anySet(), Mockito.isNull(), Mockito.anyLong(),
+        Mockito.when(this.esbSearchService.search(Mockito.anySet(), Mockito.anySet(), Mockito.isNull(), Mockito.anyLong(),
             Mockito.anyLong(), Mockito.anyInt(), Mockito.anyList(), Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(results);
 
@@ -190,12 +204,12 @@ public abstract class UITest {
         MockVaadin.tearDown();
     }
 
-    protected IkasanSolrDocumentSearchResults getSolrResults(int size) {
+    protected IkasanDocumentSearchResults getSolrResults(int size) {
 
-        ArrayList<IkasanSolrDocument> ikasanSolrDocuments = new ArrayList<>();
+        ArrayList<IkasanESBDocument> ikasanSolrDocuments = new ArrayList<>();
 
         IntStream.range(0, size).forEach(i -> {
-            IkasanSolrDocument document = new IkasanSolrDocument();
+            IkasanESBDocument document = new IkasanSolrDocument();
             document.setId("id" +i);
             document.setComponentName("component"+i);
             document.setErrorAction("exclusion"+i);

@@ -3,11 +3,12 @@ package org.ikasan.mongo.persistence.configuration.metadata.dao;
 import org.ikasan.mongo.persistence.configuration.metadata.model.MongoConfigurationMetaData;
 import org.ikasan.mongo.persistence.configuration.metadata.model.MongoConfigurationParameterMetaData;
 import org.ikasan.mongo.persistence.configuration.metadata.repository.MongoComponentConfigurationMetadataRepository;
-import org.ikasan.mongo.persistence.scheduled.MongoPersistenceAutoConfiguration;
-import org.ikasan.mongo.persistence.scheduled.context.MongoPersistenceTestAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceAutoConfiguration;
+import org.ikasan.mongo.persistence.MongoPersistenceTestAutoConfiguration;
 import org.ikasan.spec.metadata.dao.ComponentConfigurationMetadataDao;
 import org.ikasan.spec.metadata.model.ConfigurationMetaData;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +24,6 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -63,6 +63,13 @@ public class MongoComponentConfigurationMetadataDaoImplTest {
     @After
     public void tearDown() {
         repository.deleteAll();
+    }
+
+    @AfterClass
+    public static void stopContainer() {
+        if (mongoDBContainer != null) {
+            mongoDBContainer.stop();
+        }
     }
 
     @Test
