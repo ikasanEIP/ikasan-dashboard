@@ -8,6 +8,7 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -206,13 +207,16 @@ public class JobInstanceSplitVisualisationDialog extends AbstractCloseableResiza
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if (event.getContextInstance() != null &&
-            event.getContextInstance().getId().equals(this.rootContextInstance.getId())) {
-            if(this.ui != null && this.ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if (event.getContextInstance() != null &&
+                event.getContextInstance().getId().equals(this.rootContextInstance.getId())) {
                 this.ui.access(() -> {
                     this.statusDiv.setStatus(event.getNewStatus());
                 });
             }
+        }
+        else {
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
         }
     }
 }

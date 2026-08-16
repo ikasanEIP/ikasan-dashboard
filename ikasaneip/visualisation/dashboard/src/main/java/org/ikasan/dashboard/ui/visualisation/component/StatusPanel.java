@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
@@ -249,11 +250,14 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
 
     @Override
     public void receiveCacheStateBroadcast(FlowState flowState) {
-        if(ui != null && ui.isAttached()) {
+        if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
             ui.access(() -> {
                 logger.debug("Received flow state: " + flowState);
                 calculateStatus();
             });
+        }
+        else {
+            CacheStateBroadcaster.unregister(this);
         }
     }
 }

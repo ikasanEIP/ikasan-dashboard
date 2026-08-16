@@ -24,6 +24,7 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -35,6 +36,7 @@ import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroad
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
 public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseableResizableDialog
     implements SchedulerJobStateChangeEventBroadcastListener, ContextInstanceStateChangeEventBroadcastListener {
@@ -443,15 +447,27 @@ public class RepeatingSchedulerJobExecutionHistoryDialog extends AbstractCloseab
 
     @Override
     public void receiveBroadcast(SchedulerJobInstanceStateChangeEvent event) {
-        if(event.getSchedulerJobInstance().getContextInstanceId().equals(this.contextInstance.getId())) {
-            ui.access(() -> this.logFileGrid.getDataProvider().refreshAll());
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if(event.getSchedulerJobInstance().getContextInstanceId().equals(this.contextInstance.getId())) {
+                ui.access(() -> this.logFileGrid.getDataProvider().refreshAll());
+            }
+        }
+        else {
+            SchedulerJobStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
         }
     }
 
     @Override
     public void receiveBroadcast(ContextInstanceStateChangeEvent event) {
-        if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
-            ui.access(() -> this.logFileGrid.getDataProvider().refreshAll());
+        if(this.ui != null && this.ui.isAttached() && !ui.isClosing() && ui.getSession() != null) {
+            if(event.getContextInstanceId().equals(this.contextInstance.getId())) {
+                ui.access(() -> this.logFileGrid.getDataProvider().refreshAll());
+            }
+        }
+        else {
+            SchedulerJobStateChangeEventBroadcaster.unregister(this);
+            ContextInstanceStateChangeEventBroadcaster.unregister(this);
         }
     }
 

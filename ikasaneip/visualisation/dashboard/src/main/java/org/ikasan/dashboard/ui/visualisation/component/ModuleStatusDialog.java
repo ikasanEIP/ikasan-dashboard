@@ -15,6 +15,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcastListener;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
@@ -251,14 +252,19 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog impleme
 
     @Override
     public void receiveCacheStateBroadcast(FlowState flowState) {
-        logger.debug("Received flow state: " + flowState);
-        this.currentModule.getFlows()
-            .stream()
-            .filter(flow -> flowState.getFlowName().equals(flow.getName()))
-            .findFirst().ifPresent(flow -> {
-                if(ui.isAttached()) {
-                    ui.access(() -> this.flowGrid.getDataProvider().refreshItem(flow));
-                }
-            });
+        if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
+            logger.debug("Received flow state: " + flowState);
+            this.currentModule.getFlows()
+                .stream()
+                .filter(flow -> flowState.getFlowName().equals(flow.getName()))
+                .findFirst().ifPresent(flow -> {
+                    if(ui.isAttached()) {
+                        ui.access(() -> this.flowGrid.getDataProvider().refreshItem(flow));
+                    }
+                });
+        }
+        else {
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 }

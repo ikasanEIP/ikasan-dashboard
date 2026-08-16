@@ -367,13 +367,25 @@ public class StatusWidget extends Div implements FlowStateBroadcastListener, Cac
 
     @Override
     public void receiveFlowStateBroadcast(FlowState flowState) {
-        this.recalculate();
-        logger.debug("Flow state update received!" + flowState);
+        if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
+            this.recalculate();
+            logger.debug("Flow state update received!" + flowState);
+        }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 
     @Override
     public void receiveCacheStateBroadcast(FlowState flowState) {
-        this.recalculate();
-        logger.debug("Flow state update received!" + flowState);
+        if(this.ui != null && this.ui.isAttached() && !this.ui.isClosing() && this.ui.getSession() != null) {
+            this.recalculate();
+            logger.debug("Flow state update received!" + flowState);
+        }
+        else {
+            FlowStateBroadcaster.unregister(this);
+            CacheStateBroadcaster.unregister(this);
+        }
     }
 }
